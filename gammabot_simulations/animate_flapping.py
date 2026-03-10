@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import json
 import os
 
+import configs
 import dxf_to_csv
 import numpy as np
 
@@ -20,8 +21,6 @@ import pterasoftware as ps
 from pterasoftware.convergence.unsteady_non_trapezoidal import (
     _get_num_cross_sections_for_panel_ar,
 )
-
-import configs
 
 # -- Parameters ----------------------------------------------------------------
 TARGET_AR = 1
@@ -87,7 +86,8 @@ def build_problem(nc: int):
         psi_max = params["psi_max"]
         delta = params["delta"]
         return {
-            "amp_x": phi_max, "amp_y": psi_max,
+            "amp_x": phi_max,
+            "amp_y": psi_max,
             "period_x": flapping_period if phi_max != 0.0 else 0.0,
             "period_y": flapping_period if psi_max != 0.0 else 0.0,
             "phase_y": (90.0 + delta) if psi_max != 0.0 else 0.0,
@@ -102,20 +102,29 @@ def build_problem(nc: int):
                 wing_cross_sections=make_cross_sections(),
                 Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
                 angles_Gs_to_Wn_ixyz=(
-                    left_params["phi_v_shift"], left_params["psi_v_shift"], 0.0,
+                    left_params["phi_v_shift"],
+                    left_params["psi_v_shift"],
+                    0.0,
                 ),
-                symmetric=False, mirror_only=False,
-                num_chordwise_panels=nc, chordwise_spacing=chordwise_spacing,
+                symmetric=False,
+                mirror_only=False,
+                num_chordwise_panels=nc,
+                chordwise_spacing=chordwise_spacing,
             ),
             ps.geometry.wing.Wing(
                 wing_cross_sections=make_cross_sections(),
                 Ler_Gs_Cgs=(0.0, wing_spacing / 2, 0.0),
                 angles_Gs_to_Wn_ixyz=(
-                    right_params["phi_v_shift"], right_params["psi_v_shift"], 0.0,
+                    right_params["phi_v_shift"],
+                    right_params["psi_v_shift"],
+                    0.0,
                 ),
-                symmetric=False, mirror_only=True,
-                symmetryNormal_G=(0, 1, 0), symmetryPoint_G_Cg=(0, 0, 0),
-                num_chordwise_panels=nc, chordwise_spacing=chordwise_spacing,
+                symmetric=False,
+                mirror_only=True,
+                symmetryNormal_G=(0, 1, 0),
+                symmetryPoint_G_Cg=(0, 0, 0),
+                num_chordwise_panels=nc,
+                chordwise_spacing=chordwise_spacing,
             ),
         ],
         name="GammaBot",
@@ -146,7 +155,11 @@ def build_problem(nc: int):
         wing_cross_section_movements=right_wcsm,
         rotationPointOffset_Gs_Ler=(x_offset, y_offset, 0.0),
         ampAngles_Gs_to_Wn_ixyz=(right_flap["amp_x"], right_flap["amp_y"], 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(right_flap["period_x"], right_flap["period_y"], 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(
+            right_flap["period_x"],
+            right_flap["period_y"],
+            0.0,
+        ),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
         phaseAngles_Gs_to_Wn_ixyz=(0.0, right_flap["phase_y"], 0.0),
     )

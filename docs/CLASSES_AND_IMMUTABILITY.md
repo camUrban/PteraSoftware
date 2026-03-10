@@ -87,6 +87,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `delta_time`           | `float`                     | Copied from Movement  |
 | `first_averaging_step` | `int`                       | Computed during init  |
 | `first_results_step`   | `int`                       | Computed during init  |
+| `max_wake_rows`        | `int \| None`               | Copied from Movement  |
 | `steady_problems`      | `tuple[SteadyProblem, ...]` | Generated during init |
 
 #### Mutable (populated by solver)
@@ -147,6 +148,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `num_cycles`               | `int \| None`                      | Number of cycles          |
 | `num_chords`               | `int \| None`                      | Number of chord lengths   |
 | `num_steps`                | `int`                              | Total time steps          |
+| `max_wake_rows`            | `int \| None`                      | Max wake rows per Wing    |
+| `max_wake_chords`          | `int \| None`                      | Max wake in chord lengths |
+| `max_wake_cycles`          | `int \| None`                      | Max wake in motion cycles |
 | `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | Generated Airplanes       |
 | `operating_points`         | `tuple[OperatingPoint, ...]`       | Generated OperatingPoints |
 
@@ -345,35 +349,45 @@ This class is a subclass of OperatingPoint. It inherits all of OperatingPoint's 
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute      | Type    | Notes                    |
-|----------------|---------|--------------------------|
-| `rho`          | `float` | Fluid density            |
-| `vCg__E`       | `float` | CG speed                 |
-| `alpha`        | `float` | Angle of attack          |
-| `beta`         | `float` | Sideslip angle           |
-| `externalFX_W` | `float` | External force           |
-| `nu`           | `float` | Kinematic viscosity      |
+| Attribute              | Type                 | Notes                     |
+|------------------------|----------------------|---------------------------|
+| `rho`                  | `float`              | Fluid density             |
+| `vCg__E`               | `float`              | CG speed                  |
+| `alpha`                | `float`              | Angle of attack           |
+| `beta`                 | `float`              | Sideslip angle            |
+| `angles_E_to_BP1_izyx` | `np.ndarray`         | Earth-to-body orientation |
+| `CgP1_E_Eo`            | `np.ndarray`         | CG position in Earth axes |
+| `surfaceNormal_E`      | `np.ndarray \| None` | Image surface normal      |
+| `surfacePoint_E_Eo`    | `np.ndarray \| None` | Image surface point       |
+| `externalFX_W`         | `float`              | External force            |
+| `nu`                   | `float`              | Kinematic viscosity       |
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property                     | Depends On                         | Notes                           |
-|------------------------------|------------------------------------|---------------------------------|
-| `qInf__E`                    | `rho`, `vCg__E`                    | Dynamic pressure (cached)       |
-| `T_pas_GP1_CgP1_to_BP1_CgP1` | None (constant 180 deg y rotation) | Geometry to body axes (cached)  |
-| `T_pas_BP1_CgP1_to_GP1_CgP1` | `T_pas_GP1_CgP1_to_BP1_CgP1`       | Body to geometry axes (cached)  |
-| `T_pas_GP1_CgP1_to_W_CgP1`   | `alpha`, `beta`                    | Transformation matrix (cached)  |
-| `T_pas_W_CgP1_to_GP1_CgP1`   | `T_pas_GP1_CgP1_to_W_CgP1`         | Inverse transformation (cached) |
-| `vInfHat_GP1__E`             | `T_pas_W_CgP1_to_GP1_CgP1`         | Freestream direction (cached)   |
-| `vInf_GP1__E`                | `vInfHat_GP1__E`, `vCg__E`         | Freestream velocity (cached)    |
+| Property                        | Depends On                                                   | Notes                             |
+|---------------------------------|--------------------------------------------------------------|-----------------------------------|
+| `qInf__E`                       | `rho`, `vCg__E`                                              | Dynamic pressure (cached)         |
+| `T_pas_GP1_CgP1_to_BP1_CgP1`    | (constant)                                                   | Geometry-to-body matrix (cached)  |
+| `T_pas_BP1_CgP1_to_GP1_CgP1`    | `T_pas_GP1_CgP1_to_BP1_CgP1`                                 | Inverse of above (cached)         |
+| `T_pas_BP1_CgP1_to_W_CgP1`      | `alpha`, `beta`                                              | Body-to-wind matrix (cached)      |
+| `T_pas_W_CgP1_to_BP1_CgP1`      | `T_pas_BP1_CgP1_to_W_CgP1`                                   | Inverse of above (cached)         |
+| `T_pas_GP1_CgP1_to_W_CgP1`      | `T_pas_GP1_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_W_CgP1`     | Geometry-to-wind matrix (cached)  |
+| `T_pas_W_CgP1_to_GP1_CgP1`      | `T_pas_GP1_CgP1_to_W_CgP1`                                   | Inverse of above (cached)         |
+| `T_pas_E_CgP1_to_BP1_CgP1`      | `angles_E_to_BP1_izyx`                                       | Earth-to-body matrix (cached)     |
+| `T_pas_BP1_CgP1_to_E_CgP1`      | `T_pas_E_CgP1_to_BP1_CgP1`                                   | Inverse of above (cached)         |
+| `T_pas_E_CgP1_to_GP1_CgP1`      | `T_pas_E_CgP1_to_BP1_CgP1`, `T_pas_BP1_CgP1_to_GP1_CgP1`     | Earth-to-geometry matrix (cached) |
+| `T_pas_GP1_CgP1_to_E_CgP1`      | `T_pas_E_CgP1_to_GP1_CgP1`                                   | Inverse of above (cached)         |
+| `surfaceNormal_GP1`             | `surfaceNormal_E`, `T_pas_E_CgP1_to_GP1_CgP1`                | Surface normal in GP1 (cached)    |
+| `surfacePoint_GP1_CgP1`         | `surfacePoint_E_Eo`, `CgP1_E_Eo`, `T_pas_E_CgP1_to_GP1_CgP1` | Surface point in GP1 (cached)     |
+| `surfaceReflect_T_act_GP1_CgP1` | `surfacePoint_GP1_CgP1`, `surfaceNormal_GP1`                 | Active reflection matrix (cached) |
+| `vInfHat_GP1__E`                | `T_pas_W_CgP1_to_GP1_CgP1`                                   | Freestream direction (cached)     |
+| `vInf_GP1__E`                   | `vInfHat_GP1__E`, `vCg__E`                                   | Freestream velocity (cached)      |
 
 **Note on caching**: While `vInfHat_GP1__E` and `vInf_GP1__E` are simple computations once the transformation matrix is cached, they are cached for consistency with the overall pattern and because they are called repeatedly during solver operations. The same is true for `qInf__E`.
 
-#### Derived from Immutable (not cached, computed fresh each call)
+**Note on `T_pas_GP1_CgP1_to_BP1_CgP1`**: This matrix is a constant (180-degree rotation about y) and does not depend on any `__init__` parameters. It is still lazily cached for consistency with the overall pattern and to avoid recomputing it on every access.
 
-| Property                   | Depends On                 | Notes                       |
-|----------------------------|----------------------------|-----------------------------|
-| `T_pas_BP1_CgP1_to_W_CgP1` | `alpha`, `beta`            | Body to wind transformation |
-| `T_pas_W_CgP1_to_BP1_CgP1` | `T_pas_BP1_CgP1_to_W_CgP1` | Wind to body transformation |
+**Note on transformation decomposition**: The geometry-to-wind transformation (`T_pas_GP1_CgP1_to_W_CgP1`) is composed from `T_pas_GP1_CgP1_to_BP1_CgP1` and `T_pas_BP1_CgP1_to_W_CgP1` via `compose_T_pas`. Similarly, `T_pas_E_CgP1_to_GP1_CgP1` is composed from `T_pas_E_CgP1_to_BP1_CgP1` and `T_pas_BP1_CgP1_to_GP1_CgP1`. Decomposing through body axes enables the Earth transformation chain to reuse the geometry-to-body and body-to-geometry matrices without duplication.
 
 ## Airplane Class (`geometry/airplane.py`)
 

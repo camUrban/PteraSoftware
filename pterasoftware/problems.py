@@ -180,6 +180,7 @@ class UnsteadyProblem:
 
         self._num_steps: int = self._movement.num_steps
         self._delta_time: float = self._movement.delta_time
+        self._max_wake_rows: int | None = self._movement.max_wake_rows
 
         # For UnsteadyProblems with a static Movement, we are typically interested in
         # the final time step's forces and moments, which, assuming convergence, will be
@@ -280,6 +281,10 @@ class UnsteadyProblem:
     @property
     def first_results_step(self) -> int:
         return self._first_results_step
+
+    @property
+    def max_wake_rows(self) -> int | None:
+        return self._max_wake_rows
 
     @property
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
@@ -396,8 +401,8 @@ class CoupledUnsteadyProblem:
             default is None.
         :param extra_xml: A dict mapping injection point names to XML fragment strings
             to inject into the MuJoCo model's XML. Supported keys are "default",
-            "asset", "visual", "worldbody", and "body". Setting this to None injects
-            no extra XML. The default is None.
+            "asset", "visual", "worldbody", and "body". Setting this to None injects no
+            extra XML. The default is None.
         :param mujoco_assets: A dict mapping virtual filenames to their binary contents
             for the MuJoCo model. Setting this to None provides no extra assets. The
             default is None.

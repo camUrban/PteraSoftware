@@ -1,17 +1,16 @@
-"""This is script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a static Movement."""
+"""This script is an example of how to run Ptera Software's
+UnsteadyRingVortexLatticeMethodSolver with surface effects enabled. It uses the method
+of images to model ground effect by defining a horizontal image surface (the ground)
+beneath the Airplane. The geometry and Movement are static (no flapping)."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Create an Airplane with our custom geometry. I am going to declare every parameter
-# for Airplane, even though most of them have usable default values. This is for
-# educational purposes, but keep in mind that it makes the code much longer than it
-# needs to be. For details about each parameter, read the detailed class docstring.
-# The same caveats apply to the other classes, methods, and functions I call in this
-# script.
+# Create an Airplane with our custom geometry. This is the same Airplane used in the
+# unsteady_ring_vortex_lattice_method_solver_static.py example. For details about each
+# parameter, read the detailed class docstring.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
@@ -223,9 +222,20 @@ airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 del main_wing_movement
 del v_tail_movement
 
-# Define a new OperatingPoint.
+# Define a new OperatingPoint with surface effects enabled. To model ground effect, we
+# define a horizontal ground plane at z = 0 in Earth axes by specifying its unit normal
+# vector and a point on the plane. We also set CgP1_E_Eo to place the Airplane's CG 5
+# meters above the ground (negative z is up in Earth axes).
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+    rho=1.225,
+    vCg__E=10.0,
+    alpha=1.0,
+    beta=0.0,
+    CgP1_E_Eo=(0.0, 0.0, -5.0),
+    surfaceNormal_E=(0.0, 0.0, 1.0),
+    surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+    externalFX_W=0.0,
+    nu=15.06e-6,
 )
 
 # Define the operating point's OperatingPointMovement.
@@ -260,10 +270,8 @@ example_problem = ps.problems.UnsteadyProblem(
     movement=movement,
 )
 
-# Define a new solver. The available solver classes are
-# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
-# and UnsteadyRingVortexLatticeMethodSolver. We'll create an
-# UnsteadyRingVortexLatticeMethodSolver, which requires a UnsteadyProblem.
+# Define a new solver. We'll create an UnsteadyRingVortexLatticeMethodSolver, which
+# requires an UnsteadyProblem.
 example_solver = (
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
         unsteady_problem=example_problem,
@@ -273,7 +281,8 @@ example_solver = (
 # Delete the extraneous pointer.
 del example_problem
 
-# Run the solver.
+# Run the solver. The image surface contributions are automatically included at every
+# Biot-Savart call site.
 example_solver.run(
     prescribed_wake=True,
     show_progress=True,
@@ -281,8 +290,8 @@ example_solver.run(
 
 ps.output.print_results(solver=example_solver)
 
-# Call the draw function on the solver. Press "q" to close the plotter after it draws
-# the output.
+# Call the draw function on the solver. The image surface and reflected geometry are
+# automatically rendered. Press "q" to close the plotter after it draws the output.
 ps.output.draw(
     solver=example_solver,
     scalar_type="lift",
@@ -291,9 +300,9 @@ ps.output.draw(
     save=False,
 )
 
-# Call the animate function on the solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press "q",
-# after orienting the view, to begin the animation.
+# Call the animate function on the solver. This produces a GIF of the wake being shed.
+# The GIF is saved in the same directory as this script. Press "q", after orienting the
+# view, to begin the animation.
 ps.output.animate(
     unsteady_solver=example_solver,
     scalar_type="lift",

@@ -25,6 +25,7 @@ from . import (
     _logging,
     _panel,
     _parameter_validation,
+    _transformations,
     _vortices,
     geometry,
     movements,
@@ -66,6 +67,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             raise TypeError("unsteady_problem must be an UnsteadyProblem.")
         self.unsteady_problem = unsteady_problem
 
+        self._max_wake_rows = self.unsteady_problem.max_wake_rows
         self.num_steps = self.unsteady_problem.num_steps
         self.delta_time = self.unsteady_problem.delta_time
         self.first_results_step = self.unsteady_problem.first_results_step
@@ -240,8 +242,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
             # The number of wake RingVortices is the time step number multiplied by
             # the number of spanwise Panels. This works because the first time step
-            # number is 0.
-            this_num_wake_ring_vortices = step * this_num_spanwise_panels
+            # number is 0. If wake truncation is enabled, cap the number of
+            # chordwise wake rows at max_wake_rows.
+            this_num_chordwise_wake_rows = step
+            if self._max_wake_rows is not None:
+                this_num_chordwise_wake_rows = min(step, self._max_wake_rows)
+            this_num_wake_ring_vortices = (
+                this_num_chordwise_wake_rows * this_num_spanwise_panels
+            )
 
             # Allocate the ndarrays for this time step.
             this_wake_ring_vortex_strengths = np.zeros(
@@ -832,6 +840,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the current time step's SteadyProblem's 2D ndarray of Wing Wing
         influence coefficients (observed from the Earth frame).
 
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image bound RingVortices
+        reflected across that surface.
+
         :return: None
         """
         # Find the 2D ndarray of normalized velocities (in the first Airplane's
@@ -854,6 +866,36 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_operating_point.nu,
             )
         )
+
+        # Add the image contribution if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                self.stackCpp_GP1_CgP1,
+                has_point=True,
+            )
+            gridImageVIndCpp_GP1__E = (
+                _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                    strengths=self._current_bound_vortex_strengths,
+                    r_c0s=self._currentStackBoundRc0s,
+                    singularity_counts=singularity_counts,
+                    ages=None,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            gridNormVIndCpp_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                gridImageVIndCpp_GP1__E,
+                has_point=False,
+            )
 
         unexpected_singularity_counts = np.copy(singularity_counts)
 
@@ -922,6 +964,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the 1D ndarray of the wake Wing influence coefficients (observed from
         the Earth frame) at the current time step.
 
+        When an image surface is defined on the OperatingPoint, the influence
+        coefficients also include the contributions from image wake RingVortices
+        reflected across that surface.
+
         **Notes:**
 
         If the current time step is the first time step, no wake has been shed, so this
@@ -949,6 +995,36 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     nu=self.current_operating_point.nu,
                 )
             )
+
+            # Add the image contribution if an image surface is defined.
+            surfaceReflect_T_act_GP1_CgP1 = (
+                self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+            )
+            if surfaceReflect_T_act_GP1_CgP1 is not None:
+                stackReflectedCpp_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                    surfaceReflect_T_act_GP1_CgP1,
+                    self.stackCpp_GP1_CgP1,
+                    has_point=True,
+                )
+                currentStackImageWakeV_GP1_E = (
+                    _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                        stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                        stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                        stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                        stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                        stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                        strengths=self._current_wake_vortex_strengths,
+                        r_c0s=self._currentStackWakeRc0s,
+                        singularity_counts=singularity_counts,
+                        ages=self._current_wake_vortex_ages,
+                        nu=self.current_operating_point.nu,
+                    )
+                )
+                currentStackWakeV_GP1_E += _transformations.apply_T_to_vectors(
+                    surfaceReflect_T_act_GP1_CgP1,
+                    currentStackImageWakeV_GP1_E,
+                    has_point=False,
+                )
 
             unexpected_singularity_counts = np.copy(singularity_counts)
 
@@ -1006,6 +1082,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         from the Earth frame) at one or more points (in the first Airplane's geometry
         axes, relative to the first Airplane's CG) due to the freestream velocity and
         the induced velocity from every RingVortex.
+
+        When an image surface is defined on the OperatingPoint, the returned velocity
+        also includes the induced velocity from image bound and wake RingVortices
+        reflected across that surface.
 
         **Notes:**
 
@@ -1072,6 +1152,55 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 nu=self.current_operating_point.nu,
             )
         )
+
+        # Add the image contributions if an image surface is defined.
+        surfaceReflect_T_act_GP1_CgP1 = (
+            self.current_operating_point.surfaceReflect_T_act_GP1_CgP1
+        )
+        if surfaceReflect_T_act_GP1_CgP1 is not None:
+            stackReflectedP_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackP_GP1_CgP1,
+                has_point=True,
+            )
+            stackImageBoundRingVInd_GP1_E = (
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self.stackBrbrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self.stackFrbrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self.stackFlbrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self.stackBlbrvp_GP1_CgP1,
+                    strengths=self._current_bound_vortex_strengths,
+                    r_c0s=self._currentStackBoundRc0s,
+                    singularity_counts=bound_singularity_counts,
+                    ages=None,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            stackBoundRingVInd_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageBoundRingVInd_GP1_E,
+                has_point=False,
+            )
+            stackImageWakeRingVInd_GP1_E = (
+                _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                    stackP_GP1_CgP1=stackReflectedP_GP1_CgP1,
+                    stackBrrvp_GP1_CgP1=self._currentStackBrwrvp_GP1_CgP1,
+                    stackFrrvp_GP1_CgP1=self._currentStackFrwrvp_GP1_CgP1,
+                    stackFlrvp_GP1_CgP1=self._currentStackFlwrvp_GP1_CgP1,
+                    stackBlrvp_GP1_CgP1=self._currentStackBlwrvp_GP1_CgP1,
+                    strengths=self._current_wake_vortex_strengths,
+                    r_c0s=self._currentStackWakeRc0s,
+                    singularity_counts=wake_singularity_counts,
+                    ages=self._current_wake_vortex_ages,
+                    nu=self.current_operating_point.nu,
+                )
+            )
+            stackWakeRingVInd_GP1_E += _transformations.apply_T_to_vectors(
+                surfaceReflect_T_act_GP1_CgP1,
+                stackImageWakeRingVInd_GP1_E,
+                has_point=False,
+            )
 
         return cast(
             np.ndarray,
@@ -1678,6 +1807,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             )
                         )
 
+                        # If wake truncation is enabled, discard the oldest (most
+                        # downstream) rows of wake points. The point grid has one more
+                        # row than the vortex grid because points form vertices and
+                        # vortices form cells.
+                        if (
+                            self._max_wake_rows is not None
+                            and next_wing.gridWrvp_GP1_CgP1.shape[0]
+                            > self._max_wake_rows + 1
+                        ):
+                            next_wing.gridWrvp_GP1_CgP1 = next_wing.gridWrvp_GP1_CgP1[
+                                : self._max_wake_rows + 1
+                            ]
+
             unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
             unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
 
@@ -1737,6 +1879,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         .wake_ring_vortices
                     )
                     assert this_wing_wake_ring_vortices is not None
+
+                    # If wake truncation is enabled, trim the oldest rows of
+                    # wake RingVortices before adding the new row. This avoids
+                    # creating RingVortex objects that would immediately be
+                    # discarded.
+                    if (
+                        self._max_wake_rows is not None
+                        and this_wing_wake_ring_vortices.shape[0] >= self._max_wake_rows
+                    ):
+                        this_wing_wake_ring_vortices = this_wing_wake_ring_vortices[
+                            : self._max_wake_rows - 1
+                        ]
 
                     # Initialize a new ndarray to hold the new row of wake RingVortices.
                     new_row_of_wake_ring_vortices = np.empty(

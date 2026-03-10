@@ -245,6 +245,118 @@ def make_multiple_wing_static_validation_movement():
     return unsteady_validation_movement
 
 
+def make_surface_effect_static_movement():
+    """This function creates a Movement with static geometry and an image surface for
+    surface effect testing.
+
+    :return surface_effect_movement: Movement
+        This is a Movement fixture for surface effect testing.
+    """
+    surface_effect_airplane = airplane_fixtures.make_surface_effect_airplane()
+    surface_effect_operating_point = (
+        operating_point_fixtures.make_surface_effect_operating_point()
+    )
+
+    root_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=surface_effect_airplane.wings[
+                0
+            ].wing_cross_sections[0]
+        )
+    )
+
+    tip_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=surface_effect_airplane.wings[
+                0
+            ].wing_cross_sections[1]
+        )
+    )
+
+    wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=surface_effect_airplane.wings[0],
+        wing_cross_section_movements=[
+            root_wing_cross_section_movement,
+            tip_wing_cross_section_movement,
+        ],
+    )
+
+    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=surface_effect_airplane,
+        wing_movements=[wing_movement],
+    )
+
+    operating_point_movement = (
+        ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=surface_effect_operating_point
+        )
+    )
+
+    surface_effect_movement = ps.movements.movement.Movement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        num_chords=6,
+    )
+
+    return surface_effect_movement
+
+
+def make_surface_effect_free_air_static_movement():
+    """This function creates a Movement with static geometry and no image surface, for
+    use as a free-air baseline in surface effect validation tests.
+
+    :return free_air_movement: Movement
+        This is a Movement fixture for the free-air baseline.
+    """
+    surface_effect_airplane = airplane_fixtures.make_surface_effect_airplane()
+    free_air_operating_point = (
+        operating_point_fixtures.make_surface_effect_free_air_operating_point()
+    )
+
+    root_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=surface_effect_airplane.wings[
+                0
+            ].wing_cross_sections[0]
+        )
+    )
+
+    tip_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=surface_effect_airplane.wings[
+                0
+            ].wing_cross_sections[1]
+        )
+    )
+
+    wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=surface_effect_airplane.wings[0],
+        wing_cross_section_movements=[
+            root_wing_cross_section_movement,
+            tip_wing_cross_section_movement,
+        ],
+    )
+
+    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=surface_effect_airplane,
+        wing_movements=[wing_movement],
+    )
+
+    operating_point_movement = (
+        ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=free_air_operating_point
+        )
+    )
+
+    free_air_movement = ps.movements.movement.Movement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        num_chords=6,
+    )
+
+    return free_air_movement
+
+
 def make_multiple_wing_variable_validation_movement():
     """This function creates a Movement with variable, multi-wing geometry to
     be used as a fixture.

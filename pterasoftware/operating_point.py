@@ -60,6 +60,10 @@ class OperatingPoint:
         vCg__E: float | int = 10.0,
         alpha: float | int = 5.0,
         beta: float | int = 0.0,
+        angles_E_to_BP1_izyx: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        CgP1_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
+        surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
         externalFX_W: float | int = 0.0,
         nu: float | int = 15.06e-6,
     ) -> None:
@@ -87,6 +91,34 @@ class OperatingPoint:
             in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
             range (-180.0, 180.0] and will be converted internally to a float. The units
             are in degrees. The default is 0.0.
+        :param angles_E_to_BP1_izyx: An array-like object of 3 numbers representing the
+            angles from Earth axes to the first Airplane's body axes using an intrinsic
+            zy'x" sequence. Can be a tuple, list, or ndarray. Values are converted to
+            floats internally. Note that body axes differ from geometry axes: body axes
+            point forward/right/down while geometry axes point aft/right/up. The units
+            are in degrees. All angles must lie in the range (-180.0, 180.0] degrees.
+            The default is (0.0, 0.0, 0.0).
+        :param CgP1_E_Eo: An array-like object of 3 numbers representing the position of
+            the first Airplane's CG (in Earth axes, relative to the Earth origin). Can
+            be a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters. The default is (0.0, 0.0, 0.0).
+        :param surfaceNormal_E: None, or an array-like of 3 numbers (int or float)
+            representing the unit normal vector (in Earth axes) that, together with
+            surfacePoint_E_Eo, defines the image surface used for surface effect
+            modeling via the method of images. Can be None, or a tuple, list, or
+            ndarray. If not None, values are converted to floats and normalized
+            internally. Note that reversing the normal direction (using the antiparallel
+            vector) defines the same plane and produces the same result. This value must
+            be None if surfacePoint_E_Eo is None, and cannot be None if
+            surfacePoint_E_Eo is not None. The default is None.
+        :param surfacePoint_E_Eo: None, or an array-like of 3 numbers (int or float)
+            representing a point (in Earth axes, relative to the Earth origin) that,
+            along with surfaceNormal_E, defines the location of the image surface used
+            for surface effect modeling via the method of images. Can be None, or a
+            tuple, list, or ndarray. If not None, values are converted to floats
+            internally. This value must be None if surfaceNormal_E is None, and cannot
+            be None if surfaceNormal_E is not None. The units are in meters. The default
+            is None.
         :param externalFX_W: The additional thrust or drag on a problem's Airplane(s)
             (in wind axes) not due to the Airplanes' Wings. It is useful for trim
             analyses. It must be a number (int or float) and will be converted
@@ -115,6 +147,66 @@ class OperatingPoint:
         self._beta = _parameter_validation.number_in_range_return_float(
             beta, "beta", -180.0, False, 180.0, True
         )
+        angles_E_to_BP1_izyx = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                angles_E_to_BP1_izyx, "angles_E_to_BP1_izyx"
+            )
+        )
+        angles_E_to_BP1_izyx[0] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[0],
+            "angles_E_to_BP1_izyx[0]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        angles_E_to_BP1_izyx[1] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[1],
+            "angles_E_to_BP1_izyx[1]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        angles_E_to_BP1_izyx[2] = _parameter_validation.number_in_range_return_float(
+            angles_E_to_BP1_izyx[2],
+            "angles_E_to_BP1_izyx[2]",
+            -180.0,
+            False,
+            180.0,
+            True,
+        )
+        self._angles_E_to_BP1_izyx = angles_E_to_BP1_izyx
+        self._angles_E_to_BP1_izyx.flags.writeable = False
+        self._CgP1_E_Eo = _parameter_validation.threeD_number_vectorLike_return_float(
+            CgP1_E_Eo, "CgP1_E_Eo"
+        )
+        self._CgP1_E_Eo.flags.writeable = False
+        if surfaceNormal_E is not None and surfacePoint_E_Eo is not None:
+            surfaceNormal_E = (
+                _parameter_validation.threeD_number_vectorLike_return_float_unit_vector(
+                    surfaceNormal_E, "surfaceNormal_E"
+                )
+            )
+            surfaceNormal_E.flags.writeable = False
+            surfacePoint_E_Eo = (
+                _parameter_validation.threeD_number_vectorLike_return_float(
+                    surfacePoint_E_Eo, "surfacePoint_E_Eo"
+                )
+            )
+            surfacePoint_E_Eo.flags.writeable = False
+        elif surfaceNormal_E is None and surfacePoint_E_Eo is None:
+            pass
+        elif surfaceNormal_E is None:
+            raise ValueError(
+                "surfaceNormal_E cannot be None when surfacePoint_E_Eo is not None."
+            )
+        else:
+            raise ValueError(
+                "surfacePoint_E_Eo cannot be None when surfaceNormal_E is not None."
+            )
+        self._surfaceNormal_E = surfaceNormal_E
+        self._surfacePoint_E_Eo = surfacePoint_E_Eo
         self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )
@@ -127,8 +219,17 @@ class OperatingPoint:
         self._qInf__E: float | None = None
         self._T_pas_GP1_CgP1_to_BP1_CgP1: np.ndarray | None = None
         self._T_pas_BP1_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_BP1_CgP1_to_W_CgP1: np.ndarray | None = None
+        self._T_pas_W_CgP1_to_BP1_CgP1: np.ndarray | None = None
         self._T_pas_GP1_CgP1_to_W_CgP1: np.ndarray | None = None
         self._T_pas_W_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_E_CgP1_to_BP1_CgP1: np.ndarray | None = None
+        self._T_pas_BP1_CgP1_to_E_CgP1: np.ndarray | None = None
+        self._T_pas_E_CgP1_to_GP1_CgP1: np.ndarray | None = None
+        self._T_pas_GP1_CgP1_to_E_CgP1: np.ndarray | None = None
+        self._surfaceNormal_GP1: np.ndarray | None = None
+        self._surfacePoint_GP1_CgP1: np.ndarray | None = None
+        self._surfaceReflect_T_act_GP1_CgP1: np.ndarray | None = None
         self._vInfHat_GP1__E: np.ndarray | None = None
         self._vInf_GP1__E: np.ndarray | None = None
 
@@ -148,6 +249,22 @@ class OperatingPoint:
     @property
     def beta(self) -> float:
         return self._beta
+
+    @property
+    def angles_E_to_BP1_izyx(self) -> np.ndarray:
+        return self._angles_E_to_BP1_izyx
+
+    @property
+    def CgP1_E_Eo(self) -> np.ndarray:
+        return self._CgP1_E_Eo
+
+    @property
+    def surfaceNormal_E(self) -> np.ndarray | None:
+        return self._surfaceNormal_E
+
+    @property
+    def surfacePoint_E_Eo(self) -> np.ndarray | None:
+        return self._surfacePoint_E_Eo
 
     @property
     def externalFX_W(self) -> float:
@@ -211,6 +328,44 @@ class OperatingPoint:
         return self._T_pas_BP1_CgP1_to_GP1_CgP1
 
     @property
+    def T_pas_BP1_CgP1_to_W_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's body axes relative to the first Airplane's CG to wind axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's body axes relative to the first Airplane's CG to
+            wind axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_BP1_CgP1_to_W_CgP1 is None:
+            angles_BP1_to_W_exyz = np.array([0.0, -self._alpha, self._beta])
+            self._T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
+                angles=angles_BP1_to_W_exyz,
+                passive=True,
+                intrinsic=False,
+                order="xyz",
+            )
+            self._T_pas_BP1_CgP1_to_W_CgP1.flags.writeable = False
+        return self._T_pas_BP1_CgP1_to_W_CgP1
+
+    @property
+    def T_pas_W_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        wind axes relative to the first Airplane's CG to the first Airplane's body axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from wind axes relative to the first Airplane's CG to the first Airplane's
+            body axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_W_CgP1_to_BP1_CgP1 is None:
+            self._T_pas_W_CgP1_to_BP1_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_BP1_CgP1_to_W_CgP1
+            )
+            self._T_pas_W_CgP1_to_BP1_CgP1.flags.writeable = False
+        return self._T_pas_W_CgP1_to_BP1_CgP1
+
+    @property
     def T_pas_GP1_CgP1_to_W_CgP1(self) -> np.ndarray:
         """The passive transformation matrix which maps in homogeneous coordinates from
         the first Airplane's geometry axes relative to the first Airplane's CG to wind
@@ -244,21 +399,141 @@ class OperatingPoint:
             self._T_pas_W_CgP1_to_GP1_CgP1.flags.writeable = False
         return self._T_pas_W_CgP1_to_GP1_CgP1
 
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
     @property
-    def T_pas_BP1_CgP1_to_W_CgP1(self) -> np.ndarray:
-        angles_BP1_to_W_exyz = np.array([0.0, -self.alpha, self.beta])
+    def T_pas_E_CgP1_to_BP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        Earth axes relative to the first Airplane's CG to the first Airplane's body axes
+        relative to the first Airplane's CG.
 
-        return _transformations.generate_rot_T(
-            angles=angles_BP1_to_W_exyz, passive=True, intrinsic=False, order="xyz"
-        )
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from Earth axes relative to the first Airplane's CG to the first Airplane's
+            body axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_E_CgP1_to_BP1_CgP1 is None:
+            self._T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+                angles=self._angles_E_to_BP1_izyx,
+                passive=True,
+                intrinsic=True,
+                order="zyx",
+            )
+            self._T_pas_E_CgP1_to_BP1_CgP1.flags.writeable = False
+        return self._T_pas_E_CgP1_to_BP1_CgP1
 
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
     @property
-    def T_pas_W_CgP1_to_BP1_CgP1(self) -> np.ndarray:
-        return _transformations.invert_T_pas(self.T_pas_BP1_CgP1_to_W_CgP1)
+    def T_pas_BP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's body axes relative to the first Airplane's CG to Earth axes
+        relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's body axes relative to the first Airplane's CG to
+            Earth axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_BP1_CgP1_to_E_CgP1 is None:
+            self._T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_E_CgP1_to_BP1_CgP1
+            )
+            self._T_pas_BP1_CgP1_to_E_CgP1.flags.writeable = False
+        return self._T_pas_BP1_CgP1_to_E_CgP1
+
+    @property
+    def T_pas_E_CgP1_to_GP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        Earth axes relative to the first Airplane's CG to the first Airplane's geometry
+        axes relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from Earth axes relative to the first Airplane's CG to the first Airplane's
+            geometry axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_E_CgP1_to_GP1_CgP1 is None:
+            self._T_pas_E_CgP1_to_GP1_CgP1 = _transformations.compose_T_pas(
+                self.T_pas_E_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_GP1_CgP1
+            )
+            self._T_pas_E_CgP1_to_GP1_CgP1.flags.writeable = False
+        return self._T_pas_E_CgP1_to_GP1_CgP1
+
+    @property
+    def T_pas_GP1_CgP1_to_E_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix which maps in homogeneous coordinates from
+        the first Airplane's geometry axes relative to the first Airplane's CG to Earth
+        axes relative to the first Airplane's CG.
+
+        :return: The passive transformation matrix which maps in homogeneous coordinates
+            from the first Airplane's geometry axes relative to the first Airplane's CG
+            to Earth axes relative to the first Airplane's CG.
+        """
+        if self._T_pas_GP1_CgP1_to_E_CgP1 is None:
+            self._T_pas_GP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
+                self.T_pas_E_CgP1_to_GP1_CgP1
+            )
+            self._T_pas_GP1_CgP1_to_E_CgP1.flags.writeable = False
+        return self._T_pas_GP1_CgP1_to_E_CgP1
+
+    @property
+    def surfaceNormal_GP1(self) -> np.ndarray | None:
+        """The image surface's unit normal vector (in the first Airplane's geometry
+        axes).
+
+        :return: A (3,) ndarray of floats representing the image surface's unit normal
+            vector (in the first Airplane's geometry axes), or None if no image surface
+            is defined.
+        """
+        if self._surfaceNormal_E is None:
+            return None
+        if self._surfaceNormal_GP1 is None:
+            self._surfaceNormal_GP1 = _transformations.apply_T_to_vectors(
+                self.T_pas_E_CgP1_to_GP1_CgP1, self._surfaceNormal_E, has_point=False
+            )
+            self._surfaceNormal_GP1.flags.writeable = False
+        return self._surfaceNormal_GP1
+
+    @property
+    def surfacePoint_GP1_CgP1(self) -> np.ndarray | None:
+        """The position of a point on the image surface (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+
+        :return: A (3,) ndarray of floats representing the position of a point on the
+            image surface (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG). The units are in meters. Returns None if no image surface is
+            defined.
+        """
+        if self._surfacePoint_E_Eo is None:
+            return None
+        if self._surfacePoint_GP1_CgP1 is None:
+            surfacePoint_E_CgP1 = self._surfacePoint_E_Eo - self._CgP1_E_Eo
+            self._surfacePoint_GP1_CgP1 = _transformations.apply_T_to_vectors(
+                self.T_pas_E_CgP1_to_GP1_CgP1, surfacePoint_E_CgP1, has_point=True
+            )
+            self._surfacePoint_GP1_CgP1.flags.writeable = False
+        return self._surfacePoint_GP1_CgP1
+
+    @property
+    def surfaceReflect_T_act_GP1_CgP1(self) -> np.ndarray | None:
+        """The active reflection transformation matrix for the image surface (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG).
+
+        When applied with has_point=True, this matrix reflects a point across the image
+        surface. When applied with has_point=False, it reflects a free vector (such as
+        velocity) across the image surface's normal direction, without any translational
+        component.
+
+        :return: A (4,4) ndarray of floats representing the active reflection
+            transformation matrix (in the first Airplane's geometry axes, relative to
+            the first Airplane's CG), or None if no image surface is defined.
+        """
+        if self._surfaceNormal_E is None or self._surfacePoint_E_Eo is None:
+            return None
+        if self._surfaceReflect_T_act_GP1_CgP1 is None:
+            assert self.surfacePoint_GP1_CgP1 is not None
+            assert self.surfaceNormal_GP1 is not None
+            self._surfaceReflect_T_act_GP1_CgP1 = _transformations.generate_reflect_T(
+                plane_point_A_a=self.surfacePoint_GP1_CgP1,
+                plane_normal_A=self.surfaceNormal_GP1,
+                passive=False,
+            )
+            self._surfaceReflect_T_act_GP1_CgP1.flags.writeable = False
+        return self._surfaceReflect_T_act_GP1_CgP1
 
     @property
     def vInfHat_GP1__E(self) -> np.ndarray:
@@ -369,75 +644,25 @@ class CoupledOperatingPoint(OperatingPoint):
             9.80665).
         :return: None
         """
-        super().__init__(rho, vCg__E, alpha, beta, externalFX_W, nu)
+        super().__init__(
+            rho=rho,
+            vCg__E=vCg__E,
+            alpha=alpha,
+            beta=beta,
+            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
+            externalFX_W=externalFX_W,
+            nu=nu,
+        )
 
         self.omegas_BP1__E = (
             _parameter_validation.threeD_number_vectorLike_return_float(
                 omegas_BP1__E, "omegas_BP1__E"
             )
         )
-        angles_E_to_BP1_izyx = (
-            _parameter_validation.threeD_number_vectorLike_return_float(
-                angles_E_to_BP1_izyx, "angles_E_to_BP1_izyx"
-            )
-        )
-        angles_E_to_BP1_izyx[0] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_BP1_izyx[0],
-            "angles_E_to_BP1_izyx[0]",
-            -180.0,
-            False,
-            180.0,
-            True,
-        )
-        angles_E_to_BP1_izyx[1] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_BP1_izyx[1],
-            "angles_E_to_BP1_izyx[1]",
-            -180.0,
-            False,
-            180.0,
-            True,
-        )
-        angles_E_to_BP1_izyx[2] = _parameter_validation.number_in_range_return_float(
-            angles_E_to_BP1_izyx[2],
-            "angles_E_to_BP1_izyx[2]",
-            -180.0,
-            False,
-            180.0,
-            True,
-        )
-        self.angles_E_to_BP1_izyx = angles_E_to_BP1_izyx
 
         self.g_E = _parameter_validation.threeD_number_vectorLike_return_float(
             g_E, "g_E"
         )
-
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
-    @property
-    def T_pas_E_CgP1_to_BP1_CgP1(self) -> np.ndarray:
-        return _transformations.generate_rot_T(
-            angles=self.angles_E_to_BP1_izyx, passive=True, intrinsic=True, order="zyx"
-        )
-
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
-    @property
-    def T_pas_BP1_CgP1_to_E_CgP1(self) -> np.ndarray:
-        return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_BP1_CgP1)
-
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
-    @property
-    def T_pas_E_CgP1_to_GP1_CgP1(self) -> np.ndarray:
-        return _transformations.compose_T_pas(
-            self.T_pas_E_CgP1_to_BP1_CgP1, self.T_pas_BP1_CgP1_to_GP1_CgP1
-        )
-
-    # TEST: Add unit tests for this method.
-    # DOCUMENT: Fill out this method's docstring.
-    @property
-    def T_pas_GP1_CgP1_to_E_CgP1(self) -> np.ndarray:
-        return _transformations.invert_T_pas(self.T_pas_E_CgP1_to_GP1_CgP1)
 
     # TEST: Add unit tests for this method.
     # DOCUMENT: Fill out this method's docstring.

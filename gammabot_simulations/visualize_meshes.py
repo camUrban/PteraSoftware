@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent))
 
+import configs
 import dxf_to_csv
 import numpy as np
 
@@ -24,8 +25,6 @@ from pterasoftware.convergence._functions import (
 from pterasoftware.convergence.unsteady_non_trapezoidal import (
     _get_num_cross_sections_for_panel_ar,
 )
-
-import configs
 
 # ── Parameters to visualize ──────────────────────────────────────────────────
 TARGET_AR = 1

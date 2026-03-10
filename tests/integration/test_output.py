@@ -125,3 +125,75 @@ class TestPrintResults(unittest.TestCase):
         """
         # This test ensures no exceptions are raised.
         ps.output.print_results(solver=self.unsteady_solver)
+
+
+class TestOutputSurfaceEffect(unittest.TestCase):
+    """This is a class with functions to test the output module's surface effect
+    visualization, including reflected geometry and the image surface plane."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all tests in this class.
+
+        :return: None
+        """
+        cls.unsteady_solver = (
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_surface_effect_solver()
+        )
+        cls.unsteady_solver.run(show_progress=False)
+
+    def test_draw_with_surface_effect_does_not_throw(self):
+        """This method tests that the draw function does not throw any errors when
+        an image surface is defined.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=False,
+            testing=True,
+        )
+
+    def test_draw_with_surface_effect_and_wake_vortices_does_not_throw(self):
+        """This method tests that the draw function does not throw any errors when
+        an image surface is defined and wake vortices are shown.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=True,
+            show_streamlines=False,
+            testing=True,
+        )
+
+    def test_animate_with_surface_effect_does_not_throw(self):
+        """This method tests that the animate function does not throw any errors
+        when an image surface is defined.
+
+        :return: None
+        """
+        ps.output.animate(
+            unsteady_solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            save=False,
+            testing=True,
+        )
+
+    def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self):
+        """This method tests that the animate function does not throw any errors
+        when an image surface is defined and wake vortices are shown.
+
+        :return: None
+        """
+        ps.output.animate(
+            unsteady_solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=True,
+            save=False,
+            testing=True,
+        )

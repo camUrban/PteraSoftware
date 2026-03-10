@@ -37,17 +37,15 @@ import configs
 sys.path.append(str(Path(__file__).parent.parent / "gammabot_simulations"))
 
 import dxf_to_csv
-
 import matplotlib.pyplot as plt
 import numpy as np
-
-import pterasoftware as ps
-
 from run_simulation import (
     compute_flapping_parameters,
     create_wing_cross_section_movements,
     create_wing_cross_sections,
 )
+
+import pterasoftware as ps
 
 # Configure logging.
 logging.root.setLevel(logging.INFO)
@@ -333,10 +331,8 @@ def run_coupled_simulation(
     )
 
     # Create the solver.
-    solver = (
-        ps.coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver(
-            coupled_unsteady_problem=coupled_problem,
-        )
+    solver = ps.coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver(
+        coupled_unsteady_problem=coupled_problem,
     )
 
     script_logger.info("Starting coupled simulation.")
@@ -399,8 +395,10 @@ def run_coupled_simulation(
 
         # Print final position summary.
         final_pos = solver.stackPosition_E_E[-1]
-        print(f"Final CG position (E): x={final_pos[0]:.6f}, "
-              f"y={final_pos[1]:.6f}, z={final_pos[2]:.6f} m")
+        print(
+            f"Final CG position (E): x={final_pos[0]:.6f}, "
+            f"y={final_pos[1]:.6f}, z={final_pos[2]:.6f} m"
+        )
 
         # Resolve the path to the GammaBot STL mesh.
         gammabot_stl_path = str(
@@ -460,10 +458,7 @@ def run_viz_only(solver_path: str, show_results: bool = True) -> None:
     try:
         # Resolve the path to the GammaBot STL mesh.
         gammabot_stl_path = str(
-            Path(__file__).parent.parent
-            / "mujoco_examples"
-            / "assets"
-            / "gammabot.stl"
+            Path(__file__).parent.parent / "mujoco_examples" / "assets" / "gammabot.stl"
         )
 
         # Animate free flight.

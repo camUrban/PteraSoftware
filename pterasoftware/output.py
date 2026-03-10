@@ -23,6 +23,7 @@ from __future__ import annotations
 import math
 import time
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -33,6 +34,9 @@ from . import (
     _transformations,
     coupled_unsteady_ring_vortex_lattice_method,
     geometry,
+)
+from . import operating_point as operating_point_mod
+from . import (
     steady_horseshoe_vortex_lattice_method,
     steady_ring_vortex_lattice_method,
     unsteady_ring_vortex_lattice_method,
@@ -44,6 +48,12 @@ _diverging_color_map = "delta"
 _wake_vortex_color = "white"
 _panel_color = "chartreuse"
 _streamline_color = "orchid"
+_image_surface_opacity = 0.75
+_image_surface_scale = 5.0
+_image_reflection_mute_factor = 0.5
+_image_surface_checker_size = 25
+_image_surface_color_a = np.array([40, 40, 40], dtype=np.uint8)
+_image_surface_color_b = np.array([80, 80, 80], dtype=np.uint8)
 _plotter_background_color = "black"
 _body_mesh_color = "cornflowerblue"
 _ground_plane_checker_light = [200, 200, 200]
@@ -152,8 +162,8 @@ def draw(
     :param body_mesh_path: The path to an STL file containing the body mesh to display.
         The mesh is assumed to be in the first Airplane's body axes, relative to the
         first Airplane's CG. Only used when the solver is a
-        CoupledUnsteadyRingVortexLatticeMethodSolver. Setting this to None disables
-        body mesh rendering. The default is None.
+        CoupledUnsteadyRingVortexLatticeMethodSolver. Setting this to None disables body
+        mesh rendering. The default is None.
     :param body_mesh_scale: The scale factor to apply to the body mesh before rendering.
         Only used when body_mesh_path is not None. The default is 1.0.
     :param ground_plane_z_E: The z coordinate of the ground plane (in Earth axes, in
@@ -281,7 +291,7 @@ def draw(
     plotter = pv.Plotter(window_size=_window_size, lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
-    # Get the solver's geometry.
+    # Get the solver's geometry and OperatingPoint.
     if isinstance(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
@@ -289,7 +299,8 @@ def draw(
         draw_step = solver.num_steps - 1
 
         airplanes = solver.steady_problems[draw_step].airplanes
-        qInf__E = solver.steady_problems[draw_step].operating_point.qInf__E
+        draw_operating_point = solver.steady_problems[draw_step].operating_point
+        qInf__E = draw_operating_point.qInf__E
 
         # If showing wake RingVortices, get their surfaces and plot them.
         if show_wake_vortices:
@@ -326,7 +337,8 @@ def draw(
                 )
     else:
         airplanes = solver.airplanes
-        qInf__E = solver.operating_point.qInf__E
+        draw_operating_point = solver.operating_point
+        qInf__E = draw_operating_point.qInf__E
 
     # Get the Panel surfaces.
     if isinstance(
@@ -416,14 +428,14 @@ def draw(
         if ground_plane_z_E is not None:
             initialPosition_E_E = solver.stackPosition_E_E[0]
             finalPosition_E_E = solver.stackPosition_E_E[-1]
-            trajectoryMidpoint_E_E = (
-                initialPosition_E_E + finalPosition_E_E
-            ) / 2.0
+            trajectoryMidpoint_E_E = (initialPosition_E_E + finalPosition_E_E) / 2.0
             trajectory_extent = float(
                 np.linalg.norm(finalPosition_E_E - initialPosition_E_E)
             )
             ground_plane_surface = _get_ground_plane_surface(
-                ground_plane_z_E, trajectory_extent, trajectoryMidpoint_E_E,
+                ground_plane_z_E,
+                trajectory_extent,
+                trajectoryMidpoint_E_E,
                 airplane_diagonal,
             )
             ground_plane_texture = _get_ground_plane_texture()
@@ -463,6 +475,46 @@ def draw(
             (0.0, 0.0, 1.0),
         )
 
+    T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+    image_surface_mesh = None
+
+    # If an image surface is defined, add reflected geometry. The image surface plane
+    # is added later, after the geometry bounds are captured.
+    if T_reflect is not None:
+        mute = _image_reflection_mute_factor
+        muted_edge_color = _mute_color("black", mute)
+
+        # Add reflected Panel surfaces with muted coloring.
+        reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
+        if scalar_type in ("induced drag", "side force", "lift"):
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                edge_color=muted_edge_color,
+                cmap=_mute_colormap(color_map, mute),
+                clim=[c_min, c_max],
+                scalars=these_scalars,
+                smooth_shading=False,
+                show_scalar_bar=False,
+            )
+        else:
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                edge_color=muted_edge_color,
+                color=_mute_color(_panel_color, mute),
+                smooth_shading=False,
+            )
+
+        # Add reflected wake RingVortex surfaces if they are being shown.
+        if show_wake_vortices:
+            plotter.add_mesh(
+                _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
+                show_edges=True,
+                edge_color=muted_edge_color,
+                smooth_shading=False,
+                color=_mute_color(_wake_vortex_color, mute),
+            )
     # If showing streamlines, plot them.
     if show_streamlines and not isinstance(
         solver,
@@ -499,12 +551,66 @@ def draw(
                         smooth_shading=False,
                     )
 
+                    # If an image surface is defined, add the reflected streamline
+                    # segment.
+                    if T_reflect is not None:
+                        reflected_point = _transformations.apply_T_to_vectors(
+                            T_reflect,
+                            point,
+                            has_point=True,
+                        )
+                        reflected_last_point = _transformations.apply_T_to_vectors(
+                            T_reflect,
+                            last_point,
+                            has_point=True,
+                        )
+                        plotter.add_mesh(
+                            pv.Line(
+                                reflected_last_point,
+                                reflected_point,
+                            ),
+                            show_edges=True,
+                            color=_mute_color(_streamline_color, mute),
+                            line_width=2,
+                            smooth_shading=False,
+                        )
+
+    # If an image surface is defined, save the geometry bounds (which now include
+    # the reflected geometry but not the image surface plane), add the image surface
+    # plane, then fit the camera to the saved bounds so the view is not dominated by
+    # the much larger image surface plane. When an image surface is present, cpos is
+    # not passed to show() because that would trigger an auto-fit to all actors
+    # (including the image surface).
+    if T_reflect is not None:
+        geometry_bounds = plotter.bounds
+        image_surface_result = _get_image_surface_mesh_and_texture(
+            draw_operating_point, geometry_bounds
+        )
+        assert image_surface_result is not None
+        image_surface_mesh, image_surface_texture = image_surface_result
+        plotter.add_mesh(
+            image_surface_mesh,
+            texture=image_surface_texture,
+            opacity=_image_surface_opacity,
+            smooth_shading=True,
+        )
+        plotter.camera.position = (-1, -1, 1)
+        plotter.camera.focal_point = (0, 0, 0)
+        plotter.camera.up = (0, 0, 1)
+        plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
+
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
     # Use the computed camera position for coupled solvers (which accounts for the
-    # airplane's actual size), or use the default direction for other solvers.
-    cpos_arg = draw_cpos if draw_cpos is not None else (-1, -1, 1)
+    # airplane's actual size). When an image surface is defined, use None (let PyVista
+    # auto-fit to include the reflected geometry). Otherwise, use the default direction.
+    if draw_cpos is not None:
+        cpos_arg = draw_cpos
+    elif image_surface_mesh is not None:
+        cpos_arg = None
+    else:
+        cpos_arg = (-1, -1, 1)
 
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window.
@@ -684,6 +790,50 @@ def animate(
         min_scalar = round(min(all_scalars), 2)
         max_scalar = round(max(all_scalars), 2)
 
+    # Pre-compute the image surface mesh and reflection matrix from the last time
+    # step's geometry so that the plane is large enough to encompass the fully
+    # developed wake. The mesh, texture, and reflection matrix are static and reused
+    # for every frame. The last step's geometry bounds (including reflected geometry
+    # but not the image surface plane) are also saved so the camera can be fitted to
+    # the geometry rather than the larger image surface.
+    last_step = len(step_airplanes) - 1
+    last_step_operating_point = unsteady_solver.steady_problems[
+        last_step
+    ].operating_point
+    T_reflect = last_step_operating_point.surfaceReflect_T_act_GP1_CgP1
+    if T_reflect is not None:
+        last_step_panel_surfaces = _get_panel_surfaces(step_airplanes[last_step])
+        reflected_last_step_panel_surfaces = _reflect_mesh(
+            last_step_panel_surfaces, T_reflect
+        )
+        if show_wake_vortices:
+            last_step_wake_surfaces = _get_wake_ring_vortex_surfaces(
+                unsteady_solver, last_step
+            )
+            reflected_last_step_wake_surfaces = _reflect_mesh(
+                last_step_wake_surfaces, T_reflect
+            )
+            combined = (
+                last_step_panel_surfaces.merge(last_step_wake_surfaces)
+                .merge(reflected_last_step_panel_surfaces)
+                .merge(reflected_last_step_wake_surfaces)
+            )
+            image_surface_geometry_bounds = combined.bounds
+        else:
+            combined = last_step_panel_surfaces.merge(
+                reflected_last_step_panel_surfaces
+            )
+            image_surface_geometry_bounds = combined.bounds
+        image_surface_result = _get_image_surface_mesh_and_texture(
+            last_step_operating_point, image_surface_geometry_bounds
+        )
+        assert image_surface_result is not None
+        image_surface_mesh, image_surface_texture = image_surface_result
+    else:
+        image_surface_mesh = None
+        image_surface_texture = None
+        image_surface_geometry_bounds = None
+
     # Get the Panel surfaces of the first time step's Airplane(s).
     panel_surfaces = _get_panel_surfaces(step_airplanes[0])
 
@@ -715,6 +865,56 @@ def animate(
             smooth_shading=False,
         )
 
+    # If an image surface is defined, add reflected geometry, plot the pre-computed
+    # plane, set the camera direction, and fit the camera to the last time step's
+    # geometry bounds so the view is not dominated by the much larger image surface
+    # plane. When an image surface is present, cpos is not passed to show() because
+    # that would trigger an auto-fit to all actors (including the image surface).
+    if T_reflect is not None:
+        assert image_surface_mesh is not None
+        mute = _image_reflection_mute_factor
+        muted_edge_color = _mute_color("black", mute)
+        muted_panel_color = _mute_color(_panel_color, mute)
+        muted_wake_color = _mute_color(_wake_vortex_color, mute)
+        if color_map:
+            muted_color_map = _mute_colormap(color_map, mute)
+        else:
+            muted_color_map = None
+
+        # Add reflected Panel surfaces with muted coloring.
+        reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
+        if scalar_type is not None and first_results_step == 0:
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                edge_color=muted_edge_color,
+                cmap=muted_color_map,
+                clim=[c_min, c_max],
+                scalars=these_scalars,
+                smooth_shading=False,
+                show_scalar_bar=False,
+            )
+        else:
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                edge_color=muted_edge_color,
+                color=muted_panel_color,
+                smooth_shading=False,
+            )
+
+        # Add the image surface plane.
+        plotter.add_mesh(
+            image_surface_mesh,
+            texture=image_surface_texture,
+            opacity=_image_surface_opacity,
+            smooth_shading=True,
+        )
+        plotter.camera.position = (-1, -1, 1)
+        plotter.camera.focal_point = (0, 0, 0)
+        plotter.camera.up = (0, 0, 1)
+        plotter.reset_camera(bounds=image_surface_geometry_bounds)  # type: ignore[call-arg]
+
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
@@ -729,16 +929,14 @@ def animate(
         )
         plotter.show(
             title="Rendering speed not to scale.",
-            cpos=(-1, -1, 1),
-            # cpos=(-0.25, 0, 0),
+            cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             auto_close=False,
         )
     else:
         plotter.show(
             title="Rendering speed not to scale.",
-            cpos=(-1, -1, 1),
-            # cpos=(-0.25, 0, 0),
+            cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             interactive=False,
             auto_close=False,
@@ -819,6 +1017,51 @@ def animate(
                 show_edges=True,
                 color=_panel_color,
                 smooth_shading=False,
+            )
+
+        # If an image surface is defined, add reflected geometry and the pre-computed
+        # image surface plane.
+        if T_reflect is not None:
+            assert image_surface_mesh is not None
+
+            # Add reflected Panel surfaces with muted coloring.
+            reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
+            if scalar_type is not None and first_results_step <= current_step:
+                plotter.add_mesh(
+                    reflected_panel_surfaces,
+                    show_edges=True,
+                    edge_color=muted_edge_color,
+                    cmap=muted_color_map,
+                    clim=[c_min, c_max],
+                    scalars=these_scalars,
+                    smooth_shading=False,
+                    show_scalar_bar=False,
+                )
+            else:
+                plotter.add_mesh(
+                    reflected_panel_surfaces,
+                    show_edges=True,
+                    edge_color=muted_edge_color,
+                    color=muted_panel_color,
+                    smooth_shading=False,
+                )
+
+            # Add reflected wake RingVortex surfaces if they are being shown.
+            if show_wake_vortices:
+                plotter.add_mesh(
+                    _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
+                    show_edges=True,
+                    edge_color=muted_edge_color,
+                    smooth_shading=False,
+                    color=muted_wake_color,
+                )
+
+            # Add the image surface plane.
+            plotter.add_mesh(
+                image_surface_mesh,
+                texture=image_surface_texture,
+                opacity=_image_surface_opacity,
+                smooth_shading=True,
             )
 
         # If saving, append a WebP Image of this frame to the list of Images. To do
@@ -932,9 +1175,7 @@ def animate_free_flight(
     # Get the Airplane at each time step from the solver's CoupledSteadyProblems.
     # These are the Airplanes with forces computed on their Panels, as opposed to the
     # geometry only Airplanes from the CoupledMovement.
-    airplanes = tuple(
-        csp.airplane for csp in coupled_solver.coupled_steady_problems
-    )
+    airplanes = tuple(csp.airplane for csp in coupled_solver.coupled_steady_problems)
 
     # Scale down the true-speed frames per second to at most 50 fps. This is the
     # maximum speed at which some programs can render WebPs.
@@ -1032,7 +1273,9 @@ def animate_free_flight(
     ground_plane_texture: pv.Texture | None = None
     if ground_plane_z_E is not None:
         ground_plane_surface = _get_ground_plane_surface(
-            ground_plane_z_E, trajectory_extent, trajectoryMidpoint_E_E,
+            ground_plane_z_E,
+            trajectory_extent,
+            trajectoryMidpoint_E_E,
             airplane_diagonal,
         )
         ground_plane_texture = _get_ground_plane_texture()
@@ -2074,9 +2317,9 @@ def _get_body_mesh_surface_free_flight(
     """Returns a PolyData representation of the body STL mesh, in PyVista axes, relative
     to the Earth origin, for free flight visualization.
 
-    The body mesh is assumed to already be in the first Airplane's body axes, relative to
-    the first Airplane's CG. The transformation chain is:
-    BP1_CgP1 -> E_CgP1 -> E_E -> V_E.
+    The body mesh is assumed to already be in the first Airplane's body axes, relative
+    to the first Airplane's CG. The transformation chain is: BP1_CgP1 -> E_CgP1 -> E_E
+    -> V_E.
 
     :param body_mesh_BP1_CgP1: A PolyData representation of the body mesh (in the first
         Airplane's body axes, relative to the first Airplane's CG).
@@ -2101,9 +2344,7 @@ def _get_body_mesh_surface_free_flight(
 
     # Invert to get the transformation from the first Airplane's body axes, relative
     # to the first Airplane's CG, to Earth axes, relative to the first Airplane's CG.
-    T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(
-        T_pas_E_CgP1_to_BP1_CgP1
-    )
+    T_pas_BP1_CgP1_to_E_CgP1 = _transformations.invert_T_pas(T_pas_E_CgP1_to_BP1_CgP1)
 
     # Create the passive translation transformation from Earth axes, relative to
     # the first Airplane's CG, to Earth axes, relative to the Earth origin.
@@ -2154,23 +2395,23 @@ def _get_ground_plane_surface(
     """Returns a PolyData representation of a ground plane, in PyVista axes, relative to
     the Earth origin.
 
-    The plane is centered at the trajectory's x/y midpoint in Earth axes, at
-    z = ground_plane_z_E. It is sized to always extend beyond the trajectory. The
-    returned plane has its texture coordinates scaled so that a checkerboard texture
-    tiles proportionally to the airplane's size.
+    The plane is centered at the trajectory's x/y midpoint in Earth axes, at z =
+    ground_plane_z_E. It is sized to always extend beyond the trajectory. The returned
+    plane has its texture coordinates scaled so that a checkerboard texture tiles
+    proportionally to the airplane's size.
 
     :param ground_plane_z_E: The z coordinate of the ground plane (in Earth axes). The
         units are in meters.
     :param trajectory_extent: The distance between the initial and final positions of
         the trajectory. The units are in meters.
-    :param trajectoryMidpoint_E_E: A (3,) ndarray of floats representing the midpoint
-        of the trajectory (in Earth axes, relative to the Earth origin). The units are
-        in meters.
-    :param airplane_diagonal: The bounding diagonal of the airplane's panel surfaces
-        (in PyVista axes). Used to scale the checkerboard texture tiles. The units are
-        in meters.
-    :return: A PolyData representation of the ground plane (in PyVista axes, relative
-        to the Earth origin).
+    :param trajectoryMidpoint_E_E: A (3,) ndarray of floats representing the midpoint of
+        the trajectory (in Earth axes, relative to the Earth origin). The units are in
+        meters.
+    :param airplane_diagonal: The bounding diagonal of the airplane's panel surfaces (in
+        PyVista axes). Used to scale the checkerboard texture tiles. The units are in
+        meters.
+    :return: A PolyData representation of the ground plane (in PyVista axes, relative to
+        the Earth origin).
     """
     # Compute the plane size to extend beyond the trajectory. Use the airplane
     # diagonal as the minimum scale reference.
@@ -2212,7 +2453,9 @@ def _get_ground_plane_surface(
     # Scale the texture coordinates so the checkerboard tiles proportionally to the
     # physical size. Each tile covers one unit of plane_size, so the number of tiles
     # equals the plane size divided by the airplane diagonal.
-    num_tiles = max(4, int(plane_size / airplane_diagonal)) if airplane_diagonal > 0 else 4
+    num_tiles = (
+        max(4, int(plane_size / airplane_diagonal)) if airplane_diagonal > 0 else 4
+    )
     plane.active_texture_coordinates = plane.active_texture_coordinates * num_tiles
 
     return plane
@@ -2250,8 +2493,8 @@ def _setup_free_flight_lighting(plotter: pv.Plotter) -> None:
 def _get_ground_plane_texture() -> pv.Texture:
     """Returns a checkerboard Texture for the ground plane.
 
-    The texture is a repeating checkerboard pattern. The number of visible tiles
-    depends on the texture coordinate scaling applied to the ground plane surface by
+    The texture is a repeating checkerboard pattern. The number of visible tiles depends
+    on the texture coordinate scaling applied to the ground plane surface by
     ``_get_ground_plane_surface``.
 
     :return: A PyVista Texture containing a checkerboard pattern with wrap mode set to
@@ -2329,6 +2572,141 @@ def _get_panel_surfaces(
 
     # Return the Panels' surfaces.
     return pv.PolyData(panel_vertices, panel_faces)
+
+
+def _get_image_surface_mesh_and_texture(
+    this_operating_point: operating_point_mod.OperatingPoint,
+    geometry_bounds: tuple[float, float, float, float, float, float],
+) -> tuple[pv.PolyData, pv.Texture] | None:
+    """Returns a PolyData plane mesh and checkerboard Texture representing the image
+    surface, or None if no image surface is defined.
+
+    The plane is centered at the projection of the geometry bounding box center onto the
+    image surface, and sized proportionally to the bounding box diagonal so that it
+    appears large relative to the geometry.
+
+    :param this_operating_point: The OperatingPoint that may define an image surface.
+    :param geometry_bounds: The (xmin, xmax, ymin, ymax, zmin, zmax) bounding box of the
+        geometry used to determine the plane's center and size.
+    :return: A tuple of (PolyData plane mesh, checkerboard Texture) representing the
+        image surface, or None if no image surface is defined.
+    """
+    surface_normal = this_operating_point.surfaceNormal_GP1
+    surface_point = this_operating_point.surfacePoint_GP1_CgP1
+
+    if surface_normal is None or surface_point is None:
+        return None
+
+    # Compute the bounding box center and diagonal length.
+    bounds = np.array(geometry_bounds, dtype=float)
+    bbox_center = np.array(
+        [
+            0.5 * (bounds[0] + bounds[1]),
+            0.5 * (bounds[2] + bounds[3]),
+            0.5 * (bounds[4] + bounds[5]),
+        ],
+        dtype=float,
+    )
+    bbox_diagonal = float(
+        np.linalg.norm(
+            np.array(
+                [
+                    bounds[1] - bounds[0],
+                    bounds[3] - bounds[2],
+                    bounds[5] - bounds[4],
+                ],
+                dtype=float,
+            )
+        )
+    )
+
+    # Project the bounding box center onto the image surface to get the plane's center.
+    offset = np.dot(bbox_center - surface_point, surface_normal)
+    plane_center = bbox_center - offset * surface_normal
+
+    # Size the plane proportionally to the bounding box diagonal.
+    plane_size = _image_surface_scale * bbox_diagonal
+
+    mesh = pv.Plane(
+        center=plane_center,
+        direction=surface_normal,
+        i_size=plane_size,
+        j_size=plane_size,
+    )
+
+    # Build a checkerboard texture image. Each cell is one pixel, so a 25 x 25
+    # checkerboard is a 25 x 25 x 3 RGB image.
+    n = _image_surface_checker_size
+    row = np.arange(n, dtype=int)
+    col = np.arange(n, dtype=int)
+    rr, cc = np.meshgrid(row, col, indexing="ij")
+    is_dark = (rr + cc) % 2 == 0
+    image = np.where(
+        is_dark[:, :, np.newaxis], _image_surface_color_a, _image_surface_color_b
+    )
+    texture = pv.numpy_to_texture(image)
+
+    return mesh, texture
+
+
+def _reflect_mesh(
+    mesh: pv.PolyData,
+    T_reflect: np.ndarray,
+) -> pv.PolyData:
+    """Returns a copy of a PolyData mesh with its points reflected across the image
+    surface.
+
+    :param mesh: The PolyData mesh to reflect.
+    :param T_reflect: A (4,4) ndarray of floats representing the active reflection
+        transformation matrix (in the first Airplane's geometry axes, relative to the
+        first Airplane's CG).
+    :return: A new PolyData mesh with all points reflected across the image surface.
+    """
+    reflected = mesh.copy()
+    reflected.points = _transformations.apply_T_to_vectors(
+        T_reflect,
+        mesh.points,
+        has_point=True,
+    )
+    return reflected
+
+
+def _mute_color(
+    color: str | tuple[float, ...],
+    factor: float,
+) -> tuple[float, float, float]:
+    """Returns a muted version of a color by linearly interpolating it toward middle
+    gray.
+
+    :param color: Any color that PyVista can parse (name, hex string, RGB tuple, etc.).
+    :param factor: The muting factor in [0, 1]. 0 means no change, 1 means fully gray.
+    :return: A (R, G, B) tuple of floats in [0, 1].
+    """
+    rgb = np.array(pv.Color(color).float_rgb)
+    gray = np.full(3, 0.5)
+    muted = rgb + factor * (gray - rgb)
+    return float(muted[0]), float(muted[1]), float(muted[2])
+
+
+def _mute_colormap(
+    cmap_name: str,
+    factor: float,
+) -> matplotlib.colors.ListedColormap:
+    """Returns a muted version of a named colormap by linearly interpolating each color
+    toward middle gray.
+
+    :param cmap_name: The name of a Matplotlib or cmocean colormap.
+    :param factor: The muting factor in [0, 1]. 0 means no change, 1 means fully gray.
+    :return: A ListedColormap with muted colors.
+    """
+    try:
+        cmap = plt.get_cmap(cmap_name)
+    except ValueError:
+        cmap = plt.get_cmap("cmo." + cmap_name)
+    colors = cmap(np.linspace(0, 1, 256))
+    gray = 0.5
+    colors[:, :3] = colors[:, :3] + factor * (gray - colors[:, :3])
+    return matplotlib.colors.ListedColormap(colors)
 
 
 # TEST: Consider adding unit tests for this function.

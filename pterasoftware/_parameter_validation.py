@@ -225,7 +225,7 @@ def arrayLike_of_numbers_in_range_return_float(
             raise ValueError("min_val must be less than max_val")
 
     try:
-        validated_value = np.asarray(value, dtype=float)
+        validated_value = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
@@ -276,7 +276,7 @@ def arrayLike_of_twoD_number_vectorLikes_return_float(
         value.
     """
     try:
-        validated_vectors = np.asarray(value, dtype=float)
+        validated_vectors = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
@@ -333,7 +333,7 @@ def arrayLike_of_threeD_number_vectorLikes_return_float(
         value.
     """
     try:
-        validated_vectors = np.asarray(value, dtype=float)
+        validated_vectors = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
@@ -364,7 +364,7 @@ def threeD_number_vectorLike_return_float_unit_vector(
         value.
     """
     try:
-        validated_vector = np.asarray(value, dtype=float)
+        validated_vector = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
@@ -378,7 +378,7 @@ def threeD_number_vectorLike_return_float_unit_vector(
     if norm == 0:
         raise ValueError(f"{name} must have a non zero length.")
     elif not np.isclose(norm, 1.0):
-        return cast(np.ndarray, validated_vector / norm)
+        validated_vector /= norm
     return validated_vector
 
 
@@ -450,7 +450,7 @@ def nD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
         value.
     """
     try:
-        validated_vector = np.asarray(value, dtype=float)
+        validated_vector = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 
@@ -475,7 +475,7 @@ def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarra
         value.
     """
     try:
-        validated_matrix = np.asarray(value, dtype=float)
+        validated_matrix = np.array(value, dtype=float, copy=True)
     except (TypeError, ValueError):
         raise TypeError(f"{name} must be array-like and contain ints or floats.")
 

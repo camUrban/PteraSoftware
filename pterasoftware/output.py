@@ -286,6 +286,7 @@ def draw(
         )
 
     T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+    image_surface_mesh = None
 
     # If an image surface is defined, add reflected geometry. The image surface plane
     # is added later, after the geometry bounds are captured.
@@ -324,9 +325,6 @@ def draw(
                 smooth_shading=False,
                 color=_mute_color(_wake_vortex_color, mute),
             )
-    else:
-        image_surface_mesh = None
-
     # If showing streamlines, plot them.
     if show_streamlines:
         # Iterate through the spanwise positions in the solver's streamline point

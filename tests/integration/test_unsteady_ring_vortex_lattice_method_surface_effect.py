@@ -52,9 +52,7 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
         c_l_surface_effect = -self.surface_effect_solver.current_airplanes[
             0
         ].forceCoefficients_W[2]
-        c_l_free_air = -self.free_air_solver.current_airplanes[
-            0
-        ].forceCoefficients_W[2]
+        c_l_free_air = -self.free_air_solver.current_airplanes[0].forceCoefficients_W[2]
 
         self.assertGreater(c_l_surface_effect, c_l_free_air)
 
@@ -72,8 +70,8 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
         c_di_surface_effect = -self.surface_effect_solver.current_airplanes[
             0
         ].forceCoefficients_W[0]
-        c_di_free_air = -self.free_air_solver.current_airplanes[
+        c_di_free_air = -self.free_air_solver.current_airplanes[0].forceCoefficients_W[
             0
-        ].forceCoefficients_W[0]
+        ]
 
         self.assertLess(c_di_surface_effect, c_di_free_air)

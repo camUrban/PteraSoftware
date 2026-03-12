@@ -410,7 +410,6 @@ class SteadyRingVortexLatticeMethodSolver:
                 strengths=self._horseshoe_vortex_strengths,
                 r_c0s=self._stackRc0s,
                 singularity_counts=singularity_counts,
-                ages=None,
                 nu=self.operating_point.nu,
             )
         )
@@ -454,7 +453,6 @@ class SteadyRingVortexLatticeMethodSolver:
                     strengths=self._horseshoe_vortex_strengths,
                     r_c0s=self._stackRc0s,
                     singularity_counts=singularity_counts,
-                    ages=None,
                     nu=self.operating_point.nu,
                 )
             )
@@ -596,7 +594,6 @@ class SteadyRingVortexLatticeMethodSolver:
                 strengths=self._horseshoe_vortex_strengths,
                 r_c0s=self._stackRc0s,
                 singularity_counts=bound_singularity_counts,
-                ages=None,
                 nu=self.operating_point.nu,
             )
         )
@@ -640,7 +637,6 @@ class SteadyRingVortexLatticeMethodSolver:
                     strengths=self._horseshoe_vortex_strengths,
                     r_c0s=self._stackRc0s,
                     singularity_counts=bound_singularity_counts,
-                    ages=None,
                     nu=self.operating_point.nu,
                 )
             )

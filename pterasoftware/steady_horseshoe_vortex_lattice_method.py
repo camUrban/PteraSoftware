@@ -323,7 +323,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 strengths=np.ones(self.num_panels, dtype=float),
                 r_c0s=self._stackRc0s,
                 singularity_counts=singularity_counts,
-                ages=None,
                 nu=self.operating_point.nu,
             )
         )
@@ -348,7 +347,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     strengths=np.ones(self.num_panels, dtype=float),
                     r_c0s=self._stackRc0s,
                     singularity_counts=singularity_counts,
-                    ages=None,
                     nu=self.operating_point.nu,
                 )
             )
@@ -446,7 +444,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 strengths=self._vortex_strengths,
                 r_c0s=self._stackRc0s,
                 singularity_counts=bound_singularity_counts,
-                ages=None,
                 nu=self.operating_point.nu,
             )
         )
@@ -471,7 +468,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     strengths=self._vortex_strengths,
                     r_c0s=self._stackRc0s,
                     singularity_counts=bound_singularity_counts,
-                    ages=None,
                     nu=self.operating_point.nu,
                 )
             )

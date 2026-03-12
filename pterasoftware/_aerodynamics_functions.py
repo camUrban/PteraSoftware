@@ -298,7 +298,6 @@ def collapsed_velocities_from_horseshoe_vortices(
     strengths: np.ndarray,
     r_c0s: np.ndarray,
     singularity_counts: np.ndarray,
-    ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
     """Takes in a group of points and the attributes of a group of HorseshoeVortices and
@@ -333,10 +332,6 @@ def collapsed_velocities_from_horseshoe_vortices(
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across all three legs.
-    :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
-        that have been shed into the wake, it must be a (M,) ndarray of floats
-        representing the ages of the M HorseshoeVortices in seconds. The default is
-        None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
@@ -366,7 +361,7 @@ def collapsed_velocities_from_horseshoe_vortices(
             strengths=strengths,
             r_c0s=r_c0s,
             singularity_counts=singularity_counts,
-            ages=ages,
+            ages=None,
             nu=nu,
         )
     return stackVInd_GP1__E
@@ -384,7 +379,6 @@ def expanded_velocities_from_horseshoe_vortices(
     strengths: np.ndarray,
     r_c0s: np.ndarray,
     singularity_counts: np.ndarray,
-    ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
     """Takes in a group of points and the attributes of a group of HorseshoeVortices and
@@ -419,10 +413,6 @@ def expanded_velocities_from_horseshoe_vortices(
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across all three legs.
-    :param ages: For bound HorseshoeVortices, this must be None. For HorseshoeVortices
-        that have been shed into the wake, it must be a (M,) ndarray of floats
-        representing the ages of the M HorseshoeVortices in seconds. The default is
-        None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
@@ -452,7 +442,7 @@ def expanded_velocities_from_horseshoe_vortices(
             strengths=strengths,
             r_c0s=r_c0s,
             singularity_counts=singularity_counts,
-            ages=ages,
+            ages=None,
             nu=nu,
         )
     return gridVInd_GP1__E

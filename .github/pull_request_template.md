@@ -1,23 +1,31 @@
 # Description
+
 Provide a concise description of the changes in this pull request.
 
 ## Motivation
+
 Explain why you are making these changes and what problem they solve.
 
 ## Relevant Issues
+
 Link any related issues using GitHub's syntax, e.g., `Fixes #123` or `Closes #456`.
 
 ## Changes
+
 List the changes you made in bullet points.
 
 ## New Dependencies
+
 List any new dependencies (including dev dependencies) added in this PR.
 
 ## Change Magnitude
+
 Select the option that best describes the size and impact of your change:
 
 **Major**: Large change that adds significant new functionality, changes existing behavior, or may affect many parts of the codebase.
+
 **Moderate**: Medium-sized change that adds or modifies a feature without large-scale impact.
+
 **Minor**: Small change such as a bug fix, small enhancement, or documentation update.
 
 ---

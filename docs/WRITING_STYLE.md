@@ -1,7 +1,9 @@
 # Writing Style
+
 Guidelines when writing comments, docstrings, and documentation for Ptera Software.
 
 ## Terminology
+
 - **"Ptera Software"**: When writing as text, always write as two words without a hyphen, each being capitalized (never "ptera", "ptera software", or "PteraSoftware").
 - **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). In summary, when talking about code objects:
   - GOOD: "the previous WingCrossSection"
@@ -27,6 +29,7 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pt
 ```
 
 ## Miscellaneous Guidelines
+
 - Avoid abbreviations in text unless they are well-known in the context.
 - Never hyphenate words in docstrings or comments. This is because they are often incorrectly wrapped by docformatter and incorrectly rendered in PyCharm's quick documentation. For example, even though not standard grammar, it's okay to write "non symmetric" instead of "non-symmetric".
 - In documentation, docstrings, and comments, represent subtraction using hyphens surrounded by spaces ( - ); never use em-dashes (—) or en-dashes (–).
@@ -43,3 +46,4 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pt
 - Prefer comments on their own line above the code they describe.
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
 - Write "time step" instead of "timestep", "time-step", or "step".
+- In markdown files, always include a blank line after a header line. Also proceed them with a blank line, except for header lines that happen to also be the first line in their file.

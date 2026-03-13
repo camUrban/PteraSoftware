@@ -1,9 +1,11 @@
 # Ptera Software Development Guidelines for Claude
 
 ## Project Overview
+
 Ptera Software is a fast, easy-to-use, and open-source package for analyzing flapping-wing flight using unsteady and steady vortex lattice methods.
 
 ### Key Features
+
 - **Multiple Simulation Methods**: Steady horseshoe VLM, steady ring VLM, and unsteady ring UVLM
 - **Customizable Aircraft Geometry**: Multi-wing aircraft with arbitrary wing cross sections and airfoils
 - **Time-Dependent Motion**: Custom prescribed flapping motions
@@ -16,9 +18,11 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
+
 Requires Python 3.11, but active development is done in 3.13
 
 ### Key Runtime Dependencies
+
 - **NumPy/SciPy**: Core numerical computations
 - **Numba**: JIT compilation for performance-critical loops
 - **PyVista**: 3D mesh processing and visualization
@@ -28,6 +32,7 @@ Requires Python 3.11, but active development is done in 3.13
 ## Architecture Overview
 
 ### Relevant Directories, Packages, and Files
+
 - `.github/`: Directory with GitHub configuration files
     - `ISSUE_TEMPLATE/`: Directory with issue templates
       - `bug_report.md`
@@ -155,6 +160,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `setup.cfg`: Setup configuration file
 
 ## Running Scripts That Import Ptera Software
+
 When running scripts outside the main pterasoftware directory that import the package (e.g., scripts in `experimental/`), you need to set `PYTHONPATH` to the project root:
 
 ```bash
@@ -173,6 +179,7 @@ This pattern:
 3. Runs the script using the virtual environment's Python interpreter
 
 ## Common Mistakes
+
 - Forgetting to read RUNNING_TESTS_AND_TYPE_CHECKS.md before running tests and trying to use pytest (Ptera Software uses unittest)
 - Forgetting to read CODE_STYLE.md before contributing code
 - Forgetting to read TYPE_HINT_AND_DOCSTRING_STYLE.md before writing docstrings

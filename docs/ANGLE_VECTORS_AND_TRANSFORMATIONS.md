@@ -24,6 +24,7 @@ For both active and passive angle vectors, Ptera Software only uses Tait-Bryan r
 * ezyx: extrinsic z-y-x
 
 ### Passive Angle Vectors
+
 Unlike force or position vectors which have components in a single axis system, passive angle vectors inherently relate two different axis systems and therefore require special notation to specify both the source and target axes, as well as the rotation sequence convention.
 
 #### Specifying Passive Angle Vectors
@@ -61,6 +62,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 * Text: …angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic xyz sequence…
 
 ### Active Angle Vectors
+
 Active angle vectors give instructions for rotating a vector within its current axis system. Therefore, they don't require information about the particular axes, only the type or rotation and the sequence.
 
 #### Specifying Active Angle Vectors
@@ -94,6 +96,7 @@ Like angle vectors, rotation and transformation matrices can either represent th
 By convention, we treat vectors as column vectors and left-multiply by matrices for both active and passive transformations.
 
 ### Homogeneous Coordinates
+
 We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert vector's three components to four homogeneous coordinates before applying the transformation.
 
 For vector with components (x, y, z) that is given relative to a reference point, its homogeneous form is (x, y, z, 1). If it is a vector independent of any reference point, its homogeneous form is (x, y, z, 0). After applying the transformation, we can convert either type back to non-homogeneous components by dropping the last coordinate.

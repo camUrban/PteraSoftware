@@ -21,12 +21,10 @@ There are three main ways you can contribute:
 
 1. [**Report a bug**](#reporting-a-bug)  
    - Identify and document issues that prevent Ptera Software from working as expected.  
-   - This includes errors, crashes, incorrect outputs, or unexpected behavior.  
-
+   - This includes errors, crashes, incorrect outputs, or unexpected behavior.
 2. [**Request a feature**](#requesting-a-feature)  
    - Suggest new features, improvements to existing functionality, or usability changes.  
-   - This can be small quality-of-life improvements or larger feature proposals.  
-
+   - This can be small quality-of-life improvements or larger feature proposals.
 3. [**Contribute code**](#contributing-code)  
    - Submit changes that add new features, fix bugs, improve performance, or enhance documentation.  
    - Code contributions can address your own ideas or work on existing open issues.  
@@ -74,7 +72,6 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    If a pull request exists, or if an issue has been assigned to or claimed by someone else, please do **not** start parallel implementation work without first checking in via a comment. A short message like "Are you still actively working on this?" or "Is this a good time to help with X?” is usually sufficient.
 
    This helps avoid duplicated effort and ensures that contributions align with the current design direction.
-
 2. **Set up your local environment**
    - Fork the repository on GitHub to your own account.  
    - Clone your fork to your local machine:  
@@ -95,8 +92,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
      pip install -r requirements_dev.txt # Install dependencies for development (e.g. black, codespell, etc.)
      pre-commit install # Install git hooks for automatic code formatting checks
      deactivate
-     ```  
-
+     ```
 3. **Create a new branch**
    - Branch from main for each change.  
    - Use descriptive branch names, such as `feature/add-new-plot` or `bugfix/fix-units`.  
@@ -106,8 +102,7 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    git checkout <branch-name>
    git commit -m "Created a new branch for <description>"
    git push origin <branch-name>
-   ```  
-
+   ```
 4. **Make your changes**  
    - Commit frequently with clear, descriptive messages.  
    - Follow the code style and standards described in the pull request template.  
@@ -124,14 +119,12 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    Some parts of Ptera Software, such as the UVLM formulation, wake evolution, force and moment integration, and related aerodynamic models, are closely tied to underlying theoretical assumptions and numerical constraints.
 
    Contributions in these areas are very welcome, but they typically require coordination and shared understanding of the relevant aerodynamics. When opening a PR that touches core modeling logic, please:
-
    - Clearly describe the physical assumptions being made.
    - Note the regime in which the change is expected to be valid.
    - Include references, derivations, or reasoning where appropriate.
    - Add tests that validate the behavior against known physical expectations (e.g., symmetry, limiting cases, conservation behavior).
    
    If you’re unsure whether a change falls into this category, feel free to ask in the issue or PR thread before investing significant effort.
-
 5. **Push your changes and open a pull request**  
    - Push your branch to your fork:  
      ```shell
@@ -140,14 +133,12 @@ Ptera Software now uses the GitHub Flow to manage code contributions. If this is
    - Open a pull request (PR) from your branch to the main branch of the upstream repository.  
    - You can open the PR as a **Draft** to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
    - In the PR description, follow the pull request template, and link any related issues.
-
 6. **Keeping your branch up to date**  
    - If main changes before your PR is merged, sync your branch to avoid merge conflicts:  
      ```shell
      git fetch upstream
      git merge upstream/main # Or git rebase upstream/main
-     ```  
-
+     ```
 7. **Review and approval process**  
    - Only the repository owner (currently @camUrban) can approve merges to main.  
    - Your PR will be reviewed, and changes may be requested.  

@@ -3,6 +3,7 @@
 This document defines the conventions for type hints and docstrings in the Ptera Software codebase.
 
 ## Table of Contents
+
 - [Type Hints](#type-hints)
 - [Docstring Format](#docstring-format)
   - [Module-Level Docstrings](#module-level-docstrings)
@@ -504,6 +505,7 @@ class Panel:
 ### Example 1: Module-Level Docstrings
 
 #### Public Package __init__.py
+
 ```python
 """Contains the geometry classes.
 
@@ -528,6 +530,7 @@ wing_cross_section.py: Contains the WingCrossSection class.
 ```
 
 #### Public Module
+
 ```python
 """Contains the Airfoil class.
 
@@ -542,6 +545,7 @@ None
 ```
 
 #### Private Module
+
 ```python
 """Contains the function for meshing Wings."""
 ```

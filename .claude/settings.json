@@ -1,5 +1,4 @@
 {
-  "defaultMode": "plan",
   "permissions": {
     "allow": [
       "Bash(cat:${WORKSPACE}/**/*)",
@@ -84,8 +83,6 @@
       "Bash(pip3:*)",
       "Bash(powershell:*)",
       "Bash(printf:*)",
-      "Bash(python:*)",
-      "Bash(python3:*)",
       "Bash(reg:*)",
       "Bash(rm:*)",
       "Bash(rsync:*)",
@@ -121,7 +118,10 @@
       "Bash(.venv/Scripts/python.exe:tests/)",
       "Bash(.venv/Scripts/python.exe:validation/)",
       "Bash(git:add:${WORKSPACE}/**/*)",
-      "Bash(git:commit:-m:*)"
+      "Bash(git:commit:-m:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)"
     ]
-  }
+  },
+  "defaultMode": "plan"
 }

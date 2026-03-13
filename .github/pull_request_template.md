@@ -20,7 +20,7 @@ List any new dependencies (including dev dependencies) added in this PR.
 
 ## Change Magnitude
 
-Select the option that best describes the size and impact of your change:
+Identifiy the option that best describes the size and impact of your change, and delete the other two lines:
 
 **Major**: Large change that adds significant new functionality, changes existing behavior, or may affect many parts of the codebase.
 
@@ -28,9 +28,7 @@ Select the option that best describes the size and impact of your change:
 
 **Minor**: Small change such as a bug fix, small enhancement, or documentation update.
 
----
-
-# Checklist
+## Checklist
 
 - [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
 - [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
@@ -44,5 +42,3 @@ Select the option that best describes the size and impact of your change:
 - [ ] Code locally passes all tests in the `tests` package.
 - [ ] After pushing, PR passes all automated checks (`codespell`, `black`, `mypy`, and `tests`).
 - [ ] PR description links all relevant issues and follows this template.
-
----

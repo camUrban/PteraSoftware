@@ -47,3 +47,4 @@ cd ${WORKSPACE} && ".venv/Scripts/python.exe" docformatter --black --in-place pt
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
 - Write "time step" instead of "timestep", "time-step", or "step".
 - In markdown files, always include a blank line after a header line. Also proceed them with a blank line, except for header lines that happen to also be the first line in their file.
+- In markdown files, do not use hard line wrapping 

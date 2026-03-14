@@ -8,6 +8,4 @@ mypy
 pre-commit
 PyInstaller
 scipy-stubs
-setuptools
 twine
-wheel

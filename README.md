@@ -227,9 +227,7 @@ Additionally, these packages are useful for continued development of the softwar
 * pre-commit
 * PyInstaller
 * scipy-stubs
-* setuptools
 * twine
-* wheel
 
 ## Validation
 

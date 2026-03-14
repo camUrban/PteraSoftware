@@ -16,6 +16,6 @@ The installer uses `PyInstaller` to extract all the dependencies and `InnoSetup`
    ```commandline
    python -O -m PyInstaller --noconfirm "pterasoftware.spec"
    ```
-   
+
    We run `python` with the first level optimize flag `-O` to slim down some now unnecessary debug code. *Do not use second level optimisation `-OO`, as this removes some docstrings that break dependencies.*
 3. Open `make_installer.iss` in InnoSetup and run the packaging process. This can take a while, but should output an installer in the `Output` folder.

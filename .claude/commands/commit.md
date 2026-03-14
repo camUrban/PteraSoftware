@@ -41,7 +41,12 @@ Generate a commit message for the current staged changes, then create the commit
    python -c "import textwrap; print(textwrap.fill('''Your body text here.''', width=72))"
    ```
    Use the wrapped output as the final body text.
-5. **Present the draft** to the user for approval before committing.
+5. **Present the draft** to the user by displaying the full commit message, then use the `AskUserQuestion` tool to ask "How would you like to proceed with this commit message?" with options:
+   - "Commit as-is" (description: "Create the commit with the message shown above")
+   - "Edit message" (description: "Provide feedback so I can revise the message")
+   - "Abort" (description: "Cancel the commit entirely")
+
+   If the user selects "Edit message", ask them for feedback, revise the message accordingly, then repeat from step 3 (validate, wrap, and present the updated draft again). If the user selects "Abort", stop and inform the user that the commit was cancelled.
 6. **Create the commit** using a heredoc to preserve formatting:
    ```bash
    git commit -m "$(cat <<'EOF'

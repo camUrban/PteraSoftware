@@ -6,7 +6,7 @@
       </value>
     </option>
     <option name="RIGHT_MARGIN" value="88" />
-    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="true" />
+    <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <Python>
       <option name="FROM_IMPORT_PARENTHESES_FORCE_IF_MULTILINE" value="true" />
       <option name="FROM_IMPORT_TRAILING_COMMA_IF_MULTILINE" value="true" />

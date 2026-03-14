@@ -35,12 +35,12 @@ These steps are both handled by other slash commands.
 3. **Search the codebase** for other relevant files.
 4. **If you find any relevant files**, read and understand those as well.
 5. **Study existing test and fixture patterns**:
-   - Read `tests/unit/test_wing_cross_section_movement.py`
-   - Read `tests/unit/fixtures/wing_cross_section_movement_fixtures.py`
-   - Understand the patterns for creating fixtures and unit tests
+    - Read `tests/unit/test_wing_cross_section_movement.py`
+    - Read `tests/unit/fixtures/wing_cross_section_movement_fixtures.py`
+    - Understand the patterns for creating fixtures and unit tests
 6. **Study the implementation**:
-   - Read `movements/wing_cross_section_movement.py`
-   - Consider how the implementation reveals test design patterns
+    - Read `movements/wing_cross_section_movement.py`
+    - Consider how the implementation reveals test design patterns
 7. **For each class and function within `$ARGUMENTS`**:
    a. **Determine file placement**:
       - Consider if you should make new testing and fixture files

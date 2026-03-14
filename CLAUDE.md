@@ -35,115 +35,115 @@ Requires Python 3.11, but active development is done in 3.13
 
 - `.github/`: Directory with GitHub configuration files
     - `ISSUE_TEMPLATE/`: Directory with issue templates
-      - `bug_report.md`
-      - `feature_request.md`
+        - `bug_report.md`
+        - `feature_request.md`
     - `workflows/`: Directory with GitHub Actions workflows
-      - `black.yml`
-      - `codespell.yml`
-      - `mypy.yml`
-      - `tests.yml`
+        - `black.yml`
+        - `codespell.yml`
+        - `mypy.yml`
+        - `tests.yml`
     - `pull_request_template.md`
 - `.venv/`: Directory for the Python virtual environment (not included in version control)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
-  - `examples expected output/`: Example output files for verification
-  - `private/`: Directory with documentation not included in this repository's version control
-    - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
-    - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
-    - `katz_plotkin_d/`: A recreation of Appendix D, which includes example Fortran programs, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
-    - `lambert_2015_2_3__2_4/`: A recreation of Sections 2.3 and 2.4 from Thomas Lambert's thesis "Modeling of aerodynamic forces in flapping flight with the unsteady vortex lattice method"
-  - `website/`: Directory with the source files for generating the documentation website
-  - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
-  - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
-  - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability.
-  - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
-  - `RUNNING_TESTS_AND_TYPE_CHECKS.md`: Instructions for running tests and type checks **READ BEFORE RUNNING TESTS OR TYPE CHECKS LOCALLY**
-  - `TYPE_HINT_AND_DOCSTRING_STYLE.md`: Guidelines for type hinting and docstring formatting: **READ BEFORE CONTRIBUTING ANY CODE OR WRITING ANY DOCSTRINGS**
-  - `WRITING_STYLE.md`: Guidelines for writing style in comments and documentation: **READ BEFORE WRITING ANY DOCUMENTATION, DOCSTRINGS, OR COMMENTS**
+    - `examples expected output/`: Example output files for verification
+    - `private/`: Directory with documentation not included in this repository's version control
+        - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+        - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+        - `katz_plotkin_d/`: A recreation of Appendix D, which includes example Fortran programs, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
+        - `lambert_2015_2_3__2_4/`: A recreation of Sections 2.3 and 2.4 from Thomas Lambert's thesis "Modeling of aerodynamic forces in flapping flight with the unsteady vortex lattice method"
+    - `website/`: Directory with the source files for generating the documentation website
+    - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
+    - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
+    - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability.
+    - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
+    - `RUNNING_TESTS_AND_TYPE_CHECKS.md`: Instructions for running tests and type checks **READ BEFORE RUNNING TESTS OR TYPE CHECKS LOCALLY**
+    - `TYPE_HINT_AND_DOCSTRING_STYLE.md`: Guidelines for type hinting and docstring formatting: **READ BEFORE CONTRIBUTING ANY CODE OR WRITING ANY DOCSTRINGS**
+    - `WRITING_STYLE.md`: Guidelines for writing style in comments and documentation: **READ BEFORE WRITING ANY DOCUMENTATION, DOCSTRINGS, OR COMMENTS**
 - `examples/`: Directory with example scripts for users
 - `gui/`: Directory with GUI source code
 - `pterasoftware/`: Main package with modular solver architecture
-  - `_vortices/`: Package with vortex classes
-    - `_line_vortex.py`: LineVortex class
-    - `horseshoe_vortex.py`: HorseshoeVortex class
-    - `ring_vortex.py`: RingVortex class
-  - `geometry/`: Package with aircraft geometry classes
-    - `_airfoils/`: Directory containing data files with airfoil coordinates
-    - `_meshing.py`: Wing mesh generation
-    - `airfoil.py`: Airfoil class with coordinate generation
-    - `airplane.py`: Airplane class with coordinate transformations
-    - `wing.py`: Wing class with symmetry processing
-    - `wing_cross_section.py`: WingCrossSection class with validation
-  - `movements/`: Package with movement classes (definitions for time-dependent motion)
-    - `_functions.py`: Movement utility functions
-    - `airplane_movement.py`: Airplane motion definitions
-    - `movement.py`: Core Movement class
-    - `operating_point_movement.py`: Operating condition changes
-    - `wing_cross_section_movement.py`: Wing cross section motion
-    - `wing_movement.py`: Wing flapping motion
-  - `_aerodynamics_functions.py`: Induced velocity functions
-  - `_functions.py`: Shared utility functions
-  - `_logging.py`: Contains function for setting up logging
-  - `_panel.py`: Panel class for discretized mesh elements
-  - `_parameter_validation.py`: Input validation functions
-  - `_transformations.py`: Coordinate transformations and rotations
-  - `convergence.py`: Convergence analysis tools
-  - `operating_point.py`: OperatingPoint class
-  - `output.py`: Visualization and results processing
-  - `problems.py`: SteadyProblem and UnsteadyProblem classes
-  - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
-  - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
-  - `trim.py`: Trim analysis functionality
-  - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
+    - `_vortices/`: Package with vortex classes
+        - `_line_vortex.py`: LineVortex class
+        - `horseshoe_vortex.py`: HorseshoeVortex class
+        - `ring_vortex.py`: RingVortex class
+    - `geometry/`: Package with aircraft geometry classes
+        - `_airfoils/`: Directory containing data files with airfoil coordinates
+        - `_meshing.py`: Wing mesh generation
+        - `airfoil.py`: Airfoil class with coordinate generation
+        - `airplane.py`: Airplane class with coordinate transformations
+        - `wing.py`: Wing class with symmetry processing
+        - `wing_cross_section.py`: WingCrossSection class with validation
+    - `movements/`: Package with movement classes (definitions for time-dependent motion)
+        - `_functions.py`: Movement utility functions
+        - `airplane_movement.py`: Airplane motion definitions
+        - `movement.py`: Core Movement class
+        - `operating_point_movement.py`: Operating condition changes
+        - `wing_cross_section_movement.py`: Wing cross section motion
+        - `wing_movement.py`: Wing flapping motion
+    - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_functions.py`: Shared utility functions
+    - `_logging.py`: Contains function for setting up logging
+    - `_panel.py`: Panel class for discretized mesh elements
+    - `_parameter_validation.py`: Input validation functions
+    - `_transformations.py`: Coordinate transformations and rotations
+    - `convergence.py`: Convergence analysis tools
+    - `operating_point.py`: OperatingPoint class
+    - `output.py`: Visualization and results processing
+    - `problems.py`: SteadyProblem and UnsteadyProblem classes
+    - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
+    - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
+    - `trim.py`: Trim analysis functionality
+    - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 - `tests/`: Directory with unit and integration tests
-  - `integration/`: Integration tests for combined functionality
-    - `fixtures/`: Fixtures for integration tests
-      - `airplane_fixtures.py`
-      - `movement_fixtures.py`
-      - `operating_point_fixtures.py`
-      - `problem_fixtures.py`
-      - `solver_fixtures.py`
-    - `test_output.py`
-    - `test_steady_convergence.py`
-    - `test_steady_horseshoe_vortex_lattice_method.py`
-    - `test_steady_ring_vortex_lattice_method.py`
-    - `test_steady_trim.py`
-    - `test_unsteady_convergence.py`
-    - `test_unsteady_ring_vortex_lattice_method_multiple_wing_static_geometry.py`
-    - `test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry.py`
-    - `test_unsteady_ring_vortex_lattice_method_static_geometry.py`
-    - `test_unsteady_ring_vortex_lattice_method_variable_geometry.py`
-  - `unit/`: Unit tests for individual classes and functions
-    - `fixtures/`: Fixtures for unit tests
-      - `aerodynamics_function_fixtures.py`
-      - `airplane_movement_fixtures.py`
-      - `geometry_fixtures.py`
-      - `horseshoe_fixtures.py`
-      - `movement_fixtures.py`
-      - `movement_function_fixtures.py`
-      - `operating_point_fixtures.py`
-      - `operating_point_movement_fixtures.py`
-      - `problem_fixtures.py`
-      - `ring_vortex_fixtures.py`
-      - `wing_cross_section_movement_fixtures.py`
-      - `wing_movement_fixtures.py`
-    - `test_aerodynamics_functions.py`
-    - `test_airfoil.py`
-    - `test_airplane.py`
-    - `test_airplane_movement.py`
-    - `test_horseshoe_vortex.py`
-    - `test_movement.py`
-    - `test_movement_functions.py`
-    - `test_operating_point.py`
-    - `test_operating_point_movement.py`
-    - `test_panel.py`
-    - `test_problems.py`
-    - `test_ring_vortex.py`
-    - `test_transformations.py`
-    - `test_wing.py`
-    - `test_wing_cross_section.py`
-    - `test_wing_cross_section_movement.py`
-    - `test_wing_movement.py`
+    - `integration/`: Integration tests for combined functionality
+        - `fixtures/`: Fixtures for integration tests
+            - `airplane_fixtures.py`
+            - `movement_fixtures.py`
+            - `operating_point_fixtures.py`
+            - `problem_fixtures.py`
+            - `solver_fixtures.py`
+        - `test_output.py`
+        - `test_steady_convergence.py`
+        - `test_steady_horseshoe_vortex_lattice_method.py`
+        - `test_steady_ring_vortex_lattice_method.py`
+        - `test_steady_trim.py`
+        - `test_unsteady_convergence.py`
+        - `test_unsteady_ring_vortex_lattice_method_multiple_wing_static_geometry.py`
+        - `test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry.py`
+        - `test_unsteady_ring_vortex_lattice_method_static_geometry.py`
+        - `test_unsteady_ring_vortex_lattice_method_variable_geometry.py`
+    - `unit/`: Unit tests for individual classes and functions
+        - `fixtures/`: Fixtures for unit tests
+            - `aerodynamics_function_fixtures.py`
+            - `airplane_movement_fixtures.py`
+            - `geometry_fixtures.py`
+            - `horseshoe_fixtures.py`
+            - `movement_fixtures.py`
+            - `movement_function_fixtures.py`
+            - `operating_point_fixtures.py`
+            - `operating_point_movement_fixtures.py`
+            - `problem_fixtures.py`
+            - `ring_vortex_fixtures.py`
+            - `wing_cross_section_movement_fixtures.py`
+            - `wing_movement_fixtures.py`
+        - `test_aerodynamics_functions.py`
+        - `test_airfoil.py`
+        - `test_airplane.py`
+        - `test_airplane_movement.py`
+        - `test_horseshoe_vortex.py`
+        - `test_movement.py`
+        - `test_movement_functions.py`
+        - `test_operating_point.py`
+        - `test_operating_point_movement.py`
+        - `test_panel.py`
+        - `test_problems.py`
+        - `test_ring_vortex.py`
+        - `test_transformations.py`
+        - `test_wing.py`
+        - `test_wing_cross_section.py`
+        - `test_wing_cross_section_movement.py`
+        - `test_wing_movement.py`
 - `.codespell-ignore`: File listing words to ignore in spell checking
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file
@@ -174,6 +174,7 @@ cd ${WORKSPACE}/experimental && PYTHONPATH="$PWD/.." ../.venv/bin/python script_
 ```
 
 This pattern:
+
 1. Changes to the script's directory
 2. Sets `PYTHONPATH` to the parent directory (project root)
 3. Runs the script using the virtual environment's Python interpreter

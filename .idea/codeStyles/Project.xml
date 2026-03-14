@@ -1,15 +1,23 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <option name="AUTODETECT_INDENTS" value="false" />
     <option name="OTHER_INDENT_OPTIONS">
-      <value>
-        <option name="USE_TAB_CHARACTER" value="true" />
-      </value>
+      <value />
     </option>
+    <option name="LINE_SEPARATOR" value="&#10;" />
     <option name="RIGHT_MARGIN" value="88" />
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
+    <Markdown>
+      <option name="WRAP_TEXT_IF_LONG" value="false" />
+      <option name="WRAP_TEXT_INSIDE_BLOCKQUOTES" value="false" />
+    </Markdown>
     <Python>
       <option name="FROM_IMPORT_PARENTHESES_FORCE_IF_MULTILINE" value="true" />
       <option name="FROM_IMPORT_TRAILING_COMMA_IF_MULTILINE" value="true" />
     </Python>
+    <codeStyleSettings language="Markdown">
+      <option name="RIGHT_MARGIN" value="1000" />
+      <option name="WRAP_ON_TYPING" value="0" />
+    </codeStyleSettings>
   </code_scheme>
 </component>

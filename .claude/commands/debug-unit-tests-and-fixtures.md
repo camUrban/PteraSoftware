@@ -34,11 +34,11 @@ Follow these steps carefully and track your progress:
 ## Detailed Steps
 
 1. **Identify test files** for `$ARGUMENTS`:
-   - Find corresponding test files in `tests/unit/`
-   - Note any fixture dependencies
+    - Find corresponding test files in `tests/unit/`
+    - Note any fixture dependencies
 2. **Run initial tests**:
-   - Capture and analyze the full output
-   - Note all failures and their error messages
+    - Capture and analyze the full output
+    - Note all failures and their error messages
 3. **For EACH test failure**:
    a. **Read the failing test carefully**:
       - Understand what the test is trying to verify
@@ -81,13 +81,13 @@ Follow these steps carefully and track your progress:
       - Note any assumptions about intended behavior
       - Flag any edge cases discovered
 4. **Re-run tests after each fix**:
-   - Run tests incrementally to verify fixes
-   - Ensure no regressions are introduced
+    - Run tests incrementally to verify fixes
+    - Ensure no regressions are introduced
 5. **Final verification**:
-   - Run all tests for the module
-   - Confirm all tests pass
+    - Run all tests for the module
+    - Confirm all tests pass
 6. **Reformatting**:
-   - If you've modified any files, run black to reformat them
+    - If you've modified any files, run black to reformat them
 
 ## Analysis Guidelines
 

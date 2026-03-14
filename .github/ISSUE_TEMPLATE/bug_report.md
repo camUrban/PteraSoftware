@@ -16,6 +16,7 @@ Please provide a clear and concise description of what the bug is.
 Please provide the steps to reproduce the behavior.
 
 For example:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'

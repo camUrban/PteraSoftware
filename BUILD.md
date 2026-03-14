@@ -11,6 +11,7 @@ When packaging the installer, don't forget to check versions in both `setup.cfg`
 **Currently, this is only supported on Windows.**
 
 The installer uses `PyInstaller` to extract all the dependencies and `InnoSetup` to create a Windows installer package out of them.
+
 1. Ensure you have installed `InnoSetup` [here](https://jrsoftware.org/isdl.php).
 2. Inside the root repository directory with the virtualenv active:
    ```commandline

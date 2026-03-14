@@ -106,8 +106,8 @@ For vector with components (x, y, z) that is given relative to a reference point
 #### Overview of Passive Matrices
 
 * Ptera Software uses two passive matrix types:
-  * R\_pas\_…: 3x3 rotation matrices that relate the orientation of one axis system relative to another.
-  * T\_pas\_…: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
+    * R\_pas\_…: 3x3 rotation matrices that relate the orientation of one axis system relative to another.
+    * T\_pas\_…: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 
 #### Passive Matrix Name Patterns
 
@@ -133,8 +133,8 @@ See the section on angle vectors for examples that can be adapted to form text r
 #### Overview of Active Matrices
 
 * Ptera Software uses two active matrix types:
-  * [variable name]\_R\_act: 3x3 rotation matrices that are used to rotate a vector in its current axis system.
-  * [variable name]\_T\_act: 4x4 homogeneous transformation that operates within a single axis system. It applies a rigid orientation change (rotation or reflection) and, for quantities tied to a reference point, may also apply a translation. It never changes which axes a vector is expressed in and never introduces scaling or shear. The translation has no effect on free vectors (e.g., forces).
+    * [variable name]\_R\_act: 3x3 rotation matrices that are used to rotate a vector in its current axis system.
+    * [variable name]\_T\_act: 4x4 homogeneous transformation that operates within a single axis system. It applies a rigid orientation change (rotation or reflection) and, for quantities tied to a reference point, may also apply a translation. It never changes which axes a vector is expressed in and never introduces scaling or shear. The translation has no effect on free vectors (e.g., forces).
 
 #### Active Matrix Name Patterns
 

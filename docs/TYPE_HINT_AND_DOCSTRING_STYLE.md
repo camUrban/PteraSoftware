@@ -6,9 +6,9 @@ This document defines the conventions for type hints and docstrings in the Ptera
 
 - [Type Hints](#type-hints)
 - [Docstring Format](#docstring-format)
-  - [Module-Level Docstrings](#module-level-docstrings)
-  - [Class Docstrings](#class-docstrings)
-  - [Function and Method Docstrings](#function-and-method-docstrings)
+    - [Module-Level Docstrings](#module-level-docstrings)
+    - [Class Docstrings](#class-docstrings)
+    - [Function and Method Docstrings](#function-and-method-docstrings)
 - [Examples](#examples)
 
 ---
@@ -33,14 +33,14 @@ import numpy as np
 
 #### Basic Types
 
-| Parameter Description                 | Type Hint           |
-|---------------------------------------|---------------------|
-| String                                | `str`               |
-| Boolean                               | `bool`              |
-| Boolean (accepting numpy bools)       | `bool \| np.bool_`  |
-| Integer                               | `int`               |
-| Number (int or float)                 | `float \| int`      |
-| Float only                            | `float`             |
+| Parameter Description           | Type Hint          |
+|---------------------------------|--------------------|
+| String                          | `str`              |
+| Boolean                         | `bool`             |
+| Boolean (accepting numpy bools) | `bool \| np.bool_` |
+| Integer                         | `int`              |
+| Number (int or float)           | `float \| int`     |
+| Float only                      | `float`            |
 
 #### Array and Array-Like Types
 
@@ -53,10 +53,10 @@ import numpy as np
 
 #### Class Types
 
-| Parameter Description              | Type Hint                | Notes                                      |
-|------------------------------------|--------------------------|--------------------------------------------|
-| Class from same package            | `ClassName`              | Direct reference                           |
-| Class from imported module         | `module_alias.ClassName` | Use module alias to avoid circular imports |
+| Parameter Description      | Type Hint                | Notes                                      |
+|----------------------------|--------------------------|--------------------------------------------|
+| Class from same package    | `ClassName`              | Direct reference                           |
+| Class from imported module | `module_alias.ClassName` | Use module alias to avoid circular imports |
 
 #### Optional and Union Types
 
@@ -94,6 +94,7 @@ def compute_forces(self):
 ```
 
 **Use `assert` when:**
+
 - None represents a bug, not a valid state
 - You want runtime safety during development
 - The invariant should always hold
@@ -110,6 +111,7 @@ ring_vortex = cast(_vortices.ring_vortex.RingVortex, object_array[i, j], )
 ```
 
 **Use `cast()` when:**
+
 - Working around type checker limitations (e.g., numpy dtype=object arrays)
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
@@ -125,9 +127,11 @@ from . import airfoil as airfoil_mod
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
+
 # In function signature
 def mesh_wing(wing: wing_mod.Wing) -> None:
     ...
+
 
 def _get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
@@ -153,6 +157,7 @@ from . import wing_movement as wing_movement_mod
 
 from .. import geometry
 
+
 # In function signature - no quotes needed!
 def __init__(
     self,
@@ -163,6 +168,7 @@ def __init__(
 ```
 
 This approach:
+
 - Keeps all imports at the top of the file
 - Prevents circular import errors
 - Requires no string quotes around type hints
@@ -218,6 +224,7 @@ wing_cross_section.py: Contains the WingCrossSection class.
 ```
 
 **Pattern:**
+
 - Brief description using "Contains" (present tense)
 - List public subpackages (or "None")
 - List public directories (or "None")
@@ -242,6 +249,7 @@ None
 ```
 
 **Pattern:**
+
 - Brief description using "Contains" (present tense)
 - List public classes with brief descriptions (use "A class used to..." or similar)
 - List public functions (or "None")
@@ -256,6 +264,7 @@ Private modules (e.g., `_meshing.py`, `_functions.py`) have minimal docstrings:
 ```
 
 **Pattern:**
+
 - Single brief sentence
 - No listing of functions or classes
 - Keep it concise since these are internal implementation details
@@ -295,6 +304,7 @@ def function_name(
 ### Array Parameter Descriptions
 
 For numpy arrays, always include:
+
 1. **Shape**: e.g., "(4,4)", "(M,N,3)", "(N,)"
 2. **Dtype**: e.g., "ndarray of floats", "ndarray of ints", "ndarray of bools"
 3. **Coordinate system and reference point** (when applicable)
@@ -374,6 +384,7 @@ class ChildClass(ParentClass):
 ```
 
 **Key points:**
+
 - Short description explicitly mentions "A subclass of ParentClass"
 - Notes section states what is inherited from the parent
 - "Contains the following methods:" lists only NEW methods unique to this subclass
@@ -401,6 +412,7 @@ def __init__(
 ```
 
 **Key points:**
+
 - Reference the parent class's `__init__` docstring for inherited parameters
 - Only document parameters that are NEW to the subclass
 - Call `super().__init__()` with inherited parameters
@@ -431,6 +443,7 @@ For simple getters that return a cached value (e.g., corner point positions that
 def Frpp_G_Cg(self) -> np.ndarray:
     # No docstring as this attribute is documented in __init__()'s docstring
     return self._Frpp_G_Cg
+
 
 @property
 def Frpp_GP1_CgP1(self) -> np.ndarray:

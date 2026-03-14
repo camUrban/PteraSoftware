@@ -1,6 +1,7 @@
 # Classes and Immutability
 
 This document describe the consistent pattern of immutability and lazy caching across the following core classes in the Ptera Software codebase:
+
 - `UnsteadyProblem`
 - `Movement`
 - `AirplaneMovement`
@@ -39,10 +40,10 @@ Most attribute falls into one of these categories:
 2. **Enforce set once semantics at runtime**: Set once properties raise `AttributeError` if assigned a second time. This catches bugs early where code incorrectly attempts to modify values that should be immutable after initial assignment.
 
 3. **Use manual lazy caching for all derived properties**: This approach:
-   - Works consistently for properties derived from both immutable and set once attributes
-   - Enables future `__slots__` adoption (no dependency on `__dict__`)
-   - Simplifies `__deepcopy__` (cache variables can be copied directly)
-   - Maintains the existing pattern already used throughout the codebase
+    - Works consistently for properties derived from both immutable and set once attributes
+    - Enables future `__slots__` adoption (no dependency on `__dict__`)
+    - Simplifies `__deepcopy__` (cache variables can be copied directly)
+    - Maintains the existing pattern already used throughout the codebase
 
 4. **Solver mutable attributes remain mutable**: Properties that the solver needs to set keep their setters.
 
@@ -60,7 +61,6 @@ Even with read-only properties, numpy arrays can still be mutated in place via t
 When implementing `__deepcopy__`, handle cached derived properties based on their source:
 
 1. **Derived from Immutable -> Preserve**: Copy the cached values (they remain valid since the source immutable attributes are also copied). For numpy arrays, use `.copy()` then set `flags.writeable = False`.
-
 2. **Derived from Set Once -> Reset to None**: These depend on values that will be set fresh by the solver or meshing, so reset them.
 
 ### List Collection Immutability
@@ -205,10 +205,10 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property      | Depends On    | Notes                                        |
-|---------------|---------------|----------------------------------------------|
-| `all_periods` | Period arrays | Tuple of unique non zero periods (cached)    |
-| `max_period`  | Period arrays | Scalar float, longest period (cached)        |
+| Property      | Depends On    | Notes                                     |
+|---------------|---------------|-------------------------------------------|
+| `all_periods` | Period arrays | Tuple of unique non zero periods (cached) |
+| `max_period`  | Period arrays | Scalar float, longest period (cached)     |
 
 ## OperatingPointMovement Class (`movements/operating_point_movement.py`)
 
@@ -236,10 +236,10 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute         | Type                     | Notes                                    |
-|-------------------|--------------------------|------------------------------------------|
-| `airplanes`       | `tuple[Airplane, ...]`   | Tuple prevents external mutation         |
-| `operating_point` | `OperatingPoint`         | Operating conditions                     |
+| Attribute         | Type                   | Notes                            |
+|-------------------|------------------------|----------------------------------|
+| `airplanes`       | `tuple[Airplane, ...]` | Tuple prevents external mutation |
+| `operating_point` | `OperatingPoint`       | Operating conditions             |
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -311,10 +311,10 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property                  | Depends On      | Notes                    |
-|---------------------------|-----------------|--------------------------|
-| `num_panels`              | `wings`         | Sum of wing panel counts |
-| `T_pas_G_Cg_to_GP1_CgP1`  | `Cg_GP1_CgP1`   | Transformation matrix    |
+| Property                 | Depends On    | Notes                    |
+|--------------------------|---------------|--------------------------|
+| `num_panels`             | `wings`       | Sum of wing panel counts |
+| `T_pas_G_Cg_to_GP1_CgP1` | `Cg_GP1_CgP1` | Transformation matrix    |
 
 #### Mutable (set by solver)
 
@@ -344,12 +344,12 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property                   | Depends On       | Notes                  |
-|----------------------------|------------------|------------------------|
-| `T_pas_G_Cg_to_Wn_Ler`     | Immutable attrs  | Transformation matrix  |
-| `T_pas_Wn_Ler_to_G_Cg`     | Above            | Inverse transformation |
-| `WnX_G`, `WnY_G`, `WnZ_G`  | Above            | Basis vectors          |
-| `children_T_pas_*`         | Cross sections   | Child transformations  |
+| Property                  | Depends On      | Notes                  |
+|---------------------------|-----------------|------------------------|
+| `T_pas_G_Cg_to_Wn_Ler`    | Immutable attrs | Transformation matrix  |
+| `T_pas_Wn_Ler_to_G_Cg`    | Above           | Inverse transformation |
+| `WnX_G`, `WnY_G`, `WnZ_G` | Above           | Basis vectors          |
+| `children_T_pas_*`        | Cross sections  | Child transformations  |
 
 #### Set Once (set by `generate_mesh`, never modified after)
 
@@ -375,21 +375,21 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
 
-| Attribute            | Type                 | Notes                           |
-|----------------------|----------------------|---------------------------------|
-| `symmetric`          | `bool`               | Modified to False for type 5    |
-| `mirror_only`        | `bool`               | Modified to False for type 5    |
-| `symmetryNormal_G`   | `np.ndarray \| None` | Modified to None for type 5     |
-| `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to None for type 5     |
+| Attribute            | Type                 | Notes                        |
+|----------------------|----------------------|------------------------------|
+| `symmetric`          | `bool`               | Modified to False for type 5 |
+| `mirror_only`        | `bool`               | Modified to False for type 5 |
+| `symmetryNormal_G`   | `np.ndarray \| None` | Modified to None for type 5  |
+| `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to None for type 5  |
 
 **Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original Wing becomes a type 1 wing and a new reflected Wing is created with type 3 symmetry.
 
 #### Mutable (modified during simulation for wake)
 
-| Attribute             | Type                 | Notes                           |
-|-----------------------|----------------------|---------------------------------|
-| `wake_ring_vortices`  | `np.ndarray \| None` | Wake vortex array, grows        |
-| `gridWrvp_GP1_CgP1`   | `np.ndarray \| None` | Wake vortex positions, grows    |
+| Attribute            | Type                 | Notes                        |
+|----------------------|----------------------|------------------------------|
+| `wake_ring_vortices` | `np.ndarray \| None` | Wake vortex array, grows     |
+| `gridWrvp_GP1_CgP1`  | `np.ndarray \| None` | Wake vortex positions, grows |
 
 ## WingCrossSection Class (`geometry/wing_cross_section.py`)
 
@@ -410,10 +410,10 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property                   | Depends On                  | Notes                   |
-|----------------------------|-----------------------------|-------------------------|
-| `T_pas_Wcsp_Lpp_to_Wcs_Lp` | `Lp_Wcsp_Lpp`, `angles_...` | Transformation matrix   |
-| `T_pas_Wcs_Lp_to_Wcsp_Lpp` | Above                       | Inverse transformation  |
+| Property                   | Depends On                  | Notes                  |
+|----------------------------|-----------------------------|------------------------|
+| `T_pas_Wcsp_Lpp_to_Wcs_Lp` | `Lp_Wcsp_Lpp`, `angles_...` | Transformation matrix  |
+| `T_pas_Wcs_Lp_to_Wcsp_Lpp` | Above                       | Inverse transformation |
 
 #### Set Once (set by parent Wing)
 

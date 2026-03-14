@@ -29,23 +29,23 @@ These steps are both handled by other slash commands.
 ## Detailed Steps
 
 1. **Read the test and fixture files** for `$ARGUMENTS`:
-   - Find corresponding test files in `tests/unit/`
-   - Find corresponding fixture files in `tests/unit/fixtures/`
-   - Note all test methods and fixture functions
+    - Find corresponding test files in `tests/unit/`
+    - Find corresponding fixture files in `tests/unit/fixtures/`
+    - Note all test methods and fixture functions
 2. **Catalog all tests** by the behavior they verify:
-   - Group tests by the method or function they test
-   - Note what specific aspect each test verifies
-   - Identify the input conditions and expected outcomes
+    - Group tests by the method or function they test
+    - Note what specific aspect each test verifies
+    - Identify the input conditions and expected outcomes
 3. **Identify redundant tests**:
    Tests are redundant if they:
-   - Test the exact same behavior with the same inputs
-   - Test the same edge case multiple times
-   - Verify the same error condition in the same way
-   - Differ only in naming but not in what they verify
+      - Test the exact same behavior with the same inputs
+      - Test the same edge case multiple times
+      - Verify the same error condition in the same way
+      - Differ only in naming but not in what they verify
    Tests are NOT redundant if they:
-   - Test the same method but with different inputs
-   - Test the same behavior but for different edge cases
-   - Verify the same error but triggered by different conditions
+      - Test the same method but with different inputs
+      - Test the same behavior but for different edge cases
+      - Verify the same error but triggered by different conditions
 4. **Document findings** in a redundancy report:
    ```
    REDUNDANCY REPORT for [module]
@@ -59,9 +59,9 @@ These steps are both handled by other slash commands.
    - ...
    ```
 5. **Remove or consolidate** redundant tests and fixtures:
-   - Delete clearly redundant tests
-   - Consolidate tests that verify the same thing
-   - Keep the most comprehensive version when consolidating
+    - Delete clearly redundant tests
+    - Consolidate tests that verify the same thing
+    - Keep the most comprehensive version when consolidating
 6. **Update `__init__.py` files** if any modules were removed or renamed.
 
 ## Guidelines for Judgment Calls

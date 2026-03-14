@@ -13,7 +13,7 @@ animate: Animates an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
 plot_results_versus_time: Plots an UnsteadyRingVortexLatticeMethodSolver's loads and
 load coefficients as a function of time.
 
-print_results: Prints a solver's load and load coefficients.
+log_results: Logs a solver's load and load coefficients.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ import pyvista as pv
 import webp
 
 from . import (
+    _logging,
     _parameter_validation,
     _transformations,
     geometry,
@@ -38,6 +39,8 @@ from . import (
     steady_ring_vortex_lattice_method,
     unsteady_ring_vortex_lattice_method,
 )
+
+_logger = _logging.get_logger("output")
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -713,12 +716,12 @@ def animate(
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
-    # If not testing, show the Plotter with the first time step, and print a message
-    # to the console on how to adjust the view and start the animation. If testing,
+    # If not testing, show the Plotter with the first time step, and log a message
+    # on how to adjust the view and start the animation. If testing,
     # show the Plotter with the first time step for 1 second, and start the animation
     # with the current window view.
     if not testing:
-        print(
+        _logger.info(
             'Orient the view, then press "q" to close the window and produce the '
             "animation."
         )
@@ -1213,16 +1216,16 @@ def plot_results_versus_time(
 
 # TEST: Consider adding unit tests for this function.
 # TEST: Consider adding integration tests for this function.
-def print_results(
+def log_results(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
 ) -> None:
-    """Prints a solver's load and load coefficients.
+    """Logs a solver's load and load coefficients.
 
-    :param solver: The solver whose load and load coefficients will be printed.
+    :param solver: The solver whose load and load coefficients will be logged.
     :return: None
     """
     if isinstance(
@@ -1251,7 +1254,7 @@ def print_results(
         )
 
     if not solver.ran:
-        raise RuntimeError("solver must have run before printing results.")
+        raise RuntimeError("solver must have run before logging results.")
 
     padding_spaces = 2
 
@@ -1423,7 +1426,7 @@ def print_results(
             for i, val in enumerate(col4)
         ]
 
-        print(f'Airplane "{airplane.name}":')
+        _logger.info(f'Airplane "{airplane.name}":')
 
         # Display the Reynolds number for steady solvers.
         if solver_type == "steady":
@@ -1435,25 +1438,25 @@ def print_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            print(f"{pad}Reynolds Number: {re:.2e}")
+            _logger.info(f"{pad}Reynolds Number: {re:.2e}")
 
         for i in range(len(col1)):
             if i == 0:
-                print(title1)
+                _logger.info(title1)
             elif i == 3:
-                print(title2)
+                _logger.info(title2)
             elif i == 6:
-                print(title3)
+                _logger.info(title3)
             elif i == 9:
-                print(title4)
+                _logger.info(title4)
 
             s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
-            print(s)
+            _logger.info(s)
 
-        # If the results from more Airplanes are going to be printed, print two new
+        # If the results from more Airplanes are going to be printed, log two new
         # lines to separate them.
         if (airplane_num + 1) < solver.num_airplanes:
-            print("\n")
+            _logger.info("\n")
 
 
 # TEST: Consider adding unit tests for this function.

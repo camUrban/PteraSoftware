@@ -145,8 +145,8 @@ del example_problem
 # Run the solver.
 example_solver.run()
 
-# Call this function from the output module to print the results.
-ps.output.print_results(example_solver)
+# Call this function from the output module to log the results.
+ps.output.log_results(example_solver)
 
 # Call the output module's draw function on the solver.
 ps.output.draw(

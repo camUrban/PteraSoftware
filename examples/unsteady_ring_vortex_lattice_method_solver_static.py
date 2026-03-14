@@ -279,7 +279,7 @@ example_solver.run(
     show_progress=True,
 )
 
-ps.output.print_results(solver=example_solver)
+ps.output.log_results(solver=example_solver)
 
 # Call the draw function on the solver. Press "q" to close the plotter after it draws
 # the output.

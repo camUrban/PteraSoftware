@@ -22,6 +22,7 @@
     <inspection_tool class="PyPep8NamingInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PyTypeCheckerInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyTypeHintsInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="PyUnboundLocalVariableInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyUnnecessaryCastInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="ReassignedToPlainText" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>

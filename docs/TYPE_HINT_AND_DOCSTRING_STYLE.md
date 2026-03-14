@@ -272,15 +272,15 @@ def function_name(
 
     Optional longer description providing more context. This provides detailed
     explanations of the function's behavior. It can be one or more paragraphs.
-    
+
     Optional citation block:
 
     **Citation:**
-    
+
     Adapted from (can be more specific if the whole function wasn't adapted): <source>
-    
+
     Author (or "Authors"): <author>
-    
+
     Date of retrieval (don't include if not known): <date>
 
     :param param1: A (shape) dtype description of param1. Additional details about
@@ -323,28 +323,28 @@ class ClassName:
     """Short description of the class.
 
     **Contains the following methods:**
-    
+
     public_method_1: Short description (identical to method's docstring's short
     description.
 
-    public_method_2: Short description (identical to method's docstring's short 
+    public_method_2: Short description (identical to method's docstring's short
     description.
 
     Optional notes block
-    
+
     **Notes:**
-    
+
     Detailed description of the class's purpose, behavior, or usage. Can be one or more
     paragraphs. Avoid numbered or bulleted lists.
-    
+
     Optional citation block:
-    
+
     **Citation:**
-    
+
     Adapted from (can be more specific if the whole class wasn't adapted): <source>
-    
+
     Author (or "Authors"): <author>
-    
+
     Date of retrieval (don't include if not known): <date>
     """
 ```
@@ -558,9 +558,9 @@ def _get_mcl_points(
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """Takes in the inner and outer Airfoils of a wing section and its normalized 
-    chordwise coordinates. It returns a list of four column vectors containing the 
-    normalized components of the positions of points along the mean camber line (MCL) 
+    """Takes in the inner and outer Airfoils of a wing section and its normalized
+    chordwise coordinates. It returns a list of four column vectors containing the
+    normalized components of the positions of points along the mean camber line (MCL)
     (in each Airfoil's axes, relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
@@ -592,7 +592,7 @@ def _get_mcs_points(
     outer_mcl_pointsX_Ao_lpAo: np.ndarray,
     spanwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """Calculates the points on a wing section's mean camber surface (MCS) (in wing 
+    """Calculates the points on a wing section's mean camber surface (MCS) (in wing
     axes, relative to the leading edge root point).
 
     :param T_pas_Wcsi_Lpi_Wn_Ler: A (4,4) ndarray of floats representing a passive
@@ -660,7 +660,7 @@ def __init__(
 def add_control_surface(
     self, deflection: float | int, hinge_point: float | int
 ) -> Airfoil:
-    """Returns a version of the Airfoil with a control surface added at a given point. 
+    """Returns a version of the Airfoil with a control surface added at a given point.
     It is called during meshing.
 
     :param deflection: The control deflection in degrees. Deflection downwards is
@@ -694,7 +694,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
 def get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
-    """Returns a ndarray of points along the mean camber line (MCL), resampled from the 
+    """Returns a ndarray of points along the mean camber line (MCL), resampled from the
     mcl_A_outline attribute. It is used to discretize the MCL for meshing.
 
     :param mcl_fractions: A (N,) array-like object of floats representing normalized

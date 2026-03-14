@@ -29,7 +29,7 @@ Generate a commit message for the current staged changes, then create the commit
    - Wrap every line at 72 characters. This is a hard limit.
    - Explain *why* the change was made, not *what* was changed (the diff shows that).
    - Use complete sentences ending with periods, each of which written using an imperative mood.
-   
+
    Do not include a footer or co-authorship line.
 3. **Validate the subject line** by checking its length with `awk`:
    ```bash

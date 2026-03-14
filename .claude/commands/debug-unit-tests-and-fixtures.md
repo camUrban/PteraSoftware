@@ -54,7 +54,7 @@ Follow these steps carefully and track your progress:
       - **If source code logic contradicts test expectation**: Possible source bug - STOP
       - **If unclear or ambiguous**: STOP and ask for clarification
    d. **Take appropriate action**:
-      - **Test is clearly wrong**: 
+      - **Test is clearly wrong**:
         - FIRST, articulate your reasoning:
           ```
           TEST BUG ANALYSIS for [test_name]:
@@ -65,14 +65,14 @@ Follow these steps carefully and track your progress:
           5. Proposed fix: [what will be changed and why]
           ```
         - ONLY AFTER documenting this analysis, fix the test implementation or expected values
-      - **Source might have bug**: 
+      - **Source might have bug**:
         ```
         POTENTIAL BUG DETECTED
         Test: [test_name]
         Expected: [expected_behavior]
         Actual: [actual_behavior]
         Source logic suggests: [analysis]
-        
+
         Please review the source code in [file:line] to confirm intended behavior.
         ```
       - **Ambiguous**: Ask user to clarify intended behavior

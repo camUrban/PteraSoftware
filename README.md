@@ -195,31 +195,7 @@ This package currently supports three different solvers, a steady horseshoe vort
 
 ## Requirements
 
-Here are the requirements necessary to run Ptera Software:
-
-* cmocean >= 3.1.3, < 5.0.0
-* matplotlib >= 3.9.3, < 4.0.0
-* numba >= 0.61.0, < 1.0.0
-* numpy >= 2.1.0, < 3.0.0
-* PySide6 >= 6.8.1, < 7.0.0
-* pyvista >= 0.45.0, < 1.0.0
-* scipy >= 1.15.0, < 2.0.0
-* tqdm >= 4.66.3, < 5.0.0
-* webp >= 0.4.0, < 1.0.0
-
-Additionally, these packages are useful for continued development of the software:
-
-* black
-* build
-* codecov
-* codespell
-* docformatter
-* isort
-* mypy
-* pre-commit
-* PyInstaller
-* scipy-stubs
-* twine
+Ptera Software requires Python 3.11, 3.12, or 3.13. Runtime and development dependencies are listed in [requirements.txt](requirements.txt) and [requirements_dev.txt](requirements_dev.txt), respectively.
 
 ## Validation
 

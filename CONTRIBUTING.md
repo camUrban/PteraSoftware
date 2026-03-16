@@ -92,6 +92,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     python3 -m pip install --upgrade pip # On Windows use python instead of python3
     pip install -r requirements.txt # Install dependencies for running simulations
     pip install -r requirements_dev.txt # Install dependencies for development (e.g. black, codespell, etc.)
+    pip install -e . # Install the package in editable mode
     pre-commit install # Install git hooks for automatic code formatting checks
     deactivate
     ```

@@ -79,16 +79,10 @@ Then, open a command prompt window in your project's directory and enter:
 pip install -r requirements.txt
 ```
 
-via the command prompt in your fork's directory. You may also want to run:
+via the command prompt in your fork's directory. Depending on your development environment, you may also need to run:
 
 ```shell
-pip install -r requirements_dev.txt
-```
-
-if you plan on making significant changes to the software. Depending on your development environment, you may also need to run:
-
-```shell
-pip install --editable .
+pip install -e .
 ```
 
 to avoid import errors.

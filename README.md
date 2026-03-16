@@ -17,113 +17,15 @@
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing flapping-wing flight.
 
-## Motivation
+## Quick Start
 
-In late 2018, I became curious about biological flight. To sate this curiosity, I wanted to computationally simulate some flapping-wing fliers. I quickly realized I had two options:
-
-1. Spend thousands of dollars on a closed-source CFD program, which would take hours to solve a simple case.
-2. Try to learn someone else's open-source, unsteady solver written in a language I didn't know, or using a framework that is overly complicated for my use case.
-
-Neither of these seemed like the right choice.
-
-Thankfully, my friend, Peter Sharpe, had just released his own open-source aerodynamics solver: AeroSandbox. With his support, I have used AeroSandbox as a jumping-off point to develop a solver package capable of unsteady simulations.
-
-Through the combined efforts of Peter Sharpe, Suhas Kodali, and me, Ptera Software was born. It is an easy-to-use, open-source, and actively-maintained UVLM package capable of analyzing flapping-wing flight. Moreover, it's written in Python, is well documented, tested, and validated.
-
-Beginning with version 3.0.0, Ptera Software also includes a GUI developed by Zach Tait. Although it is still rudimentary, we hope that it will help make this tool accessible to even more users.
-
-With your help, I hope we will increase the open-source community's interest and understanding of biological flight.
-
-## Features
-
-1. Various Aerodynamic Simulation Methods
-    * Steady simulations can be run with a standard horseshoe vortex-lattice method (VLM) or a ring VLM.
-    * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
-    * Unsteady simulations support both fixed and free wakes.
-    * Unsteady simulations implement vortex aging to reduce numerical instabilities.
-2. Customizable Aircraft Geometry
-    * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
-    * Wings can be defined as a collection of two or more wing cross sections of any dimensions and positions.
-    * Wing cross sections can be specified to match the mean camber line of an airfoil.
-    * The package comes with a massive database of airfoils to choose from, courtesy of the [UIUC Airfoil Coordinates Database](https://m-selig.ae.illinois.edu/ads/coord_database.html).
-    * Wings are automatically discretized into panels with customizable sizes and spacings.
-3. Customizable Aircraft Motion
-    * The relative motion of wings and wing cross sections can be defined using any time-dependent functions of sweep, pitch, and heave angles.
-4. Customizable Operating Points
-    * Parameters such as the free-stream velocity, density, angle of attack, angle of sideslip, etc. can be changed by the user.
-5. High-Speed Simulations
-    * Using Just-In-Time compilation, Ptera Software can solve many unsteady flapping-wing simulations in less than a minute!
-    * Steady simulations take only seconds!
-6. Simulations of Formation Flight
-    * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
-    * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
-7. Features for Flapping-Wing Vehicle Design
-    * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
-    * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
-8. A Basic GUI
-    * This is still in its beta stage, but we will be adding more functionality over the next several releases.
-
-## Installation and Use
-
-First things first, you will need a copy of Python (3.11, 3.12, or 3.13), which you can download from the official Python website. At this time, I do not recommend using a version from the Anaconda distribution as it could introduce compatibility issues with PyPI.
-
-There are two ways to use Ptera Software. The first is by downloading a GitHub release, which will provide you your own copy of the source code, in which you can get a feel for how it works (this can also be accomplished by forking the main branch). The second is by importing the Ptera Software package using PyPI, which will allow you to call Ptera Software's functions in your own scripts. If you are new to this tool, I recommend first downloading a release, as this will give you access to the `examples` directory.
-
-### Downloading A Release
-
-To download a release, navigate to [the releases page](https://github.com/camUrban/PteraSoftware/releases) and download the latest zipped directory. Extract the contents, and set up a python project as described in the PyCharm tutorial.
-
-Then, open a command prompt window in your project's directory and enter:
-
-```shell
-pip install -r requirements.txt
-```
-
-via the command prompt in your fork's directory. Depending on your development environment, you may also need to run:
-
-```shell
-pip install -e .
-```
-
-to avoid import errors.
-
-Finally, open the "examples" folder, which contains several heavily commented scripts that demonstrate different features and simulations. Read through each example, and then run them to admire their pretty output!
-
-### Importing As A Package
-
-If you wish to use this package as a dependency in your own project, simply run:
+Install the package with pip (requires Python 3.11, 3.12, or 3.13):
 
 ```shell
 pip install pterasoftware
 ```
 
-via the command prompt in your project's directory. Then, in a script that you'd like to use features from Ptera Software, add:
-
-```python
-import pterasoftware as ps
-```
-
-If you haven't previously downloaded Ptera Software's source code, you can also learn about the available functions by reading their docstrings, which should be fetched automatically by many IDEs. Otherwise, you can return to the GitHub and read through the docstrings there.
-
-For more detailed documentation, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
-
-### Using the GUI (Beta)
-
-If you downloaded the source code from GitHub, you can try using the experimental GUI to run the example simulations:
-
-```shell
-python gui/main.py
-```
-
-**Note:** The GUI is currently in beta and is not included in the PyPI package. It is only available when you download the source code from GitHub. The GUI provides a graphical interface for running the 10 example simulations but does not yet support custom aircraft creation. We welcome contributions if you'd like to extend it!
-
-### What If I'm Having Trouble Getting Set Up?
-
-Not to worry! I've made [a video](https://www.youtube.com/watch?v=oX8u2ZflJM4) that walks through getting Ptera Software up and running. It includes every step, from downloading Python for the first time to setting up your IDE to running the software. Please note that the video demonstrates installation with Python 3.8, but you should use Python 3.11, 3.12, or 3.13 for the current version of Ptera Software.
-
-## Example Code
-
-The following code snippet is all that is needed (after running `pip install pterasoftware`) to run the steady horseshoe solver on an airplane with custom geometry.
+Then run a simulation. The following snippet defines a simple rectangular wing, solves for its aerodynamics using the steady horseshoe vortex lattice method (VLM), and visualizes the results:
 
 ```python
 import pterasoftware as ps
@@ -173,9 +75,56 @@ solver.run()
 ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ```
 
+## Features
+
+1. Various Aerodynamic Simulation Methods
+    * Steady simulations can be run with a standard horseshoe vortex-lattice method (VLM) or a ring VLM.
+    * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
+    * Unsteady simulations support both fixed and free wakes.
+    * Unsteady simulations implement vortex aging to reduce numerical instabilities.
+2. Customizable Aircraft Geometry
+    * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
+    * Wings can be defined as a collection of two or more wing cross sections of any dimensions and positions.
+    * Wing cross sections can be specified to match the mean camber line of an airfoil.
+    * The package comes with a massive database of airfoils to choose from, courtesy of the [UIUC Airfoil Coordinates Database](https://m-selig.ae.illinois.edu/ads/coord_database.html).
+    * Wings are automatically discretized into panels with customizable sizes and spacings.
+3. Customizable Aircraft Motion
+    * The relative motion of wings and wing cross sections can be defined using any time-dependent functions of sweep, pitch, and heave angles.
+4. Customizable Operating Points
+    * Parameters such as the free-stream velocity, density, angle of attack, angle of sideslip, etc. can be changed by the user.
+5. High-Speed Simulations
+    * Using Just-In-Time compilation, Ptera Software can solve many unsteady flapping-wing simulations in less than a minute!
+    * Steady simulations take only seconds!
+6. Simulations of Formation Flight
+    * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
+    * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
+7. Features for Flapping-Wing Vehicle Design
+    * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
+    * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
+8. A Basic GUI
+    * This is still in its alpha stage, but we will be adding more functionality soon.
+
+## Installation
+
+### As a Package
+
+If you haven't already, install Ptera Software from PyPI (see [Quick Start](#quick-start) above):
+
+```shell
+pip install pterasoftware
+```
+
+Your IDE should automatically provide docstring hints for the available classes and functions. For more detailed documentation, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
+
+### From Source
+
+If you want to browse the example scripts or dig into the source code, you will need a local copy of the repository. Follow the environment setup instructions in the [Contributing Guidelines](CONTRIBUTING.md#contributing-code) to clone the repository, create a virtual environment, and install dependencies.
+
+Once set up, the `examples/` directory contains scripts that demonstrate the full range of Ptera Software's features and solvers.
+
 ## Example Output
 
-This package currently supports three different solvers, a steady horseshoe vortex lattice method (VLM), a steady ring VLM, and an unsteady ring VLM (UVLM). Here are examples of the output you can expect to receive from each of them.
+This package currently supports three different solvers, a steady horseshoe VLM, a steady ring VLM, and an unsteady ring VLM (UVLM). Here are examples of the output you can expect to receive from each of them.
 
 ### Steady Horseshoe VLM
 
@@ -193,17 +142,17 @@ This package currently supports three different solvers, a steady horseshoe vort
 
 ![Example Unsteady Ring VLM Moment Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Example_Airplane_Moment_Coefficients.png)
 
-## Requirements
-
-Ptera Software requires Python 3.11, 3.12, or 3.13. Runtime and development dependencies are listed in [requirements.txt](requirements.txt) and [requirements_dev.txt](requirements_dev.txt), respectively.
-
 ## Validation
 
-Since the release of version 1.0.0, Ptera Software is now validated against experimental flapping-wing data! See the "validation" directory to run the test case and read a report on the software's accuracy.
+Since the release of version 1.0.0, Ptera Software is now validated against experimental flapping-wing data! See the `validation/` directory to run the test case and read a report on the software's accuracy.
+
+## Documentation
+
+For detailed API documentation and guides, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
 
 ## How to Contribute
 
-As I said before, the primary goal of this project is to increase the open-source community's understanding and appreciation for unsteady aerodynamics in general and flapping-wing flight in particular. This will only happen through your participation. Feel free to request features, report bugs or security issues, and provide suggestions.
+The primary goal of this project is to increase the open-source community's understanding and appreciation for unsteady aerodynamics in general and flapping-wing flight in particular. This will only happen through your participation. Feel free to request features, report bugs or security issues, and provide suggestions.
 
 Before contributing, make sure to read through the [Contributing Guidelines](CONTRIBUTING.md) for how to best help out.
 
@@ -226,7 +175,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Allen Plotkin
 * Austin Stover
 
-## Notes
+## Background
 
-To the best of my ability, I am following SemVer conventions in naming my releases. I am also using the [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow) method of branching for this project's development, with a version bump and deployment to GitHub and PyPI about once per month, plus on-demand releases for critical bug fixes.
+Ptera Software grew out of a desire to make flapping-wing aerodynamics accessible without expensive commercial CFD tools or hard-to-use open-source alternatives. Initially built on [AeroSandbox](https://github.com/peterdsharpe/AeroSandbox) with the support of Peter Sharpe and Suhas Kodali, it has developed into an actively-maintained UVLM package that is well documented, tested, and validated. We hope that with your help, we will increase the open-source community's interest and understanding of biological flight.
 <!-- docs-include-end -->

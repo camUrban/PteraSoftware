@@ -141,7 +141,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     ```
     - Stage the changes you'd like to commit:
     ```shell
-    git add <file-1> <file=2> ...
+    git add <file-1> <file-2> ...
     ```
     - Before committing, note that you need to know how to use Git's text editor, which defaults to Vim. If you've never used Vim before, I recommend telling Git to use Nano instead, as many people find it less confusing. To do so, run the following (you only need to run it once):
     ```shell
@@ -196,3 +196,9 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     - Only the repository owner (currently [camUrban](https://github.com/camUrban)) can approve merges to main.
     - Your PR will be reviewed, and changes may be requested.
     - Once approved, it will be merged into main and included in the next release.
+
+---
+
+## Release Process
+
+Ptera Software follows [SemVer](https://semver.org/) conventions for release naming and uses [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow) for branching. Releases include a version bump and deployment to GitHub and PyPI once every few months, plus on-demand releases for critical bug fixes.

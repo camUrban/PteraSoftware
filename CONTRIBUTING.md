@@ -95,6 +95,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     pre-commit install # Install git hooks for automatic code formatting checks
     deactivate
     ```
+    **Note:** If you use PyCharm, the repository includes a pre-configured `.idea` directory with code style settings and inspection profiles.
 3. **Create a new branch**
     - Branch from main for each change.
     - Use descriptive branch names, such as `feature/add-new-plot` or `bug/fix-units`.

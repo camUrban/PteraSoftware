@@ -69,8 +69,6 @@ First things first, you will need a copy of Python (3.11, 3.12, or 3.13), which 
 
 There are two ways to use Ptera Software. The first is by downloading a GitHub release, which will provide you your own copy of the source code, in which you can get a feel for how it works (this can also be accomplished by forking the main branch). The second is by importing the Ptera Software package using PyPI, which will allow you to call Ptera Software's functions in your own scripts. If you are new to this tool, I recommend first downloading a release, as this will give you access to the `examples` directory.
 
-Next, make sure you have an IDE in which you can run Ptera Software. I recommend using the Community Edition of PyCharm, which is free, powerful, and well documented. If you've never set up a Python project before, follow [this guide](https://www.jetbrains.com/help/pycharm/quick-start-guide.html) to set up a new project in PyCharm. If you'll be downloading a release, follow that tutorial's "Open an existing project guide." Otherwise, follow the "Create a new project guide."
-
 ### Downloading A Release
 
 To download a release, navigate to [the releases page](https://github.com/camUrban/PteraSoftware/releases) and download the latest zipped directory. Extract the contents, and set up a python project as described in the PyCharm tutorial.
@@ -87,7 +85,7 @@ via the command prompt in your fork's directory. You may also want to run:
 pip install -r requirements_dev.txt
 ```
 
-if you plan on making significant changes to the software. If you are using an IDE other than PyCharm, you may also need to run:
+if you plan on making significant changes to the software. Depending on your development environment, you may also need to run:
 
 ```shell
 pip install --editable .

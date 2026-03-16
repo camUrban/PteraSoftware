@@ -113,7 +113,7 @@ import pterasoftware as ps
 
 If you haven't previously downloaded Ptera Software's source code, you can also learn about the available functions by reading their docstrings, which should be fetched automatically by many IDEs. Otherwise, you can return to the GitHub and read through the docstrings there.
 
-I am hoping to implement a web-based documentation guide soon! If you'd like to contribute to this, feel free to open a feature request issue and start a conversation!
+For more detailed documentation, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
 
 ### Using the GUI (Beta)
 

@@ -31,6 +31,7 @@ Identify the option that best describes the size and impact of your change, and 
 ## Checklist
 
 - [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
+- [ ] PR description links all relevant issues and follows this template.
 - [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
 - [ ] All calculations use S.I. units.
 - [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
@@ -40,5 +41,7 @@ Identify the option that best describes the size and impact of your change, and 
 - [ ] All new classes, functions, and methods in the `pterasoftware` package use type hints. See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
 - [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
 - [ ] Code locally passes all tests in the `tests` package.
-- [ ] After pushing, PR passes all automated checks (`codespell`, `black`, `mypy`, and `tests`).
-- [ ] PR description links all relevant issues and follows this template.
+- [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
+- [ ] This PR passes the `mypy` GitHub action.
+- [ ] This PR passes the `tests` GitHub action.
+- [ ] After passing the `tests` action, this PR passes CodeCov's coverage checks (this takes a few minutes, and will appear as a comment).

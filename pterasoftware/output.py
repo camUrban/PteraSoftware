@@ -416,6 +416,7 @@ def draw(
         # When the user closes the window, the Plotter still exists. Therefore,
         # it can later be saved as an image if desired.
         plotter.show(
+            title="Orient the view, then press any key to continue.",
             cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             auto_close=False,
@@ -716,21 +717,18 @@ def animate(
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
-    # If not testing, show the Plotter with the first time step, and log a message
-    # on how to adjust the view and start the animation. If testing,
-    # show the Plotter with the first time step for 1 second, and start the animation
-    # with the current window view.
+    # If not testing, show the Plotter with the first time step so the user can
+    # orient the view. When the user presses any key, set the title back to the
+    # animation title and proceed. If testing, show the Plotter with the first time
+    # step for 1 second, and start the animation with the current window view.
     if not testing:
-        _logger.info(
-            'Orient the view, then press "q" to close the window and produce the '
-            "animation."
-        )
         plotter.show(
-            title="Rendering speed not to scale.",
+            title="Orient the view, then press any key to produce the animation.",
             cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             auto_close=False,
         )
+        plotter.ren_win.SetWindowName("Rendering speed not to scale.")
     else:
         plotter.show(
             title="Rendering speed not to scale.",
@@ -1225,6 +1223,9 @@ def log_results(
 ) -> None:
     """Logs a solver's load and load coefficients.
 
+    The logging level must be set to INFO or lower in order to see results. See
+    set_up_logging for details on configuring the logging level.
+
     :param solver: The solver whose load and load coefficients will be logged.
     :return: None
     """
@@ -1453,8 +1454,8 @@ def log_results(
             s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
             _logger.info(s)
 
-        # If the results from more Airplanes are going to be logged, log two new
-        # lines to separate them.
+        # If the results from more Airplanes are going to be logged, log a blank
+        # line to separate them.
         if (airplane_num + 1) < solver.num_airplanes:
             _logger.info("")
 

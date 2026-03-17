@@ -138,10 +138,6 @@ This package currently supports three different solvers, a steady horseshoe VLM,
 
 ![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Animate.webp)
 
-![Example Unsteady Ring VLM Force Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Example_Airplane_Force_Coefficients.png)
-
-![Example Unsteady Ring VLM Moment Coefficient Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Example_Airplane_Moment_Coefficients.png)
-
 ## Validation
 
 Since the release of version 1.0.0, Ptera Software is now validated against experimental flapping-wing data! See the `validation/` directory to run the test case and read a report on the software's accuracy.

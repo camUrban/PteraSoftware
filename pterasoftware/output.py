@@ -1453,10 +1453,10 @@ def log_results(
             s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
             _logger.info(s)
 
-        # If the results from more Airplanes are going to be printed, log two new
+        # If the results from more Airplanes are going to be logged, log two new
         # lines to separate them.
         if (airplane_num + 1) < solver.num_airplanes:
-            _logger.info("\n")
+            _logger.info("")
 
 
 # TEST: Consider adding unit tests for this function.

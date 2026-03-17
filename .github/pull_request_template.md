@@ -44,4 +44,4 @@ Identify the option that best describes the impact of your change, then delete t
 - [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
 - [ ] This PR passes the `mypy` GitHub action.
 - [ ] This PR passes the `tests` GitHub action.
-- [ ] After passing the `tests` action, this PR passes CodeCov's coverage checks (this takes a few minutes, and will appear as a comment).
+- [ ] After passing the `tests` action, this PR passes Codecov's coverage checks (this takes a few minutes, and will appear as a comment).

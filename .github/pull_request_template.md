@@ -20,7 +20,7 @@ List any new dependencies (including dev dependencies) added in this PR.
 
 ## Change Magnitude
 
-Identify the option that best describes the size and impact of your change, and delete the other two lines:
+Identify the option that best describes the impact of your change, then delete the other two lines and this sentence.
 
 **Major**: Large change that adds significant new functionality, changes existing behavior, or may affect many parts of the codebase.
 

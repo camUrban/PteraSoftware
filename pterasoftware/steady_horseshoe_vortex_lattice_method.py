@@ -94,7 +94,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         #  which makes more sense because then they can be passed in to find the
         #  normalized wing-wing influence coefficients. Switch to that declaration if
         #  doing so doesn't change the results (it shouldn't).
-        self._vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
         self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._panel_areas = np.zeros(self.num_panels, dtype=float)

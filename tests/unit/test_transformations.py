@@ -392,6 +392,7 @@ class TestGenerateRotT(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _transformations.generate_rot_T(angles, True, True, bad)
 
+
 class TestGenerate2DRotT(unittest.TestCase):
     """This class contains methods for testing the generate_2D_rot_T function."""
 
@@ -482,6 +483,7 @@ class TestGenerate2DRotT(unittest.TestCase):
         # -270 degrees is equivalent to 90 degrees
         R_neg = _transformations.generate_2D_rot_T(-270.0, False)
         npt.assert_allclose(R_neg, R_equivalent, atol=1e-14)
+
 
 class TestGenerateTransT(unittest.TestCase):
     """This class contains methods for testing the generate_trans_T function."""

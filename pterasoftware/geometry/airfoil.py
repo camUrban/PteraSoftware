@@ -856,8 +856,7 @@ class Airfoil:
             # Create active rotation matrix to rotate chord onto x axis.
             # Convert the angle to degrees to match the _transformations.py standard.
             rot_T_act = _transformations.generate_2D_rot_T(
-                angle=np.degrees(-chord_angle), 
-                passive=False
+                angle=np.degrees(-chord_angle), passive=False
             )
 
             # Apply active rotation to all points.

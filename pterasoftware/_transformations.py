@@ -147,6 +147,7 @@ def generate_rot_T(
     T[:3, :3] = R
     return T
 
+
 def generate_2D_rot_T(
     angle: float | int,
     passive: bool | np.bool_,
@@ -199,6 +200,7 @@ def generate_2D_rot_T(
         return R_act.T
 
     return R_act
+
 
 def generate_trans_T(
     translations: np.ndarray | Sequence[float | int],

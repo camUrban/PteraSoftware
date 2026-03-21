@@ -93,6 +93,52 @@ class Panel:
     unit normals, area, and aspect ratio) are lazily evaluated and cached.
     """
 
+    __slots__ = (
+        # Immutable (set in __init__)
+        "_Frpp_G_Cg",
+        "_Flpp_G_Cg",
+        "_Blpp_G_Cg",
+        "_Brpp_G_Cg",
+        "_is_leading_edge",
+        "_is_trailing_edge",
+        # Caches derived from immutable
+        "_rightLeg_G",
+        "_frontLeg_G",
+        "_leftLeg_G",
+        "_backLeg_G",
+        "_Frbvp_G_Cg",
+        "_Flbvp_G_Cg",
+        "_Cpp_G_Cg",
+        "_unitNormal_G",
+        "_area",
+        "_aspect_ratio",
+        # Set once
+        "_Frpp_GP1_CgP1",
+        "_Flpp_GP1_CgP1",
+        "_Blpp_GP1_CgP1",
+        "_Brpp_GP1_CgP1",
+        "_is_right_edge",
+        "_is_left_edge",
+        "_local_chordwise_position",
+        "_local_spanwise_position",
+        # Caches derived from set once
+        "_rightLeg_GP1",
+        "_frontLeg_GP1",
+        "_leftLeg_GP1",
+        "_backLeg_GP1",
+        "_Frbvp_GP1_CgP1",
+        "_Flbvp_GP1_CgP1",
+        "_Cpp_GP1_CgP1",
+        "_unitNormal_GP1",
+        # Mutable
+        "ring_vortex",
+        "horseshoe_vortex",
+        "forces_GP1",
+        "moments_GP1_CgP1",
+        "forces_W",
+        "moments_W_CgP1",
+    )
+
     def __init__(
         self,
         Frpp_G_Cg: np.ndarray,

@@ -34,6 +34,21 @@ class RingVortex:
     LineVortex legs (if they've be created and cached).
     """
 
+    __slots__ = (
+        "_Flrvp_GP1_CgP1",
+        "_Frrvp_GP1_CgP1",
+        "_Blrvp_GP1_CgP1",
+        "_Brrvp_GP1_CgP1",
+        "_Crvp_GP1_CgP1",
+        "_front_leg",
+        "_left_leg",
+        "_back_leg",
+        "_right_leg",
+        "_area",
+        "_strength",
+        "age",
+    )
+
     def __init__(
         self,
         Frrvp_GP1_CgP1: np.ndarray,

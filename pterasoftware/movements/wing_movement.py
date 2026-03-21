@@ -46,6 +46,22 @@ class WingMovement:
     WingMovement's parent AirplaneMovement's parent Movement.
     """
 
+    __slots__ = (
+        "_base_wing",
+        "_wing_cross_section_movements",
+        "_ampLer_Gs_Cgs",
+        "_periodLer_Gs_Cgs",
+        "_spacingLer_Gs_Cgs",
+        "_phaseLer_Gs_Cgs",
+        "_ampAngles_Gs_to_Wn_ixyz",
+        "_periodAngles_Gs_to_Wn_ixyz",
+        "_spacingAngles_Gs_to_Wn_ixyz",
+        "_phaseAngles_Gs_to_Wn_ixyz",
+        "_rotationPointOffset_Gs_Ler",
+        "_all_periods",
+        "_max_period",
+    )
+
     def __init__(
         self,
         base_wing: geometry.wing.Wing,

@@ -34,7 +34,6 @@ from . import (
 convergence_logger = _logging.get_logger("convergence")
 
 
-# TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 # TODO: If a converged mesh was found, consider also returning the converged solver.
@@ -709,7 +708,6 @@ def analyze_steady_convergence(
     return None, None
 
 
-# TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 # TODO: If a converged mesh was found, consider also returning the converged solver.
@@ -1832,7 +1830,6 @@ def analyze_unsteady_convergence(
     return None, None, None, None
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_movement_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
@@ -1913,7 +1910,6 @@ def _get_wing_section_movement_num_spanwise_panels(
     return int(max(these_num_spanwise_panels))
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
@@ -1975,7 +1971,6 @@ def _get_wing_section_num_spanwise_panels(
     return this_num_spanwise_panels
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
     chordwise_spacing: str,

@@ -46,6 +46,9 @@ This package contains the following modules:
 
     test_ring_vortex.py: This module contains classes to test RingVortices.
 
+    test_slots.py: This module contains classes to test __slots__ enforcement on
+    slotted classes.
+
     test_transformations.py: This module contains classes to test functions in the
     transformations module.
 
@@ -74,6 +77,7 @@ import tests.unit.test_panel
 import tests.unit.test_parameter_validation
 import tests.unit.test_problems
 import tests.unit.test_ring_vortex
+import tests.unit.test_slots
 import tests.unit.test_transformations
 import tests.unit.test_wing
 import tests.unit.test_wing_cross_section

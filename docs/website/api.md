@@ -1,7 +1,6 @@
 # API Reference
 
-This reference covers the public modules most users interact with. Pages are
-generated automatically from docstrings using AutoAPI.
+This reference covers the public modules most users interact with. Pages are generated automatically from docstrings using AutoAPI.
 
 ```{toctree}
 :maxdepth: 1

@@ -13,7 +13,7 @@ animate: Animates an UnsteadyRingVortexLatticeMethodSolver's Airplane(s).
 plot_results_versus_time: Plots an UnsteadyRingVortexLatticeMethodSolver's loads and
 load coefficients as a function of time.
 
-print_results: Prints a solver's load and load coefficients.
+log_results: Logs a solver's load and load coefficients.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ import pyvista as pv
 import webp
 
 from . import (
+    _logging,
     _parameter_validation,
     _transformations,
     geometry,
@@ -38,6 +39,8 @@ from . import (
     steady_ring_vortex_lattice_method,
     unsteady_ring_vortex_lattice_method,
 )
+
+_logger = _logging.get_logger("output")
 
 # Define the color and colormaps used by the visualization functions.
 _sequential_color_map = "speed"
@@ -103,9 +106,6 @@ _marker_size = 8
 _marker_spacing = 1.0 / _num_markers
 
 
-# TEST: Consider adding unit tests for this function.
-# TEST: Assess how comprehensive this function's integration tests are and update or
-#  extend them if needed.
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -413,6 +413,7 @@ def draw(
         # When the user closes the window, the Plotter still exists. Therefore,
         # it can later be saved as an image if desired.
         plotter.show(
+            title="Orient the view, then press any key to continue.",
             cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             auto_close=False,
@@ -449,9 +450,6 @@ def draw(
     pv.close_all()
 
 
-# TEST: Consider adding unit tests for this function.
-# TEST: Assess how comprehensive this function's integration tests are and update or
-#  extend them if needed.
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
@@ -713,21 +711,18 @@ def animate(
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
-    # If not testing, show the Plotter with the first time step, and print a message
-    # to the console on how to adjust the view and start the animation. If testing,
-    # show the Plotter with the first time step for 1 second, and start the animation
-    # with the current window view.
+    # If not testing, show the Plotter with the first time step so the user can
+    # orient the view. When the user presses any key, set the title back to the
+    # animation title and proceed. If testing, show the Plotter with the first time
+    # step for 1 second, and start the animation with the current window view.
     if not testing:
-        print(
-            'Orient the view, then press "q" to close the window and produce the '
-            "animation."
-        )
         plotter.show(
-            title="Rendering speed not to scale.",
+            title="Orient the view, then press any key to produce the animation.",
             cpos=(-1, -1, 1) if image_surface_mesh is None else None,
             full_screen=False,
             auto_close=False,
         )
+        plotter.ren_win.SetWindowName("Rendering speed not to scale.")
     else:
         plotter.show(
             title="Rendering speed not to scale.",
@@ -887,9 +882,6 @@ def animate(
     pv.close_all()
 
 
-# TEST: Consider adding unit tests for this function.
-# TEST: Assess how comprehensive this function's integration tests are and update or
-#  extend them if needed.
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool | np.bool_ = True,
@@ -1211,18 +1203,20 @@ def plot_results_versus_time(
         plt.close("all")
 
 
-# TEST: Consider adding unit tests for this function.
 # TEST: Consider adding integration tests for this function.
-def print_results(
+def log_results(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
 ) -> None:
-    """Prints a solver's load and load coefficients.
+    """Logs a solver's load and load coefficients.
 
-    :param solver: The solver whose load and load coefficients will be printed.
+    The logging level must be set to INFO or lower in order to see results. See
+    set_up_logging for details on configuring the logging level.
+
+    :param solver: The solver whose load and load coefficients will be logged.
     :return: None
     """
     if isinstance(
@@ -1251,7 +1245,7 @@ def print_results(
         )
 
     if not solver.ran:
-        raise RuntimeError("solver must have run before printing results.")
+        raise RuntimeError("solver must have run before logging results.")
 
     padding_spaces = 2
 
@@ -1423,7 +1417,7 @@ def print_results(
             for i, val in enumerate(col4)
         ]
 
-        print(f'Airplane "{airplane.name}":')
+        _logger.info(f'Airplane "{airplane.name}":')
 
         # Display the Reynolds number for steady solvers.
         if solver_type == "steady":
@@ -1435,28 +1429,27 @@ def print_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            print(f"{pad}Reynolds Number: {re:.2e}")
+            _logger.info(f"{pad}Reynolds Number: {re:.2e}")
 
         for i in range(len(col1)):
             if i == 0:
-                print(title1)
+                _logger.info(title1)
             elif i == 3:
-                print(title2)
+                _logger.info(title2)
             elif i == 6:
-                print(title3)
+                _logger.info(title3)
             elif i == 9:
-                print(title4)
+                _logger.info(title4)
 
             s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
-            print(s)
+            _logger.info(s)
 
-        # If the results from more Airplanes are going to be printed, print two new
-        # lines to separate them.
+        # If the results from more Airplanes are going to be logged, log a blank
+        # line to separate them.
         if (airplane_num + 1) < solver.num_airplanes:
-            print("\n")
+            _logger.info("")
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_panel_surfaces(
     airplanes: tuple[geometry.airplane.Airplane, ...],
 ) -> pv.PolyData:
@@ -1651,7 +1644,6 @@ def _mute_colormap(
     return matplotlib.colors.ListedColormap(colors)
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wake_ring_vortex_surfaces(
     solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     step: int,
@@ -1715,7 +1707,6 @@ def _get_wake_ring_vortex_surfaces(
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_scalars(
     airplanes: tuple[geometry.airplane.Airplane, ...],
     scalar_type: str,
@@ -1771,7 +1762,6 @@ def _get_scalars(
     return scalars
 
 
-# TEST: Consider adding unit tests for this function.
 def _plot_scalars(
     plotter: pv.Plotter,
     these_scalars: np.ndarray,

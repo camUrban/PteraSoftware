@@ -8,6 +8,10 @@ beneath the Airplane. The geometry and Movement are static (no flapping)."""
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the log_results function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane with our custom geometry. This is the same Airplane used in the
 # unsteady_ring_vortex_lattice_method_solver_static.py example. For details about each
 # parameter, read the detailed class docstring.
@@ -288,7 +292,7 @@ example_solver.run(
     show_progress=True,
 )
 
-ps.output.print_results(solver=example_solver)
+ps.output.log_results(solver=example_solver)
 
 # Call the draw function on the solver. The image surface and reflected geometry are
 # automatically rendered. Press "q" to close the plotter after it draws the output.

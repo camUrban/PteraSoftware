@@ -6,6 +6,10 @@ UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a static Movem
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the log_results function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
 # educational purposes, but keep in mind that it makes the code much longer than it
@@ -279,7 +283,7 @@ example_solver.run(
     show_progress=True,
 )
 
-ps.output.print_results(solver=example_solver)
+ps.output.log_results(solver=example_solver)
 
 # Call the draw function on the solver. Press "q" to close the plotter after it draws
 # the output.

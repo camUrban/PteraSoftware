@@ -82,6 +82,24 @@ class Movement:
     and its sub sub sub movement objects all represent no motion.
     """
 
+    __slots__ = (
+        "_airplane_movements",
+        "_operating_point_movement",
+        "_delta_time",
+        "_num_cycles",
+        "_num_chords",
+        "_num_steps",
+        "_max_wake_rows",
+        "_max_wake_chords",
+        "_max_wake_cycles",
+        "_airplanes",
+        "_operating_points",
+        "_lcm_period",
+        "_max_period",
+        "_min_period",
+        "_static",
+    )
+
     def __init__(
         self,
         airplane_movements: list[airplane_movement_mod.AirplaneMovement],

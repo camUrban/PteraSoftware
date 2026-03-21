@@ -53,6 +53,14 @@ class Airfoil:
     Date of retrieval: 04/27/2020
     """
 
+    __slots__ = (
+        "_name",
+        "_outline_A_lp",
+        "_resample",
+        "_n_points_per_side",
+        "_mcl_A_lp",
+    )
+
     def __init__(
         self,
         name: str = "NACA0012",

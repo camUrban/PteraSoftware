@@ -58,6 +58,48 @@ class SteadyRingVortexLatticeMethodSolver:
     Date of retrieval: 04/28/2020
     """
 
+    __slots__ = (
+        "_steady_problem",
+        "airplanes",
+        "operating_point",
+        "reynolds_numbers",
+        "num_airplanes",
+        "num_panels",
+        "vInf_GP1__E",
+        "stackFreestreamWingInfluences__E",
+        "_gridWingWingInfluences__E",
+        "_vortex_strengths",
+        "panels",
+        "stackUnitNormals_GP1",
+        "panel_areas",
+        "stackCpp_GP1_CgP1",
+        "stackBrbrvp_GP1_CgP1",
+        "stackFrbrvp_GP1_CgP1",
+        "stackFlbrvp_GP1_CgP1",
+        "stackBlbrvp_GP1_CgP1",
+        "stackCblvpr_GP1_CgP1",
+        "stackCblvpf_GP1_CgP1",
+        "stackCblvpl_GP1_CgP1",
+        "stackCblvpb_GP1_CgP1",
+        "stackRbrv_GP1",
+        "stackFbrv_GP1",
+        "stackLbrv_GP1",
+        "stackBbrv_GP1",
+        "_stackBrhvp_GP1_CgP1",
+        "_stackFrhvp_GP1_CgP1",
+        "_stackFlhvp_GP1_CgP1",
+        "_stackBlhvp_GP1_CgP1",
+        "_horseshoe_vortex_strengths",
+        "_stackRc0s",
+        "panel_is_trailing_edge",
+        "panel_is_leading_edge",
+        "panel_is_left_edge",
+        "panel_is_right_edge",
+        "stackSeedPoints_GP1_CgP1",
+        "gridStreamlinePoints_GP1_CgP1",
+        "ran",
+    )
+
     def __init__(self, steady_problem: problems.SteadyProblem) -> None:
         """The initialization method.
 

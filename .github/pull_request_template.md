@@ -1,30 +1,37 @@
 # Description
-Provide a concise description of the changes in this pull request.
+
+Provide a concise description of the changes in this pull request. Appropriate titles for PRs use sentence-case and no trailing period. Also, add applicable labels and assign the PR to yourself. If using the `bug` or `feature` label, prefix your title with [BUG] or [FEATURE]. If a first-time contributor, welcome! If you'd like, feel free to add yourself to the end of the list of contributors in the [README](https://github.com/camUrban/PteraSoftware/blob/main/README.md), following one of the styles shown.
 
 ## Motivation
+
 Explain why you are making these changes and what problem they solve.
 
 ## Relevant Issues
-Link any related issues using GitHub's syntax, e.g., `Fixes #123` or `Closes #456`.
+
+Link any related issues using GitHub's syntax. For bugs, write, "Fixes #<issue number>." For features, "Closes #<issue number>." If there are no related issues, write "None."
 
 ## Changes
+
 List the changes you made in bullet points.
 
-## New Dependencies
-List any new dependencies (including dev dependencies) added in this PR.
+## Dependency Updates
+
+List any new dependencies (including dev dependencies) added in this PR. Also list any updates to required dependency versions. If no new dependencies have been added or version requirements changed, write "None."
 
 ## Change Magnitude
-Select the option that best describes the size and impact of your change:
+
+Identify the option that best describes the impact of your change, then delete the other two lines and this sentence.
 
 **Major**: Large change that adds significant new functionality, changes existing behavior, or may affect many parts of the codebase.
+
 **Moderate**: Medium-sized change that adds or modifies a feature without large-scale impact.
+
 **Minor**: Small change such as a bug fix, small enhancement, or documentation update.
 
----
-
-# Checklist
+## Checklist (check each item when completed or not applicable)
 
 - [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
+- [ ] PR description links all relevant issues and follows this template.
 - [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
 - [ ] All calculations use S.I. units.
 - [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
@@ -34,7 +41,8 @@ Select the option that best describes the size and impact of your change:
 - [ ] All new classes, functions, and methods in the `pterasoftware` package use type hints. See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
 - [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
 - [ ] Code locally passes all tests in the `tests` package.
-- [ ] After pushing, PR passes all automated checks (`codespell`, `black`, `mypy`, and `tests`).
-- [ ] PR description links all relevant issues and follows this template.
-
----
+- [ ] This PR passes the ReadTheDocs build check (this runs automatically with the other workflows).
+- [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
+- [ ] This PR passes the `mypy` GitHub action.
+- [ ] This PR passes all the `tests` GitHub actions.
+- [ ] After passing all the `tests` actions, this PR passes Codecov's coverage checks (these take a few minutes, but should automatically appear as a comment and two more checks alongside the GitHub actions).

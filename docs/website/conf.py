@@ -6,6 +6,7 @@ from datetime import datetime
 project = "PteraSoftware"
 author = "Cameron Urban and contributors"
 current_year = datetime.now().year
+# noinspection PyShadowingBuiltins
 copyright = f"{current_year}, {author}"
 
 # -- General configuration ---------------------------------------------------
@@ -135,6 +136,7 @@ def _repo_rel_for_autoapi_page(pagename: str) -> str | None:
     return target.relative_to(REPO_ROOT).as_posix()
 
 
+# noinspection PyUnusedLocal
 def _html_page_context(app, pagename, templatename, context, doctree):
     repo_rel = _repo_rel_for_autoapi_page(pagename)
     if repo_rel:
@@ -150,6 +152,7 @@ def setup(app):
     app.connect("html-page-context", _html_page_context)
 
     # Copy extra assets to the site root after build
+    # noinspection PyShadowingNames
     def _copy_extra_assets(app, exception):
         if exception is not None:
             return

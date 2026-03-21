@@ -140,6 +140,46 @@ class Wing:
     Date of retrieval: 04/24/2020
     """
 
+    __slots__ = (
+        # Immutable
+        "_wing_cross_sections",
+        "_name",
+        "_Ler_Gs_Cgs",
+        "_angles_Gs_to_Wn_ixyz",
+        "_num_chordwise_panels",
+        "_chordwise_spacing",
+        # Mutable (type 5 symmetry)
+        "symmetric",
+        "mirror_only",
+        "symmetryNormal_G",
+        "symmetryPoint_G_Cg",
+        # Set once
+        "_symmetry_type",
+        "_num_spanwise_panels",
+        "_num_panels",
+        "_panels",
+        # Mutable (wake)
+        "gridWrvp_GP1_CgP1",
+        "wake_ring_vortices",
+        # Caches from immutable
+        "_T_pas_G_Cg_to_Wn_Ler",
+        "_T_pas_Wn_Ler_to_G_Cg",
+        "_WnX_G",
+        "_WnY_G",
+        "_WnZ_G",
+        "_children_T_pas_Wn_Ler_to_Wcs_Lp",
+        "_children_T_pas_Wcs_Lp_to_Wn_Ler",
+        "_children_T_pas_G_Cg_to_Wcs_Lp",
+        "_children_T_pas_Wcs_Lp_to_G_Cg",
+        # Caches from set once
+        "_projected_area",
+        "_wetted_area",
+        "_average_panel_aspect_ratio",
+        "_span",
+        "_standard_mean_chord",
+        "_mean_aerodynamic_chord",
+    )
+
     def __init__(
         self,
         wing_cross_sections: list[wing_cross_section_mod.WingCrossSection],

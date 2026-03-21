@@ -1,4 +1,5 @@
 # Running Tests and Type Checks
+
 Guidelines for Claude on running tests and type checks for Ptera Software. For developers, see the `CONTRIBUTING.md` file for more instructions.
 
 ## Running Tests

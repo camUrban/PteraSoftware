@@ -34,33 +34,27 @@ Follow these steps carefully and track your progress:
 ## Detailed Steps
 
 1. **Identify test files** for `$ARGUMENTS`:
-   - Find corresponding test files in `tests/unit/`
-   - Note any fixture dependencies
-
+    - Find corresponding test files in `tests/unit/`
+    - Note any fixture dependencies
 2. **Run initial tests**:
-   - Capture and analyze the full output
-   - Note all failures and their error messages
-
+    - Capture and analyze the full output
+    - Note all failures and their error messages
 3. **For EACH test failure**:
-   
    a. **Read the failing test carefully**:
       - Understand what the test is trying to verify
       - Note the expected vs actual values
       - Identify which source method/function is being tested
-   
    b. **Analyze the source code**:
       - Read the source implementation in $ARGUMENTS
       - Trace through the logic step by step
       - Check all relevant docstrings and comments
       - Look for any documentation about intended behavior
-   
    c. **Determine the root cause**:
       - **If source code logic matches test expectation**: Likely a test implementation issue
       - **If source code logic contradicts test expectation**: Possible source bug - STOP
       - **If unclear or ambiguous**: STOP and ask for clarification
-   
    d. **Take appropriate action**:
-      - **Test is clearly wrong**: 
+      - **Test is clearly wrong**:
         - FIRST, articulate your reasoning:
           ```
           TEST BUG ANALYSIS for [test_name]:
@@ -71,44 +65,42 @@ Follow these steps carefully and track your progress:
           5. Proposed fix: [what will be changed and why]
           ```
         - ONLY AFTER documenting this analysis, fix the test implementation or expected values
-      - **Source might have bug**: 
+      - **Source might have bug**:
         ```
         POTENTIAL BUG DETECTED
         Test: [test_name]
         Expected: [expected_behavior]
         Actual: [actual_behavior]
         Source logic suggests: [analysis]
-        
+
         Please review the source code in [file:line] to confirm intended behavior.
         ```
       - **Ambiguous**: Ask user to clarify intended behavior
-   
    e. **Document your reasoning**:
       - Explain why you made each change
       - Note any assumptions about intended behavior
       - Flag any edge cases discovered
-
 4. **Re-run tests after each fix**:
-   - Run tests incrementally to verify fixes
-   - Ensure no regressions are introduced
-
+    - Run tests incrementally to verify fixes
+    - Ensure no regressions are introduced
 5. **Final verification**:
-   - Run all tests for the module
-   - Confirm all tests pass
-
+    - Run all tests for the module
+    - Confirm all tests pass
 6. **Reformatting**:
-   - If you've modified any files, run black to reformat them
+    - If you've modified any files, run black to reformat them
 
 ## Analysis Guidelines
 
 When analyzing test failures:
 
 ### Signs the TEST is wrong:
+
 - Test logic doesn't align with method docstring
 - Test makes incorrect assumptions about input validation
 - Test has obvious typos or copy-paste errors
 
 ### Signs the SOURCE has a bug:
+
 - Source code logic clearly produces different result than documented
 - Mathematical calculations are incorrect
 - Boundary conditions aren't handled as specified
@@ -116,6 +108,7 @@ When analyzing test failures:
 - Inconsistent behavior with similar methods in codebase
 
 ### When to STOP and alert:
+
 - Source behavior differs from documentation
 - Test comment says "should do X" but source does Y
 - Mathematical/logical error in source is apparent

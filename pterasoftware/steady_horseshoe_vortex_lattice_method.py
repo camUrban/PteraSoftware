@@ -58,6 +58,33 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
     Date of retrieval: 04/28/2020
     """
 
+    __slots__ = (
+        "_steady_problem",
+        "airplanes",
+        "operating_point",
+        "reynolds_numbers",
+        "num_airplanes",
+        "num_panels",
+        "_gridWingWingInfluences__E",
+        "vInf_GP1__E",
+        "stackFreestreamWingInfluences__E",
+        "_vortex_strengths",
+        "stackUnitNormals_GP1",
+        "_panel_areas",
+        "_stackCpp_GP1_CgP1",
+        "_stackBrhvp_GP1_CgP1",
+        "_stackFrhvp_GP1_CgP1",
+        "_stackFlhvp_GP1_CgP1",
+        "_stackBlhvp_GP1_CgP1",
+        "panels",
+        "_stackBoundVortexCenters_GP1_CgP1",
+        "_stackBoundVortexVectors_GP1",
+        "_stackRc0s",
+        "stackSeedPoints_GP1_CgP1",
+        "gridStreamlinePoints_GP1_CgP1",
+        "ran",
+    )
+
     def __init__(self, steady_problem: problems.SteadyProblem) -> None:
         """The initialization method.
 

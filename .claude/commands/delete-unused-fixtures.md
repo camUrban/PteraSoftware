@@ -13,7 +13,6 @@ Fixtures may be used by tests in ANY module, not just the corresponding test fil
 ## Progress Tracking
 
 Follow these steps carefully and track your progress:
-
 - [ ] Read the fixture file for the module specified in `$ARGUMENTS`
 - [ ] Extract all fixture function names (functions that don't start with `_`)
 - [ ] For each fixture, search the entire `tests/` directory for usage
@@ -33,11 +32,9 @@ These steps are both handled by other slash commands.
 ## Detailed Steps
 
 1. **Read the fixture file** for the module specified in `$ARGUMENTS`:
-   - Note all public function names (fixture functions)
-   - Ignore private functions (those starting with `_`)
-
+    - Note all public function names (fixture functions)
+    - Ignore private functions (those starting with `_`)
 2. **For each fixture function**, search for usage:
-
    Use the Grep tool to search the entire `tests/` directory:
    ```
    pattern: fixture_function_name
@@ -46,13 +43,11 @@ These steps are both handled by other slash commands.
    ```
 
    A fixture is USED if it appears in any file OTHER than:
-   - Its own fixture file (the definition)
-   - `__init__.py` files (just imports)
-
+    - Its own fixture file (the definition)
+    - `__init__.py` files (just imports)
 3. **Classify each fixture**:
-   - **Used**: Found in at least one test file
-   - **Unused**: Only found in its definition and/or `__init__.py` imports
-
+    - **Used**: Found in at least one test file
+    - **Unused**: Only found in its definition and/or `__init__.py` imports
 4. **Generate an unused fixtures report**:
    ```
    UNUSED FIXTURES REPORT for [fixture_file]
@@ -68,15 +63,13 @@ These steps are both handled by other slash commands.
    - Used: [N]
    - Unused: [N]
    ```
-
 5. **Delete unused fixtures**:
-   - Remove the function definitions from the fixture file
-   - Remove any imports that were only used by deleted fixtures
-   - Keep the file structure clean (no orphaned blank lines)
-
+    - Remove the function definitions from the fixture file
+    - Remove any imports that were only used by deleted fixtures
+    - Keep the file structure clean (no orphaned blank lines)
 6. **Update `tests/unit/fixtures/__init__.py`**:
-   - Remove imports for deleted fixtures
-   - Update the module docstring if needed
+    - Remove imports for deleted fixtures
+    - Update the module docstring if needed
 
 ## Efficiency Tips
 

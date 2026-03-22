@@ -393,8 +393,8 @@ class TestGenerateRotT(unittest.TestCase):
                 _transformations.generate_rot_T(angles, True, True, bad)
 
 
-class TestGenerate2DRotT(unittest.TestCase):
-    """This class contains methods for testing the generate_2D_rot_T function."""
+class TestGenerate2DRotR(unittest.TestCase):
+    """This class contains methods for testing the generate_2D_rot_R function."""
 
     def test_identity_transformations(self):
         """Tests that zero angles produce identity matrices for all configurations.
@@ -403,7 +403,7 @@ class TestGenerate2DRotT(unittest.TestCase):
         """
         for passive in [True, False]:
             with self.subTest(passive=passive):
-                R = _transformations.generate_2D_rot_T(0.0, passive)
+                R = _transformations.generate_2D_rot_R(0.0, passive)
                 npt.assert_allclose(R, np.eye(2), atol=1e-14)
 
     def test_rotation_matrix_properties(self):
@@ -418,7 +418,7 @@ class TestGenerate2DRotT(unittest.TestCase):
         for angle in test_angles:
             for passive in [True, False]:
                 with self.subTest(angle=angle, passive=passive):
-                    R = _transformations.generate_2D_rot_T(angle, passive)
+                    R = _transformations.generate_2D_rot_R(angle, passive)
 
                     # Test output shape
                     self.assertEqual(R.shape, (2, 2))
@@ -444,8 +444,8 @@ class TestGenerate2DRotT(unittest.TestCase):
 
         for angle in angles:
             with self.subTest(angle=angle):
-                R_passive = _transformations.generate_2D_rot_T(angle, True)
-                R_active = _transformations.generate_2D_rot_T(angle, False)
+                R_passive = _transformations.generate_2D_rot_R(angle, True)
+                R_active = _transformations.generate_2D_rot_R(angle, False)
 
                 npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
@@ -456,17 +456,17 @@ class TestGenerate2DRotT(unittest.TestCase):
         """
         # 90 degrees active
         R_act_90_expected = np.array([[0.0, -1.0], [1.0, 0.0]])
-        R_act_90 = _transformations.generate_2D_rot_T(90.0, False)
+        R_act_90 = _transformations.generate_2D_rot_R(90.0, False)
         npt.assert_allclose(R_act_90, R_act_90_expected, atol=1e-14)
 
         # 90 degrees passive
         R_pas_90_expected = np.array([[0.0, 1.0], [-1.0, 0.0]])
-        R_pas_90 = _transformations.generate_2D_rot_T(90.0, True)
+        R_pas_90 = _transformations.generate_2D_rot_R(90.0, True)
         npt.assert_allclose(R_pas_90, R_pas_90_expected, atol=1e-14)
 
         # 180 degrees active
         R_act_180_expected = np.array([[-1.0, 0.0], [0.0, -1.0]])
-        R_act_180 = _transformations.generate_2D_rot_T(180.0, False)
+        R_act_180 = _transformations.generate_2D_rot_R(180.0, False)
         npt.assert_allclose(R_act_180, R_act_180_expected, atol=1e-14)
 
     def test_large_angle_handling(self):
@@ -475,13 +475,13 @@ class TestGenerate2DRotT(unittest.TestCase):
         :return: None
         """
         # 450 degrees is equivalent to 90 degrees
-        R_large = _transformations.generate_2D_rot_T(450.0, False)
-        R_equivalent = _transformations.generate_2D_rot_T(90.0, False)
+        R_large = _transformations.generate_2D_rot_R(450.0, False)
+        R_equivalent = _transformations.generate_2D_rot_R(90.0, False)
 
         npt.assert_allclose(R_large, R_equivalent, atol=1e-14)
 
         # -270 degrees is equivalent to 90 degrees
-        R_neg = _transformations.generate_2D_rot_T(-270.0, False)
+        R_neg = _transformations.generate_2D_rot_R(-270.0, False)
         npt.assert_allclose(R_neg, R_equivalent, atol=1e-14)
 
 

@@ -148,7 +148,7 @@ def generate_rot_T(
     return T
 
 
-def generate_2D_rot_T(
+def generate_2D_rot_R(
     angle: float | int,
     passive: bool | np.bool_,
 ) -> np.ndarray:
@@ -160,7 +160,7 @@ def generate_2D_rot_T(
     the same vector, but expressed in "B" axes. The orientation of "B" axes relative to
     "A" axes is defined by the angle ``angle``. Then:
 
-    | ``R_pas_A_to_B=generate_2D_rot_T(angle,True)``
+    | ``R_pas_A_to_B=generate_2D_rot_R(angle,True)``
 
     | ``r_B=R_pas_A_to_B@r_A``
 
@@ -169,7 +169,7 @@ def generate_2D_rot_T(
     Let ``r_A`` be a 2D free vector in "A" axes, but we want to find ``rPrime_A``, which
     is ``r_A`` rotated by ``angle``. Then:
 
-    | ``rot_R_act=generate_2D_rot_T(angle,False)``
+    | ``rot_R_act=generate_2D_rot_R(angle,False)``
 
     | ``rPrime_A=rot_R_act@r_A``
 

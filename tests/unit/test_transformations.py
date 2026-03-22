@@ -484,6 +484,69 @@ class TestGenerate2DRotR(unittest.TestCase):
         R_neg = _transformations.generate_2D_rot_R(-270.0, False)
         npt.assert_allclose(R_neg, R_equivalent, atol=1e-14)
 
+    def test_edge_case_angles(self):
+        """Tests edge case angle values.
+
+        :return: None
+        """
+        edge_case_angles = [
+            180.0,
+            -180.0,
+            360.0,
+            -360.0,
+        ]
+
+        for angle in edge_case_angles:
+            with self.subTest(angle=angle):
+                for passive in [True, False]:
+                    R = _transformations.generate_2D_rot_R(angle, passive)
+
+                    # Should be a valid rotation matrix
+                    det = np.linalg.det(R)
+                    self.assertAlmostEqual(det, 1.0, places=14)
+
+                    identity_test = R.T @ R
+                    npt.assert_allclose(identity_test, np.eye(2), atol=1e-14)
+
+        # 360 and -360 should both produce identity
+        R_360 = _transformations.generate_2D_rot_R(360.0, False)
+        npt.assert_allclose(R_360, np.eye(2), atol=1e-14)
+
+        R_neg_360 = _transformations.generate_2D_rot_R(-360.0, False)
+        npt.assert_allclose(R_neg_360, np.eye(2), atol=1e-14)
+
+        # 180 and -180 should produce the same matrix
+        R_180 = _transformations.generate_2D_rot_R(180.0, False)
+        R_neg_180 = _transformations.generate_2D_rot_R(-180.0, False)
+        npt.assert_allclose(R_180, R_neg_180, atol=1e-14)
+
+    def test_invalid_angle_type_rejected(self):
+        """Tests that passing in invalid angle types raises a type error.
+
+        :return: None
+        """
+        for bad_angle in ["90", [90.0], None]:
+            with self.assertRaises(TypeError):
+                _transformations.generate_2D_rot_R(bad_angle, False)
+
+    def test_invalid_angle_value_rejected(self):
+        """Tests that passing in non finite angle values raises a value error.
+
+        :return: None
+        """
+        for bad_angle in [np.nan, np.inf, -np.inf]:
+            with self.assertRaises(ValueError):
+                _transformations.generate_2D_rot_R(bad_angle, False)
+
+    def test_invalid_passive_type_rejected(self):
+        """Tests that passing in invalid passive types raises a type error.
+
+        :return: None
+        """
+        for bad_passive in ["True", 1, 0, None]:
+            with self.assertRaises(TypeError):
+                _transformations.generate_2D_rot_R(45.0, bad_passive)
+
 
 class TestGenerateTransT(unittest.TestCase):
     """This class contains methods for testing the generate_trans_T function."""

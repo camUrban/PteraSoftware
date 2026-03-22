@@ -166,17 +166,17 @@ def generate_2D_rot_T(
 
     **Active Use-Case:**
 
-    Let ``r_A`` be a 2D free vector in "A" axes, but we want to find ``rPrime_A``,
-    which is ``r_A`` rotated by ``angle``. Then:
+    Let ``r_A`` be a 2D free vector in "A" axes, but we want to find ``rPrime_A``, which
+    is ``r_A`` rotated by ``angle``. Then:
 
     | ``rot_R_act=generate_2D_rot_T(angle,False)``
 
     | ``rPrime_A=rot_R_act@r_A``
 
-    :param angle: A number representing the rotation angle, with signs defined using
-        the right-hand rule. For ``passive=True``, it describes the orientation of "B"
-        axes with respect to "A" axes. For ``passive=False``, it prescribes the angle
-        by which to rotate a vector in "A" axes. Can be an int or a float and will be
+    :param angle: A number representing the rotation angle, with signs defined using the
+        right-hand rule. For ``passive=True``, it describes the orientation of "B" axes
+        with respect to "A" axes. For ``passive=False``, it prescribes the angle by
+        which to rotate a vector in "A" axes. Can be an int or a float and will be
         converted internally to a float. The units are in degrees.
     :param passive: Set this to True to return a matrix that changes coordinates from
         "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that

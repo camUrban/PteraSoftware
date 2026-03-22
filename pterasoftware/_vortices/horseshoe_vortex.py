@@ -33,6 +33,19 @@ class HorseshoeVortex:
     strength to the three LineVortex legs (if they've be created and cached).
     """
 
+    __slots__ = (
+        "_Frhvp_GP1_CgP1",
+        "_Flhvp_GP1_CgP1",
+        "_leftLegVector_GP1",
+        "_left_right_leg_lengths",
+        "_Brhvp_GP1_CgP1",
+        "_Blhvp_GP1_CgP1",
+        "_right_leg",
+        "_finite_leg",
+        "_left_leg",
+        "_strength",
+    )
+
     def __init__(
         self,
         Frhvp_GP1_CgP1: np.ndarray,

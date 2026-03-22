@@ -148,6 +148,60 @@ def generate_rot_T(
     return T
 
 
+def generate_2D_rot_R(
+    angle: float | int,
+    passive: bool | np.bool_,
+) -> np.ndarray:
+    """Generates a 2D rotational matrix.
+
+    **Passive Use-Case:**
+
+    Let ``r_A`` be a 2D free vector in "A" axes, but we want to find ``r_B``, which is
+    the same vector, but expressed in "B" axes. The orientation of "B" axes relative to
+    "A" axes is defined by the angle ``angle``. Then:
+
+    | ``R_pas_A_to_B=generate_2D_rot_R(angle,True)``
+
+    | ``r_B=R_pas_A_to_B@r_A``
+
+    **Active Use-Case:**
+
+    Let ``r_A`` be a 2D free vector in "A" axes, but we want to find ``rPrime_A``, which
+    is ``r_A`` rotated by ``angle``. Then:
+
+    | ``rot_R_act=generate_2D_rot_R(angle,False)``
+
+    | ``rPrime_A=rot_R_act@r_A``
+
+    :param angle: A number representing the rotation angle, with signs defined using the
+        right-hand rule. For ``passive=True``, it describes the orientation of "B" axes
+        with respect to "A" axes. For ``passive=False``, it prescribes the angle by
+        which to rotate a vector in "A" axes. Can be an int or a float and will be
+        converted internally to a float. The units are in degrees.
+    :param passive: Set this to True to return a matrix that changes coordinates from
+        "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that
+        rotates vectors in "A" axes (``rPrime_A=R@r_A``). Can be a bool or a numpy bool
+        and will be converted internally to a bool.
+    :return: The rotation matrix as a (2,2) ndarray of floats.
+    """
+    angle = _parameter_validation.number_in_range_return_float(angle, "angle")
+    passive = _parameter_validation.boolLike_return_bool(passive, "passive")
+    angle_rad = np.radians(angle)
+
+    R_act = np.array(
+        [
+            [np.cos(angle_rad), -np.sin(angle_rad)],
+            [np.sin(angle_rad), np.cos(angle_rad)],
+        ],
+        dtype=float,
+    )
+
+    if passive:
+        return R_act.T
+
+    return R_act
+
+
 def generate_trans_T(
     translations: np.ndarray | Sequence[float | int],
     passive: bool | np.bool_,

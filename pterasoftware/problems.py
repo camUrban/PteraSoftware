@@ -30,6 +30,12 @@ class SteadyProblem:
     SteadyProblem.
     """
 
+    __slots__ = (
+        "_airplanes",
+        "_operating_point",
+        "_reynolds_numbers",
+    )
+
     def __init__(
         self,
         airplanes: list[geometry.airplane.Airplane],
@@ -139,6 +145,29 @@ class UnsteadyProblem:
 
     None
     """
+
+    __slots__ = (
+        "_movement",
+        "_only_final_results",
+        "_num_steps",
+        "_delta_time",
+        "_max_wake_rows",
+        "_first_averaging_step",
+        "_first_results_step",
+        "finalForces_W",
+        "finalForceCoefficients_W",
+        "finalMoments_W_CgP1",
+        "finalMomentCoefficients_W_CgP1",
+        "finalMeanForces_W",
+        "finalMeanForceCoefficients_W",
+        "finalMeanMoments_W_CgP1",
+        "finalMeanMomentCoefficients_W_CgP1",
+        "finalRmsForces_W",
+        "finalRmsForceCoefficients_W",
+        "finalRmsMoments_W_CgP1",
+        "finalRmsMomentCoefficients_W_CgP1",
+        "_steady_problems",
+    )
 
     def __init__(
         self,

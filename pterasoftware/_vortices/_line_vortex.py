@@ -24,6 +24,14 @@ class LineVortex:
     cached.
     """
 
+    __slots__ = (
+        "_Slvp_GP1_CgP1",
+        "_Elvp_GP1_CgP1",
+        "_vector_GP1",
+        "_Clvp_GP1_CgP1",
+        "strength",
+    )
+
     def __init__(
         self, Slvp_GP1_CgP1: np.ndarray, Elvp_GP1_CgP1: np.ndarray, strength: float
     ) -> None:

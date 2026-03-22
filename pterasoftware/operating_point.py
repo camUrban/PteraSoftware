@@ -50,6 +50,35 @@ class OperatingPoint:
     Date of retrieval: 04/29/2020
     """
 
+    __slots__ = (
+        "_rho",
+        "_vCg__E",
+        "_alpha",
+        "_beta",
+        "_angles_E_to_BP1_izyx",
+        "_CgP1_E_Eo",
+        "_surfaceNormal_E",
+        "_surfacePoint_E_Eo",
+        "_externalFX_W",
+        "_nu",
+        "_qInf__E",
+        "_T_pas_GP1_CgP1_to_BP1_CgP1",
+        "_T_pas_BP1_CgP1_to_GP1_CgP1",
+        "_T_pas_BP1_CgP1_to_W_CgP1",
+        "_T_pas_W_CgP1_to_BP1_CgP1",
+        "_T_pas_GP1_CgP1_to_W_CgP1",
+        "_T_pas_W_CgP1_to_GP1_CgP1",
+        "_T_pas_E_CgP1_to_BP1_CgP1",
+        "_T_pas_BP1_CgP1_to_E_CgP1",
+        "_T_pas_E_CgP1_to_GP1_CgP1",
+        "_T_pas_GP1_CgP1_to_E_CgP1",
+        "_surfaceNormal_GP1",
+        "_surfacePoint_GP1_CgP1",
+        "_surfaceReflect_T_act_GP1_CgP1",
+        "_vInfHat_GP1__E",
+        "_vInf_GP1__E",
+    )
+
     def __init__(
         self,
         rho: float | int = 1.225,

@@ -5,6 +5,7 @@ This package contains the following subpackages:
     unit: This package contains the unit tests.
 
 This package contains the following directories:
+    benchmarks: This directory contains benchmark scripts and results.
     references: This directory contains reference files for tests.
 
 This package contains the following modules:

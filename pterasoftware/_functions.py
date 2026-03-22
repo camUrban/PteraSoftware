@@ -147,7 +147,6 @@ def numba_centroid_of_quadrilateral(
     return np.array([x_average, y_average, z_average])
 
 
-# TEST: Consider adding unit tests for this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -220,7 +219,6 @@ def calculate_streamlines(
     )
 
 
-# TEST: Consider adding unit tests for this function.
 def process_solver_loads(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -362,7 +360,6 @@ def process_solver_loads(
         )
 
 
-# TEST: Consider adding unit tests for this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
@@ -472,7 +469,6 @@ def update_ring_vortex_solvers_panel_attributes(
         )
 
 
-# TEST: Consider adding unit tests for this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver

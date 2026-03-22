@@ -39,6 +39,17 @@ class AirplaneMovement:
     list.
     """
 
+    __slots__ = (
+        "_base_airplane",
+        "_wing_movements",
+        "_ampCg_GP1_CgP1",
+        "_periodCg_GP1_CgP1",
+        "_spacingCg_GP1_CgP1",
+        "_phaseCg_GP1_CgP1",
+        "_all_periods",
+        "_max_period",
+    )
+
     def __init__(
         self,
         base_airplane: geometry.airplane.Airplane,

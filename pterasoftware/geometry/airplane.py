@@ -90,6 +90,22 @@ class Airplane:
     Date of retrieval: 04/23/2020
     """
 
+    __slots__ = (
+        "_wings",
+        "_name",
+        "_Cg_GP1_CgP1",
+        "_weight",
+        "_s_ref",
+        "_c_ref",
+        "_b_ref",
+        "_num_panels",
+        "_T_pas_G_Cg_to_GP1_CgP1",
+        "forces_W",
+        "forceCoefficients_W",
+        "moments_W_CgP1",
+        "momentCoefficients_W_CgP1",
+    )
+
     def __init__(
         self,
         wings: list[wing_mod.Wing],

@@ -1,6 +1,6 @@
 # Classes and Immutability
 
-This document describe the consistent pattern of immutability and lazy caching across the following core classes in the Ptera Software codebase:
+This document describes the consistent pattern of immutability and lazy caching across the following core data and geometry classes in the Ptera Software codebase:
 
 - `UnsteadyProblem`
 - `Movement`
@@ -41,11 +41,13 @@ Most attribute falls into one of these categories:
 
 3. **Use manual lazy caching for all derived properties**: This approach:
     - Works consistently for properties derived from both immutable and set once attributes
-    - Enables future `__slots__` adoption (no dependency on `__dict__`)
+    - Is compatible with `__slots__` (no dependency on `__dict__`)
     - Simplifies `__deepcopy__` (cache variables can be copied directly)
     - Maintains the existing pattern already used throughout the codebase
 
 4. **Solver mutable attributes remain mutable**: Properties that the solver needs to set keep their setters.
+
+5. **`__slots__` on every class**: All classes in the package define `__slots__`, which eliminates per-instance `__dict__` overhead and prevents accidental dynamic attribute assignment. This catches typos like `self.num_panles = 5` at runtime with an `AttributeError` instead of silently creating a new attribute.
 
 ### Numpy Array Mutability
 
@@ -616,3 +618,9 @@ Since `LineVortex` is an internal class whose endpoints ARE updated by parent vo
 | Attribute  | Type    | Notes                    |
 |------------|---------|--------------------------|
 | `strength` | `float` | Updated by parent vortex |
+
+---
+
+## Solver Classes (Not Covered Above)
+
+The three solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingVortexLatticeMethodSolver`, and `UnsteadyRingVortexLatticeMethodSolver`) are intentionally omitted from the immutability and lazy caching patterns described in this document. Unlike the data and geometry classes above, the solver classes are algorithmic classes whose attributes are internal mutable working state in a procedural computation pipeline. They are not shared data that external code accesses or modifies, so immutable properties, set once enforcement, and lazy caching would add significant boilerplate with no meaningful safety benefit. The solver classes do still use `__slots__`, like all other classes in the package, to protect against dynamic attribute assignment typos.

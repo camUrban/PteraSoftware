@@ -31,6 +31,15 @@ class OperatingPointMovement:
     them in a list.
     """
 
+    __slots__ = (
+        "_base_operating_point",
+        "_ampVCg__E",
+        "_periodVCg__E",
+        "_spacingVCg__E",
+        "_phaseVCg__E",
+        "_max_period",
+    )
+
     def __init__(
         self,
         base_operating_point: operating_point_mod.OperatingPoint,

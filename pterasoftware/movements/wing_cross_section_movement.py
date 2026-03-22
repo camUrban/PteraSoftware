@@ -35,6 +35,20 @@ class WingCrossSectionMovement:
     returns them in a list.
     """
 
+    __slots__ = (
+        "_base_wing_cross_section",
+        "_ampLp_Wcsp_Lpp",
+        "_periodLp_Wcsp_Lpp",
+        "_spacingLp_Wcsp_Lpp",
+        "_phaseLp_Wcsp_Lpp",
+        "_ampAngles_Wcsp_to_Wcs_ixyz",
+        "_periodAngles_Wcsp_to_Wcs_ixyz",
+        "_spacingAngles_Wcsp_to_Wcs_ixyz",
+        "_phaseAngles_Wcsp_to_Wcs_ixyz",
+        "_all_periods",
+        "_max_period",
+    )
+
     def __init__(
         self,
         base_wing_cross_section: geometry.wing_cross_section.WingCrossSection,

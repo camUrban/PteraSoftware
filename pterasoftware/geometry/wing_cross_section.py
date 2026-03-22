@@ -98,6 +98,22 @@ class WingCrossSection:
     Date of retrieval: 04/26/2020
     """
 
+    __slots__ = (
+        "_airfoil",
+        "_num_spanwise_panels",
+        "_chord",
+        "_Lp_Wcsp_Lpp",
+        "_angles_Wcsp_to_Wcs_ixyz",
+        "control_surface_symmetry_type",
+        "_control_surface_hinge_point",
+        "_control_surface_deflection",
+        "_spanwise_spacing",
+        "_validated",
+        "_symmetry_type",
+        "_T_pas_Wcsp_Lpp_to_Wcs_Lp",
+        "_T_pas_Wcs_Lp_to_Wcsp_Lpp",
+    )
+
     def __init__(
         self,
         airfoil: airfoil_mod.Airfoil,

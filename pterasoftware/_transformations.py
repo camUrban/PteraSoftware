@@ -176,8 +176,8 @@ def generate_2D_rot_R(
         and will be converted internally to a bool.
     :return: The rotation matrix as a (2,2) ndarray of floats.
     """
-    angle = _parameter_validation.number_in_range_return_float(angle, "angle")
-    passive = _parameter_validation.boolLike_return_bool(passive, "passive")
+    angle = float(angle)
+    passive = bool(passive)
     angle_rad = np.radians(angle)
 
     R_act = np.array(

@@ -382,16 +382,6 @@ class TestGenerateRotT(unittest.TestCase):
         expected_transformed_dir = np.array([0.0, 1.0, 0.0])
         npt.assert_allclose(transformed_dir, expected_transformed_dir, atol=1e-14)
 
-    def test_invalid_rotation_order_rejected(self):
-        """Tests that passing in invalid angle orders raises a value error.
-
-        :return: None
-        """
-        angles = np.array([10.0, 20.0, 30.0])
-        for bad in ["xyx", "xxx", "zz", "wxy", "x_y", ""]:
-            with self.assertRaises(ValueError):
-                _transformations.generate_rot_T(angles, True, True, bad)
-
 
 class TestGenerate2DRotR(unittest.TestCase):
     """This class contains methods for testing the generate_2D_rot_R function."""
@@ -519,33 +509,6 @@ class TestGenerate2DRotR(unittest.TestCase):
         R_180 = _transformations.generate_2D_rot_R(180.0, False)
         R_neg_180 = _transformations.generate_2D_rot_R(-180.0, False)
         npt.assert_allclose(R_180, R_neg_180, atol=1e-14)
-
-    def test_invalid_angle_type_rejected(self):
-        """Tests that passing in invalid angle types raises a type error.
-
-        :return: None
-        """
-        for bad_angle in ["90", [90.0], None]:
-            with self.assertRaises(TypeError):
-                _transformations.generate_2D_rot_R(bad_angle, False)
-
-    def test_invalid_angle_value_rejected(self):
-        """Tests that passing in non finite angle values raises a value error.
-
-        :return: None
-        """
-        for bad_angle in [np.nan, np.inf, -np.inf]:
-            with self.assertRaises(ValueError):
-                _transformations.generate_2D_rot_R(bad_angle, False)
-
-    def test_invalid_passive_type_rejected(self):
-        """Tests that passing in invalid passive types raises a type error.
-
-        :return: None
-        """
-        for bad_passive in ["True", 1, 0, None]:
-            with self.assertRaises(TypeError):
-                _transformations.generate_2D_rot_R(45.0, bad_passive)
 
 
 class TestGenerateTransT(unittest.TestCase):
@@ -996,16 +959,16 @@ class TestComposeTPas(unittest.TestCase):
 
         # Given:
         # The position of point c (in A axes, relative to point a)
-        c_A_a = [0.5, -1.0, 2.0]
+        c_A_a = np.array([0.5, -1.0, 2.0])
 
         # Given:
         # The position of point b (in A axes, relative to point a)
-        b_A_a = [1.0, 2.0, 0.5]
+        b_A_a = np.array([1.0, 2.0, 0.5])
 
         # Given:
         # The orientation of B axes relative to A axes using an intrinsic zy'x"
         # rotation
-        angles_A_to_B_izyx = [0.0, 0.0, 90.0]
+        angles_A_to_B_izyx = np.array([0.0, 0.0, 90.0])
 
         T_rot_pas_A_to_B = _transformations.generate_rot_T(
             angles_A_to_B_izyx, passive=True, intrinsic=True, order="zyx"
@@ -1167,10 +1130,10 @@ class TestComposeTAct(unittest.TestCase):
 
         :return: None
         """
-        c_G = [1.0, 2.0, 3.0]
+        c_G = np.array([1.0, 2.0, 3.0])
 
-        angles_act_izyx = [0.0, 0.0, 90.0]
-        t_G = [10.0, 0.0, 0.0]
+        angles_act_izyx = np.array([0.0, 0.0, 90.0])
+        t_G = np.array([10.0, 0.0, 0.0])
 
         rot_T_act = _transformations.generate_rot_T(
             angles_act_izyx, passive=False, intrinsic=True, order="zyx"
@@ -1506,33 +1469,6 @@ class TestApplyTToVectors(unittest.TestCase):
         expected = np.array([0.0, 1.0, 0.0])
         npt.assert_allclose(transformed_direction, expected, atol=1e-14)
 
-    def test_input_validation(self):
-        """Tests various input types and edge cases.
-
-        :return: None
-        """
-        T = _transformations.generate_rot_T(
-            np.array([30.0, 0.0, 0.0]), False, True, "xyz"
-        )
-
-        # Test with tuple input
-        vector_tuple = (1.0, 2.0, 3.0)
-        result_tuple = _transformations.apply_T_to_vectors(T, vector_tuple, True)
-        self.assertIsInstance(result_tuple, np.ndarray)
-        self.assertEqual(len(result_tuple), 3)
-
-        # Test with list input
-        vector_list = [1.0, 2.0, 3.0]
-        result_list = _transformations.apply_T_to_vectors(T, vector_list, True)
-        self.assertIsInstance(result_list, np.ndarray)
-        self.assertEqual(len(result_list), 3)
-
-        # Test with numpy array input
-        vector_array = np.array([1.0, 2.0, 3.0])
-        result_array = _transformations.apply_T_to_vectors(T, vector_array, True)
-        self.assertIsInstance(result_array, np.ndarray)
-        self.assertEqual(len(result_array), 3)
-
     def test_transformation_consistency(self):
         """Tests consistency with manual homogeneous coordinate operations.
 
@@ -1607,11 +1543,6 @@ class TestApplyTToVectors(unittest.TestCase):
         :return: None
         """
         T = _transformations.generate_trans_T(np.array([1.0, 2.0, 3.0]), False)
-
-        # Test with integer vector
-        int_vector = np.array([1, 2, 3])
-        result_int = _transformations.apply_T_to_vectors(T, int_vector, True)
-        self.assertEqual(result_int.dtype, np.float64)
 
         # Test with float vector
         float_vector = np.array([1.5, 2.5, 3.5])

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import numpy as np
 
 
@@ -26,8 +24,6 @@ def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
     :return: A (...,4) ndarray of floats (with same leading dimensions as the input)
         representing the vector(s) in homogeneous coordinates.
     """
-    vectors_A = np.asarray(vectors_A, dtype=float)
-
     # Create a homogeneous ndarray with one extra dimension.
     vectorsHomog_A = np.zeros(vectors_A.shape[:-1] + (4,), dtype=float)
 
@@ -42,9 +38,9 @@ def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
 
 
 def generate_rot_T(
-    angles: np.ndarray | Sequence[float | int],
-    passive: bool | np.bool_,
-    intrinsic: bool | np.bool_,
+    angles: np.ndarray,
+    passive: bool,
+    intrinsic: bool,
     order: str,
 ) -> np.ndarray:
     """Generates a rotational transformation matrix.
@@ -71,38 +67,27 @@ def generate_rot_T(
 
     | ``rPrime_A=apply_T_to_vectors(rot_T_act,r_A,has_point=False)``
 
-    :param angles: An array-like object of 3 numbers representing the rotation angles,
-        with signs defined using the right-hand rule. For `passive=True`, it describes
-        the orientation of "B" axes with respect to "A" axes. For `passive=False`, it
+    :param angles: A (3,) ndarray of floats representing the rotation angles, with signs
+        defined using the right-hand rule. For `passive=True`, it describes the
+        orientation of "B" axes with respect to "A" axes. For `passive=False`, it
         prescribes the angles by which to rotate a vector in "A" axes. In both cases,
         the rotations' type is specified by the intrinsic parameter. Angles are always
         listed as [about x axis, about y axis, about z axis], but are applied in the
         sequence given by `order` (e.g., order="zxy" applies angles[2], angles[0],
-        angles[1]). Can be a tuple, list, or ndarray. Values are converted to floats
-        internally. The units are in degrees.
+        angles[1]). The units are in degrees.
     :param passive: Set this to True to return a matrix that changes coordinates from
         "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that
-        rotates vectors in "A" axes (``rPrime_A=R@r_A``). Can be a bool or a numpy bool
-        and will be converted internally to a bool.
+        rotates vectors in "A" axes (``rPrime_A=R@r_A``).
     :param intrinsic: Set this to True to return a transformation matrix where each
         subsequent rotation is applied to the current, newly-rotated axes. Set this to
         False to return a transformation matrix where rotations are performed about the
-        original, non rotated "A" axes. Can be a bool or a numpy bool and will be
-        converted internally to a bool.
+        original, non rotated "A" axes.
     :param order: A str of three chars that represents the rotation order. Each char can
         be 'x', 'y', or 'z'. Only Tait-Bryan angles are accepted so all accepted chars
         must be distinct.
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    if not isinstance(order, str):
-        raise TypeError("order must be a string")
-
-    if len(order) != 3 or len(set(order)) != 3 or any(c not in "xyz" for c in order):
-        raise ValueError("Invalid rotation order")
-    angles = np.asarray(angles, dtype=float)
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
-    passive = bool(passive)
-    intrinsic = bool(intrinsic)
 
     x_R_act = np.array(
         [
@@ -150,8 +135,8 @@ def generate_rot_T(
 
 
 def generate_2D_rot_R(
-    angle: float | int,
-    passive: bool | np.bool_,
+    angle: float,
+    passive: bool,
 ) -> np.ndarray:
     """Generates a 2D rotational matrix.
 
@@ -174,27 +159,15 @@ def generate_2D_rot_R(
 
     | ``rPrime_A=rot_R_act@r_A``
 
-    :param angle: A number representing the rotation angle, with signs defined using the
+    :param angle: A float representing the rotation angle, with signs defined using the
         right-hand rule. For ``passive=True``, it describes the orientation of "B" axes
         with respect to "A" axes. For ``passive=False``, it prescribes the angle by
-        which to rotate a vector in "A" axes. Can be an int or a float and will be
-        converted internally to a float. The units are in degrees.
+        which to rotate a vector in "A" axes. The units are in degrees.
     :param passive: Set this to True to return a matrix that changes coordinates from
         "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that
-        rotates vectors in "A" axes (``rPrime_A=R@r_A``). Can be a bool or a numpy bool
-        and will be converted internally to a bool.
+        rotates vectors in "A" axes (``rPrime_A=R@r_A``).
     :return: The rotation matrix as a (2,2) ndarray of floats.
     """
-    if not isinstance(angle, (int, float, np.number)):
-        raise TypeError("angle must be a number")
-
-    if not np.isfinite(angle):
-        raise ValueError("angle must be finite")
-
-    if not isinstance(passive, (bool, np.bool_)):
-        raise TypeError("passive must be boolean")
-    angle = float(angle)
-    passive = bool(passive)
     angle_rad = np.radians(angle)
 
     R_act = np.array(
@@ -212,8 +185,8 @@ def generate_2D_rot_R(
 
 
 def generate_trans_T(
-    translations: np.ndarray | Sequence[float | int],
-    passive: bool | np.bool_,
+    translations: np.ndarray,
+    passive: bool,
 ) -> np.ndarray:
     """Generates a translational transformation matrix.
 
@@ -238,31 +211,28 @@ def generate_trans_T(
 
     | ``cPrime_A_a=apply_T_to_vectors(translate_T_act,c_A_a,has_point=True)``
 
-    :param translations: An array-like object of 3 numbers representing the
-        translations. For ``passive=True``, this is the position of the "b" point (in
-        "A" axes, relative to the "a" point). For ``passive=False``, this is the
-        position (in "A" axes) of the offset point "cPrime" relative to the original "c"
-        point. Can be a tuple, list, or ndarray. Values are converted to floats
-        internally. The units are in meters.
+    :param translations: A (3,) ndarray of floats representing the translations. For
+        ``passive=True``, this is the position of the "b" point (in "A" axes, relative
+        to the "a" point). For ``passive=False``, this is the position (in "A" axes) of
+        the offset point "cPrime" relative to the original "c" point. The units are in
+        meters.
     :param passive: Set this to True to return a matrix that changes the reference point
         of a vector in homogeneous coordinates (``rHomog_A_b=T_trans@rHomog_A_a``). Set
         this to False to return a matrix that finds the new position vector of point
         after translating it from its original position
-        (``cPrimeHomog_A_a=T_trans@cHomog_A_a``). Can be a bool or a numpy bool and will
-        be converted internally to a bool.
+        (``cPrimeHomog_A_a=T_trans@cHomog_A_a``).
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    p = np.asarray(translations, dtype=float)
-    passive = bool(passive)
+    p = translations
     T_trans = np.eye(4, dtype=float)
     T_trans[:3, 3] = -p if passive else p
     return T_trans
 
 
 def generate_reflect_T(
-    plane_point_A_a: np.ndarray | Sequence[float | int],
-    plane_normal_A: np.ndarray | Sequence[float | int],
-    passive: bool | np.bool_,
+    plane_point_A_a: np.ndarray,
+    plane_normal_A: np.ndarray,
+    passive: bool,
 ) -> np.ndarray:
     """Generates a reflectional transformation matrix about a plane defined by a point
     (in "A" axes, relative to point "a") and a normal vector (in "A" axes).
@@ -297,31 +267,25 @@ def generate_reflect_T(
     is correct. However, it retains the `passive` flag for API consistency and as a
     reminder to consider what the final matrix represents.
 
-    :param plane_point_A_a: An array-like object of 3 numbers representing a point on
-        the reflection plane (in "A" axes, relative to the "a" point). Can be a tuple,
-        list, or ndarray. Values are converted to floats internally. The units are in
+    :param plane_point_A_a: A (3,) ndarray of floats representing a point on the
+        reflection plane (in "A" axes, relative to the "a" point). The units are in
         meters.
-    :param plane_normal_A: An array-like object of 3 numbers representing a vector (in
-        "A" axes) normal to the reflection plane. Can be a tuple, list, or ndarray. It
-        must have a non zero magnitude, and will be normalized to a unit vector. Values
-        are converted to floats internally.
+    :param plane_normal_A: A (3,) ndarray of floats representing a vector (in "A" axes)
+        normal to the reflection plane. It must have a non zero magnitude, and will be
+        normalized to a unit vector.
     :param passive: Set this to True to return a matrix that changes reference point and
         axes of a vector in homogeneous coordinates to a reference point and axes
         reflected about the specified plane (``cHomog_B_b=T_reflect@cHomog_A_a``). Set
         this to False to return a matrix that reflects a vector (in its original axes,
         relative to its original reference point) about a specified plane
-        (``cPrimeHomog_A_a=T_reflect@cHomog_A_a``). Can be a bool or a numpy bool and
-        will be converted internally to a bool.
+        (``cPrimeHomog_A_a=T_reflect@cHomog_A_a``).
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    p = np.asarray(plane_point_A_a, dtype=float)
-    n_hat = np.asarray(plane_normal_A, dtype=float)
-    norm = np.linalg.norm(n_hat)
+    p = plane_point_A_a
+    norm = np.linalg.norm(plane_normal_A)
     if norm == 0:
         raise ValueError("plane_normal_A must have a non zero length.")
-    n_hat = n_hat / norm
-
-    passive = bool(passive)
+    n_hat = plane_normal_A / norm
     T_reflect = np.eye(4, dtype=float)
 
     S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)
@@ -351,7 +315,7 @@ def _left_compose_T(valid_T_chain: list[np.ndarray]) -> np.ndarray:
 
 
 def compose_T_pas(
-    *T_pas_chain: np.ndarray | Sequence[Sequence[float | int]],
+    *T_pas_chain: np.ndarray,
 ) -> np.ndarray:
     """Compose a chain of passive homogeneous transformations.
 
@@ -359,23 +323,19 @@ def compose_T_pas(
 
     | ``T_pas_A_a_to_C_c=compose_T_pas(T_pas_A_a_to_B_b,T_pas_B_b_to_C_c)``
 
-    :param T_pas_chain: One or more (4,4) array-like objects of numbers representing the
-        passive homogeneous transforms along the path from the original axes and
-        reference point to the final axes and reference point. Each transform can be a
-        tuple, list, or ndarray. Values are converted to floats internally.
+    :param T_pas_chain: One or more (4,4) ndarrays of floats representing the passive
+        homogeneous transforms along the path from the original axes and reference point
+        to the final axes and reference point.
     :return: The composed transformation matrix as a (4,4) ndarray of floats.
     """
     if not T_pas_chain:
         raise ValueError("At least one transform must be provided.")
 
-    valid_T_pas_chain = []
-    for T_pas_id, T_pas in enumerate(T_pas_chain):
-        valid_T_pas_chain.append(np.asarray(T_pas, dtype=float))
-    return _left_compose_T(valid_T_pas_chain)
+    return _left_compose_T(list(T_pas_chain))
 
 
 def compose_T_act(
-    *T_act_chain: np.ndarray | Sequence[Sequence[float | int]],
+    *T_act_chain: np.ndarray,
 ) -> np.ndarray:
     """Compose a chain of active homogeneous transformations.
 
@@ -410,18 +370,14 @@ def compose_T_act(
 
     | ``T_act=compose_T_act(trans_T_act,rot_T_act)``
 
-    :param T_act_chain: One or more (4,4) array-like objects of numbers representing the
-        active homogeneous transforms applied in order. Each transform can be a tuple,
-        list, or ndarray. Values are converted to floats internally.
+    :param T_act_chain: One or more (4,4) ndarrays of floats representing the active
+        homogeneous transforms applied in order.
     :return: The composed transformation matrix as a (4,4) ndarray of floats.
     """
     if not T_act_chain:
         raise ValueError("At least one transform must be provided.")
 
-    valid_T_act_chain = []
-    for T_act_id, T_act in enumerate(T_act_chain):
-        valid_T_act_chain.append(np.asarray(T_act, dtype=float))
-    return _left_compose_T(valid_T_act_chain)
+    return _left_compose_T(list(T_act_chain))
 
 
 def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
@@ -456,7 +412,7 @@ def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
     return valid_T_inv
 
 
-def invert_T_pas(T_pas: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndarray:
+def invert_T_pas(T_pas: np.ndarray) -> np.ndarray:
     """Inverts a passive homogeneous transform.
 
     A passive transform maps components of the same physical quantity between an initial
@@ -474,19 +430,16 @@ def invert_T_pas(T_pas: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
     vectors, the translation component matters. For free vectors (``has_point=False``),
     translation has no effect because the homogeneous last coordinate is 0.0.
 
-    :param T_pas: A (4,4) array-like object of numbers representing a passive
-        homogeneous transform mapping from source axes and reference point to target
-        axes and reference point. Can be a tuple, list, or ndarray. Values are converted
-        to floats internally.
+    :param T_pas: A (4,4) ndarray of floats representing a passive homogeneous transform
+        mapping from source axes and reference point to target axes and reference point.
     :return: A (4,4) ndarray of floats representing the passive transform that maps back
         from the target axes and reference point to the original axes and reference
         point.
     """
-    T_pas = np.asarray(T_pas, dtype=float)
     return _invert_T_rigid(T_pas)
 
 
-def invert_T_act(T_act: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndarray:
+def invert_T_act(T_act: np.ndarray) -> np.ndarray:
     """Inverts an active homogeneous transform.
 
     An active transform re-orients and optionally translates a quantity within the same
@@ -502,18 +455,16 @@ def invert_T_act(T_act: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
     (``has_point=False``), only the orientation is undone; translation has no effect
     because the homogeneous last coordinate is 0.0.
 
-    :param T_act: A (4,4) array-like object of numbers representing an active
-        homogeneous transform that operated within the current axis system. Can be a
-        tuple, list, or ndarray. Values are converted to floats internally.
+    :param T_act: A (4,4) ndarray of floats representing an active homogeneous transform
+        that operated within the current axis system.
     :return: A (4,4) ndarray of floats representing the active transform that exactly
         undoes T_act.
     """
-    T_act = np.asarray(T_act, dtype=float)
     return _invert_T_rigid(T_act)
 
 
 def convert_T_pas_to_T_act(
-    T_pas: np.ndarray | Sequence[Sequence[float | int]],
+    T_pas: np.ndarray,
 ) -> np.ndarray:
     """Converts a passive transformation matrix to an active transformation matrix.
 
@@ -522,18 +473,16 @@ def convert_T_pas_to_T_act(
     describes how to change the physical quantity itself within the same axes. This
     function converts between these interpretations by inverting the matrix.
 
-    :param T_pas: A (4,4) array-like object of numbers representing a passive
-        transformation matrix. Can be a tuple, list, or ndarray. Values are converted to
-        floats internally.
+    :param T_pas: A (4,4) ndarray of floats representing a passive transformation
+        matrix.
     :return: A (4,4) ndarray of floats representing the converted active transformation
         matrix.
     """
-    T_pas = np.asarray(T_pas, dtype=float)
     return np.linalg.inv(T_pas)
 
 
 def convert_T_act_to_T_pas(
-    T_act: np.ndarray | Sequence[Sequence[float | int]],
+    T_act: np.ndarray,
 ) -> np.ndarray:
     """Converts an active transformation matrix to a passive transformation matrix.
 
@@ -542,20 +491,18 @@ def convert_T_act_to_T_pas(
     quantity in different axes or relative to a different reference point. This function
     converts between these interpretations by inverting the matrix.
 
-    :param T_act: A (4,4) array-like object of numbers representing an active
-        transformation matrix. Can be a tuple, list, or ndarray. Values are converted to
-        floats internally.
+    :param T_act: A (4,4) ndarray of floats representing an active transformation
+        matrix.
     :return: A (4,4) ndarray of floats representing the converted passive transformation
         matrix.
     """
-    T_act = np.asarray(T_act, dtype=float)
     return np.linalg.inv(T_act)
 
 
 def apply_T_to_vectors(
-    T: np.ndarray | Sequence[Sequence[float | int]],
-    vectors_A: np.ndarray | Sequence[float | int],
-    has_point: bool | np.bool_,
+    T: np.ndarray,
+    vectors_A: np.ndarray,
+    has_point: bool,
 ) -> np.ndarray:
     """Applies a homogeneous transform to 3-element vector(s) and returns 3-element
     vector(s).
@@ -567,22 +514,15 @@ def apply_T_to_vectors(
     This function handles both single vectors and arrays of vectors efficiently using
     einsum operations.
 
-    :param T: A (4,4) array-like object of numbers representing a homogeneous transform
-        (active or passive). Can be a tuple, list, or ndarray. Values are converted to
-        floats internally.
-    :param vectors_A: An array-like object of numbers with shape (...,3) representing
-        the vector(s) to transform. Can be a single (3,) vector or a (...,3) array of
-        vectors. Can be a tuple, list, or ndarray. Values are converted to floats
-        internally.
+    :param T: A (4,4) ndarray of floats representing a homogeneous transform (active or
+        passive).
+    :param vectors_A: A (...,3) ndarray of floats representing the vector(s) to
+        transform. Can be a single (3,) vector or a (...,3) array of vectors.
     :param has_point: Set this to True for vectors relative to a reference point, such
-        as position vectors, or False for free vectors. Can be a bool or a numpy bool
-        and will be converted internally to a bool.
+        as position vectors, or False for free vectors.
     :return: A ndarray of floats with same shape as ``vectors_A`` representing the
         transformed vector(s).
     """
-    T = np.asarray(T, dtype=float)
-    vectors_A = np.asarray(vectors_A, dtype=float)
-    has_point = bool(has_point)
     vectorsHomog_A = _generate_homogs(vectors_A, has_point)
     return np.asarray(
         np.einsum("ij,...j->...i", T, vectorsHomog_A)[..., :3], dtype=float

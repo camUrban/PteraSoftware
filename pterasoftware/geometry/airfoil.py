@@ -283,7 +283,10 @@ class Airfoil:
         # Make the active rotational homogeneous transformation matrix for the given
         # angle.
         rot_T = _transformations.generate_rot_T(
-            (0, 0, -deflection), passive=False, intrinsic=False, order="zyx"
+            np.array([0.0, 0.0, -deflection]),
+            passive=False,
+            intrinsic=False,
+            order="zyx",
         )
 
         flippedUpperOutlineBack_T_act = _transformations.generate_trans_T(

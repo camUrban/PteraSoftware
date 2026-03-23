@@ -245,7 +245,7 @@ def oscillating_customspaces(
     # Calculate the output or raise an exception if custom_functions throws.
     try:
         output = np.asarray(a * custom_function(b * times + h) + k)
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         raise ValueError(
             f"Calling your custom_function on the inputs resulted in the following "
             f"exception:\n{e}"
@@ -254,7 +254,7 @@ def oscillating_customspaces(
     output_shape = output.shape
     expected_shape = amps.shape + (num_steps,)
 
-    if output_shape != expected_shape:
+    if output_shape != expected_shape:  # pragma: no cover
         raise ValueError(
             f"Calling custom_function on your inputs resulted in an ndarray of shape "
             f"{output_shape}, but the expected shape is {expected_shape}."

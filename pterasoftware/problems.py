@@ -16,7 +16,11 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import scipy.signal as sp_sig
 
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+from .movements.single_step.single_step_movement import SingleStepMovement
 from . import _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
 
@@ -216,3 +220,397 @@ class UnsteadyProblem:
 
             # Append this SteadyProblem to the list of SteadyProblems.
             self.steady_problems.append(this_steady_problem)
+
+class CoupledUnsteadyProblem(UnsteadyProblem):
+    """This is a class for coupled unsteady problems.
+
+    This class contains the following public methods:
+        None
+
+    This class contains the following class attributes:
+        None
+    """
+
+    def __init__(self, single_step_movement, only_final_results=False):
+        """This is the initialization method.
+
+        :param single_step_movement: SingleStepMovement
+
+            This is the SingleStepMovement that contains this CoupledUnsteadyProblem's
+            SingleStepOperatingPointMovement and SingleStepAirplaneMovements.
+            OperatingPointMovement and AirplaneMovements.
+
+        :param only_final_results: boolLike, optional
+
+            If set to True, the Solver will only calculate forces, moments,
+            and pressures for the final complete cycle (of the Movement's
+            sub-Movement with the longest period), which increases simulation speed.
+            The default value is False.
+        """
+        if not isinstance(single_step_movement, movements.single_step.single_step_movement.SingleStepMovement):
+            raise TypeError("single_step_movement must be a SingleStepMovement.")
+        self.single_step_movement = single_step_movement
+        self.movement = single_step_movement.corresponding_movement
+        self.only_final_results = _parameter_validation.boolLike_return_bool(
+            only_final_results, "only_final_results"
+        )
+
+        super().__init__(movement=self.movement, only_final_results=self.only_final_results)
+
+        # this set of steady problems should essnetially be treated as private
+        # and the getter method should be used to obtain it
+        self.coupled_steady_problems = [
+            SteadyProblem(
+                [self.movement.airplane_movements[0].base_airplane],
+                self.movement.operating_point_movement.base_operating_point,
+            )
+        ]
+
+    def get_steady_problem(self, step):
+        """
+        Return the steady-state problem associated with the given step index.
+
+        Parameters
+        ----------
+        step : int
+            Index of the steady problem to retrieve.
+
+        Returns
+        -------
+        Any
+            The steady-state problem object stored at the specified index.
+
+        Raises
+        ------
+        Exception
+            If `step` is greater than or equal to the number of initialized
+            steady problems.
+        """
+        # Ensure the requested step index is valid.
+        if step >= len(self.coupled_steady_problems):
+            raise Exception(
+                f"Step index {step} is out of range of the number of initialized problems"
+            )
+
+        # Return the corresponding steady-state problem.
+        return self.coupled_steady_problems[step]
+
+    def initialize_next_problem(self, solver):
+        self.coupled_steady_problems.append(self.steady_problems[len(self.coupled_steady_problems)])
+
+class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
+
+    def __init__(
+        self,
+        single_step_movement: SingleStepMovement,
+        wing_density,
+        spring_constant,
+        damping_constant,
+        aero_scaling=1.0,
+        moment_scaling_factor=1.0,
+        damping_eps=1e-3,
+        plot_flap_cycle=False,
+        custom_spacing_second_derivative=None,
+        only_final_results=False,
+    ):
+        super().__init__(single_step_movement=single_step_movement, only_final_results=only_final_results)
+        self.plot_flap_cycle = plot_flap_cycle
+        self.prev_velocities = []
+        self.curr_airplanes = [self.movement.airplane_movements[0].base_airplane]
+        self.curr_operating_point = (
+            self.movement.operating_point_movement.base_operating_point
+        )
+        self.positions = []
+        self.net_deformation = None
+        self.angluar_velocities = None
+
+        # Tunable Parameters
+        self.wing_density = wing_density  # per unit height kg/m^2
+        self.moment_scaling_factor = moment_scaling_factor
+        self.spring_constant = spring_constant
+        self.damping_constant = damping_constant
+        self.aero_scaling = aero_scaling
+        self.numerical_integration = True # use numerical integration or closed form solution
+        self.damping_eps = damping_eps  # critical damping tolerance
+
+        self.per_step_data = []
+        self.net_data = []
+        self.angluar_velocity_data = []
+        self.per_step_inertial = []
+        self.per_step_aero = []
+        self.per_step_spring = []
+        self.base_wing_positions = None
+        self.flap_points = []
+
+        # For custom spacing defined in movement.
+        self.custom_spacing_second_derivative = custom_spacing_second_derivative
+
+    def calculate_wing_panel_accelerations(self):
+        if len(self.positions) <= 2:
+            return np.zeros_like(self.positions[0])
+        dt = self.movement.delta_time
+        return (self.positions[-1] - 2 * self.positions[-2] + self.positions[-3]) / (dt * dt)
+
+    def calculate_mass_matrix(self, wing):
+        areas = np.array([[panel.area for panel in row] for row in wing.panels])
+        return (
+            np.repeat(areas[:, :, None], 3, axis=2)
+            * self.wing_density
+        )
+
+    def initialize_next_problem(self, solver):
+
+        deformation_matrices = self.calculate_wing_deformation(
+            solver, len(self.coupled_steady_problems)
+        )
+        self.curr_airplanes, self.curr_operating_point = (
+            self.single_step_movement.generate_next_movement(
+                base_airplanes=self.curr_airplanes,
+                base_operating_point=self.curr_operating_point,
+                step=len(self.coupled_steady_problems),
+                deformation_matrices=deformation_matrices,
+            )
+        )
+        self.coupled_steady_problems.append(
+            SteadyProblem(
+                airplanes=self.curr_airplanes,
+                operating_point=self.curr_operating_point,
+            )
+        )
+
+    def calculate_wing_deformation(self, solver, step):
+        curr_problem: SteadyProblem = self.coupled_steady_problems[-1]
+        airplane = curr_problem.airplanes[0]
+
+        wing: geometry.wing.Wing = airplane.wings[0]
+
+        # Panel number definitions
+        num_chordwise_panels = wing.num_chordwise_panels
+        num_spanwise_panels = wing.num_spanwise_panels
+        num_panels = num_chordwise_panels * num_spanwise_panels
+        if self.net_deformation is None:
+            self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
+            self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
+
+        aeroMoments_GP1_Slep = np.array(solver.moments_GP1_Slep[:num_panels]).reshape(
+            num_chordwise_panels, num_spanwise_panels, 3
+        ) * self.aero_scaling
+
+        self.positions.append(np.array(
+            [[panel.Cpp_GP1_CgP1 for panel in row] for row in wing.panels]
+        ))
+
+        mass_matrix = self.calculate_mass_matrix(wing)
+
+        inertial_forces = (
+            self.calculate_wing_panel_accelerations()
+            * mass_matrix
+        )
+
+        inertial_moments = np.cross(
+            self.positions[-1] - solver.stack_leading_edge_points[:num_panels].reshape((num_chordwise_panels, num_spanwise_panels, 3)), inertial_forces, axis=2
+        )
+
+        undeforemed_wing = self.steady_problems[step].airplanes[0].wings[0]
+        undeformed_postions = np.array(
+            [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeforemed_wing.panels]
+        )
+
+        thetas, omegas, spring_moments = self.calculate_spring_moments(
+            num_spanwise_panels=num_spanwise_panels,
+            wing=wing,
+            mass_matrix=mass_matrix,
+            aero_moments=aeroMoments_GP1_Slep,
+            step=step,
+        )
+        self.angluar_velocities[:, 1] = omegas
+        if self.base_wing_positions is None:
+            self.base_wing_positions = np.array(undeformed_postions)
+
+        self.flap_points.append(np.array(undeformed_postions) - self.base_wing_positions)
+        self.per_step_inertial.append(inertial_moments.copy())
+        self.per_step_aero.append(aeroMoments_GP1_Slep.copy())
+        self.per_step_spring.append(spring_moments.copy())
+
+        step_deformation = np.array(
+            [
+                np.array(
+                    [
+                        0,
+                        thetas[i + 1] * self.moment_scaling_factor,
+                        0,
+                    ]
+                )
+                for i in range(num_spanwise_panels)
+            ]
+        )
+
+        step_deformation = np.insert(step_deformation, 0, np.array([0,0,0]), axis=0)
+        if step > 5:
+            self.net_deformation = step_deformation
+
+        self.per_step_data.append(step_deformation)
+        self.net_data.append(self.net_deformation.copy())
+        self.angluar_velocity_data.append(self.angluar_velocities.copy())
+
+        if self.plot_flap_cycle and step == self.num_steps - 1:
+            zero_curve = np.zeros((1, np.array(self.per_step_inertial).shape[0]))
+            self.plot_flap_cycle_curves(np.array(self.per_step_data)[:, :, 1].T.tolist(), "Per Step Deformation")
+            self.plot_flap_cycle_curves(np.array(self.net_data)[:, :, 1].T.tolist(), "Net Deformation")
+            self.plot_flap_cycle_curves(np.vstack((zero_curve, np.array(self.per_step_inertial)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Inertial Moments")
+            self.plot_flap_cycle_curves(np.vstack((zero_curve, np.array(self.per_step_aero)[:, :, :, 2].sum(axis=1).T)).tolist(), "Per Step Aero Moments")
+            self.plot_flap_cycle_curves(np.vstack((zero_curve, np.array(self.per_step_spring)[:, :, 2].sum(axis=1).T)).tolist(), "Per Step Spring Moments")
+            self.plot_flap_cycle_curves(
+                np.vstack(
+                    (
+                        zero_curve,
+                        np.array(self.flap_points)[:, :, :, 2].sum(axis=1).T,
+                    )
+                ).tolist(),
+                "Flap Points Z",
+            )
+
+        return self.net_deformation
+
+    def calculate_spring_moments(self, num_spanwise_panels, wing, mass_matrix, aero_moments, step):
+        spring_moments = np.zeros((num_spanwise_panels, 3))
+        thetas = np.zeros(num_spanwise_panels + 1)
+        omegas = np.zeros(num_spanwise_panels + 1)
+        d = 0.0 # distance from flapping axis to panel centroid
+        for span_panel in range(num_spanwise_panels):
+            aero_span_moment = np.sum(aero_moments[:, span_panel, 2])
+            if span_panel == 0:
+                theta0 = 0.0
+                omega0 = 0.0
+            else:
+                theta0 = self.net_deformation[span_panel][1] 
+                omega0 = self.angluar_velocities[span_panel][1]  
+
+            dt = self.movement.delta_time
+            mass = mass_matrix[:, span_panel, :].sum()
+            # Equation for rotational inertia of rectangular prism about flapping axis
+            # Considers two factors, the first is the rotational inertial of a rectangular
+            # prism about its centroid, the second is the parallel axis theorem to
+            # account for distance from flapping axis to the panel centroid
+            L = (
+                wing.wing_cross_sections[span_panel].chord
+                + wing.wing_cross_sections[span_panel + 1].chord
+            ) / 2
+            W = np.linalg.norm(wing.panels[0][span_panel].frontLeg_G)
+            d += W / 2
+            span_I = 1/12 * mass * (L ** 2 + W ** 2)  + mass * (d ** 2) 
+            # span_I = d * mass * L
+            theta, omega, moment = self.calculate_torsional_spring_moment(
+                dt,
+                # 1/2 * M * L^2
+                # I=mass * (wing.wing_cross_sections[span_panel].chord ** 2) / 2,
+                # I= 4/3 * mass * (L ** 2),
+                I=span_I,
+                theta0=theta0,
+                omega0=omega0,
+                aero_span_moment=aero_span_moment,
+                step=step,
+                span_I=span_I,
+            )
+            d += W / 2
+            thetas[span_panel + 1] = theta
+            omegas[span_panel + 1] = omega
+            spring_moments[span_panel] = np.array([0, moment, 0])
+
+        return thetas, omegas, spring_moments
+
+    def calculate_torsional_spring_moment(
+        self, dt, I, theta0, omega0, aero_span_moment, step, span_I, num_steps=2, 
+    ):
+        k = self.spring_constant
+        c = self.damping_constant
+
+        t = np.linspace(dt * (step - 1), dt * step, num_steps)
+
+        # ---- Forced numerical integration ----
+        theta, omega = self.spring_numerical_ode(t, k, c, I, theta0, omega0, aero_span_moment, self.generate_inertial_torque_function(span_I))
+
+        # ---- Internal spring-damper moment ----
+        spring_moment = -k * theta - c * omega
+
+        # ---- Net moment (optional, depending on sign convention) ----
+        # net_moment = spring_moment + tau(t)
+
+        return theta, omega, spring_moment
+
+    def generate_inertial_torque_function(self, span_I):
+        """
+        Docstring for generate_inertial_torque_function
+        
+        :param span_I: float
+            The rotational inertia of the wing span section about alpha (the flapping axis).
+        """
+        spacing = (
+            self.single_step_movement.airplane_movements[0]
+            .wing_movements[0]
+            .spacingAngles_Gs_to_Wn_ixyz[0]
+        )
+        wing_movement = self.single_step_movement.airplane_movements[0].wing_movements[0]
+        amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+        b = 2 * np.pi / wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
+        h = np.deg2rad(wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
+        if spacing == "sine":
+            torque_func = lambda time: -1 * (b ** 2) * np.sin(b * time + h) * amp * span_I
+        elif spacing == "uniform":
+            raise ValueError("Sawtooth function (uniform spacing) is not differentiable, cannot be used for inertial torque function.")
+        elif callable(spacing):
+            if self.custom_spacing_second_derivative is not None:
+                torque_func = lambda time: self.custom_spacing_second_derivative(time) * span_I
+            else:
+                raise ValueError("Custom spacing function provided without second derivative function for inertial torque calculation.")
+
+        return torque_func 
+
+    def spring_numerical_ode(self, t, k, c, I, theta0, omega0, aero_torque, inertial_torque_func):
+        """ Numerical solution to the spring-damper ODE with arbitrary torque input.
+        t: numpy.ndarray    
+            Time array.
+        k: float
+            Spring constant.
+        c: float
+            Damping constant.
+        I: float
+            Rotational inertia.
+        theta0: float
+            Initial angular displacement.
+        omega0: float
+            Initial angular velocity."""
+        def tau(time):
+            return aero_torque + inertial_torque_func(time) 
+        def ode(time, y):
+            theta, omega = y
+            return [omega, (tau(time) - c * omega - k * theta) / I]
+
+        sol = solve_ivp(
+            ode, (t[0], t[-1]), [theta0, omega0], t_eval=t, rtol=1e-9, atol=1e-12
+        )
+
+        theta = sol.y[0][-1]
+        omega = sol.y[1][-1]
+
+        return theta, omega
+
+    def plot_flap_cycle_curves(self, data, title, flap_cycle=None):
+        """
+        data: list of lists
+            each inner list is a curve
+        """
+        plt.figure(figsize=(12, 6), dpi=200)
+
+        for i, curve in enumerate(data):
+            x = range(len(curve))
+            plt.plot(x, curve, label=f"Curve {i}")
+        if flap_cycle is not None:
+            plt.plot(range(len(flap_cycle)), flap_cycle, label=f"Flap Cycle", color="black")
+        plt.xlabel("Step")
+        plt.ylabel("Value")
+        plt.title(title)
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f"{title.replace(' ', '_')}.png")
+        plt.show()

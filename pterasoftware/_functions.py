@@ -17,6 +17,7 @@ if TYPE_CHECKING:
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
+        coupled_unsteady_ring_vortex_lattice_method,
     )
 
 
@@ -99,13 +100,14 @@ def numba_centroid_of_quadrilateral(
 
     return np.array([x_average, y_average, z_average])
 
-
+# TODO: make subclassing of solver for ease
 # TEST: Consider adding unit tests for this function.
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     num_steps: int = 25,
     delta_time: float = 0.02,
@@ -167,6 +169,7 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_GP1: np.ndarray,
     stackPanelMoments_GP1_CgP1: np.ndarray,
@@ -189,6 +192,7 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
+        coupled_unsteady_ring_vortex_lattice_method,
     )
 
     if isinstance(
@@ -203,8 +207,10 @@ def process_solver_loads(
         assert solver.operating_point is not None
         this_operating_point = solver.operating_point
     elif isinstance(
-        solver,
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        solver, (
+            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
+        )
     ):
         assert solver.current_airplanes is not None
         these_airplanes = solver.current_airplanes
@@ -308,6 +314,7 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
     panel: _panel.Panel,

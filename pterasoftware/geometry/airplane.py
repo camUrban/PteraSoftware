@@ -18,6 +18,7 @@ from typing import Any, cast
 import numpy as np
 import pyvista as pv
 import webp
+import pterasoftware as ps
 
 from .. import _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
@@ -119,6 +120,7 @@ class Airplane:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
             processed_wings.extend(self.process_wing_symmetry(wing))
+
         self.wings = processed_wings
 
         self.name = _parameter_validation.str_return_str(name, "name")

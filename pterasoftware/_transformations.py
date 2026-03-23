@@ -7,7 +7,6 @@ from collections.abc import Sequence
 import numpy as np
 
 
-
 def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
     """Converts 3D vector(s) to homogeneous coordinates for use with (4,4)
     transformation matrices.

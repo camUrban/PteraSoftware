@@ -168,21 +168,6 @@ def calculate_streamlines(
         0.02 seconds.
     :return: None
     """
-    # Validate num_steps
-    if not isinstance(num_steps, (int, float)):
-        raise TypeError("num_steps must be a number")
-
-    num_steps = int(num_steps)
-    if num_steps <= 0:
-        raise ValueError("num_steps must be greater than 0")
-
-    # Validate delta_time
-    if not isinstance(delta_time, (int, float)):
-        raise TypeError("delta_time must be a number")
-
-    delta_time = float(delta_time)
-    if delta_time <= 0:
-        raise ValueError("delta_time must be greater than 0")
     # Initialize a ndarray to hold this solver's grid of streamline points (in the first
     # Airplane's geometry axes, relative to the first Airplane's CG).
     assert solver.stackSeedPoints_GP1_CgP1 is not None

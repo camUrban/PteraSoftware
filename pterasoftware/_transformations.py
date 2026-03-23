@@ -306,10 +306,10 @@ def generate_reflect_T(
     n_hat = np.asarray(plane_normal_A, dtype=float)
     norm = np.linalg.norm(n_hat)
     if norm == 0:
-       raise ValueError("Normal vector cannot be zero")
+        raise ValueError("Normal vector cannot be zero")
     n_hat = n_hat / norm
 
-    passive = bool(passive)   
+    passive = bool(passive)
     T_reflect = np.eye(4, dtype=float)
 
     S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)

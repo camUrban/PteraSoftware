@@ -98,7 +98,7 @@ def generate_rot_T(
         raise TypeError("order must be a string")
 
     if len(order) != 3 or len(set(order)) != 3 or any(c not in "xyz" for c in order):
-       raise ValueError("Invalid rotation order")
+        raise ValueError("Invalid rotation order")
     angles = np.asarray(angles, dtype=float)
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
     passive = bool(passive)
@@ -186,13 +186,13 @@ def generate_2D_rot_R(
     :return: The rotation matrix as a (2,2) ndarray of floats.
     """
     if not isinstance(angle, (int, float, np.number)):
-       raise TypeError("angle must be a number")
+        raise TypeError("angle must be a number")
 
     if not np.isfinite(angle):
-       raise ValueError("angle must be finite")
+        raise ValueError("angle must be finite")
 
     if not isinstance(passive, (bool, np.bool_)):
-       raise TypeError("passive must be boolean")
+        raise TypeError("passive must be boolean")
     angle = float(angle)
     passive = bool(passive)
     angle_rad = np.radians(angle)
@@ -318,7 +318,7 @@ def generate_reflect_T(
     n_hat = np.asarray(plane_normal_A, dtype=float)
     norm = np.linalg.norm(n_hat)
     if norm == 0:
-       raise ValueError("plane_normal_A must have a non zero length.")
+        raise ValueError("plane_normal_A must have a non zero length.")
     n_hat = n_hat / norm
 
     passive = bool(passive)

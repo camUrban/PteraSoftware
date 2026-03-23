@@ -160,6 +160,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Venkata Akhil Mettu ([AKHIL-149](https://github.com/AKHIL-149))
 * Savitha N ([Savitha-Akhilu](https://github.com/Savitha-Akhilu))
 * Pedro Bornia ([BorniaPedro](https://github.com/BorniaPedro))
+* Mohamed Abdulghany ([MohamedMG7](https://github.com/MohamedMG7))
 
 ### Supporters
 

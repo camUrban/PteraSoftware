@@ -117,11 +117,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.vInf_GP1__E = self.operating_point.vInf_GP1__E
         self.stackFreestreamWingInfluences__E = np.zeros(self.num_panels, dtype=float)
 
-        # TODO: The steady ring vortex lattice initializes the strengths to ones,
-        #  which makes more sense because then they can be passed in to find the
-        #  normalized wing-wing influence coefficients. Switch to that declaration if
-        #  doing so doesn't change the results (it shouldn't).
-        self._vortex_strengths = np.zeros(self.num_panels, dtype=float)
+        # Initialize the vortex strengths to ones so that they can be passed in to find
+        # the normalized wing wing influence coefficients.
+        self._vortex_strengths = np.ones(self.num_panels, dtype=float)
 
         self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._panel_areas = np.zeros(self.num_panels, dtype=float)
@@ -243,7 +241,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                                 Flhvp_GP1_CgP1=_Flbvp_GP1_CgP1,
                                 leftLegVector_GP1=vInfHat_GP1__E,
                                 left_right_leg_lengths=infinite_leg_length,
-                                strength=0.0,
+                                strength=1.0,
                             )
                         )
 
@@ -347,7 +345,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
                 stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                 stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
-                strengths=np.ones(self.num_panels, dtype=float),
+                strengths=self._vortex_strengths,
                 r_c0s=self._stackRc0s,
                 singularity_counts=singularity_counts,
                 nu=self.operating_point.nu,
@@ -371,7 +369,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     stackFrhvp_GP1_CgP1=self._stackFrhvp_GP1_CgP1,
                     stackFlhvp_GP1_CgP1=self._stackFlhvp_GP1_CgP1,
                     stackBlhvp_GP1_CgP1=self._stackBlhvp_GP1_CgP1,
-                    strengths=np.ones(self.num_panels, dtype=float),
+                    strengths=self._vortex_strengths,
                     r_c0s=self._stackRc0s,
                     singularity_counts=singularity_counts,
                     nu=self.operating_point.nu,

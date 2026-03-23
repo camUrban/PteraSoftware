@@ -229,6 +229,7 @@ def generate_trans_T(
     return T_trans
 
 
+# noinspection PyUnusedLocal
 def generate_reflect_T(
     plane_point_A_a: np.ndarray,
     plane_normal_A: np.ndarray,

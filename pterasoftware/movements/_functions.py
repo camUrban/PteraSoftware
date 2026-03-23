@@ -8,8 +8,6 @@ from typing import Any
 import numpy as np
 import scipy.signal as sp_sig
 
-from .. import _parameter_validation
-
 
 def oscillating_sinspaces(
     amps: float | int | np.ndarray | Sequence[float | int],
@@ -303,18 +301,10 @@ def _validate_oscillating_function_parameters(
         previous parameters are static (have zero amplitude). It will have the same
         shape as amps, periods, phases, and bases.
     """
-    amps = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        amps, "amps", 0.0, True, None, None
-    )
-    periods = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        periods, "periods", 0.0, True, None, None
-    )
-    phases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        phases, "phases", -180.0, False, 180.0, True
-    )
-    bases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        bases, "bases", None, None, None, None
-    )
+    amps = np.asarray(amps, dtype=float)
+    periods = np.asarray(periods, dtype=float)
+    phases = np.asarray(phases, dtype=float)
+    bases = np.asarray(bases, dtype=float)
 
     expected_shape = amps.shape
     values_to_check = (periods, phases, bases)
@@ -344,15 +334,8 @@ def _validate_oscillating_function_parameters(
             "the corresponding element in phases must also be 0.0."
         )
 
-    num_steps = _parameter_validation.int_in_range_return_int(
-        num_steps,
-        "num_steps",
-        min_val=1,
-        min_inclusive=True,
-    )
-    delta_time = _parameter_validation.number_in_range_return_float(
-        delta_time, "delta_time", min_val=0.0, min_inclusive=False
-    )
+    num_steps = int(num_steps)
+    delta_time = float(delta_time)
 
     return amps, periods, phases, bases, num_steps, delta_time, mask_static
 

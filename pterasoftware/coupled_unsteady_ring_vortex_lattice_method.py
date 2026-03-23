@@ -2,7 +2,7 @@
 
 **Contains the following classes:**
 
-CoupledUnsteadyRingVortexLatticeMethodSolver: A class used to solve CoupledUnsteadyProblems with 
+CoupledUnsteadyRingVortexLatticeMethodSolver: A class used to solve CoupledUnsteadyProblems with
 the unsteady ring vortex lattice method.
 
 **Contains the following functions:**
@@ -13,6 +13,7 @@ None
 from __future__ import annotations
 
 from collections.abc import Sequence
+
 from typing import cast
 
 import numpy as np
@@ -30,13 +31,15 @@ from . import (
     problems,
 )
 
+from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
+
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
 
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-class CoupledUnsteadyRingVortexLatticeMethodSolver:
+class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMethodSolver):
     """A class used to solve UnsteadyProblems with the unsteady ring vortex lattice
     method.
 
@@ -52,16 +55,21 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
     velocity and the induced velocity from every RingVortex.
     """
 
-    def __init__(self, coupled_unsteady_problem: problems.CoupledUnsteadyProblem) -> None:
+    def __init__(
+        self, coupled_unsteady_problem: problems.CoupledUnsteadyProblem
+    ) -> None:
         """The initialization method.
 
         :param unsteady_problem: The UnsteadyProblem to be solved.
         :return: None
         """
         if not isinstance(coupled_unsteady_problem, problems.CoupledUnsteadyProblem):
-            raise TypeError("coupled_unsteady_problem must be a CoupledUnsteadyProblem.")
+            raise TypeError(
+                "coupled_unsteady_problem must be a CoupledUnsteadyProblem."
+            )
         self.coupled_unsteady_problem = coupled_unsteady_problem
-
+        # super().__init__(problems.UnsteadyProblem(coupled_unsteady_problem.movement))
+        
         self.num_steps = self.coupled_unsteady_problem.num_steps
         self.delta_time = self.coupled_unsteady_problem.delta_time
         self.first_results_step = self.coupled_unsteady_problem.first_results_step
@@ -90,7 +98,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                 for wing_cross_section in wing.wing_cross_sections:
                     self.slep_point_indices.append(panel_count)
                     if wing_cross_section.num_spanwise_panels is not None:
-                        panel_count += wing_cross_section.num_spanwise_panels 
+                        panel_count += wing_cross_section.num_spanwise_panels
         self.slep_point_indices = np.array(self.slep_point_indices, dtype=int)
 
         self.num_panels: int = num_panels
@@ -506,7 +514,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
-                self.steady_problems.append(self.coupled_unsteady_problem.get_steady_problem(step))
+                self.steady_problems.append(
+                    self.coupled_unsteady_problem.get_steady_problem(step)
+                )
                 bar.update(n=float(approx_times[step + 1]))
 
             _logger.debug("Calculating averaged or final forces and moments.")
@@ -541,7 +551,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         # Initialize bound RingVortices for all steps on the first call.
         if step == 0:
-            self._initialize_panel_vortex(self.coupled_unsteady_problem.get_steady_problem(0), 0)
+            self._initialize_panel_vortex(
+                self.coupled_unsteady_problem.get_steady_problem(0), 0
+            )
 
         # Set the current step and related state.
         self._current_step = step
@@ -610,14 +622,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                                 chordwise_position + 1, spanwise_position
                             ]
 
-                            _nextFlbvp_GP1_CgP1 = (
-                                next_chordwise_panel.Flbvp_GP1_CgP1
-                            )
+                            _nextFlbvp_GP1_CgP1 = next_chordwise_panel.Flbvp_GP1_CgP1
                             assert _nextFlbvp_GP1_CgP1 is not None
 
-                            _nextFrbvp_GP1_CgP1 = (
-                                next_chordwise_panel.Frbvp_GP1_CgP1
-                            )
+                            _nextFrbvp_GP1_CgP1 = next_chordwise_panel.Frbvp_GP1_CgP1
                             assert _nextFrbvp_GP1_CgP1 is not None
 
                             Blrvp_GP1_CgP1 = _nextFlbvp_GP1_CgP1
@@ -647,8 +655,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
                                     + vInf_GP1__E * self.delta_time * 0.25
                                 )
                             else:
-                                last_steady_problem = self.coupled_unsteady_problem.get_steady_problem(
-                                    steady_problem_id - 1
+                                last_steady_problem = (
+                                    self.coupled_unsteady_problem.get_steady_problem(
+                                        steady_problem_id - 1
+                                    )
                                 )
                                 last_airplane = last_steady_problem.airplanes[
                                     airplane_id
@@ -1951,7 +1961,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         for step in range(self._first_averaging_step, self.num_steps):
 
             # Get the Airplanes from the SteadyProblem at this time step.
-            this_steady_problem: problems.SteadyProblem = self.coupled_unsteady_problem.get_steady_problem(step)
+            this_steady_problem: problems.SteadyProblem = (
+                self.coupled_unsteady_problem.get_steady_problem(step)
+            )
             these_airplanes = this_steady_problem.airplanes
 
             # Iterate through this time step's Airplanes.
@@ -1969,10 +1981,14 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
 
         # For each Airplane, calculate and then save the final or cycle-averaged and
         # RMS loads and load coefficients.
-        first_problem: problems.SteadyProblem = self.coupled_unsteady_problem.get_steady_problem(0)
+        first_problem: problems.SteadyProblem = (
+            self.coupled_unsteady_problem.get_steady_problem(0)
+        )
         for airplane_id, airplane in enumerate(first_problem.airplanes):
             if static:
-                self.coupled_unsteady_problem.finalForces_W.append(forces_W[airplane_id, :, -1])
+                self.coupled_unsteady_problem.finalForces_W.append(
+                    forces_W[airplane_id, :, -1]
+                )
                 self.coupled_unsteady_problem.finalForceCoefficients_W.append(
                     force_coefficients_W[airplane_id, :, -1]
                 )
@@ -2039,14 +2055,41 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver:
         for panel_num, panel in enumerate(self.panels):
             self.stackFlpp_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
         slep_points = self.stackFlpp_GP1_CgP1[self.slep_point_indices]
-        slep_map = np.searchsorted(self.slep_point_indices, np.arange(self.num_panels), side="right") - 1
-        self.stack_leading_edge_points = np.array([
-            slep_points[i] for i in slep_map
-        ])  
-        self.stackCblvpr_GP1_Slep = self.stackCblvpr_GP1_CgP1 - self.stack_leading_edge_points
-        self.stackCblvpf_GP1_Slep = self.stackCblvpf_GP1_CgP1 - self.stack_leading_edge_points
-        self.stackCblvpl_GP1_Slep = self.stackCblvpl_GP1_CgP1 - self.stack_leading_edge_points
-        self.stackCblvpb_GP1_Slep = self.stackCblvpb_GP1_CgP1 - self.stack_leading_edge_points
+        slep_map = (
+            np.searchsorted(
+                self.slep_point_indices, np.arange(self.num_panels), side="right"
+            )
+            - 1
+        )
+        self.stack_leading_edge_points = np.array([slep_points[i] for i in slep_map])
+        self.stackCblvpr_GP1_Slep = (
+            self.stackCblvpr_GP1_CgP1 - self.stack_leading_edge_points
+        )
+        self.stackCblvpf_GP1_Slep = (
+            self.stackCblvpf_GP1_CgP1 - self.stack_leading_edge_points
+        )
+        self.stackCblvpl_GP1_Slep = (
+            self.stackCblvpl_GP1_CgP1 - self.stack_leading_edge_points
+        )
+        self.stackCblvpb_GP1_Slep = (
+            self.stackCblvpb_GP1_CgP1 - self.stack_leading_edge_points
+        )
 
         # Find the collocation point positions relative to the SLEP points.
         self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - self.stack_leading_edge_points
+
+    def get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
+        """Gets the SteadyProblem at a given time step. This is used for dynamic dispatch
+        with coupled unsteady problem as we want to have a different way of getting the steady
+        problem based on the solver type, but we want functions to work the same way regardless
+        of the solver type so that we don't need ot duplicate functionality across solvers.
+
+        :param step: An int representing the time step of the desired SteadyProblem. It
+            must be between 0 and num_steps - 1, inclusive.
+        :return: The SteadyProblem at the given time step.
+        """
+        if step < 0 or step >= self.num_steps:
+            raise ValueError(
+                f"Step must be between 0 and {self.num_steps - 1}, inclusive."
+            )
+        return self.coupled_unsteady_problem.get_steady_problem(step)

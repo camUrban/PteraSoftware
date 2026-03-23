@@ -18,6 +18,7 @@ from typing import Any, cast
 import numpy as np
 import pyvista as pv
 import webp
+import pterasoftware as ps
 
 from .. import _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
@@ -79,6 +80,7 @@ class Airplane:
         name: str = "Untitled Airplane",
         Cg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         weight: float | int = 0.0,
+        single_step_wing: bool | np.bool_ = False,
         s_ref: float | int | None = None,
         c_ref: float | int | None = None,
         b_ref: float | int | None = None,
@@ -114,11 +116,17 @@ class Airplane:
             internally. The units are meters.
         """
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
+        self.single_step_wing = _parameter_validation.boolLike_return_bool(
+            single_step_wing, "single_step_wing"
+        )
         processed_wings: list[wing_mod.Wing] = []
+        if single_step_wing:
+            wings = [self.explode_wing(wing) for wing in wings]
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
             processed_wings.extend(self.process_wing_symmetry(wing))
+
         self.wings = processed_wings
 
         self.name = _parameter_validation.str_return_str(name, "name")
@@ -769,3 +777,82 @@ class Airplane:
             wing.generate_mesh(symmetry_type=1)
             reflected_wing.generate_mesh(symmetry_type=3)
             return [wing, reflected_wing]
+
+    def interpolate_between_wing_cross_sections(self,wcs1, wcs2, first_wcs):
+        """
+        Wing cross section panels are between the line of wcs1 and wcs2.
+        When exploding a wing to 1 spanwise panel per cross section,
+        we need to interpolate the intermediate cross sections.
+        """
+
+        interpolated = []
+
+        if first_wcs:
+            interpolated.append(
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    num_spanwise_panels=1,
+                    chord=wcs1.chord,
+                    Lp_Wcsp_Lpp=wcs1.Lp_Wcsp_Lpp,
+                    angles_Wcsp_to_Wcs_ixyz=wcs1.angles_Wcsp_to_Wcs_ixyz,
+                    control_surface_symmetry_type=wcs1.control_surface_symmetry_type,
+                    control_surface_hinge_point=wcs1.control_surface_hinge_point,
+                    control_surface_deflection=wcs1.control_surface_deflection,
+                    spanwise_spacing="uniform",
+                    airfoil=wcs1.airfoil,
+                )
+            )
+
+        N = wcs1.num_spanwise_panels
+
+        for i in range(N):
+            t = (i + 1) / N  # interpolation parameter between 0 and 1
+
+            chord = (1 - t) * wcs1.chord + t * wcs2.chord
+            Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
+            # angles_Wcsp_to_Wcs_ixyz = tuple((1 - t) * np.array(wcs1.angles_Wcsp_to_Wcs_ixyz) + t * np.array(wcs2.angles_Wcsp_to_Wcs_ixyz))
+            angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
+            is_final_section = wcs2.num_spanwise_panels is None and i == N - 1
+
+            interpolated.append(
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    num_spanwise_panels=None if is_final_section else 1,
+                    chord=chord,
+                    Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
+                    angles_Wcsp_to_Wcs_ixyz=angles_Wcsp_to_Wcs_ixyz,
+                    control_surface_symmetry_type=wcs1.control_surface_symmetry_type,
+                    control_surface_hinge_point=wcs1.control_surface_hinge_point,
+                    control_surface_deflection=wcs1.control_surface_deflection,
+                    spanwise_spacing=None if is_final_section else "uniform",
+                    airfoil=wcs1.airfoil,
+                )
+            )
+        return interpolated
+
+    def explode_wing(self, wing):
+        """
+        Takes a ps.geometry.wing.Wing and returns a NEW Wing
+        where all cross sections have num_spanwise_panels = 1.
+        """
+
+        new_cross_sections = []
+
+        for i in range(len(wing.wing_cross_sections) - 1):
+            new_cross_sections.extend(
+                self.interpolate_between_wing_cross_sections(
+                    wing.wing_cross_sections[i], wing.wing_cross_sections[i + 1], i == 0
+                )
+            )
+
+        # Rebuild the wing (copying everything else verbatim)
+        return ps.geometry.wing.Wing(
+            wing_cross_sections=new_cross_sections,
+            name=wing.name,
+            Ler_Gs_Cgs=wing.Ler_Gs_Cgs,
+            angles_Gs_to_Wn_ixyz=wing.angles_Gs_to_Wn_ixyz,
+            symmetric=wing.symmetric,
+            mirror_only=wing.mirror_only,
+            symmetryNormal_G=wing.symmetryNormal_G,
+            symmetryPoint_G_Cg=wing.symmetryPoint_G_Cg,
+            num_chordwise_panels=wing.num_chordwise_panels,
+            chordwise_spacing=wing.chordwise_spacing,
+        )

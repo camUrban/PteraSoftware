@@ -276,15 +276,15 @@ original_wing = ps.geometry.wing.Wing(
         chordwise_spacing="uniform",
     )
 
-exploded_wing = explode_wing(original_wing)
 pterasaure = ps.geometry.airplane.Airplane(
-    wings=[exploded_wing],
+    wings=[original_wing],
     name="Pterosaur",
     Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=0,
     s_ref=None,
     c_ref=None,
     b_ref=None,
+    single_step_wing=True,
 )
 
 dephase_x = 0.0
@@ -307,9 +307,6 @@ reflected_single_step_movements_list = []
 
 for i in range(len(pterasaure.wings[0].wing_cross_sections)):
     if i == 0:
-        movement = ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=pterasaure.wings[0].wing_cross_sections[i],
-        )
         single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
             base_wing_cross_section=pterasaure.wings[0].wing_cross_sections[i],
         )

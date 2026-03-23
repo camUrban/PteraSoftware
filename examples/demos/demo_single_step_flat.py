@@ -315,10 +315,10 @@ del operating_point_movement
 # Define the UnsteadyProblem.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     single_step_movement=single_step_movement,
-    plot_flap_cycle=True,
+    plot_flap_cycle=False,
     wing_density=0.012,
     spring_constant=1.0,
-    moment_scaling_factor=0.0,
+    moment_scaling_factor=1.0,
     damping_constant=1.0,
 )
 

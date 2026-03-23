@@ -263,8 +263,12 @@ class SingleStepWingCrossSectionMovement:
         self.listLp_Wcsp_Lpp = None
         self.listAngles_Wcsp_to_Wcs_ixyz = None
 
+        if base_wing_cross_section.num_spanwise_panels is not None and base_wing_cross_section.num_spanwise_panels > 1:
+            print("base_wing_cross_section must have num_spanwise_panels equal to None or 1 to do deformation. " + \
+                  "This wing cross section has " + str(base_wing_cross_section.num_spanwise_panels) + " spanwise panels. Please be sure this is intended. " + \
+                    "Applications that make sense for this are tails and non-primary wings.")
         # Create the corresponding WingCrossSectionMovement, which will remove redundancy as
-        # Coupled unsteady problems require both a SingleStepWingCrossSectionMovement and a 
+        # Coupled unsteady problems require both a SingleStepWingCrossSectionMovement and a
         # WingCrossSectionMovement with the same parameters.
         self.corresponding_wcs_movement = WingCrossSectionMovement(
             base_wing_cross_section=base_wing_cross_section,

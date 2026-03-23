@@ -221,7 +221,7 @@ class UnsteadyProblem:
             # Append this SteadyProblem to the list of SteadyProblems.
             self.steady_problems.append(this_steady_problem)
 
-class CoupledUnsteadyProblem():
+class CoupledUnsteadyProblem(UnsteadyProblem):
     """This is a class for coupled unsteady problems.
 
     This class contains the following public methods:

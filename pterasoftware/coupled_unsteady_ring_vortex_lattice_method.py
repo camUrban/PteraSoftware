@@ -12,21 +12,14 @@ None
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import cast
-
 import numpy as np
 from tqdm import tqdm
 
 from . import (
-    _aerodynamics,
     _functions,
     _logging,
-    _panel,
     _parameter_validation,
     geometry,
-    movements,
-    operating_point,
     problems,
 )
 
@@ -459,9 +452,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
 
         # Set the current step and related state.
         self._current_step = step
-        current_problem: problems.SteadyProblem = (
-            self.coupled_unsteady_problem.get_steady_problem(step)
-        )
+        current_problem: problems.SteadyProblem = self.get_steady_problem_at(step)
         self.current_airplanes = current_problem.airplanes
         self.current_operating_point = current_problem.operating_point
         self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
@@ -470,163 +461,6 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         if step < self.num_steps - 1:
             self._populate_next_airplanes_wake_vortex_points()
             self._populate_next_airplanes_wake_vortices()
-
-    def _initialize_panel_vortex(self, steady_problem, steady_problem_id: int) -> None:
-        """Calculates the locations of the bound RingVortex vertices, and then
-        initializes them.
-
-        Every Panel has a RingVortex, which is a quadrangle whose front leg is a
-        LineVortex at the Panel's quarter chord. The left and right legs are
-        LineVortices running along the Panel's left and right legs. If the Panel is not
-        along the trailing edge, they extend backwards and meet the back LineVortex, at
-        the rear Panel's quarter chord. Otherwise, they extend backwards and meet the
-        back LineVortex one quarter chord back from the Panel's back leg.
-
-        :return: None
-        """
-        this_operating_point = steady_problem.operating_point
-        vInf_GP1__E = this_operating_point.vInf_GP1__E
-
-        # Iterate through this SteadyProblem's Airplanes' Wings.
-        for airplane_id, airplane in enumerate(steady_problem.airplanes):
-            for wing_id, wing in enumerate(airplane.wings):
-                _num_spanwise_panels = wing.num_spanwise_panels
-                assert _num_spanwise_panels is not None
-
-                # Iterate through the Wing's chordwise and spanwise positions.
-                for chordwise_position in range(wing.num_chordwise_panels):
-                    for spanwise_position in range(_num_spanwise_panels):
-                        _panels = wing.panels
-                        assert _panels is not None
-
-                        # Pull the Panel out of the Wing's 2D ndarray of Panels.
-                        panel: _panel.Panel = _panels[
-                            chordwise_position, spanwise_position
-                        ]
-
-                        _Flbvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
-                        assert _Flbvp_GP1_CgP1 is not None
-
-                        _Frbvp_GP1_CgP1 = panel.Frbvp_GP1_CgP1
-                        assert _Frbvp_GP1_CgP1 is not None
-
-                        # Find the location of this Panel's front left and
-                        # front right RingVortex points (in the first Airplane's
-                        # geometry axes, relative to the first Airplane's CG).
-                        Flrvp_GP1_CgP1 = _Flbvp_GP1_CgP1
-                        Frrvp_GP1_CgP1 = _Frbvp_GP1_CgP1
-
-                        # Define the location of the back left and back right
-                        # RingVortex points based on whether the Panel is along
-                        # the trailing edge or not.
-                        if not panel.is_trailing_edge:
-                            next_chordwise_panel: _panel.Panel = _panels[
-                                chordwise_position + 1, spanwise_position
-                            ]
-
-                            _nextFlbvp_GP1_CgP1 = next_chordwise_panel.Flbvp_GP1_CgP1
-                            assert _nextFlbvp_GP1_CgP1 is not None
-
-                            _nextFrbvp_GP1_CgP1 = next_chordwise_panel.Frbvp_GP1_CgP1
-                            assert _nextFrbvp_GP1_CgP1 is not None
-
-                            Blrvp_GP1_CgP1 = _nextFlbvp_GP1_CgP1
-                            Brrvp_GP1_CgP1 = _nextFrbvp_GP1_CgP1
-                        else:
-                            # As these vertices are directly behind the trailing
-                            # edge, they are spaced back from their Panel's
-                            # vertex by one quarter of the distance traveled by
-                            # the trailing edge during a time step. This is to
-                            # more accurately predict drag. More information can
-                            # be found on pages 37-39 of "Modeling of aerodynamic
-                            # forces in flapping flight with the Unsteady Vortex
-                            # Lattice Method" by Thomas Lambert.
-                            if steady_problem_id == 0:
-                                _Blpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
-                                assert _Blpp_GP1_CgP1 is not None
-
-                                _Brpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
-                                assert _Brpp_GP1_CgP1 is not None
-
-                                Blrvp_GP1_CgP1 = (
-                                    _Blpp_GP1_CgP1
-                                    + vInf_GP1__E * self.delta_time * 0.25
-                                )
-                                Brrvp_GP1_CgP1 = (
-                                    _Brpp_GP1_CgP1
-                                    + vInf_GP1__E * self.delta_time * 0.25
-                                )
-                            else:
-                                last_steady_problem = (
-                                    self.coupled_unsteady_problem.get_steady_problem(
-                                        steady_problem_id - 1
-                                    )
-                                )
-                                last_airplane = last_steady_problem.airplanes[
-                                    airplane_id
-                                ]
-                                last_wing = last_airplane.wings[wing_id]
-
-                                _last_panels = last_wing.panels
-                                assert _last_panels is not None
-
-                                last_panel: _panel.Panel = _last_panels[
-                                    chordwise_position, spanwise_position
-                                ]
-
-                                _thisBlpp_GP1_CgP1 = panel.Blpp_GP1_CgP1
-                                assert _thisBlpp_GP1_CgP1 is not None
-
-                                _lastBlpp_GP1_CgP1 = last_panel.Blpp_GP1_CgP1
-                                assert _lastBlpp_GP1_CgP1 is not None
-
-                                # We subtract (thisBlpp_GP1_CgP1 -
-                                # lastBlpp_GP1_CgP1) / self.delta_time from
-                                # vInf_GP1__E, because we want the apparent fluid
-                                # velocity due to motion (observed in the Earth
-                                # frame, in the first Airplane's geometry axes).
-                                # This is the vector pointing opposite the
-                                # velocity from motion.
-                                Blrvp_GP1_CgP1 = (
-                                    _thisBlpp_GP1_CgP1
-                                    + (
-                                        vInf_GP1__E
-                                        - (_thisBlpp_GP1_CgP1 - _lastBlpp_GP1_CgP1)
-                                        / self.delta_time
-                                    )
-                                    * self.delta_time
-                                    * 0.25
-                                )
-
-                                _thisBrpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
-                                assert _thisBrpp_GP1_CgP1 is not None
-
-                                _lastBrpp_GP1_CgP1 = last_panel.Brpp_GP1_CgP1
-                                assert _lastBrpp_GP1_CgP1 is not None
-
-                                # The comment from above about apparent fluid
-                                # velocity due to motion applies here as well.
-                                Brrvp_GP1_CgP1 = (
-                                    _thisBrpp_GP1_CgP1
-                                    + (
-                                        vInf_GP1__E
-                                        - (_thisBrpp_GP1_CgP1 - _lastBrpp_GP1_CgP1)
-                                        / self.delta_time
-                                    )
-                                    * self.delta_time
-                                    * 0.25
-                                )
-
-                        # Initialize the Panel's RingVortex.
-                        panel.ring_vortex = _aerodynamics.RingVortex(
-                            Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
-                            Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
-                            Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
-                            Brrvp_GP1_CgP1=Brrvp_GP1_CgP1,
-                            strength=1.0,
-                        )
-
-
 
     def _load_calculation_moment_processing_hook(
         self,

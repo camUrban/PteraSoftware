@@ -87,38 +87,9 @@ def interpolate_between_wing_cross_sections(wcs1, wcs2, first_wcs):
         )
     return interpolated
 
-def explode_wing(wing):
-    """
-    Takes a ps.geometry.wing.Wing and returns a NEW Wing
-    where all cross sections have num_spanwise_panels = 1.
-    """
-
-    new_cross_sections = []
-
-    for i in range(len(wing.wing_cross_sections) - 1):
-        new_cross_sections.extend(
-            interpolate_between_wing_cross_sections(
-                wing.wing_cross_sections[i], wing.wing_cross_sections[i + 1], i == 0
-            )
-        )
-
-    # Rebuild the wing (copying everything else verbatim)
-    return ps.geometry.wing.Wing(
-        wing_cross_sections=new_cross_sections,
-        name=wing.name,
-        Ler_Gs_Cgs=wing.Ler_Gs_Cgs,
-        angles_Gs_to_Wn_ixyz=wing.angles_Gs_to_Wn_ixyz,
-        symmetric=wing.symmetric,
-        mirror_only=wing.mirror_only,
-        symmetryNormal_G=wing.symmetryNormal_G,
-        symmetryPoint_G_Cg=wing.symmetryPoint_G_Cg,
-        num_chordwise_panels=wing.num_chordwise_panels,
-        chordwise_spacing=wing.chordwise_spacing,
-    )
-
 
 wing_cross_section_1 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=4,
+                    num_spanwise_panels=1,
                     chord=0.25,
                     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),

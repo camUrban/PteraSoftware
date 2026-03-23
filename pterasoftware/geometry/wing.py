@@ -194,6 +194,11 @@ class Wing:
         wing_cross_sections = _parameter_validation.non_empty_list_return_list(
             wing_cross_sections, "wing_cross_sections"
         )
+        self.single_step_wing = _parameter_validation.boolLike_return_bool(
+            single_step_wing, "single_step_wing"
+        )
+        if single_step_wing:
+            wing_cross_sections = self.explode_wing(wing_cross_sections)
         num_wing_cross_sections = len(wing_cross_sections)
         if num_wing_cross_sections < 2:
             raise ValueError("wing_cross_sections must contain at least two elements.")
@@ -293,12 +298,6 @@ class Wing:
         if chordwise_spacing not in ["cosine", "uniform"]:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
         self.chordwise_spacing = chordwise_spacing
-
-        self.single_step_wing = _parameter_validation.boolLike_return_bool(
-            single_step_wing, "single_step_wing"
-        )
-        if single_step_wing:
-            self.explode_wing()
 
         # These attributes will be initialized or populated once this Wing's parent
         # Airplane calls generate_mesh.
@@ -597,12 +596,25 @@ class Wing:
 
         return None
 
-
-    def interpolate_between_wing_cross_sections(self, wcs1, wcs2, first_wcs):
+    def interpolate_between_wing_cross_sections(
+        self,
+        wcs1: wing_cross_section_mod.WingCrossSection,
+        wcs2: wing_cross_section_mod.WingCrossSection,
+        first_wcs: bool,
+    ) -> list[wing_cross_section_mod.WingCrossSection]:
         """
         Wing cross section panels are between the line of wcs1 and wcs2.
         When exploding a wing to 1 spanwise panel per cross section,
         we need to interpolate the intermediate cross sections.
+
+        :param wcs1: The first WingCrossSection.
+        :param wcs2: The second WingCrossSection.
+        :param first_wcs: Whether wcs1 is the first WingCrossSection of the wing. If
+            True, the method will include a WingCrossSection with the same parameters
+            as wcs1 in the output list. If False, it will not, since it will have
+            already been included as the last interpolated WingCrossSection between
+            the previous pair of WingCrossSections.
+        :return: A list of WingCrossSections representing the interpolated cross sections
         """
 
         interpolated = []
@@ -648,39 +660,31 @@ class Wing:
             )
         return interpolated
 
-    def explode_wing(self):
+
+    def explode_wing(self, wing_cross_sections: list[wing_cross_section_mod.WingCrossSection]) -> list[wing_cross_section_mod.WingCrossSection]:
         """
-        Takes a ps.geometry.wing.Wing and returns a NEW Wing
+        Takes a list of WingCrossSections and returns a new list
         where all cross sections have num_spanwise_panels = 1.
+        
+        :param wing_cross_sections: The list of wing cross sections to explode.
+        :return: A new list of exploded wing cross sections.
         """
 
         new_cross_sections = []
 
-        for i in range(len(self.wing_cross_sections) - 1):
+        for i in range(len(wing_cross_sections) - 1):
             new_cross_sections.extend(
                 self.interpolate_between_wing_cross_sections(
-                    self.wing_cross_sections[i], self.wing_cross_sections[i + 1], i == 0
+                    wing_cross_sections[i], wing_cross_sections[i + 1], i == 0
                 )
             )
 
-        # Rebuild the wing (copying everything else verbatim)
-        self.__init__(
-            wing_cross_sections=new_cross_sections,
-            name=self.name,
-            Ler_Gs_Cgs=self.Ler_Gs_Cgs,
-            angles_Gs_to_Wn_ixyz=self.angles_Gs_to_Wn_ixyz,
-            symmetric=self.symmetric,
-            mirror_only=self.mirror_only,
-            symmetryNormal_G=self.symmetryNormal_G,
-            symmetryPoint_G_Cg=self.symmetryPoint_G_Cg,
-            num_chordwise_panels=self.num_chordwise_panels,
-            chordwise_spacing=self.chordwise_spacing,
-        )
+        return new_cross_sections
 
     @property
     def T_pas_G_Cg_to_Wn_Ler(self) -> None | np.ndarray:
         """The passive transformation matrix which maps in homogeneous coordinates from
-        geometry axes relative to the CG to wing axes relative to the leading edge root
+        geometry axes relative to the CG to wing axes relative to the leading edge froroot
         point. Is None if the Wing's symmetry type hasn't been defined yet.
 
         :return: A (4,4) ndarray of floats representing the transformation matrix or

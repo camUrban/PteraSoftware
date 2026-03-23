@@ -613,7 +613,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 )
                             else:
                                 last_steady_problem = (
-                                    self.coupled_unsteady_problem.get_steady_problem(
+                                    self.get_steady_problem_at(
                                         steady_problem_id - 1
                                     )
                                 )

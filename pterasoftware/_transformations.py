@@ -26,6 +26,8 @@ def _generate_homogs(vectors_A: np.ndarray, has_point: bool) -> np.ndarray:
     :return: A (...,4) ndarray of floats (with same leading dimensions as the input)
         representing the vector(s) in homogeneous coordinates.
     """
+    vectors_A = np.asarray(vectors_A, dtype=float)
+
     # Create a homogeneous ndarray with one extra dimension.
     vectorsHomog_A = np.zeros(vectors_A.shape[:-1] + (4,), dtype=float)
 
@@ -302,8 +304,12 @@ def generate_reflect_T(
     """
     p = np.asarray(plane_point_A_a, dtype=float)
     n_hat = np.asarray(plane_normal_A, dtype=float)
-    passive = bool(passive)
+    norm = np.linalg.norm(n_hat)
+    if norm == 0:
+       raise ValueError("Normal vector cannot be zero")
+    n_hat = n_hat / norm
 
+    passive = bool(passive)   
     T_reflect = np.eye(4, dtype=float)
 
     S = np.eye(3, dtype=float) - 2 * np.outer(n_hat, n_hat)

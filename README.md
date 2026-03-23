@@ -159,6 +159,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Jonah Jaffe ([JonahJ27](https://github.com/JonahJ27))
 * Venkata Akhil Mettu ([AKHIL-149](https://github.com/AKHIL-149))
 * Savitha N ([Savitha-Akhilu](https://github.com/Savitha-Akhilu))
+* Pedro Bornia ([BorniaPedro](https://github.com/BorniaPedro))
 
 ### Supporters
 

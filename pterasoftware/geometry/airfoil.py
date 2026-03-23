@@ -861,24 +861,16 @@ class Airfoil:
                     f"outline data appears to be in an unexpected orientation."
                 )
 
-            # TODO: Create a 2D rotation matrix function in _transformations.py,
-            #  validate it, and use it here. Also, update the rotation matrix variable
-            #  to be an active matrix and use the "active" variable name convention.
-            # Create rotation matrix to rotate chord onto x axis.
-            cos_neg_angle = np.cos(-chord_angle)
-            sin_neg_angle = np.sin(-chord_angle)
-            R_pas_old_to_new = np.array(
-                [
-                    [cos_neg_angle, -sin_neg_angle],
-                    [sin_neg_angle, cos_neg_angle],
-                ],
-                dtype=float,
+            # Create an active rotation matrix to rotate the chord onto x axis.
+            # Convert the angle to degrees to match the _transformations.py standard.
+            rot_R_act = _transformations.generate_2D_rot_R(
+                angle=np.degrees(-chord_angle), passive=False
             )
 
-            # Apply rotation to all points.
-            self._outline_A_lp = (R_pas_old_to_new @ self._outline_A_lp.T).T
+            # Apply the active rotation to all points.
+            self._outline_A_lp = (rot_R_act @ self._outline_A_lp.T).T
 
-            # Check if the point at origin is still the minimum x point.
+            # Check if the point at the origin is still the minimum x point.
             new_lp_index = self._lp_index()
             new_min_x = self._outline_A_lp[new_lp_index, 0]
 

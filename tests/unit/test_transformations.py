@@ -393,6 +393,161 @@ class TestGenerateRotT(unittest.TestCase):
                 _transformations.generate_rot_T(angles, True, True, bad)
 
 
+class TestGenerate2DRotR(unittest.TestCase):
+    """This class contains methods for testing the generate_2D_rot_R function."""
+
+    def test_identity_transformations(self):
+        """Tests that zero angles produce identity matrices for all configurations.
+
+        :return: None
+        """
+        for passive in [True, False]:
+            with self.subTest(passive=passive):
+                R = _transformations.generate_2D_rot_R(0.0, passive)
+                npt.assert_allclose(R, np.eye(2), atol=1e-14)
+
+    def test_rotation_matrix_properties(self):
+        """Tests that rotation components satisfy rotation matrix properties.
+
+        Tests: determinant = 1 and orthogonality (R.T @ R = I).
+
+        :return: None
+        """
+        test_angles = [0.0, 30.0, 45.0, 90.0, 180.0, -45.0]
+
+        for angle in test_angles:
+            for passive in [True, False]:
+                with self.subTest(angle=angle, passive=passive):
+                    R = _transformations.generate_2D_rot_R(angle, passive)
+
+                    # Test output shape
+                    self.assertEqual(R.shape, (2, 2))
+
+                    # Test determinant = 1 (proper rotation)
+                    det = np.linalg.det(R)
+                    self.assertAlmostEqual(det, 1.0, places=14)
+
+                    # Test orthogonality: R.T @ R = I
+                    identity_test = R.T @ R
+                    npt.assert_allclose(identity_test, np.eye(2), atol=1e-14)
+
+                    # Test that R @ R.T = I
+                    identity_test2 = R @ R.T
+                    npt.assert_allclose(identity_test2, np.eye(2), atol=1e-14)
+
+    def test_passive_vs_active_relationship(self):
+        """Tests that passive and active rotation components are transposes.
+
+        :return: None
+        """
+        angles = [30.0, 45.0, 60.0, -15.0]
+
+        for angle in angles:
+            with self.subTest(angle=angle):
+                R_passive = _transformations.generate_2D_rot_R(angle, True)
+                R_active = _transformations.generate_2D_rot_R(angle, False)
+
+                npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
+
+    def test_specific_known_rotations(self):
+        """Tests specific active and passive rotations with analytically known results.
+
+        :return: None
+        """
+        # 90 degrees active
+        R_act_90_expected = np.array([[0.0, -1.0], [1.0, 0.0]])
+        R_act_90 = _transformations.generate_2D_rot_R(90.0, False)
+        npt.assert_allclose(R_act_90, R_act_90_expected, atol=1e-14)
+
+        # 90 degrees passive
+        R_pas_90_expected = np.array([[0.0, 1.0], [-1.0, 0.0]])
+        R_pas_90 = _transformations.generate_2D_rot_R(90.0, True)
+        npt.assert_allclose(R_pas_90, R_pas_90_expected, atol=1e-14)
+
+        # 180 degrees active
+        R_act_180_expected = np.array([[-1.0, 0.0], [0.0, -1.0]])
+        R_act_180 = _transformations.generate_2D_rot_R(180.0, False)
+        npt.assert_allclose(R_act_180, R_act_180_expected, atol=1e-14)
+
+    def test_large_angle_handling(self):
+        """Tests handling of large angles beyond ±180 degrees.
+
+        :return: None
+        """
+        # 450 degrees is equivalent to 90 degrees
+        R_large = _transformations.generate_2D_rot_R(450.0, False)
+        R_equivalent = _transformations.generate_2D_rot_R(90.0, False)
+
+        npt.assert_allclose(R_large, R_equivalent, atol=1e-14)
+
+        # -270 degrees is equivalent to 90 degrees
+        R_neg = _transformations.generate_2D_rot_R(-270.0, False)
+        npt.assert_allclose(R_neg, R_equivalent, atol=1e-14)
+
+    def test_edge_case_angles(self):
+        """Tests edge case angle values.
+
+        :return: None
+        """
+        edge_case_angles = [
+            180.0,
+            -180.0,
+            360.0,
+            -360.0,
+        ]
+
+        for angle in edge_case_angles:
+            with self.subTest(angle=angle):
+                for passive in [True, False]:
+                    R = _transformations.generate_2D_rot_R(angle, passive)
+
+                    # Should be a valid rotation matrix
+                    det = np.linalg.det(R)
+                    self.assertAlmostEqual(det, 1.0, places=14)
+
+                    identity_test = R.T @ R
+                    npt.assert_allclose(identity_test, np.eye(2), atol=1e-14)
+
+        # 360 and -360 should both produce identity
+        R_360 = _transformations.generate_2D_rot_R(360.0, False)
+        npt.assert_allclose(R_360, np.eye(2), atol=1e-14)
+
+        R_neg_360 = _transformations.generate_2D_rot_R(-360.0, False)
+        npt.assert_allclose(R_neg_360, np.eye(2), atol=1e-14)
+
+        # 180 and -180 should produce the same matrix
+        R_180 = _transformations.generate_2D_rot_R(180.0, False)
+        R_neg_180 = _transformations.generate_2D_rot_R(-180.0, False)
+        npt.assert_allclose(R_180, R_neg_180, atol=1e-14)
+
+    def test_invalid_angle_type_rejected(self):
+        """Tests that passing in invalid angle types raises a type error.
+
+        :return: None
+        """
+        for bad_angle in ["90", [90.0], None]:
+            with self.assertRaises(TypeError):
+                _transformations.generate_2D_rot_R(bad_angle, False)
+
+    def test_invalid_angle_value_rejected(self):
+        """Tests that passing in non finite angle values raises a value error.
+
+        :return: None
+        """
+        for bad_angle in [np.nan, np.inf, -np.inf]:
+            with self.assertRaises(ValueError):
+                _transformations.generate_2D_rot_R(bad_angle, False)
+
+    def test_invalid_passive_type_rejected(self):
+        """Tests that passing in invalid passive types raises a type error.
+
+        :return: None
+        """
+        for bad_passive in ["True", 1, 0, None]:
+            with self.assertRaises(TypeError):
+                _transformations.generate_2D_rot_R(45.0, bad_passive)
+
+
 class TestGenerateTransT(unittest.TestCase):
     """This class contains methods for testing the generate_trans_T function."""
 

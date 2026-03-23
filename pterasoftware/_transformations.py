@@ -93,7 +93,10 @@ def generate_rot_T(
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
 
+    angles = np.asarray(angles, dtype=float)
     angleX_rad, angleY_rad, angleZ_rad = np.radians(angles)
+    passive = bool(passive)
+    intrinsic = bool(intrinsic)
 
     x_R_act = np.array(
         [
@@ -235,7 +238,8 @@ def generate_trans_T(
         be converted internally to a bool.
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    p = translations
+    p = np.asarray(translations, dtype=float)
+    passive = bool(passive)
     T_trans = np.eye(4, dtype=float)
     T_trans[:3, 3] = -p if passive else p
     return T_trans
@@ -296,8 +300,9 @@ def generate_reflect_T(
         will be converted internally to a bool.
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    p = plane_point_A_a
-    n_hat = plane_normal_A
+    p = np.asarray(plane_point_A_a, dtype=float)
+    n_hat = np.asarray(plane_normal_A, dtype=float)
+    passive = bool(passive)
 
     T_reflect = np.eye(4, dtype=float)
 
@@ -347,7 +352,7 @@ def compose_T_pas(
 
     valid_T_pas_chain = []
     for T_pas_id, T_pas in enumerate(T_pas_chain):
-        valid_T_pas_chain.append(T_pas)
+        valid_T_pas_chain.append(np.asarray(T_pas, dtype=float))
     return _left_compose_T(valid_T_pas_chain)
 
 
@@ -397,7 +402,7 @@ def compose_T_act(
 
     valid_T_act_chain = []
     for T_act_id, T_act in enumerate(T_act_chain):
-        valid_T_act_chain.append(T_act)
+        valid_T_act_chain.append(np.asarray(T_act, dtype=float))
     return _left_compose_T(valid_T_act_chain)
 
 
@@ -459,6 +464,7 @@ def invert_T_pas(T_pas: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
         from the target axes and reference point to the original axes and reference
         point.
     """
+    T_pas = np.asarray(T_pas, dtype=float)
     return _invert_T_rigid(T_pas)
 
 
@@ -484,6 +490,7 @@ def invert_T_act(T_act: np.ndarray | Sequence[Sequence[float | int]]) -> np.ndar
     :return: A (4,4) ndarray of floats representing the active transform that exactly
         undoes T_act.
     """
+    T_act = np.asarray(T_act, dtype=float)
     return _invert_T_rigid(T_act)
 
 
@@ -503,6 +510,7 @@ def convert_T_pas_to_T_act(
     :return: A (4,4) ndarray of floats representing the converted active transformation
         matrix.
     """
+    T_pas = np.asarray(T_pas, dtype=float)
     return np.linalg.inv(T_pas)
 
 
@@ -522,6 +530,7 @@ def convert_T_act_to_T_pas(
     :return: A (4,4) ndarray of floats representing the converted passive transformation
         matrix.
     """
+    T_act = np.asarray(T_act, dtype=float)
     return np.linalg.inv(T_act)
 
 
@@ -553,9 +562,10 @@ def apply_T_to_vectors(
     :return: A ndarray of floats with same shape as ``vectors_A`` representing the
         transformed vector(s).
     """
-
+    T = np.asarray(T, dtype=float)
+    vectors_A = np.asarray(vectors_A, dtype=float)
+    has_point = bool(has_point)
     vectorsHomog_A = _generate_homogs(vectors_A, has_point)
-
     return np.asarray(
         np.einsum("ij,...j->...i", T, vectorsHomog_A)[..., :3], dtype=float
     )

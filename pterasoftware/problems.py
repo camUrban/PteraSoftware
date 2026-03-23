@@ -254,87 +254,17 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
         self.only_final_results = _parameter_validation.boolLike_return_bool(
             only_final_results, "only_final_results"
         )
-        print("Type of movement: ", type(self.movement))
-        self.num_steps = self.movement.num_steps
-        self.delta_time = self.movement.delta_time
 
-        # For UnsteadyProblems with a static Movement, users are typically interested
-        # in the final time step's forces and moments, which, assuming convergence,
-        # will be the most accurate. For UnsteadyProblems with cyclic movement,
-        # (e.g. flapping wings) users are typically interested in the forces and
-        # moments averaged over the last cycle simulated. Therefore, determine which
-        # time step will be the first with relevant results based on if the Movement
-        # is static or cyclic.
-        _movement_max_period = self.movement.max_period
-        if _movement_max_period == 0:
-            self.first_averaging_step = self.num_steps - 1
-        else:
-            self.first_averaging_step = max(
-                0,
-                math.floor(self.num_steps - (_movement_max_period / self.delta_time)),
-            )
-
-        # If the user only wants to calculate forces and moments for the final cycle
-        # (for a cyclic Movement) or for the final time step (for a static Movement)
-        # set the first step to calculate results to the first averaging step.
-        # Otherwise, set it to the zero, which is the first time step.
-        if self.only_final_results:
-            self.first_results_step = self.first_averaging_step
-        else:
-            self.first_results_step = 0
-
-        # Initialize empty lists to hold the final loads and load coefficients each
-        # Airplane experiences. These will only be populated if this
-        # UnsteadyProblem's Movement is static.
-        self.finalForces_W = []
-        self.finalForceCoefficients_W = []
-        self.finalMoments_W_CgP1 = []
-        self.finalMomentCoefficients_W_CgP1 = []
-
-        # Initialize empty lists to hold the final cycle-averaged loads and load
-        # coefficients each Airplane experiences. These will only be populated if
-        # this UnsteadyProblem's Movement is cyclic.
-        self.finalMeanForces_W = []
-        self.finalMeanForceCoefficients_W = []
-        self.finalMeanMoments_W_CgP1 = []
-        self.finalMeanMomentCoefficients_W_CgP1 = []
-
-        # Initialize empty lists to hold the final cycle-root-mean-squared loads and
-        # load coefficients each airplane object experiences. These will only be
-        # populated for variable geometry problems.
-        self.finalRmsForces_W = []
-        self.finalRmsForceCoefficients_W = []
-        self.finalRmsMoments_W_CgP1 = []
-        self.finalRmsMomentCoefficients_W_CgP1 = []
+        super().__init__(movement=self.movement, only_final_results=self.only_final_results)
 
         # this set of steady problems should essnetially be treated as private
         # and the getter method should be used to obtain it
-        self._steady_problems = [
+        self.coupled_steady_problems = [
             SteadyProblem(
                 [self.movement.airplane_movements[0].base_airplane],
                 self.movement.operating_point_movement.base_operating_point,
             )
         ]
-
-        # Initialize an empty list to hold the SteadyProblems.
-        self.steady_problems = []
-
-        # Iterate through the UnsteadyProblem's time steps.
-        for step_id in range(self.num_steps):
-
-            # Get the Airplanes and the OperatingPoint associated with this time step.
-            these_airplanes = []
-            for this_base_airplane in self.movement.airplanes:
-                these_airplanes.append(this_base_airplane[step_id])
-            this_operating_point = self.movement.operating_points[step_id]
-
-            # Initialize the SteadyProblem at this time step.
-            this_steady_problem = SteadyProblem(
-                airplanes=these_airplanes, operating_point=this_operating_point
-            )
-
-            # Append this SteadyProblem to the list of SteadyProblems.
-            self.steady_problems.append(this_steady_problem)
 
     def get_steady_problem(self, step):
         """
@@ -357,16 +287,16 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
             steady problems.
         """
         # Ensure the requested step index is valid.
-        if step >= len(self._steady_problems):
+        if step >= len(self.coupled_steady_problems):
             raise Exception(
                 f"Step index {step} is out of range of the number of initialized problems"
             )
 
         # Return the corresponding steady-state problem.
-        return self._steady_problems[step]
+        return self.coupled_steady_problems[step]
 
     def initialize_next_problem(self, solver):
-        self._steady_problems.append(self.steady_problems[len(self._steady_problems)])
+        self.coupled_steady_problems.append(self.steady_problems[len(self.coupled_steady_problems)])
 
 class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
@@ -431,17 +361,17 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def initialize_next_problem(self, solver):
 
         deformation_matrices = self.calculate_wing_deformation(
-            solver, len(self._steady_problems)
+            solver, len(self.coupled_steady_problems)
         )
         self.curr_airplanes, self.curr_operating_point = (
             self.single_step_movement.generate_next_movement(
                 base_airplanes=self.curr_airplanes,
                 base_operating_point=self.curr_operating_point,
-                step=len(self._steady_problems),
+                step=len(self.coupled_steady_problems),
                 deformation_matrices=deformation_matrices,
             )
         )
-        self._steady_problems.append(
+        self.coupled_steady_problems.append(
             SteadyProblem(
                 airplanes=self.curr_airplanes,
                 operating_point=self.curr_operating_point,
@@ -449,7 +379,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         )
 
     def calculate_wing_deformation(self, solver, step):
-        curr_problem: SteadyProblem = self._steady_problems[-1]
+        curr_problem: SteadyProblem = self.coupled_steady_problems[-1]
         airplane = curr_problem.airplanes[0]
 
         wing: geometry.wing.Wing = airplane.wings[0]

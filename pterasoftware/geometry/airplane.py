@@ -80,7 +80,6 @@ class Airplane:
         name: str = "Untitled Airplane",
         Cg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         weight: float | int = 0.0,
-        single_step_wing: bool | np.bool_ = False,
         s_ref: float | int | None = None,
         c_ref: float | int | None = None,
         b_ref: float | int | None = None,
@@ -116,12 +115,7 @@ class Airplane:
             internally. The units are meters.
         """
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
-        self.single_step_wing = _parameter_validation.boolLike_return_bool(
-            single_step_wing, "single_step_wing"
-        )
         processed_wings: list[wing_mod.Wing] = []
-        if single_step_wing:
-            wings = [self.explode_wing(wing) for wing in wings]
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")

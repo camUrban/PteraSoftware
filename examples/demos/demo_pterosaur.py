@@ -272,6 +272,7 @@ original_wing = ps.geometry.wing.Wing(
         mirror_only=False,
         symmetryNormal_G=(0.0, 1.0, 0.0),
         symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+        single_step_wing = True,
         num_chordwise_panels=5,
         chordwise_spacing="uniform",
     )
@@ -284,7 +285,6 @@ pterasaure = ps.geometry.airplane.Airplane(
     s_ref=None,
     c_ref=None,
     b_ref=None,
-    single_step_wing=True,
 )
 
 dephase_x = 0.0

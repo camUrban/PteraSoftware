@@ -45,10 +45,7 @@ for i in range(len(cross_section_chords)):
         )
     )
 
-
-example_airplane = ps.geometry.airplane.Airplane(
-    wings=[
-        ps.geometry.wing.Wing(
+wing_1 = ps.geometry.wing.Wing(
             wing_cross_sections=wing_cross_sections,
             name="Main Wing",
             Ler_Gs_Cgs=(0.0, 0.5, 0.0),
@@ -57,9 +54,14 @@ example_airplane = ps.geometry.airplane.Airplane(
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+            single_step_wing=True,
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
-        ),
+        )
+
+example_airplane = ps.geometry.airplane.Airplane(
+    wings=[
+        wing_1,
         ps.geometry.wing.Wing(
             wing_cross_sections=[
                 ps.geometry.wing_cross_section.WingCrossSection(
@@ -102,6 +104,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+            single_step_wing=False,
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
         ),

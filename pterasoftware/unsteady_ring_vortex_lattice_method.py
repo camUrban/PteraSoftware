@@ -612,15 +612,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Calculates the locations of the bound RingVortex vertices, and then
         initializes them.
 
-        :return: None
-        """
-        for steady_problem_id, steady_problem in enumerate(self.steady_problems):
-            self._initialize_panel_vortex(steady_problem, steady_problem_id)
-
-    def _initialize_panel_vortex(self, steady_problem, steady_problem_id: int) -> None:
-        """Calculates the locations of the bound RingVortex vertices, and then
-        initializes them for a specific steady problem.
-
         Every Panel has a RingVortex, which is a quadrangle whose front leg is a
         LineVortex at the Panel's quarter chord. The left and right legs are
         LineVortices running along the Panel's left and right legs. If the Panel is not
@@ -630,6 +621,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :return: None
         """
+        for steady_problem_id, steady_problem in enumerate(self.steady_problems):
+            # Find the freestream velocity (in the first Airplane's geometry axes,
+            # observed from the Earth frame) at this time step.
+            self._initialize_panel_vortex(steady_problem, steady_problem_id)
+
+    def _initialize_panel_vortex(self, steady_problem, steady_problem_id):
         this_operating_point = steady_problem.operating_point
         vInf_GP1__E = this_operating_point.vInf_GP1__E
 
@@ -670,10 +667,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 chordwise_position + 1, spanwise_position
                             ]
 
-                            _nextFlbvp_GP1_CgP1 = next_chordwise_panel.Flbvp_GP1_CgP1
+                            _nextFlbvp_GP1_CgP1 = (
+                                next_chordwise_panel.Flbvp_GP1_CgP1
+                            )
                             assert _nextFlbvp_GP1_CgP1 is not None
 
-                            _nextFrbvp_GP1_CgP1 = next_chordwise_panel.Frbvp_GP1_CgP1
+                            _nextFrbvp_GP1_CgP1 = (
+                                next_chordwise_panel.Frbvp_GP1_CgP1
+                            )
                             assert _nextFrbvp_GP1_CgP1 is not None
 
                             Blrvp_GP1_CgP1 = _nextFlbvp_GP1_CgP1
@@ -703,10 +704,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     + vInf_GP1__E * self.delta_time * 0.25
                                 )
                             else:
-                                last_steady_problem = (
-                                    self.get_steady_problem_at(
-                                        steady_problem_id - 1
-                                    )
+                                last_steady_problem = self.get_steady_problem_at(
+                                    steady_problem_id - 1
                                 )
                                 last_airplane = last_steady_problem.airplanes[
                                     airplane_id
@@ -763,14 +762,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                     * 0.25
                                 )
 
-                            # Initialize the Panel's RingVortex.
-                            panel.ring_vortex = _vortices.ring_vortex.RingVortex(
-                                Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
-                                Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
-                                Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
-                                Brrvp_GP1_CgP1=Brrvp_GP1_CgP1,
-                                strength=1.0,
-                            )
+                        # Initialize the Panel's RingVortex.
+                        panel.ring_vortex = _vortices.ring_vortex.RingVortex(
+                            Flrvp_GP1_CgP1=Flrvp_GP1_CgP1,
+                            Frrvp_GP1_CgP1=Frrvp_GP1_CgP1,
+                            Blrvp_GP1_CgP1=Blrvp_GP1_CgP1,
+                            Brrvp_GP1_CgP1=Brrvp_GP1_CgP1,
+                            strength=1.0,
+                        )
 
     def _collapse_geometry(self) -> None:
         """Converts attributes of the UnsteadyProblem's geometry into 1D ndarrays.
@@ -2291,7 +2290,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # For each Airplane, calculate and then save the final or cycle-averaged and
         # RMS loads and load coefficients.
-        first_problem: problems.SteadyProblem = self.steady_problems[0]
+        first_problem: problems.SteadyProblem = self.get_steady_problem_at(0)
         for airplane_id, airplane in enumerate(first_problem.airplanes):
             if static:
                 self.unsteady_problem.finalForces_W.append(forces_W[airplane_id, :, -1])

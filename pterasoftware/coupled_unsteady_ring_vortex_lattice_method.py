@@ -73,6 +73,11 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             self.get_steady_problem_at(0)
         )
 
+        # We want to store the data from every steady problem we compute here
+        # but we don't want to override the initial steady problems until the 
+        # data visualization stage so we store this and overwrite after run.
+        self.steady_problems_data_storage = []
+
         # number of panels overide and strip leading edge point initialization
         num_panels = 0
         panel_count = 0
@@ -161,7 +166,12 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             # The number of wake RingVortices is the time step number multiplied by
             # the number of spanwise Panels. This works because the first time step
             # number is 0.
-            this_num_wake_ring_vortices = step * this_num_spanwise_panels
+            this_num_chordwise_wake_rows = step
+            if self._max_wake_rows is not None:
+                this_num_chordwise_wake_rows = min(step, self._max_wake_rows)
+            this_num_wake_ring_vortices = (
+                this_num_chordwise_wake_rows * this_num_spanwise_panels
+            )
 
             # Allocate the ndarrays for this time step.
             this_wake_ring_vortex_strengths = np.zeros(
@@ -183,6 +193,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 (this_num_wake_ring_vortices, 3), dtype=float
             )
 
+            this_wake_rc0s = np.zeros(this_num_wake_ring_vortices, dtype=float)
+
             # Append this time step's ndarrays to the lists of ndarrays.
             self.list_num_wake_vortices.append(this_num_wake_ring_vortices)
             self._list_wake_vortex_strengths.append(this_wake_ring_vortex_strengths)
@@ -191,6 +203,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             self.listStackFrwrvp_GP1_CgP1.append(thisStackFrwrvp_GP1_CgP1)
             self.listStackFlwrvp_GP1_CgP1.append(thisStackFlwrvp_GP1_CgP1)
             self.listStackBlwrvp_GP1_CgP1.append(thisStackBlwrvp_GP1_CgP1)
+            self._list_wake_rc0s.append(this_wake_rc0s)
 
         # The following loop attempts to predict how much time each time step will
         # take, relative to the other time steps. This data will be used to generate
@@ -230,9 +243,6 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
             "Remaining: {remaining}",
         ) as bar:
-            # Initialize all the Airplanes' bound RingVortices.
-            _logger.debug("Initializing all Airplanes' bound RingVortices.")
-
             # Update the progress bar based on the initialization step's predicted
             # approximate, relative computing time.
             bar.update(n=float(approx_times[0]))
@@ -358,7 +368,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 self._currentStackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
                 self._currentStackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
                 self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
-
+                self._currentStackBoundRc0s = np.zeros(self.num_panels, dtype=float)
+                self._currentStackWakeRc0s = self._list_wake_rc0s[step]
                 self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
                 # Collapse the geometry matrices into 1D ndarrays of attributes.
@@ -407,7 +418,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
 
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
-                self.steady_problems.append(
+                self.steady_problems_data_storage.append(
                     self.get_steady_problem_at(step)
                 )
                 bar.update(n=float(approx_times[step + 1]))
@@ -422,6 +433,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.
+        self.steady_problems = self.steady_problems_data_storage
         self.ran = True
 
     def initialize_step_geometry(self, step: int) -> None:

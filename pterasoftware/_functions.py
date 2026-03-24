@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
 from numba import njit
 
 from . import (
+    _logging,
     _panel,
     _transformations,
 )
@@ -17,7 +19,51 @@ if TYPE_CHECKING:
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
-        coupled_unsteady_ring_vortex_lattice_method,
+    )
+
+_logger = _logging.get_logger("_functions")
+
+_SINGULARITY_NAMES: tuple[str, ...] = (
+    "degenerate filament",
+    "vertex start proximity",
+    "vertex end proximity",
+    "collinearity",
+)
+
+
+def log_unexpected_singularity_counts(
+    logger: logging.Logger,
+    level: int,
+    context: str,
+    singularity_counts: np.ndarray,
+) -> None:
+    """Logs a summary of unexpected singularity events if any occurred.
+
+    :param logger: The logger instance to use.
+    :param level: The logging level (e.g., logging.ERROR, logging.INFO).
+    :param context: A string describing the call site context (e.g.,
+        "_calculate_wing_wing_influences").
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity.
+    :return: None
+    """
+    total = singularity_counts.sum()
+    if total == 0:
+        return
+
+    parts = []
+    for i in range(4):
+        count = singularity_counts[i]
+        if count > 0:
+            parts.append(f"{_SINGULARITY_NAMES[i]}={count}")
+
+    logger.log(
+        level,
+        "%s: %d singularity skip(s) (%s)",
+        context,
+        total,
+        ", ".join(parts),
     )
 
 
@@ -100,14 +146,13 @@ def numba_centroid_of_quadrilateral(
 
     return np.array([x_average, y_average, z_average])
 
-# TODO: make subclassing of solver for ease
-# TEST: Consider adding unit tests for this function.
+
+
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     num_steps: int = 25,
     delta_time: float = 0.02,
@@ -131,6 +176,8 @@ def calculate_streamlines(
         solver.stackSeedPoints_GP1_CgP1, axis=0
     )
 
+    bound_singularity_counts = np.zeros(4, dtype=np.int64)
+
     # Iterate through the streamline time steps.
     for step in range(num_steps):
         # Get the previous row of streamline points (in the first Airplane's geometry
@@ -143,7 +190,8 @@ def calculate_streamlines(
         # from the Earth frame) at each streamline point in the previous row due to
         # the freestream velocity and the induced velocity from the vortices.
         stackVLastRowStreamlinePoints_GP1__E = solver.calculate_solution_velocity(
-            stackP_GP1_CgP1=lastRowStackStreamlinePoints_GP1_CgP1
+            stackP_GP1_CgP1=lastRowStackStreamlinePoints_GP1_CgP1,
+            bound_singularity_counts=bound_singularity_counts,
         )
 
         # Interpolate to find the new row of streamline points (in the first
@@ -162,14 +210,21 @@ def calculate_streamlines(
             )
         )
 
+    unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
 
-# TEST: Consider adding unit tests for this function.
+    log_unexpected_singularity_counts(
+        _logger,
+        logging.WARNING,
+        "calculate_streamlines",
+        unexpected_bound_singularity_counts,
+    )
+
+
 def process_solver_loads(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
         | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     stackPanelForces_GP1: np.ndarray,
     stackPanelMoments_GP1_CgP1: np.ndarray,
@@ -192,7 +247,6 @@ def process_solver_loads(
         steady_horseshoe_vortex_lattice_method,
         steady_ring_vortex_lattice_method,
         unsteady_ring_vortex_lattice_method,
-        coupled_unsteady_ring_vortex_lattice_method,
     )
 
     if isinstance(
@@ -209,7 +263,6 @@ def process_solver_loads(
     elif isinstance(
         solver, (
             unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-            coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver,
         )
     ):
         assert solver.current_airplanes is not None
@@ -309,12 +362,10 @@ def process_solver_loads(
         )
 
 
-# TEST: Consider adding unit tests for this function.
 def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver: (
         steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
-        | coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver
     ),
     global_panel_position: int,
     panel: _panel.Panel,
@@ -420,7 +471,6 @@ def update_ring_vortex_solvers_panel_attributes(
         )
 
 
-# TEST: Consider adding unit tests for this function.
 def calculate_steady_freestream_wing_influences(
     steady_solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver

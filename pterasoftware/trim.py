@@ -8,14 +8,15 @@ None
 **Contains the following functions:**
 
 analyze_steady_trim: Attempts to calculate a trim condition of a SteadyProblem by
-varying the operating conditions until the net loads are sufficient low.
+varying the operating conditions until the net loads are sufficiently low.
 
 analyze_unsteady_trim: Attempts to calculate a trim condition of an UnsteadyProblem by
-varying the base operating conditions until the net loads are sufficient low.
+varying the base operating conditions until the net loads are sufficiently low.
 """
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Sequence
 from typing import Any
 
@@ -26,6 +27,9 @@ from . import (
     _logging,
     _parameter_validation,
     movements,
+)
+from . import operating_point as operating_point_mod
+from . import (
     problems,
     steady_horseshoe_vortex_lattice_method,
     steady_ring_vortex_lattice_method,
@@ -54,7 +58,7 @@ def analyze_steady_trim(
     num_calls: int = 100,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of a SteadyProblem by varying the
-    operating conditions until the net loads are sufficient low.
+    operating conditions until the net loads are sufficiently low.
 
     **Procedure:**
 
@@ -218,6 +222,14 @@ def analyze_steady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
+    # Store the base OperatingPoint's immutable attributes that don't vary during trim.
+    base_rho = problem.operating_point.rho
+    base_nu = problem.operating_point.nu
+    base_angles_E_to_BP1_izyx = problem.operating_point.angles_E_to_BP1_izyx
+    base_CgP1_E_Eo = problem.operating_point.CgP1_E_Eo
+    base_surfaceNormal_E = problem.operating_point.surfaceNormal_E
+    base_surfacePoint_E_Eo = problem.operating_point.surfacePoint_E_Eo
+
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
@@ -240,13 +252,36 @@ def analyze_steady_trim(
         current_arguments.clear()
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
-        problem.operating_point.vCg__E = vCg__E
-        problem.operating_point.alpha = alpha
-        problem.operating_point.beta = beta
+        # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
+        # so we create a new instance rather than mutating the original.
+        trial_operating_point = operating_point_mod.OperatingPoint(
+            rho=base_rho,
+            vCg__E=vCg__E,
+            alpha=alpha,
+            beta=beta,
+            externalFX_W=externalFX_W,
+            nu=base_nu,
+            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+            CgP1_E_Eo=base_CgP1_E_Eo,
+            surfaceNormal_E=base_surfaceNormal_E,
+            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
+        )
 
-        qInf__E = problem.operating_point.qInf__E
+        qInf__E = trial_operating_point.qInf__E
 
-        s_ref = problem.airplanes[0].s_ref
+        # Deep copy the airplanes so the new SteadyProblem can set fresh Panel
+        # coordinates. This ensures correctness for multi-airplane problems where
+        # Panel coordinates depend on relative airplane positions.
+        trial_airplanes = [copy.deepcopy(airplane) for airplane in problem.airplanes]
+
+        # Create a new SteadyProblem with the trial operating point and copied
+        # airplanes.
+        trial_problem = problems.SteadyProblem(
+            airplanes=trial_airplanes,
+            operating_point=trial_operating_point,
+        )
+
+        s_ref = trial_problem.airplanes[0].s_ref
         assert s_ref is not None
 
         # To my knowledge, there isn't a standard way to define "external" force
@@ -267,12 +302,12 @@ def analyze_steady_trim(
         )
         if solver_type == "steady horseshoe vortex lattice method":
             solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-                steady_problem=problem
+                steady_problem=trial_problem
             )
         else:
             solver = (
                 steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-                    steady_problem=problem
+                    steady_problem=trial_problem
                 )
             )
 
@@ -401,7 +436,7 @@ def analyze_unsteady_trim(
     show_solver_progress: bool | np.bool_ = True,
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
-    operating conditions until the net loads are sufficient low.
+    operating conditions until the net loads are sufficiently low.
 
     **Procedure:**
 
@@ -570,6 +605,14 @@ def analyze_unsteady_trim(
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
+    # Store the base OperatingPoint's immutable attributes that don't vary during trim.
+    base_rho = base_operating_point.rho
+    base_nu = base_operating_point.nu
+    base_angles_E_to_BP1_izyx = base_operating_point.angles_E_to_BP1_izyx
+    base_CgP1_E_Eo = base_operating_point.CgP1_E_Eo
+    base_surfaceNormal_E = base_operating_point.surfaceNormal_E
+    base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
+
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
         parameters.
@@ -592,11 +635,22 @@ def analyze_unsteady_trim(
         current_arguments.clear()
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
-        base_operating_point.vCg__E = vCg__E
-        base_operating_point.alpha = alpha
-        base_operating_point.beta = beta
+        # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
+        # so we create a new instance rather than mutating the original.
+        trial_operating_point = operating_point_mod.OperatingPoint(
+            rho=base_rho,
+            vCg__E=vCg__E,
+            alpha=alpha,
+            beta=beta,
+            externalFX_W=externalFX_W,
+            nu=base_nu,
+            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+            CgP1_E_Eo=base_CgP1_E_Eo,
+            surfaceNormal_E=base_surfaceNormal_E,
+            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
+        )
 
-        qInf__E = base_operating_point.qInf__E
+        qInf__E = trial_operating_point.qInf__E
 
         s_ref = problem.movement.airplane_movements[0].base_airplane.s_ref
         assert s_ref is not None
@@ -615,7 +669,7 @@ def analyze_unsteady_trim(
 
         this_operating_point_movement = (
             movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point
+                base_operating_point=trial_operating_point
             )
         )
 

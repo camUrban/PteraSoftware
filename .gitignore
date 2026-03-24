@@ -149,3 +149,15 @@ Draw.webp
 * Force Coefficients.png
 * Moments.png
 * Moment Coefficients.png
+
+# This symlink folder contains reference documentation that shouldn't be uploaded.
+/docs/private
+
+# This folder contains built documentation files that shouldn't be uploaded.
+/docs/website/_build/
+
+# This folder contains a copy of the Furo theme to use as a reference for customization.
+/docs/website/furo_src/
+
+# These are the Claude's documentation files to ignore.
+/docs/CLAUDE_*.md

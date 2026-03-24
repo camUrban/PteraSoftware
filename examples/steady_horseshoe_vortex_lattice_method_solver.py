@@ -6,6 +6,10 @@ SteadyHorseshoeVortexLatticeMethodSolver with a custom Airplane."""
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the log_results function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
 # educational purposes, but keep in mind that it makes the code much longer than it
@@ -145,8 +149,8 @@ del example_problem
 # Run the solver.
 example_solver.run()
 
-# Call this function from the output module to print the results.
-ps.output.print_results(example_solver)
+# Call this function from the output module to log the results.
+ps.output.log_results(example_solver)
 
 # Call the output module's draw function on the solver.
 ps.output.draw(

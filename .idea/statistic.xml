@@ -15,12 +15,13 @@
         <option value="$PROJECT_DIR$/docs" />
         <option value="$PROJECT_DIR$/examples" />
         <option value="$PROJECT_DIR$/experimental" />
-        <option value="$PROJECT_DIR$/formation flight" />
         <option value="$PROJECT_DIR$/gui" />
         <option value="$PROJECT_DIR$/tests" />
         <option value="$PROJECT_DIR$/validation" />
         <option value="$PROJECT_DIR$/pterasoftware/__pycache__" />
+        <option value="$PROJECT_DIR$/pterasoftware/_vortices/__pycache__" />
         <option value="$PROJECT_DIR$/pterasoftware/geometry/__pycache__" />
+        <option value="$PROJECT_DIR$/pterasoftware/geometry/_airfoils" />
         <option value="$PROJECT_DIR$/pterasoftware/movements/__pycache__" />
       </list>
     </option>

@@ -1,13 +1,14 @@
-# Type Hint and Docstring Style Guide
+# Type Hints and Docstrings
 
 This document defines the conventions for type hints and docstrings in the Ptera Software codebase.
 
 ## Table of Contents
+
 - [Type Hints](#type-hints)
 - [Docstring Format](#docstring-format)
-  - [Module-Level Docstrings](#module-level-docstrings)
-  - [Class Docstrings](#class-docstrings)
-  - [Function and Method Docstrings](#function-and-method-docstrings)
+    - [Module-Level Docstrings](#module-level-docstrings)
+    - [Class Docstrings](#class-docstrings)
+    - [Function and Method Docstrings](#function-and-method-docstrings)
 - [Examples](#examples)
 
 ---
@@ -32,14 +33,14 @@ import numpy as np
 
 #### Basic Types
 
-| Parameter Description                 | Type Hint           |
-|---------------------------------------|---------------------|
-| String                                | `str`               |
-| Boolean                               | `bool`              |
-| Boolean (accepting numpy bools)       | `bool \| np.bool_`  |
-| Integer                               | `int`               |
-| Number (int or float)                 | `float \| int`      |
-| Float only                            | `float`             |
+| Parameter Description           | Type Hint          |
+|---------------------------------|--------------------|
+| String                          | `str`              |
+| Boolean                         | `bool`             |
+| Boolean (accepting numpy bools) | `bool \| np.bool_` |
+| Integer                         | `int`              |
+| Number (int or float)           | `float \| int`     |
+| Float only                      | `float`            |
 
 #### Array and Array-Like Types
 
@@ -52,10 +53,10 @@ import numpy as np
 
 #### Class Types
 
-| Parameter Description              | Type Hint                | Notes                                      |
-|------------------------------------|--------------------------|--------------------------------------------|
-| Class from same package            | `ClassName`              | Direct reference                           |
-| Class from imported module         | `module_alias.ClassName` | Use module alias to avoid circular imports |
+| Parameter Description      | Type Hint                | Notes                                      |
+|----------------------------|--------------------------|--------------------------------------------|
+| Class from same package    | `ClassName`              | Direct reference                           |
+| Class from imported module | `module_alias.ClassName` | Use module alias to avoid circular imports |
 
 #### Optional and Union Types
 
@@ -93,6 +94,7 @@ def compute_forces(self):
 ```
 
 **Use `assert` when:**
+
 - None represents a bug, not a valid state
 - You want runtime safety during development
 - The invariant should always hold
@@ -105,13 +107,11 @@ Use `cast()` sparingly, only when the type checker cannot infer what you know to
 from typing import cast
 
 # For dtype=object arrays where we know the element type
-ring_vortex = cast(
-    _aerodynamics.RingVortex,
-    object_array[i, j],
-)
+ring_vortex = cast(_vortices.ring_vortex.RingVortex, object_array[i, j], )
 ```
 
 **Use `cast()` when:**
+
 - Working around type checker limitations (e.g., numpy dtype=object arrays)
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
@@ -127,9 +127,11 @@ from . import airfoil as airfoil_mod
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
+
 # In function signature
 def mesh_wing(wing: wing_mod.Wing) -> None:
     ...
+
 
 def _get_mcl_points(
     inner_airfoil: airfoil_mod.Airfoil,
@@ -155,6 +157,7 @@ from . import wing_movement as wing_movement_mod
 
 from .. import geometry
 
+
 # In function signature - no quotes needed!
 def __init__(
     self,
@@ -165,6 +168,7 @@ def __init__(
 ```
 
 This approach:
+
 - Keeps all imports at the top of the file
 - Prevents circular import errors
 - Requires no string quotes around type hints
@@ -220,6 +224,7 @@ wing_cross_section.py: Contains the WingCrossSection class.
 ```
 
 **Pattern:**
+
 - Brief description using "Contains" (present tense)
 - List public subpackages (or "None")
 - List public directories (or "None")
@@ -244,6 +249,7 @@ None
 ```
 
 **Pattern:**
+
 - Brief description using "Contains" (present tense)
 - List public classes with brief descriptions (use "A class used to..." or similar)
 - List public functions (or "None")
@@ -258,6 +264,7 @@ Private modules (e.g., `_meshing.py`, `_functions.py`) have minimal docstrings:
 ```
 
 **Pattern:**
+
 - Single brief sentence
 - No listing of functions or classes
 - Keep it concise since these are internal implementation details
@@ -274,15 +281,15 @@ def function_name(
 
     Optional longer description providing more context. This provides detailed
     explanations of the function's behavior. It can be one or more paragraphs.
-    
+
     Optional citation block:
 
     **Citation:**
-    
+
     Adapted from (can be more specific if the whole function wasn't adapted): <source>
-    
+
     Author (or "Authors"): <author>
-    
+
     Date of retrieval (don't include if not known): <date>
 
     :param param1: A (shape) dtype description of param1. Additional details about
@@ -297,6 +304,7 @@ def function_name(
 ### Array Parameter Descriptions
 
 For numpy arrays, always include:
+
 1. **Shape**: e.g., "(4,4)", "(M,N,3)", "(N,)"
 2. **Dtype**: e.g., "ndarray of floats", "ndarray of ints", "ndarray of bools"
 3. **Coordinate system and reference point** (when applicable)
@@ -325,28 +333,28 @@ class ClassName:
     """Short description of the class.
 
     **Contains the following methods:**
-    
+
     public_method_1: Short description (identical to method's docstring's short
     description.
 
-    public_method_2: Short description (identical to method's docstring's short 
+    public_method_2: Short description (identical to method's docstring's short
     description.
 
     Optional notes block
-    
+
     **Notes:**
-    
+
     Detailed description of the class's purpose, behavior, or usage. Can be one or more
     paragraphs. Avoid numbered or bulleted lists.
-    
+
     Optional citation block:
-    
+
     **Citation:**
-    
+
     Adapted from (can be more specific if the whole class wasn't adapted): <source>
-    
+
     Author (or "Authors"): <author>
-    
+
     Date of retrieval (don't include if not known): <date>
     """
 ```
@@ -376,6 +384,7 @@ class ChildClass(ParentClass):
 ```
 
 **Key points:**
+
 - Short description explicitly mentions "A subclass of ParentClass"
 - Notes section states what is inherited from the parent
 - "Contains the following methods:" lists only NEW methods unique to this subclass
@@ -403,6 +412,7 @@ def __init__(
 ```
 
 **Key points:**
+
 - Reference the parent class's `__init__` docstring for inherited parameters
 - Only document parameters that are NEW to the subclass
 - Call `super().__init__()` with inherited parameters
@@ -418,6 +428,89 @@ def property_name(self) -> ReturnType:
     """
 ```
 
+For simple getter properties that just return a stored attribute, the docstring can be omitted if the attribute is already thoroughly documented in `__init__`'s docstring. This applies broadly to all simple getter properties, not only to cached properties with invalidating setters.
+
+### Cached Properties with Invalidating Setters
+
+When implementing a caching pattern where computed properties are lazily evaluated and cached, with setters that invalidate dependent caches, follow these conventions:
+
+#### Property Getters for Cached Attributes
+
+For simple getters that return a cached value (e.g., corner point positions that were previously plain attributes), use a brief docstring or omit the docstring entirely if the attribute is already thoroughly documented in `__init__`:
+
+```python
+@property
+def Frpp_G_Cg(self) -> np.ndarray:
+    # No docstring as this attribute is documented in __init__()'s docstring
+    return self._Frpp_G_Cg
+
+
+@property
+def Frpp_GP1_CgP1(self) -> np.ndarray:
+    """The position of the Panel's front right vertex (in the first Airplane's geometry
+    axes, relative to the first Airplane's CG).
+
+    :return: A (3,) ndarray of floats representing the position of the Panel's front
+        right vertex (in the first Airplane's geometry axes, relative to the first
+        Airplane's CG). The units are in meters. Returns None if not yet set or if
+        Frpp_G_Cg has been modified since last set.
+    """
+    return self._Frpp_GP1_CgP1
+```
+
+#### Property Setters that Invalidate Caches
+
+Do not add docstrings to setters. The cache invalidation behavior is an implementation detail.
+
+```python
+@Frpp_G_Cg.setter
+def Frpp_G_Cg(self, newFrpp_G_Cg: np.ndarray) -> None:
+    # No docstring as this is a setter method
+    self._rightLeg_G = None
+    self._frontLeg_G = None
+    self._Frbvp_G_Cg = None
+    self._Cpp_G_Cg = None
+    self._unitNormal_G = None
+    self._area = None
+    self._aspect_ratio = None
+
+    self.Frpp_GP1_CgP1 = None
+
+    self._Frpp_G_Cg = newFrpp_G_Cg
+```
+
+#### Cached Computed Properties
+
+For computed properties that are now cached (e.g., `rightLeg_G`, `area`), the existing docstring remains unchanged. Caching is an implementation detail that does not affect the public interface.
+
+#### Class Docstring for Classes with Caching
+
+When a class uses this caching pattern, add a **Notes:** section to the class docstring explaining the caching behavior. Don't add the getters and setter methods for the non-computed properties to the list of methods:
+
+```python
+class Panel:
+    """A class used to contain the panels of a Wing.
+
+    **Contains the following methods:**
+
+    rightLeg_G: The Panel's right leg vector (in geometry axes).
+
+    area: An estimate of the Panel's area.
+
+    [... other methods (don't include Frpp_G_Cg or Frpp_GP1_CgP1 ...]
+
+    **Notes:**
+
+    Computed geometric properties (leg vectors, bound vortex points, collocation points,
+    unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
+    corner point position invalidates all dependent cached values, ensuring consistency
+    while avoiding redundant computation. Setting a corner point's local position
+    (one of the parameters with a _G_Cg suffix), sets the corresponding global position
+    (_GP1_CgP1 suffix) to None. It also sets this Panel's bound vortices and the loads
+    on the Panel to None.
+    """
+```
+
 ---
 
 ## Examples
@@ -425,6 +518,7 @@ def property_name(self) -> ReturnType:
 ### Example 1: Module-Level Docstrings
 
 #### Public Package __init__.py
+
 ```python
 """Contains the geometry classes.
 
@@ -449,6 +543,7 @@ wing_cross_section.py: Contains the WingCrossSection class.
 ```
 
 #### Public Module
+
 ```python
 """Contains the Airfoil class.
 
@@ -463,6 +558,7 @@ None
 ```
 
 #### Private Module
+
 ```python
 """Contains the function for meshing Wings."""
 ```
@@ -475,9 +571,9 @@ def _get_mcl_points(
     outer_airfoil: airfoil_mod.Airfoil,
     chordwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """Takes in the inner and outer Airfoils of a wing section and its normalized 
-    chordwise coordinates. It returns a list of four column vectors containing the 
-    normalized components of the positions of points along the mean camber line (MCL) 
+    """Takes in the inner and outer Airfoils of a wing section and its normalized
+    chordwise coordinates. It returns a list of four column vectors containing the
+    normalized components of the positions of points along the mean camber line (MCL)
     (in each Airfoil's axes, relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
@@ -509,7 +605,7 @@ def _get_mcs_points(
     outer_mcl_pointsX_Ao_lpAo: np.ndarray,
     spanwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
-    """Calculates the points on a wing section's mean camber surface (MCS) (in wing 
+    """Calculates the points on a wing section's mean camber surface (MCS) (in wing
     axes, relative to the leading edge root point).
 
     :param T_pas_Wcsi_Lpi_Wn_Ler: A (4,4) ndarray of floats representing a passive
@@ -577,7 +673,7 @@ def __init__(
 def add_control_surface(
     self, deflection: float | int, hinge_point: float | int
 ) -> Airfoil:
-    """Returns a version of the Airfoil with a control surface added at a given point. 
+    """Returns a version of the Airfoil with a control surface added at a given point.
     It is called during meshing.
 
     :param deflection: The control deflection in degrees. Deflection downwards is
@@ -611,7 +707,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
 def get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
-    """Returns a ndarray of points along the mean camber line (MCL), resampled from the 
+    """Returns a ndarray of points along the mean camber line (MCL), resampled from the
     mcl_A_outline attribute. It is used to discretize the MCL for meshing.
 
     :param mcl_fractions: A (N,) array-like object of floats representing normalized

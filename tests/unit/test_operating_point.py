@@ -43,6 +43,42 @@ class TestOperatingPoint(unittest.TestCase):
         self.boundary_alpha_op = (
             operating_point_fixtures.make_boundary_alpha_operating_point_fixture()
         )
+        self.negative_beta_op = (
+            operating_point_fixtures.make_negative_beta_operating_point_fixture()
+        )
+        self.boundary_beta_op = (
+            operating_point_fixtures.make_boundary_beta_operating_point_fixture()
+        )
+        self.combined_boundary_angles_op = (
+            operating_point_fixtures.make_combined_boundary_angles_operating_point_fixture()
+        )
+        self.very_low_speed_op = (
+            operating_point_fixtures.make_very_low_speed_operating_point_fixture()
+        )
+        self.integer_parameters_op = (
+            operating_point_fixtures.make_integer_parameters_operating_point_fixture()
+        )
+        self.negative_external_force_op = (
+            operating_point_fixtures.make_negative_external_force_operating_point_fixture()
+        )
+        self.near_boundary_alpha_op = (
+            operating_point_fixtures.make_near_boundary_alpha_operating_point_fixture()
+        )
+        self.near_boundary_beta_op = (
+            operating_point_fixtures.make_near_boundary_beta_operating_point_fixture()
+        )
+        self.with_attitude_angles_op = (
+            operating_point_fixtures.make_with_attitude_angles_operating_point_fixture()
+        )
+        self.with_cg_position_op = (
+            operating_point_fixtures.make_with_cg_position_operating_point_fixture()
+        )
+        self.with_ground_surface_op = (
+            operating_point_fixtures.make_with_ground_surface_operating_point_fixture()
+        )
+        self.with_tilted_surface_op = (
+            operating_point_fixtures.make_with_tilted_surface_operating_point_fixture()
+        )
 
     def test_initialization_valid_parameters(self):
         """Test OperatingPoint initialization with valid parameters."""
@@ -550,18 +586,6 @@ class TestOperatingPoint(unittest.TestCase):
                 self.assertAlmostEqual(op.alpha, params["alpha"], places=10)
                 self.assertAlmostEqual(op.beta, params["beta"], places=10)
 
-    def test_very_low_speed(self):
-        """Test with very low but valid speed."""
-        op = ps.operating_point.OperatingPoint(vCg__E=0.01)
-
-        # Should still calculate qInf correctly
-        expected_qInf = 0.5 * 1.225 * 0.01**2
-        self.assertAlmostEqual(op.qInf__E, expected_qInf, places=10)
-
-        # Should still produce valid velocity vectors
-        self.assertEqual(len(op.vInf_GP1__E), 3)
-        npt.assert_allclose(np.linalg.norm(op.vInf_GP1__E), 0.01, atol=1e-14)
-
     def test_very_high_speed(self):
         """Test with very high speed."""
         op = ps.operating_point.OperatingPoint(vCg__E=300.0)
@@ -589,6 +613,1041 @@ class TestOperatingPoint(unittest.TestCase):
         # Both should produce valid transformations
         self.assertEqual(op_low.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
         self.assertEqual(op_high.T_pas_GP1_CgP1_to_W_CgP1.shape, (4, 4))
+
+    def test_immutable_attributes_raise_attribute_error(self):
+        """Test that setting read-only properties raises AttributeError."""
+        op = self.basic_op
+
+        # Test all immutable scalar attributes
+        with self.assertRaises(AttributeError):
+            op.rho = 2.0
+
+        with self.assertRaises(AttributeError):
+            op.vCg__E = 20.0
+
+        with self.assertRaises(AttributeError):
+            op.alpha = 10.0
+
+        with self.assertRaises(AttributeError):
+            op.beta = 5.0
+
+        with self.assertRaises(AttributeError):
+            op.externalFX_W = 100.0
+
+        with self.assertRaises(AttributeError):
+            op.nu = 20.0e-6
+
+    def test_derived_property_caching(self):
+        """Test that derived properties are cached and return same objects."""
+        op = self.basic_op
+
+        # Access qInf__E twice, should return same value (float)
+        qInf_1 = op.qInf__E
+        qInf_2 = op.qInf__E
+        self.assertEqual(qInf_1, qInf_2)
+
+        # Access transformation matrices twice, should return same objects
+        T_forward_1 = op.T_pas_GP1_CgP1_to_W_CgP1
+        T_forward_2 = op.T_pas_GP1_CgP1_to_W_CgP1
+        self.assertIs(T_forward_1, T_forward_2)
+
+        T_inverse_1 = op.T_pas_W_CgP1_to_GP1_CgP1
+        T_inverse_2 = op.T_pas_W_CgP1_to_GP1_CgP1
+        self.assertIs(T_inverse_1, T_inverse_2)
+
+        # Access velocity vectors twice, should return same objects
+        vInfHat_1 = op.vInfHat_GP1__E
+        vInfHat_2 = op.vInfHat_GP1__E
+        self.assertIs(vInfHat_1, vInfHat_2)
+
+        vInf_1 = op.vInf_GP1__E
+        vInf_2 = op.vInf_GP1__E
+        self.assertIs(vInf_1, vInf_2)
+
+    def test_cached_numpy_arrays_are_read_only(self):
+        """Test that cached numpy arrays cannot be mutated in place."""
+        op = self.basic_op
+
+        # Test T_pas_GP1_CgP1_to_W_CgP1 is read-only
+        T_forward = op.T_pas_GP1_CgP1_to_W_CgP1
+        with self.assertRaises(ValueError):
+            T_forward[0, 0] = 999.0
+
+        # Test T_pas_W_CgP1_to_GP1_CgP1 is read-only
+        T_inverse = op.T_pas_W_CgP1_to_GP1_CgP1
+        with self.assertRaises(ValueError):
+            T_inverse[0, 0] = 999.0
+
+        # Test vInfHat_GP1__E is read-only
+        vInfHat = op.vInfHat_GP1__E
+        with self.assertRaises(ValueError):
+            vInfHat[0] = 999.0
+
+        # Test vInf_GP1__E is read-only
+        vInf = op.vInf_GP1__E
+        with self.assertRaises(ValueError):
+            vInf[0] = 999.0
+
+    def test_derived_properties_computed_correctly_after_caching(self):
+        """Test that derived properties return correct values after caching."""
+        # Create a fresh OperatingPoint
+        op = ps.operating_point.OperatingPoint(
+            rho=1.5, vCg__E=25.0, alpha=15.0, beta=5.0
+        )
+
+        # Access all derived properties to populate caches
+        qInf = op.qInf__E
+        T_forward = op.T_pas_GP1_CgP1_to_W_CgP1
+        T_inverse = op.T_pas_W_CgP1_to_GP1_CgP1
+        vInfHat = op.vInfHat_GP1__E
+        vInf = op.vInf_GP1__E
+
+        # Verify qInf__E calculation
+        expected_qInf = 0.5 * 1.5 * 25.0**2
+        self.assertAlmostEqual(qInf, expected_qInf, places=10)
+
+        # Verify transformation matrices are still inverses
+        identity = T_forward @ T_inverse
+        npt.assert_allclose(identity, np.eye(4), atol=1e-14)
+
+        # Verify vInfHat is unit vector
+        npt.assert_allclose(np.linalg.norm(vInfHat), 1.0, atol=1e-14)
+
+        # Verify vInf magnitude equals vCg__E
+        npt.assert_allclose(np.linalg.norm(vInf), 25.0, atol=1e-14)
+
+        # Verify vInf = vInfHat * vCg__E
+        npt.assert_allclose(vInf, vInfHat * 25.0, atol=1e-14)
+
+    def test_integer_parameters_converted_to_float(self):
+        """Test that integer parameters are internally converted to floats."""
+        op = self.integer_parameters_op
+
+        # Verify all parameters are stored as floats.
+        self.assertIsInstance(op.rho, float)
+        self.assertIsInstance(op.vCg__E, float)
+        self.assertIsInstance(op.alpha, float)
+        self.assertIsInstance(op.beta, float)
+        self.assertIsInstance(op.externalFX_W, float)
+        self.assertIsInstance(op.nu, float)
+
+        # Verify values are correct.
+        self.assertEqual(op.rho, 1.0)
+        self.assertEqual(op.vCg__E, 10.0)
+        self.assertEqual(op.alpha, 5.0)
+        self.assertEqual(op.beta, 0.0)
+        self.assertEqual(op.externalFX_W, 0.0)
+        self.assertEqual(op.nu, 1.0)
+
+    def test_negative_beta_transformation(self):
+        """Test transformation with negative beta."""
+        op = self.negative_beta_op
+
+        # Verify beta is stored correctly.
+        self.assertEqual(op.beta, -15.0)
+
+        # Verify transformation matrix is still valid.
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
+        R = T[:3, :3]
+
+        # Rotation matrix should be orthonormal.
+        npt.assert_allclose(R @ R.T, np.eye(3), atol=1e-14)
+        npt.assert_allclose(np.linalg.det(R), 1.0, atol=1e-14)
+
+        # Transformation matrices should be inverses.
+        T_inverse = op.T_pas_W_CgP1_to_GP1_CgP1
+        identity = T @ T_inverse
+        npt.assert_allclose(identity, np.eye(4), atol=1e-14)
+
+    def test_boundary_beta_transformation(self):
+        """Test transformation with beta at boundary (180 degrees)."""
+        op = self.boundary_beta_op
+
+        # Verify beta is stored correctly.
+        self.assertEqual(op.beta, 180.0)
+
+        # Verify transformation matrix is valid.
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
+        R = T[:3, :3]
+
+        npt.assert_allclose(R @ R.T, np.eye(3), atol=1e-14)
+        self.assertFalse(np.any(np.isnan(T)))
+        self.assertFalse(np.any(np.isinf(T)))
+
+    def test_combined_boundary_angles_transformation(self):
+        """Test transformation with both alpha and beta at boundary values."""
+        op = self.combined_boundary_angles_op
+
+        # Verify angles are stored correctly.
+        self.assertEqual(op.alpha, 180.0)
+        self.assertEqual(op.beta, 180.0)
+
+        # Verify transformation matrix is valid.
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
+        R = T[:3, :3]
+
+        npt.assert_allclose(R @ R.T, np.eye(3), atol=1e-14)
+        self.assertFalse(np.any(np.isnan(T)))
+        self.assertFalse(np.any(np.isinf(T)))
+
+        # Transformation matrices should be inverses.
+        T_inverse = op.T_pas_W_CgP1_to_GP1_CgP1
+        identity = T @ T_inverse
+        npt.assert_allclose(identity, np.eye(4), atol=1e-14)
+
+    def test_very_low_speed_fixture(self):
+        """Test the very low speed fixture properties."""
+        op = self.very_low_speed_op
+
+        # Verify speed is stored correctly.
+        self.assertEqual(op.vCg__E, 0.01)
+
+        # Verify qInf calculation.
+        expected_qInf = 0.5 * 1.225 * 0.01**2
+        self.assertAlmostEqual(op.qInf__E, expected_qInf, places=14)
+
+        # Verify velocity vector magnitude.
+        npt.assert_allclose(np.linalg.norm(op.vInf_GP1__E), 0.01, atol=1e-14)
+
+    def test_negative_external_force_fixture(self):
+        """Test the negative external force fixture properties."""
+        op = self.negative_external_force_op
+
+        # Verify external force is stored correctly.
+        self.assertEqual(op.externalFX_W, -25.0)
+        self.assertIsInstance(op.externalFX_W, float)
+
+    def test_near_boundary_alpha_fixture(self):
+        """Test the near boundary alpha fixture properties."""
+        op = self.near_boundary_alpha_op
+
+        # Verify alpha is stored correctly (near -180).
+        self.assertEqual(op.alpha, -179.999)
+
+        # Verify transformation is still valid.
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
+        self.assertFalse(np.any(np.isnan(T)))
+        self.assertFalse(np.any(np.isinf(T)))
+
+    def test_near_boundary_beta_fixture(self):
+        """Test the near boundary beta fixture properties."""
+        op = self.near_boundary_beta_op
+
+        # Verify beta is stored correctly (near -180).
+        self.assertEqual(op.beta, -179.999)
+
+        # Verify transformation is still valid.
+        T = op.T_pas_GP1_CgP1_to_W_CgP1
+        self.assertFalse(np.any(np.isnan(T)))
+        self.assertFalse(np.any(np.isinf(T)))
+
+    def test_all_new_fixtures_comprehensive_properties(self):
+        """Test all properties on the new fixtures."""
+        fixtures = [
+            (self.negative_beta_op, "negative_beta"),
+            (self.boundary_beta_op, "boundary_beta"),
+            (self.combined_boundary_angles_op, "combined_boundary_angles"),
+            (self.very_low_speed_op, "very_low_speed"),
+            (self.integer_parameters_op, "integer_parameters"),
+            (self.negative_external_force_op, "negative_external_force"),
+            (self.near_boundary_alpha_op, "near_boundary_alpha"),
+            (self.near_boundary_beta_op, "near_boundary_beta"),
+        ]
+
+        for op, fixture_name in fixtures:
+            with self.subTest(fixture=fixture_name):
+                # Test all attributes exist and have correct types.
+                self.assertIsInstance(op.rho, float)
+                self.assertIsInstance(op.vCg__E, float)
+                self.assertIsInstance(op.alpha, float)
+                self.assertIsInstance(op.beta, float)
+                self.assertIsInstance(op.externalFX_W, float)
+                self.assertIsInstance(op.nu, float)
+
+                # Test all properties return correct types.
+                self.assertIsInstance(op.qInf__E, float)
+                self.assertIsInstance(op.T_pas_GP1_CgP1_to_W_CgP1, np.ndarray)
+                self.assertIsInstance(op.T_pas_W_CgP1_to_GP1_CgP1, np.ndarray)
+                self.assertIsInstance(op.vInfHat_GP1__E, np.ndarray)
+                self.assertIsInstance(op.vInf_GP1__E, np.ndarray)
+
+                # Test no NaN or Inf values in properties.
+                self.assertFalse(np.isnan(op.qInf__E))
+                self.assertFalse(np.any(np.isnan(op.T_pas_GP1_CgP1_to_W_CgP1)))
+                self.assertFalse(np.any(np.isnan(op.T_pas_W_CgP1_to_GP1_CgP1)))
+                self.assertFalse(np.any(np.isnan(op.vInfHat_GP1__E)))
+                self.assertFalse(np.any(np.isnan(op.vInf_GP1__E)))
+
+    # --- Tests for angles_E_to_BP1_izyx ---
+
+    def test_angles_E_to_BP1_izyx_default(self):
+        """Test that angles_E_to_BP1_izyx defaults to (0, 0, 0)."""
+        op = ps.operating_point.OperatingPoint()
+        npt.assert_array_equal(op.angles_E_to_BP1_izyx, [0.0, 0.0, 0.0])
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_valid(self):
+        """Test angles_E_to_BP1_izyx parameter validation with valid values."""
+        # Test various valid angles_E_to_BP1_izyx values within (-180, 180].
+        valid_angles_values = [
+            (0.0, 0.0, 0.0),
+            (45.0, 30.0, 15.0),
+            (-45.0, -30.0, -15.0),
+            (180.0, 180.0, 180.0),
+            (-179.999, -179.999, -179.999),
+            [90.0, -90.0, 0.0],
+            np.array([10.0, 20.0, 30.0]),
+        ]
+
+        for angles in valid_angles_values:
+            with self.subTest(angles=angles):
+                op = ps.operating_point.OperatingPoint(
+                    angles_E_to_BP1_izyx=angles,
+                )
+                npt.assert_array_almost_equal(
+                    op.angles_E_to_BP1_izyx,
+                    np.array(angles, dtype=float),
+                )
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_invalid_range(self):
+        """Test angles_E_to_BP1_izyx parameter validation with values outside
+        range.
+        """
+        # Test angles outside the valid range (-180, 180].
+        invalid_angles_values = [
+            (180.1, 0.0, 0.0),
+            (0.0, 180.1, 0.0),
+            (0.0, 0.0, 180.1),
+            (-180.0, 0.0, 0.0),
+            (0.0, -180.0, 0.0),
+            (0.0, 0.0, -180.0),
+            (-180.1, 0.0, 0.0),
+            (200.0, 200.0, 200.0),
+        ]
+
+        for invalid_angles in invalid_angles_values:
+            with self.subTest(invalid_angles=invalid_angles):
+                with self.assertRaises(ValueError):
+                    ps.operating_point.OperatingPoint(
+                        angles_E_to_BP1_izyx=invalid_angles,
+                    )
+
+    def test_angles_E_to_BP1_izyx_parameter_validation_invalid_type(self):
+        """Test angles_E_to_BP1_izyx parameter validation with invalid types."""
+        # Test invalid types for angles_E_to_BP1_izyx.
+        invalid_angles_values = [
+            (0.0, 0.0),
+            (0.0, 0.0, 0.0, 0.0),
+            "invalid",
+            None,
+            (1.0, "invalid", 0.0),
+        ]
+
+        for invalid_angles in invalid_angles_values:
+            with self.subTest(invalid_angles=invalid_angles):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.operating_point.OperatingPoint(
+                        angles_E_to_BP1_izyx=invalid_angles,
+                    )
+
+    def test_angles_E_to_BP1_izyx_shape_and_type(self):
+        """Test angles_E_to_BP1_izyx shape and type."""
+        angles = self.with_attitude_angles_op.angles_E_to_BP1_izyx
+
+        # Should be a 3-element ndarray of floats.
+        self.assertEqual(len(angles), 3)
+        self.assertIsInstance(angles, np.ndarray)
+        self.assertEqual(angles.dtype, float)
+
+    def test_angles_E_to_BP1_izyx_conversion_to_float_array(self):
+        """Test that angles_E_to_BP1_izyx is converted to a float array."""
+        # Test with integer values.
+        op = ps.operating_point.OperatingPoint(
+            angles_E_to_BP1_izyx=(10, 20, 30),
+        )
+        self.assertEqual(op.angles_E_to_BP1_izyx.dtype, float)
+        npt.assert_array_equal(op.angles_E_to_BP1_izyx, [10.0, 20.0, 30.0])
+
+    def test_angles_E_to_BP1_izyx_immutable(self):
+        """Test that angles_E_to_BP1_izyx is read only."""
+        op = self.with_attitude_angles_op
+
+        # The property should not be settable.
+        with self.assertRaises(AttributeError):
+            op.angles_E_to_BP1_izyx = np.array([0.0, 0.0, 0.0])
+
+        # The underlying array should not be writable.
+        with self.assertRaises(ValueError):
+            op.angles_E_to_BP1_izyx[0] = 999.0
+
+    # --- Tests for CgP1_E_Eo ---
+
+    def test_CgP1_E_Eo_default(self):
+        """Test that CgP1_E_Eo defaults to (0, 0, 0)."""
+        op = ps.operating_point.OperatingPoint()
+        npt.assert_array_equal(op.CgP1_E_Eo, [0.0, 0.0, 0.0])
+
+    def test_CgP1_E_Eo_parameter_validation_valid(self):
+        """Test CgP1_E_Eo parameter validation with valid values."""
+        valid_cg_values = [
+            (0.0, 0.0, 0.0),
+            (100.0, 200.0, -50.0),
+            (-10.0, -20.0, -30.0),
+            [1.0, 2.0, 3.0],
+            np.array([4.0, 5.0, 6.0]),
+        ]
+
+        for cg in valid_cg_values:
+            with self.subTest(cg=cg):
+                op = ps.operating_point.OperatingPoint(CgP1_E_Eo=cg)
+                npt.assert_array_almost_equal(op.CgP1_E_Eo, np.array(cg, dtype=float))
+
+    def test_CgP1_E_Eo_parameter_validation_invalid(self):
+        """Test CgP1_E_Eo parameter validation with invalid values."""
+        invalid_cg_values = [
+            (0.0, 0.0),
+            (0.0, 0.0, 0.0, 0.0),
+            "invalid",
+            None,
+            (1.0, "invalid", 0.0),
+        ]
+
+        for invalid_cg in invalid_cg_values:
+            with self.subTest(invalid_cg=invalid_cg):
+                # noinspection PyTypeChecker
+                with self.assertRaises((ValueError, TypeError)):
+                    ps.operating_point.OperatingPoint(CgP1_E_Eo=invalid_cg)
+
+    def test_CgP1_E_Eo_shape_and_type(self):
+        """Test CgP1_E_Eo shape and type."""
+        cg = self.with_cg_position_op.CgP1_E_Eo
+
+        # Should be a 3-element ndarray of floats.
+        self.assertEqual(len(cg), 3)
+        self.assertIsInstance(cg, np.ndarray)
+        self.assertEqual(cg.dtype, float)
+
+    def test_CgP1_E_Eo_conversion_to_float_array(self):
+        """Test that CgP1_E_Eo is converted to a float array."""
+        op = ps.operating_point.OperatingPoint(CgP1_E_Eo=(10, 20, 30))
+        self.assertEqual(op.CgP1_E_Eo.dtype, float)
+        npt.assert_array_equal(op.CgP1_E_Eo, [10.0, 20.0, 30.0])
+
+    def test_CgP1_E_Eo_immutable(self):
+        """Test that CgP1_E_Eo is read only."""
+        op = self.with_cg_position_op
+
+        # The property should not be settable.
+        with self.assertRaises(AttributeError):
+            op.CgP1_E_Eo = np.array([0.0, 0.0, 0.0])
+
+        # The underlying array should not be writable.
+        with self.assertRaises(ValueError):
+            op.CgP1_E_Eo[0] = 999.0
+
+    # --- Tests for surfaceNormal_E and surfacePoint_E_Eo ---
+
+    def test_surface_parameters_default_to_none(self):
+        """Test that surfaceNormal_E and surfacePoint_E_Eo default to None."""
+        op = ps.operating_point.OperatingPoint()
+        self.assertIsNone(op.surfaceNormal_E)
+        self.assertIsNone(op.surfacePoint_E_Eo)
+
+    def test_surface_parameters_both_provided(self):
+        """Test that providing both surface parameters succeeds."""
+        op = ps.operating_point.OperatingPoint(
+            surfaceNormal_E=(0.0, 0.0, 1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+        npt.assert_allclose(op.surfaceNormal_E, [0.0, 0.0, 1.0], atol=1e-14)
+        npt.assert_array_equal(op.surfacePoint_E_Eo, [0.0, 0.0, 0.0])
+
+    def test_surface_parameters_mutual_exclusivity(self):
+        """Test that providing only one surface parameter raises ValueError."""
+        # surfaceNormal_E without surfacePoint_E_Eo.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=(0.0, 0.0, 1.0),
+                surfacePoint_E_Eo=None,
+            )
+
+        # surfacePoint_E_Eo without surfaceNormal_E.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=None,
+                surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+            )
+
+    def test_surfaceNormal_E_is_normalized(self):
+        """Test that surfaceNormal_E is normalized to a unit vector."""
+        # Provide a non unit normal; it should be normalized internally.
+        op = ps.operating_point.OperatingPoint(
+            surfaceNormal_E=(0.0, 0.0, 3.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+        npt.assert_allclose(np.linalg.norm(op.surfaceNormal_E), 1.0, atol=1e-14)
+        npt.assert_allclose(op.surfaceNormal_E, [0.0, 0.0, 1.0], atol=1e-14)
+
+    def test_surfaceNormal_E_validation_invalid(self):
+        """Test surfaceNormal_E validation with invalid values."""
+        # Zero vector should be rejected.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=(0.0, 0.0, 0.0),
+                surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+            )
+
+        # Wrong length.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=(0.0, 1.0),
+                surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+            )
+
+        # Non numeric.
+        with self.assertRaises(TypeError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E="invalid",
+                surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+            )
+
+    def test_surfacePoint_E_Eo_validation_invalid(self):
+        """Test surfacePoint_E_Eo validation with invalid values."""
+        # Wrong length.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=(0.0, 0.0, 1.0),
+                surfacePoint_E_Eo=(0.0, 0.0),
+            )
+
+        # Non numeric.
+        with self.assertRaises(TypeError):
+            ps.operating_point.OperatingPoint(
+                surfaceNormal_E=(0.0, 0.0, 1.0),
+                surfacePoint_E_Eo="invalid",
+            )
+
+    def test_surface_parameters_immutable(self):
+        """Test that surfaceNormal_E and surfacePoint_E_Eo are read only."""
+        op = self.with_ground_surface_op
+
+        # The properties should not be settable.
+        with self.assertRaises(AttributeError):
+            op.surfaceNormal_E = np.array([1.0, 0.0, 0.0])
+        with self.assertRaises(AttributeError):
+            op.surfacePoint_E_Eo = np.array([1.0, 0.0, 0.0])
+
+        # The underlying arrays should not be writable.
+        with self.assertRaises(ValueError):
+            op.surfaceNormal_E[0] = 999.0
+        with self.assertRaises(ValueError):
+            op.surfacePoint_E_Eo[0] = 999.0
+
+    def test_surface_parameters_accept_various_array_likes(self):
+        """Test that surface parameters accept tuples, lists, and ndarrays."""
+        input_types = [
+            ((0.0, 0.0, 1.0), (1.0, 2.0, 3.0)),
+            ([0.0, 0.0, 1.0], [1.0, 2.0, 3.0]),
+            (np.array([0.0, 0.0, 1.0]), np.array([1.0, 2.0, 3.0])),
+        ]
+
+        for normal, point in input_types:
+            with self.subTest(normal_type=type(normal).__name__):
+                op = ps.operating_point.OperatingPoint(
+                    surfaceNormal_E=normal,
+                    surfacePoint_E_Eo=point,
+                )
+                npt.assert_allclose(op.surfaceNormal_E, [0.0, 0.0, 1.0], atol=1e-14)
+                npt.assert_array_equal(op.surfacePoint_E_Eo, [1.0, 2.0, 3.0])
+
+    # --- Tests for intermediate transformation properties (GP1 <-> BP1, BP1 <-> W) ---
+
+    def test_T_pas_GP1_CgP1_to_BP1_CgP1_shape_and_type(self):
+        """Test T_pas_GP1_CgP1_to_BP1_CgP1 shape and type."""
+        T = self.basic_op.T_pas_GP1_CgP1_to_BP1_CgP1
+
+        self.assertEqual(T.shape, (4, 4))
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.dtype, float)
+
+    def test_T_pas_GP1_CgP1_to_BP1_CgP1_is_180_deg_about_y(self):
+        """Test that GP1 to BP1 is a 180 degree rotation about y.
+
+        Geometry axes: +x aft, +y right, +z up.
+        Body axes: +x forward, +y right, +z down.
+        So x and z flip sign; y is unchanged.
+        """
+        T = self.basic_op.T_pas_GP1_CgP1_to_BP1_CgP1
+        R = T[:3, :3]
+
+        expected_R = np.diag([-1.0, 1.0, -1.0])
+        npt.assert_allclose(R, expected_R, atol=1e-14)
+
+        # Translation part should be zero.
+        npt.assert_allclose(T[:3, 3], [0.0, 0.0, 0.0], atol=1e-14)
+
+    def test_T_pas_GP1_CgP1_to_BP1_CgP1_and_inverse_are_inverses(self):
+        """Test that GP1 to BP1 and BP1 to GP1 are inverses."""
+        T_forward = self.basic_op.T_pas_GP1_CgP1_to_BP1_CgP1
+        T_inverse = self.basic_op.T_pas_BP1_CgP1_to_GP1_CgP1
+
+        npt.assert_allclose(T_forward @ T_inverse, np.eye(4), atol=1e-14)
+        npt.assert_allclose(T_inverse @ T_forward, np.eye(4), atol=1e-14)
+
+    def test_T_pas_BP1_CgP1_to_W_CgP1_shape_and_type(self):
+        """Test T_pas_BP1_CgP1_to_W_CgP1 shape and type."""
+        T = self.basic_op.T_pas_BP1_CgP1_to_W_CgP1
+
+        self.assertEqual(T.shape, (4, 4))
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.dtype, float)
+
+    def test_T_pas_BP1_CgP1_to_W_CgP1_and_inverse_are_inverses(self):
+        """Test that BP1 to W and W to BP1 are inverses."""
+        fixtures = [
+            self.basic_op,
+            self.zero_alpha_beta_op,
+            self.high_alpha_op,
+            self.nonzero_beta_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                T_forward = op.T_pas_BP1_CgP1_to_W_CgP1
+                T_inverse = op.T_pas_W_CgP1_to_BP1_CgP1
+
+                npt.assert_allclose(T_forward @ T_inverse, np.eye(4), atol=1e-14)
+
+    def test_GP1_to_W_composition_equals_product(self):
+        """Test that GP1 to W equals GP1 to BP1 composed with BP1 to W."""
+        fixtures = [
+            self.basic_op,
+            self.zero_alpha_beta_op,
+            self.high_alpha_op,
+            self.nonzero_beta_op,
+            self.boundary_alpha_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                T_GP1_to_W = op.T_pas_GP1_CgP1_to_W_CgP1
+                T_GP1_to_BP1 = op.T_pas_GP1_CgP1_to_BP1_CgP1
+                T_BP1_to_W = op.T_pas_BP1_CgP1_to_W_CgP1
+
+                npt.assert_allclose(T_GP1_to_W, T_BP1_to_W @ T_GP1_to_BP1, atol=1e-14)
+
+    def test_intermediate_transformations_read_only(self):
+        """Test that intermediate transformation matrices are read only."""
+        op = self.basic_op
+
+        with self.assertRaises(ValueError):
+            op.T_pas_GP1_CgP1_to_BP1_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_BP1_CgP1_to_GP1_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_BP1_CgP1_to_W_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_W_CgP1_to_BP1_CgP1[0, 0] = 999.0
+
+    def test_intermediate_transformations_cached(self):
+        """Test that intermediate transformation properties return the same
+        objects on repeated access.
+        """
+        op = self.basic_op
+
+        self.assertIs(op.T_pas_GP1_CgP1_to_BP1_CgP1, op.T_pas_GP1_CgP1_to_BP1_CgP1)
+        self.assertIs(op.T_pas_BP1_CgP1_to_GP1_CgP1, op.T_pas_BP1_CgP1_to_GP1_CgP1)
+        self.assertIs(op.T_pas_BP1_CgP1_to_W_CgP1, op.T_pas_BP1_CgP1_to_W_CgP1)
+        self.assertIs(op.T_pas_W_CgP1_to_BP1_CgP1, op.T_pas_W_CgP1_to_BP1_CgP1)
+
+    # --- Tests for Earth transformation properties ---
+
+    def test_T_pas_E_CgP1_to_BP1_CgP1_shape_and_type(self):
+        """Test T_pas_E_CgP1_to_BP1_CgP1 shape and type."""
+        T = self.with_attitude_angles_op.T_pas_E_CgP1_to_BP1_CgP1
+
+        self.assertEqual(T.shape, (4, 4))
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.dtype, float)
+
+    def test_T_pas_E_CgP1_to_BP1_CgP1_identity_when_zero_angles(self):
+        """Test that E to BP1 is identity when angles_E_to_BP1_izyx is all
+        zeros.
+        """
+        op = self.basic_op
+        T = op.T_pas_E_CgP1_to_BP1_CgP1
+
+        npt.assert_allclose(T, np.eye(4), atol=1e-14)
+
+    def test_T_pas_E_CgP1_to_BP1_CgP1_and_inverse_are_inverses(self):
+        """Test that E to BP1 and BP1 to E are inverses."""
+        fixtures = [
+            self.basic_op,
+            self.with_attitude_angles_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                T_forward = op.T_pas_E_CgP1_to_BP1_CgP1
+                T_inverse = op.T_pas_BP1_CgP1_to_E_CgP1
+
+                npt.assert_allclose(T_forward @ T_inverse, np.eye(4), atol=1e-14)
+                npt.assert_allclose(T_inverse @ T_forward, np.eye(4), atol=1e-14)
+
+    def test_T_pas_E_CgP1_to_BP1_CgP1_orthonormal_rotation(self):
+        """Test that the rotation part of E to BP1 is orthonormal."""
+        T = self.with_attitude_angles_op.T_pas_E_CgP1_to_BP1_CgP1
+        R = T[:3, :3]
+
+        npt.assert_allclose(R @ R.T, np.eye(3), atol=1e-14)
+        npt.assert_allclose(np.linalg.det(R), 1.0, atol=1e-14)
+
+    def test_T_pas_E_CgP1_to_GP1_CgP1_shape_and_type(self):
+        """Test T_pas_E_CgP1_to_GP1_CgP1 shape and type."""
+        T = self.with_attitude_angles_op.T_pas_E_CgP1_to_GP1_CgP1
+
+        self.assertEqual(T.shape, (4, 4))
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.dtype, float)
+
+    def test_T_pas_E_CgP1_to_GP1_CgP1_and_inverse_are_inverses(self):
+        """Test that E to GP1 and GP1 to E are inverses."""
+        fixtures = [
+            self.basic_op,
+            self.with_attitude_angles_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                T_forward = op.T_pas_E_CgP1_to_GP1_CgP1
+                T_inverse = op.T_pas_GP1_CgP1_to_E_CgP1
+
+                npt.assert_allclose(T_forward @ T_inverse, np.eye(4), atol=1e-14)
+                npt.assert_allclose(T_inverse @ T_forward, np.eye(4), atol=1e-14)
+
+    def test_E_to_GP1_is_180_deg_about_y_when_zero_angles(self):
+        """Test that E to GP1 equals the 180 degree about y rotation when
+        angles_E_to_BP1_izyx is all zeros.
+
+        When E to BP1 is identity, E to GP1 is just BP1 to GP1, which is the
+        180 degree rotation about y (flipping x and z).
+        """
+        op = self.basic_op
+        T = op.T_pas_E_CgP1_to_GP1_CgP1
+        R = T[:3, :3]
+
+        expected_R = np.diag([-1.0, 1.0, -1.0])
+        npt.assert_allclose(R, expected_R, atol=1e-14)
+
+    def test_E_to_GP1_composition_equals_product(self):
+        """Test that E to GP1 equals E to BP1 composed with BP1 to GP1."""
+        fixtures = [
+            self.basic_op,
+            self.with_attitude_angles_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                T_E_to_GP1 = op.T_pas_E_CgP1_to_GP1_CgP1
+                T_E_to_BP1 = op.T_pas_E_CgP1_to_BP1_CgP1
+                T_BP1_to_GP1 = op.T_pas_BP1_CgP1_to_GP1_CgP1
+
+                npt.assert_allclose(T_E_to_GP1, T_BP1_to_GP1 @ T_E_to_BP1, atol=1e-14)
+
+    def test_earth_transformations_read_only(self):
+        """Test that Earth transformation matrices are read only."""
+        op = self.with_attitude_angles_op
+
+        with self.assertRaises(ValueError):
+            op.T_pas_E_CgP1_to_BP1_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_BP1_CgP1_to_E_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_E_CgP1_to_GP1_CgP1[0, 0] = 999.0
+        with self.assertRaises(ValueError):
+            op.T_pas_GP1_CgP1_to_E_CgP1[0, 0] = 999.0
+
+    def test_earth_transformations_cached(self):
+        """Test that Earth transformation properties return the same objects on
+        repeated access.
+        """
+        op = self.with_attitude_angles_op
+
+        self.assertIs(op.T_pas_E_CgP1_to_BP1_CgP1, op.T_pas_E_CgP1_to_BP1_CgP1)
+        self.assertIs(op.T_pas_BP1_CgP1_to_E_CgP1, op.T_pas_BP1_CgP1_to_E_CgP1)
+        self.assertIs(op.T_pas_E_CgP1_to_GP1_CgP1, op.T_pas_E_CgP1_to_GP1_CgP1)
+        self.assertIs(op.T_pas_GP1_CgP1_to_E_CgP1, op.T_pas_GP1_CgP1_to_E_CgP1)
+
+    # --- Tests for derived surface properties ---
+
+    def test_surfaceNormal_GP1_is_none_when_no_surface(self):
+        """Test that surfaceNormal_GP1 returns None when no surface is
+        defined.
+        """
+        self.assertIsNone(self.basic_op.surfaceNormal_GP1)
+
+    def test_surfacePoint_GP1_CgP1_is_none_when_no_surface(self):
+        """Test that surfacePoint_GP1_CgP1 returns None when no surface is
+        defined.
+        """
+        self.assertIsNone(self.basic_op.surfacePoint_GP1_CgP1)
+
+    def test_surfaceNormal_GP1_is_unit_vector(self):
+        """Test that surfaceNormal_GP1 is a unit vector when a surface is
+        defined.
+        """
+        fixtures = [
+            self.with_ground_surface_op,
+            self.with_tilted_surface_op,
+        ]
+
+        for op in fixtures:
+            with self.subTest(op=op):
+                normal = op.surfaceNormal_GP1
+                self.assertIsNotNone(normal)
+                npt.assert_allclose(np.linalg.norm(normal), 1.0, atol=1e-14)
+
+    def test_surfaceNormal_GP1_with_zero_angles(self):
+        """Test surfaceNormal_GP1 when angles_E_to_BP1_izyx is all zeros.
+
+        The ground surface fixture has surfaceNormal_E = (0, 0, -1) (down in
+        Earth axes) and angles_E_to_BP1_izyx = (0, 0, 0). With zero attitude
+        angles, E to GP1 is the 180 degree about y rotation, which flips x and
+        z. So the Earth z down vector (0, 0, -1) should map to GP1 z up
+        (0, 0, 1).
+        """
+        normal = self.with_ground_surface_op.surfaceNormal_GP1
+        npt.assert_allclose(normal, [0.0, 0.0, 1.0], atol=1e-14)
+
+    def test_surfacePoint_GP1_CgP1_with_zero_angles(self):
+        """Test surfacePoint_GP1_CgP1 when angles_E_to_BP1_izyx is all zeros.
+
+        The ground surface fixture has surfacePoint_E_Eo = (0, 0, 0) and
+        CgP1_E_Eo = (0, 0, -10). The surface point relative to CG in Earth axes
+        is (0, 0, 0) - (0, 0, -10) = (0, 0, 10). The E to GP1 rotation (180
+        degrees about y) flips x and z, giving (0, 0, -10) in GP1 axes. This
+        means the ground is 10 meters below the CG in GP1 axes (z up).
+        """
+        point = self.with_ground_surface_op.surfacePoint_GP1_CgP1
+        npt.assert_allclose(point, [0.0, 0.0, -10.0], atol=1e-14)
+
+    def test_surfaceNormal_GP1_translation_does_not_affect_normal(self):
+        """Test that changing CgP1_E_Eo does not affect surfaceNormal_GP1.
+
+        The normal is a free vector, so it should be independent of the CG
+        position.
+        """
+        op_no_offset = ps.operating_point.OperatingPoint(
+            CgP1_E_Eo=(0.0, 0.0, 0.0),
+            surfaceNormal_E=(0.0, 0.0, -1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+        op_with_offset = ps.operating_point.OperatingPoint(
+            CgP1_E_Eo=(100.0, 200.0, -50.0),
+            surfaceNormal_E=(0.0, 0.0, -1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+
+        npt.assert_allclose(
+            op_no_offset.surfaceNormal_GP1,
+            op_with_offset.surfaceNormal_GP1,
+            atol=1e-14,
+        )
+
+    def test_surfacePoint_GP1_CgP1_depends_on_cg_position(self):
+        """Test that surfacePoint_GP1_CgP1 changes with CgP1_E_Eo.
+
+        With the same surface in Earth axes, changing the CG position should
+        change where the surface point is relative to the CG in GP1 axes.
+        """
+        op_near = ps.operating_point.OperatingPoint(
+            CgP1_E_Eo=(0.0, 0.0, -5.0),
+            surfaceNormal_E=(0.0, 0.0, -1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+        op_far = ps.operating_point.OperatingPoint(
+            CgP1_E_Eo=(0.0, 0.0, -20.0),
+            surfaceNormal_E=(0.0, 0.0, -1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, 0.0),
+        )
+
+        # With zero attitude angles, E to GP1 flips z. The surface point
+        # relative to CG is (0, 0, -Cg_z) in Earth, which maps to (0, 0, Cg_z)
+        # in GP1. But Cg_z is negative (above ground), so the GP1 z component
+        # should be negative (below CG in GP1's z up frame).
+        point_near = op_near.surfacePoint_GP1_CgP1
+        point_far = op_far.surfacePoint_GP1_CgP1
+
+        # The airplane further from the ground should have a more negative
+        # z component in GP1.
+        self.assertLess(point_far[2], point_near[2])
+
+        # Verify specific values. E to GP1 flips x and z.
+        # Near: surfacePoint_E_CgP1 = (0,0,0) - (0,0,-5) = (0,0,5).
+        # In GP1: (0,0,-5).
+        npt.assert_allclose(point_near, [0.0, 0.0, -5.0], atol=1e-14)
+
+        # Far: surfacePoint_E_CgP1 = (0,0,0) - (0,0,-20) = (0,0,20).
+        # In GP1: (0,0,-20).
+        npt.assert_allclose(point_far, [0.0, 0.0, -20.0], atol=1e-14)
+
+    def test_derived_surface_properties_read_only(self):
+        """Test that derived surface property arrays are read only."""
+        op = self.with_ground_surface_op
+
+        with self.assertRaises(ValueError):
+            op.surfaceNormal_GP1[0] = 999.0
+        with self.assertRaises(ValueError):
+            op.surfacePoint_GP1_CgP1[0] = 999.0
+
+    def test_derived_surface_properties_cached(self):
+        """Test that derived surface properties return the same objects on
+        repeated access.
+        """
+        op = self.with_ground_surface_op
+
+        self.assertIs(op.surfaceNormal_GP1, op.surfaceNormal_GP1)
+        self.assertIs(op.surfacePoint_GP1_CgP1, op.surfacePoint_GP1_CgP1)
+
+    def test_derived_surface_properties_with_tilted_surface(self):
+        """Test derived surface properties with non zero attitude angles.
+
+        The tilted surface fixture has angles_E_to_BP1_izyx = (0, 10, 0),
+        which is a 10 degree pitch (about the y axis). The surface normal in
+        Earth axes is (0, 0, -1). The combined E to GP1 transformation is
+        BP1_to_GP1 (180 degrees about y) composed with E_to_BP1 (10 degrees
+        about y). Both rotations are pure y rotations, so they combine to 190
+        degrees about y. A pure y rotation by theta maps (0, 0, -1) to
+        (sin(theta), 0, -cos(theta)).
+        """
+        op = self.with_tilted_surface_op
+        normal = op.surfaceNormal_GP1
+
+        theta_deg = 190.0
+        theta_rad = np.deg2rad(theta_deg)
+        expected_normal = np.array([np.sin(theta_rad), 0.0, -np.cos(theta_rad)])
+        npt.assert_allclose(normal, expected_normal, atol=1e-14)
+
+        # The normal should still be a unit vector.
+        npt.assert_allclose(np.linalg.norm(normal), 1.0, atol=1e-14)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_is_none_when_no_surface(self):
+        """Test that surfaceReflect_T_act_GP1_CgP1 returns None when no surface
+        is defined.
+        """
+        self.assertIsNone(self.basic_op.surfaceReflect_T_act_GP1_CgP1)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_shape_and_type(self):
+        """Test surfaceReflect_T_act_GP1_CgP1 shape and type."""
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        self.assertIsNotNone(T)
+        self.assertIsInstance(T, np.ndarray)
+        self.assertEqual(T.shape, (4, 4))
+        self.assertEqual(T.dtype, float)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_reflects_point(self):
+        """Test that the reflection matrix correctly reflects a point across the
+        image surface.
+
+        The ground surface fixture has a horizontal ground at z = 0 in Earth
+        axes with CG at (0, 0, -10). With zero attitude angles, the GP1 to E
+        transformation is a 180 degree rotation about y (x and z flip). So
+        CgP1 at (0, 0, -10) in Earth becomes (0, 0, 10) in GP1, and the
+        ground at z = 0 in Earth becomes z = 0 in GP1 (since the origin maps
+        to the origin under 180 degree y rotation). A point at (1, 2, 3) in
+        GP1_CgP1 (3 meters above CgP1 in GP1 z, which is 3 meters below CgP1
+        in Earth z) should reflect to (1, 2, -23) in GP1_CgP1 when reflected
+        about the ground plane.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # A test point in GP1_CgP1.
+        point = np.array([1.0, 2.0, 3.0])
+
+        reflected = _transformations.apply_T_to_vectors(T, point, has_point=True)
+
+        # The surface point in GP1_CgP1 is at z = -10 (10 meters below CgP1 in
+        # GP1 z, corresponding to the ground at z = 0 in Earth). The surface
+        # normal in GP1 is (0, 0, 1) (180 degree y rotation flips Earth's
+        # (0, 0, -1) to (0, 0, 1)). Reflecting (1, 2, 3) across a plane at
+        # z = -10 with normal (0, 0, 1) gives (1, 2, -23).
+        expected = np.array([1.0, 2.0, -23.0])
+        npt.assert_allclose(reflected, expected, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_reflects_velocity(self):
+        """Test that the reflection matrix correctly reflects a free vector.
+
+        Free vector reflection should only negate the component along the
+        surface normal, with no translational contribution.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # The surface normal in GP1 is (0, 0, 1) for this fixture. Reflecting
+        # a velocity vector should negate only the z component.
+        velocity = np.array([5.0, -3.0, 7.0])
+        reflected = _transformations.apply_T_to_vectors(T, velocity, has_point=False)
+
+        expected = np.array([5.0, -3.0, -7.0])
+        npt.assert_allclose(reflected, expected, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_is_involution(self):
+        """Test that reflecting twice returns the original point."""
+        from pterasoftware import _transformations
+
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        point = np.array([1.0, 2.0, 3.0])
+        once = _transformations.apply_T_to_vectors(T, point, has_point=True)
+        twice = _transformations.apply_T_to_vectors(T, once, has_point=True)
+
+        npt.assert_allclose(twice, point, atol=1e-12)
+
+    def test_surfaceReflect_T_act_GP1_CgP1_read_only(self):
+        """Test that the reflection matrix is read only."""
+        op = self.with_ground_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        with self.assertRaises(ValueError):
+            T[0, 0] = 999.0
+
+    def test_surfaceReflect_T_act_GP1_CgP1_cached(self):
+        """Test that the reflection matrix returns the same object on repeated
+        access.
+        """
+        op = self.with_ground_surface_op
+        self.assertIs(
+            op.surfaceReflect_T_act_GP1_CgP1, op.surfaceReflect_T_act_GP1_CgP1
+        )
+
+    def test_surfaceReflect_T_act_GP1_CgP1_with_tilted_surface(self):
+        """Test reflection matrix with non zero attitude angles.
+
+        The tilted surface fixture has angles_E_to_BP1_izyx = (0, 10, 0) and
+        CG at (50, 0, -20) in Earth axes. The surface is at z = 0 in Earth
+        with normal (0, 0, -1). Reflecting a point on the surface plane
+        should return the same point.
+        """
+        from pterasoftware import _transformations
+
+        op = self.with_tilted_surface_op
+        T = op.surfaceReflect_T_act_GP1_CgP1
+
+        # The surface point in GP1_CgP1 should lie on the reflection plane.
+        # Reflecting it should return the same point.
+        surface_point = op.surfacePoint_GP1_CgP1
+        reflected = _transformations.apply_T_to_vectors(
+            T, surface_point, has_point=True
+        )
+        npt.assert_allclose(reflected, surface_point, atol=1e-12)
 
 
 if __name__ == "__main__":

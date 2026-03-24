@@ -21,6 +21,9 @@ This package contains the following modules:
     horseshoe_vortex_fixtures.py: This module contains functions to create
     HorseshoeVortices for uses in tests.
 
+    line_vortex_fixtures.py: This module contains functions to create LineVortices
+    for use in tests.
+
     movement_fixtures.py: This module contains functions to create Movements for use
     in tests.
 
@@ -28,10 +31,13 @@ This package contains the following modules:
     fixtures for movements functions tests.
 
     operating_point_fixtures.py: This module contains functions to create
-    OperatingPoints.
+    OperatingPoints for use in tests.
 
     operating_point_movement_fixtures.py: This module contains functions to create
     OperatingPointMovements for use in tests.
+
+    panel_fixtures.py: This module contains functions to create Panels for use in
+    tests.
 
     parameter_validation_fixtures.py: This module contains functions to create
     fixtures for parameter validation tests.
@@ -41,6 +47,9 @@ This package contains the following modules:
 
     ring_vortex_fixtures.py: This module contains functions to create RingVortices
     for uses in tests.
+
+    solver_fixtures.py: This module contains functions to create solver objects for use
+    in unit tests.
 
     wing_cross_section_movement_fixtures.py: This module contains functions to create
     WingCrossSectionMovements for use in tests.
@@ -53,12 +62,15 @@ import tests.unit.fixtures.aerodynamics_functions_fixtures
 import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.geometry_fixtures
 import tests.unit.fixtures.horseshoe_vortex_fixtures
+import tests.unit.fixtures.line_vortex_fixtures
 import tests.unit.fixtures.movement_fixtures
 import tests.unit.fixtures.movements_functions_fixtures
 import tests.unit.fixtures.operating_point_fixtures
 import tests.unit.fixtures.operating_point_movement_fixtures
+import tests.unit.fixtures.panel_fixtures
 import tests.unit.fixtures.parameter_validation_fixtures
 import tests.unit.fixtures.problem_fixtures
 import tests.unit.fixtures.ring_vortex_fixtures
+import tests.unit.fixtures.solver_fixtures
 import tests.unit.fixtures.wing_cross_section_movement_fixtures
 import tests.unit.fixtures.wing_movement_fixtures

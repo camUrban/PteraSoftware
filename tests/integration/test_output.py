@@ -4,9 +4,8 @@ Note: Most of the tests in this case do not currently test against an expected
 result. Instead, they test that the functions in output.py don't throw any errors.
 """
 
-import io
+import logging
 import unittest
-from contextlib import redirect_stdout
 
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
@@ -74,12 +73,12 @@ class TestOutput(unittest.TestCase):
         )
 
 
-class TestPrintResults(unittest.TestCase):
-    """Tests the print_results() function."""
+class TestLogResults(unittest.TestCase):
+    """Tests the log_results() function."""
 
     @classmethod
     def setUpClass(cls):
-        """Set up solvers for testing print_results().
+        """Set up solvers for testing log_results().
 
         :return: None
         """
@@ -93,35 +92,106 @@ class TestPrintResults(unittest.TestCase):
         )
         cls.unsteady_solver.run(show_progress=False)
 
-    def test_print_results_steady_solver_displays_reynolds_number(self):
-        """Test that Reynolds number is displayed for steady solvers.
+    def test_log_results_steady_solver_displays_reynolds_number(self):
+        """Test that Reynolds number is logged for steady solvers.
 
         :return: None
         """
-        # Capture stdout using redirect_stdout context manager.
-        captured_output = io.StringIO()
-        with redirect_stdout(captured_output):
-            ps.output.print_results(solver=self.steady_solver)
+        # Capture log output using assertLogs context manager.
+        with self.assertLogs("pterasoftware.output", level=logging.INFO) as log:
+            ps.output.log_results(solver=self.steady_solver)
 
-        output = captured_output.getvalue()
+        output = "\n".join(log.output)
 
         # Verify Reynolds number is in the output.
         self.assertIn("Reynolds Number:", output)
         # Verify scientific notation format (e.g., "1.23e+05" or "1.23e+06").
         self.assertRegex(output, r"Reynolds Number:\s+\d+\.\d{2}e[+-]\d{2}")
 
-    def test_print_results_steady_solver_runs_without_error(self):
-        """Test that print_results() runs without error for steady solver.
+    def test_log_results_steady_solver_runs_without_error(self):
+        """Test that log_results() runs without error for steady solver.
 
         :return: None
         """
         # This test ensures no exceptions are raised.
-        ps.output.print_results(solver=self.steady_solver)
+        ps.output.log_results(solver=self.steady_solver)
 
-    def test_print_results_unsteady_solver_runs_without_error(self):
-        """Test that print_results() runs without error for unsteady solver.
+    def test_log_results_unsteady_solver_runs_without_error(self):
+        """Test that log_results() runs without error for unsteady solver.
 
         :return: None
         """
         # This test ensures no exceptions are raised.
-        ps.output.print_results(solver=self.unsteady_solver)
+        ps.output.log_results(solver=self.unsteady_solver)
+
+
+class TestOutputSurfaceEffect(unittest.TestCase):
+    """This is a class with functions to test the output module's surface effect
+    visualization, including reflected geometry and the image surface plane."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all tests in this class.
+
+        :return: None
+        """
+        cls.unsteady_solver = (
+            solver_fixtures.make_unsteady_ring_vortex_lattice_method_surface_effect_solver()
+        )
+        cls.unsteady_solver.run(show_progress=False)
+
+    def test_draw_with_surface_effect_does_not_throw(self):
+        """This method tests that the draw function does not throw any errors when
+        an image surface is defined.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=False,
+            testing=True,
+        )
+
+    def test_draw_with_surface_effect_and_wake_vortices_does_not_throw(self):
+        """This method tests that the draw function does not throw any errors when
+        an image surface is defined and wake vortices are shown.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=True,
+            show_streamlines=False,
+            testing=True,
+        )
+
+    def test_animate_with_surface_effect_does_not_throw(self):
+        """This method tests that the animate function does not throw any errors
+        when an image surface is defined.
+
+        :return: None
+        """
+        ps.output.animate(
+            unsteady_solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            save=False,
+            testing=True,
+        )
+
+    def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self):
+        """This method tests that the animate function does not throw any errors
+        when an image surface is defined and wake vortices are shown.
+
+        :return: None
+        """
+        ps.output.animate(
+            unsteady_solver=self.unsteady_solver,
+            scalar_type=None,
+            show_wake_vortices=True,
+            save=False,
+            testing=True,
+        )

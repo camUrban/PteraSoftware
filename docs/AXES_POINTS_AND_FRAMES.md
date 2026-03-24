@@ -16,11 +16,11 @@ Consider the arbitrary vector **r**, which exists in 3D space. For now, let's sa
 
 Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. An example of this next structure for an unsteady vortex lattice method simulation is shown below.
 
-<img src="ObjectHierarchy.jpg" alt="Object Hierarchy" width="400"/>
+<img src="https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/Object_Hierarchy.jpg" alt="Object Hierarchy" width="400"/>
 
-For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](https://raw.githubusercontent.com/camUrban/PteraSoftware/feature/improved_geometry_definitions/docs/ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
+For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
 
-# Specifying Axes, Points, and Frames
+## Specifying Axes, Points, and Frames
 
 Given the varied requirements for vector-valued quantities, it is important that we are very specific when assigning them variable names or referencing them in text. Also, due to the hierarchical structure of Ptera Software's objects, additional specificity may be required depending on the context. For example, if we use a force vector within the Wing class that references wing axes, we still need to specify that this vector is given in wind axes, but we don't (and can't) specify which of the parent Airplane's Wing's axes we mean. In contrast, if we declare a variable inside the Wing class that references wing cross section axes, we must specify which of the Wing's WingCrossSections's axes we are referring to.
 
@@ -28,17 +28,28 @@ Given the varied requirements for vector-valued quantities, it is important that
 
 There are four useful combinations of axes, points, and frames. For variables that fall into each of these three cases, we denote them by appending information to their variable names using **IDs**. When referencing the variables in comments and docstrings, we add this additional information parenthetically using **names**:
 
-1. Axes without a point and without a frame  
-   \[variable name\]\_\[axes ID\]  
+1. Axes without a point and without a frame
+
+   \[variable name\]\_\[axes ID\]
+
    "\[variable name\] (in \[axes name\])"
-2. Axes without a point and with a frame  
-   \[variable name\]\_\[axes ID\]\_\_\[frame ID\]  
-   "\[variable name\] (in \[axes name\], observed from the \[frame name\])"  
-3. Axes with a point and without a frame  
-   \[variable name\]\_\[axes ID\]\_\[point ID\]  
+
+2. Axes without a point and with a frame
+
+   \[variable name\]\_\[axes ID\]\_\_\[frame ID\]
+
+   "\[variable name\] (in \[axes name\], observed from the \[frame name\])"
+
+3. Axes with a point and without a frame
+
+   \[variable name\]\_\[axes ID\]\_\[point ID\]
+
    "\[variable name\] (in \[axes name\], relative to the \[point name\])"
+
 4. Only a frame (for scalar values like speed)
-   \[variable name\]\_\_\[frame ID\]   
+
+   \[variable name\]\_\_\[frame ID\]
+
    "\[variable name\] (observed from the \[frame name\])"
 
 The correct name and ID for a particular axis system, point, or frame depends on the level of context. However, in all cases IDs consist of a series of abbreviations, moving in scope from most specific to least specific. By contrast, names move from least specific to most specific. Also, in contrast with IDs, the exact syntax for names is slightly flexible to allow for the description to sound correct in plain English.
@@ -56,466 +67,475 @@ The standard abbreviations and names are given below for reference. See the sect
 * Gs: geometry axes (after accounting for symmetry)
 * Wn: wing
 * Wcs…: wing cross section
-  * …i: inner
-  * …o: outer
+    * …i: inner
+    * …o: outer
 * Wcsp: wing cross section parent
 * A…: airfoil
-  * …i: inner
-  * …o: outer
+    * …i: inner
+    * …o: outer
+* Eo: Earth origin
 * Cg: center of gravity (CG)
 * Cgs: CG (after accounting for symmetry)
 * Ler: leading edge root point
 * Lp: leading point
 * Lpp: leading point parent
 * …pp…: panel point
-  * Fr…: front right
-  * Fo…: forward outer
-  * Fl…: front left
-  * Fi…: forward inner
-  * Bl…: back left
-  * Bi…: backward inner
-  * Br…: back right
-  * Bo…: backward outer
-  * C…: collocation
-  * …r\[m\]c\[n\]: (m, n)
+    * Fr…: front right
+    * Fo…: forward outer
+    * Fl…: front left
+    * Fi…: forward inner
+    * Bl…: back left
+    * Bi…: backward inner
+    * Br…: back right
+    * Bo…: backward outer
+    * C…: collocation
+    * …r\[m\]c\[n\]: (m, n)
 * …hvp…: horseshoe vortex point
-  * Fr…: front right
-  * Fl…: front left
-  * Bl…: back left
-  * Br…: back right
-  * …b…: bound
-  * …w…: wake
-  * …r\[m\]c\[n\]: (m, n)
-  * …\[n\]: n
+    * Fr…: front right
+    * Fl…: front left
+    * Bl…: back left
+    * Br…: back right
+    * …b…: bound
+    * …w…: wake
+    * …r\[m\]c\[n\]: (m, n)
+    * …\[n\]: n
 * …rvp…: ring vortex point
-  * Fr…: front right
-  * Fl…: front left
-  * Bl…: back left
-  * Br…: back right
-  * C…: centroid
-  * …b…: bound
-  * …w…: wake
-  * …r\[m\]c\[n\]: (m, n)
+    * Fr…: front right
+    * Fl…: front left
+    * Bl…: back left
+    * Br…: back right
+    * C…: centroid
+    * …b…: bound
+    * …w…: wake
+    * …r\[m\]c\[n\]: (m, n)
 * …lvp…: line vortex point
-  * S…: start
-  * E…: end
-  * C…: center
-  * …f: front leg
-  * …l: left leg
-  * …b: back leg
-  * …r: right leg
+    * S…: start
+    * E…: end
+    * C…: center
+    * …f: front leg
+    * …l: left leg
+    * …b: back leg
+    * …r: right leg
 
-# Axis Systems
+## Axis Systems
 
-## 1. The Earth axis system
+### 1. The Earth axis system
 
-* Basis directions  
-  1. +x: North  
-  2. +y: East  
-  3. +z: Down  
-* Right-handed  
-* Ownership: None  
-* References  
-  * Text: …in Earth axes…  
-  * Variables: …\_E…
-
-## 2. Body axes
-
-* Basis directions  
-  1. +x: Towards the front of the Airplane  
-  2. +y: Towards the right of the Airplane  
-  3. +z: Towards the bottom of the Airplane  
+* Basis directions
+    1. +x: North
+    2. +y: East
+    3. +z: Down
 * Right-handed
-* Ownership: Airplane  
-* Local reference examples  
-  * Text: …in body axes…  
-  * Variables: …\_B…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's body axes…  
-  * Variables: …\_BP1…
+* Ownership: None
+* References
+    * Text: …in Earth axes…
+    * Variables: …\_E…
 
-## 3. Wind axes
+### 2. Body axes
 
-* Caveat: We assume a still airmass, so the freestream velocity observed from the body frame is solely due to the Airplane's velocity observed from the Earth frame.  
-* Basis directions  
-  1. +x: In line with (parallel, not anti-parallel, to) Airplane's velocity observed from the Earth frame
-  2. +y: In the direction perpendicular to first and third components\*  
-  3. +z: In the direction perpendicular to first and second components\*  
-* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions. There is exactly one pair of angles, which we'll call -α (note the negative sign) and β, that we can use to perform a y-z extrinsic series (or, equivalently, a z-y' intrinsic series) of rotations to construct wind axes from body axes that will exactly align the x-axis with Airplane's velocity observed from the Earth frame. This series of rotations also constructs the wind axes +y and +z basis directions.  
-The two angles α and β are known as the angle of attack and the angle of sideslip. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: in the simplest scenarios, a positive α corresponds to the Airplane's nose pointing above its direction of travel (relative wind coming from below the aircraft), and a positive β to its nose pointing to the left of its direction of travel (relative wind coming from the right of the aircraft). However, this can seem a bit cyclical, and it obscures some subtlety in their definition: defining α and β using the convention described previously allows us to define lift as the aerodynamic force's component in the wind axes' -z basis direction, thereby making lift independent of sideslip.  
-* Alternative way to think about basis directions (for small |α| and |β|): 
-  1. +x: Approximately towards the front of the Airplane  
-  2. +y: Approximately towards the right of the Airplane  
-  3. +z: Approximately towards the bottom of the Airplane
+* Basis directions
+    1. +x: Towards the front of the Airplane
+    2. +y: Towards the right of the Airplane
+    3. +z: Towards the bottom of the Airplane
 * Right-handed
-* Ownership: SteadyProblem or UnsteadyProblem  
-* Local reference examples  
-  * Text: …in wind axes…  
-  * Variables: …\_W…  
-* Non-local reference examples  
-  * Text: …in the first Problem's wind axes…  
-  * Variables: …\_WPr1…
+* Ownership: Airplane
+* Local reference examples
+    * Text: …in body axes…
+    * Variables: …\_B…
+* Non-local reference examples
+    * Text: …in the first Airplane's body axes…
+    * Variables: …\_BP1…
 
-## 4. Geometry axes
+### 3. Wind axes
 
-* Basis directions  
-  1. +x: Towards the back of the Airplane (aft)  
-  2. +y: Towards the right of the Airplane  
-  3. +z: Towards the top of Airplane  
-* Right-handed  
-* Ownership: Airplane  
-* Local reference examples  
-  * Text: …in geometry axes…  
-  * Variables: …\_G…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's geometry axes…  
-  * Variables: …\_GP1…
+* Caveat: We assume a still airmass, so the freestream velocity observed from the body frame is solely due to the Airplane's velocity observed from the Earth frame.
+* Basis directions
+    1. +x: In line with (parallel, not anti-parallel, to) Airplane's velocity observed from the Earth frame
+    2. +y: In the direction perpendicular to first and third components\*
+    3. +z: In the direction perpendicular to first and second components\*
+* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions. There is exactly one pair of angles, which we'll call -α (note the negative sign) and β, that we can use to perform a y-z extrinsic series (or, equivalently, a z-y' intrinsic series) of rotations to construct wind axes from body axes that will exactly align the x-axis with Airplane's velocity observed from the Earth frame. This series of rotations also constructs the wind axes +y and +z basis directions.
+  The two angles α and β are known as the angle of attack and the angle of sideslip. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: in the simplest scenarios, a positive α corresponds to the Airplane's nose pointing above its direction of travel (relative wind coming from below the aircraft), and a positive β to its nose pointing to the left of its direction of travel (relative wind coming from the right of the aircraft). However, this can seem a bit cyclical, and it obscures some subtlety in their definition: defining α and β using the convention described previously allows us to define lift as the aerodynamic force's component in the wind axes' -z basis direction, thereby making lift independent of sideslip.
+* Alternative way to think about basis directions (for small |α| and |β|):
+    1. +x: Approximately towards the front of the Airplane
+    2. +y: Approximately towards the right of the Airplane
+    3. +z: Approximately towards the bottom of the Airplane
+* Right-handed
+* Ownership: SteadyProblem or UnsteadyProblem
+* Local reference examples
+    * Text: …in wind axes…
+    * Variables: …\_W…
+* Non-local reference examples
+    * Text: …in the first Problem's wind axes…
+    * Variables: …\_WPr1…
 
-## 5. Geometry axes (after accounting for symmetry)
+### 4. Geometry axes
 
-* Basis directions: For a given Wing, the basis directions are identical to that Wing's Airplane's geometry axes if the Wing is non-symmetric or symmetric-continuous. For mirror-only Wings, the basis directions are that Wing's Airplane's geometry axes reflected about that Wing's symmetry plane.  
-* Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.  
-* Ownership: Wing 
-* Local reference examples  
-  * Text: …in geometry axes (after accounting for symmetry)…  
-  * Variables: …\_Gs…  
-* Airplane-local reference examples  
-  * Text: …in geometry axes (after accounting for the first Wing's symmetry)…  
-  * Variables: …\_Gs1…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's geometry axes (after accounting for its second Wing's symmetry)…  
-  * Variables: …\_Gs2P1…
+* Basis directions
+    1. +x: Towards the back of the Airplane (aft)
+    2. +y: Towards the right of the Airplane
+    3. +z: Towards the top of Airplane
+* Right-handed
+* Ownership: Airplane
+* Local reference examples
+    * Text: …in geometry axes…
+    * Variables: …\_G…
+* Non-local reference examples
+    * Text: …in the first Airplane's geometry axes…
+    * Variables: …\_GP1…
 
-## 6. Wing axes
+### 5. Geometry axes (after accounting for symmetry)
 
-* Basis directions  
-  1. +x: Towards the back of the Wing at its root  
-  2. +y: From a Wing's root towards its second WingCrossSection's plane  
-  3. +z: Towards the top surface of the Wing  
-* Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.  
-* Ownership: Wing  
-* Local reference examples  
-  * Text: …in wing axes…  
-  * Variables: …\_Wn…  
-* Airplane-local reference examples  
-  * Text: …in the first Wing's axes…  
-  * Variables: …\_Wn1…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's second Wing's axes…  
-  * Variables: …\_Wn2P1…
+* Basis directions: For a given Wing, the basis directions are identical to that Wing's Airplane's geometry axes if the Wing is non-symmetric or symmetric-continuous. For mirror-only Wings, the basis directions are that Wing's Airplane's geometry axes reflected about that Wing's symmetry plane.
+* Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.
+* Ownership: Wing
+* Local reference examples
+    * Text: …in geometry axes (after accounting for symmetry)…
+    * Variables: …\_Gs…
+* Airplane-local reference examples
+    * Text: …in geometry axes (after accounting for the first Wing's symmetry)…
+    * Variables: …\_Gs1…
+* Non-local reference examples
+    * Text: …in the first Airplane's geometry axes (after accounting for its second Wing's symmetry)…
+    * Variables: …\_Gs2P1…
 
-## 7. Wing cross section axes
+### 6. Wing axes
 
-* Basis directions  
-  1. +x: Towards the trailing edge in the WingCrossSection's plane  
-  2. +y: Normal to the WingCrossSection's plane in the direction of the next WingCrossSection  
-  3. +z: Towards the top surface of the Wing  
-* Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …in wing cross section axes…  
-  * Variables: …\_Wcs…  
-* Wing-local reference examples  
-  * Text: …in the first WingCrossSection's axes…  
-  * Variables: …\_Wcs1…  
-* Airplane-local reference examples  
-  * Text: …in the second Wing's third WingCrossSection's axes…  
-  * Variables: …\_Wcs3Wn2…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's second Wing's first WingCrossSection's axes…  
-  * Variables: …\_Wcs1Wn2P1…
+* Basis directions
+    1. +x: Towards the back of the Wing at its root
+    2. +y: From a Wing's root towards its second WingCrossSection's plane
+    3. +z: Towards the top surface of the Wing
+* Right-handed for non-symmetric and symmetric-continuous Wings. Left-handed for mirror-only Wings.
+* Ownership: Wing
+* Local reference examples
+    * Text: …in wing axes…
+    * Variables: …\_Wn…
+* Airplane-local reference examples
+    * Text: …in the first Wing's axes…
+    * Variables: …\_Wn1…
+* Non-local reference examples
+    * Text: …in the first Airplane's second Wing's axes…
+    * Variables: …\_Wn2P1…
 
-## 8. Wing cross section parent axes
+### 7. Wing cross section axes
 
-* Basis directions: Identical to Wing axes for a Wing's first WingCrossSection, and identical to the previous WingCrossSection's axes for subsequent ones.  
-* Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …in wing cross section parent axes…  
-  * Variables: …\_Wcsp…  
-* Wing-local reference examples  
-  * Text: …in the second WingCrossSection's parent axes…  
-  * Variables: …\_Wcsp1…  
-* Airplane-local reference examples  
-  * Text: …in the second Wing's third WingCrossSection's parent axes…  
-  * Variables: …\_Wcsp3Wn2…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's second Wing's first WingCrossSection's parent axes…  
-  * Variables: …\_Wcsp1Wn2P1…
+* Basis directions
+    1. +x: Towards the trailing edge in the WingCrossSection's plane
+    2. +y: Normal to the WingCrossSection's plane in the direction of the next WingCrossSection
+    3. +z: Towards the top surface of the Wing
+* Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …in wing cross section axes…
+    * Variables: …\_Wcs…
+* Wing-local reference examples
+    * Text: …in the first WingCrossSection's axes…
+    * Variables: …\_Wcs1…
+* Airplane-local reference examples
+    * Text: …in the second Wing's third WingCrossSection's axes…
+    * Variables: …\_Wcs3Wn2…
+* Non-local reference examples
+    * Text: …in the first Airplane's second Wing's first WingCrossSection's axes…
+    * Variables: …\_Wcs1Wn2P1…
 
-## 9. Airfoil axes
+### 8. Wing cross section parent axes
 
-* Basis directions  
-  1. +x: Chordwise towards the Airfoil's trailing point  
-  2. +y: Normal to the chord towards the Airfoil's upper line  
-* Two-dimensional  
-* Ownership: Airfoil  
-* Local reference examples  
-  * Text: …in airfoil axes…  
-  * Variables: …\_A…  
-* Wing-local reference examples  
-  * Text: …in the second WingCrossSection's Airfoil's axes…  
-  * Variables: …\_AWcs2…  
-* Airplane-local reference examples  
-  * Text: …in the second Wing's third WingCrossSection's Airfoil's axes…  
-  * Variables: …\_AWcs3Wn2…  
-* Non-local reference examples  
-  * Text: …in the first Airplane's second Wing's first WingCrossSection's Airfoil's axes…  
-  * Variables: …\_AWcs1Wn2P1…
+* Basis directions: Identical to Wing axes for a Wing's first WingCrossSection, and identical to the previous WingCrossSection's axes for subsequent ones.
+* Right-handed for WingCrossSections of non-symmetric and symmetric-continuous Wings. Left-handed for WingCrossSections of mirror-only Wings.
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …in wing cross section parent axes…
+    * Variables: …\_Wcsp…
+* Wing-local reference examples
+    * Text: …in the second WingCrossSection's parent axes…
+    * Variables: …\_Wcsp1…
+* Airplane-local reference examples
+    * Text: …in the second Wing's third WingCrossSection's parent axes…
+    * Variables: …\_Wcsp3Wn2…
+* Non-local reference examples
+    * Text: …in the first Airplane's second Wing's first WingCrossSection's parent axes…
+    * Variables: …\_Wcsp1Wn2P1…
 
-# Reference Points
+### 9. Airfoil axes
 
-## 1. CG
+* Basis directions
+    1. +x: Chordwise towards the Airfoil's trailing point
+    2. +y: Normal to the chord towards the Airfoil's upper line
+* Two-dimensional
+* Ownership: Airfoil
+* Local reference examples
+    * Text: …in airfoil axes…
+    * Variables: …\_A…
+* Wing-local reference examples
+    * Text: …in the second WingCrossSection's Airfoil's axes…
+    * Variables: …\_AWcs2…
+* Airplane-local reference examples
+    * Text: …in the second Wing's third WingCrossSection's Airfoil's axes…
+    * Variables: …\_AWcs3Wn2…
+* Non-local reference examples
+    * Text: …in the first Airplane's second Wing's first WingCrossSection's Airfoil's axes…
+    * Variables: …\_AWcs1Wn2P1…
 
-* Position of the Airplane's CG  
-* Ownership: Airplane  
-* Local reference examples  
-  * Text: …relative to the CG…  
-  * Variables: …\_Cg  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's CG…  
-  * Variables: …\_CgP1
+## Reference Points
 
-## 2. CG (after accounting for symmetry)
+### 1. Earth origin
 
-* For a non-symmetric or symmetric-continuous Wing, this identical to its Airplane's CG. For mirror-only Wings, it is their Airplane's CG reflected across that Wing's symmetry plane.  
-* Ownership: Wing  
-* Local reference examples  
-  * Text: …relative to the CG (after accounting for symmetry)…  
-  * Variables: …\_Cgs  
-* Airplane-local reference examples  
-  * Text: …relative to the CG (after accounting for the first Wing's symmetry)…  
-  * Variables: …\_Cgs1  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's CG (after accounting for its second Wing's symmetry)…  
-  * Variables: …\_Cgs2P1
+* A fixed point serving as the global spatial origin
+* Ownership: None
+* References
+    * Text: …relative to the Earth origin…
+    * Variables: …\_Eo
 
-## 3. Leading edge root point
+### 2. CG
 
-* Root point of the Wing's leading edge  
-* Ownership: Wing  
-* Local reference examples  
-  * Text: …relative to the leading edge root point…  
-  * Variables: …\_Ler  
-* Airplane-local reference examples  
-  * Text: …relative to the first Wing's leading edge root point…  
-  * Variables: …\_Ler1  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's leading edge root point…  
-  * Variables: …\_Ler2P1
+* Position of the Airplane's CG
+* Ownership: Airplane
+* Local reference examples
+    * Text: …relative to the CG…
+    * Variables: …\_Cg
+* Non-local reference examples
+    * Text: …relative to the first Airplane's CG…
+    * Variables: …\_CgP1
 
-## 4. Leading point
+### 3. CG (after accounting for symmetry)
 
-* The leading point of the WingCrossSection  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …relative to the leading point…  
-  * Variables: …\_Lp  
-* Wing-local reference examples  
-  * Text: …relative to the first WingCrossSection's leading point…  
-  * Variables: …\_Lp1  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's first WingCrossSection's leading point…  
-  * Variables: …\_Lp1Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading point…  
-  * Variables: …\_Lp1Wn2P1
+* For a non-symmetric or symmetric-continuous Wing, this identical to its Airplane's CG. For mirror-only Wings, it is their Airplane's CG reflected across that Wing's symmetry plane.
+* Ownership: Wing
+* Local reference examples
+    * Text: …relative to the CG (after accounting for symmetry)…
+    * Variables: …\_Cgs
+* Airplane-local reference examples
+    * Text: …relative to the CG (after accounting for the first Wing's symmetry)…
+    * Variables: …\_Cgs1
+* Non-local reference examples
+    * Text: …relative to the first Airplane's CG (after accounting for its second Wing's symmetry)…
+    * Variables: …\_Cgs2P1
 
-## 5. Leading point parent
+### 4. Leading edge root point
 
-* For a Wing's first WingCrossSection, this is the Wing's leading edge root point. For subsequent WingCrossSections, this is the previous WingCrossSection's leading point.  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …relative to the leading point parent)  
-  * Variables: …\_Lpp  
-* Wing-local reference examples  
-  * Text: …relative to the first WingCrossSection's leading point parent)  
-  * Variables: …\_Lpp1  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's first WingCrossSection's leading point parent)  
-  * Variables: …\_Lpp1Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading parent point…  
-  * Variables: …\_Lpp1Wn2P1
+* Root point of the Wing's leading edge
+* Ownership: Wing
+* Local reference examples
+    * Text: …relative to the leading edge root point…
+    * Variables: …\_Ler
+* Airplane-local reference examples
+    * Text: …relative to the first Wing's leading edge root point…
+    * Variables: …\_Ler1
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's leading edge root point…
+    * Variables: …\_Ler2P1
 
-## 6. Panel points
+### 5. Leading point
 
-* The front right, front left, back left, back right, and collocation points of a Panel  
-* Ownership: Panel  
-* Local reference examples  
-  * Text: …relative to the panel front right point…  
-  * Variables: …\_Frpp  
-* Wing-local reference examples  
-  * Text: …relative to the (3, 2\) Panel's front right point…  
-  * Variables: …\_Frppr3c2  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's (3, 2\) Panel's front right point…  
-  * Variables: …\_Frppr3c2Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's front right point…  
-  * Variables: …\_Frppr3c2Wn2P1
+* The leading point of the WingCrossSection
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …relative to the leading point…
+    * Variables: …\_Lp
+* Wing-local reference examples
+    * Text: …relative to the first WingCrossSection's leading point…
+    * Variables: …\_Lp1
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's first WingCrossSection's leading point…
+    * Variables: …\_Lp1Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading point…
+    * Variables: …\_Lp1Wn2P1
 
-## 7. Bound horseshoe vortex points
+### 6. Leading point parent
 
-* Only relevant in steady horseshoe vortex lattice method simulations  
-* The front right, front left, back left, and back right points of a bound HorseshoeVortex  
-* Ownership: HorseshoeVortex  
-* Local reference examples  
-  * Text: …relative to the bound horseshoe vortex front right point…  
-  * Variables: …\_Frbhvp  
-* Wing-local reference examples  
-  * Text: …relative to the (3, 2\) Panel's bound HorseshoeVortex's front right point…  
-  * Variables: …\_Frbhvpr3c2  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…  
-  * Variables: …\_Frbhvpr3c2Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…  
-  * Variables: …\_Frbhvpr3c2Wn2P1
+* For a Wing's first WingCrossSection, this is the Wing's leading edge root point. For subsequent WingCrossSections, this is the previous WingCrossSection's leading point.
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …relative to the leading point parent)
+    * Variables: …\_Lpp
+* Wing-local reference examples
+    * Text: …relative to the first WingCrossSection's leading point parent)
+    * Variables: …\_Lpp1
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's first WingCrossSection's leading point parent)
+    * Variables: …\_Lpp1Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's first WingCrossSection's leading parent point…
+    * Variables: …\_Lpp1Wn2P1
 
-## 8. Bound ring vortex points
+### 7. Panel points
 
-* The front right, front left, back left, and back right points of a bound RingVortex  
-* Ownership: RingVortex  
-* Local reference examples  
-  * Text: …relative to the bound ring vortex front right point…  
-  * Variables: …\_Frbrvp  
-* Wing-local reference examples  
-  * Text: …relative to the (3, 2\) Panel's bound RingVortex's front right point…  
-  * Variables: …\_Frbrvpr3c2  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's (3, 2\) Panel's bound RingVortex's front right point…  
-  * Variables: …\_Frbrvpr3c2Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound RingVortex's front right point…  
-  * Variables: …\_Frbrvpr3c2Wn2P1
+* The front right, front left, back left, back right, and collocation points of a Panel
+* Ownership: Panel
+* Local reference examples
+    * Text: …relative to the panel front right point…
+    * Variables: …\_Frpp
+* Wing-local reference examples
+    * Text: …relative to the (3, 2\) Panel's front right point…
+    * Variables: …\_Frppr3c2
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's (3, 2\) Panel's front right point…
+    * Variables: …\_Frppr3c2Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's front right point…
+    * Variables: …\_Frppr3c2Wn2P1
 
-## 9. Wake horseshoe vortex points
+### 8. Bound horseshoe vortex points
 
-* Only relevant in steady horseshoe and steady ring vortex lattice method simulations  
-* The front right, front left, back left, and back right points of a wake HorseshoeVortex  
-* Ownership: HorseshoeVortex  
-* Local reference examples  
-  * Text: …relative to the wake horseshoe vortex front right point…  
-  * Variables: …\_Frwhvp  
-* Wing-local reference examples  
-  * Text: …relative to the third wake HorseshoeVortex's front right point…  
-  * Variables: …\_Frwhvp3  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's third wake HorseshoeVortex's front right point…  
-  * Variables: …\_Frwhvp3Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's third wake HorseshoeVortex's front right point…  
-  * Variables: …\_Frwhvp3Wn2P1
+* Only relevant in steady horseshoe vortex lattice method simulations
+* The front right, front left, back left, and back right points of a bound HorseshoeVortex
+* Ownership: HorseshoeVortex
+* Local reference examples
+    * Text: …relative to the bound horseshoe vortex front right point…
+    * Variables: …\_Frbhvp
+* Wing-local reference examples
+    * Text: …relative to the (3, 2\) Panel's bound HorseshoeVortex's front right point…
+    * Variables: …\_Frbhvpr3c2
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…
+    * Variables: …\_Frbhvpr3c2Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound HorseshoeVortex's front right point…
+    * Variables: …\_Frbhvpr3c2Wn2P1
 
-## 10. Wake ring vortex points
+### 9. Bound ring vortex points
 
-* Only relevant in unsteady ring vortex lattice method simulations  
-* The front right, front left, back left, and back right points of a wake RingVortex  
-* Ownership: RingVortex  
-* Local reference examples  
-  * Text: …relative to the wake ring vortex front right point…  
-  * Variables: …\_Frwrvp  
-* Wing-local reference examples  
-  * Text: …relative to the (3, 2\) wake RingVortex's front right point…  
-  * Variables: …\_Frwrvpr3c2  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's (3, 2\) wake RingVortex's front right point…  
-  * Variables: …\_Frwrvpr3c2Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's (3, 2\) wake RingVortex's front right point…  
-  * Variables: …\_Frwrvpr3c2Wn2P1
+* The front right, front left, back left, and back right points of a bound RingVortex
+* Ownership: RingVortex
+* Local reference examples
+    * Text: …relative to the bound ring vortex front right point…
+    * Variables: …\_Frbrvp
+* Wing-local reference examples
+    * Text: …relative to the (3, 2\) Panel's bound RingVortex's front right point…
+    * Variables: …\_Frbrvpr3c2
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's (3, 2\) Panel's bound RingVortex's front right point…
+    * Variables: …\_Frbrvpr3c2Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's (3, 2\) Panel's bound RingVortex's front right point…
+    * Variables: …\_Frbrvpr3c2Wn2P1
 
-## 11. Line vortex points
+### 10. Wake horseshoe vortex points
 
-* The start, end, and center points of a LineVortex  
-* Ownership: LineVortex  
-* Local reference examples  
-  * Text: …relative to the LineVortex start point…  
-  * Variables: …\_Slvp  
-* Parent-vortex-local reference examples  
-  * Text: …relative to the bound HorseshoeVortex's front LineVortex's center point…  
-  * Variables: …\_Clvpf  
-* Wing-local reference examples  
-  * Text: …relative to the (3, 2\) bound HorseshoeVortex's front LineVortex's center point…  
-  * Variables: …\_ClvpfBhvr3c2  
-* Airplane-local reference examples  
-  * Text: …relative to the second Wing's (3, 2\) bound HorseshoeVortex's front LineVortex's center point…  
-  * Variables: …\_ClvpfBhvr3c2Wn2  
-* Non-local reference examples  
-  * Text: …relative to the first Airplane's second Wing's (3, 2\) bound HorseshoeVortex's front LineVortex's center point…  
-  * Variables: …\_ClvpfBhvr3c2Wn2P1
+* Only relevant in steady horseshoe and steady ring vortex lattice method simulations
+* The front right, front left, back left, and back right points of a wake HorseshoeVortex
+* Ownership: HorseshoeVortex
+* Local reference examples
+    * Text: …relative to the wake horseshoe vortex front right point…
+    * Variables: …\_Frwhvp
+* Wing-local reference examples
+    * Text: …relative to the third wake HorseshoeVortex's front right point…
+    * Variables: …\_Frwhvp3
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's third wake HorseshoeVortex's front right point…
+    * Variables: …\_Frwhvp3Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's third wake HorseshoeVortex's front right point…
+    * Variables: …\_Frwhvp3Wn2P1
 
-# Reference Frames
+### 11. Wake ring vortex points
 
-## 1. Earth reference frame
+* Only relevant in unsteady ring vortex lattice method simulations
+* The front right, front left, back left, and back right points of a wake RingVortex
+* Ownership: RingVortex
+* Local reference examples
+    * Text: …relative to the wake ring vortex front right point…
+    * Variables: …\_Frwrvp
+* Wing-local reference examples
+    * Text: …relative to the (3, 2\) wake RingVortex's front right point…
+    * Variables: …\_Frwrvpr3c2
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's (3, 2\) wake RingVortex's front right point…
+    * Variables: …\_Frwrvpr3c2Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's (3, 2\) wake RingVortex's front right point…
+    * Variables: …\_Frwrvpr3c2Wn2P1
 
-* Inertial  
-* Attached rigidly to the Earth  
-* Ownership: None  
-* References  
-  * Text: …observed from the Earth frame…  
-  * Variables: …\_\_E
+### 12. Line vortex points
 
-## 2. Body reference frame
+* The start, end, and center points of a LineVortex
+* Ownership: LineVortex
+* Local reference examples
+    * Text: …relative to the LineVortex start point…
+    * Variables: …\_Slvp
+* Parent-vortex-local reference examples
+    * Text: …relative to the bound HorseshoeVortex's front LineVortex's center point…
+    * Variables: …\_Clvpf
+* Wing-local reference examples
+    * Text: …relative to the (3, 2\) bound HorseshoeVortex's front LineVortex's center point…
+    * Variables: …\_ClvpfBhvr3c2
+* Airplane-local reference examples
+    * Text: …relative to the second Wing's (3, 2\) bound HorseshoeVortex's front LineVortex's center point…
+    * Variables: …\_ClvpfBhvr3c2Wn2
+* Non-local reference examples
+    * Text: …relative to the first Airplane's second Wing's (3, 2\) bound HorseshoeVortex's front LineVortex's center point…
+    * Variables: …\_ClvpfBhvr3c2Wn2P1
 
-* Non-inertial  
-* Attached rigidly to the Airplane's body  
-* Ownership: Airplane  
-* Local reference examples  
-  * Text: …observed from the body frame…  
-  * Variables …\_\_B  
-* Non-local reference examples  
-  * Text: …observed from the second Airplane's body frame…  
-  * Variables …\_\_BP2
+## Reference Frames
 
-## 3. Wing reference frame
+### 1. Earth reference frame
 
-* Non-inertial  
-* Attached rigidly to the root of a Wing's leading edge  
-* Ownership: Wing  
-* Local reference examples  
-  * Text: …observed from the wing frame…  
-  * Variables …\_\_Wn  
-* Airplane-local reference examples  
-  * Text: …observed from the second Wing's frame…  
-  * Variables …\_\_Wn2  
-* Non-local reference examples  
-  * Text: …observed from the fourth Airplane's second Wing's frame…  
-  * Variables …\_\_Wn2P4
+* Inertial
+* Attached rigidly to the Earth
+* Ownership: None
+* References
+    * Text: …observed from the Earth frame…
+    * Variables: …\_\_E
 
-## 4. Wing cross section reference frame
+### 2. Body reference frame
 
-* Non-inertial  
-* Attached rigidly to the leading point of a WingCrossSection  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …observed from the wing cross section frame…  
-  * Variables …\_\_Wcs  
-* Wing-local reference examples  
-  * Text: …observed from the third WingCrossSection's frame…  
-  * Variables …\_\_Wcs3  
-* Airplane-local reference examples  
-  * Text: …observed from the second Wing's third WingCrossSection's frame…  
-  * Variables …\_\_Wcs3Wn2  
-* Non-local reference examples  
-  * Text: …observed from the fourth Airplane's second Wing's third WingCrossSection's frame…  
-  * Variables …\_\_Wcs3Wn2P4
+* Non-inertial
+* Attached rigidly to the Airplane's body
+* Ownership: Airplane
+* Local reference examples
+    * Text: …observed from the body frame…
+    * Variables …\_\_B
+* Non-local reference examples
+    * Text: …observed from the second Airplane's body frame…
+    * Variables …\_\_BP2
 
-## 5. Wing cross section parent reference frame
+### 3. Wing reference frame
 
-* Non-inertial  
-* Attached rigidly to the leading parent point of a WingCrossSection  
-* Ownership: WingCrossSection  
-* Local reference examples  
-  * Text: …observed from the wing cross section parent frame…  
-  * Variables …\_\_Wcsp  
-* Wing-local reference examples  
-  * Text: …observed from the third WingCrossSection's parent frame…  
-  * Variables …\_\_Wcsp3  
-* Airplane-local reference examples  
-  * Text: …observed from the second Wing's third WingCrossSection's parent frame…  
-  * Variables …\_\_Wcsp3Wn2  
-* Non-local reference examples  
-  * Text: …observed from the fourth Airplane's second Wing's third WingCrossSection's parent frame…  
-  * Variables …\_\_Wcsp3Wn2P4
+* Non-inertial
+* Attached rigidly to the root of a Wing's leading edge
+* Ownership: Wing
+* Local reference examples
+    * Text: …observed from the wing frame…
+    * Variables …\_\_Wn
+* Airplane-local reference examples
+    * Text: …observed from the second Wing's frame…
+    * Variables …\_\_Wn2
+* Non-local reference examples
+    * Text: …observed from the fourth Airplane's second Wing's frame…
+    * Variables …\_\_Wn2P4
+
+### 4. Wing cross section reference frame
+
+* Non-inertial
+* Attached rigidly to the leading point of a WingCrossSection
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …observed from the wing cross section frame…
+    * Variables …\_\_Wcs
+* Wing-local reference examples
+    * Text: …observed from the third WingCrossSection's frame…
+    * Variables …\_\_Wcs3
+* Airplane-local reference examples
+    * Text: …observed from the second Wing's third WingCrossSection's frame…
+    * Variables …\_\_Wcs3Wn2
+* Non-local reference examples
+    * Text: …observed from the fourth Airplane's second Wing's third WingCrossSection's frame…
+    * Variables …\_\_Wcs3Wn2P4
+
+### 5. Wing cross section parent reference frame
+
+* Non-inertial
+* Attached rigidly to the leading parent point of a WingCrossSection
+* Ownership: WingCrossSection
+* Local reference examples
+    * Text: …observed from the wing cross section parent frame…
+    * Variables …\_\_Wcsp
+* Wing-local reference examples
+    * Text: …observed from the third WingCrossSection's parent frame…
+    * Variables …\_\_Wcsp3
+* Airplane-local reference examples
+    * Text: …observed from the second Wing's third WingCrossSection's parent frame…
+    * Variables …\_\_Wcsp3Wn2
+* Non-local reference examples
+    * Text: …observed from the fourth Airplane's second Wing's third WingCrossSection's parent frame…
+    * Variables …\_\_Wcsp3Wn2P4

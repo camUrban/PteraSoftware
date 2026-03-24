@@ -34,7 +34,6 @@ from . import (
 convergence_logger = _logging.get_logger("convergence")
 
 
-# TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 # TODO: If a converged mesh was found, consider also returning the converged solver.
@@ -709,7 +708,6 @@ def analyze_steady_convergence(
     return None, None
 
 
-# TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 # TODO: If a converged mesh was found, consider also returning the converged solver.
@@ -1832,12 +1830,11 @@ def analyze_unsteady_convergence(
     return None, None, None, None
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_movement_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
-    ref_airplanes: list[geometry.airplane.Airplane],
+    ref_airplanes: tuple[geometry.airplane.Airplane, ...],
     ref_wing_id: int,
     ref_root_wing_cross_section_id: int,
     ref_tip_wing_cross_section_id: int,
@@ -1855,7 +1852,7 @@ def _get_wing_section_movement_num_spanwise_panels(
         positive int.
     :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
         "cosine" or "uniform".
-    :param ref_airplanes: A list of the Airplanes at each time step.
+    :param ref_airplanes: A tuple of the Airplanes at each time step.
     :param ref_wing_id: The index of the Wing within each Airplane in ref_airplanes. It
         must be a non negative int.
     :param ref_root_wing_cross_section_id: The index of the root WingCrossSection of the
@@ -1872,7 +1869,7 @@ def _get_wing_section_movement_num_spanwise_panels(
     :return: The maximum number of spanwise Panels needed across all applicable time
         steps to achieve the desired average Panel aspect ratio.
     """
-    # Slice the list of Airplanes to only the applicable ones. For cases with static
+    # Slice the tuple of Airplanes to only the applicable ones. For cases with static
     # geometry, this is just the last time step's Airplane. For cases with variable
     # geometry, this is the last max-period cycle's time steps' Airplanes
     ref_airplanes = ref_airplanes[first_applicable_time_step_id:]
@@ -1913,7 +1910,6 @@ def _get_wing_section_movement_num_spanwise_panels(
     return int(max(these_num_spanwise_panels))
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
@@ -1975,7 +1971,6 @@ def _get_wing_section_num_spanwise_panels(
     return this_num_spanwise_panels
 
 
-# TEST: Consider adding unit tests for this function.
 def _get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
     chordwise_spacing: str,

@@ -11,6 +11,7 @@ None
 
 from __future__ import annotations
 
+import copy
 import time
 from collections.abc import Sequence
 from typing import Any, cast
@@ -21,7 +22,6 @@ import webp
 import pterasoftware as ps
 
 from .. import _parameter_validation, _transformations
-from . import airfoil as airfoil_mod
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
 
@@ -31,19 +31,25 @@ class Airplane:
 
     **Contains the following methods:**
 
+    __deepcopy__: Creates a deep copy of this Airplane, preserving mesh geometry but
+    resetting solver state.
+
+    deep_copy_with_Cg_GP1_CgP1: Creates a deep copy of this Airplane with a different
+    Cg_GP1_CgP1 position.
+
+    num_panels: The total number of Panels across all Wings.
+
+    T_pas_G_Cg_to_GP1_CgP1: The passive transformation matrix from this Airplane's
+    geometry axes, relative to this Airplane's CG to the first Airplane's geometry axes,
+    relative to the first Airplane's CG.
+
     draw: Draws the 3D geometry of this Airplane.
 
     get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
     and mean camber lines.
 
-    num_panels: The total number of Panels across all Wings.
-
     validate_first_airplane_constraints: Validates that the first Airplane in a
     simulation has Cg_GP1_CgP1 set to zeros.
-
-    T_pas_G_Cg_to_GP1_CgP1: The passive transformation matrix from this Airplane's
-    geometry axes, relative to this Airplane's CG to the first Airplane's geometry axes,
-    relative to the first Airplane's CG.
 
     process_wing_symmetry: Processes a Wing to determine what type of symmetry it has.
     If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
@@ -65,6 +71,17 @@ class Airplane:
     +y points to the right (starboard direction), and +z points upward (completing a
     right-handed system).
 
+    Immutable attributes (wings, name, Cg_GP1_CgP1, weight, s_ref, c_ref, and b_ref) are
+    set during initialization and cannot be modified afterward. The numpy array
+    Cg_GP1_CgP1 is made read only to prevent in place mutation. The wings attribute is
+    stored as a tuple to prevent external mutation.
+
+    Derived properties (num_panels and T_pas_G_Cg_to_GP1_CgP1) are lazily evaluated and
+    cached since they depend only on immutable attributes.
+
+    The forces_W, forceCoefficients_W, moments_W_CgP1, and momentCoefficients_W_CgP1
+    attributes remain mutable as they are set by the solver during simulation.
+
     **Citation:**
 
     Adapted from: geometry.Airplane in AeroSandbox
@@ -73,6 +90,22 @@ class Airplane:
 
     Date of retrieval: 04/23/2020
     """
+
+    __slots__ = (
+        "_wings",
+        "_name",
+        "_Cg_GP1_CgP1",
+        "_weight",
+        "_s_ref",
+        "_c_ref",
+        "_b_ref",
+        "_num_panels",
+        "_T_pas_G_Cg_to_GP1_CgP1",
+        "forces_W",
+        "forceCoefficients_W",
+        "moments_W_CgP1",
+        "momentCoefficients_W_CgP1",
+    )
 
     def __init__(
         self,
@@ -114,21 +147,24 @@ class Airplane:
             set, it must be greater than zero, and will be converted to a float
             internally. The units are meters.
         """
+        # Initialize the immutable attributes. Set those that are numpy arrays to be
+        # read only. Store wings as a tuple to prevent external mutation.
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings: list[wing_mod.Wing] = []
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
             processed_wings.extend(self.process_wing_symmetry(wing))
+        self._wings = tuple(processed_wings)
 
-        self.wings = processed_wings
+        self._name = _parameter_validation.str_return_str(name, "name")
 
-        self.name = _parameter_validation.str_return_str(name, "name")
-        self.Cg_GP1_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
+        self._Cg_GP1_CgP1 = _parameter_validation.threeD_number_vectorLike_return_float(
             Cg_GP1_CgP1, "Cg_GP1_CgP1"
         )
+        self._Cg_GP1_CgP1.flags.writeable = False
 
-        self.weight = _parameter_validation.number_in_range_return_float(
+        self._weight = _parameter_validation.number_in_range_return_float(
             weight,
             "weight",
             min_val=0.0,
@@ -139,31 +175,244 @@ class Airplane:
         # corresponding reference. Otherwise, set them to the passed dimension after
         # checking that it is valid.
         if s_ref is None:
-            self.s_ref = self.wings[0].projected_area
+            first_wing_projected_area = self._wings[0].projected_area
+            if first_wing_projected_area is None:
+                raise ValueError(
+                    "s_ref was not provided and the first Wing's projected_area is "
+                    "None. Either provide an explicit s_ref or ensure the first Wing "
+                    "is meshed."
+                )
+            self._s_ref = first_wing_projected_area
         else:
-            self.s_ref = _parameter_validation.number_in_range_return_float(
+            self._s_ref = _parameter_validation.number_in_range_return_float(
                 s_ref, "s_ref", min_val=0.0, min_inclusive=False
             )
         if c_ref is None:
-            self.c_ref = self.wings[0].mean_aerodynamic_chord
+            first_wing_mean_aerodynamic_chord = self._wings[0].mean_aerodynamic_chord
+            if first_wing_mean_aerodynamic_chord is None:
+                raise ValueError(
+                    "c_ref was not provided and the first Wing's "
+                    "mean_aerodynamic_chord is None. Either provide an explicit c_ref "
+                    "or ensure the first Wing is meshed."
+                )
+            self._c_ref = first_wing_mean_aerodynamic_chord
         else:
-            self.c_ref = _parameter_validation.number_in_range_return_float(
+            self._c_ref = _parameter_validation.number_in_range_return_float(
                 c_ref, "c_ref", min_val=0.0, min_inclusive=False
             )
         if b_ref is None:
-            self.b_ref = self.wings[0].span
+            first_wing_span = self._wings[0].span
+            if first_wing_span is None:
+                raise ValueError(
+                    "b_ref was not provided and the first Wing's span is None. Either "
+                    "provide an explicit b_ref or ensure the first Wing is meshed."
+                )
+            self._b_ref = first_wing_span
         else:
-            self.b_ref = _parameter_validation.number_in_range_return_float(
+            self._b_ref = _parameter_validation.number_in_range_return_float(
                 b_ref, "b_ref", min_val=0.0, min_inclusive=False
             )
 
-        # Initialize empty class attributes to hold the force, moment,
-        # force coefficients, and moment coefficients this Airplane experiences.
+        # Initialize the caches for the properties derived from the immutable
+        # attributes.
+        self._num_panels: int | None = None
+        self._T_pas_G_Cg_to_GP1_CgP1: np.ndarray | None = None
+
+        # Initialize mutable attributes to hold the forces, moments, force
+        # coefficients, and moment coefficients this Airplane experiences.
         self.forces_W: np.ndarray | None = None
         self.forceCoefficients_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
         self.momentCoefficients_W_CgP1: np.ndarray | None = None
 
+    # --- Deep copy methods ---
+    def __deepcopy__(self, memo: dict) -> Airplane:
+        """Creates a deep copy of this Airplane, preserving mesh geometry but resetting
+        solver state.
+
+        The copy preserves: (1) Wings tuple (each Wing is deep copied, preserving mesh
+        and Panels) (2) Airplane parameters (name, Cg_GP1_CgP1, weight, reference
+        dimensions), and (3) cached derived properties (num_panels,
+        T_pas_G_Cg_to_GP1_CgP1).
+
+        The copy resets to None: (1) loads and load coefficients.
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new Airplane with preserved mesh geometry and reset solver state.
+        """
+        # Create a new Airplane instance without calling __init__ to avoid redundant
+        # validation and Wing symmetry processing.
+        new_airplane = object.__new__(Airplane)
+
+        # Store this Airplane in memo to handle potential circular references.
+        memo[id(self)] = new_airplane
+
+        # Deep copy the Wings into a new tuple.
+        new_airplane._wings = tuple(copy.deepcopy(wing, memo) for wing in self._wings)
+
+        # Copy immutable attributes. For those that are numpy arrays, make the copies
+        # read only.
+        new_airplane._name = self._name
+        new_airplane._Cg_GP1_CgP1 = self._Cg_GP1_CgP1.copy()
+        new_airplane._Cg_GP1_CgP1.flags.writeable = False
+        new_airplane._weight = self._weight
+        new_airplane._s_ref = self._s_ref
+        new_airplane._c_ref = self._c_ref
+        new_airplane._b_ref = self._b_ref
+
+        # Copy cached derived properties. For those that are numpy arrays, make the
+        # copies read only.
+        new_airplane._num_panels = self._num_panels
+        if self._T_pas_G_Cg_to_GP1_CgP1 is not None:
+            new_airplane._T_pas_G_Cg_to_GP1_CgP1 = self._T_pas_G_Cg_to_GP1_CgP1.copy()
+            new_airplane._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
+        else:
+            new_airplane._T_pas_G_Cg_to_GP1_CgP1 = None
+
+        # Reset loads and load coefficients to None (solver will compute these).
+        new_airplane.forces_W = None
+        new_airplane.forceCoefficients_W = None
+        new_airplane.moments_W_CgP1 = None
+        new_airplane.momentCoefficients_W_CgP1 = None
+
+        return new_airplane
+
+    def deep_copy_with_Cg_GP1_CgP1(
+        self, new_Cg_GP1_CgP1: np.ndarray | Sequence[float | int]
+    ) -> Airplane:
+        """Creates a deep copy of this Airplane with a different Cg_GP1_CgP1 position.
+
+        This method is used by AirplaneMovement to create Airplanes at different time
+        steps that share the same geometry but have different positions in the
+        formation. It maintains immutability by returning a new Airplane rather than
+        modifying the existing one.
+
+        Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to differ
+        from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs, panels, etc.)
+        is defined relative to this Airplane's own CG, not the formation position, so it
+        remains valid, (2) Panel local coordinates (_G_Cg) are independent of formation
+        position (global coordinates (_GP1_CgP1) are reset to None by Panel's
+        __deepcopy__ and will be recomputed by the Problem using the new transformation
+        matrix), and (3) all other child objects (WingCrossSections, Airfoils, vortices)
+        have no dependency on Cg_GP1_CgP1.
+
+        :param new_Cg_GP1_CgP1: An array-like object of 3 numbers representing the
+            position of the new Airplane's CG (in the first Airplane's geometry axes,
+            relative to the first Airplane's CG). Can be a list, tuple, or ndarray.
+            Values are converted to floats internally. The units are in meters.
+        :return: A new Airplane with the specified position and deep copied geometry.
+        """
+        # Validate the new position.
+        validated_Cg_GP1_CgP1 = (
+            _parameter_validation.threeD_number_vectorLike_return_float(
+                new_Cg_GP1_CgP1, "new_Cg_GP1_CgP1"
+            )
+        )
+        validated_Cg_GP1_CgP1.flags.writeable = False
+
+        # Create a new Airplane instance without calling __init__ to avoid redundant
+        # validation and Wing symmetry processing.
+        new_airplane = object.__new__(Airplane)
+
+        # Deep copy the Wings into a new tuple.
+        memo: dict = {id(self): new_airplane}
+        new_airplane._wings = tuple(copy.deepcopy(wing, memo) for wing in self._wings)
+
+        # Copy immutable attributes, using the new Cg_GP1_CgP1.
+        new_airplane._name = self._name
+        new_airplane._Cg_GP1_CgP1 = validated_Cg_GP1_CgP1
+        new_airplane._weight = self._weight
+        new_airplane._s_ref = self._s_ref
+        new_airplane._c_ref = self._c_ref
+        new_airplane._b_ref = self._b_ref
+
+        # Copy _num_panels cache (depends only on Wings, not position).
+        # Reset _T_pas_G_Cg_to_GP1_CgP1 to None (depends on Cg_GP1_CgP1).
+        new_airplane._num_panels = self._num_panels
+        new_airplane._T_pas_G_Cg_to_GP1_CgP1 = None
+
+        # Reset loads and load coefficients to None (solver will compute these).
+        new_airplane.forces_W = None
+        new_airplane.forceCoefficients_W = None
+        new_airplane.moments_W_CgP1 = None
+        new_airplane.momentCoefficients_W_CgP1 = None
+
+        return new_airplane
+
+    # --- Immutable: read only properties ---
+    @property
+    def wings(self) -> tuple[wing_mod.Wing, ...]:
+        return self._wings
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def Cg_GP1_CgP1(self) -> np.ndarray:
+        return self._Cg_GP1_CgP1
+
+    @property
+    def weight(self) -> float:
+        return self._weight
+
+    @property
+    def s_ref(self) -> float:
+        return self._s_ref
+
+    @property
+    def c_ref(self) -> float:
+        return self._c_ref
+
+    @property
+    def b_ref(self) -> float:
+        return self._b_ref
+
+    # --- Immutable derived: manual lazy caching ---
+    @property
+    def num_panels(self) -> int:
+        """The total number of Panels across all Wings.
+
+        :return: The total number of Panels.
+        """
+        if self._num_panels is None:
+            self._num_panels = sum(
+                wing.num_panels if wing.num_panels is not None else 0
+                for wing in self._wings
+            )
+        return self._num_panels
+
+    @property
+    def T_pas_G_Cg_to_GP1_CgP1(self) -> np.ndarray:
+        """The passive transformation matrix from this Airplane's geometry axes,
+        relative to this Airplane's CG to the first Airplane's geometry axes, relative
+        to the first Airplane's CG.
+
+        Computes the transformation chain: G_Cg > GP1_CgP1. This transformation matrix
+        is used to position Airplanes relative to one another, in problems with more
+        than one Airplane. If this Airplane is the first Airplane (where Cg_GP1_CgP1 =
+        [0, 0, 0]), it returns an identity transformation.
+
+        :return: A (4,4) ndarray of floats representing the passive transformation
+            matrix from this Airplane's geometry axes, relative to its CG to the first
+            Airplane's geometry axes, relative to its CG.
+        """
+        if self._T_pas_G_Cg_to_GP1_CgP1 is None:
+            # generate_trans_T with passive=True expects the `translations` parameter
+            # to be the position of the target reference point (CgP1) relative to the
+            # source reference point (Cg). Using the notation from
+            # AXES_POINTS_AND_FRAMES.md: translations=CgP1_G_Cg. However, we have
+            # Cg_GP1_CgP1 (position of Cg, in GP1 axes, relative to CgP1). Since
+            # geometry axes G and GP1 are parallel (pure translation, no rotation):
+            # CgP1_G_Cg=-Cg_GP1_CgP1.
+            self._T_pas_G_Cg_to_GP1_CgP1 = _transformations.generate_trans_T(
+                translations=-self._Cg_GP1_CgP1, passive=True
+            )
+            self._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
+        return self._T_pas_G_Cg_to_GP1_CgP1
+
+    # --- Other methods ---
     def draw(
         self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False
     ) -> None:
@@ -202,7 +451,7 @@ class Airplane:
         panel_num = 0
 
         # Iterate through this Airplane's Wings.
-        for wing in self.wings:
+        for wing in self._wings:
             # Unravel the Wing's Panel matrix and iterate through it.
             if wing.panels is None:
                 continue
@@ -252,7 +501,7 @@ class Airplane:
         if not testing:
             # Show the plotter so the user can adjust the camera position and window
             plotter.show(
-                title=f"Airplane: {self.name}",
+                title=f"Airplane: {self._name}",
                 cpos=(-1, -1, 1),
                 full_screen=False,
                 auto_close=False,
@@ -260,7 +509,7 @@ class Airplane:
         else:
             # Show the plotter for 1 second, then proceed automatically (for testing)
             plotter.show(
-                title=f"Airplane: {self.name}",
+                title=f"Airplane: {self._name}",
                 cpos=(-1, -1, 1),
                 full_screen=False,
                 interactive=False,
@@ -280,7 +529,7 @@ class Airplane:
             )
             webp.save_image(
                 img=image,
-                file_path=f"{self.name}_geometry.webp",
+                file_path=f"{self._name}_geometry.webp",
                 lossless=False,
                 quality=quality,
             )
@@ -288,7 +537,6 @@ class Airplane:
         # Close all the plotters
         pv.close_all()
 
-    # TEST: Consider adding unit tests for this method.
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[list[list[np.ndarray]]] | None:
@@ -312,7 +560,7 @@ class Airplane:
 
         airfoilOutlines_G_Cg = []
         airfoilMcls_G_Cg = []
-        for wing_id, wing in enumerate(self.wings):
+        for wing_id, wing in enumerate(self._wings):
             plottable_data = wing.get_plottable_data(show=False)
 
             assert plottable_data is not None
@@ -372,7 +620,7 @@ class Airplane:
 
         plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
-        for wing_id, wing in enumerate(self.wings):
+        for wing_id, wing in enumerate(self._wings):
             wing_num = wing_id + 1
 
             assert wing.T_pas_G_Cg_to_Wn_Ler is not None
@@ -524,16 +772,6 @@ class Airplane:
 
         return None
 
-    @property
-    def num_panels(self) -> int:
-        """The total number of Panels across all Wings.
-
-        :return: The total number of Panels.
-        """
-        return sum(
-            wing.num_panels if wing.num_panels is not None else 0 for wing in self.wings
-        )
-
     def validate_first_airplane_constraints(self) -> None:
         """Validates that the first Airplane in a simulation has Cg_GP1_CgP1 set to
         zeros.
@@ -542,33 +780,12 @@ class Airplane:
 
         :return: None
         """
-        if not np.allclose(self.Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0])):
+        if not np.allclose(self._Cg_GP1_CgP1, np.array([0.0, 0.0, 0.0])):
             raise ValueError(
                 "The first Airplane in a simulation must have Cg_GP1_CgP1 set to ("
                 "0.0, 0.0, 0.0) by definition."
             )
 
-    # TEST: Add unit tests for this method.
-    @property
-    def T_pas_G_Cg_to_GP1_CgP1(self) -> np.ndarray:
-        """The passive transformation matrix from this Airplane's geometry axes,
-        relative to this Airplane's CG to the first Airplane's geometry axes, relative
-        to the first Airplane's CG.
-
-        Computes the transformation chain: G_Cg > GP1_CgP1. This transformation matrix
-        is used to position Airplanes relative to one another, in problems with more
-        than one Airplane. If this Airplane is the first Airplane (where Cg_GP1_CgP1 =
-        [0, 0, 0]), it returns an identity transformation.
-
-        :return: A (4,4) ndarray of floats representing the passive transformation
-            matrix from this Airplane's geometry axes, relative to its CG to the first
-            Airplane's geometry axes, relative to its CG.
-        """
-        return _transformations.generate_trans_T(
-            translations=self.Cg_GP1_CgP1, passive=True
-        )
-
-    # TEST: Add more thorough unit tests for this method.
     @staticmethod
     def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
         """Processes a Wing to determine what type of symmetry it has. If necessary, it
@@ -712,12 +929,7 @@ class Airplane:
             for wing_cross_section in wing.wing_cross_sections:
                 airfoil = wing_cross_section.airfoil
 
-                reflected_airfoil = airfoil_mod.Airfoil(
-                    name=airfoil.name,
-                    outline_A_lp=np.copy(airfoil.outline_A_lp),
-                    resample=airfoil.resample,
-                    n_points_per_side=airfoil.n_points_per_side,
-                )
+                reflected_airfoil = copy.deepcopy(airfoil)
 
                 if wing_cross_section.control_surface_symmetry_type == "asymmetric":
                     reflected_control_surface_deflection = (

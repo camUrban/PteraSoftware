@@ -14,15 +14,18 @@ None
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.signal as sp_sig
 
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-from .movements.single_step.single_step_movement import SingleStepMovement
 from . import _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
+
+if TYPE_CHECKING:
+    from .movements.single_step.single_step_movement import SingleStepMovement
 
 
 class SteadyProblem:
@@ -312,84 +315,76 @@ class UnsteadyProblem:
         return self._steady_problems
 
 class CoupledUnsteadyProblem(UnsteadyProblem):
-    """This is a class for coupled unsteady problems.
+    """A class for coupled unsteady problems.
 
-    This class contains the following public methods:
-        None
+    This class extends UnsteadyProblem to manage multiple SteadyProblems for 
+    coupled simulations where each time step has its own SteadyProblem.
 
-    This class contains the following class attributes:
-        None
+    **Contains the following methods:**
+
+    get_steady_problem: Gets the SteadyProblem at a specified step.
+    initialize_next_problem: Initializes the next step's problem.
+
+    **Contains the following class attributes:**
+
+    None
     """
 
     def __init__(self, single_step_movement, only_final_results=False):
-        """This is the initialization method.
+        """The initialization method.
 
-        :param single_step_movement: SingleStepMovement
-
-            This is the SingleStepMovement that contains this CoupledUnsteadyProblem's
-            SingleStepOperatingPointMovement and SingleStepAirplaneMovements.
-            OperatingPointMovement and AirplaneMovements.
-
-        :param only_final_results: boolLike, optional
-
-            If set to True, the Solver will only calculate forces, moments,
-            and pressures for the final complete cycle (of the Movement's
-            sub-Movement with the longest period), which increases simulation speed.
-            The default value is False.
+        :param single_step_movement: SingleStepMovement containing the movement
+            and single-step aerodynamic definitions.
+        :param only_final_results: If True, only calculate forces/moments for the
+            final cycle. Defaults to False.
+        :return: None
         """
         if not isinstance(single_step_movement, movements.single_step.single_step_movement.SingleStepMovement):
             raise TypeError("single_step_movement must be a SingleStepMovement.")
+        
         self.single_step_movement = single_step_movement
-        self.movement = single_step_movement.corresponding_movement
-        self.only_final_results = _parameter_validation.boolLike_return_bool(
+        movement = single_step_movement.corresponding_movement
+        only_final_results_bool = _parameter_validation.boolLike_return_bool(
             only_final_results, "only_final_results"
         )
 
-        super().__init__(movement=self.movement, only_final_results=self.only_final_results)
+        # Call parent __init__ to properly initialize UnsteadyProblem attributes
+        # and create SteadyProblems. This is safe because there's no double-initialization.
+        super().__init__(movement=movement, only_final_results=only_final_results_bool)
 
-        # this set of steady problems should essnetially be treated as private
-        # and the getter method should be used to obtain it
+        # Coupled-specific state: list of steady problems for each coupled step
+        # We create an initial SteadyProblem using the base airplanes and operating point
         self.coupled_steady_problems = [
             SteadyProblem(
-                [self.movement.airplane_movements[0].base_airplane],
-                self.movement.operating_point_movement.base_operating_point,
+                [movement.airplane_movements[0].base_airplane],
+                movement.operating_point_movement.base_operating_point,
             )
         ]
 
-    def get_steady_problem(self, step):
+    def get_steady_problem(self, step: int) -> SteadyProblem:
+        """Get the SteadyProblem at a given time step.
+
+        :param step: The time step index (0-indexed).
+        :return: The SteadyProblem at the specified step.
+        :raises Exception: If step is out of range.
         """
-        Return the steady-state problem associated with the given step index.
-
-        Parameters
-        ----------
-        step : int
-            Index of the steady problem to retrieve.
-
-        Returns
-        -------
-        Any
-            The steady-state problem object stored at the specified index.
-
-        Raises
-        ------
-        Exception
-            If `step` is greater than or equal to the number of initialized
-            steady problems.
-        """
-        # Ensure the requested step index is valid.
         if step >= len(self.coupled_steady_problems):
             raise Exception(
                 f"Step index {step} is out of range of the number of initialized problems"
             )
-
-        # Return the corresponding steady-state problem.
         return self.coupled_steady_problems[step]
 
-    def initialize_next_problem(self, solver):
-        self.coupled_steady_problems.append(self.steady_problems[len(self.coupled_steady_problems)])
+    def initialize_next_problem(self, solver) -> None:
+        """Initialize the next step's problem.
+        
+        :param solver: The solver instance managing this problem.
+        :return: None
+        """
+        self.coupled_steady_problems.append(
+            self.steady_problems[len(self.coupled_steady_problems)]
+        )
 
 class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
-
     def __init__(
         self,
         single_step_movement: SingleStepMovement,

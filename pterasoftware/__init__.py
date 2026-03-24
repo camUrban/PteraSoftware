@@ -48,6 +48,12 @@ import pterasoftware.movements
 import pterasoftware.operating_point
 import pterasoftware.problems
 
+# Expose eagerly imported modules as attributes
+geometry = pterasoftware.geometry
+movements = pterasoftware.movements
+operating_point = pterasoftware.operating_point
+problems = pterasoftware.problems
+
 # Lazy imports configuration: modules loaded on first access.
 _LAZY_MODULES = {
     "convergence": "pterasoftware.convergence",

@@ -153,6 +153,7 @@ class Wing:
         "mirror_only",
         "symmetryNormal_G",
         "symmetryPoint_G_Cg",
+        "single_step_wing",
         # Set once
         "_symmetry_type",
         "_num_spanwise_panels",

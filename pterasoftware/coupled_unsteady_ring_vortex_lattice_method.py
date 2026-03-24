@@ -62,14 +62,12 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         # self.coupled_unsteady_problem must be defined before the call to super().__init__()
         # because the parent class's __init__ method calls methods that rely on self.coupled_unsteady_problem being defined.
         self.coupled_unsteady_problem = coupled_unsteady_problem
-        super().__init__(problems.UnsteadyProblem(coupled_unsteady_problem.movement))
+        super().__init__(coupled_unsteady_problem)
 
         self.num_steps = self.coupled_unsteady_problem.num_steps
         self.delta_time = self.coupled_unsteady_problem.delta_time
         self.first_results_step = self.coupled_unsteady_problem.first_results_step
         self._first_averaging_step = self.coupled_unsteady_problem.first_averaging_step
-
-        self.steady_problems = []
 
         first_steady_problem: problems.SteadyProblem = (
             self.get_steady_problem_at(0)
@@ -141,7 +139,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         # Loop through this time step's Airplanes to create a list of their Wings.
         # Here we calculate all of our values from our first ariplane to start our main run loop
         this_problem: problems.SteadyProblem = (
-            self.coupled_unsteady_problem.get_steady_problem(0)
+            self.get_steady_problem_at(0)
         )
         these_airplanes = this_problem.airplanes
         num_wing_panels = 0
@@ -247,7 +245,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 # Airplane's geometry axes, observed from the Earth frame).
                 self._current_step = step
                 current_problem: problems.SteadyProblem = (
-                    self.coupled_unsteady_problem.get_steady_problem(self._current_step)
+                    self.get_steady_problem_at(self._current_step)
                 )
 
                 # Initialize all the current step's bound RingVortices.
@@ -400,7 +398,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 if self._current_step < self.num_steps - 1:
                     self.coupled_unsteady_problem.initialize_next_problem(self)
                     self._initialize_panel_vortex(
-                        self.coupled_unsteady_problem.get_steady_problem(step + 1),
+                        self.get_steady_problem_at(step + 1),
                         step + 1,
                     )
                     # Shed RingVortices into the wake.
@@ -410,7 +408,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
                 self.steady_problems.append(
-                    self.coupled_unsteady_problem.get_steady_problem(step)
+                    self.get_steady_problem_at(step)
                 )
                 bar.update(n=float(approx_times[step + 1]))
 
@@ -447,7 +445,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         # Initialize bound RingVortices for all steps on the first call.
         if step == 0:
             self._initialize_panel_vortex(
-                self.coupled_unsteady_problem.get_steady_problem(0), 0
+                self.get_steady_problem_at(0), 0
             )
 
         # Set the current step and related state.

@@ -214,25 +214,26 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         # one more element than the number of time steps, because I will also use the
         # progress bar during the simulation initialization.
         approx_times = np.zeros(self.num_steps + 1, dtype=float)
-        if step != 0:
-            # Calculate the total number of RingVortices analyzed during this step.
-            num_wing_ring_vortices = num_wing_panels
-            num_wake_ring_vortices = self.list_num_wake_vortices[step]
-            num_ring_vortices = num_wing_ring_vortices + num_wake_ring_vortices
+        for step in range(self.num_steps):
+            if step != 0:
+                # Calculate the total number of RingVortices analyzed during this step.
+                num_wing_ring_vortices = num_wing_panels
+                num_wake_ring_vortices = self.list_num_wake_vortices[step]
+                num_ring_vortices = num_wing_ring_vortices + num_wake_ring_vortices
 
-            # The following constant multipliers were determined empirically. Thus
-            # far, they seem to provide for adequately smooth progress bar updating.
-            if step == 1:
-                approx_times[step] = num_ring_vortices * 70
-            elif step == 2:
-                approx_times[step] = num_ring_vortices * 30
-            else:
-                approx_times[step] = num_ring_vortices * 3
+                # The following constant multipliers were determined empirically. Thus
+                # far, they seem to provide for adequately smooth progress bar updating.
+                if step == 1:
+                    approx_times[step] = num_ring_vortices * 70
+                elif step == 2:
+                    approx_times[step] = num_ring_vortices * 30
+                else:
+                    approx_times[step] = num_ring_vortices * 3
 
         approx_partial_time = np.sum(approx_times)
         approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
-
+        print(approx_times)
         with tqdm(
             total=approx_total_time,
             unit="",

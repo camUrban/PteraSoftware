@@ -233,7 +233,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         approx_partial_time = np.sum(approx_times)
         approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
-        print(approx_times)
+        
         with tqdm(
             total=approx_total_time,
             unit="",

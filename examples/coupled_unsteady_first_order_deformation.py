@@ -23,12 +23,13 @@ wing_cross_sections = []
 
 # Initialization loop for our wing cross sections. Here we are defining automatically
 # wing cross sections with a variable set of chords. All of the wing cross sections for
-# deformation simulation are defined to have num_spanwise_panels=1 (except the wing tip which
-# is always None). This is because we deform each strip of wing cross section independently by
-# modeling them as torsional springs, and that model only really works if those strips are thin.
-# Note that if you want to go thinner for the same base definition, you can increase the number
-# of spanwise panels and ensure that in Wing you set the single_step_wing parameter to True,
-# which will ensure that the wing is split back up into single strips for deformation.
+# deformation simulation will eventually be defined to have num_spanwise_panels=1
+# (except the wing tip whichis always None). This is because we deform each strip of wing cross
+# section independently by modeling them as torsional springs, and that model only really works
+# if those strips are thin.If you want to go thinner for the same base definition, you can
+# increase the num_spanwise_panels and ensure that in Wing you set the single_step_wing
+# parameter to True, which will ensure that the wing is split back up into single strips 
+# for deformation.
 for i in range(len(cross_section_chords)):
     wing_cross_sections.append(
         ps.geometry.wing_cross_section.WingCrossSection(
@@ -53,7 +54,7 @@ for i in range(len(cross_section_chords)):
 
 # Primary wing definition. Note that the single_step_wing parameter is set to True,
 # which means that the wing will be split into strips for deformation, and each
-# strip will be modeled as a torsional spring. 
+# strip will be modeled as a torsional spring.
 wing_1 = ps.geometry.wing.Wing(
     wing_cross_sections=wing_cross_sections,
     name="Main Wing",
@@ -160,12 +161,12 @@ main_single_step_movements_list = []
 reflected_movements_list = []
 reflected_single_step_movements_list = []
 
-# A loop for defining the movement for the main wing and its reflected counterpart's wing 
-# cross sections. Here, we are defining single step wing cross movement, a movement class 
-# that functions differently from the standard Movement class, by giving the next 
+# A loop for defining the movement for the main wing and its reflected counterpart's wing
+# cross sections. Here, we are defining single step wing cross movement, a movement class
+# that functions differently from the standard Movement class, by giving the next
 # position of wing cross section from the previous instead of attempting to precompute
-# the entire movement beforehand as that is impossible in scenarios where the deformation 
-# is dependent on the aerodynamic loads. 
+# the entire movement beforehand as that is impossible in scenarios where the deformation
+# is dependent on the aerodynamic loads.
 for i in range(len(example_airplane.wings[0].wing_cross_sections)):
     if i == 0:
         single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
@@ -202,18 +203,16 @@ single_step_v_tail_root_wing_cross_section_movement = ps.movements.single_step.s
     spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
     phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
-single_step_v_tail_tip_wing_cross_section_movement = (
-    ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+single_step_v_tail_tip_wing_cross_section_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
 
 # This dephase parameter is used to make the wing start in a flat position
@@ -334,7 +333,7 @@ example_problem = ps.problems.AeroelasticUnsteadyProblem(
     single_step_movement=single_step_movement,
     plot_flap_cycle=False,
     wing_density=0.012,
-    spring_constant=1.0,
+    spring_constant=5.0,
     moment_scaling_factor=1.0,
     damping_constant=1.0,
 )

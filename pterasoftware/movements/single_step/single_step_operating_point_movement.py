@@ -1,11 +1,14 @@
-"""This module contains the OperatingPointMovement class.
+"""Contains the SingleStepOperatingPointMovement class.
 
-This module contains the following classes:
-    OperatingPointMovement: This is a class used to contain the OperatingPoint
-    movements.
+**Contains the following classes:**
 
-This module contains the following functions:
-    None
+SingleStepOperatingPointMovement: A single step variant of OperatingPointMovement
+that generates one OperatingPoint per time step instead of all at once. Uses
+composition to wrap an OperatingPointMovement.
+
+**Contains the following functions:**
+
+None
 """
 from ..operating_point_movement import OperatingPointMovement
 from .._functions import (
@@ -22,22 +25,29 @@ from ..._parameter_validation import (
 
 
 class SingleStepOperatingPointMovement:
-    """This is a class used to contain the OperatingPoint movements.
+    """A single step variant of OperatingPointMovement for coupled simulations.
 
-    This class contains the following public methods:
+    This class wraps an OperatingPointMovement via composition and generates one
+    OperatingPoint per time step (via generate_next_operating_point) rather than
+    generating all OperatingPoints at once. The composed OperatingPointMovement is
+    accessible via corresponding_operating_point_movement.
 
-        generate_operating_points: Creates the OperatingPoint at each time step,
-        and returns them in a list.
+    **Contains the following methods:**
 
-        max_period: Defines a property for the longest period of
-        OperatingPointMovement's own motion.
+    generate_next_operating_point: Creates the OperatingPoint at a single time step.
 
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    max_period: The longest period of this SingleStepOperatingPointMovement's own
+    motion.
     """
+
+    __slots__ = (
+        "ampVCg__E",
+        "periodVCg__E",
+        "spacingVCg__E",
+        "phaseVCg__E",
+        "listVCg__E",
+        "corresponding_operating_point_movement",
+    )
 
     def __init__(
         self,
@@ -47,83 +57,42 @@ class SingleStepOperatingPointMovement:
         spacingVCg__E="sine",
         phaseVCg__E=0.0,
     ):
-        """This is the initialization method.
+        """The initialization method.
 
-        :param base_operating_point: OperatingPoint
-
-            This is the base OperatingPoint, from which the OperatingPoint at each
-            time step will be created.
-
-        :param ampVCg__E: number, optional
-
-            The amplitude of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameters. Must be a non-negative number (int or
-            float), and is converted to a float internally.  Also, the amplitude must
-            be low enough that it doesn't drive its base value out of the range of
-            valid values. Otherwise, this OperatingPointMovement will try to create
-            OperatingPoints with invalid parameters values.The default value is 0.0.
-            The units are in meters per second.
-
-        :param periodVCg__E: number, optional
-
-            The period of the OperatingPointMovement's changes in its
-            OperatingPoints' vCg__E parameter. Must be a non-negative number (int or
-            float), and is converted to a float internally. The default value is 0.0.
-            It must be 0.0 if ampVCg__E 0.0 and non-zero if not. The units are in
-            seconds.
-
-        :param spacingVCg__E: string, optional
-
-            The value determines the spacing of the OperatingPointMovement's change
-            in its OperatingPoints' vCg__E parameters. Must be either "sine",
-            "uniform", or a callable custom spacing function. Custom spacing
-            functions are for advanced users and must start at 0, return to 0 after
-            one period of 2*pi radians, have amplitude of 1, be periodic,
-            return finite values only, and accept a ndarray as input and return a
-            ndarray of the same shape. The custom function is scaled by ampVCg__E,
-            shifted horizontally by phaseVCg__E, and vertically by the base value,
-            with the period controlled by periodVCg__E. The default value is "sine".
-
-        :param phaseVCg__E: number optional
-
-            The phase offsets of the first time step's OperatingPoint's vCg__E
-            parameter relative to the base OperatingPoint's vCg__E parameter. Must be
-            a number (int or float) in the range (-180.0, 180.0], and is converted to a
-            float internally. The default value is 0.0. It must be 0.0 if ampVCg__E
-            is 0.0 and non-zero if not. The units are in degrees.
+        :param base_operating_point: The base OperatingPoint from which the
+            OperatingPoint at each time step will be created.
+        :param ampVCg__E: The amplitude of the SingleStepOperatingPointMovement's
+            changes in its OperatingPoints' vCg__E parameters. Must be a non negative
+            number (int or float), and is converted to a float internally. The
+            amplitude must be low enough that it doesn't drive its base value out of
+            the range of valid values. Otherwise, this
+            SingleStepOperatingPointMovement will try to create OperatingPoints with
+            invalid parameter values. The units are in meters per second. The default
+            is 0.0.
+        :param periodVCg__E: The period of the SingleStepOperatingPointMovement's
+            changes in its OperatingPoints' vCg__E parameter. Must be a non negative
+            number (int or float), and is converted to a float internally. It must be
+            0.0 if ampVCg__E is 0.0 and non zero if not. The units are in seconds. The
+            default is 0.0.
+        :param spacingVCg__E: Determines the spacing of the
+            SingleStepOperatingPointMovement's change in its OperatingPoints' vCg__E
+            parameters. Can be "sine", "uniform", or a callable custom spacing
+            function. Custom spacing functions are for advanced users and must start at
+            0.0, return to 0.0 after one period of 2*pi radians, have amplitude of
+            1.0, be periodic, return finite values only, and accept a ndarray as input
+            and return a ndarray of the same shape. The custom function is scaled by
+            ampVCg__E, shifted horizontally and vertically by phaseVCg__E and the base
+            value, and have a period set by periodVCg__E. The default is "sine".
+        :param phaseVCg__E: The phase offset of the first time step's OperatingPoint's
+            vCg__E parameter relative to the base OperatingPoint's vCg__E parameter.
+            Must be a number (int or float) in the range (-180.0, 180.0], and will be
+            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and
+            non zero if not. The units are in degrees. The default is 0.0.
+        :return: None
         """
 
-        self.ampVCg__E = number_in_range_return_float(
-            ampVCg__E, "ampVCg__E", min_val=0.0, min_inclusive=True
-        )
-
-        periodVCg__E = number_in_range_return_float(
-            periodVCg__E, "periodVCg__E", min_val=0.0, min_inclusive=True
-        )
-        if self.ampVCg__E == 0 and periodVCg__E != 0:
-            raise ValueError("If ampVCg__E is 0.0, then periodVCg__E must also be 0.0.")
-        self.periodVCg__E = periodVCg__E
-
-        if isinstance(spacingVCg__E, str):
-            if spacingVCg__E not in ["sine", "uniform"]:
-                raise ValueError(
-                    f"spacingVCg__E must be 'sine', 'uniform', or a callable, got string '{spacingVCg__E}'."
-                )
-        elif not callable(spacingVCg__E):
-            raise TypeError(
-                f"spacingVCg__E must be 'sine', 'uniform', or a callable, got {type(spacingVCg__E).__name__}."
-            )
-        self.spacingVCg__E = spacingVCg__E
-
-        phaseVCg__E = number_in_range_return_float(
-            phaseVCg__E, "phaseVCg__E", -180.0, False, 180.0, True
-        )
-        if self.ampVCg__E == 0 and phaseVCg__E != 0:
-            raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
-        self.phaseVCg__E = phaseVCg__E
-
-        self.listVCg__E = None
-
+        # Create the corresponding OperatingPointMovement, which validates all
+        # oscillation parameters and is also needed by coupled unsteady problems.
         self.corresponding_operating_point_movement = OperatingPointMovement(
             base_operating_point=base_operating_point,
             ampVCg__E=ampVCg__E,
@@ -132,24 +101,23 @@ class SingleStepOperatingPointMovement:
             phaseVCg__E=phaseVCg__E,
         )
 
+        # Copy validated attributes from the corresponding OperatingPointMovement.
+        self.ampVCg__E = self.corresponding_operating_point_movement.ampVCg__E
+        self.periodVCg__E = self.corresponding_operating_point_movement.periodVCg__E
+        self.spacingVCg__E = self.corresponding_operating_point_movement.spacingVCg__E
+        self.phaseVCg__E = self.corresponding_operating_point_movement.phaseVCg__E
+
+        self.listVCg__E = None
+
     def generate_next_operating_point(self, delta_time, base_operating_point: OperatingPoint, num_steps, step):
-        """Creates the OperatingPoint at each time step, and returns them in a list.
+        """Creates the OperatingPoint at a single time step.
 
-        :param num_steps: int
-
-            This is the number of time steps in this movement. It must be a positive
-            int.
-
-        :param delta_time: number
-
-            This is the time between each time step. It must be a positive number (
-            int or float), and will be converted internally to a float. The units are
-            in seconds.
-
-        :return: list of OperatingPoints
-
-            This is the list of OperatingPoints associated with this
-            OperatingPointMovement.
+        :param delta_time: The time between each time step in seconds.
+        :param base_operating_point: The base OperatingPoint from which the new
+            OperatingPoint will be created.
+        :param num_steps: The total number of time steps in this movement.
+        :param step: The index of the current time step.
+        :return: The OperatingPoint at the specified time step.
         """
         num_steps = int_in_range_return_int(
             num_steps, "num_steps", min_val=1, min_inclusive=True
@@ -186,30 +154,21 @@ class SingleStepOperatingPointMovement:
 
     @property
     def max_period(self):
-        """Defines a property for the longest period of OperatingPointMovement's own
-        motion.
+        """The longest period of this SingleStepOperatingPointMovement's own motion.
 
-        :return: float
-
-            The longest period in seconds. If the all the motion is static, this will
-            be 0.0.
+        :return: The longest period in seconds. If all the motion is static, this
+            will be 0.0.
         """
         return self.periodVCg__E
 
     def _initialize_oscillating_values(self, delta_time, num_steps, base_operating_point):
-        """Pre-computes the oscillating values for faster access later.
+        """Pre computes the oscillating VCg__E values for all time steps.
 
-        :param delta_time: number  
-
-            This is the time between each time step. It must be a positive number (
-            int or float), and will be converted internally to a float. The units are
-            in seconds.
-        :param num_steps: int
-            This is the number of time steps in this movement. It must be a positive
-            int.
-        :param base_operating_point: OperatingPoint
-            This is the base OperatingPoint, from which the OperatingPoint at each
-            time step will be created.
+        :param delta_time: The time between each time step in seconds.
+        :param num_steps: The total number of time steps.
+        :param base_operating_point: The base OperatingPoint providing the base
+            VCg__E value.
+        :return: None
         """
         # Generate oscillating values for VCg__E.
         if self.spacingVCg__E == "sine":

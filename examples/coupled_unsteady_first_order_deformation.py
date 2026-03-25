@@ -335,7 +335,7 @@ del operating_point_movement
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     single_step_movement=single_step_movement,
     wing_density=0.012,
-    spring_constant=5.0,
+    spring_constant=15.0,
     damping_constant=1.0,
     aero_scaling=1.0,
     moment_scaling_factor=1.0,

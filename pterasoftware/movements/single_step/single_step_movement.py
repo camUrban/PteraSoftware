@@ -1,10 +1,14 @@
-"""This module contains the Movement class.
+"""Contains the SingleStepMovement class.
 
-This module contains the following classes:
-    Movement: This is a class used to contain an UnsteadyProblem's movement.
+**Contains the following classes:**
 
-This module contains the following functions:
-    None
+SingleStepMovement: A single step variant of Movement that generates Airplanes and
+OperatingPoints one time step at a time instead of all at once. Uses composition to
+wrap a Movement.
+
+**Contains the following functions:**
+
+None
 """
 
 from ..movement import Movement
@@ -18,22 +22,26 @@ from ..._parameter_validation import (
 )
 
 class SingleStepMovement:
-    """This is a class used to contain an UnsteadyProblem's movement.
+    """A single step variant of Movement for coupled simulations.
 
-    This class contains the following public methods:
+    This class wraps a Movement via composition and generates Airplanes and
+    OperatingPoints one time step at a time (via generate_next_movement) rather than
+    generating all of them at once. The composed Movement is accessible via
+    corresponding_movement.
 
-        max_period: Defines a property for the longest period of Movement's own
-        motion and that of its sub-movement objects, sub-sub-movement objects, etc.
+    **Contains the following methods:**
 
-        static: Defines a property to flag if all the Movement itself, and all of its
-        sub-movement objects, sub-sub-movement objects, etc. represent no motion.
-
-    This class contains the following class attributes:
-        None
-
-    Subclassing:
-        This class is not meant to be subclassed.
+    generate_next_movement: Creates the Airplanes and OperatingPoint at a single time
+    step.
     """
+
+    __slots__ = (
+        "airplane_movements",
+        "operating_point_movement",
+        "corresponding_movement",
+        "delta_time",
+        "num_steps",
+    )
 
     def __init__(
         self,
@@ -44,63 +52,48 @@ class SingleStepMovement:
         num_chords: int | None = None,
         num_steps: int | None = None,
     ):
-        """This is the initialization method.
+        """The initialization method.
 
-        Note: This method checks that all Wings maintain their symmetry type across
-        all time steps. See the WingMovement class documentation for more details on
-        this requirement, and the Wing class documentation for more information on
-        symmetry types.
-
-        :param airplane_movements: list of AirplaneMovements
-
-            This is a list of objects which characterize the movement of each
-            of the airplanes in the UnsteadyProblem.
-
-        :param operating_point_movement: OperatingPointMovement
-
-            This object characterizes changes to the UnsteadyProblem's the operating
-            point.
-
-        :param delta_time: number or None, optional
-
-            delta_time is the time, in seconds, between each time step. If left as
-            None, which is the default value, Movement will calculate a value such
-            that RingVortices shed from the first Wing will have roughly the same
-            chord length as the RingVortices on the first Wing. This is based on
-            first base Airplane's reference chord length, its first Wing's number of
-            chordwise panels, and its base OperatingPoint's velocity. If set,
-            delta_time must be a positive number (int or float). It will be converted
-            internally to a float.
-
-        :param num_cycles: int or None, optional
-
-            num_cycles is the number of cycles of the maximum period motion used to
-            calculate a non-populated num_steps parameter if Movement isn't static.
-            If num_steps is set or Movement is static, this must be left as None,
-            which is the default value. If num_steps isn't set and Movement isn't
-            static, num_cycles must be a positive int. In that case, I recommend
-            setting num_cycles to 3.
-
-        :param num_chords: int or None, optional
-
-            num_chords is the number of chord lengths used to calculate a
-            non-populated num_steps parameter if Movement is static. If num_steps is
-            set or Movement isn't static, this must be left as None, which is the
-            default value. If num_steps isn't set and Movement is static, num_chords
-            must be a positive int. In that case, I recommend setting num_chords to
-            10. For cases with multiple Airplanes, the num_chords will reference the
-            largest reference chord length.
-
-        :param num_steps: int or None, optional
-
-            num_steps is the number of time steps of the unsteady simulation. It must
-            be a positive int. The default value is None. If left as None,
-            and Movement isn't static, Movement will calculate a value such that the
-            simulation will cover some number of cycles of the maximum period of all
-            the motion described in Movement's sub-movement objects, sub-sub-movement
-            objects, etc. If num_steps is left as None, and Movement is static,
-            it will default to the number of time steps such that the wake extends
-            back by some number of reference chord lengths.
+        :param single_step_airplane_movements: A list of SingleStepAirplaneMovements
+            characterizing the movement of each Airplane.
+        :param single_step_operating_point_movement: A SingleStepOperatingPointMovement
+            characterizing any changes to the operating conditions.
+        :param delta_time: The time between each time step. Accepts the following: None
+            (default): SingleStepMovement analytically estimates the delta_time that
+            produces wake RingVortices with roughly the same chord length as the bound
+            trailing edge RingVortices, accounting for both freestream and geometry
+            motion velocities. This provides good results across all Strouhal numbers.
+            "optimize": SingleStepMovement first runs the analytical estimation, then
+            uses that result as an initial guess for an iterative optimization that
+            minimizes the area mismatch between wake RingVortices and their parent
+            bound trailing edge RingVortices. This is slower but may produce slightly
+            more accurate results. Positive number (int or float): Use the specified
+            value directly. All values are converted internally to floats. The units
+            are in seconds.
+        :param num_cycles: The number of cycles of the maximum period motion used to
+            calculate a num_steps parameter initialized as None if the
+            SingleStepMovement isn't static. If num_steps is not None or if the
+            SingleStepMovement is static, this must be None. If num_steps is
+            initialized as None and the SingleStepMovement isn't static, num_cycles
+            must be a positive int. In that case, I recommend setting num_cycles to 3.
+            The default is None.
+        :param num_chords: The number of chord lengths used to calculate a num_steps
+            parameter initialized as None if the SingleStepMovement is static. If
+            num_steps is not None or if the SingleStepMovement isn't static, this must
+            be None. If num_steps is initialized as None and the SingleStepMovement is
+            static, num_chords must be a positive int. In that case, I recommend
+            setting num_chords to 10. For cases with multiple Airplanes, the num_chords
+            will reference the largest reference chord length. The default is None.
+        :param num_steps: The number of time steps of the unsteady simulation. If
+            initialized as None, and the SingleStepMovement isn't static, it will
+            calculate a value for num_steps such that the simulation will cover some
+            number of cycles of the maximum period of all the motion described in the
+            SingleStepMovement's sub movement objects, sub sub movement object(s), and
+            sub sub sub movement objects. If num_steps is initialized as None, and the
+            SingleStepMovement is static, it will calculate a value for num_steps such
+            that the simulation will result in a wake extending back by some number of
+            reference chord lengths.
+        :return: None
         """
         if not isinstance(single_step_airplane_movements, list):
             raise TypeError("single_step_airplane_movements must be a list.")
@@ -137,18 +130,15 @@ class SingleStepMovement:
         self.num_steps = self.corresponding_movement.num_steps
 
     def generate_next_movement(self, base_airplanes, base_operating_point, step, deformation_matrices=None):
-        """Creates the Airplanes and OperatingPoint at the next time step.
-        :param base_airplanes: list of Airplanes
+        """Creates the Airplanes and OperatingPoint at a single time step.
 
-            This is the list of Airplanes at the base time step.
-        :param base_operating_point: OperatingPoint
-
-            This is the OperatingPoint at the base time step.
-        :return: tuple (list of Airplanes, OperatingPoint)
-
-            This is a tuple where the first element is the list of Airplanes at the
-            next time step, and the second element is the OperatingPoint at the next
-            time step.
+        :param base_airplanes: The list of Airplanes at the current time step.
+        :param base_operating_point: The OperatingPoint at the current time step.
+        :param step: The index of the time step to generate.
+        :param deformation_matrices: Deformation matrices to apply to the Wings, or
+            None. The default is None.
+        :return: A tuple of (list of Airplanes, OperatingPoint) at the specified time
+            step.
         """
 
         airplanes = []

@@ -19,7 +19,6 @@ from typing import Any, cast
 import numpy as np
 import pyvista as pv
 import webp
-import pterasoftware as ps
 
 from .. import _parameter_validation, _transformations
 from . import wing as wing_mod

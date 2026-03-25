@@ -58,7 +58,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=6,
-            chordwise_spacing="cosine",
+            chordwise_spacing="uniform",
         ),
         ps.geometry.wing.Wing(
             wing_cross_sections=[

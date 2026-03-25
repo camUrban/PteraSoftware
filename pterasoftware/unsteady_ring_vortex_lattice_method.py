@@ -612,13 +612,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Calculates the locations of the bound RingVortex vertices, and then
         initializes them.
 
-        Every Panel has a RingVortex, which is a quadrangle whose front leg is a
-        LineVortex at the Panel's quarter chord. The left and right legs are
-        LineVortices running along the Panel's left and right legs. If the Panel is not
-        along the trailing edge, they extend backwards and meet the back LineVortex, at
-        the rear Panel's quarter chord. Otherwise, they extend backwards and meet the
-        back LineVortex one quarter chord back from the Panel's back leg.
-
         :return: None
         """
         for steady_problem_id, steady_problem in enumerate(self.steady_problems):
@@ -627,6 +620,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self._initialize_panel_vortex(steady_problem, steady_problem_id)
 
     def _initialize_panel_vortex(self, steady_problem, steady_problem_id):
+        """
+        Initializes the bound RingVortex for each Panel in the given SteadyProblem.
+
+        Every Panel has a RingVortex, which is a quadrangle whose front leg is a
+        LineVortex at the Panel's quarter chord. The left and right legs are
+        LineVortices running along the Panel's left and right legs. If the Panel is not
+        along the trailing edge, they extend backwards and meet the back LineVortex, at
+        the rear Panel's quarter chord. Otherwise, they extend backwards and meet the
+        back LineVortex one quarter chord back from the Panel's back leg.
+
+        :param steady_problem: The SteadyProblem for which to initialize the bound RingVortices.
+        :param steady_problem_id: The index of the given SteadyProblem in the list of SteadyProblems.
+        :return: None
+        """
         this_operating_point = steady_problem.operating_point
         vInf_GP1__E = this_operating_point.vInf_GP1__E
 

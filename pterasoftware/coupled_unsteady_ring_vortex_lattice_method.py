@@ -2,8 +2,10 @@
 
 **Contains the following classes:**
 
-CoupledUnsteadyRingVortexLatticeMethodSolver: A class used to solve CoupledUnsteadyProblems with
-the unsteady ring vortex lattice method.
+CoupledUnsteadyRingVortexLatticeMethodSolver: A subclass of UnsteadyRingVortexLatticeMethodSolver
+that solves CoupledUnsteadyProblems using the unsteady ring vortex lattice method. This solver
+handles step-by-step geometry initialization and computes aerodynamic loads relative to strip
+leading edge points (SLEP) in addition to the standard center-of-gravity frame.
 
 **Contains the following functions:**
 
@@ -32,27 +34,50 @@ _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMethodSolver):
-    """A class used to solve UnsteadyProblems with the unsteady ring vortex lattice
-    method.
+    """A subclass of UnsteadyRingVortexLatticeMethodSolver that solves CoupledUnsteadyProblems.
 
-    **Contains the following methods:**
+    This solver handles CoupledUnsteadyProblems where geometry is initialized and updated on a
+    per-step basis (step-by-step), rather than being fully precomputed. It extends the parent
+    class with Strip Leading Edge Point (SLEP) functionality for computing aerodynamic moments
+    about the strip leading edge, which is important for analyzing wing deformations and local
+    loading characteristics.
 
-    run: Runs the solver on the UnsteadyProblem.
+    **Key differences from parent UnsteadyRingVortexLatticeMethodSolver:**
+
+    - Inherits core aerodynamic solver logic from parent (wall-built inheritance)
+    - Overrides get_steady_problem_at() to dynamically retrieve problems during iteration
+    - Extends moment calculations to include SLEP-based moments via _load_calculation_moment_processing_hook()
+    - Computes bound vortex positions relative to strip leading edge points
+
+    **Inherited methods (used directly from parent):**
+
+    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's geometry
+    axes, observed from the Earth frame) at one or more points due to freestream and induced
+    velocity from every RingVortex.
+    
+    All movement velocity calculation methods and aerodynamic influence calculation methods.
+
+    **Custom methods:**
+
+    run: Runs the solver on the CoupledUnsteadyProblem with per-step geometry initialization.
 
     initialize_step_geometry: Initializes geometry for a specific step without solving.
-
-    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
-    geometry axes, observed from the Earth frame) at one or more points (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
-    velocity and the induced velocity from every RingVortex.
+    
+    get_steady_problem_at: Overridden abstraction point for dynamic problem retrieval.
     """
 
     def __init__(
         self, coupled_unsteady_problem: problems.CoupledUnsteadyProblem
     ) -> None:
-        """The initialization method.
+        """Initialize the solver for a CoupledUnsteadyProblem.
 
-        :param unsteady_problem: The UnsteadyProblem to be solved.
+        Sets up the solver infrastructure and initializes SLEP (Strip Leading Edge Point)
+        related attributes. The coupled_unsteady_problem is stored before calling the parent's
+        __init__() because the parent's initialization calls methods that depend on accessing
+        this attribute.
+
+        :param coupled_unsteady_problem: The CoupledUnsteadyProblem to be solved. Steps are
+            retrieved dynamically from this problem during iteration via get_steady_problem_at().
         :return: None
         """
         if not isinstance(coupled_unsteady_problem, problems.CoupledUnsteadyProblem):
@@ -60,7 +85,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                 "coupled_unsteady_problem must be a CoupledUnsteadyProblem."
             )
         # self.coupled_unsteady_problem must be defined before the call to super().__init__()
-        # because the parent class's __init__ method calls methods that rely on self.coupled_unsteady_problem being defined.
+        # because the parent class's __init__ method calls methods that rely on 
+        # self.coupled_unsteady_problem being defined.
         self.coupled_unsteady_problem = coupled_unsteady_problem
         super().__init__(coupled_unsteady_problem)
 
@@ -73,12 +99,14 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             self.get_steady_problem_at(0)
         )
 
-        # We want to store the data from every steady problem we compute here
-        # but we don't want to override the initial steady problems until the 
-        # data visualization stage so we store this and overwrite after run.
+        # Store computed steady problems for each time step to be assigned to the
+        # CoupledUnsteadyProblem after solve completes. This avoids overwriting the
+        # initial steady problems until data visualization/post-processing stage.
         self.steady_problems_data_storage = []
 
-        # number of panels overide and strip leading edge point initialization
+        # Initialize SLEP (Strip Leading Edge Point) information. For each airplane and wing,
+        # we track the panel index where each new spanwise strip begins. This allows efficient
+        # computation of moments about the strip leading edge (wing root to tip).
         num_panels = 0
         panel_count = 0
         self.slep_point_indices = []
@@ -86,6 +114,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             num_panels += airplane.num_panels
             for wing in airplane.wings:
                 for wing_cross_section in wing.wing_cross_sections:
+                    # Record the first panel index for this wing cross-section (start of strip)
                     self.slep_point_indices.append(panel_count)
                     if wing_cross_section.num_spanwise_panels is not None:
                         panel_count += wing_cross_section.num_spanwise_panels
@@ -115,7 +144,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         calculate_streamlines: bool | np.bool_ = True,
         show_progress: bool | np.bool_ = True,
     ) -> None:
-        """Runs the solver on the UnsteadyProblem.
+        """Runs the solver on the CoupledUnsteadyProblem.
 
         :param prescribed_wake: Set this to True to solve using a prescribed wake model.
             Set to False to use a free-wake, which may be more accurate but will make
@@ -141,8 +170,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
             show_progress, "show_progress"
         )
 
-        # Loop through this time step's Airplanes to create a list of their Wings.
-        # Here we calculate all of our values from our first ariplane to start our main run loop
+        # Cache the wings and compute spanwise panel counts from the initial geometry.
+        # Unlike the parent class (which precomputes all steps), this coupled solver
+        # retrieves each step's geometry dynamically via get_steady_problem_at().
         this_problem: problems.SteadyProblem = (
             self.get_steady_problem_at(0)
         )
@@ -294,8 +324,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
                     self.num_panels, dtype=float
                 )
 
-                # Initialize attributes to hold geometric data that pertain to this
-                # UnsteadyProblem.
+                # Initialize attributes to hold geometric data that pertain to the current
+                # time step of this CoupledUnsteadyProblem.
                 self.panels = np.empty(self.num_panels, dtype=object)
                 self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
                 self.panel_areas = np.zeros(self.num_panels, dtype=float)
@@ -481,12 +511,23 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         backLegForces_GP1,
         unsteady_forces_GP1,
     ) -> np.ndarray:
-        """Extends the parent implementation to also compute moments
-        about the SLEP point, stored in self.moments_GP1_Slep.
+        """Override parent to compute moments about both center-of-gravity and SLEP.
+
+        This hook extends the parent class's moment calculation by additionally computing
+        moments about each panel's Strip Leading Edge Point (SLEP). This is used for
+        analyzing wing loading and deformation characteristics relative to the wing root.
+
+        The method:
+        1. Calls parent's implementation to get CG-based moments
+        2. Updates bound vortex positions relative to SLEP points
+        3. Recalculates all moment contributions in the SLEP frame
+        4. Stores SLEP moments in self.moments_GP1_Slep
 
         :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
-        (in the first Airplane's geometry axes, relative to the first Airplane's CG)
-        on every Panel at the current time step."""
+            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
+            on every Panel at the current time step. SLEP moments are stored separately
+            in self.moments_GP1_Slep.
+        """
         # Find the moments (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
         # front LineVortex, left LineVortex, and back LineVortex.
@@ -534,8 +575,16 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         return moments_GP1_CgP1
 
     def _update_bound_vortex_positions_relative_to_slep_points(self) -> None:
-        """Updates the bound RingVortex position variables to be relative to the
-        Airplane's SLEP points.
+        """Transform bound RingVortex leg center positions from CG-relative to SLEP-relative.
+
+        For each panel, this method:
+        1. Gets the front-left panel point (leading edge) from each panel
+        2. Maps panels to their corresponding strip's leading edge point using slep_point_indices
+        3. Subtracts the SLEP position from all vortex leg center positions
+        4. Subtracts the SLEP position from collocation points
+
+        This prepares positions for computing moments about the strip leading edge, which is
+        important for analyzing local wing loading and deformations.
 
         :return: None
         """
@@ -567,14 +616,18 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(UnsteadyRingVortexLatticeMeth
         self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - self.stack_leading_edge_points
 
     def get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
-        """Gets the SteadyProblem at a given time step. This is used for dynamic dispatch
-        with coupled unsteady problem as we want to have a different way of getting the steady
-        problem based on the solver type, but we want functions to work the same way regardless
-        of the solver type so that we don't need ot duplicate functionality across solvers.
+        """Get the SteadyProblem at a given time step via the CoupledUnsteadyProblem.
+
+        This is a KEY ABSTRACTION POINT that enables inheritance. The parent
+        UnsteadyRingVortexLatticeMethodSolver has nearly identical code that calls this
+        method, but retrieves from self.steady_problems[step]. This coupled solver
+        retrieves from self.coupled_unsteady_problem.get_steady_problem(step), enabling
+        dynamic step-by-step geometry updates rather than precomputed steps.
 
         :param step: An int representing the time step of the desired SteadyProblem. It
             must be between 0 and num_steps - 1, inclusive.
-        :return: The SteadyProblem at the given time step.
+        :return: The SteadyProblem at the given time step, retrieved from the
+            CoupledUnsteadyProblem's step sequence.
         """
         if step < 0 or step >= self.num_steps:
             raise ValueError(

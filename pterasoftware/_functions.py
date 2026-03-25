@@ -147,7 +147,6 @@ def numba_centroid_of_quadrilateral(
     return np.array([x_average, y_average, z_average])
 
 
-
 def calculate_streamlines(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -261,9 +260,8 @@ def process_solver_loads(
         assert solver.operating_point is not None
         this_operating_point = solver.operating_point
     elif isinstance(
-        solver, (
-            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-        )
+        solver,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         assert solver.current_airplanes is not None
         these_airplanes = solver.current_airplanes

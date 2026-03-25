@@ -2,7 +2,7 @@
 
 **Contains the following subpackages:**
 
-None
+single_step: Contains the single step movement classes.
 
 **Contains the following directories:**
 

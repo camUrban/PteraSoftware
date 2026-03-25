@@ -451,7 +451,7 @@ def draw(
 
 
 def animate(
-    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver, 
+    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool_ = False,
     save: bool | np.bool_ = False,
@@ -900,9 +900,7 @@ def plot_results_versus_time(
     """
     if not isinstance(
         unsteady_solver,
-        (
-            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-        )
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     ):
         raise TypeError(
             "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."

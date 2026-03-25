@@ -15,7 +15,7 @@ None
 convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
-unsteady_ring_vortex_lattice_method.py: Contains the
+coupled_unsteady_ring_vortex_lattice_method.py: Contains the
 CoupledUnsteadyRingVortexLatticeMethodSolver class.
 
 operating_point.py: Contains the OperatingPoint class.
@@ -48,11 +48,6 @@ import pterasoftware.movements
 import pterasoftware.operating_point
 import pterasoftware.problems
 
-# Expose eagerly imported modules as attributes
-geometry = pterasoftware.geometry
-movements = pterasoftware.movements
-operating_point = pterasoftware.operating_point
-problems = pterasoftware.problems
 
 # Lazy imports configuration: modules loaded on first access.
 _LAZY_MODULES = {

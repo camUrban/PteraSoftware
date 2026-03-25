@@ -23,13 +23,12 @@ wing_cross_sections = []
 
 # Initialization loop for our wing cross sections. Here we are defining automatically
 # wing cross sections with a variable set of chords. All of the wing cross sections for
-# deformation simulation will eventually be defined to have num_spanwise_panels=1
-# (except the wing tip whichis always None). This is because we deform each strip of wing cross
-# section independently by modeling them as torsional springs, and that model only really works
-# if those strips are thin.If you want to go thinner for the same base definition, you can
-# increase the num_spanwise_panels and ensure that in Wing you set the single_step_wing
-# parameter to True, which will ensure that the wing is split back up into single strips 
-# for deformation.
+# deformation simulation are defined to have num_spanwise_panels=1 (except the wing tip which
+# is always None). This is because we deform each strip of wing cross section independently by
+# modeling them as torsional springs, and that model only really works if those strips are thin.
+# Note that if you want to go thinner for the same base definition, you can increase the number
+# of spanwise panels and ensure that in Wing you set the single_step_wing parameter to True,
+# which will ensure that the wing is split back up into single strips for deformation.
 for i in range(len(cross_section_chords)):
     wing_cross_sections.append(
         ps.geometry.wing_cross_section.WingCrossSection(
@@ -329,13 +328,21 @@ single_step_movement = ps.movements.single_step.single_step_movement.SingleStepM
 del operating_point_movement
 
 # Define the UnsteadyProblem.
+# The deformation parameters are set here
+# The wing_density, spring_constant and damping_constant are the primary parameters
+# you should expect to change. The rest are more for considering numerical issues
+# with our integrator and debugging. Plotting the flap cycle can give good data as well.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     single_step_movement=single_step_movement,
-    plot_flap_cycle=False,
     wing_density=0.012,
     spring_constant=5.0,
-    moment_scaling_factor=1.0,
     damping_constant=1.0,
+    aero_scaling=1.0,
+    moment_scaling_factor=1.0,
+    damping_eps=1e-3,
+    plot_flap_cycle=False,
+    custom_spacing_second_derivative=None,
+    only_final_results=False,
 )
 
 # Define a new solver. The available solver classes are

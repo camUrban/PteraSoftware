@@ -53,7 +53,7 @@ for i in range(len(cross_section_chords)):
 
 # Primary wing definition. Note that the single_step_wing parameter is set to True,
 # which means that the wing will be split into strips for deformation, and each
-# strip will be modeled as a torsional spring. 
+# strip will be modeled as a torsional spring.
 wing_1 = ps.geometry.wing.Wing(
     wing_cross_sections=wing_cross_sections,
     name="Main Wing",
@@ -160,12 +160,12 @@ main_single_step_movements_list = []
 reflected_movements_list = []
 reflected_single_step_movements_list = []
 
-# A loop for defining the movement for the main wing and its reflected counterpart's wing 
-# cross sections. Here, we are defining single step wing cross movement, a movement class 
-# that functions differently from the standard Movement class, by giving the next 
+# A loop for defining the movement for the main wing and its reflected counterpart's wing
+# cross sections. Here, we are defining single step wing cross movement, a movement class
+# that functions differently from the standard Movement class, by giving the next
 # position of wing cross section from the previous instead of attempting to precompute
-# the entire movement beforehand as that is impossible in scenarios where the deformation 
-# is dependent on the aerodynamic loads. 
+# the entire movement beforehand as that is impossible in scenarios where the deformation
+# is dependent on the aerodynamic loads.
 for i in range(len(example_airplane.wings[0].wing_cross_sections)):
     if i == 0:
         single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
@@ -330,13 +330,21 @@ single_step_movement = ps.movements.single_step.single_step_movement.SingleStepM
 del operating_point_movement
 
 # Define the UnsteadyProblem.
+# The deformation parameters are set here
+# The wing_density, spring_constant and damping_constant are the primary parameters
+# you should expect to change. The rest are more for considering numerical issues
+# with our integrator and debugging. Plotting the flap cycle can give good data as well.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     single_step_movement=single_step_movement,
-    plot_flap_cycle=False,
     wing_density=0.012,
-    spring_constant=1.0,
-    moment_scaling_factor=1.0,
+    spring_constant=5.0,
     damping_constant=1.0,
+    aero_scaling=1.0,
+    moment_scaling_factor=1.0,
+    damping_eps=1e-3,
+    plot_flap_cycle=False,
+    custom_spacing_second_derivative=None,
+    only_final_results=False,
 )
 
 # Define a new solver. The available solver classes are

@@ -134,6 +134,7 @@ class SingleStepOperatingPointMovement:
                 base_operating_point=base_operating_point,
             )
 
+        assert self.listVCg__E is not None
         # Get the non-changing OperatingPoint attributes.
         this_rho = base_operating_point.rho
         this_alpha = base_operating_point.alpha

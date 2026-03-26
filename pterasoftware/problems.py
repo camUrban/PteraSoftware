@@ -490,14 +490,14 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             only_final_results=only_final_results,
         )
         self.plot_flap_cycle = plot_flap_cycle
-        self.prev_velocities = []
+        self.prev_velocities: list[np.ndarray] = []
         self.curr_airplanes = [self.movement.airplane_movements[0].base_airplane]
         self.curr_operating_point = (
             self.movement.operating_point_movement.base_operating_point
         )
-        self.positions = []
-        self.net_deformation = None
-        self.angluar_velocities = None
+        self.positions: list[np.ndarray] = []
+        self.net_deformation: np.ndarray = np.zeros((0, 3))
+        self.angluar_velocities: np.ndarray = np.zeros((0, 3))
 
         # Tunable Parameters
         self.wing_density = wing_density  # per unit height kg/m^2
@@ -520,14 +520,14 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             0
         ].wing_movements[0]
 
-        self.per_step_data = []
-        self.net_data = []
-        self.angluar_velocity_data = []
-        self.per_step_inertial = []
-        self.per_step_aero = []
-        self.per_step_spring = []
-        self.base_wing_positions = None
-        self.flap_points = []
+        self.per_step_data: list[np.ndarray] = []
+        self.net_data: list[np.ndarray] = []
+        self.angluar_velocity_data: list[np.ndarray] = []
+        self.per_step_inertial: list[np.ndarray] = []
+        self.per_step_aero: list[np.ndarray] = []
+        self.per_step_spring: list[np.ndarray] = []
+        self.base_wing_positions: np.ndarray = np.zeros(0)
+        self.flap_points: list[np.ndarray] = []
 
         # For custom spacing defined in movement.
         self.custom_spacing_second_derivative = custom_spacing_second_derivative
@@ -543,14 +543,17 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             position snapshots are available.
         """
         if len(self.positions) <= 2:
+            if len(self.positions) == 0:
+                return np.zeros(1)
             return np.zeros_like(self.positions[0])
         dt = self.movement.delta_time
         # If given a relatively large dt value, the finite difference calculation can produce
         # very large accelerations that cause numerical instability in the spring ODE integration.
         # A higher order model may be useful if this is the case.
-        return (self.positions[-1] - 2 * self.positions[-2] + self.positions[-3]) / (
-            dt * dt
-        )
+        pos_m1: np.ndarray = self.positions[-1]
+        pos_m2: np.ndarray = self.positions[-2]
+        pos_m3: np.ndarray = self.positions[-3]
+        return np.array((pos_m1 - 2 * pos_m2 + pos_m3) / (dt * dt))
 
     def calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
         """Generate the mass distribution matrix for all wing panels.
@@ -564,6 +567,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             at each panel. The three components are identical (mass scalar replicated
             for x, y, z axes).
         """
+        assert wing.panels is not None
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
@@ -611,11 +615,12 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         # Compute panel parameters and mass matrix once
         num_chordwise_panels = wing.num_chordwise_panels
         num_spanwise_panels = wing.num_spanwise_panels
+        assert num_spanwise_panels is not None, "num_spanwise_panels must not be None"
         num_panels = num_chordwise_panels * num_spanwise_panels
         mass_matrix = self.calculate_mass_matrix(wing)
 
         # Initialize deformation state if needed
-        if self.net_deformation is None:
+        if self.net_deformation.size == 0:
             self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
             self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
 
@@ -650,7 +655,6 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             inertial_moments=inertial_moments,
             aeroMoments_GP1_Slep=aeroMoments_GP1_Slep,
             spring_moments=spring_moments,
-            wing=wing,
         )
 
         # Plot results at end of simulation if enabled
@@ -711,6 +715,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         :return: An (N_chordwise, N_spanwise, 3) ndarray of inertial moment vectors.
         """
         # Store current panel center positions
+        assert wing.panels is not None
         self.positions.append(
             np.array([[panel.Cpp_GP1_CgP1 for panel in row] for row in wing.panels])
         )
@@ -727,7 +732,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             inertial_forces,
             axis=2,
         )
-        return inertial_moments
+        return np.array(inertial_moments)
 
     def _build_deformation_vector(
         self, thetas: np.ndarray, num_spanwise_panels: int
@@ -766,7 +771,6 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         inertial_moments: np.ndarray,
         aeroMoments_GP1_Slep: np.ndarray,
         spring_moments: np.ndarray,
-        wing: geometry.wing.Wing,
     ) -> None:
         """Update internal moment and deformation state arrays.
 
@@ -782,7 +786,6 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero
             moments.
         :param spring_moments: An (N_spanwise, 3) ndarray of spring-damper moments.
-        :param wing: The Wing object for accessing undeformed geometry.
         :return: None
         """
         # Update angular velocity state
@@ -790,10 +793,11 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
         # Initialize baseline wing positions for flap point tracking
         undeformed_wing = self.steady_problems[step].airplanes[0].wings[0]
+        assert undeformed_wing.panels is not None
         undeformed_positions = np.array(
             [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeformed_wing.panels]
         )
-        if self.base_wing_positions is None:
+        if self.base_wing_positions.size == 0:
             self.base_wing_positions = np.array(undeformed_positions)
 
         # Track wing deflection relative to undeformed baseline
@@ -904,10 +908,9 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
         for span_panel in range(num_spanwise_panels):
             aero_span_moment = np.sum(aero_moments[:, span_panel, 2])
-            if span_panel == 0:
-                theta0 = 0.0
-                omega0 = 0.0
-            else:
+            theta0: float = 0.0
+            omega0: float = 0.0
+            if span_panel != 0:
                 theta0 = self.net_deformation[span_panel][1]
                 omega0 = self.angluar_velocities[span_panel][1]
 
@@ -921,7 +924,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
                 wing.wing_cross_sections[span_panel].chord
                 + wing.wing_cross_sections[span_panel + 1].chord
             ) / 2
-            W = np.linalg.norm(wing.panels[0][span_panel].frontLeg_G)
+            assert wing.panels is not None
+            W: float = float(np.linalg.norm(wing.panels[0][span_panel].frontLeg_G))
             d += W / 2
             span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
             theta, omega, moment = self.calculate_torsional_spring_moment(
@@ -1070,19 +1074,24 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
         def tau(time: float) -> float:
             """Total external torque (aerodynamic + inertial from prescribed motion)."""
-            return aero_torque + inertial_torque_func(time)
+            return float(aero_torque + inertial_torque_func(time))
 
-        def ode(time: float, y: list[float]) -> list[float]:
+        def ode(time: float, y: np.ndarray) -> np.ndarray:
             """ODE system: dθ/dt = ω, dω/dt = (τ - c*ω - k*θ)/I."""
             theta, omega = y
-            return [omega, (tau(time) - c * omega - k * theta) / I]
+            return np.array([omega, (tau(time) - c * omega - k * theta) / I])
 
         sol = solve_ivp(
-            ode, (t[0], t[-1]), [theta0, omega0], t_eval=t, rtol=1e-9, atol=1e-12
+            ode,
+            (t[0], t[-1]),
+            np.array([theta0, omega0]),
+            t_eval=t,
+            rtol=1e-9,
+            atol=1e-12,
         )
 
-        theta = sol.y[0][-1]
-        omega = sol.y[1][-1]
+        theta = float(sol.y[0][-1])
+        omega = float(sol.y[1][-1])
 
         return theta, omega
 

@@ -1661,7 +1661,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + unsteady_moments_GP1_CgP1
         )
 
-        return moments_GP1_CgP1
+        return np.array(moments_GP1_CgP1)
 
     def _populate_next_airplanes_wake(self) -> None:
         """Updates the next time step's Airplanes' wakes.

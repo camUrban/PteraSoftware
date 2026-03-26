@@ -204,6 +204,8 @@ class SingleStepAirplaneMovement:
                 delta_time, num_steps, base_airplane
             )
 
+        assert self.listCg_GP1_CgP1 is not None
+
         wings = []
 
         # Iterate through the WingMovements.

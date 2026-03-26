@@ -1552,6 +1552,7 @@ class Wing:
             )
 
         N = wcs1.num_spanwise_panels
+        assert N is not None, "wcs1.num_spanwise_panels must not be None"
 
         for i in range(N):
             t = (i + 1) / N  # interpolation parameter between 0 and 1

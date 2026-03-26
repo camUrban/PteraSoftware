@@ -107,23 +107,25 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         # Store computed steady problems for each time step to be assigned to the
         # CoupledUnsteadyProblem after solve completes. This avoids overwriting the
         # initial steady problems until data visualization/post-processing stage.
-        self.steady_problems_data_storage = []
+        self.steady_problems_data_storage: list[problems.SteadyProblem] = []
 
         # Initialize SLEP (Strip Leading Edge Point) information. For each airplane and wing,
         # we track the panel index where each new spanwise strip begins. This allows efficient
         # computation of moments about the strip leading edge (wing root to tip).
         num_panels = 0
         panel_count = 0
-        self.slep_point_indices = []
+        slep_point_indices_list: list[int] = []
         for airplane in first_steady_problem.airplanes:
             num_panels += airplane.num_panels
             for wing in airplane.wings:
                 for wing_cross_section in wing.wing_cross_sections:
                     # Record the first panel index for this wing cross-section (start of strip)
-                    self.slep_point_indices.append(panel_count)
+                    slep_point_indices_list.append(panel_count)
                     if wing_cross_section.num_spanwise_panels is not None:
                         panel_count += wing_cross_section.num_spanwise_panels
-        self.slep_point_indices = np.array(self.slep_point_indices, dtype=int)
+        self.slep_point_indices: np.ndarray = np.array(
+            slep_point_indices_list, dtype=int
+        )
         self.num_panels: int = num_panels
 
         # The current time step's center bound LineVortex points for the right,
@@ -181,7 +183,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         this_problem: problems.SteadyProblem = self.get_steady_problem_at(0)
         these_airplanes = this_problem.airplanes
         num_wing_panels = 0
-        these_wings: list[list[geometry.wing.Wing]] = []
+        these_wings: list[tuple[geometry.wing.Wing, ...]] = []
         for airplane in these_airplanes:
             these_wings.append(airplane.wings)
             num_wing_panels += airplane.num_panels
@@ -467,7 +469,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.
-        self.steady_problems = self.steady_problems_data_storage
+        self.steady_problems = tuple(self.steady_problems_data_storage)
         self.ran = True
 
     def initialize_step_geometry(self, step: int) -> None:

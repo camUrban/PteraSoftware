@@ -619,7 +619,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # observed from the Earth frame) at this time step.
             self._initialize_panel_vortex(steady_problem, steady_problem_id)
 
-    def _initialize_panel_vortex(self, steady_problem, steady_problem_id):
+    def _initialize_panel_vortex(
+        self, steady_problem: problems.SteadyProblem, steady_problem_id: int
+    ) -> None:
         """Initializes the bound RingVortex for each Panel in the given SteadyProblem.
 
         Every Panel has a RingVortex, which is a quadrangle whose front leg is a

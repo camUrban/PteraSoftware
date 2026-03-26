@@ -11,10 +11,12 @@ a Movement.
 None
 """
 
-from ..._parameter_validation import (
-    int_in_range_return_int,
-    number_in_range_return_float,
-)
+from __future__ import annotations
+
+import numpy as np
+
+from ... import geometry
+from ...operating_point import OperatingPoint
 from ..movement import Movement
 from .single_step_airplane_movement import SingleStepAirplaneMovement
 from .single_step_operating_point_movement import SingleStepOperatingPointMovement
@@ -132,8 +134,12 @@ class SingleStepMovement:
         self.num_steps = self.corresponding_movement.num_steps
 
     def generate_next_movement(
-        self, base_airplanes, base_operating_point, step, deformation_matrices=None
-    ):
+        self,
+        base_airplanes: list[geometry.airplane.Airplane],
+        base_operating_point: OperatingPoint,
+        step: int,
+        deformation_matrices: np.ndarray | None = None,
+    ) -> tuple[list[geometry.airplane.Airplane], OperatingPoint]:
         """Creates the Airplanes and OperatingPoint at a single time step.
 
         :param base_airplanes: The list of Airplanes at the current time step.

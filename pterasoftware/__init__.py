@@ -48,7 +48,6 @@ import pterasoftware.movements
 import pterasoftware.operating_point
 import pterasoftware.problems
 
-
 # Lazy imports configuration: modules loaded on first access.
 _LAZY_MODULES = {
     "convergence": "pterasoftware.convergence",

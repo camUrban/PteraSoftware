@@ -139,7 +139,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 # WingMovement for this reflected Wing. To start, we'll first define the reflected
 # main wing's root and tip WingCrossSections' WingCrossSectionMovements.
 
-# defintions for wing cross section movement parameters
+# definitions for wing cross section movement parameters
 dephase_x = 0.0
 period_x = 0.0
 amplitude_x = 0.0

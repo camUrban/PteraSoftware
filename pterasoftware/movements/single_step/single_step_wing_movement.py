@@ -12,27 +12,25 @@ None
 
 import numpy as np
 
-from ..wing_movement import WingMovement
-
+from ... import geometry
 from ..._parameter_validation import (
     int_in_range_return_int,
     number_in_range_return_float,
 )
-
 from .._functions import (
-    oscillating_sinspaces,
-    oscillating_linspaces,
     oscillating_customspaces,
+    oscillating_linspaces,
+    oscillating_sinspaces,
 )
+from ..wing_movement import WingMovement
 
-from ... import geometry
 
 class SingleStepWingMovement:
     """A single step variant of WingMovement for coupled simulations.
 
-    This class wraps a WingMovement via composition and generates one Wing per time
-    step (via generate_next_wing) rather than generating all Wings at once. The
-    composed WingMovement is accessible via corresponding_wing_movement.
+    This class wraps a WingMovement via composition and generates one Wing per time step
+    (via generate_next_wing) rather than generating all Wings at once. The composed
+    WingMovement is accessible via corresponding_wing_movement.
 
     Wings cannot undergo motion that causes them to switch symmetry types. See the
     WingMovement class documentation for details.
@@ -83,30 +81,29 @@ class SingleStepWingMovement:
             WingCrossSections.
         :param ampLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
-            SingleStepWingMovement's changes in its Wings' Ler_Gs_Cgs parameters. Can
-            be a tuple, list, or ndarray. Values are converted to floats internally.
-            Each amplitude must be low enough that it doesn't drive its base value out
-            of the range of valid values. Otherwise, this SingleStepWingMovement will
-            try to create Wings with invalid parameter values. The units are in meters.
-            The default is (0.0, 0.0, 0.0).
+            SingleStepWingMovement's changes in its Wings' Ler_Gs_Cgs parameters. Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. Each
+            amplitude must be low enough that it doesn't drive its base value out of the
+            range of valid values. Otherwise, this SingleStepWingMovement will try to
+            create Wings with invalid parameter values. The units are in meters. The
+            default is (0.0, 0.0, 0.0).
         :param periodLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the
-            SingleStepWingMovement's changes in its Wings' Ler_Gs_Cgs parameters. Can
-            be a tuple, list, or ndarray. Values are converted to floats internally.
-            Each element must be 0.0 if the corresponding element in ampLer_Gs_Cgs is
-            0.0 and non zero if not. The units are in seconds. The default is (0.0,
-            0.0, 0.0).
+            SingleStepWingMovement's changes in its Wings' Ler_Gs_Cgs parameters. Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. Each
+            element must be 0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and
+            non zero if not. The units are in seconds. The default is (0.0, 0.0, 0.0).
         :param spacingLer_Gs_Cgs: An array-like object of strs or callables with shape
             (3,) representing the spacing of the SingleStepWingMovement's change in its
-            Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or ndarray. Each
-            element can be the str "sine", the str "uniform", or a callable custom
-            spacing function. Custom spacing functions are for advanced users and must
-            start at 0.0, return to 0.0 after one period of 2*pi radians, have
-            amplitude of 1.0, be periodic, return finite values only, and accept a
-            ndarray as input and return a ndarray of the same shape. The custom function
-            is scaled by ampLer_Gs_Cgs, shifted horizontally and vertically by
-            phaseLer_Gs_Cgs and the base value, and have a period set by
-            periodLer_Gs_Cgs. The default is ("sine", "sine", "sine").
+            Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or ndarray. Each element
+            can be the str "sine", the str "uniform", or a callable custom spacing
+            function. Custom spacing functions are for advanced users and must start at
+            0.0, return to 0.0 after one period of 2*pi radians, have amplitude of 1.0,
+            be periodic, return finite values only, and accept a ndarray as input and
+            return a ndarray of the same shape. The custom function is scaled by
+            ampLer_Gs_Cgs, shifted horizontally and vertically by phaseLer_Gs_Cgs and
+            the base value, and have a period set by periodLer_Gs_Cgs. The default is
+            ("sine", "sine", "sine").
         :param phaseLer_Gs_Cgs: An array-like object of numbers (int or float) with
             shape (3,) representing the phase offsets of the elements in the first time
             step's Wing's Ler_Gs_Cgs parameter relative to the base Wing's Ler_Gs_Cgs
@@ -115,19 +112,18 @@ class SingleStepWingMovement:
             must be 0.0 if the corresponding element in ampLer_Gs_Cgs is 0.0 and non
             zero if not. The units are in degrees. The default is (0.0, 0.0, 0.0).
         :param ampAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
-            with shape (3,) representing the amplitudes of the
-            SingleStepWingMovement's changes in its Wings' angles_Gs_to_Wn_ixyz
-            parameters. Can be a tuple, list, or ndarray. Values must lie in the range
-            [0.0, 180.0] and will be converted to floats internally. Each amplitude
-            must be low enough that it doesn't drive its base value out of the range of
-            valid values. Otherwise, this SingleStepWingMovement will try to create
-            Wings with invalid parameter values. The units are in degrees. The default
-            is (0.0, 0.0, 0.0).
+            with shape (3,) representing the amplitudes of the SingleStepWingMovement's
+            changes in its Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list,
+            or ndarray. Values must lie in the range [0.0, 180.0] and will be converted
+            to floats internally. Each amplitude must be low enough that it doesn't
+            drive its base value out of the range of valid values. Otherwise, this
+            SingleStepWingMovement will try to create Wings with invalid parameter
+            values. The units are in degrees. The default is (0.0, 0.0, 0.0).
         :param periodAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or
             float) with shape (3,) representing the periods of the
             SingleStepWingMovement's changes in its Wings' angles_Gs_to_Wn_ixyz
-            parameters. Can be a tuple, list, or ndarray. Values are converted to
-            floats internally. Each element must be 0.0 if the corresponding element in
+            parameters. Can be a tuple, list, or ndarray. Values are converted to floats
+            internally. Each element must be 0.0 if the corresponding element in
             ampAngles_Gs_to_Wn_ixyz is 0.0 and non zero if not. The units are in
             seconds. The default is (0.0, 0.0, 0.0).
         :param spacingAngles_Gs_to_Wn_ixyz: An array-like object of strs or callables
@@ -135,20 +131,19 @@ class SingleStepWingMovement:
             change in its Wings' angles_Gs_to_Wn_ixyz parameters. Can be a tuple, list,
             or ndarray. Each element can be the str "sine", the str "uniform", or a
             callable custom spacing function. Custom spacing functions are for advanced
-            users and must start at 0.0, return to 0.0 after one period of 2*pi
-            radians, have amplitude of 1.0, be periodic, return finite values only, and
-            accept a ndarray as input and return a ndarray of the same shape. The custom
-            function is scaled by ampAngles_Gs_to_Wn_ixyz, shifted horizontally and
-            vertically by phaseAngles_Gs_to_Wn_ixyz and the base value, with the period
-            set by periodAngles_Gs_to_Wn_ixyz. The default is ("sine", "sine",
-            "sine").
-        :param phaseAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or
-            float) with shape (3,) representing the phase offsets of the elements in
-            the first time step's Wing's angles_Gs_to_Wn_ixyz parameter relative to
-            the base Wing's angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or
-            ndarray. Values must lie in the range (-180.0, 180.0] and will be converted
-            to floats internally. Each element must be 0.0 if the corresponding element
-            in ampAngles_Gs_to_Wn_ixyz is 0.0 and non zero if not. The units are in
+            users and must start at 0.0, return to 0.0 after one period of 2*pi radians,
+            have amplitude of 1.0, be periodic, return finite values only, and accept a
+            ndarray as input and return a ndarray of the same shape. The custom function
+            is scaled by ampAngles_Gs_to_Wn_ixyz, shifted horizontally and vertically by
+            phaseAngles_Gs_to_Wn_ixyz and the base value, with the period set by
+            periodAngles_Gs_to_Wn_ixyz. The default is ("sine", "sine", "sine").
+        :param phaseAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
+            with shape (3,) representing the phase offsets of the elements in the first
+            time step's Wing's angles_Gs_to_Wn_ixyz parameter relative to the base
+            Wing's angles_Gs_to_Wn_ixyz parameter. Can be a tuple, list, or ndarray.
+            Values must lie in the range (-180.0, 180.0] and will be converted to floats
+            internally. Each element must be 0.0 if the corresponding element in
+            ampAngles_Gs_to_Wn_ixyz is 0.0 and non zero if not. The units are in
             degrees. The default is (0.0, 0.0, 0.0).
         :return: None
         """
@@ -178,15 +173,25 @@ class SingleStepWingMovement:
         self.periodLer_Gs_Cgs = self.corresponding_wing_movement.periodLer_Gs_Cgs
         self.spacingLer_Gs_Cgs = self.corresponding_wing_movement.spacingLer_Gs_Cgs
         self.phaseLer_Gs_Cgs = self.corresponding_wing_movement.phaseLer_Gs_Cgs
-        self.ampAngles_Gs_to_Wn_ixyz = self.corresponding_wing_movement.ampAngles_Gs_to_Wn_ixyz
-        self.periodAngles_Gs_to_Wn_ixyz = self.corresponding_wing_movement.periodAngles_Gs_to_Wn_ixyz
-        self.spacingAngles_Gs_to_Wn_ixyz = self.corresponding_wing_movement.spacingAngles_Gs_to_Wn_ixyz
-        self.phaseAngles_Gs_to_Wn_ixyz = self.corresponding_wing_movement.phaseAngles_Gs_to_Wn_ixyz
+        self.ampAngles_Gs_to_Wn_ixyz = (
+            self.corresponding_wing_movement.ampAngles_Gs_to_Wn_ixyz
+        )
+        self.periodAngles_Gs_to_Wn_ixyz = (
+            self.corresponding_wing_movement.periodAngles_Gs_to_Wn_ixyz
+        )
+        self.spacingAngles_Gs_to_Wn_ixyz = (
+            self.corresponding_wing_movement.spacingAngles_Gs_to_Wn_ixyz
+        )
+        self.phaseAngles_Gs_to_Wn_ixyz = (
+            self.corresponding_wing_movement.phaseAngles_Gs_to_Wn_ixyz
+        )
 
         self.listLer_Gs_Cgs = None
         self.listAngles_Gs_to_Wn_ixyz = None
 
-    def generate_next_wing(self, base_wing, delta_time, num_steps, step, deformation_matrices):
+    def generate_next_wing(
+        self, base_wing, delta_time, num_steps, step, deformation_matrices
+    ):
         """Creates the Wing at a single time step.
 
         :param base_wing: The base Wing from which the new Wing will be created.

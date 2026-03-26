@@ -24,6 +24,6 @@ wing_movement.py: Contains the WingMovement class.
 import pterasoftware.movements.airplane_movement
 import pterasoftware.movements.movement
 import pterasoftware.movements.operating_point_movement
+import pterasoftware.movements.single_step
 import pterasoftware.movements.wing_cross_section_movement
 import pterasoftware.movements.wing_movement
-import pterasoftware.movements.single_step

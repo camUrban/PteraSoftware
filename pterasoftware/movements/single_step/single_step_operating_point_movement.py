@@ -2,26 +2,26 @@
 
 **Contains the following classes:**
 
-SingleStepOperatingPointMovement: A single step variant of OperatingPointMovement
-that generates one OperatingPoint per time step instead of all at once. Uses
-composition to wrap an OperatingPointMovement.
+SingleStepOperatingPointMovement: A single step variant of OperatingPointMovement that
+generates one OperatingPoint per time step instead of all at once. Uses composition to
+wrap an OperatingPointMovement.
 
 **Contains the following functions:**
 
 None
 """
-from ..operating_point_movement import OperatingPointMovement
-from .._functions import (
-    oscillating_sinspaces,
-    oscillating_linspaces,
-    oscillating_customspaces,
-)
 
-from ...operating_point import OperatingPoint
 from ..._parameter_validation import (
-    number_in_range_return_float,
     int_in_range_return_int,
+    number_in_range_return_float,
 )
+from ...operating_point import OperatingPoint
+from .._functions import (
+    oscillating_customspaces,
+    oscillating_linspaces,
+    oscillating_sinspaces,
+)
+from ..operating_point_movement import OperatingPointMovement
 
 
 class SingleStepOperatingPointMovement:
@@ -63,12 +63,11 @@ class SingleStepOperatingPointMovement:
             OperatingPoint at each time step will be created.
         :param ampVCg__E: The amplitude of the SingleStepOperatingPointMovement's
             changes in its OperatingPoints' vCg__E parameters. Must be a non negative
-            number (int or float), and is converted to a float internally. The
-            amplitude must be low enough that it doesn't drive its base value out of
-            the range of valid values. Otherwise, this
-            SingleStepOperatingPointMovement will try to create OperatingPoints with
-            invalid parameter values. The units are in meters per second. The default
-            is 0.0.
+            number (int or float), and is converted to a float internally. The amplitude
+            must be low enough that it doesn't drive its base value out of the range of
+            valid values. Otherwise, this SingleStepOperatingPointMovement will try to
+            create OperatingPoints with invalid parameter values. The units are in
+            meters per second. The default is 0.0.
         :param periodVCg__E: The period of the SingleStepOperatingPointMovement's
             changes in its OperatingPoints' vCg__E parameter. Must be a non negative
             number (int or float), and is converted to a float internally. It must be
@@ -76,18 +75,18 @@ class SingleStepOperatingPointMovement:
             default is 0.0.
         :param spacingVCg__E: Determines the spacing of the
             SingleStepOperatingPointMovement's change in its OperatingPoints' vCg__E
-            parameters. Can be "sine", "uniform", or a callable custom spacing
-            function. Custom spacing functions are for advanced users and must start at
-            0.0, return to 0.0 after one period of 2*pi radians, have amplitude of
-            1.0, be periodic, return finite values only, and accept a ndarray as input
-            and return a ndarray of the same shape. The custom function is scaled by
+            parameters. Can be "sine", "uniform", or a callable custom spacing function.
+            Custom spacing functions are for advanced users and must start at 0.0,
+            return to 0.0 after one period of 2*pi radians, have amplitude of 1.0, be
+            periodic, return finite values only, and accept a ndarray as input and
+            return a ndarray of the same shape. The custom function is scaled by
             ampVCg__E, shifted horizontally and vertically by phaseVCg__E and the base
             value, and have a period set by periodVCg__E. The default is "sine".
         :param phaseVCg__E: The phase offset of the first time step's OperatingPoint's
             vCg__E parameter relative to the base OperatingPoint's vCg__E parameter.
             Must be a number (int or float) in the range (-180.0, 180.0], and will be
-            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and
-            non zero if not. The units are in degrees. The default is 0.0.
+            converted to a float internally. It must be 0.0 if ampVCg__E is 0.0 and non
+            zero if not. The units are in degrees. The default is 0.0.
         :return: None
         """
 
@@ -109,7 +108,9 @@ class SingleStepOperatingPointMovement:
 
         self.listVCg__E = None
 
-    def generate_next_operating_point(self, delta_time, base_operating_point: OperatingPoint, num_steps, step):
+    def generate_next_operating_point(
+        self, delta_time, base_operating_point: OperatingPoint, num_steps, step
+    ):
         """Creates the OperatingPoint at a single time step.
 
         :param delta_time: The time between each time step in seconds.
@@ -156,18 +157,20 @@ class SingleStepOperatingPointMovement:
     def max_period(self):
         """The longest period of this SingleStepOperatingPointMovement's own motion.
 
-        :return: The longest period in seconds. If all the motion is static, this
-            will be 0.0.
+        :return: The longest period in seconds. If all the motion is static, this will
+            be 0.0.
         """
         return self.periodVCg__E
 
-    def _initialize_oscillating_values(self, delta_time, num_steps, base_operating_point):
+    def _initialize_oscillating_values(
+        self, delta_time, num_steps, base_operating_point
+    ):
         """Pre computes the oscillating VCg__E values for all time steps.
 
         :param delta_time: The time between each time step in seconds.
         :param num_steps: The total number of time steps.
-        :param base_operating_point: The base OperatingPoint providing the base
-            VCg__E value.
+        :param base_operating_point: The base OperatingPoint providing the base VCg__E
+            value.
         :return: None
         """
         # Generate oscillating values for VCg__E.

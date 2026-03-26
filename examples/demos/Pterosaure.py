@@ -1,13 +1,15 @@
-import pterasoftware as ps
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
+import pterasoftware as ps
+
 
 def get_relative_transform(Point1, Unit1, Point2, Unit2):
 
     Point1 = np.array(Point1, dtype=float)
-    Unit1  = np.array(Unit1, dtype=float)
+    Unit1 = np.array(Unit1, dtype=float)
     Point2 = np.array(Point2, dtype=float)
-    Unit2  = np.array(Unit2, dtype=float)
+    Unit2 = np.array(Unit2, dtype=float)
 
     Xp = Unit1 / np.linalg.norm(Unit1)
     Zp = np.array([0, 0, 1])
@@ -28,7 +30,7 @@ def get_relative_transform(Point1, Unit1, Point2, Unit2):
     Rrel = Rp.T @ Re
 
     rot = R.from_matrix(Rrel)
-    angles_Wcsp_to_Wcs_ixyz = rot.as_euler('xyz', degrees=True)
+    angles_Wcsp_to_Wcs_ixyz = rot.as_euler("xyz", degrees=True)
 
     Lp_Wcsp_Lpp = Rp.T @ (Point2 - Point1)
 
@@ -36,89 +38,123 @@ def get_relative_transform(Point1, Unit1, Point2, Unit2):
 
 
 wing_cross_section_1 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=6,
-                    chord=0.25,
-                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-                    control_surface_symmetry_type="symmetric",
-                    control_surface_hinge_point=0.75,
-                    control_surface_deflection=0.0,
-                    spanwise_spacing="uniform",
-                    airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0012",
-                        outline_A_lp=None,
-                        resample=True,
-                        n_points_per_side=400,
-                    ),
-                )
+    num_spanwise_panels=6,
+    chord=0.25,
+    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    control_surface_symmetry_type="symmetric",
+    control_surface_hinge_point=0.75,
+    control_surface_deflection=0.0,
+    spanwise_spacing="uniform",
+    airfoil=ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        outline_A_lp=None,
+        resample=True,
+        n_points_per_side=400,
+    ),
+)
 
 wing_cross_section_2 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=6,
-                    chord=np.linalg.norm((0.1559,0,-0.0931)),
-                    Lp_Wcsp_Lpp=get_relative_transform((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0889,0.2249, 0.0955), (0.1559,0,-0.0931))[0],
-                    angles_Wcsp_to_Wcs_ixyz=get_relative_transform((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0889,0.2249, 0.0955), (0.1559,0,-0.0931))[1],
-                    control_surface_symmetry_type="symmetric",
-                    control_surface_hinge_point=0.75,
-                    control_surface_deflection=0.0,
-                    spanwise_spacing="uniform",
-                    airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0012",
-                        outline_A_lp=None,
-                        resample=True,
-                        n_points_per_side=400,
-                    ),
-                )
+    num_spanwise_panels=6,
+    chord=np.linalg.norm((0.1559, 0, -0.0931)),
+    Lp_Wcsp_Lpp=get_relative_transform(
+        (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0889, 0.2249, 0.0955), (0.1559, 0, -0.0931)
+    )[0],
+    angles_Wcsp_to_Wcs_ixyz=get_relative_transform(
+        (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0889, 0.2249, 0.0955), (0.1559, 0, -0.0931)
+    )[1],
+    control_surface_symmetry_type="symmetric",
+    control_surface_hinge_point=0.75,
+    control_surface_deflection=0.0,
+    spanwise_spacing="uniform",
+    airfoil=ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        outline_A_lp=None,
+        resample=True,
+        n_points_per_side=400,
+    ),
+)
 
 wing_cross_section_3 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=6,
-                    chord=np.linalg.norm((0.2864,0,-0.1878)),
-                    Lp_Wcsp_Lpp=get_relative_transform((0.0889,0.2249, 0.0955), (0.1559,0,-0.0931), (-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878))[0],
-                    angles_Wcsp_to_Wcs_ixyz=get_relative_transform((0.0889,0.2249, 0.0955), (0.1559,0,-0.0931), (-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878))[1],
-                    control_surface_symmetry_type="symmetric",
-                    control_surface_hinge_point=0.75,
-                    control_surface_deflection=0.0,
-                    spanwise_spacing="uniform",
-                    airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0012",
-                        outline_A_lp=None,
-                        resample=True,
-                        n_points_per_side=400,
-                    ),
-                )
+    num_spanwise_panels=6,
+    chord=np.linalg.norm((0.2864, 0, -0.1878)),
+    Lp_Wcsp_Lpp=get_relative_transform(
+        (0.0889, 0.2249, 0.0955),
+        (0.1559, 0, -0.0931),
+        (-0.0521, 0.5749, 0.1940),
+        (0.2864, 0, -0.1878),
+    )[0],
+    angles_Wcsp_to_Wcs_ixyz=get_relative_transform(
+        (0.0889, 0.2249, 0.0955),
+        (0.1559, 0, -0.0931),
+        (-0.0521, 0.5749, 0.1940),
+        (0.2864, 0, -0.1878),
+    )[1],
+    control_surface_symmetry_type="symmetric",
+    control_surface_hinge_point=0.75,
+    control_surface_deflection=0.0,
+    spanwise_spacing="uniform",
+    airfoil=ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        outline_A_lp=None,
+        resample=True,
+        n_points_per_side=400,
+    ),
+)
 
 wing_cross_section_4 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=6,
-                    chord=np.linalg.norm((0.322,0,-0.2256)),
-                    Lp_Wcsp_Lpp=get_relative_transform((-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878), (-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256))[0],
-                    angles_Wcsp_to_Wcs_ixyz=get_relative_transform((-0.0521, 0.5749, 0.1940), (0.2864,0,-0.1878), (-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256))[1],
-                    control_surface_symmetry_type="symmetric",
-                    control_surface_hinge_point=0.75,
-                    control_surface_deflection=0.0,
-                    spanwise_spacing="uniform",
-                    airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0012",
-                        outline_A_lp=None,
-                        resample=True,
-                        n_points_per_side=400,
-                    ),
-                )
+    num_spanwise_panels=6,
+    chord=np.linalg.norm((0.322, 0, -0.2256)),
+    Lp_Wcsp_Lpp=get_relative_transform(
+        (-0.0521, 0.5749, 0.1940),
+        (0.2864, 0, -0.1878),
+        (-0.0946, 0.8282, 0.2345),
+        (0.322, 0, -0.2256),
+    )[0],
+    angles_Wcsp_to_Wcs_ixyz=get_relative_transform(
+        (-0.0521, 0.5749, 0.1940),
+        (0.2864, 0, -0.1878),
+        (-0.0946, 0.8282, 0.2345),
+        (0.322, 0, -0.2256),
+    )[1],
+    control_surface_symmetry_type="symmetric",
+    control_surface_hinge_point=0.75,
+    control_surface_deflection=0.0,
+    spanwise_spacing="uniform",
+    airfoil=ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        outline_A_lp=None,
+        resample=True,
+        n_points_per_side=400,
+    ),
+)
 
 wing_cross_section_5 = ps.geometry.wing_cross_section.WingCrossSection(
-                    num_spanwise_panels=1,
-                    chord=np.linalg.norm((0.005,0,-0.0003)),
-                    Lp_Wcsp_Lpp=get_relative_transform((-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256), (0.1829, 2.4373, 0.0266), (0.005,0,-0.0003))[0],
-                    angles_Wcsp_to_Wcs_ixyz=get_relative_transform((-0.0946, 0.8282, 0.2345), (0.322,0,-0.2256), (0.1829, 2.4373, 0.0266), (0.005,0,-0.0003))[1],
-                    control_surface_symmetry_type="symmetric",
-                    control_surface_hinge_point=0.75,
-                    control_surface_deflection=0.0,
-                    spanwise_spacing=None,
-                    airfoil=ps.geometry.airfoil.Airfoil(
-                        name="naca0012",
-                        outline_A_lp=None,
-                        resample=True,
-                        n_points_per_side=400,
-                    ),
-                )
+    num_spanwise_panels=1,
+    chord=np.linalg.norm((0.005, 0, -0.0003)),
+    Lp_Wcsp_Lpp=get_relative_transform(
+        (-0.0946, 0.8282, 0.2345),
+        (0.322, 0, -0.2256),
+        (0.1829, 2.4373, 0.0266),
+        (0.005, 0, -0.0003),
+    )[0],
+    angles_Wcsp_to_Wcs_ixyz=get_relative_transform(
+        (-0.0946, 0.8282, 0.2345),
+        (0.322, 0, -0.2256),
+        (0.1829, 2.4373, 0.0266),
+        (0.005, 0, -0.0003),
+    )[1],
+    control_surface_symmetry_type="symmetric",
+    control_surface_hinge_point=0.75,
+    control_surface_deflection=0.0,
+    spanwise_spacing=None,
+    airfoil=ps.geometry.airfoil.Airfoil(
+        name="naca0012",
+        outline_A_lp=None,
+        resample=True,
+        n_points_per_side=400,
+    ),
+)
 wing_cross_section_6 = ps.geometry.wing_cross_section.WingCrossSection(
     num_spanwise_panels=None,
     chord=np.linalg.norm((0.005, 0, -0.0003)),
@@ -150,10 +186,17 @@ wing_cross_section_6 = ps.geometry.wing_cross_section.WingCrossSection(
 pterasaure = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
-            wing_cross_sections=[wing_cross_section_1, wing_cross_section_2, wing_cross_section_3, wing_cross_section_4, wing_cross_section_5, wing_cross_section_6],
+            wing_cross_sections=[
+                wing_cross_section_1,
+                wing_cross_section_2,
+                wing_cross_section_3,
+                wing_cross_section_4,
+                wing_cross_section_5,
+                wing_cross_section_6,
+            ],
             name="Main Wing",
-            Ler_Gs_Cgs= [0.0, 0.025, 0.0],
-            angles_Gs_to_Wn_ixyz= [4, 0.0, 0.0],
+            Ler_Gs_Cgs=[0.0, 0.025, 0.0],
+            angles_Gs_to_Wn_ixyz=[4, 0.0, 0.0],
             symmetric=True,
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -176,20 +219,22 @@ wing_movements = []
 for wing in pterasaure.wings:
     wing_cross_section_movements = []
     for wing_cross_section in wing.wing_cross_sections:
-        wing_cross_section_movements.append(ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=wing_cross_section)
+        wing_cross_section_movements.append(
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wing_cross_section
+            )
         )
     wing_movements.append(wing_cross_section_movements)
 
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=pterasaure.wings[0],
-    wing_cross_section_movements= wing_movements[0],
+    wing_cross_section_movements=wing_movements[0],
     ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
     periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
     spacingLer_Gs_Cgs=("sine", "sine", "sine"),
     phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0), 
-    periodAngles_Gs_to_Wn_ixyz=(1/3, 0.0, 0.0), 
+    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(1 / 3, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
@@ -201,8 +246,8 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
     spacingLer_Gs_Cgs=("sine", "sine", "sine"),
     phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0),  
-    periodAngles_Gs_to_Wn_ixyz=(1/3, 0.0, 0.0), 
+    ampAngles_Gs_to_Wn_ixyz=(30.0, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(1 / 3, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
 )
@@ -224,7 +269,8 @@ example_operating_point = ps.operating_point.OperatingPoint(
 
 # Define the operating point's OperatingPointMovement.
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-    base_operating_point=example_operating_point)
+    base_operating_point=example_operating_point
+)
 
 # Define the Movement. This contains the AirplaneMovement and the
 # OperatingPointMovement.
@@ -239,7 +285,7 @@ movement = ps.movements.movement.Movement(
 
 # Define the UnsteadyProblem.
 example_problem = ps.problems.UnsteadyProblem(
-    movement=movement, 
+    movement=movement,
 )
 
 # Define a new solver. The available solver classes are

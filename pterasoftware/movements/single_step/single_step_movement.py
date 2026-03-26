@@ -3,23 +3,22 @@
 **Contains the following classes:**
 
 SingleStepMovement: A single step variant of Movement that generates Airplanes and
-OperatingPoints one time step at a time instead of all at once. Uses composition to
-wrap a Movement.
+OperatingPoints one time step at a time instead of all at once. Uses composition to wrap
+a Movement.
 
 **Contains the following functions:**
 
 None
 """
 
+from ..._parameter_validation import (
+    int_in_range_return_int,
+    number_in_range_return_float,
+)
 from ..movement import Movement
-
-from .single_step_airplane_movement import SingleStepAirplaneMovement 
+from .single_step_airplane_movement import SingleStepAirplaneMovement
 from .single_step_operating_point_movement import SingleStepOperatingPointMovement
 
-from ..._parameter_validation import (
-    number_in_range_return_float,
-    int_in_range_return_int,
-)
 
 class SingleStepMovement:
     """A single step variant of Movement for coupled simulations.
@@ -65,25 +64,25 @@ class SingleStepMovement:
             motion velocities. This provides good results across all Strouhal numbers.
             "optimize": SingleStepMovement first runs the analytical estimation, then
             uses that result as an initial guess for an iterative optimization that
-            minimizes the area mismatch between wake RingVortices and their parent
-            bound trailing edge RingVortices. This is slower but may produce slightly
-            more accurate results. Positive number (int or float): Use the specified
-            value directly. All values are converted internally to floats. The units
-            are in seconds.
+            minimizes the area mismatch between wake RingVortices and their parent bound
+            trailing edge RingVortices. This is slower but may produce slightly more
+            accurate results. Positive number (int or float): Use the specified value
+            directly. All values are converted internally to floats. The units are in
+            seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if the
             SingleStepMovement isn't static. If num_steps is not None or if the
-            SingleStepMovement is static, this must be None. If num_steps is
-            initialized as None and the SingleStepMovement isn't static, num_cycles
-            must be a positive int. In that case, I recommend setting num_cycles to 3.
-            The default is None.
+            SingleStepMovement is static, this must be None. If num_steps is initialized
+            as None and the SingleStepMovement isn't static, num_cycles must be a
+            positive int. In that case, I recommend setting num_cycles to 3. The default
+            is None.
         :param num_chords: The number of chord lengths used to calculate a num_steps
             parameter initialized as None if the SingleStepMovement is static. If
             num_steps is not None or if the SingleStepMovement isn't static, this must
             be None. If num_steps is initialized as None and the SingleStepMovement is
-            static, num_chords must be a positive int. In that case, I recommend
-            setting num_chords to 10. For cases with multiple Airplanes, the num_chords
-            will reference the largest reference chord length. The default is None.
+            static, num_chords must be a positive int. In that case, I recommend setting
+            num_chords to 10. For cases with multiple Airplanes, the num_chords will
+            reference the largest reference chord length. The default is None.
         :param num_steps: The number of time steps of the unsteady simulation. If
             initialized as None, and the SingleStepMovement isn't static, it will
             calculate a value for num_steps such that the simulation will cover some
@@ -116,7 +115,10 @@ class SingleStepMovement:
             )
         self.operating_point_movement = single_step_operating_point_movement
 
-        corresponding_airplane_movements = [airplane_movement.corresponding_airplane_movement for airplane_movement in self.airplane_movements]
+        corresponding_airplane_movements = [
+            airplane_movement.corresponding_airplane_movement
+            for airplane_movement in self.airplane_movements
+        ]
         self.corresponding_movement = Movement(
             airplane_movements=corresponding_airplane_movements,
             operating_point_movement=self.operating_point_movement.corresponding_operating_point_movement,
@@ -129,7 +131,9 @@ class SingleStepMovement:
         self.delta_time = self.corresponding_movement.delta_time
         self.num_steps = self.corresponding_movement.num_steps
 
-    def generate_next_movement(self, base_airplanes, base_operating_point, step, deformation_matrices=None):
+    def generate_next_movement(
+        self, base_airplanes, base_operating_point, step, deformation_matrices=None
+    ):
         """Creates the Airplanes and OperatingPoint at a single time step.
 
         :param base_airplanes: The list of Airplanes at the current time step.

@@ -620,8 +620,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self._initialize_panel_vortex(steady_problem, steady_problem_id)
 
     def _initialize_panel_vortex(self, steady_problem, steady_problem_id):
-        """
-        Initializes the bound RingVortex for each Panel in the given SteadyProblem.
+        """Initializes the bound RingVortex for each Panel in the given SteadyProblem.
 
         Every Panel has a RingVortex, which is a quadrangle whose front leg is a
         LineVortex at the Panel's quarter chord. The left and right legs are
@@ -630,8 +629,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         the rear Panel's quarter chord. Otherwise, they extend backwards and meet the
         back LineVortex one quarter chord back from the Panel's back leg.
 
-        :param steady_problem: The SteadyProblem for which to initialize the bound RingVortices.
-        :param steady_problem_id: The index of the given SteadyProblem in the list of SteadyProblems.
+        :param steady_problem: The SteadyProblem for which to initialize the bound
+            RingVortices.
+        :param steady_problem_id: The index of the given SteadyProblem in the list of
+            SteadyProblems.
         :return: None
         """
         this_operating_point = steady_problem.operating_point
@@ -674,14 +675,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 chordwise_position + 1, spanwise_position
                             ]
 
-                            _nextFlbvp_GP1_CgP1 = (
-                                next_chordwise_panel.Flbvp_GP1_CgP1
-                            )
+                            _nextFlbvp_GP1_CgP1 = next_chordwise_panel.Flbvp_GP1_CgP1
                             assert _nextFlbvp_GP1_CgP1 is not None
 
-                            _nextFrbvp_GP1_CgP1 = (
-                                next_chordwise_panel.Frbvp_GP1_CgP1
-                            )
+                            _nextFrbvp_GP1_CgP1 = next_chordwise_panel.Frbvp_GP1_CgP1
                             assert _nextFrbvp_GP1_CgP1 is not None
 
                             Blrvp_GP1_CgP1 = _nextFlbvp_GP1_CgP1
@@ -1608,20 +1605,28 @@ class UnsteadyRingVortexLatticeMethodSolver:
             frontLegForces_GP1,
             leftLegForces_GP1,
             backLegForces_GP1,
-            unsteady_forces_GP1
+            unsteady_forces_GP1,
         )
 
         # TODO: Transform forces_GP1 and moments_GP1_CgP1 to each Airplane's local
         #  geometry axes before passing to process_solver_loads.
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
-    def _load_calculation_moment_processing_hook(self, rightLegForces_GP1, frontLegForces_GP1, leftLegForces_GP1, backLegForces_GP1, unsteady_forces_GP1) -> np.ndarray:
-        """A hook method for processing the moments calculated in _calculate_loads.
-        This is added to allow for overriding the moment calculation in a child class
+    def _load_calculation_moment_processing_hook(
+        self,
+        rightLegForces_GP1,
+        frontLegForces_GP1,
+        leftLegForces_GP1,
+        backLegForces_GP1,
+        unsteady_forces_GP1,
+    ) -> np.ndarray:
+        """A hook method for processing the moments calculated in _calculate_loads. This
+        is added to allow for overriding the moment calculation in a child class.
 
-        :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments 
-        (in the first Airplane's geometry axes, relative to the first Airplane's CG) 
-        on every Panel at the current time step."""
+        :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
+            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
+            on every Panel at the current time step.
+        """
         # Find the moments (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
         # front LineVortex, left LineVortex, and back LineVortex.
@@ -2279,7 +2284,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         for step in range(self._first_averaging_step, self.num_steps):
 
             # Get the Airplanes from the SteadyProblem at this time step.
-            this_steady_problem: problems.SteadyProblem = self.get_steady_problem_at(step)
+            this_steady_problem: problems.SteadyProblem = self.get_steady_problem_at(
+                step
+            )
             these_airplanes = this_steady_problem.airplanes
 
             # Iterate through this time step's Airplanes.
@@ -2368,10 +2375,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 )
 
     def get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
-        """Gets the SteadyProblem at a given time step. This is used for dynamic dispatch
-        with coupled unsteady problem as we want to have a different way of getting the steady
-        problem based on the solver type, but we want functions to work the same way regardless
-        of the solver type so that we don't need ot duplicate functionality across solvers.
+        """Gets the SteadyProblem at a given time step. This is used for dynamic
+        dispatch with coupled unsteady problem as we want to have a different way of
+        getting the steady problem based on the solver type, but we want functions to
+        work the same way regardless of the solver type so that we don't need to
+        duplicate functionality across solvers.
 
         :param step: An int representing the time step of the desired SteadyProblem. It
             must be between 0 and num_steps - 1, inclusive.

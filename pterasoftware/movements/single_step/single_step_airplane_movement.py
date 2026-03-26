@@ -2,8 +2,8 @@
 
 **Contains the following classes:**
 
-SingleStepAirplaneMovement: A single step variant of AirplaneMovement that generates
-one Airplane per time step instead of all at once. Uses composition to wrap an
+SingleStepAirplaneMovement: A single step variant of AirplaneMovement that generates one
+Airplane per time step instead of all at once. Uses composition to wrap an
 AirplaneMovement.
 
 **Contains the following functions:**
@@ -17,20 +17,17 @@ from collections.abc import Callable, Sequence
 
 import numpy as np
 
-
-from ..airplane_movement import AirplaneMovement
 from ... import geometry
-
 from ..._parameter_validation import (
     int_in_range_return_int,
     number_in_range_return_float,
 )
-
 from .._functions import (
-    oscillating_sinspaces,
-    oscillating_linspaces,
     oscillating_customspaces,
+    oscillating_linspaces,
+    oscillating_sinspaces,
 )
+from ..airplane_movement import AirplaneMovement
 
 
 class SingleStepAirplaneMovement:
@@ -42,9 +39,8 @@ class SingleStepAirplaneMovement:
 
     **Contains the following methods:**
 
-    all_periods: All unique non zero periods from this
-    SingleStepAirplaneMovement, its SingleStepWingMovements, and their
-    SingleStepWingCrossSectionMovements.
+    all_periods: All unique non zero periods from this SingleStepAirplaneMovement, its
+    SingleStepWingMovements, and their SingleStepWingCrossSectionMovements.
 
     generate_next_airplane: Creates the Airplane at a single time step.
 
@@ -88,32 +84,32 @@ class SingleStepAirplaneMovement:
         :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             SingleStepAirplaneMovement's changes in its Airplanes' Cg_GP1_CgP1
-            parameters. Can be a tuple, list, or ndarray. Values are converted to
-            floats internally. Each amplitude must be low enough that it doesn't drive
-            its base value out of the range of valid values. Otherwise, this
+            parameters. Can be a tuple, list, or ndarray. Values are converted to floats
+            internally. Each amplitude must be low enough that it doesn't drive its base
+            value out of the range of valid values. Otherwise, this
             SingleStepAirplaneMovement will try to create Airplanes with invalid
-            parameter values. Because the first Airplane's Cg_GP1_CgP1 parameter must
-            be all zeros, this means that the first Airplane's ampCg_GP1_CgP1 parameter
+            parameter values. Because the first Airplane's Cg_GP1_CgP1 parameter must be
+            all zeros, this means that the first Airplane's ampCg_GP1_CgP1 parameter
             must also be all zeros. The units are in meters. The default is (0.0, 0.0,
             0.0).
         :param periodCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the
             SingleStepAirplaneMovement's changes in its Airplanes' Cg_GP1_CgP1
-            parameters. Can be a tuple, list, or ndarray. Values are converted to
-            floats internally. Each element must be 0.0 if the corresponding element in
+            parameters. Can be a tuple, list, or ndarray. Values are converted to floats
+            internally. Each element must be 0.0 if the corresponding element in
             ampCg_GP1_CgP1 is 0.0 and non zero if not. The units are in seconds. The
             default is (0.0, 0.0, 0.0).
         :param spacingCg_GP1_CgP1: An array-like object of strs or callables with shape
-            (3,) representing the spacing of the SingleStepAirplaneMovement's changes
-            in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or ndarray.
+            (3,) representing the spacing of the SingleStepAirplaneMovement's changes in
+            its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or ndarray.
             Each element can be the str "sine", the str "uniform", or a callable custom
             spacing function. Custom spacing functions are for advanced users and must
-            start at 0.0, return to 0.0 after one period of 2*pi radians, have
-            amplitude of 1.0, be periodic, return finite values only, and accept a
-            ndarray as input and return a ndarray of the same shape. Custom functions
-            are scaled by ampCg_GP1_CgP1, shifted horizontally and vertically by
-            phaseCg_GP1_CgP1 and the base value, and have a period set by
-            periodCg_GP1_CgP1. The default is ("sine", "sine", "sine").
+            start at 0.0, return to 0.0 after one period of 2*pi radians, have amplitude
+            of 1.0, be periodic, return finite values only, and accept a ndarray as
+            input and return a ndarray of the same shape. Custom functions are scaled by
+            ampCg_GP1_CgP1, shifted horizontally and vertically by phaseCg_GP1_CgP1 and
+            the base value, and have a period set by periodCg_GP1_CgP1. The default is
+            ("sine", "sine", "sine").
         :param phaseCg_GP1_CgP1: An array-like object of numbers (int or float) with
             shape (3,) representing the phase offsets of the elements in the first time
             step's Airplane's Cg_GP1_CgP1 parameter relative to the base Airplane's
@@ -143,7 +139,9 @@ class SingleStepAirplaneMovement:
         # Copy validated attributes from the corresponding AirplaneMovement.
         self.ampCg_GP1_CgP1 = self.corresponding_airplane_movement.ampCg_GP1_CgP1
         self.periodCg_GP1_CgP1 = self.corresponding_airplane_movement.periodCg_GP1_CgP1
-        self.spacingCg_GP1_CgP1 = self.corresponding_airplane_movement.spacingCg_GP1_CgP1
+        self.spacingCg_GP1_CgP1 = (
+            self.corresponding_airplane_movement.spacingCg_GP1_CgP1
+        )
         self.phaseCg_GP1_CgP1 = self.corresponding_airplane_movement.phaseCg_GP1_CgP1
 
         self.listCg_GP1_CgP1 = None
@@ -169,7 +167,12 @@ class SingleStepAirplaneMovement:
         return periods
 
     def generate_next_airplane(
-        self, base_airplane, delta_time: float | int, num_steps: int, step: int, deformation_matrices,
+        self,
+        base_airplane,
+        delta_time: float | int,
+        num_steps: int,
+        step: int,
+        deformation_matrices,
     ) -> geometry.airplane.Airplane:
         """Creates the Airplane at a single time step.
 
@@ -197,7 +200,9 @@ class SingleStepAirplaneMovement:
 
         # Generate oscillating values for each dimension of Cg_GP1_CgP1.
         if self.listCg_GP1_CgP1 is None:
-            self._initialize_oscillating_dimensions(delta_time, num_steps, base_airplane)
+            self._initialize_oscillating_dimensions(
+                delta_time, num_steps, base_airplane
+            )
 
         wings = []
 

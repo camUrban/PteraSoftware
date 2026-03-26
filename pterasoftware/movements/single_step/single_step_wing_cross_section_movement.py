@@ -2,9 +2,9 @@
 
 **Contains the following classes:**
 
-SingleStepWingCrossSectionMovement: A single step variant of
-WingCrossSectionMovement that generates one WingCrossSection per time step instead of
-all at once. Uses composition to wrap a WingCrossSectionMovement.
+SingleStepWingCrossSectionMovement: A single step variant of WingCrossSectionMovement
+that generates one WingCrossSection per time step instead of all at once. Uses
+composition to wrap a WingCrossSectionMovement.
 
 **Contains the following functions:**
 
@@ -13,20 +13,17 @@ None
 
 import numpy as np
 
-from ..wing_cross_section_movement import WingCrossSectionMovement
-
+from ... import geometry
 from ..._parameter_validation import (
     int_in_range_return_int,
-    number_in_range_return_float
+    number_in_range_return_float,
 )
-
 from .._functions import (
-    oscillating_sinspaces,
-    oscillating_linspaces,
     oscillating_customspaces,
+    oscillating_linspaces,
+    oscillating_sinspaces,
 )
-
-from ... import geometry
+from ..wing_cross_section_movement import WingCrossSectionMovement
 
 
 class SingleStepWingCrossSectionMovement:
@@ -83,8 +80,8 @@ class SingleStepWingCrossSectionMovement:
             converted to floats internally. Each amplitude must be low enough that it
             doesn't drive its base value out of the range of valid values. Otherwise,
             this SingleStepWingCrossSectionMovement will try to create WingCrossSections
-            with invalid parameter values. The units are in meters. The default is
-            (0.0, 0.0, 0.0).
+            with invalid parameter values. The units are in meters. The default is (0.0,
+            0.0, 0.0).
         :param periodLp_Wcsp_Lpp: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the periods of the
             SingleStepWingCrossSectionMovement's changes in its WingCrossSections'
@@ -97,11 +94,11 @@ class SingleStepWingCrossSectionMovement:
             changes in its WingCrossSections' Lp_Wcsp_Lpp parameters. Can be a tuple,
             list, or ndarray. Each element can be the str "sine", the str "uniform", or
             a callable custom spacing function. Custom spacing functions are for
-            advanced users and must start at 0.0, return to 0.0 after one period of
-            2*pi radians, have amplitude of 1.0, be periodic, return finite values
-            only, and accept a ndarray as input and return a ndarray of the same shape.
-            Custom functions are scaled by ampLp_Wcsp_Lpp, shifted horizontally and
-            vertically by phaseLp_Wcsp_Lpp and the base value, and have a period set by
+            advanced users and must start at 0.0, return to 0.0 after one period of 2*pi
+            radians, have amplitude of 1.0, be periodic, return finite values only, and
+            accept a ndarray as input and return a ndarray of the same shape. Custom
+            functions are scaled by ampLp_Wcsp_Lpp, shifted horizontally and vertically
+            by phaseLp_Wcsp_Lpp and the base value, and have a period set by
             periodLp_Wcsp_Lpp. The default is ("sine", "sine", "sine").
         :param phaseLp_Wcsp_Lpp: An array-like object of numbers (int or float) with
             shape (3,) representing the phase offsets of the elements in the first time
@@ -114,35 +111,34 @@ class SingleStepWingCrossSectionMovement:
         :param ampAngles_Wcsp_to_Wcs_ixyz: An array-like object of non negative numbers
             (int or float) with shape (3,) representing the amplitudes of the
             SingleStepWingCrossSectionMovement's changes in its WingCrossSections'
-            angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray.
-            Values are converted to floats internally. Each amplitude must be low enough
-            that it doesn't drive its base value out of the range of valid values.
-            Otherwise, this SingleStepWingCrossSectionMovement will try to create
-            WingCrossSections with invalid parameter values. The units are in degrees.
-            The default is (0.0, 0.0, 0.0).
+            angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray. Values
+            are converted to floats internally. Each amplitude must be low enough that
+            it doesn't drive its base value out of the range of valid values. Otherwise,
+            this SingleStepWingCrossSectionMovement will try to create WingCrossSections
+            with invalid parameter values. The units are in degrees. The default is
+            (0.0, 0.0, 0.0).
         :param periodAngles_Wcsp_to_Wcs_ixyz: An array-like object of non negative
             numbers (int or float) with shape (3,) representing the periods of the
             SingleStepWingCrossSectionMovement's changes in its WingCrossSections'
-            angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray.
-            Values are converted to floats internally. Each element must be 0.0 if the
+            angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray. Values
+            are converted to floats internally. Each element must be 0.0 if the
             corresponding element in ampAngles_Wcsp_to_Wcs_ixyz is 0.0 and non zero if
             not. The units are in seconds. The default is (0.0, 0.0, 0.0).
-        :param spacingAngles_Wcsp_to_Wcs_ixyz: An array-like object of strs or
-            callables with shape (3,) representing the spacing of the
+        :param spacingAngles_Wcsp_to_Wcs_ixyz: An array-like object of strs or callables
+            with shape (3,) representing the spacing of the
             SingleStepWingCrossSectionMovement's changes in its WingCrossSections'
             angles_Wcsp_to_Wcs_ixyz parameters. Can be a tuple, list, or ndarray. Each
             element can be the str "sine", the str "uniform", or a callable custom
             spacing function. Custom spacing functions are for advanced users and must
-            start at 0.0, return to 0.0 after one period of 2*pi radians, have
-            amplitude of 1.0, be periodic, return finite values only, and accept a
-            ndarray as input and return a ndarray of the same shape. Custom functions
-            are scaled by ampAngles_Wcsp_to_Wcs_ixyz, shifted horizontally and
-            vertically by phaseAngles_Wcsp_to_Wcs_ixyz and the base value, and have a
-            period set by periodAngles_Wcsp_to_Wcs_ixyz. The default is ("sine",
-            "sine", "sine").
+            start at 0.0, return to 0.0 after one period of 2*pi radians, have amplitude
+            of 1.0, be periodic, return finite values only, and accept a ndarray as
+            input and return a ndarray of the same shape. Custom functions are scaled by
+            ampAngles_Wcsp_to_Wcs_ixyz, shifted horizontally and vertically by
+            phaseAngles_Wcsp_to_Wcs_ixyz and the base value, and have a period set by
+            periodAngles_Wcsp_to_Wcs_ixyz. The default is ("sine", "sine", "sine").
         :param phaseAngles_Wcsp_to_Wcs_ixyz: An array-like object of numbers (int or
-            float) with shape (3,) representing the phase offsets of the elements in
-            the first time step's WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter
+            float) with shape (3,) representing the phase offsets of the elements in the
+            first time step's WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter
             relative to the base WingCrossSection's angles_Wcsp_to_Wcs_ixyz parameter.
             Can be a tuple, list, or ndarray. Elements must lie in the range (-180.0,
             180.0]. Each element must be 0.0 if the corresponding element in
@@ -153,10 +149,17 @@ class SingleStepWingCrossSectionMovement:
         """
 
         # Warn about potential deformation issues with multiple spanwise panels.
-        if base_wing_cross_section.num_spanwise_panels is not None and base_wing_cross_section.num_spanwise_panels > 1:
-            print("base_wing_cross_section must have num_spanwise_panels equal to None or 1 to do deformation. " + \
-                  "This wing cross section has " + str(base_wing_cross_section.num_spanwise_panels) + " spanwise panels. Please be sure this is intended. " + \
-                    "Applications that make sense for this are tails and non-primary wings.")
+        if (
+            base_wing_cross_section.num_spanwise_panels is not None
+            and base_wing_cross_section.num_spanwise_panels > 1
+        ):
+            print(
+                "base_wing_cross_section must have num_spanwise_panels equal to None or 1 to do deformation. "
+                + "This wing cross section has "
+                + str(base_wing_cross_section.num_spanwise_panels)
+                + " spanwise panels. Please be sure this is intended. "
+                + "Applications that make sense for this are tails and non-primary wings."
+            )
 
         # Create the corresponding WingCrossSectionMovement, which validates all
         # oscillation parameters and is also needed by coupled unsteady problems.
@@ -173,14 +176,30 @@ class SingleStepWingCrossSectionMovement:
         )
 
         # Copy validated attributes from the corresponding WingCrossSectionMovement.
-        self.ampLp_Wcsp_Lpp = self.corresponding_wing_cross_section_movement.ampLp_Wcsp_Lpp
-        self.periodLp_Wcsp_Lpp = self.corresponding_wing_cross_section_movement.periodLp_Wcsp_Lpp
-        self.spacingLp_Wcsp_Lpp = self.corresponding_wing_cross_section_movement.spacingLp_Wcsp_Lpp
-        self.phaseLp_Wcsp_Lpp = self.corresponding_wing_cross_section_movement.phaseLp_Wcsp_Lpp
-        self.ampAngles_Wcsp_to_Wcs_ixyz = self.corresponding_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz
-        self.periodAngles_Wcsp_to_Wcs_ixyz = self.corresponding_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz
-        self.spacingAngles_Wcsp_to_Wcs_ixyz = self.corresponding_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz
-        self.phaseAngles_Wcsp_to_Wcs_ixyz = self.corresponding_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz
+        self.ampLp_Wcsp_Lpp = (
+            self.corresponding_wing_cross_section_movement.ampLp_Wcsp_Lpp
+        )
+        self.periodLp_Wcsp_Lpp = (
+            self.corresponding_wing_cross_section_movement.periodLp_Wcsp_Lpp
+        )
+        self.spacingLp_Wcsp_Lpp = (
+            self.corresponding_wing_cross_section_movement.spacingLp_Wcsp_Lpp
+        )
+        self.phaseLp_Wcsp_Lpp = (
+            self.corresponding_wing_cross_section_movement.phaseLp_Wcsp_Lpp
+        )
+        self.ampAngles_Wcsp_to_Wcs_ixyz = (
+            self.corresponding_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz
+        )
+        self.periodAngles_Wcsp_to_Wcs_ixyz = (
+            self.corresponding_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz
+        )
+        self.spacingAngles_Wcsp_to_Wcs_ixyz = (
+            self.corresponding_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz
+        )
+        self.phaseAngles_Wcsp_to_Wcs_ixyz = (
+            self.corresponding_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz
+        )
 
         self.listLp_Wcsp_Lpp = None
         self.listAngles_Wcsp_to_Wcs_ixyz = None
@@ -200,8 +219,8 @@ class SingleStepWingCrossSectionMovement:
         :param delta_time: The time between each time step in seconds.
         :param num_steps: The total number of time steps in this movement.
         :param step: The index of the current time step.
-        :param deformation_matrix: Deformation matrix to apply to the
-            WingCrossSection's angles, or None.
+        :param deformation_matrix: Deformation matrix to apply to the WingCrossSection's
+            angles, or None.
         :return: A list containing the WingCrossSection at the specified time step.
         """
         num_steps = int_in_range_return_int(
@@ -245,10 +264,10 @@ class SingleStepWingCrossSectionMovement:
         )
         this_spanwise_spacing = base_wing_cross_section.spanwise_spacing
 
-        thisLp_Wcsp_Lpp = self.listLp_Wcsp_Lpp[:, step] 
-        theseAngles_Wcsp_to_Wcs_ixyz = self.listAngles_Wcsp_to_Wcs_ixyz[
-            :, step
-        ] + deformation_matrix
+        thisLp_Wcsp_Lpp = self.listLp_Wcsp_Lpp[:, step]
+        theseAngles_Wcsp_to_Wcs_ixyz = (
+            self.listAngles_Wcsp_to_Wcs_ixyz[:, step] + deformation_matrix
+        )
 
         # Make a new WingCrossSection for this time step.
         this_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
@@ -324,7 +343,8 @@ class SingleStepWingCrossSectionMovement:
         num_steps,
         base_wing_cross_section,
     ):
-        """Pre computes the oscillating angles_Wcsp_to_Wcs_ixyz values for all time steps.
+        """Pre computes the oscillating angles_Wcsp_to_Wcs_ixyz values for all time
+        steps.
 
         :param delta_time: The time between each time step in seconds.
         :param num_steps: The total number of time steps.

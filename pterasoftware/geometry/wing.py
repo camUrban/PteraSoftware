@@ -252,8 +252,8 @@ class Wing:
             either are True. For more details on how this parameter interacts with
             symmetryNormal_G, symmetric, and mirror_only, see the class docstring. The
             units are meters. The default is None.
-        :param single_step_wing: Set this to True to have the explode_wing method called on
-            this Wing during initialization, which will return a NEW Wing where all
+        :param single_step_wing: Set this to True to have the explode_wing method called
+            on this Wing during initialization, which will return a NEW Wing where all
             panels are broken into single strips for deformation.
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
@@ -1275,7 +1275,7 @@ class Wing:
 
         # Generate the wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
-        
+
     def get_plottable_data(
         self, show: bool | np.bool_ = False
     ) -> list[list[np.ndarray]] | None:
@@ -1519,19 +1519,19 @@ class Wing:
         wcs2: wing_cross_section_mod.WingCrossSection,
         first_wcs: bool,
     ) -> list[wing_cross_section_mod.WingCrossSection]:
-        """
-        Wing cross section panels are between the line of wcs1 and wcs2.
-        When exploding a wing to 1 spanwise panel per cross section,
-        we need to interpolate the intermediate cross sections.
+        """Wing cross section panels are between the line of wcs1 and wcs2. When
+        exploding a wing to 1 spanwise panel per cross section, we need to interpolate
+        the intermediate cross sections.
 
         :param wcs1: The first WingCrossSection.
         :param wcs2: The second WingCrossSection.
         :param first_wcs: Whether wcs1 is the first WingCrossSection of the wing. If
-            True, the method will include a WingCrossSection with the same parameters
-            as wcs1 in the output list. If False, it will not, since it will have
-            already been included as the last interpolated WingCrossSection between
-            the previous pair of WingCrossSections.
-        :return: A list of WingCrossSections representing the interpolated cross sections
+            True, the method will include a WingCrossSection with the same parameters as
+            wcs1 in the output list. If False, it will not, since it will have already
+            been included as the last interpolated WingCrossSection between the previous
+            pair of WingCrossSections.
+        :return: A list of WingCrossSections representing the interpolated cross
+            sections
         """
 
         interpolated = []
@@ -1577,11 +1577,12 @@ class Wing:
             )
         return interpolated
 
-    def explode_wing(self, wing_cross_sections: list[wing_cross_section_mod.WingCrossSection]) -> list[wing_cross_section_mod.WingCrossSection]:
-        """
-        Takes a list of WingCrossSections and returns a new list
-        where all cross sections have num_spanwise_panels = 1.
-        
+    def explode_wing(
+        self, wing_cross_sections: list[wing_cross_section_mod.WingCrossSection]
+    ) -> list[wing_cross_section_mod.WingCrossSection]:
+        """Takes a list of WingCrossSections and returns a new list where all cross
+        sections have num_spanwise_panels = 1.
+
         :param wing_cross_sections: The list of wing cross sections to explode.
         :return: A new list of exploded wing cross sections.
         """
@@ -1596,6 +1597,7 @@ class Wing:
             )
 
         return new_cross_sections
+
 
 def _assert_T_not_none(T: np.ndarray | None) -> np.ndarray:
     """Assert that a transformation matrix is not None and return it.

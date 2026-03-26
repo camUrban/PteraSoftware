@@ -16,11 +16,10 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import numpy as np
-import scipy.signal as sp_sig
-
-from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.integrate import solve_ivp
+
 from . import _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
 
@@ -317,8 +316,8 @@ class UnsteadyProblem:
 class CoupledUnsteadyProblem(UnsteadyProblem):
     """A class for coupled unsteady problems.
 
-    This class extends UnsteadyProblem to manage multiple SteadyProblems for
-    coupled simulations where each time step has its own SteadyProblem.
+    This class extends UnsteadyProblem to manage multiple SteadyProblems for coupled
+    simulations where each time step has its own SteadyProblem.
 
     **Contains the following methods:**
 
@@ -337,14 +336,15 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
     ) -> None:
         """The initialization method.
 
-        Initializes the aeroelastic problem with structural parameters and motion definitions.
-        Sets up storage for aerodynamic loads, wing deformations, moments, and solver state.
+        Initializes the aeroelastic problem with structural parameters and motion
+        definitions. Sets up storage for aerodynamic loads, wing deformations, moments,
+        and solver state.
 
-        :param single_step_movement: A SingleStepMovement object containing the prescribed
-            motion and aerodynamic setup for the coupled simulation.
-        :param only_final_results: If True, only calculate forces and moments for the final
-            motion cycle. Can be a bool or numpy bool and will be converted to bool internally.
-            The default is False.
+        :param single_step_movement: A SingleStepMovement object containing the
+            prescribed motion and aerodynamic setup for the coupled simulation.
+        :param only_final_results: If True, only calculate forces and moments for the
+            final motion cycle. Can be a bool or numpy bool and will be converted to
+            bool internally. The default is False.
         :return: None
         """
         if not isinstance(
@@ -388,9 +388,9 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
     def initialize_next_problem(self, solver) -> None:
         """Initialize the next time step's problem with updated wing deformations.
 
-        Computes cumulative wing deformations from aerodynamic and inertial loads,
-        then creates the next SteadyProblem with deformed airplanes. Updates the
-        current airplane and operating point state.
+        Computes cumulative wing deformations from aerodynamic and inertial loads, then
+        creates the next SteadyProblem with deformed airplanes. Updates the current
+        airplane and operating point state.
 
         :param solver: The solver instance providing aerodynamic moment data.
         :return: None
@@ -401,36 +401,44 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
 
 
 class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
-    """A subclass of CoupledUnsteadyProblem used to couple aeroelastic wing deformations with unsteady aerodynamics.
+    """A subclass of CoupledUnsteadyProblem used to couple aeroelastic wing deformations
+    with unsteady aerodynamics.
 
-    This class couples aerodynamic loads with wing structural dynamics (spring-mass-damper system) to
-    simulate aeroelastic deformation. Each time step, wing deformations are calculated based on the
-    combined effects of aerodynamic moments, inertial forces, and spring-damper restoring forces.
+    This class couples aerodynamic loads with wing structural dynamics (spring-mass-
+    damper system) to simulate aeroelastic deformation. Each time step, wing
+    deformations are calculated based on the combined effects of aerodynamic moments,
+    inertial forces, and spring-damper restoring forces.
 
     **Contains the following methods:**
 
-    calculate_wing_panel_accelerations: Computes panel accelerations from finite difference of positions.
+    calculate_wing_panel_accelerations: Computes panel accelerations from finite
+    difference of positions.
 
     calculate_mass_matrix: Generates the mass distribution matrix for wing panels.
 
-    calculate_wing_deformation: Computes cumulative wing deformation for the current step.
+    calculate_wing_deformation: Computes cumulative wing deformation for the current
+    step.
 
-    calculate_spring_moments: Calculates spring-damper moments acting on each spanwise section.
+    calculate_spring_moments: Calculates spring-damper moments acting on each spanwise
+    section.
 
-    calculate_torsional_spring_moment: Solves the torsional spring-damper ODE for a single span section.
+    calculate_torsional_spring_moment: Solves the torsional spring-damper ODE for a
+    single span section.
 
-    generate_inertial_torque_function: Creates a torque function from prescribed wing motion.
+    generate_inertial_torque_function: Creates a torque function from prescribed wing
+    motion.
 
-    spring_numerical_ode: Numerically integrates the spring-damper differential equation.
+    spring_numerical_ode: Numerically integrates the spring-damper differential
+    equation.
 
     plot_flap_cycle_curves: Visualizes moment and deformation time histories.
 
     **Notes:**
 
-    The aeroelastic coupling assumes a torsional spring-mass-damper model for each spanwise section.
-    Wing motion is prescribed through wing flapping, and aerodynamic moments from the solver are
-    combined with inertial and spring restoring forces via ODE integration to produce structural
-    deformations.
+    The aeroelastic coupling assumes a torsional spring-mass-damper model for each
+    spanwise section. Wing motion is prescribed through wing flapping, and aerodynamic
+    moments from the solver are combined with inertial and spring restoring forces via
+    ODE integration to produce structural deformations.
     """
 
     def __init__(
@@ -455,10 +463,10 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         See CoupledUnsteadyProblem's initialization method for descriptions of inherited
         parameters (single_step_movement and only_final_results).
 
-        :param wing_density: The mass per unit span area of the wing (kg/m^2). Used
-            to distribute wing mass across panels for inertial calculations.
-        :param spring_constant: The torsional spring stiffness for the spring-mass-damper
-            model (N*m/rad). Controls the restoring torque opposing deformation.
+        :param wing_density: The mass per unit span area of the wing (kg/m^2). Used to
+            distribute wing mass across panels for inertial calculations.
+        :param spring_constant: The torsional spring stiffness for the spring-mass-
+            damper model (N*m/rad). Controls the restoring torque opposing deformation.
         :param damping_constant: The torsional damping coefficient (N*m*s/rad). Controls
             the viscous damping in the spring-mass-damper system.
         :param aero_scaling: A scaling factor applied to aerodynamic moments (unitless).
@@ -466,13 +474,15 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         :param moment_scaling_factor: A scaling factor applied to the computed wing
             deformation angles (unitless). The default is 1.0. Useful for adjusting the
             magnitude of structural response.
-        :param damping_eps: The critical damping tolerance used for diagnostics (unitless).
-            The default is 1e-3. This parameter is not currently used in the solver.
-        :param plot_flap_cycle: If True, plots time histories of moments and deformations
-            at the end of the simulation. The default is False.
+        :param damping_eps: The critical damping tolerance used for diagnostics
+            (unitless). The default is 1e-3. This parameter is not currently used in the
+            solver.
+        :param plot_flap_cycle: If True, plots time histories of moments and
+            deformations at the end of the simulation. The default is False.
         :param custom_spacing_second_derivative: An optional callable function of time
-            that returns the second time derivative of a custom wing motion spacing function.
-            Required if custom (non-sinusoidal) wing motion spacing is used. The default is None.
+            that returns the second time derivative of a custom wing motion spacing
+            function. Required if custom (non-sinusoidal) wing motion spacing is used.
+            The default is None.
         :return: None
         """
         super().__init__(
@@ -525,8 +535,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def calculate_wing_panel_accelerations(self) -> np.ndarray:
         """Compute panel accelerations using finite difference of stored positions.
 
-        Calculates second-order accelerations using the finite difference formula:
-        a = (p[n] - 2*p[n-1] + p[n-2]) / dt^2.
+        Calculates second-order accelerations using the finite difference formula: a =
+        (p[n] - 2*p[n-1] + p[n-2]) / dt^2.
 
         :return: An (N_chordwise, N_spanwise, 3) ndarray of floats representing panel
             center accelerations in the global frame. Returns zeros if fewer than 3
@@ -545,13 +555,13 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     def calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
         """Generate the mass distribution matrix for all wing panels.
 
-        Distributes the total spanwise mass (wing_density) across panel areas to form
-        a panel-by-panel mass matrix. Each panel's mass is proportional to its area
-        times the specified wing_density.
+        Distributes the total spanwise mass (wing_density) across panel areas to form a
+        panel-by-panel mass matrix. Each panel's mass is proportional to its area times
+        the specified wing_density.
 
         :param wing: A Wing object whose panels define the mass distribution.
-        :return: An (N_chordwise, N_spanwise, 3) ndarray of floats representing the
-            mass at each panel. The three components are identical (mass scalar replicated
+        :return: An (N_chordwise, N_spanwise, 3) ndarray of floats representing the mass
+            at each panel. The three components are identical (mass scalar replicated
             for x, y, z axes).
         """
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
@@ -584,14 +594,15 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     ) -> np.ndarray:
         """Compute cumulative wing deformation for the current time step.
 
-        Orchestrates the calculation of inertial moments, spring moments, and
-        cumulative deformation. Updates internal state and optionally generates plots.
+        Orchestrates the calculation of inertial moments, spring moments, and cumulative
+        deformation. Updates internal state and optionally generates plots.
 
-        :param solver: The solver instance providing aerodynamic moment data (moments_GP1_Slep).
+        :param solver: The solver instance providing aerodynamic moment data
+            (moments_GP1_Slep).
         :param step: The current time step index (0-indexed).
-        :return: An (N_spanwise+1, 3) ndarray of floats representing cumulative deformation
-            angles at each spanwise station. The y-component (index 1) contains torsional
-            angles in radians; x and z components are zero.
+        :return: An (N_spanwise+1, 3) ndarray of floats representing cumulative
+            deformation angles at each spanwise station. The y-component (index 1)
+            contains torsional angles in radians; x and z components are zero.
         """
         curr_problem: SteadyProblem = self.coupled_steady_problems[-1]
         airplane = curr_problem.airplanes[0]
@@ -613,7 +624,12 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             solver, num_chordwise_panels, num_spanwise_panels, num_panels
         )
         inertial_moments = self._calculate_inertial_moments(
-            solver, wing, mass_matrix, num_chordwise_panels, num_spanwise_panels, num_panels
+            solver,
+            wing,
+            mass_matrix,
+            num_chordwise_panels,
+            num_spanwise_panels,
+            num_panels,
         )
 
         # Calculate spring moments and deformation via ODE integration
@@ -719,8 +735,8 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         """Construct the step deformation vector from torsional angles.
 
         Converts the torsional angles output from the spring-damper ODE (one per
-        spanwise section) into a full (N_spanwise+1, 3) deformation vector with
-        scaling applied to the y-component (torsional angle).
+        spanwise section) into a full (N_spanwise+1, 3) deformation vector with scaling
+        applied to the y-component (torsional angle).
 
         :param thetas: An (N_spanwise+1,) ndarray of torsional angles in radians.
         :param num_spanwise_panels: Number of spanwise panel rows.
@@ -761,8 +777,10 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         :param step: The current time step index.
         :param step_deformation: The (N_spanwise+1, 3) deformation vector for this step.
         :param omegas: An (N_spanwise+1,) ndarray of angular velocities.
-        :param inertial_moments: An (N_chordwise, N_spanwise, 3) ndarray of inertial moments.
-        :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero moments.
+        :param inertial_moments: An (N_chordwise, N_spanwise, 3) ndarray of inertial
+            moments.
+        :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero
+            moments.
         :param spring_moments: An (N_spanwise, 3) ndarray of spring-damper moments.
         :param wing: The Wing object for accessing undeformed geometry.
         :return: None
@@ -863,24 +881,22 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
         Solves the torsional spring-damper ODE independently for each spanwise section,
         accounting for aerodynamic moments, inertial forces, and structural properties.
-        Uses the parallel axis theorem to compute rotational inertia about the flapping axis.
+        Uses the parallel axis theorem to compute rotational inertia about the flapping
+        axis.
 
         :param num_spanwise_panels: Number of spanwise panel rows in the wing.
         :param wing: The Wing object containing geometric and structural definitions.
         :param mass_matrix: An (N_chordwise, N_spanwise, 3) ndarray of panel masses.
-        :param aero_moments: An (N_chordwise, N_spanwise, 3) ndarray of aerodynamic moments
-            from the aerodynamic solver.
+        :param aero_moments: An (N_chordwise, N_spanwise, 3) ndarray of aerodynamic
+            moments from the aerodynamic solver.
         :param step: The current time step index.
-        :return: A tuple of three ndarrays:
-            - thetas: (N_spanwise+1,) ndarray of torsional angles (radians) at each station.
-            - omegas: (N_spanwise+1,) ndarray of angular velocities (rad/s) at each station.
-            - spring_moments: (N_spanwise, 3) ndarray of spring-damper moment vectors.
-
-        **Notes:**
-
-        The rotational inertia is computed as: I = (1/12)*M*(L^2 + W^2) + M*d^2,
-        where M is panel mass, L is chord, W is span width, and d is distance from
-        the flapping axis (computed cumulatively using the parallel axis theorem).
+        :return: A tuple of three ndarrays: - thetas: (N_spanwise+1,) ndarray of
+            torsional angles (radians) at each station. - omegas: (N_spanwise+1,)
+            ndarray of angular velocities (rad/s) at each station. - spring_moments:
+            (N_spanwise, 3) ndarray of spring-damper moment vectors. **Notes:** The
+            rotational inertia is computed as: I = (1/12)*M*(L^2 + W^2) + M*d^2, where M
+            is panel mass, L is chord, W is span width, and d is distance from the
+            flapping axis (computed cumulatively using the parallel axis theorem).
         """
         spring_moments = np.zeros((num_spanwise_panels, 3))
         thetas = np.zeros(num_spanwise_panels + 1)
@@ -912,7 +928,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
                 dt,
                 # A potential knob to tweak in representation of the torsional inertia
                 # I=mass * (wing.wing_cross_sections[span_panel].chord ** 2) / 2,
-                I= 1/2 * mass * (L ** 2),
+                I=1 / 2 * mass * (L**2),
                 # I=span_I,
                 theta0=theta0,
                 omega0=omega0,
@@ -940,26 +956,26 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     ) -> tuple[float, float, float]:
         """Solve the torsional spring-damper ODE for a single wing section.
 
-        Integrates the forced torsional damped harmonic oscillator equation:
-        I*dω/dt = τ_aero + τ_inertial - k*θ - c*ω
+        Integrates the forced torsional damped harmonic oscillator equation: I*dω/dt =
+        τ_aero + τ_inertial - k*θ - c*ω
 
-        Returns the angular displacement and velocity at the end of the time step,
-        along with the spring-damper restoring moment.
+        Returns the angular displacement and velocity at the end of the time step, along
+        with the spring-damper restoring moment.
 
         :param dt: The time step duration (seconds).
         :param I: The rotational inertia about the flapping axis (kg*m^2).
         :param theta0: Initial torsional angle at the start of the time step (radians).
         :param omega0: Initial angular velocity at the start of the time step (rad/s).
-        :param aero_span_moment: The z-component aerodynamic moment summed over chordwise
-            panels for this spanwise section (N*m).
+        :param aero_span_moment: The z-component aerodynamic moment summed over
+            chordwise panels for this spanwise section (N*m).
         :param step: The current time step index (used for inertial torque evaluation).
         :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).
             This is the actual inertia used in the ODE solver.
-        :param num_steps: Number of time sub-steps for numerical integration. The default is 2.
-        :return: A tuple of (theta, omega, spring_moment) where:
-            - theta: Final torsional angle (radians).
-            - omega: Final angular velocity (rad/s).
-            - spring_moment: The z-component spring-damper moment τ = -k*θ - c*ω (N*m).
+        :param num_steps: Number of time sub-steps for numerical integration. The
+            default is 2.
+        :return: A tuple of (theta, omega, spring_moment) where: - theta: Final
+            torsional angle (radians). - omega: Final angular velocity (rad/s). -
+            spring_moment: The z-component spring-damper moment τ = -k*θ - c*ω (N*m).
         """
         k = self.spring_constant
         c = self.damping_constant
@@ -989,16 +1005,13 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         creates a callable inertial torque function τ_inertial = I * d²θ_prescribed/dt².
         Supports sinusoidal and custom spacing functions.
 
-        :param span_I: The rotational inertia of the wing span section about the flapping
-            axis (kg*m^2).
+        :param span_I: The rotational inertia of the wing span section about the
+            flapping axis (kg*m^2).
         :return: A callable function that accepts time and returns the inertial torque
-            (N*m) due to the prescribed wing motion acceleration.
-
-        **Notes:**
-
-        For sinusoidal spacing: τ = -I * b^2 * sin(b*t + h) * A,
-        where b = 2π/period, h = phase, A = amplitude.
-        For custom spacing, requires custom_spacing_second_derivative to be defined.
+            (N*m) due to the prescribed wing motion acceleration. **Notes:** For
+            sinusoidal spacing: τ = -I * b^2 * sin(b*t + h) * A, where b = 2π/period, h
+            = phase, A = amplitude. For custom spacing, requires
+            custom_spacing_second_derivative to be defined.
         """
         amp = self.wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
         b = 2 * np.pi / self.wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
@@ -1036,16 +1049,16 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     ) -> tuple[float, float]:
         """Numerically integrate the torsional spring-damper ODE.
 
-        Solves the second-order forced ODE:
-        I * d²θ/dt² = τ_aero + τ_inertial(t) - k*θ - c*dθ/dt
+        Solves the second-order forced ODE: I * d²θ/dt² = τ_aero + τ_inertial(t) - k*θ -
+        c*dθ/dt
 
         using scipy.integrate.solve_ivp with strict tolerances.
 
         :param t: A (N,) ndarray of time points for integration evaluation.
         :param k: Spring constant (N*m/rad).
         :param c: Damping constant (N*m*s/rad).
-        :param I: Rotational inertia (kg*m^2). This parameter is present for API consistency
-            but is not used in the ODE solver; use only the solution state.
+        :param I: Rotational inertia (kg*m^2). This parameter is present for potential
+            alternative models of inertia.
         :param theta0: Initial angular displacement (radians).
         :param omega0: Initial angular velocity (rad/s).
         :param aero_torque: Constant aerodynamic torque acting on the section (N*m).
@@ -1081,22 +1094,19 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
     ) -> None:
         """Visualize time histories of moments, deformations, or forces.
 
-        Creates a multi-curve line plot showing moment or deformation values across
-        all time steps, with optional overlay of a reference flap cycle.
+        Creates a multi-curve line plot showing moment or deformation values across all
+        time steps, with optional overlay of a reference flap cycle.
 
         :param data: A list of lists where each inner list represents a curve to plot.
             Values in each curve are plotted against step number.
-        :param title: The title for the plot and the output PNG filename (spaces replaced
-            with underscores).
+        :param title: The title for the plot and the output PNG filename (spaces
+            replaced with underscores).
         :param flap_cycle: Optional reference curve to overlay on the plot. If provided,
             should be a list of values to plot with label "Flap Cycle" in black. The
             default is None.
-        :return: None
-
-        **Notes:**
-
-        The plot is saved as a PNG file with the title as the filename. The plot window
-        is displayed to the user. Figure size is 12x6 inches at 200 DPI.
+        :return: None **Notes:** The plot is saved as a PNG file with the title as the
+            filename. The plot window is displayed to the user. Figure size is 12x6
+            inches at 200 DPI.
         """
         plt.figure(figsize=(12, 6), dpi=200)
 

@@ -139,7 +139,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 # WingMovement for this reflected Wing. To start, we'll first define the reflected
 # main wing's root and tip WingCrossSections' WingCrossSectionMovements.
 
-# defintions for wing cross section movement parameters
+# definitions for wing cross section movement parameters
 dephase_x = 0.0
 period_x = 0.0
 amplitude_x = 0.0
@@ -202,18 +202,16 @@ single_step_v_tail_root_wing_cross_section_movement = ps.movements.single_step.s
     spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
     phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
-single_step_v_tail_tip_wing_cross_section_movement = (
-    ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    )
+single_step_v_tail_tip_wing_cross_section_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
 )
 
 # This dephase parameter is used to make the wing start in a flat position

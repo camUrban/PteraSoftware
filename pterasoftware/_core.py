@@ -5,8 +5,12 @@ from __future__ import annotations
 import copy
 import math
 from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from . import problems as problems_mod
 
 from . import _oscillation, _parameter_validation, _transformations, geometry
 from . import operating_point as operating_point_mod
@@ -2361,3 +2365,11 @@ class CoreUnsteadyProblem:
     @property
     def max_wake_rows(self) -> int | None:
         return self._max_wake_rows
+
+    @property
+    def movement(self) -> CoreMovement:
+        raise NotImplementedError
+
+    @property
+    def steady_problems(self) -> tuple[problems_mod.SteadyProblem, ...]:
+        raise NotImplementedError

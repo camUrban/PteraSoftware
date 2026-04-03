@@ -105,3 +105,39 @@ def make_multi_airplane_unsteady_problem_fixture():
     )
 
     return multi_airplane_unsteady_problem_fixture
+
+
+def make_basic_coupled_unsteady_problem_fixture():
+    """This method makes a fixture that is a CoupledUnsteadyProblem for general testing.
+
+    :return basic_coupled_unsteady_problem_fixture: CoupledUnsteadyProblem
+        This is the CoupledUnsteadyProblem configured for general testing.
+    """
+    # Create a basic Movement.
+    basic_movement = movement_fixtures.make_basic_movement_fixture()
+
+    # Create the CoupledUnsteadyProblem.
+    basic_coupled_unsteady_problem_fixture = ps.problems.CoupledUnsteadyProblem(
+        movement=basic_movement,
+        only_final_results=False,
+    )
+
+    return basic_coupled_unsteady_problem_fixture
+
+
+def make_static_coupled_unsteady_problem_fixture():
+    """This method makes a fixture that is a CoupledUnsteadyProblem with static motion.
+
+    :return static_coupled_unsteady_problem_fixture: CoupledUnsteadyProblem
+        This is the CoupledUnsteadyProblem with static motion.
+    """
+    # Create a static Movement.
+    static_movement = movement_fixtures.make_static_movement_fixture()
+
+    # Create the CoupledUnsteadyProblem.
+    static_coupled_unsteady_problem_fixture = ps.problems.CoupledUnsteadyProblem(
+        movement=static_movement,
+        only_final_results=False,
+    )
+
+    return static_coupled_unsteady_problem_fixture

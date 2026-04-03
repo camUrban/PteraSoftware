@@ -53,3 +53,21 @@ def make_unsteady_ring_solver_fixture():
     )
 
     return solver
+
+
+def make_coupled_unsteady_ring_solver_fixture():
+    """This method makes a fixture that is a
+    CoupledUnsteadyRingVortexLatticeMethodSolver for general testing.
+
+    :return solver: CoupledUnsteadyRingVortexLatticeMethodSolver
+        This is the CoupledUnsteadyRingVortexLatticeMethodSolver fixture.
+    """
+    coupled_unsteady_problem = (
+        problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+    )
+
+    solver = ps.coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver(
+        coupled_unsteady_problem
+    )
+
+    return solver

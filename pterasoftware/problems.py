@@ -1,10 +1,13 @@
-"""Contains the SteadyProblem and UnsteadyProblem classes.
+"""Contains the SteadyProblem, UnsteadyProblem, and CoupledUnsteadyProblem classes.
 
 **Contains the following classes:**
 
 SteadyProblem: A class used to contain steady aerodynamics problems.
 
 UnsteadyProblem: A class used to contain unsteady aerodynamics problems.
+
+CoupledUnsteadyProblem: A class used to contain coupled unsteady aerodynamics problems
+where SteadyProblems are generated dynamically at each time step.
 
 **Contains the following functions:**
 
@@ -13,10 +16,17 @@ None
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from . import _core, _transformations, geometry, movements
+from . import _core, _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
+
+if TYPE_CHECKING:
+    from .unsteady_ring_vortex_lattice_method import (
+        UnsteadyRingVortexLatticeMethodSolver,
+    )
 
 
 class SteadyProblem:
@@ -229,3 +239,152 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     @property
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return self._steady_problems
+
+
+class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
+    """A class used to contain coupled unsteady aerodynamics problems.
+
+    Unlike UnsteadyProblem, which pre-computes all SteadyProblems during initialization,
+    CoupledUnsteadyProblem generates SteadyProblems dynamically at each time step. This
+    enables two-way coupling between the aerodynamic solver and external models (e.g.,
+    structural deformation, rigid body dynamics) where the geometry or operating
+    conditions at step N + 1 depend on the aerodynamic solution at step N.
+
+    The base implementation generates each step's SteadyProblem from the movement's
+    prescribed geometry and operating conditions. Subclasses
+    (AeroelasticUnsteadyProblem, FreeFlightUnsteadyProblem) override
+    initialize_next_problem to incorporate feedback from the solver.
+
+    **Contains the following methods:**
+
+    movement: The CoreMovement that contains this CoupledUnsteadyProblem's
+    OperatingPointMovement and AirplaneMovements.
+
+    steady_problems: A tuple of the SteadyProblems generated so far.
+
+    get_steady_problem: Retrieves the SteadyProblem at a given time step.
+
+    initialize_next_problem: Generates and appends the next time step's SteadyProblem.
+    """
+
+    __slots__ = (
+        "_movement",
+        "_coupled_steady_problems",
+    )
+
+    def __init__(
+        self,
+        movement: _core.CoreMovement,
+        only_final_results: bool | np.bool_ = False,
+    ) -> None:
+        """The initialization method.
+
+        :param movement: The CoreMovement (or subclass) that contains this
+            CoupledUnsteadyProblem's OperatingPointMovement and AirplaneMovements. It
+            must be an instance of CoreMovement.
+        :param only_final_results: Determines whether the solver will only calculate
+            loads for the final time step (for static movements) or will only calculate
+            loads for the time steps in the final complete motion cycle (for non-static
+            movements), which increases simulation speed. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :return: None
+        """
+        if not isinstance(movement, _core.CoreMovement):
+            raise TypeError("movement must be a CoreMovement or one of its subclasses.")
+        self._movement = movement
+
+        # Delegate shared initialization (validation, first_averaging_step computation,
+        # load list initialization) to the core class.
+        super().__init__(
+            only_final_results=only_final_results,
+            delta_time=self._movement.delta_time,
+            num_steps=self._movement.num_steps,
+            max_wake_rows=self._movement.max_wake_rows,
+            lcm_period=self._movement.lcm_period,
+        )
+
+        # Generate the initial SteadyProblem for step 0 from the movement's prescribed
+        # geometry and operating conditions.
+        initial_airplanes: list[geometry.airplane.Airplane] = []
+        for airplane_movement in self._movement.airplane_movements:
+            initial_airplanes.append(
+                airplane_movement.generate_airplane_at_time_step(
+                    0, self._movement.delta_time
+                )
+            )
+        initial_operating_point = self._movement.operating_point_movement.generate_operating_point_at_time_step(
+            0, self._movement.delta_time
+        )
+        initial_problem = SteadyProblem(
+            airplanes=initial_airplanes,
+            operating_point=initial_operating_point,
+        )
+
+        # Initialize the mutable list of SteadyProblems with the initial problem.
+        self._coupled_steady_problems: list[SteadyProblem] = [initial_problem]
+
+    # --- Immutable: read only properties ---
+    @property
+    def movement(self) -> _core.CoreMovement:
+        return self._movement
+
+    @property
+    def steady_problems(self) -> tuple[SteadyProblem, ...]:
+        """A tuple of the SteadyProblems generated so far.
+
+        During simulation, this tuple grows as initialize_next_problem is called at each
+        time step. After simulation completes, it contains one SteadyProblem per time
+        step.
+
+        :return: A tuple of SteadyProblems.
+        """
+        return tuple(self._coupled_steady_problems)
+
+    def get_steady_problem(self, step: int) -> SteadyProblem:
+        """Retrieves the SteadyProblem at a given time step.
+
+        :param step: An int representing the time step index. It must be non-negative
+            and less than the number of SteadyProblems generated so far.
+        :return: The SteadyProblem at the given time step.
+        """
+        if step < 0 or step >= len(self._coupled_steady_problems):
+            raise ValueError(
+                f"Step index {step} is out of range. Only"
+                f" {len(self._coupled_steady_problems)} problems have been"
+                " initialized so far."
+            )
+        return self._coupled_steady_problems[step]
+
+    def initialize_next_problem(
+        self, solver: UnsteadyRingVortexLatticeMethodSolver
+    ) -> None:
+        """Generates and appends the next time step's SteadyProblem.
+
+        The base implementation generates the next SteadyProblem from the movement's
+        prescribed geometry and operating conditions. Subclasses override this method to
+        incorporate feedback from the solver (e.g., structural deformation angles,
+        dynamics-integrated operating conditions).
+
+        :param solver: The solver instance, which provides access to the current
+            aerodynamic solution state. Subclasses use this to extract forces, moments,
+            or other quantities needed to compute the next step's geometry or operating
+            conditions.
+        :return: None
+        """
+        next_step = len(self._coupled_steady_problems)
+
+        next_airplanes: list[geometry.airplane.Airplane] = []
+        for airplane_movement in self._movement.airplane_movements:
+            next_airplanes.append(
+                airplane_movement.generate_airplane_at_time_step(
+                    next_step, self._movement.delta_time
+                )
+            )
+        next_operating_point = self._movement.operating_point_movement.generate_operating_point_at_time_step(
+            next_step, self._movement.delta_time
+        )
+        next_problem = SteadyProblem(
+            airplanes=next_airplanes,
+            operating_point=next_operating_point,
+        )
+        self._coupled_steady_problems.append(next_problem)

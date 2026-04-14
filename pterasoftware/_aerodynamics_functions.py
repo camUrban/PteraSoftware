@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
@@ -802,3 +802,138 @@ def _expanded_velocities_from_line_vortices(
             gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
             gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
     return gridVInd_GP1__E
+
+# ==== PARALLELIZED IMPLEMENTATION FOR ISSUE #140 ====
+# Parallel outer loop with thread-local accumulators - NO RACE CONDITIONS
+# Each thread processes one complete vortex, then merges results sequentially
+# See: https://github.com/camUrban/PteraSoftware/issues/140
+
+@njit(fastmath=False, parallel=True)
+def _collapsed_velocities_from_line_vortices_parallel(
+    stackP_GP1_CgP1: np.ndarray,
+    stackSlvp_GP1_CgP1: np.ndarray,
+    stackElvp_GP1_CgP1: np.ndarray,
+    strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
+    ages: np.ndarray | None = None,
+    nu: float = 0.0,
+) -> np.ndarray:
+    """Parallel vortex loop with thread-local accumulators (Issue #140).
+
+    Parallelizes outer loop (vortices) with each thread processing one complete
+    vortex independently. Results stored in non-overlapping array slices to avoid
+    race conditions. After prange barrier, results are merged serially.
+
+    Thread safety:
+    - Each thread: unique vortex_id from prange (no conflicts)
+    - Each thread: local_velocities (thread-private)
+    - Each thread: local_counts (thread-private)
+    - Storage: vortex_results[vortex_id] (non-overlapping per thread)
+    - After prange: merge happens at barrier (all threads synchronized)
+    """
+    num_vortices = stackSlvp_GP1_CgP1.shape[0]
+    num_points = stackP_GP1_CgP1.shape[0]
+
+    # Pre-allocate non-overlapping storage for each thread's results
+    vortex_results = np.zeros((num_vortices, num_points, 3))
+    vortex_counts = np.zeros((num_vortices, 4), dtype=np.int64)
+
+    if ages is None:
+        ages = np.zeros(num_vortices)
+
+    # Parallel outer loop over vortices - each thread gets unique vortex_id
+    for vortex_id in prange(num_vortices):
+        # Thread-local accumulators (created fresh for each iteration)
+        local_velocities = np.zeros((num_points, 3))
+        local_counts = np.zeros(4, dtype=np.int64)
+
+        Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
+        Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
+
+        r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
+        r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
+        r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
+
+        r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
+
+        if r0 < _eps:
+            local_counts[0] = np.int64(1)
+        else:
+            strength = strengths[vortex_id]
+            age = ages[vortex_id]
+            r_c0 = r_c0s[vortex_id]
+
+            r0_times_tol = r0 * _tol
+            r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+
+            c_1 = strength / _four_pi
+            c_2 = r0**2.0 * r_c_sq
+
+            # Serial inner loop - each thread processes its vortex completely
+            for point_id in range(num_points):
+                P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
+
+                r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
+                r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
+                r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
+
+                r2X_GP1 = Elvp_GP1_CgP1[0] - P_GP1_CgP1[0]
+                r2Y_GP1 = Elvp_GP1_CgP1[1] - P_GP1_CgP1[1]
+                r2Z_GP1 = Elvp_GP1_CgP1[2] - P_GP1_CgP1[2]
+
+                r3X_GP1 = r1Y_GP1 * r2Z_GP1 - r1Z_GP1 * r2Y_GP1
+                r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
+                r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
+
+                r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
+                r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
+
+                if r1 < r0_times_tol:
+                    local_counts[1] += 1
+                    continue
+                if r2 < r0_times_tol:
+                    local_counts[2] += 1
+                    continue
+
+                r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
+
+                r3 = math.sqrt(r3_sq)
+
+                r1_times_r2 = r1 * r2
+
+                c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
+
+                if r3 < (_tol * r1_times_r2):
+                    if c_3 < 0.0:
+                        local_counts[3] += 1
+                    continue
+
+                c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+                local_velocities[point_id, 0] += c_4 * r3X_GP1
+                local_velocities[point_id, 1] += c_4 * r3Y_GP1
+                local_velocities[point_id, 2] += c_4 * r3Z_GP1
+
+        # Store in non-overlapping slice for this thread (no race condition)
+        for point_id in range(num_points):
+            vortex_results[vortex_id, point_id, 0] = local_velocities[point_id, 0]
+            vortex_results[vortex_id, point_id, 1] = local_velocities[point_id, 1]
+            vortex_results[vortex_id, point_id, 2] = local_velocities[point_id, 2]
+
+        for i in range(4):
+            vortex_counts[vortex_id, i] = local_counts[i]
+
+    # AFTER prange barrier: serial merge of all vortex results
+    result = np.zeros((num_points, 3))
+    for vortex_id in range(num_vortices):
+        for point_id in range(num_points):
+            result[point_id, 0] += vortex_results[vortex_id, point_id, 0]
+            result[point_id, 1] += vortex_results[vortex_id, point_id, 1]
+            result[point_id, 2] += vortex_results[vortex_id, point_id, 2]
+
+    for i in range(4):
+        for vortex_id in range(num_vortices):
+            singularity_counts[i] += vortex_counts[vortex_id, i]
+
+    return result
+

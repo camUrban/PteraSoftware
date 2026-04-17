@@ -227,10 +227,10 @@ single_step_main_wing_movement = (
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
         spacingLer_Gs_Cgs=("sine", "sine", "sine"),
         phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),  # (0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(15.0, 23.0, 0.0),  # (0.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(1.0, 1.0, 0.0),  # (0.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(dephase, -90.0, 0.0),
     )
 )
 
@@ -242,10 +242,10 @@ single_step_reflected_main_wing_movement = (
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
         spacingLer_Gs_Cgs=("sine", "sine", "sine"),
         phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(15.0, 23.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(1.0, 1.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(dephase, -90.0, 0.0),
     )
 )
 

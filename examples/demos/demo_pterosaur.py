@@ -91,7 +91,7 @@ def interpolate_between_wing_cross_sections(wcs1, wcs2, first_wcs):
 
 
 wing_cross_section_1 = ps.geometry.wing_cross_section.WingCrossSection(
-    num_spanwise_panels=1,
+    num_spanwise_panels=3,
     chord=0.25,
     Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
     angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
@@ -120,7 +120,7 @@ wing_cross_section_1 = ps.geometry.wing_cross_section.WingCrossSection(
 #            (0.1829, 2.4373, 0.0266)]
 
 wing_cross_section_2 = ps.geometry.wing_cross_section.WingCrossSection(
-    num_spanwise_panels=1,
+    num_spanwise_panels=3,
     chord=np.linalg.norm((0.1559, 0, -0.0931)),
     Lp_Wcsp_Lpp=get_relative_transform(
         (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0889, 0.2249, 0.0955), (0.1559, 0, -0.0931)
@@ -141,7 +141,7 @@ wing_cross_section_2 = ps.geometry.wing_cross_section.WingCrossSection(
 )
 
 wing_cross_section_3 = ps.geometry.wing_cross_section.WingCrossSection(
-    num_spanwise_panels=1,
+    num_spanwise_panels=3,
     chord=np.linalg.norm((0.2864, 0, -0.1878)),
     Lp_Wcsp_Lpp=get_relative_transform(
         (0.0889, 0.2249, 0.0955),

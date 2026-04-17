@@ -2,55 +2,46 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import Any
+from collections.abc import Callable
 
 import numpy as np
 import scipy.signal as sp_sig
 
-from .. import _parameter_validation
-
 
 def oscillating_sinspaces(
-    amps: float | int | np.ndarray | Sequence[float | int],
-    periods: float | int | np.ndarray | Sequence[float | int],
-    phases: float | int | np.ndarray | Sequence[float | int],
-    bases: float | int | np.ndarray | Sequence[float | int],
+    amps: float | np.ndarray,
+    periods: float | np.ndarray,
+    phases: float | np.ndarray,
+    bases: float | np.ndarray,
     num_steps: int,
-    delta_time: float | int,
+    delta_time: float,
 ) -> np.ndarray:
     """Returns a (...,num_steps) ndarray of floats calculated by inputting a vector of
     linearly spaced time steps into a sine function defined with the parameters given by
-    the scalars or array-like objects amp, period, phase, and base.
+    the floats or ndarrays amp, period, phase, and base.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding periods element must also be 0.0, and the corresponding
-        results will have no fluctuations. Its units can be anything so long as they
-        correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding amps element must also be 0.0, and the corresponding
-        results will have no fluctuations. If an array-like object, its shape must match
-        that of amps. Its units are in seconds.
-    :param phases: The phase offset(s) of the fluctuation(s). It must be a number (int
-        or float), or an array-like object of numbers, in the range (-180.0, 180.0], and
-        will be converted to a float internally. Positive values correspond to phase
-        lead. If a given result has no fluctuations (corresponding elements in amps and
-        periods are 0.0), the corresponding element in phases must be 0.0. If an array-
-        like object, its shape must match that of amps. Its units are in degrees.
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding periods element must also be 0.0, and the corresponding results
+        will have no fluctuations. Its units can be anything so long as they correspond
+        with the units of base.
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding amps element must also be 0.0, and the corresponding results will
+        have no fluctuations. If a ndarray, its shape must match that of amps. Its units
+        are in seconds.
+    :param phases: The phase offset(s) of the fluctuation(s). It must be a float or a
+        ndarray of floats in the range (-180.0, 180.0]. Positive values correspond to
+        phase lead. If a given result has no fluctuations (corresponding elements in
+        amps and periods are 0.0), the corresponding element in phases must be 0.0. If a
+        ndarray, its shape must match that of amps. Its units are in degrees.
     :param bases: The mean value(s) about which the fluctuation(s) occurs. It must be a
-        number (int or float), or array-like object of numbers. All elements will be
-        converted to floats internally. If an array-like object, its shape must match
-        that of amps. Its units can be anything so long as they correspond with the
-        units of amps.
+        float or a ndarray of floats. If a ndarray, its shape must match that of amps.
+        Its units can be anything so long as they correspond with the units of amps.
     :param num_steps: The number of time steps to iterate through. It must be a positive
         int.
     :param delta_time: The change in time between each time step. It must be a positive
-        number (int or float), and will be converted to a float internally. Its units
-        are in seconds.
+        float. Its units are in seconds.
     :return: The resulting ndarray of sinusoidally varying values. It will be a ndarray
         of floats with shape (num_steps,) (for scalar parameters) or (S,num_steps) (for
         array-like parameters of shape S). Its units will match those of amp and base.
@@ -82,47 +73,41 @@ def oscillating_sinspaces(
 
 
 def oscillating_linspaces(
-    amps: float | int | np.ndarray | Sequence[float | int],
-    periods: float | int | np.ndarray | Sequence[float | int],
-    phases: float | int | np.ndarray | Sequence[float | int],
-    bases: float | int | np.ndarray | Sequence[float | int],
+    amps: float | np.ndarray,
+    periods: float | np.ndarray,
+    phases: float | np.ndarray,
+    bases: float | np.ndarray,
     num_steps: int,
-    delta_time: float | int,
+    delta_time: float,
 ) -> np.ndarray:
     """Returns a (...,num_steps) ndarray of floats calculated by inputting a vector of
     linearly spaced time steps into a triangular wave function defined with the
-    parameters given by the scalars or array-like objects amp, period, phase, and base.
+    parameters given by the floats or ndarrays amp, period, phase, and base.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding periods element must also be 0.0, and the corresponding
-        results will have no fluctuations. Its units can be anything so long as they
-        correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding amps element must also be 0.0, and the corresponding
-        results will have no fluctuations. If an array-like object, its shape must match
-        that of amps. Its units are in seconds.
-    :param phases: The phase offset(s) of the fluctuation(s). It must be a number (int
-        or float), or an array-like object of numbers, in the range (-180.0, 180.0], and
-        will be converted to a float internally. Positive values correspond to phase
-        lead. If a given result has no fluctuations (corresponding elements in amps and
-        periods are 0.0), the corresponding element in phases must be 0.0. If an array-
-        like object, its shape must match that of amps. Its units are in degrees.
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding periods element must also be 0.0, and the corresponding results
+        will have no fluctuations. Its units can be anything so long as they correspond
+        with the units of base.
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding amps element must also be 0.0, and the corresponding results will
+        have no fluctuations. If a ndarray, its shape must match that of amps. Its units
+        are in seconds.
+    :param phases: The phase offset(s) of the fluctuation(s). It must be a float or a
+        ndarray of floats in the range (-180.0, 180.0]. Positive values correspond to
+        phase lead. If a given result has no fluctuations (corresponding elements in
+        amps and periods are 0.0), the corresponding element in phases must be 0.0. If a
+        ndarray, its shape must match that of amps. Its units are in degrees.
     :param bases: The mean value(s) about which the fluctuation(s) occurs. It must be a
-        number (int or float), or array-like object of numbers. All elements will be
-        converted to floats internally. If an array-like object, its shape must match
-        that of amps. Its units can be anything so long as they correspond with the
-        units of amps.
+        float or a ndarray of floats. If a ndarray, its shape must match that of amps.
+        Its units can be anything so long as they correspond with the units of amps.
     :param num_steps: The number of time steps to iterate through. It must be a positive
         int.
     :param delta_time: The change in time between each time step. It must be a positive
-        number (int or float), and will be converted to a float internally. Its units
-        are in seconds.
+        float. Its units are in seconds.
     :return: The resulting ndarray of varying values. It will be a ndarray of floats
-        with shape (num_steps,) (for scalar parameters) or (S,num_steps) (for array-like
+        with shape (num_steps,) (for scalar parameters) or (S,num_steps) (for ndarray
         parameters of shape S). Its units will match those of amp and base.
     """
     amps, periods, phases, bases, num_steps, delta_time, mask_static = (
@@ -153,17 +138,17 @@ def oscillating_linspaces(
 
 
 def oscillating_customspaces(
-    amps: float | int | np.ndarray | Sequence[float | int],
-    periods: float | int | np.ndarray | Sequence[float | int],
-    phases: float | int | np.ndarray | Sequence[float | int],
-    bases: float | int | np.ndarray | Sequence[float | int],
+    amps: float | np.ndarray,
+    periods: float | np.ndarray,
+    phases: float | np.ndarray,
+    bases: float | np.ndarray,
     num_steps: int,
-    delta_time: float | int,
+    delta_time: float,
     custom_function: Callable[[np.ndarray], np.ndarray],
 ) -> np.ndarray:
     """Returns a (...,num_steps) ndarray of floats calculated by inputting a vector of
     linearly spaced time steps into a custom oscillating function defined with the
-    parameters given by the scalars or array-like objects amp, period, phase, and base.
+    parameters given by the floats or ndarrays amp, period, phase, and base.
 
     This function is intended for advanced users. The custom function is validated to
     ensure it meets requirements, but users should thoroughly test their functions
@@ -196,34 +181,28 @@ def oscillating_customspaces(
     function. The phases parameter shifts the function horizontally in degrees. The
     bases parameter shifts the function vertically.
 
-    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding periods element must also be 0.0, and the corresponding
-        results will have no fluctuations. Its units can be anything so long as they
-        correspond with the units of base.
-    :param periods: The period(s) of the fluctuation(s). It must be a non negative
-        number (int or float) or an array-like object of non negative numbers. All
-        elements will be converted to floats internally. If any of its elements are 0.0,
-        then the corresponding amps element must also be 0.0, and the corresponding
-        results will have no fluctuations. If an array-like object, its shape must match
-        that of amps. Its units are in seconds.
-    :param phases: The phase offset(s) of the fluctuation(s). It must be a number (int
-        or float), or an array-like object of numbers, in the range (-180.0, 180.0], and
-        will be converted to a float internally. Positive values correspond to phase
-        lead. If a given result has no fluctuations (corresponding elements in amps and
-        periods are 0.0), the corresponding element in phases must be 0.0. If an array-
-        like object, its shape must match that of amps. Its units are in degrees.
+    :param amps: The amplitude(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding periods element must also be 0.0, and the corresponding results
+        will have no fluctuations. Its units can be anything so long as they correspond
+        with the units of base.
+    :param periods: The period(s) of the fluctuation(s). It must be a non negative float
+        or a ndarray of non negative floats. If any of its elements are 0.0, then the
+        corresponding amps element must also be 0.0, and the corresponding results will
+        have no fluctuations. If a ndarray, its shape must match that of amps. Its units
+        are in seconds.
+    :param phases: The phase offset(s) of the fluctuation(s). It must be a float or a
+        ndarray of floats in the range (-180.0, 180.0]. Positive values correspond to
+        phase lead. If a given result has no fluctuations (corresponding elements in
+        amps and periods are 0.0), the corresponding element in phases must be 0.0. If a
+        ndarray, its shape must match that of amps. Its units are in degrees.
     :param bases: The mean value(s) about which the fluctuation(s) occurs. It must be a
-        number (int or float), or array-like object of numbers. All elements will be
-        converted to floats internally. If an array-like object, its shape must match
-        that of amps. Its units can be anything so long as they correspond with the
-        units of amps.
+        float or a ndarray of floats. If a ndarray, its shape must match that of amps.
+        Its units can be anything so long as they correspond with the units of amps.
     :param num_steps: The number of time steps to iterate through. It must be a positive
         int.
     :param delta_time: The change in time between each time step. It must be a positive
-        number (int or float), and will be converted to a float internally. Its units
-        are in seconds.
+        float. Its units are in seconds.
     :param custom_function: A custom oscillating function that defines the waveform
         shape. The function must meet all requirements listed above. It must accept a
         ndarray as input and return a ndarray of the same shape. The function will be
@@ -234,7 +213,7 @@ def oscillating_customspaces(
         Custom functions are validated before use, and if validation fails, a detailed
         error message will indicate which requirement was not met.
     :return: The resulting ndarray of varying values. It will be a ndarray of floats
-        with shape (num_steps,) (for scalar parameters) or (S,num_steps) (for array-like
+        with shape (num_steps,) (for scalar parameters) or (S,num_steps) (for ndarray
         parameters of shape S). Its units will match those of amp and base.
     """
     amps, periods, phases, bases, num_steps, delta_time, mask_static = (
@@ -266,7 +245,7 @@ def oscillating_customspaces(
     # Calculate the output or raise an exception if custom_functions throws.
     try:
         output = np.asarray(a * custom_function(b * times + h) + k)
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         raise ValueError(
             f"Calling your custom_function on the inputs resulted in the following "
             f"exception:\n{e}"
@@ -275,7 +254,7 @@ def oscillating_customspaces(
     output_shape = output.shape
     expected_shape = amps.shape + (num_steps,)
 
-    if output_shape != expected_shape:
+    if output_shape != expected_shape:  # pragma: no cover
         raise ValueError(
             f"Calling custom_function on your inputs resulted in an ndarray of shape "
             f"{output_shape}, but the expected shape is {expected_shape}."
@@ -284,7 +263,12 @@ def oscillating_customspaces(
 
 
 def _validate_oscillating_function_parameters(
-    amps: Any, periods: Any, phases: Any, bases: Any, num_steps: Any, delta_time: Any
+    amps: float | np.ndarray,
+    periods: float | np.ndarray,
+    phases: float | np.ndarray,
+    bases: float | np.ndarray,
+    num_steps: int,
+    delta_time: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, float, np.ndarray]:
     """Validates and returns the conditioned parameters for the oscillating_* functions.
 
@@ -303,18 +287,10 @@ def _validate_oscillating_function_parameters(
         previous parameters are static (have zero amplitude). It will have the same
         shape as amps, periods, phases, and bases.
     """
-    amps = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        amps, "amps", 0.0, True, None, None
-    )
-    periods = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        periods, "periods", 0.0, True, None, None
-    )
-    phases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        phases, "phases", -180.0, False, 180.0, True
-    )
-    bases = _parameter_validation.arrayLike_of_numbers_in_range_return_float(
-        bases, "bases", None, None, None, None
-    )
+    amps = np.asarray(amps, dtype=float)
+    periods = np.asarray(periods, dtype=float)
+    phases = np.asarray(phases, dtype=float)
+    bases = np.asarray(bases, dtype=float)
 
     expected_shape = amps.shape
     values_to_check = (periods, phases, bases)
@@ -344,20 +320,12 @@ def _validate_oscillating_function_parameters(
             "the corresponding element in phases must also be 0.0."
         )
 
-    num_steps = _parameter_validation.int_in_range_return_int(
-        num_steps,
-        "num_steps",
-        min_val=1,
-        min_inclusive=True,
-    )
-    delta_time = _parameter_validation.number_in_range_return_float(
-        delta_time, "delta_time", min_val=0.0, min_inclusive=False
-    )
-
     return amps, periods, phases, bases, num_steps, delta_time, mask_static
 
 
-def _validate_custom_spacing_function(custom_function: Any) -> None:
+def _validate_custom_spacing_function(
+    custom_function: Callable[[np.ndarray], np.ndarray],
+) -> None:
     """Validates that a custom spacing function meets requirements for use in
     oscillating_customspaces.
 

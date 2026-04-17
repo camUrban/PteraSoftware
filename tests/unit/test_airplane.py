@@ -782,6 +782,7 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         npt.assert_array_equal(copied.Cg_GP1_CgP1, new_position)
 
         for i, (orig_wing, copied_wing) in enumerate(zip(original.wings, copied.wings)):
+            # noinspection PyUnresolvedReferences
             with self.subTest(wing_index=i):
                 self.assertIsNot(orig_wing, copied_wing)
                 self.assertEqual(copied_wing.symmetry_type, orig_wing.symmetry_type)

@@ -48,7 +48,7 @@ _diverging_color_map = "delta"
 _wake_vortex_color = "white"
 _panel_color = "chartreuse"
 _streamline_color = "orchid"
-_image_surface_opacity = 0.75
+_image_surface_opacity = 0.5
 _image_surface_scale = 5.0
 _image_reflection_mute_factor = 0.5
 _image_surface_checker_size = 25
@@ -56,7 +56,13 @@ _image_surface_color_a = np.array([40, 40, 40], dtype=np.uint8)
 _image_surface_color_b = np.array([80, 80, 80], dtype=np.uint8)
 _plotter_background_color = "black"
 _figure_background_color = "None"
-_text_color = "#818181"
+_text_color = (129, 129, 129)
+_text_color_normalized: tuple[float, float, float] = (
+    _text_color[0] / 255,
+    _text_color[1] / 255,
+    _text_color[2] / 255,
+)
+_text_color_surface = (220, 220, 220)
 _quality = 75.0
 _window_size = [1024, 768]
 
@@ -266,6 +272,7 @@ def draw(
             c_min = -_color_map_num_sig * float(np.std(these_scalars))
             c_max = _color_map_num_sig * float(np.std(these_scalars))
 
+        T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
         _plot_scalars(
             plotter,
             these_scalars,
@@ -276,6 +283,7 @@ def draw(
             c_min,
             c_max,
             panel_surfaces,
+            text_color=_text_color_surface if T_reflect is not None else _text_color,
         )
     else:
         plotter.add_mesh(
@@ -284,8 +292,7 @@ def draw(
             color=_panel_color,
             smooth_shading=False,
         )
-
-    T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+        T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
     image_surface_mesh = None
 
     # If an image surface is defined, add reflected geometry. The image surface plane
@@ -534,16 +541,6 @@ def animate(
     c_max = 0.0
     color_map: str = ""
 
-    # If saving the animation, add text that displays its speed.
-    if save:
-        plotter.add_text(
-            text="Speed: " + str(round(100 * speed)) + "%",
-            position=_text_speed_position,
-            font_size=_text_font_size,
-            viewport=True,
-            color=_text_color,
-        )
-
     # Initialize variables to hold the SteadyProblems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=float)
     min_scalar = 0.0
@@ -594,6 +591,7 @@ def animate(
         last_step
     ].operating_point
     T_reflect = last_step_operating_point.surfaceReflect_T_act_GP1_CgP1
+    animate_text_color = _text_color_surface if T_reflect is not None else _text_color
     if T_reflect is not None:
         last_step_panel_surfaces = _get_panel_surfaces(step_airplanes[last_step])
         reflected_last_step_panel_surfaces = _reflect_mesh(
@@ -627,6 +625,16 @@ def animate(
         image_surface_texture = None
         image_surface_geometry_bounds = None
 
+    # If saving the animation, add text that displays its speed.
+    if save:
+        plotter.add_text(
+            text="Speed: " + str(round(100 * speed)) + "%",
+            position=_text_speed_position,
+            font_size=_text_font_size,
+            viewport=True,
+            color=animate_text_color,
+        )
+
     # Get the Panel surfaces of the first time step's Airplane(s).
     panel_surfaces = _get_panel_surfaces(step_airplanes[0])
 
@@ -649,6 +657,7 @@ def animate(
             c_min,
             c_max,
             panel_surfaces,
+            text_color=_text_color_surface if T_reflect is not None else _text_color,
         )
     else:
         plotter.add_mesh(
@@ -765,7 +774,7 @@ def animate(
                 position=_text_speed_position,
                 font_size=_text_font_size,
                 viewport=True,
-                color=_text_color,
+                color=animate_text_color,
             )
 
         # If showing wake RingVortices, get their surfaces and plot them.
@@ -799,6 +808,9 @@ def animate(
                 c_min,
                 c_max,
                 panel_surfaces,
+                text_color=(
+                    _text_color_surface if T_reflect is not None else _text_color
+                ),
             )
         else:
             plotter.add_mesh(
@@ -852,6 +864,15 @@ def animate(
                 opacity=_image_surface_opacity,
                 smooth_shading=True,
             )
+
+        # If an image surface is present, force VTK to recalculate the scalar bar
+        # layout. Adding the image surface mesh with opacity causes VTK's
+        # UnconstrainedFontSize layout to misposition the left label (PyVista
+        # issue #7516).
+        if T_reflect is not None:
+            for scalar_bar_actor in plotter.scalar_bars.values():
+                scalar_bar_actor.Modified()
+            plotter.render()
 
         # If saving, append a WebP Image of this frame to the list of Images. To do
         # so, take a screenshot, convert it to a ndarray, and convert that to an Image.
@@ -986,32 +1007,32 @@ def plot_results_versus_time(
         moment_coefficients_axes.spines.top.set_visible(False)
 
         # Format all the plots' spine and label colors.
-        force_axes.spines.bottom.set_color(_text_color)
-        force_axes.spines.left.set_color(_text_color)
-        force_axes.xaxis.label.set_color(_text_color)
-        force_axes.yaxis.label.set_color(_text_color)
-        force_coefficients_axes.spines.bottom.set_color(_text_color)
-        force_coefficients_axes.spines.left.set_color(_text_color)
-        force_coefficients_axes.xaxis.label.set_color(_text_color)
-        force_coefficients_axes.yaxis.label.set_color(_text_color)
-        moment_coefficients_axes.spines.bottom.set_color(_text_color)
-        moment_coefficients_axes.spines.left.set_color(_text_color)
-        moment_coefficients_axes.xaxis.label.set_color(_text_color)
-        moment_coefficients_axes.yaxis.label.set_color(_text_color)
-        moment_axes.spines.bottom.set_color(_text_color)
-        moment_axes.spines.left.set_color(_text_color)
-        moment_axes.xaxis.label.set_color(_text_color)
-        moment_axes.yaxis.label.set_color(_text_color)
+        force_axes.spines.bottom.set_color(_text_color_normalized)
+        force_axes.spines.left.set_color(_text_color_normalized)
+        force_axes.xaxis.label.set_color(_text_color_normalized)
+        force_axes.yaxis.label.set_color(_text_color_normalized)
+        force_coefficients_axes.spines.bottom.set_color(_text_color_normalized)
+        force_coefficients_axes.spines.left.set_color(_text_color_normalized)
+        force_coefficients_axes.xaxis.label.set_color(_text_color_normalized)
+        force_coefficients_axes.yaxis.label.set_color(_text_color_normalized)
+        moment_coefficients_axes.spines.bottom.set_color(_text_color_normalized)
+        moment_coefficients_axes.spines.left.set_color(_text_color_normalized)
+        moment_coefficients_axes.xaxis.label.set_color(_text_color_normalized)
+        moment_coefficients_axes.yaxis.label.set_color(_text_color_normalized)
+        moment_axes.spines.bottom.set_color(_text_color_normalized)
+        moment_axes.spines.left.set_color(_text_color_normalized)
+        moment_axes.xaxis.label.set_color(_text_color_normalized)
+        moment_axes.yaxis.label.set_color(_text_color_normalized)
 
         # Format all the plots' tick colors.
-        force_axes.tick_params(axis="x", colors=_text_color)
-        force_axes.tick_params(axis="y", colors=_text_color)
-        force_coefficients_axes.tick_params(axis="x", colors=_text_color)
-        force_coefficients_axes.tick_params(axis="y", colors=_text_color)
-        moment_coefficients_axes.tick_params(axis="x", colors=_text_color)
-        moment_coefficients_axes.tick_params(axis="y", colors=_text_color)
-        moment_axes.tick_params(axis="x", colors=_text_color)
-        moment_axes.tick_params(axis="y", colors=_text_color)
+        force_axes.tick_params(axis="x", colors=_text_color_normalized)
+        force_axes.tick_params(axis="y", colors=_text_color_normalized)
+        force_coefficients_axes.tick_params(axis="x", colors=_text_color_normalized)
+        force_coefficients_axes.tick_params(axis="y", colors=_text_color_normalized)
+        moment_coefficients_axes.tick_params(axis="x", colors=_text_color_normalized)
+        moment_coefficients_axes.tick_params(axis="y", colors=_text_color_normalized)
+        moment_axes.tick_params(axis="x", colors=_text_color_normalized)
+        moment_axes.tick_params(axis="y", colors=_text_color_normalized)
 
         # Format all the plots' background colors.
         force_figure.patch.set_facecolor(_figure_background_color)
@@ -1141,39 +1162,47 @@ def plot_results_versus_time(
         moment_coefficient_title = airplane_name + " Moment Coefficients vs. Time"
 
         # Name the plots' axis labels and titles.
-        force_axes.set_xlabel("Time (s)", color=_text_color)
-        force_axes.set_ylabel("Force (N)", color=_text_color)
-        force_axes.set_title(force_title, color=_text_color)
-        force_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
-        force_coefficients_axes.set_ylabel("Force Coefficient", color=_text_color)
-        force_coefficients_axes.set_title(force_coefficient_title, color=_text_color)
-        moment_axes.set_xlabel("Time (s)", color=_text_color)
-        moment_axes.set_ylabel("Moment (N m)", color=_text_color)
-        moment_axes.set_title(moment_title, color=_text_color)
-        moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color)
-        moment_coefficients_axes.set_ylabel("Moment Coefficient", color=_text_color)
-        moment_coefficients_axes.set_title(moment_coefficient_title, color=_text_color)
+        force_axes.set_xlabel("Time (s)", color=_text_color_normalized)
+        force_axes.set_ylabel("Force (N)", color=_text_color_normalized)
+        force_axes.set_title(force_title, color=_text_color_normalized)
+        force_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
+        force_coefficients_axes.set_ylabel(
+            "Force Coefficient", color=_text_color_normalized
+        )
+        force_coefficients_axes.set_title(
+            force_coefficient_title, color=_text_color_normalized
+        )
+        moment_axes.set_xlabel("Time (s)", color=_text_color_normalized)
+        moment_axes.set_ylabel("Moment (N m)", color=_text_color_normalized)
+        moment_axes.set_title(moment_title, color=_text_color_normalized)
+        moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
+        moment_coefficients_axes.set_ylabel(
+            "Moment Coefficient", color=_text_color_normalized
+        )
+        moment_coefficients_axes.set_title(
+            moment_coefficient_title, color=_text_color_normalized
+        )
 
         # Format the plots' legends.
         force_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
-            labelcolor=_text_color,
+            labelcolor=_text_color_normalized,
         )
         force_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
-            labelcolor=_text_color,
+            labelcolor=_text_color_normalized,
         )
         moment_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
-            labelcolor=_text_color,
+            labelcolor=_text_color_normalized,
         )
         moment_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
-            labelcolor=_text_color,
+            labelcolor=_text_color_normalized,
         )
 
         # Save the figures as PNGs if the user wants to do so.
@@ -1772,6 +1801,7 @@ def _plot_scalars(
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
+    text_color: tuple[int, int, int] = _text_color,
 ) -> None:
     """Plots a scalar bar, the surfaces of a set of Panels with particular scalars, and
     labels for the minimum and maximum scalar values.
@@ -1788,6 +1818,8 @@ def _plot_scalars(
     :param c_min: Lower bound for the color map scaling.
     :param c_max: Upper bound for the color map scaling.
     :param panel_surfaces: PolyData representing the Panels' surfaces.
+    :param text_color: The color used for the scalar bar and label text. The default is
+        _text_color.
     :return: None
     """
     scalar_bar_args = dict(
@@ -1799,7 +1831,7 @@ def _plot_scalars(
         position_y=_bar_position_y,
         n_labels=_bar_n_labels,
         fmt="%.2f",
-        color=_text_color,
+        color=text_color,
     )
     plotter.add_mesh(
         panel_surfaces,
@@ -1810,17 +1842,18 @@ def _plot_scalars(
         smooth_shading=False,
         scalar_bar_args=scalar_bar_args,  # type: ignore[arg-type]
     )
+
     plotter.add_text(
         text="Max: " + str(max_scalar),
         position=_text_max_position,
         font_size=_text_font_size,
         viewport=True,
-        color=_text_color,
+        color=text_color,
     )
     plotter.add_text(
         text="Min: " + str(min_scalar),
         position=_text_min_position,
         font_size=_text_font_size,
         viewport=True,
-        color=_text_color,
+        color=text_color,
     )

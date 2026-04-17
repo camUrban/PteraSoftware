@@ -38,6 +38,10 @@ UnsteadyRingVortexLatticeMethodSolver class.
 
 **Contains the following functions:**
 
+load: Loads a Ptera Software object from a JSON file.
+
+save: Saves a Ptera Software object to a JSON file.
+
 set_up_logging: Configures logging for the pterasoftware package that is compatible with
 TQDM progress bars.
 """
@@ -61,6 +65,8 @@ _LAZY_MODULES = {
 
 # Lazy callable imports: functions that need special handling.
 _LAZY_CALLABLES = {
+    "load": ("pterasoftware._serialization", "load"),
+    "save": ("pterasoftware._serialization", "save"),
     "set_up_logging": ("pterasoftware._logging", "set_up_logging"),
 }
 

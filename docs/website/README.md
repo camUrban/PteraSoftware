@@ -5,6 +5,7 @@
 :hidden:
 
 self
+examples
 api
 ```
 

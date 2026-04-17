@@ -15,6 +15,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Convergence Analysis**: Automatic search for converged parameters
 - **GUI Interface**: Basic GUI available (beta stage)
 - **Visualization Tools**: 3D mesh visualization and 2D plotting of results
+- **Save and Load**: JSON serialization of solved simulations without pickle security risks
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
@@ -86,6 +87,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `_logging.py`: Contains function for setting up logging
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
+    - `_serialization.py`: JSON serialization and deserialization (save/load)
     - `_transformations.py`: Coordinate transformations and rotations
     - `convergence.py`: Convergence analysis tools
     - `operating_point.py`: OperatingPoint class
@@ -96,6 +98,9 @@ Requires Python 3.11, but active development is done in 3.13
     - `trim.py`: Trim analysis functionality
     - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 - `tests/`: Directory with unit and integration tests
+    - `benchmarks/`: Performance benchmark scripts and saved results
+        - `bench_serialization.py`
+        - `bench_slots.py`
     - `integration/`: Integration tests for combined functionality
         - `fixtures/`: Fixtures for integration tests
             - `airplane_fixtures.py`
@@ -104,6 +109,7 @@ Requires Python 3.11, but active development is done in 3.13
             - `problem_fixtures.py`
             - `solver_fixtures.py`
         - `test_output.py`
+        - `test_serialization_output.py`
         - `test_steady_convergence.py`
         - `test_steady_horseshoe_vortex_lattice_method.py`
         - `test_steady_ring_vortex_lattice_method.py`
@@ -113,6 +119,7 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry.py`
         - `test_unsteady_ring_vortex_lattice_method_static_geometry.py`
         - `test_unsteady_ring_vortex_lattice_method_variable_geometry.py`
+        - `test_unsteady_ring_vortex_lattice_method_wake_truncation.py`
     - `unit/`: Unit tests for individual classes and functions
         - `fixtures/`: Fixtures for unit tests
             - `aerodynamics_function_fixtures.py`
@@ -125,6 +132,7 @@ Requires Python 3.11, but active development is done in 3.13
             - `operating_point_movement_fixtures.py`
             - `problem_fixtures.py`
             - `ring_vortex_fixtures.py`
+            - `serialization_fixtures.py`
             - `wing_cross_section_movement_fixtures.py`
             - `wing_movement_fixtures.py`
         - `test_aerodynamics_functions.py`
@@ -136,9 +144,12 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_movement_functions.py`
         - `test_operating_point.py`
         - `test_operating_point_movement.py`
+        - `test_package_init.py`
         - `test_panel.py`
         - `test_problems.py`
         - `test_ring_vortex.py`
+        - `test_serialization.py`
+        - `test_slots.py`
         - `test_transformations.py`
         - `test_wing.py`
         - `test_wing_cross_section.py`

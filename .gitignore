@@ -159,5 +159,9 @@ Draw.webp
 # This folder contains a copy of the Furo theme to use as a reference for customization.
 /docs/website/furo_src/
 
+# These are serialization output files to ignore.
+*.json
+*.json.gz
+
 # These are the Claude's documentation files to ignore.
 /docs/CLAUDE_*.md

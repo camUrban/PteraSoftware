@@ -1,5 +1,70 @@
 import os
+import re
+import sys
 from datetime import datetime
+from importlib.machinery import ModuleSpec
+from pathlib import Path
+from unittest.mock import MagicMock
+
+# Add project root to sys.path so sphinx.ext.autodoc can import pterasoftware.
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
+
+# Mock all runtime dependencies so autodoc can import pterasoftware without them
+# installed. This is safe because the documented functions (save, load,
+# set_up_logging) only use stdlib types in their signatures. autodoc_mock_imports
+# only takes effect during autodoc's build phase, not when conf.py executes, so
+# we also install a meta path finder to mock them in sys.modules before the
+# pterasoftware imports below trigger the full package import chain.
+autodoc_mock_imports = [
+    "cmocean",
+    "matplotlib",
+    "numba",
+    "numpy",
+    "PySide6",
+    "pyvista",
+    "scipy",
+    "tqdm",
+    "webp",
+]
+
+
+class _MockModuleFinder:
+    """Meta path finder that returns MagicMock for mocked top-level packages."""
+
+    def __init__(self, mock_names):
+        self._mock_names = set(mock_names)
+
+    # noinspection PyUnusedLocal
+    def find_spec(self, fullname, path, target=None):
+        if fullname.split(".")[0] in self._mock_names:
+            return ModuleSpec(fullname, self, is_package=True)
+        return None
+
+    # noinspection PyUnusedLocal
+    # noinspection PyMethodMayBeStatic
+    def create_module(self, spec):
+        return MagicMock()
+
+    def exec_module(self, module):
+        pass
+
+
+sys.meta_path.insert(0, _MockModuleFinder(autodoc_mock_imports))
+
+# noinspection PyProtectedMember
+from pterasoftware._logging import set_up_logging as _set_up_logging
+
+# noinspection PyProtectedMember
+# noinspection PyProtectedMember
+from pterasoftware._serialization import load as _load
+from pterasoftware._serialization import save as _save
+
+# Override __module__ for public functions that live in private modules so
+# autodoc renders them with the public package path (e.g., pterasoftware.save
+# instead of pterasoftware._serialization.save).
+_save.__module__ = "pterasoftware"
+_load.__module__ = "pterasoftware"
+_set_up_logging.__module__ = "pterasoftware"
 
 # -- Project information -----------------------------------------------------
 
@@ -14,6 +79,7 @@ copyright = f"{current_year}, {author}"
 extensions = [
     "myst_parser",
     "autoapi.extension",
+    "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
@@ -112,8 +178,6 @@ html_theme_options = {
 # For AutoAPI-generated pages, the default "Edit this page" points to a
 # generated .rst path that doesn't exist in the repo. Override the URL to
 # point to the corresponding Python source file in GitHub.
-from pathlib import Path
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -264,8 +328,6 @@ def _first_sentence(docstring: str) -> str:
     # Join into one string
     text = " ".join(paragraph_lines)
     # Find the first sentence (ends with period followed by space or end)
-    import re
-
     match = re.match(r"^(.*?\.)\s", text + " ")
     if match:
         return match.group(1)

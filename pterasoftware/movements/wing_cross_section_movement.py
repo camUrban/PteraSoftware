@@ -296,7 +296,7 @@ class WingCrossSectionMovement:
         """Creates a deep copy of this WingCrossSectionMovement.
 
         All attributes are copied. The base WingCrossSection is deep copied to ensure
-        independence. Numpy arrays are copied and set to read only to preserve
+        independence. NumPy arrays are copied and set to read only to preserve
         immutability. Cache variables are reset to None.
 
         :param memo: A dict used by the copy module to track already copied objects and

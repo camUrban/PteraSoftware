@@ -571,7 +571,7 @@ class WingCrossSection:
 
         if self.symmetry_type in (2, 3):
             UserMatrixAxesWcspLpp = _transformations.generate_reflect_T(
-                (0, 0, 0), (0, 1, 0), passive=False
+                np.array([0.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), passive=False
             )
 
             airfoilOutline_WcspReflectY_lpp = _transformations.apply_T_to_vectors(

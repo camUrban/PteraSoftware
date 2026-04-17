@@ -283,23 +283,32 @@ example_solver.run(
     show_progress=True,
 )
 
-ps.output.log_results(solver=example_solver)
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+ps.save("example_unsteady_solver.json.gz", example_solver)
 
-# Call the draw function on the solver. Press "q" to close the plotter after it draws
-# the output.
+# Load the saved solver. The loaded object is identical to the original and can be
+# passed to any output function.
+loaded_solver = ps.load("example_unsteady_solver.json.gz")
+
+ps.output.log_results(solver=loaded_solver)
+
+# Call the draw function on the loaded solver. Press any key to close the plotter after
+# it draws the output.
 ps.output.draw(
-    solver=example_solver,
+    solver=loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
     save=False,
 )
 
-# Call the animate function on the solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press "q",
-# after orienting the view, to begin the animation.
+# Call the animate function on the loaded solver. This produces a GIF of the wake being shed.
+# The GIF is saved in the same directory as this script. Press any key, after orienting
+# the view, to begin the animation.
 ps.output.animate(
-    unsteady_solver=example_solver,
+    unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=False,
@@ -308,7 +317,7 @@ ps.output.animate(
 # Call the plotting function on the solver. This produces graphs of the loads with
 # respect to time.
 ps.output.plot_results_versus_time(
-    unsteady_solver=example_solver,
+    unsteady_solver=loaded_solver,
     show=True,
     save=False,
 )

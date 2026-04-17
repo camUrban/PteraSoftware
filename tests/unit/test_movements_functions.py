@@ -725,32 +725,6 @@ class TestMovementsFunctions(unittest.TestCase):
             "corresponding element in phases must also be 0.0", str(context.exception)
         )
 
-    def test_oscillating_functions_validation_invalid_num_steps(self):
-        """Test that oscillating functions raise error with invalid num_steps."""
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError)):
-            _functions.oscillating_sinspaces(
-                amps=self.scalar_amps,
-                periods=self.scalar_periods,
-                phases=self.scalar_phases,
-                bases=self.scalar_bases,
-                num_steps=0,
-                delta_time=self.delta_time,
-            )
-
-    def test_oscillating_functions_validation_invalid_delta_time(self):
-        """Test that oscillating functions raise error with invalid delta_time."""
-        # noinspection PyTypeChecker
-        with self.assertRaises((ValueError, TypeError)):
-            _functions.oscillating_sinspaces(
-                amps=self.scalar_amps,
-                periods=self.scalar_periods,
-                phases=self.scalar_phases,
-                bases=self.scalar_bases,
-                num_steps=self.num_steps,
-                delta_time=0.0,
-            )
-
     def test_oscillating_functions_validation_mismatched_array_shapes(self):
         """Test that oscillating functions raise error with mismatched array shapes."""
         with self.assertRaises(ValueError) as context:

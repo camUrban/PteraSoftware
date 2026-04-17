@@ -2,18 +2,18 @@
 
 ***
 
+[![DOI](https://zenodo.org/badge/249337717.svg)](https://doi.org/10.5281/zenodo.19229119)
+![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=main)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
-![code quality](https://img.shields.io/codefactor/grade/github/camUrban/PteraSoftware)
-![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 ![python](https://img.shields.io/pypi/pyversions/pterasoftware)
-![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
 ![types](https://img.shields.io/pypi/types/pterasoftware)
 ![code style](https://img.shields.io/badge/code%20style-black-black)
+![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 
 ***
 <!-- docs-include-start -->
-![Example Unsteady Formation Flight](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_variable_formation/Animate.webp)
+![Flapping Wings in Ground Effect](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/hero_graphics/hero_animated.webp)
 
 This is Ptera Software: a fast, easy-to-use, and open-source package for analyzing flapping-wing flight.
 
@@ -82,6 +82,7 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
     * Unsteady simulations support both fixed and free wakes.
     * Unsteady simulations implement vortex aging to reduce numerical instabilities.
+    * All three solvers support surface effects (e.g., ground effect) via the method of images.
 2. Customizable Aircraft Geometry
     * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
     * Wings can be defined as a collection of two or more wing cross sections of any dimensions and positions.
@@ -98,10 +99,15 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 6. Simulations of Formation Flight
     * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
     * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
-7. Features for Flapping-Wing Vehicle Design
+7. Save and Load Simulation Results
+    * Save solved simulations to JSON files and load them back without re-running.
+    * Uses JSON serialization instead of pickle, avoiding arbitrary code execution vulnerabilities.
+    * Supports gzip compression for reduced file sizes.
+    * Loaded objects are fully compatible with all output and visualization functions.
+8. Features for Flapping-Wing Vehicle Design
     * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
     * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
-8. A Basic GUI
+9. A Basic GUI
     * This is still in its alpha stage, but we will be adding more functionality soon.
 
 ## Installation
@@ -120,7 +126,7 @@ Your IDE should automatically provide docstring hints for the available classes 
 
 If you want to browse the example scripts or dig into the source code, you will need a local copy of the repository. Follow the environment setup instructions in the [Contributing Guidelines](CONTRIBUTING.md#contributing-code) to clone the repository, create a virtual environment, and install dependencies.
 
-Once set up, the `examples/` directory contains scripts that demonstrate the full range of Ptera Software's features and solvers.
+Once set up, the `examples/` directory contains scripts that demonstrate the full range of Ptera Software's features and solvers. These scripts are also available on the [documentation site](https://pterasoftware.readthedocs.io/en/latest/examples.html).
 
 ## Example Output
 
@@ -160,6 +166,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Venkata Akhil Mettu ([AKHIL-149](https://github.com/AKHIL-149))
 * Savitha N ([Savitha-Akhilu](https://github.com/Savitha-Akhilu))
 * Pedro Bornia ([BorniaPedro](https://github.com/BorniaPedro))
+* Mohamed Abdulghany ([MohamedMG7](https://github.com/MohamedMG7))
 
 ### Supporters
 

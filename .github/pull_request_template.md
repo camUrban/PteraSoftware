@@ -30,19 +30,18 @@ Identify the option that best describes the impact of your change, then delete t
 
 ## Checklist (check each item when completed or not applicable)
 
-- [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
-- [ ] PR description links all relevant issues and follows this template.
-- [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
-- [ ] All calculations use S.I. units.
-- [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
-- [ ] Code is well documented with block comments where appropriate.
-- [ ] Any external code, algorithms, or equations used have been cited in comments or docstrings.
-- [ ] All new modules, classes, functions, and methods have docstrings in [reStructuredText format](https://realpython.com/documenting-python-code/), and are formatted using [docformatter](https://github.com/PyCQA/docformatter) (`--in-place --black`). See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
-- [ ] All new classes, functions, and methods in the `pterasoftware` package use type hints. See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
-- [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
-- [ ] Code locally passes all tests in the `tests` package.
-- [ ] This PR passes the ReadTheDocs build check (this runs automatically with the other workflows).
-- [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
-- [ ] This PR passes the `mypy` GitHub action.
-- [ ] This PR passes all the `tests` GitHub actions.
-- [ ] After passing all the `tests` actions, this PR passes Codecov's coverage checks (these take a few minutes, but should automatically appear as a comment and two more checks alongside the GitHub actions).
+* [ ] I am familiar with the current [contribution guidelines](https://github.com/camUrban/PteraSoftware/blob/main/CONTRIBUTING.md).
+* [ ] PR description links all relevant issues and follows this template.
+* [ ] My branch is based on `main` and is up to date with the upstream `main` branch.
+* [ ] All calculations use S.I. units.
+* [ ] Code is formatted with [black](https://github.com/psf/black) (line length = 88).
+* [ ] Code is well documented with block comments where appropriate.
+* [ ] Any external code, algorithms, or equations used have been cited in comments or docstrings.
+* [ ] All new modules, classes, functions, and methods have docstrings in [reStructuredText format](https://realpython.com/documenting-python-code/), and are formatted using [docformatter](https://github.com/PyCQA/docformatter) (`--in-place --black`). See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
+* [ ] All new classes, functions, and methods in the `pterasoftware` package use type hints. See the [style guide for type hints and docstrings](https://github.com/camUrban/PteraSoftware/blob/main/docs/TYPE_HINT_AND_DOCSTRING_STYLE.md) for more details.
+* [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
+* [ ] Code locally passes all tests in the `tests` package.
+* [ ] This PR passes the ReadTheDocs build check (this runs automatically with the other workflows).
+* [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
+* [ ] This PR passes the `mypy` GitHub action.
+* [ ] This PR passes all the `tests` GitHub actions.

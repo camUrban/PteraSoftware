@@ -1,10 +1,13 @@
 # API Reference
 
-This reference covers the public modules most users interact with. Pages are generated automatically from docstrings using AutoAPI.
+This reference covers the public functions and modules most users interact with. Pages are generated automatically from docstrings using AutoAPI.
 
 ```{toctree}
 :maxdepth: 1
 
+save() <save>
+load() <load>
+set_up_logging() <set_up_logging>
 geometry <api/pterasoftware/geometry/index>
 movements <api/pterasoftware/movements/index>
 convergence <api/pterasoftware/convergence/index>

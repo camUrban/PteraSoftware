@@ -48,6 +48,9 @@ This package contains the following modules:
     ring_vortex_fixtures.py: This module contains functions to create RingVortices
     for uses in tests.
 
+    serialization_fixtures.py: This module contains functions to create objects for use
+    in serialization tests.
+
     solver_fixtures.py: This module contains functions to create solver objects for use
     in unit tests.
 
@@ -71,6 +74,7 @@ import tests.unit.fixtures.panel_fixtures
 import tests.unit.fixtures.parameter_validation_fixtures
 import tests.unit.fixtures.problem_fixtures
 import tests.unit.fixtures.ring_vortex_fixtures
+import tests.unit.fixtures.serialization_fixtures
 import tests.unit.fixtures.solver_fixtures
 import tests.unit.fixtures.wing_cross_section_movement_fixtures
 import tests.unit.fixtures.wing_movement_fixtures

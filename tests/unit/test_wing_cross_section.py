@@ -81,7 +81,6 @@ class TestWingCrossSection(unittest.TestCase):
                 num_spanwise_panels=8,
             )
 
-    # noinspection PyUnresolvedReferences
     def test_num_spanwise_panels_validation(self):
         """Test num_spanwise_panels parameter validation."""
         # Test with valid positive integer
@@ -101,6 +100,7 @@ class TestWingCrossSection(unittest.TestCase):
         # Test with invalid values
         invalid_values = [0, -5, 2.5, "eight"]
         for invalid_value in invalid_values:
+            # noinspection PyUnresolvedReferences
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
@@ -134,7 +134,6 @@ class TestWingCrossSection(unittest.TestCase):
                         chord=invalid_chord,
                     )
 
-    # noinspection PyUnresolvedReferences
     def test_Lp_Wcsp_Lpp_validation(self):
         """Test Lp_Wcsp_Lpp parameter validation."""
         # Test with valid array-like inputs
@@ -146,6 +145,7 @@ class TestWingCrossSection(unittest.TestCase):
             np.array([1, 2, 0]),  # numpy array of ints
         ]
         for vector in valid_vectors:
+            # noinspection PyUnresolvedReferences
             with self.subTest(vector=vector):
                 wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
                     airfoil=self.test_airfoil,

@@ -10,6 +10,8 @@ import pterasoftware as ps
 
 # noinspection PyProtectedMember
 from pterasoftware import _panel
+
+# noinspection PyProtectedMember
 from pterasoftware._vortices import _line_vortex
 from tests.unit.fixtures import (
     airplane_movement_fixtures,

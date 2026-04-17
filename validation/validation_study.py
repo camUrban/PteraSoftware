@@ -16,7 +16,7 @@ UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach." """
 # Import Python’s math package.
 import math
 
-# Import Numpy and MatPlotLib’s PyPlot package.
+# Import NumPy and MatPlotLib’s PyPlot package.
 import matplotlib.pyplot as plt
 import numpy as np
 

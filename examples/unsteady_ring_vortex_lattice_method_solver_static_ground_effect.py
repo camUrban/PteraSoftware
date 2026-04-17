@@ -295,7 +295,7 @@ example_solver.run(
 ps.output.log_results(solver=example_solver)
 
 # Call the draw function on the solver. The image surface and reflected geometry are
-# automatically rendered. Press "q" to close the plotter after it draws the output.
+# automatically rendered. Press any key to close the plotter after it draws the output.
 ps.output.draw(
     solver=example_solver,
     scalar_type="lift",
@@ -305,8 +305,8 @@ ps.output.draw(
 )
 
 # Call the animate function on the solver. This produces a GIF of the wake being shed.
-# The GIF is saved in the same directory as this script. Press "q", after orienting the
-# view, to begin the animation.
+# The GIF is saved in the same directory as this script. Press any key, after orienting
+# the view, to begin the animation.
 ps.output.animate(
     unsteady_solver=example_solver,
     scalar_type="lift",

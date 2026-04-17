@@ -11,6 +11,9 @@ This package contains the following modules:
 
     test_output.py: This module is a testing case for the output module.
 
+    test_serialization_output.py: This module tests that output functions accept
+    deserialized solver objects.
+
     test_steady_convergence.py: This module contains testing cases for the steady
     convergence function.
 
@@ -46,6 +49,7 @@ This package contains the following modules:
 
 import tests.integration.fixtures
 import tests.integration.test_output
+import tests.integration.test_serialization_output
 import tests.integration.test_steady_convergence
 import tests.integration.test_steady_horseshoe_vortex_lattice_method
 import tests.integration.test_steady_ring_vortex_lattice_method

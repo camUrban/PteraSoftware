@@ -188,7 +188,7 @@ class AirplaneMovement:
         """Creates a deep copy of this AirplaneMovement.
 
         All attributes are copied. The base Airplane and WingMovements are deep copied
-        to ensure independence. Numpy arrays are copied and set to read only to preserve
+        to ensure independence. NumPy arrays are copied and set to read only to preserve
         immutability. Cache variables are reset to None.
 
         :param memo: A dict used by the copy module to track already copied objects and

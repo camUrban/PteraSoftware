@@ -1,5 +1,3 @@
-from email.mime import base
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 

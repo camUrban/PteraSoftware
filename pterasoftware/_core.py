@@ -5,11 +5,15 @@ from __future__ import annotations
 import copy
 import math
 from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from . import _oscillation, _parameter_validation, _transformations, geometry
 from . import operating_point as operating_point_mod
+
+if TYPE_CHECKING:
+    from . import problems as problems_mod
 
 
 def lcm(a: float, b: float) -> float:
@@ -2361,3 +2365,23 @@ class CoreUnsteadyProblem:
     @property
     def max_wake_rows(self) -> int | None:
         return self._max_wake_rows
+
+    @property
+    def steady_problems(self) -> tuple[problems_mod.SteadyProblem, ...]:
+        """The SteadyProblems for each time step.
+
+        Subclasses must override.
+        """
+        raise NotImplementedError(
+            "Subclasses of CoreUnsteadyProblem must implement steady_problems."
+        )
+
+    @property
+    def movement(self) -> CoreMovement:
+        """The movement that defines the motion parameters.
+
+        Subclasses must override.
+        """
+        raise NotImplementedError(
+            "Subclasses of CoreUnsteadyProblem must implement movement."
+        )

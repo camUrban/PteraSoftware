@@ -2129,7 +2129,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         num_steps_to_average = self.num_steps - self._first_averaging_step
 
         # Determine if this SteadyProblem's geometry is static or variable.
-        this_movement: movements.movement.Movement = self.unsteady_problem.movement
+        this_movement = self.unsteady_problem.movement
         static = this_movement.static
 
         # Initialize ndarrays to hold each Airplane's loads and load coefficients at

@@ -23,12 +23,12 @@ B_VALUES: list[float] = []
 DENSITY_VALUES: list[float] = [0.012, 0.12, 0.3]
 
 
-def run_single_step(
+def run_aeroelastic(
     spring_constant: float = DEFAULT_K,
     damping_constant: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
 ) -> tuple[list, object]:
-    """Run the coupled aeroelastic solver and return the net deformation data.
+    """Run the aeroelastic solver and return the net deformation data.
 
     :param spring_constant: The torsional spring stiffness value.
     :param damping_constant: The damping constant value.
@@ -352,7 +352,7 @@ results = {}
 flap_angle = None
 for val in sweep_values:
     print(f"Running with {sweep_symbol}={val}...")
-    net_data, problem = run_single_step(**{sweep_kwarg: val})
+    net_data, problem = run_aeroelastic(**{sweep_kwarg: val})
     # Extract y-component (torsional angle) for Curve 16 across all time steps
     curve_16 = np.array(net_data)[:, CURVE_INDEX, 1].tolist()
     results[val] = curve_16

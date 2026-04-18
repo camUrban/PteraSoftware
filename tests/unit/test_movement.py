@@ -326,314 +326,6 @@ class TestMovement(unittest.TestCase):
                         num_steps=invalid_value,
                     )
 
-    def test_static_property_for_static_movement(self):
-        """Test that static property returns True for static Movement."""
-        movement = self.static_movement
-        self.assertTrue(movement.static)
-
-    def test_static_property_for_non_static_movement(self):
-        """Test that static property returns False for non static Movement."""
-        movement = self.basic_movement
-        self.assertFalse(movement.static)
-
-    def test_max_period_for_static_movement(self):
-        """Test that max_period returns 0.0 for static Movement."""
-        movement = self.static_movement
-        self.assertEqual(movement.max_period, 0.0)
-
-    def test_max_period_for_non_static_movement(self):
-        """Test that max_period returns correct value for non static Movement."""
-        movement = self.basic_movement
-        # The basic_movement has period of 2.0 for all motion.
-        self.assertEqual(movement.max_period, 2.0)
-
-    def test_lcm_period_for_static_movement(self):
-        """Test that lcm_period returns 0.0 for static Movement."""
-        movement = self.static_movement
-        self.assertEqual(movement.lcm_period, 0.0)
-
-    def test_lcm_period_for_single_period_movement(self):
-        """Test that lcm_period returns correct value when all periods are the same."""
-        movement = self.basic_movement
-        # The basic_movement has period of 2.0 for all motion.
-        # LCM of identical periods should equal that period.
-        self.assertEqual(movement.lcm_period, 2.0)
-
-    def test_lcm_period_with_multiple_wings_same_airplane(self):
-        """Test that lcm_period collects all periods, not just max from each
-        AirplaneMovement.
-
-        This test creates a single Airplane with two Wings having different periods
-        (3.0 s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
-        max_period from the AirplaneMovement, lcm_period would incorrectly return 4.0 s
-        instead of 12.0 s.
-        """
-        # Create two Wings for the same Airplane.
-        base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
-        base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
-
-        base_airplane = ps.geometry.airplane.Airplane(
-            wings=[base_wing_1, base_wing_2],
-            name="Test Airplane",
-            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
-
-        # Wing_1: tip WingCrossSectionMovement has period 3.0 s.
-        wcs_movements_wing_1 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_1.wing_cross_sections[0],
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_1.wing_cross_sections[1],
-                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-        ]
-
-        wing_movement_1 = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing_1,
-            wing_cross_section_movements=wcs_movements_wing_1,
-        )
-
-        # Wing_2: tip WingCrossSectionMovement has period 4.0 s.
-        wcs_movements_wing_2 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_2.wing_cross_sections[0],
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_2.wing_cross_sections[1],
-                periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-        ]
-
-        wing_movement_2 = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing_2,
-            wing_cross_section_movements=wcs_movements_wing_2,
-        )
-
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=[wing_movement_1, wing_movement_2],
-        )
-
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
-        # property is calculated from the Movement parameters (periods), not from the
-        # generated Airplanes, so we only need to generate one Airplane to test the
-        # period calculation logic.
-        movement = ps.movements.movement.Movement(
-            airplane_movements=[airplane_movement],
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The max_period should be 4.0 (the max of 3.0 and 4.0).
-        self.assertEqual(movement.max_period, 4.0)
-
-        # The lcm_period should be LCM(3.0, 4.0) = 12.0, Not 4.0. This test will Fail if
-        # lcm_period only uses max_period from each AirplaneMovement instead of
-        # collecting all individual periods.
-        self.assertEqual(movement.lcm_period, 12.0)
-
-    def test_lcm_period_with_multiple_cross_sections_same_wing(self):
-        """Test that lcm_period collects all periods from WingCrossSectionMovements.
-
-        This test creates a single Wing with three WingCrossSections having different
-        periods (root static, middle 3.0 s, tip 4.0 s). The correct LCM is 12.0 s. If
-        the implementation only uses max_period from each WingMovement, lcm_period
-        would incorrectly return 4.0 s instead of 12.0 s.
-        """
-        # Create a Wing with three WingCrossSections.
-        test_airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
-
-        root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=test_airfoil,
-            num_spanwise_panels=4,
-            chord=2.0,
-            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
-
-        middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=test_airfoil,
-            num_spanwise_panels=4,
-            chord=1.5,
-            Lp_Wcsp_Lpp=(0.0, 1.5, 0.0),
-            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
-
-        tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=test_airfoil,
-            num_spanwise_panels=None,
-            chord=1.0,
-            Lp_Wcsp_Lpp=(0.0, 1.5, 0.0),
-            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        )
-
-        base_wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
-            name="Test Wing",
-        )
-
-        base_airplane = ps.geometry.airplane.Airplane(
-            wings=[base_wing],
-            name="Test Airplane",
-            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
-
-        # Root WingCrossSectionMovement must be static.
-        # Middle has period 3.0 s, tip has period 4.0 s.
-        wcs_movements = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing.wing_cross_sections[0],
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing.wing_cross_sections[1],
-                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing.wing_cross_sections[2],
-                periodLp_Wcsp_Lpp=(4.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-        ]
-
-        wing_movement = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing,
-            wing_cross_section_movements=wcs_movements,
-        )
-
-        airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=[wing_movement],
-        )
-
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
-        # property is calculated from the Movement parameters (periods), not from the
-        # generated Airplanes, so we only need to generate one Airplane to test the
-        # period calculation logic.
-        movement = ps.movements.movement.Movement(
-            airplane_movements=[airplane_movement],
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The max_period should be 4.0 (the max of 3.0 and 4.0).
-        self.assertEqual(movement.max_period, 4.0)
-
-        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail if
-        # lcm_period only uses max_period from each WingMovement instead of collecting
-        # all individual periods from WingCrossSectionMovements.
-        self.assertEqual(movement.lcm_period, 12.0)
-
-    def test_lcm_period_with_multiple_airplanes(self):
-        """Test that lcm_period calculates LCM correctly with multiple periods."""
-        # Create AirplaneMovements with different periods
-
-        base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
-        base_airplane_1 = ps.geometry.airplane.Airplane(
-            wings=[base_wing_1],
-            name="Test Airplane 1",
-            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
-
-        # Make WingCrossSectionMovements for the first Airplane's Wing's root and
-        # tip WingCrossSections. The root WingCrossSectionMovement must be static.
-        # The tip WingCrossSectionMovement will have a period of 2.0 s.
-        wcs_movements_1 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_1.wing_cross_sections[0],
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_1.wing_cross_sections[1],
-                periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-        ]
-
-        wing_movement_1 = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing_1,
-            wing_cross_section_movements=wcs_movements_1,
-        )
-
-        airplane_movement_1 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane_1,
-            wing_movements=[wing_movement_1],
-        )
-
-        base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
-        base_airplane_2 = ps.geometry.airplane.Airplane(
-            wings=[base_wing_2],
-            name="Test Airplane 2",
-            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
-        )
-
-        # Make WingCrossSectionMovements for the second Airplane's Wing's root and
-        # tip WingCrossSections. The root WingCrossSectionMovement must be static.
-        # The tip WingCrossSectionMovement will have a period of 3.0 s.
-        wcs_movements_2 = [
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_2.wing_cross_sections[0],
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ),
-            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=base_wing_2.wing_cross_sections[1],
-                periodLp_Wcsp_Lpp=(3.0, 0.0, 0.0),
-                ampLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
-            ),
-        ]
-
-        wing_movement_2 = ps.movements.wing_movement.WingMovement(
-            base_wing=base_wing_2,
-            wing_cross_section_movements=wcs_movements_2,
-        )
-
-        airplane_movement_2 = ps.movements.airplane_movement.AirplaneMovement(
-            base_airplane=base_airplane_2,
-            wing_movements=[wing_movement_2],
-        )
-
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        # Use num_steps=1 instead of num_cycles=1 to speed up this test. The lcm_period
-        # property is calculated from the Movement parameters (periods), not from the
-        # generated Airplanes, so we only need to generate one Airplane to test the
-        # period calculation logic.
-        movement = ps.movements.movement.Movement(
-            airplane_movements=[airplane_movement_1, airplane_movement_2],
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The LCM of 2.0 and 3.0 should be 6.0.
-        self.assertEqual(movement.lcm_period, 6.0)
-
-        # The max_period should still be 3.0.
-        self.assertEqual(movement.max_period, 3.0)
-
     def test_delta_time_automatic_calculation(self):
         """Test that delta_time is automatically calculated when not provided."""
         airplane_movements = [
@@ -707,14 +399,6 @@ class TestMovement(unittest.TestCase):
         self.assertEqual(len(movement.airplanes), 2)
         for airplane_list in movement.airplanes:
             self.assertEqual(len(airplane_list), movement.num_steps)
-
-    def test_max_period_with_multiple_airplanes(self):
-        """Test that max_period returns maximum across all AirplaneMovements."""
-        movement = self.movement_with_multiple_airplanes
-
-        # The movement has one static (period 0.0) and one with period 2.0.
-        # Should return 2.0.
-        self.assertEqual(movement.max_period, 2.0)
 
     def test_delta_time_averaging_with_multiple_airplanes(self):
         """Test that delta_time is averaged across multiple Airplanes when auto-calculated."""
@@ -1664,8 +1348,8 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
 
     def test_returns_positive_float(self):
         """Test that _optimize_delta_time_non_static returns a positive float."""
+        from pterasoftware._core import lcm_multiple
         from pterasoftware.movements.movement import (
-            _lcm_multiple,
             _optimize_delta_time_non_static,
         )
 
@@ -1680,7 +1364,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         all_periods = []
         for airplane_movement in airplane_movements:
             all_periods.extend(airplane_movement.all_periods)
-        lcm_period = _lcm_multiple(all_periods)
+        lcm_period = lcm_multiple(all_periods)
 
         # Use a larger initial_delta_time to reduce the brute force search range.
         initial_delta_time = 0.1
@@ -1697,8 +1381,8 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
 
     def test_result_divides_lcm_period_evenly(self):
         """Test that _optimize_delta_time_non_static result divides LCM period evenly."""
+        from pterasoftware._core import lcm_multiple
         from pterasoftware.movements.movement import (
-            _lcm_multiple,
             _optimize_delta_time_non_static,
         )
 
@@ -1713,7 +1397,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         all_periods = []
         for airplane_movement in airplane_movements:
             all_periods.extend(airplane_movement.all_periods)
-        lcm_period = _lcm_multiple(all_periods)
+        lcm_period = lcm_multiple(all_periods)
 
         initial_delta_time = 0.1
 
@@ -1932,29 +1616,6 @@ class TestMovementImmutability(unittest.TestCase):
         cls.static_movement = movement_fixtures.make_static_movement_fixture()
         cls.basic_movement = movement_fixtures.make_basic_movement_fixture()
 
-    def test_immutable_airplane_movements_property(self):
-        """Test that airplane_movements property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_movement.airplane_movements = []
-
-    def test_immutable_airplane_movements_tuple(self):
-        """Test that airplane_movements returns a tuple (immutable sequence)."""
-        airplane_movements = self.basic_movement.airplane_movements
-        self.assertIsInstance(airplane_movements, tuple)
-
-    def test_immutable_operating_point_movement_property(self):
-        """Test that operating_point_movement property is read only."""
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        with self.assertRaises(AttributeError):
-            self.basic_movement.operating_point_movement = operating_point_movement
-
-    def test_immutable_delta_time_property(self):
-        """Test that delta_time property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_movement.delta_time = 0.05
-
     def test_immutable_num_cycles_property(self):
         """Test that num_cycles property is read only."""
         with self.assertRaises(AttributeError):
@@ -1964,11 +1625,6 @@ class TestMovementImmutability(unittest.TestCase):
         """Test that num_chords property is read only."""
         with self.assertRaises(AttributeError):
             self.static_movement.num_chords = 10
-
-    def test_immutable_num_steps_property(self):
-        """Test that num_steps property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_movement.num_steps = 100
 
     def test_immutable_airplanes_property(self):
         """Test that airplanes property is read only."""
@@ -1991,105 +1647,6 @@ class TestMovementImmutability(unittest.TestCase):
         """Test that operating_points returns a tuple (immutable sequence)."""
         operating_points = self.basic_movement.operating_points
         self.assertIsInstance(operating_points, tuple)
-
-
-class TestMovementCaching(unittest.TestCase):
-    """Tests for Movement caching behavior."""
-
-    def test_lcm_period_cache_is_populated_after_access(self):
-        """Test that _lcm_period cache is populated after first access."""
-        # Create a fresh Movement to test cache population.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_steps=1,
-        )
-
-        # Cache should be None initially.
-        self.assertIsNone(movement._lcm_period)
-
-        # Access the property.
-        _ = movement.lcm_period
-
-        # Cache should now be populated.
-        self.assertIsNotNone(movement._lcm_period)
-
-    def test_max_period_cache_is_populated_after_init(self):
-        """Test that _max_period cache is populated during __init__ because the static
-        property is accessed during __init__ to determine num_steps calculation, and
-        static depends on max_period.
-        """
-        # Create a fresh Movement.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_steps=1,
-        )
-
-        # max_period is accessed during __init__ via the static property
-        # (which checks self.max_period == 0), so the cache should already be populated.
-        self.assertIsNotNone(movement._max_period)
-
-    def test_static_cache_is_populated_after_init(self):
-        """Test that _static cache is populated during __init__ because it is accessed
-        to determine num_steps calculation.
-        """
-        # Create a fresh Movement.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_steps=1,
-        )
-
-        # static is accessed during __init__ to determine num_steps calculation,
-        # so the cache should already be populated.
-        self.assertIsNotNone(movement._static)
-
-    def test_min_period_cache_is_populated_after_access(self):
-        """Test that _min_period cache is populated after first access."""
-        # Create a fresh Movement to test cache population.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            num_steps=1,
-        )
-
-        # Cache should be None initially.
-        self.assertIsNone(movement._min_period)
-
-        # Access the property.
-        _ = movement.min_period
-
-        # Cache should now be populated.
-        self.assertIsNotNone(movement._min_period)
 
 
 class TestMovementDeepcopy(unittest.TestCase):
@@ -2201,117 +1758,6 @@ class TestMovementDeepcopy(unittest.TestCase):
         self.assertIsNot(original, copied)
         self.assertTrue(copied.static)
         self.assertEqual(copied.max_period, 0.0)
-
-
-class TestLcmFunctions(unittest.TestCase):
-    """Tests for _lcm and _lcm_multiple module level functions."""
-
-    def test_lcm_of_two_positive_numbers(self):
-        """Test _lcm returns correct LCM for two positive numbers."""
-        result = ps.movements.movement._lcm(2.0, 3.0)
-        self.assertEqual(result, 6.0)
-
-    def test_lcm_of_same_numbers(self):
-        """Test _lcm returns the number when both inputs are the same."""
-        result = ps.movements.movement._lcm(4.0, 4.0)
-        self.assertEqual(result, 4.0)
-
-    def test_lcm_with_first_zero(self):
-        """Test _lcm returns 0.0 when first input is zero."""
-        result = ps.movements.movement._lcm(0.0, 5.0)
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_with_second_zero(self):
-        """Test _lcm returns 0.0 when second input is zero."""
-        result = ps.movements.movement._lcm(5.0, 0.0)
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_with_both_zero(self):
-        """Test _lcm returns 0.0 when both inputs are zero."""
-        result = ps.movements.movement._lcm(0.0, 0.0)
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_of_one_and_any_number(self):
-        """Test _lcm of 1.0 and any number returns that number."""
-        result = ps.movements.movement._lcm(1.0, 7.0)
-        self.assertEqual(result, 7.0)
-
-        result = ps.movements.movement._lcm(7.0, 1.0)
-        self.assertEqual(result, 7.0)
-
-    def test_lcm_of_multiples(self):
-        """Test _lcm of a number and its multiple returns the larger number."""
-        result = ps.movements.movement._lcm(3.0, 9.0)
-        self.assertEqual(result, 9.0)
-
-        result = ps.movements.movement._lcm(9.0, 3.0)
-        self.assertEqual(result, 9.0)
-
-    def test_lcm_multiple_empty_list(self):
-        """Test _lcm_multiple returns 0.0 for empty list."""
-        result = ps.movements.movement._lcm_multiple([])
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_multiple_all_zeros(self):
-        """Test _lcm_multiple returns 0.0 when all periods are zero."""
-        result = ps.movements.movement._lcm_multiple([0.0, 0.0, 0.0])
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_multiple_single_nonzero(self):
-        """Test _lcm_multiple returns the value for a single non zero period."""
-        result = ps.movements.movement._lcm_multiple([5.0])
-        self.assertEqual(result, 5.0)
-
-    def test_lcm_multiple_single_zero(self):
-        """Test _lcm_multiple returns 0.0 for a single zero period."""
-        result = ps.movements.movement._lcm_multiple([0.0])
-        self.assertEqual(result, 0.0)
-
-    def test_lcm_multiple_mixed_with_zeros(self):
-        """Test _lcm_multiple correctly ignores zeros in the list."""
-        result = ps.movements.movement._lcm_multiple([0.0, 2.0, 0.0, 3.0, 0.0])
-        self.assertEqual(result, 6.0)
-
-    def test_lcm_multiple_three_periods(self):
-        """Test _lcm_multiple returns correct LCM for three periods."""
-        result = ps.movements.movement._lcm_multiple([2.0, 3.0, 4.0])
-        self.assertEqual(result, 12.0)
-
-    def test_lcm_multiple_many_same_periods(self):
-        """Test _lcm_multiple returns the period when all are the same."""
-        result = ps.movements.movement._lcm_multiple([5.0, 5.0, 5.0, 5.0])
-        self.assertEqual(result, 5.0)
-
-    def test_lcm_multiple_coprime_periods(self):
-        """Test _lcm_multiple of coprime numbers returns their product."""
-        # 2, 3, and 5 are coprime, so LCM = 2 * 3 * 5 = 30.
-        result = ps.movements.movement._lcm_multiple([2.0, 3.0, 5.0])
-        self.assertEqual(result, 30.0)
-
-    def test_lcm_non_integer_periods(self):
-        """Test _lcm returns correct LCM for non integer periods."""
-        # LCM(1.5, 2.5) = 7.5 (both divide 7.5 evenly: 7.5/1.5=5, 7.5/2.5=3).
-        result = ps.movements.movement._lcm(1.5, 2.5)
-        self.assertAlmostEqual(result, 7.5, places=6)
-
-    def test_lcm_multiple_non_integer_periods(self):
-        """Test _lcm_multiple returns correct LCM for non integer periods."""
-        # LCM(1.5, 2.0, 2.5) = 30.0.
-        # 30.0/1.5=20, 30.0/2.0=15, 30.0/2.5=12.
-        result = ps.movements.movement._lcm_multiple([1.5, 2.0, 2.5])
-        self.assertAlmostEqual(result, 30.0, places=6)
-
-    def test_lcm_small_periods(self):
-        """Test _lcm handles small periods correctly without precision issues."""
-        # LCM(0.001, 0.002) = 0.002.
-        result = ps.movements.movement._lcm(0.001, 0.002)
-        self.assertAlmostEqual(result, 0.002, places=9)
-
-    def test_lcm_multiple_small_periods(self):
-        """Test _lcm_multiple handles small periods correctly."""
-        # LCM(0.01, 0.02, 0.03) = 0.06.
-        result = ps.movements.movement._lcm_multiple([0.01, 0.02, 0.03])
-        self.assertAlmostEqual(result, 0.06, places=9)
 
 
 class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
@@ -2839,129 +2285,6 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
             upper_bound_warning_found,
             "Expected warning about upper bound not found.",
         )
-
-
-class TestMovementWithOperatingPointMovementPeriod(unittest.TestCase):
-    """Tests for Movement when OperatingPointMovement has non zero period."""
-
-    def test_lcm_period_includes_operating_point_movement_period(self):
-        """Test that lcm_period includes the OperatingPointMovement period."""
-        # Create a static AirplaneMovement.
-        airplane_movements = [
-            airplane_movement_fixtures.make_static_airplane_movement_fixture()
-        ]
-
-        # Create an OperatingPointMovement with a non zero period.
-        base_operating_point = (
-            operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point,
-                ampVCg__E=1.0,
-                periodVCg__E=3.0,
-            )
-        )
-
-        # Create the Movement with explicit num_steps to avoid auto calculation.
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The lcm_period should be 3.0 (from OperatingPointMovement).
-        # Since the AirplaneMovement is static (period 0.0), the only period is 3.0.
-        self.assertEqual(movement.lcm_period, 3.0)
-
-    def test_lcm_period_combines_airplane_and_operating_point_periods(self):
-        """Test that lcm_period combines periods from AirplaneMovement and
-        OperatingPointMovement."""
-        # Create a non static AirplaneMovement with period 2.0.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-
-        # Create an OperatingPointMovement with period 3.0.
-        base_operating_point = (
-            operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point,
-                ampVCg__E=1.0,
-                periodVCg__E=3.0,
-            )
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The lcm_period should be LCM(2.0, 3.0) = 6.0.
-        self.assertEqual(movement.lcm_period, 6.0)
-
-    def test_min_period_includes_operating_point_movement_period(self):
-        """Test that min_period includes the OperatingPointMovement period."""
-        # Create a non static AirplaneMovement with period 2.0.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-
-        # Create an OperatingPointMovement with a shorter period (1.5).
-        base_operating_point = (
-            operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point,
-                ampVCg__E=1.0,
-                periodVCg__E=1.5,
-            )
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The min_period should be 1.5 (from OperatingPointMovement, smaller than 2.0).
-        self.assertEqual(movement.min_period, 1.5)
-
-    def test_max_period_includes_operating_point_movement_period(self):
-        """Test that max_period includes the OperatingPointMovement period."""
-        # Create a non static AirplaneMovement with period 2.0.
-        airplane_movements = [
-            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
-        ]
-
-        # Create an OperatingPointMovement with a longer period (5.0).
-        base_operating_point = (
-            operating_point_fixtures.make_basic_operating_point_fixture()
-        )
-        operating_point_movement = (
-            ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=base_operating_point,
-                ampVCg__E=1.0,
-                periodVCg__E=5.0,
-            )
-        )
-
-        movement = ps.movements.movement.Movement(
-            airplane_movements=airplane_movements,
-            operating_point_movement=operating_point_movement,
-            delta_time=0.1,
-            num_steps=1,
-        )
-
-        # The max_period should be 5.0 (from OperatingPointMovement, larger than 2.0).
-        self.assertEqual(movement.max_period, 5.0)
 
 
 if __name__ == "__main__":

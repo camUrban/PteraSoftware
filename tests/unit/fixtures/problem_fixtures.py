@@ -87,42 +87,6 @@ def make_only_final_results_unsteady_problem_fixture():
     return only_final_results_unsteady_problem_fixture
 
 
-def make_static_unsteady_problem_fixture():
-    """This method makes a fixture that is an UnsteadyProblem with static Movement.
-
-    :return static_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem with static Movement.
-    """
-    # Create a static Movement.
-    static_movement = movement_fixtures.make_static_movement_fixture()
-
-    # Create the UnsteadyProblem with static Movement.
-    static_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
-        movement=static_movement,
-        only_final_results=False,
-    )
-
-    return static_unsteady_problem_fixture
-
-
-def make_cyclic_unsteady_problem_fixture():
-    """This method makes a fixture that is an UnsteadyProblem with cyclic Movement.
-
-    :return cyclic_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem with cyclic Movement.
-    """
-    # Create a cyclic Movement.
-    cyclic_movement = movement_fixtures.make_cyclic_movement_fixture()
-
-    # Create the UnsteadyProblem with cyclic Movement.
-    cyclic_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
-        movement=cyclic_movement,
-        only_final_results=False,
-    )
-
-    return cyclic_unsteady_problem_fixture
-
-
 def make_multi_airplane_unsteady_problem_fixture():
     """This method makes a fixture that is an UnsteadyProblem with multiple Airplanes.
 

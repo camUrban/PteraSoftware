@@ -76,15 +76,26 @@ Requires Python 3.11, but active development is done in 3.13
         - `wing.py`: Wing class with symmetry processing
         - `wing_cross_section.py`: WingCrossSection class with validation
     - `movements/`: Package with movement classes (definitions for time-dependent motion)
-        - `_functions.py`: Movement utility functions
-        - `airplane_movement.py`: Airplane motion definitions
-        - `movement.py`: Core Movement class
-        - `operating_point_movement.py`: Operating condition changes
-        - `wing_cross_section_movement.py`: Wing cross section motion
-        - `wing_movement.py`: Wing flapping motion
+        - `aeroelastic_airplane_movement.py`: AeroelasticAirplaneMovement skeleton
+        - `aeroelastic_movement.py`: AeroelasticMovement skeleton
+        - `aeroelastic_operating_point_movement.py`: AeroelasticOperatingPointMovement skeleton
+        - `aeroelastic_wing_cross_section_movement.py`: AeroelasticWingCrossSectionMovement skeleton
+        - `aeroelastic_wing_movement.py`: AeroelasticWingMovement skeleton
+        - `airplane_movement.py`: AirplaneMovement class
+        - `free_flight_airplane_movement.py`: FreeFlightAirplaneMovement skeleton
+        - `free_flight_movement.py`: FreeFlightMovement skeleton
+        - `free_flight_operating_point_movement.py`: FreeFlightOperatingPointMovement skeleton
+        - `free_flight_wing_cross_section_movement.py`: FreeFlightWingCrossSectionMovement skeleton
+        - `free_flight_wing_movement.py`: FreeFlightWingMovement skeleton
+        - `movement.py`: Movement class
+        - `operating_point_movement.py`: OperatingPointMovement class
+        - `wing_cross_section_movement.py`: WingCrossSectionMovement class
+        - `wing_movement.py`: WingMovement class
     - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_core.py`: Core classes for the movement and problem hierarchies
     - `_functions.py`: Shared utility functions
     - `_logging.py`: Contains function for setting up logging
+    - `_oscillation.py`: Oscillation functions for movement classes
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
     - `_serialization.py`: JSON serialization and deserialization (save/load)
@@ -112,40 +123,62 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_serialization_output.py`
         - `test_steady_convergence.py`
         - `test_steady_horseshoe_vortex_lattice_method.py`
+        - `test_steady_horseshoe_vortex_lattice_method_surface_effect.py`
         - `test_steady_ring_vortex_lattice_method.py`
+        - `test_steady_ring_vortex_lattice_method_surface_effect.py`
         - `test_steady_trim.py`
         - `test_unsteady_convergence.py`
         - `test_unsteady_ring_vortex_lattice_method_multiple_wing_static_geometry.py`
         - `test_unsteady_ring_vortex_lattice_method_multiple_wing_variable_geometry.py`
         - `test_unsteady_ring_vortex_lattice_method_static_geometry.py`
+        - `test_unsteady_ring_vortex_lattice_method_surface_effect.py`
         - `test_unsteady_ring_vortex_lattice_method_variable_geometry.py`
         - `test_unsteady_ring_vortex_lattice_method_wake_truncation.py`
     - `unit/`: Unit tests for individual classes and functions
         - `fixtures/`: Fixtures for unit tests
-            - `aerodynamics_function_fixtures.py`
+            - `aerodynamics_functions_fixtures.py`
             - `airplane_movement_fixtures.py`
+            - `core_airplane_movement_fixtures.py`
+            - `core_movement_fixtures.py`
+            - `core_operating_point_movement_fixtures.py`
+            - `core_wing_cross_section_movement_fixtures.py`
+            - `core_wing_movement_fixtures.py`
             - `geometry_fixtures.py`
-            - `horseshoe_fixtures.py`
+            - `horseshoe_vortex_fixtures.py`
+            - `line_vortex_fixtures.py`
             - `movement_fixtures.py`
-            - `movement_function_fixtures.py`
             - `operating_point_fixtures.py`
             - `operating_point_movement_fixtures.py`
+            - `oscillation_fixtures.py`
+            - `panel_fixtures.py`
+            - `parameter_validation_fixtures.py`
             - `problem_fixtures.py`
             - `ring_vortex_fixtures.py`
             - `serialization_fixtures.py`
+            - `solver_fixtures.py`
             - `wing_cross_section_movement_fixtures.py`
             - `wing_movement_fixtures.py`
         - `test_aerodynamics_functions.py`
         - `test_airfoil.py`
         - `test_airplane.py`
         - `test_airplane_movement.py`
+        - `test_core.py`
+        - `test_core_airplane_movement.py`
+        - `test_core_movement.py`
+        - `test_core_operating_point_movement.py`
+        - `test_core_unsteady_problem.py`
+        - `test_core_wing_cross_section_movement.py`
+        - `test_core_wing_movement.py`
         - `test_horseshoe_vortex.py`
+        - `test_line_vortex.py`
+        - `test_logging.py`
         - `test_movement.py`
-        - `test_movement_functions.py`
         - `test_operating_point.py`
         - `test_operating_point_movement.py`
+        - `test_oscillation.py`
         - `test_package_init.py`
         - `test_panel.py`
+        - `test_parameter_validation.py`
         - `test_problems.py`
         - `test_ring_vortex.py`
         - `test_serialization.py`

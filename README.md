@@ -120,13 +120,13 @@ If you haven't already, install Ptera Software from PyPI (see [Quick Start](#qui
 pip install pterasoftware
 ```
 
-Your IDE should automatically provide docstring hints for the available classes and functions. For more detailed documentation, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
+Your IDE should automatically provide docstring hints for the available classes and functions. For more detailed documentation, visit the [Ptera Software documentation site](https://docs.pterasoftware.com/).
 
 ### From Source
 
 If you want to browse the example scripts or dig into the source code, you will need a local copy of the repository. Follow the environment setup instructions in the [Contributing Guidelines](CONTRIBUTING.md#contributing-code) to clone the repository, create a virtual environment, and install dependencies.
 
-Once set up, the `examples/` directory contains scripts that demonstrate the full range of Ptera Software's features and solvers. These scripts are also available on the [documentation site](https://pterasoftware.readthedocs.io/en/latest/examples.html).
+Once set up, the `examples/` directory contains scripts that demonstrate the full range of Ptera Software's features and solvers. These scripts are also available on the [documentation site](https://docs.pterasoftware.com/en/latest/examples.html).
 
 ## Example Output
 
@@ -150,7 +150,7 @@ Since the release of version 1.0.0, Ptera Software is now validated against expe
 
 ## Documentation
 
-For detailed API documentation and guides, visit the [Ptera Software documentation site](https://pterasoftware.readthedocs.io/).
+For detailed API documentation and guides, visit the [Ptera Software documentation site](https://docs.pterasoftware.com/).
 
 ## How to Contribute
 

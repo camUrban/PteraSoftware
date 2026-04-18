@@ -102,48 +102,18 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         self.first_results_step = self.coupled_unsteady_problem.first_results_step
         self._first_averaging_step = self.coupled_unsteady_problem.first_averaging_step
 
-        first_steady_problem: problems.SteadyProblem = self.get_steady_problem_at(0)
+        first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
 
         # Store computed steady problems for each time step to be assigned to the
         # CoupledUnsteadyProblem after solve completes. This avoids overwriting the
         # initial steady problems until data visualization/post-processing stage.
         self.steady_problems_data_storage: list[problems.SteadyProblem] = []
 
-        # Initialize SLEP (Strip Leading Edge Point) information. For each airplane and wing,
-        # we track the panel index where each new spanwise strip begins. This allows efficient
-        # computation of moments about the strip leading edge (wing root to tip).
+        # Compute the total number of panels across all airplanes.
         num_panels = 0
-        panel_count = 0
-        slep_point_indices_list: list[int] = []
         for airplane in first_steady_problem.airplanes:
             num_panels += airplane.num_panels
-            for wing in airplane.wings:
-                for wing_cross_section in wing.wing_cross_sections:
-                    # Record the first panel index for this wing cross-section (start of strip)
-                    slep_point_indices_list.append(panel_count)
-                    if wing_cross_section.num_spanwise_panels is not None:
-                        panel_count += wing_cross_section.num_spanwise_panels
-        self.slep_point_indices: np.ndarray = np.array(
-            slep_point_indices_list, dtype=int
-        )
         self.num_panels: int = num_panels
-
-        # The current time step's center bound LineVortex points for the right,
-        # front, left, and back legs (in the first Airplane's geometry axes,
-        # relative to the local strip leading edge point).
-        self.stackCblvpr_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self.stackCblvpf_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self.stackCblvpl_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self.stackCblvpb_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-
-        # The colocation panel points and the front left panel point (in the first Airplane's
-        # geometry axes, relative to the local strip leading edge point and the first
-        # Airplane's CG respectively).
-        self.stackCpp_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        # Leading edge of the panel points
-        self.stack_Flpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
-        self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self.stack_leading_edge_points: np.ndarray = np.empty(0, dtype=float)
 
     def run(
         self,
@@ -180,7 +150,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         # Cache the wings and compute spanwise panel counts from the initial geometry.
         # Unlike the parent class (which precomputes all steps), this coupled solver
         # retrieves each step's geometry dynamically via get_steady_problem_at().
-        this_problem: problems.SteadyProblem = self.get_steady_problem_at(0)
+        this_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
         these_airplanes = this_problem.airplanes
         num_wing_panels = 0
         these_wings: list[tuple[geometry.wing.Wing, ...]] = []
@@ -290,13 +260,13 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                 # and OperatingPoint, and freestream velocity (in the first
                 # Airplane's geometry axes, observed from the Earth frame).
                 self._current_step = step
-                current_problem: problems.SteadyProblem = self.get_steady_problem_at(
+                current_problem: problems.SteadyProblem = self._get_steady_problem_at(
                     self._current_step
                 )
 
                 # Initialize all the current step's bound RingVortices.
                 _logger.debug(f"Initializing step {step}'s RingVortices")
-                self._initialize_panel_vortex(current_problem, step)
+                self._initialize_panel_vortices_at(step)
                 self.current_airplanes = current_problem.airplanes
                 self.current_operating_point = current_problem.operating_point
                 self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
@@ -374,14 +344,6 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                     (self.num_panels, 3), dtype=float
                 )
 
-                self.stackCblvpr_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpf_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpl_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpb_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCpp_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.moments_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackFlpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-
                 self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
                 self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
                 self.stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
@@ -393,6 +355,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                 self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
                 self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
                 self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
+
+                # Hook for subclasses to reinitialize step-specific arrays.
+                self._reinitialize_step_arrays_hook()
 
                 # Get the pre-allocated (but still all zero) arrays of wake
                 # information that are associated with this time step.
@@ -444,10 +409,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                 # Check if the current time step is not the last step.
                 if self._current_step < self.num_steps - 1:
                     self.coupled_unsteady_problem.initialize_next_problem(self)
-                    self._initialize_panel_vortex(
-                        self.get_steady_problem_at(step + 1),
-                        step + 1,
-                    )
+                    self._initialize_panel_vortices_at(step + 1)
                     # Shed RingVortices into the wake.
                     _logger.debug("Shedding RingVortices into the wake.")
                     self._populate_next_airplanes_wake()
@@ -455,7 +417,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                 # Update the progress bar based on this time step's predicted
                 # approximate, relative computing time.
                 self.steady_problems_data_storage.append(
-                    self.get_steady_problem_at(step)
+                    self._get_steady_problem_at(step)
                 )
                 bar.update(n=float(approx_times[step + 1]))
 
@@ -492,11 +454,11 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
         # Initialize bound RingVortices for all steps on the first call.
         if step == 0:
-            self._initialize_panel_vortex(self.get_steady_problem_at(0), 0)
+            self._initialize_panel_vortices_at(0)
 
         # Set the current step and related state.
         self._current_step = step
-        current_problem: problems.SteadyProblem = self.get_steady_problem_at(step)
+        current_problem: problems.SteadyProblem = self._get_steady_problem_at(step)
         self.current_airplanes = current_problem.airplanes
         self.current_operating_point = current_problem.operating_point
         self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
@@ -506,118 +468,16 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
             self._populate_next_airplanes_wake_vortex_points()
             self._populate_next_airplanes_wake_vortices()
 
-    def _load_calculation_moment_processing_hook(
-        self,
-        rightLegForces_GP1,
-        frontLegForces_GP1,
-        leftLegForces_GP1,
-        backLegForces_GP1,
-        unsteady_forces_GP1,
-    ) -> np.ndarray:
-        """Override parent to compute moments about both center-of-gravity and SLEP.
+    def _reinitialize_step_arrays_hook(self) -> None:
+        """Hook for subclasses to reinitialize step-specific arrays.
 
-        This hook extends the parent class's moment calculation by additionally
-        computing moments about each panel's Strip Leading Edge Point (SLEP). This is
-        used for analyzing wing loading and deformation characteristics relative to the
-        wing root.
-
-        The method: 1. Calls parent's implementation to get CG-based moments 2. Updates
-        bound vortex positions relative to SLEP points 3. Recalculates all moment
-        contributions in the SLEP frame 4. Stores SLEP moments in self.moments_GP1_Slep
-
-        :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
-            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
-            on every Panel at the current time step. SLEP moments are stored separately
-            in self.moments_GP1_Slep.
-        """
-        # Find the moments (in the first Airplane's geometry axes, relative to the
-        # first Airplane's CG) on the Panels' RingVortex's right LineVortex,
-        # front LineVortex, left LineVortex, and back LineVortex.
-        moments_GP1_CgP1 = super()._load_calculation_moment_processing_hook(
-            rightLegForces_GP1,
-            frontLegForces_GP1,
-            leftLegForces_GP1,
-            backLegForces_GP1,
-            unsteady_forces_GP1,
-        )
-
-        self._update_bound_vortex_positions_relative_to_slep_points()
-
-        rightLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self.stackCblvpr_GP1_Slep, rightLegForces_GP1
-        )
-        frontLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self.stackCblvpf_GP1_Slep, frontLegForces_GP1
-        )
-        leftLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self.stackCblvpl_GP1_Slep, leftLegForces_GP1
-        )
-        backLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self.stackCblvpb_GP1_Slep, backLegForces_GP1
-        )
-
-        # The unsteady moment is calculated at the collocation point because the
-        # unsteady force acts on the bound RingVortex, whose center is at the
-        # collocation point, not at the Panel's centroid.
-
-        # Find the moments (in the first Airplane's geometry axes, relative to the
-        # first Airplane's CG) due to the unsteady component of the force on each Panel.
-        unsteady_moments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self.stackCpp_GP1_Slep, unsteady_forces_GP1
-        )
-
-        self.moments_GP1_Slep = (
-            rightLegMoments_GP1_Slep
-            + frontLegMoments_GP1_Slep
-            + leftLegMoments_GP1_Slep
-            + backLegMoments_GP1_Slep
-            + unsteady_moments_GP1_Slep
-        )
-
-        return moments_GP1_CgP1
-
-    def _update_bound_vortex_positions_relative_to_slep_points(self) -> None:
-        """Transform bound RingVortex leg center positions from CG-relative to SLEP-
-        relative.
-
-        For each panel, this method: 1. Gets the front-left panel point (leading edge)
-        from each panel 2. Maps panels to their corresponding strip's leading edge point
-        using slep_point_indices 3. Subtracts the SLEP position from all vortex leg
-        center positions 4. Subtracts the SLEP position from collocation points
-
-        This prepares positions for computing moments about the strip leading edge,
-        which is important for analyzing local wing loading and deformations.
+        Called at the beginning of each time step in run(), after the standard arrays
+        are reinitialized. The default implementation is a no-op.
 
         :return: None
         """
-        # Find the bound RingVortex leg center positions relative to the SLEP points.
-        for panel_num, panel in enumerate(self.panels):
-            self.stackFlpp_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
-        slep_points = self.stackFlpp_GP1_CgP1[self.slep_point_indices]
-        slep_map = (
-            np.searchsorted(
-                self.slep_point_indices, np.arange(self.num_panels), side="right"
-            )
-            - 1
-        )
-        self.stack_leading_edge_points = np.array([slep_points[i] for i in slep_map])
-        self.stackCblvpr_GP1_Slep = (
-            self.stackCblvpr_GP1_CgP1 - self.stack_leading_edge_points
-        )
-        self.stackCblvpf_GP1_Slep = (
-            self.stackCblvpf_GP1_CgP1 - self.stack_leading_edge_points
-        )
-        self.stackCblvpl_GP1_Slep = (
-            self.stackCblvpl_GP1_CgP1 - self.stack_leading_edge_points
-        )
-        self.stackCblvpb_GP1_Slep = (
-            self.stackCblvpb_GP1_CgP1 - self.stack_leading_edge_points
-        )
 
-        # Find the collocation point positions relative to the SLEP points.
-        self.stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - self.stack_leading_edge_points
-
-    def get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
+    def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
         """Get the SteadyProblem at a given time step via the CoupledUnsteadyProblem.
 
         This is a KEY ABSTRACTION POINT that enables inheritance. The parent

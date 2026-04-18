@@ -12,11 +12,17 @@ None
 
 **Contains the following modules:**
 
+aeroelastic_unsteady_ring_vortex_lattice_method.py: Contains the
+AeroelasticUnsteadyRingVortexLatticeMethodSolver class.
+
 convergence.py: Contains functions for analyzing the convergence of SteadyProblems and
 UnsteadyProblems.
 
 coupled_unsteady_ring_vortex_lattice_method.py: Contains the
 CoupledUnsteadyRingVortexLatticeMethodSolver class.
+
+free_flight_unsteady_ring_vortex_lattice_method.py: Contains the
+FreeFlightUnsteadyRingVortexLatticeMethodSolver class.
 
 operating_point.py: Contains the OperatingPoint class.
 
@@ -54,6 +60,7 @@ import pterasoftware.problems
 
 # Lazy imports configuration: modules loaded on first access.
 _LAZY_MODULES = {
+    "aeroelastic_unsteady_ring_vortex_lattice_method": "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method",
     "convergence": "pterasoftware.convergence",
     "output": "pterasoftware.output",
     "steady_horseshoe_vortex_lattice_method": "pterasoftware.steady_horseshoe_vortex_lattice_method",
@@ -61,6 +68,7 @@ _LAZY_MODULES = {
     "trim": "pterasoftware.trim",
     "unsteady_ring_vortex_lattice_method": "pterasoftware.unsteady_ring_vortex_lattice_method",
     "coupled_unsteady_ring_vortex_lattice_method": "pterasoftware.coupled_unsteady_ring_vortex_lattice_method",
+    "free_flight_unsteady_ring_vortex_lattice_method": "pterasoftware.free_flight_unsteady_ring_vortex_lattice_method",
 }
 
 # Lazy callable imports: functions that need special handling.

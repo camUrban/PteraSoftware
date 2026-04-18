@@ -21,12 +21,6 @@ def make_empty_str_fixture():
 
 
 # Valid bool fixtures.
-def make_valid_bool_fixture():
-    """Makes a fixture that is a valid bool for boolLike_return_bool.
-
-    :return: A valid bool.
-    """
-    return True
 
 
 def make_valid_numpy_bool_fixture():
@@ -44,22 +38,6 @@ def make_valid_int_fixture():
     :return: A valid int.
     """
     return 5
-
-
-def make_valid_int_at_lower_bound_inclusive_fixture():
-    """Makes a fixture that is a valid int at the lower bound (inclusive).
-
-    :return: A valid int at lower bound.
-    """
-    return 0
-
-
-def make_valid_int_at_upper_bound_inclusive_fixture():
-    """Makes a fixture that is a valid int at the upper bound (inclusive).
-
-    :return: A valid int at upper bound.
-    """
-    return 10
 
 
 # Valid number in range fixtures.
@@ -391,14 +369,6 @@ def make_invalid_spacing_type_fixture():
     :return: A tuple with an invalid type (int).
     """
     return "sine", 123, "uniform"
-
-
-def make_scalar_fixture():
-    """Makes a fixture that is a scalar for testing array-like validation errors.
-
-    :return: A scalar value.
-    """
-    return 5.0
 
 
 def make_invalid_array_with_nan_fixture():

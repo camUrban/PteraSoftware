@@ -23,7 +23,7 @@ To run a specific test module in `tests\unit\`:
 For example:
 
 ```
-".venv/Scripts/python.exe" -m unittest tests.unit.test_wing_cross_section_movement -v
+".venv/Scripts/python.exe" -m unittest tests.unit.test_core_wing_cross_section_movement -v
 ```
 
 ## Running MyPy Type Checking

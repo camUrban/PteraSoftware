@@ -6,7 +6,7 @@ We are excited that you are interested in contributing to **Ptera Software**! Th
 
 ## Before Contributing
 
-Please review the following documents before making contributions. These documents are also available on the [Ptera Software documentation website](https://pterasoftware.readthedocs.io/).
+Please review the following documents before making contributions. These documents are also available on the [Ptera Software documentation website](https://docs.pterasoftware.com/).
 
 1. [README](README.md)
 2. [Code of Conduct](CODE_OF_CONDUCT.md)

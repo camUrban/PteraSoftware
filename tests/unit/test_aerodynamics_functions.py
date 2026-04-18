@@ -78,7 +78,6 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         # Create age and viscosity fixtures.
         self.ages = aerodynamics_functions_fixtures.make_ages_fixture()
-        self.zero_ages = aerodynamics_functions_fixtures.make_zero_ages_fixture()
         self.kinematic_viscosity = (
             aerodynamics_functions_fixtures.make_kinematic_viscosity_fixture()
         )

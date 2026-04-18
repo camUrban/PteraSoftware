@@ -27,7 +27,6 @@ class TestAirplane(unittest.TestCase):
 
         # Create additional test fixtures
         self.test_wing_type_1 = geometry_fixtures.make_type_1_wing_fixture()
-        self.test_wing_type_4 = geometry_fixtures.make_type_4_wing_fixture()
 
     def test_wings_parameter_validation(self):
         """Test that wings parameter validation works correctly."""
@@ -573,7 +572,6 @@ class TestAirplaneImmutability(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for immutability tests."""
         self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
-        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
 
     def test_immutable_wings_property(self):
         """Test that wings property is read only."""
@@ -883,7 +881,6 @@ class TestAirplaneGetPlottableData(unittest.TestCase):
         """Set up test fixtures for get_plottable_data tests."""
         self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
         self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
-        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
 
     def test_get_plottable_data_returns_list_when_show_is_false(self):
         """Test that get_plottable_data returns a list when show is False."""
@@ -980,7 +977,6 @@ class TestAirplaneDraw(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for draw tests."""
         self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
-        self.first_airplane = geometry_fixtures.make_first_airplane_fixture()
 
     def test_draw_runs_without_error_in_testing_mode(self):
         """Test that draw runs without error in testing mode."""

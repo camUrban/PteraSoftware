@@ -383,9 +383,9 @@ def threeD_number_vectorLike_return_float_unit_vector(
 
 
 def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
-    str | Callable[[np.ndarray], np.ndarray],
-    str | Callable[[np.ndarray], np.ndarray],
-    str | Callable[[np.ndarray], np.ndarray],
+    str | Callable[[float], float],
+    str | Callable[[float], float],
+    str | Callable[[float], float],
 ]:
     """Validates a value is a 3D vector-like object (array-like object with shape (3,))
     of spacing specifications, and then returns it as a tuple of 3 spacing
@@ -430,9 +430,9 @@ def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
     validated_value = tuple(validated_list)
     return cast(
         tuple[
-            str | Callable[[np.ndarray], np.ndarray],
-            str | Callable[[np.ndarray], np.ndarray],
-            str | Callable[[np.ndarray], np.ndarray],
+            str | Callable[[float], float],
+            str | Callable[[float], float],
+            str | Callable[[float], float],
         ],
         validated_value,
     )

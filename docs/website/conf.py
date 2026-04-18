@@ -212,7 +212,26 @@ def _html_page_context(app, pagename, templatename, context, doctree):
         )
 
 
+def _rewrite_repo_root_links(app, docname, source):
+    """Rewrite relative links in files included from the repo root.
+
+    Files like CONTRIBUTING.md live at the repo root and use paths like
+    ``docs/CODE_STYLE.md`` which are correct on GitHub. When Sphinx
+    includes them via ``{include}``, those paths are resolved relative to
+    ``docs/website/`` where the wrapper lives, so ``docs/CODE_STYLE.md``
+    cannot be found. This handler replaces the wrapper's ``{include}``
+    directive with the actual file content, rewriting ``docs/*.md`` paths
+    to ``*.md`` so they resolve correctly in the Sphinx build.
+    """
+    contributing_path = REPO_ROOT / "CONTRIBUTING.md"
+    if docname == "CONTRIBUTING" and contributing_path.exists():
+        text = contributing_path.read_text()
+        text = re.sub(r"\(docs/([A-Z_]+\.md)\)", r"(\1)", text)
+        source[0] = text
+
+
 def setup(app):
+    app.connect("source-read", _rewrite_repo_root_links)
     app.connect("html-page-context", _html_page_context)
 
     # Copy extra assets to the site root after build
@@ -272,11 +291,14 @@ autoapi_ignore = [
     "*/ui_resources/*",
     "*/airfoils/*",
     "*/models/*",
+    "*/movements/free_flight_*",
+    "*/movements/aeroelastic_*",
 ]
 autoapi_options = [
     "members",
     "show-module-summary",
     "show-inheritance",
+    "inherited-members",
 ]
 autoapi_template_dir = "_autoapi_templates"
 

@@ -23,8 +23,16 @@
    {% endfor %}
    {% if obj.bases %}
       {% if "show-inheritance" in autoapi_options %}
+         {% set public_bases = [] %}
+         {% for base in obj.bases %}
+            {% if "._" not in base %}
+               {% set _ = public_bases.append(base) %}
+            {% endif %}
+         {% endfor %}
+         {% if public_bases %}
 
-   Bases: {% for base in obj.bases %}{{ base|link_objs }}{% if not loop.last %}, {% endif %}{% endfor %}
+   Bases: {% for base in public_bases %}{{ base|link_objs }}{% if not loop.last %}, {% endif %}{% endfor %}
+         {% endif %}
       {% endif %}
 
 

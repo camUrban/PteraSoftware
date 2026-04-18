@@ -22,9 +22,7 @@ class TestWing(unittest.TestCase):
         self.type_5_wing = geometry_fixtures.make_type_5_wing_fixture()
 
         # Create additional test fixtures
-        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        self.tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     def test_initialization_valid_parameters(self):
         """Test Wing initialization with valid parameters for all types."""
@@ -1282,8 +1280,6 @@ class TestWingGetPlottableData(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for get_plottable_data tests."""
-        self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
-        self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
 
     def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self):
         """Test that get_plottable_data returns None when symmetry_type not set."""

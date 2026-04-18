@@ -9,6 +9,12 @@ import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
+from pterasoftware._oscillation import (
+    oscillating_lin_at_time,
+    oscillating_sin_at_time,
+)
+
+# noinspection PyProtectedMember
 from pterasoftware._panel import Panel
 
 # noinspection PyProtectedMember
@@ -36,12 +42,6 @@ from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing
 from pterasoftware.geometry.wing_cross_section import WingCrossSection
-
-# noinspection PyProtectedMember
-from pterasoftware.movements._functions import (
-    oscillating_linspaces,
-    oscillating_sinspaces,
-)
 from pterasoftware.movements.airplane_movement import AirplaneMovement
 from pterasoftware.movements.movement import Movement
 from pterasoftware.movements.operating_point_movement import OperatingPointMovement
@@ -436,19 +436,19 @@ class TestSerializeValue(unittest.TestCase):
         self.assertEqual(len(inner["items"]), 2)
 
     def test_callable_sine(self):
-        """Tests that the oscillating_sinspaces function serializes by name.
+        """Tests that the oscillating_sin_at_time function serializes by name.
 
         :return: None
         """
-        result = _serialize_value(oscillating_sinspaces)
+        result = _serialize_value(oscillating_sin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "sine"})
 
     def test_callable_uniform(self):
-        """Tests that the oscillating_linspaces function serializes by name.
+        """Tests that the oscillating_lin_at_time function serializes by name.
 
         :return: None
         """
-        result = _serialize_value(oscillating_linspaces)
+        result = _serialize_value(oscillating_lin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "uniform"})
 
     def test_callable_custom_raises(self):
@@ -562,21 +562,21 @@ class TestDeserializeValue(unittest.TestCase):
 
     def test_callable_sine(self):
         """Tests that a callable dict with name "sine" deserializes to
-        oscillating_sinspaces.
+        oscillating_sin_at_time.
 
         :return: None
         """
         result = _deserialize_value({"_type": "callable", "name": "sine"})
-        self.assertIs(result, oscillating_sinspaces)
+        self.assertIs(result, oscillating_sin_at_time)
 
     def test_callable_uniform(self):
         """Tests that a callable dict with name "uniform" deserializes to
-        oscillating_linspaces.
+        oscillating_lin_at_time.
 
         :return: None
         """
         result = _deserialize_value({"_type": "callable", "name": "uniform"})
-        self.assertIs(result, oscillating_linspaces)
+        self.assertIs(result, oscillating_lin_at_time)
 
     def test_callable_unknown_name_raises(self):
         """Tests that an unknown callable name raises a ValueError.
@@ -723,23 +723,23 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertIsInstance(result[1], tuple)
 
     def test_callable_sine(self):
-        """Tests round trip for the oscillating_sinspaces function.
+        """Tests round trip for the oscillating_sin_at_time function.
 
         :return: None
         """
         self.assertIs(
-            _deserialize_value(_serialize_value(oscillating_sinspaces)),
-            oscillating_sinspaces,
+            _deserialize_value(_serialize_value(oscillating_sin_at_time)),
+            oscillating_sin_at_time,
         )
 
     def test_callable_uniform(self):
-        """Tests round trip for the oscillating_linspaces function.
+        """Tests round trip for the oscillating_lin_at_time function.
 
         :return: None
         """
         self.assertIs(
-            _deserialize_value(_serialize_value(oscillating_linspaces)),
-            oscillating_linspaces,
+            _deserialize_value(_serialize_value(oscillating_lin_at_time)),
+            oscillating_lin_at_time,
         )
 
 

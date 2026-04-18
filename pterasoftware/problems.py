@@ -13,18 +13,14 @@ None
 
 from __future__ import annotations
 
-import math
-from typing import TYPE_CHECKING
-
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from . import _parameter_validation, _transformations, geometry, movements
+from . import _core, _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
-
-if TYPE_CHECKING:
-    from .movements.single_step.single_step_movement import SingleStepMovement
+from .movements import aeroelastic_movement as aeroelastic_movement_mod
+from .movements import free_flight_movement as free_flight_movement_mod
 
 
 class SteadyProblem:
@@ -144,34 +140,32 @@ class SteadyProblem:
         return self._reynolds_numbers
 
 
-class UnsteadyProblem:
+class UnsteadyProblem(_core.CoreUnsteadyProblem):
     """A class used to contain unsteady aerodynamics problems.
 
     **Contains the following methods:**
 
-    None
+    only_final_results: Determines whether the solver will only calculate loads for the
+    final time step or final cycle.
+
+    num_steps: The number of time steps.
+
+    delta_time: The time step size in seconds.
+
+    first_averaging_step: The first time step included in cycle averaging.
+
+    first_results_step: The first time step for which loads are calculated.
+
+    max_wake_rows: The maximum chordwise wake rows per Wing.
+
+    movement: The Movement that contains this UnsteadyProblem's OperatingPointMovement
+    and AirplaneMovements.
+
+    steady_problems: A tuple of SteadyProblems, one for each time step.
     """
 
     __slots__ = (
         "_movement",
-        "_only_final_results",
-        "_num_steps",
-        "_delta_time",
-        "_max_wake_rows",
-        "_first_averaging_step",
-        "_first_results_step",
-        "finalForces_W",
-        "finalForceCoefficients_W",
-        "finalMoments_W_CgP1",
-        "finalMomentCoefficients_W_CgP1",
-        "finalMeanForces_W",
-        "finalMeanForceCoefficients_W",
-        "finalMeanMoments_W_CgP1",
-        "finalMeanMomentCoefficients_W_CgP1",
-        "finalRmsForces_W",
-        "finalRmsForceCoefficients_W",
-        "finalRmsMoments_W_CgP1",
-        "finalRmsMomentCoefficients_W_CgP1",
         "_steady_problems",
     )
 
@@ -192,69 +186,21 @@ class UnsteadyProblem:
             will be converted internally to a bool. The default is False.
         :return: None
         """
-        # Validate and store immutable attributes.
+        # Validate and store the Movement before calling super().__init__() because
+        # the Movement provides the parameters that the core class needs.
         if not isinstance(movement, movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
         self._movement = movement
-        self._only_final_results = _parameter_validation.boolLike_return_bool(
-            only_final_results, "only_final_results"
+
+        # Delegate shared initialization (validation, first_averaging_step computation,
+        # load list initialization) to the core class.
+        super().__init__(
+            only_final_results=only_final_results,
+            delta_time=self._movement.delta_time,
+            num_steps=self._movement.num_steps,
+            max_wake_rows=self._movement.max_wake_rows,
+            lcm_period=self._movement.lcm_period,
         )
-
-        self._num_steps: int = self._movement.num_steps
-        self._delta_time: float = self._movement.delta_time
-        self._max_wake_rows: int | None = self._movement.max_wake_rows
-
-        # For UnsteadyProblems with a static Movement, we are typically interested in
-        # the final time step's forces and moments, which, assuming convergence, will be
-        # the most accurate. For UnsteadyProblems with cyclic movement, (e.g. flapping
-        # wings) we are typically interested in the forces and moments averaged over the
-        # last cycle simulated. Use the LCM of all motion periods to ensure we average
-        # over a complete cycle of all motions.
-        _movement_lcm_period = self._movement.lcm_period
-        self._first_averaging_step: int
-        if _movement_lcm_period == 0:
-            self._first_averaging_step = self._num_steps - 1
-        else:
-            self._first_averaging_step = max(
-                0,
-                math.floor(self._num_steps - (_movement_lcm_period / self._delta_time)),
-            )
-
-        # If we only wants to calculate forces and moments for the final cycle (for a
-        # cyclic Movement) or for the final time step (for a static Movement) set the
-        # first step to calculate results to the first averaging step. Otherwise, set it
-        # to the zero, which is the first time step.
-        self._first_results_step: int
-        if self._only_final_results:
-            self._first_results_step = self._first_averaging_step
-        else:
-            self._first_results_step = 0
-
-        # Initialize empty lists to hold the final loads and load coefficients each
-        # Airplane experiences. These will only be populated if this UnsteadyProblem's
-        # Movement is static. These are mutable and populated by the solver.
-        self.finalForces_W: list[np.ndarray] = []
-        self.finalForceCoefficients_W: list[np.ndarray] = []
-        self.finalMoments_W_CgP1: list[np.ndarray] = []
-        self.finalMomentCoefficients_W_CgP1: list[np.ndarray] = []
-
-        # Initialize empty lists to hold the final cycle-averaged loads and load
-        # coefficients each Airplane experiences. These will only be populated if this
-        # UnsteadyProblem's Movement is cyclic. These are mutable and populated by the
-        # solver.
-        self.finalMeanForces_W: list[np.ndarray] = []
-        self.finalMeanForceCoefficients_W: list[np.ndarray] = []
-        self.finalMeanMoments_W_CgP1: list[np.ndarray] = []
-        self.finalMeanMomentCoefficients_W_CgP1: list[np.ndarray] = []
-
-        # Initialize empty lists to hold the final cycle-root-mean-squared loads and
-        # load coefficients each airplane object experiences. These will only be
-        # populated for variable geometry problems. These are mutable and populated by
-        # the solver.
-        self.finalRmsForces_W: list[np.ndarray] = []
-        self.finalRmsForceCoefficients_W: list[np.ndarray] = []
-        self.finalRmsMoments_W_CgP1: list[np.ndarray] = []
-        self.finalRmsMomentCoefficients_W_CgP1: list[np.ndarray] = []
 
         # Initialize an empty list to hold the SteadyProblems as they are generated.
         steady_problems_temp: list[SteadyProblem] = []
@@ -285,92 +231,96 @@ class UnsteadyProblem:
         return self._movement
 
     @property
-    def only_final_results(self) -> bool:
-        return self._only_final_results
-
-    @property
-    def num_steps(self) -> int:
-        return self._num_steps
-
-    @property
-    def delta_time(self) -> float:
-        return self._delta_time
-
-    @property
-    def first_averaging_step(self) -> int:
-        return self._first_averaging_step
-
-    @property
-    def first_results_step(self) -> int:
-        return self._first_results_step
-
-    @property
-    def max_wake_rows(self) -> int | None:
-        return self._max_wake_rows
-
-    @property
     def steady_problems(self) -> tuple[SteadyProblem, ...]:
         return self._steady_problems
 
 
-class CoupledUnsteadyProblem(UnsteadyProblem):
+class CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     """A class for coupled unsteady problems.
 
-    This class extends UnsteadyProblem to manage multiple SteadyProblems for coupled
-    simulations where each time step has its own SteadyProblem.
+    This class extends CoreUnsteadyProblem to manage SteadyProblems for coupled
+    simulations where the geometry at each time step depends on the solver's results
+    from previous time steps.
 
     **Contains the following methods:**
 
+    movement: The CoreMovement that defines the motion parameters for this problem.
+
+    steady_problems: A tuple of SteadyProblems, one for each time step that has been
+    initialized so far.
+
     get_steady_problem: Gets the SteadyProblem at a specified step.
-    initialize_next_problem: Initializes the next step's problem.
+
+    initialize_next_problem: Initializes the next step's problem. Must be overridden by
+    subclasses.
 
     **Contains the following class attributes:**
 
     None
     """
 
+    __slots__ = (
+        "_movement",
+        "coupled_steady_problems",
+    )
+
     def __init__(
         self,
-        single_step_movement: movements.single_step.single_step_movement.SingleStepMovement,
+        movement: _core.CoreMovement,
+        initial_airplanes: list[geometry.airplane.Airplane],
+        initial_operating_point: operating_point_mod.OperatingPoint,
         only_final_results: bool | np.bool_ = False,
     ) -> None:
         """The initialization method.
 
-        Initializes the aeroelastic problem with structural parameters and motion
-        definitions. Sets up storage for aerodynamic loads, wing deformations, moments,
-        and solver state.
+        Initializes the coupled unsteady problem with the first time step's geometry and
+        the motion parameters from the provided CoreMovement.
 
-        :param single_step_movement: A SingleStepMovement object containing the
-            prescribed motion and aerodynamic setup for the coupled simulation.
+        :param movement: A CoreMovement object that defines the motion parameters
+            (delta_time, num_steps, max_wake_rows, lcm_period) for this problem.
+        :param initial_airplanes: The list of Airplanes at the first time step.
+        :param initial_operating_point: The OperatingPoint at the first time step.
         :param only_final_results: If True, only calculate forces and moments for the
             final motion cycle. Can be a bool or numpy bool and will be converted to
             bool internally. The default is False.
         :return: None
         """
-        if not isinstance(
-            single_step_movement,
-            movements.single_step.single_step_movement.SingleStepMovement,
-        ):
-            raise TypeError("single_step_movement must be a SingleStepMovement.")
+        if not isinstance(movement, _core.CoreMovement):
+            raise TypeError("movement must be a CoreMovement.")
 
-        self.single_step_movement = single_step_movement
-        movement = single_step_movement.corresponding_movement
+        self._movement = movement
+
         only_final_results_bool = _parameter_validation.boolLike_return_bool(
             only_final_results, "only_final_results"
         )
 
-        # Call parent __init__ to properly initialize UnsteadyProblem attributes
-        # and create SteadyProblems. This is safe because there's no double-initialization.
-        super().__init__(movement=movement, only_final_results=only_final_results_bool)
+        # Delegate shared initialization (validation, first_averaging_step computation,
+        # load list initialization) to the core class.
+        super().__init__(
+            only_final_results=only_final_results_bool,
+            delta_time=self._movement.delta_time,
+            num_steps=self._movement.num_steps,
+            max_wake_rows=self._movement.max_wake_rows,
+            lcm_period=self._movement.lcm_period,
+        )
 
-        # Coupled-specific state: list of steady problems for each coupled step
-        # We create an initial SteadyProblem using the base airplanes and operating point
-        self.coupled_steady_problems = [
+        # Coupled-specific state: list of steady problems for each coupled step.
+        # We create an initial SteadyProblem using the provided initial geometry.
+        self.coupled_steady_problems: list[SteadyProblem] = [
             SteadyProblem(
-                [movement.airplane_movements[0].base_airplane],
-                movement.operating_point_movement.base_operating_point,
+                airplanes=initial_airplanes,
+                operating_point=initial_operating_point,
             )
         ]
+
+    # --- Immutable: read only properties ---
+    @property
+    def movement(self) -> _core.CoreMovement:
+        return self._movement
+
+    @property
+    def steady_problems(self) -> tuple[SteadyProblem, ...]:
+        return tuple(self.coupled_steady_problems)
 
     def get_steady_problem(self, step: int) -> SteadyProblem:
         """Get the SteadyProblem at a given time step.
@@ -386,18 +336,17 @@ class CoupledUnsteadyProblem(UnsteadyProblem):
         return self.coupled_steady_problems[step]
 
     def initialize_next_problem(self, solver) -> None:
-        """Initialize the next time step's problem with updated wing deformations.
+        """Initialize the next time step's problem.
 
-        Computes cumulative wing deformations from aerodynamic and inertial loads, then
-        creates the next SteadyProblem with deformed airplanes. Updates the current
-        airplane and operating point state.
+        Must be overridden by subclasses to compute the geometry for the next time step
+        based on the solver's results.
 
-        :param solver: The solver instance providing aerodynamic moment data.
+        :param solver: The solver instance providing aerodynamic data from the current
+            time step.
         :return: None
+        :raises NotImplementedError: Always. Subclasses must override this method.
         """
-        self.coupled_steady_problems.append(
-            self.steady_problems[len(self.coupled_steady_problems)]
-        )
+        raise NotImplementedError("Subclasses must implement initialize_next_problem.")
 
 
 class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
@@ -443,7 +392,7 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
     def __init__(
         self,
-        single_step_movement: SingleStepMovement,
+        movement: aeroelastic_movement_mod.AeroelasticMovement,
         wing_density: float,
         spring_constant: float,
         damping_constant: float,
@@ -461,8 +410,10 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         storage for aerodynamic loads, deformations, moments, and solver state.
 
         See CoupledUnsteadyProblem's initialization method for descriptions of inherited
-        parameters (single_step_movement and only_final_results).
+        parameters.
 
+        :param movement: An AeroelasticMovement object containing the prescribed motion
+            and aerodynamic setup for the aeroelastic simulation.
         :param wing_density: The mass per unit span area of the wing (kg/m^2). Used to
             distribute wing mass across panels for inertial calculations.
         :param spring_constant: The torsional spring stiffness for the spring-mass-
@@ -485,16 +436,28 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             The default is None.
         :return: None
         """
+        if not isinstance(movement, aeroelastic_movement_mod.AeroelasticMovement):
+            raise TypeError("movement must be an AeroelasticMovement.")
+
+        # Generate the initial airplane at step 0 with no deformation.
+        initial_airplane = movement.generate_airplane_at_time_step(
+            airplane_movement_index=0, step=0
+        )
+
         super().__init__(
-            single_step_movement=single_step_movement,
+            movement=movement,
+            initial_airplanes=[initial_airplane],
+            initial_operating_point=movement.operating_points[0],
             only_final_results=only_final_results,
         )
+
+        # Store a typed reference for aeroelastic-specific operations.
+        self._aeroelastic_movement: aeroelastic_movement_mod.AeroelasticMovement = (
+            movement
+        )
+
         self.plot_flap_cycle = plot_flap_cycle
         self.prev_velocities: list[np.ndarray] = []
-        self.curr_airplanes = [self.movement.airplane_movements[0].base_airplane]
-        self.curr_operating_point = (
-            self.movement.operating_point_movement.base_operating_point
-        )
         self.positions: list[np.ndarray] = []
         self.net_deformation: np.ndarray = np.zeros((0, 3))
         self.angluar_velocities: np.ndarray = np.zeros((0, 3))
@@ -512,11 +475,11 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
             5  # number of initial steps to discard for numerical stability
         )
         self.spacing = (
-            self.single_step_movement.airplane_movements[0]
+            self._aeroelastic_movement.airplane_movements[0]
             .wing_movements[0]
             .spacingAngles_Gs_to_Wn_ixyz[0]
         )
-        self.wing_movement = self.single_step_movement.airplane_movements[
+        self.wing_movement = self._aeroelastic_movement.airplane_movements[
             0
         ].wing_movements[0]
 
@@ -573,21 +536,31 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
 
     def initialize_next_problem(self, solver):
 
-        deformation_matrices = self.calculate_wing_deformation(
-            solver, len(self.coupled_steady_problems)
+        step = len(self.coupled_steady_problems)
+        deformation_matrices = self.calculate_wing_deformation(solver, step)
+
+        # Build the per-wing deformation list. The main wing (index 0) and its
+        # symmetric reflection (index 1) both receive the same deformation angles.
+        # The mirror mesh generation in the Airplane constructor ensures that
+        # applying the same angles produces physically symmetric deformation.
+        # All other wings (e.g. the v-tail) get None (no deformation applied).
+        num_wings = len(self._aeroelastic_movement.airplane_movements[0].wing_movements)
+        wing_deformation_angles_ixyz: list[np.ndarray | None] = [None] * num_wings
+        wing_deformation_angles_ixyz[0] = deformation_matrices
+        wing_deformation_angles_ixyz[1] = deformation_matrices
+
+        # Generate the deformed airplane at this step.
+        airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
+            airplane_movement_index=0,
+            step=step,
+            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz,
         )
-        self.curr_airplanes, self.curr_operating_point = (
-            self.single_step_movement.generate_next_movement(
-                base_airplanes=self.curr_airplanes,
-                base_operating_point=self.curr_operating_point,
-                step=len(self.coupled_steady_problems),
-                deformation_matrices=deformation_matrices,
-            )
-        )
+        operating_point = self._aeroelastic_movement.operating_points[step]
+
         self.coupled_steady_problems.append(
             SteadyProblem(
-                airplanes=self.curr_airplanes,
-                operating_point=self.curr_operating_point,
+                airplanes=[airplane],
+                operating_point=operating_point,
             )
         )
 
@@ -791,8 +764,15 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         # Update angular velocity state
         self.angluar_velocities[:, 1] = omegas
 
-        # Initialize baseline wing positions for flap point tracking
-        undeformed_wing = self.steady_problems[step].airplanes[0].wings[0]
+        # Generate the reference (undeformed) airplane at this step to get the
+        # baseline panel positions for tracking wing deflection.
+        ref_airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
+            airplane_movement_index=0, step=step
+        )
+        ref_problem = SteadyProblem(
+            [ref_airplane], self._aeroelastic_movement.operating_points[step]
+        )
+        undeformed_wing = ref_problem.airplanes[0].wings[0]
         assert undeformed_wing.panels is not None
         undeformed_positions = np.array(
             [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeformed_wing.panels]
@@ -1133,3 +1113,64 @@ class AeroelasticUnsteadyProblem(CoupledUnsteadyProblem):
         plt.grid(True)
         plt.savefig(f"{title.replace(' ', '_')}.png")
         plt.show()
+
+
+class FreeFlightUnsteadyProblem(CoupledUnsteadyProblem):
+    """A subclass of CoupledUnsteadyProblem for free flight simulations.
+
+    This class manages the geometry for free flight simulations where the operating
+    point is updated by the solver at each time step based on the computed aerodynamic
+    forces and moments. The airplane geometry is precomputed by the FreeFlightMovement,
+    but the operating point evolves dynamically.
+
+    **Contains the following methods:**
+
+    initialize_next_problem: Initializes the next step's problem with an updated
+    operating point from the FreeFlightMovement.
+
+    **Contains the following class attributes:**
+
+    None
+    """
+
+    __slots__ = ("_free_flight_movement",)
+
+    def __init__(
+        self,
+        movement: free_flight_movement_mod.FreeFlightMovement,
+        only_final_results: bool | np.bool_ = False,
+    ) -> None:
+        """The initialization method.
+
+        :param movement: A FreeFlightMovement object containing the precomputed airplane
+            geometry and mutable operating point for the free flight simulation.
+        :param only_final_results: If True, only calculate forces and moments for the
+            final motion cycle. Can be a bool or numpy bool and will be converted to
+            bool internally. The default is False.
+        :return: None
+        """
+        if not isinstance(movement, free_flight_movement_mod.FreeFlightMovement):
+            raise TypeError("movement must be a FreeFlightMovement.")
+
+        # Extract the initial airplanes (one per airplane movement, at step 0).
+        initial_airplanes = [airplane_tuple[0] for airplane_tuple in movement.airplanes]
+        initial_operating_point = movement.operating_point_movement.operating_points[0]
+
+        super().__init__(
+            movement=movement,
+            initial_airplanes=initial_airplanes,
+            initial_operating_point=initial_operating_point,
+            only_final_results=only_final_results,
+        )
+
+        self._free_flight_movement = movement
+
+    def initialize_next_problem(self, solver) -> None:
+        """Initialize the next time step's problem.
+
+        :param solver: The solver instance providing aerodynamic data from the current
+            time step.
+        :return: None
+        :raises NotImplementedError: Always. Free flight solver not yet implemented.
+        """
+        raise NotImplementedError("Free flight solver not yet implemented.")

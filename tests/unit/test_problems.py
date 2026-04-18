@@ -1,6 +1,5 @@
 """This module contains classes to test SteadyProblems and UnsteadyProblems."""
 
-import math
 import unittest
 
 import numpy as np
@@ -269,12 +268,6 @@ class TestUnsteadyProblem(unittest.TestCase):
         cls.only_final_results_unsteady_problem = (
             problem_fixtures.make_only_final_results_unsteady_problem_fixture()
         )
-        cls.static_unsteady_problem = (
-            problem_fixtures.make_static_unsteady_problem_fixture()
-        )
-        cls.cyclic_unsteady_problem = (
-            problem_fixtures.make_cyclic_unsteady_problem_fixture()
-        )
         cls.multi_airplane_unsteady_problem = (
             problem_fixtures.make_multi_airplane_unsteady_problem_fixture()
         )
@@ -356,108 +349,6 @@ class TestUnsteadyProblem(unittest.TestCase):
             self.basic_unsteady_problem.movement.delta_time,
         )
 
-    def test_first_averaging_step_static_movement(self):
-        """Test first_averaging_step for static Movement."""
-        # For static Movement (max_period = 0), first_averaging_step should be
-        # num_steps - 1.
-        expected_first_averaging_step = self.static_unsteady_problem.num_steps - 1
-        self.assertEqual(
-            self.static_unsteady_problem.first_averaging_step,
-            expected_first_averaging_step,
-        )
-
-    def test_first_averaging_step_cyclic_movement(self):
-        """Test first_averaging_step for cyclic Movement."""
-        # For cyclic Movement (lcm_period > 0), first_averaging_step should be
-        # calculated based on the lcm_period.
-        movement_lcm_period = self.cyclic_unsteady_problem.movement.lcm_period
-        expected_first_averaging_step = max(
-            0,
-            math.floor(
-                self.cyclic_unsteady_problem.num_steps
-                - (movement_lcm_period / self.cyclic_unsteady_problem.delta_time)
-            ),
-        )
-        self.assertEqual(
-            self.cyclic_unsteady_problem.first_averaging_step,
-            expected_first_averaging_step,
-        )
-
-    def test_first_results_step_only_final_results_false(self):
-        """Test first_results_step when only_final_results is False."""
-        # When only_final_results is False, first_results_step should be 0.
-        self.assertEqual(self.basic_unsteady_problem.first_results_step, 0)
-
-    def test_first_results_step_only_final_results_true(self):
-        """Test first_results_step when only_final_results is True."""
-        # When only_final_results is True, first_results_step should equal
-        # first_averaging_step.
-        self.assertEqual(
-            self.only_final_results_unsteady_problem.first_results_step,
-            self.only_final_results_unsteady_problem.first_averaging_step,
-        )
-
-    def test_initialization_of_load_lists(self):
-        """Test that load lists are initialized as empty."""
-        # All load lists should be initialized as empty lists.
-        self.assertIsInstance(self.basic_unsteady_problem.finalForces_W, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalForces_W), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalForceCoefficients_W, list
-        )
-        self.assertEqual(len(self.basic_unsteady_problem.finalForceCoefficients_W), 0)
-
-        self.assertIsInstance(self.basic_unsteady_problem.finalMoments_W_CgP1, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalMoments_W_CgP1), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalMomentCoefficients_W_CgP1, list
-        )
-        self.assertEqual(
-            len(self.basic_unsteady_problem.finalMomentCoefficients_W_CgP1), 0
-        )
-
-        self.assertIsInstance(self.basic_unsteady_problem.finalMeanForces_W, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalMeanForces_W), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalMeanForceCoefficients_W, list
-        )
-        self.assertEqual(
-            len(self.basic_unsteady_problem.finalMeanForceCoefficients_W), 0
-        )
-
-        self.assertIsInstance(self.basic_unsteady_problem.finalMeanMoments_W_CgP1, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalMeanMoments_W_CgP1), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalMeanMomentCoefficients_W_CgP1, list
-        )
-        self.assertEqual(
-            len(self.basic_unsteady_problem.finalMeanMomentCoefficients_W_CgP1), 0
-        )
-
-        self.assertIsInstance(self.basic_unsteady_problem.finalRmsForces_W, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalRmsForces_W), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalRmsForceCoefficients_W, list
-        )
-        self.assertEqual(
-            len(self.basic_unsteady_problem.finalRmsForceCoefficients_W), 0
-        )
-
-        self.assertIsInstance(self.basic_unsteady_problem.finalRmsMoments_W_CgP1, list)
-        self.assertEqual(len(self.basic_unsteady_problem.finalRmsMoments_W_CgP1), 0)
-
-        self.assertIsInstance(
-            self.basic_unsteady_problem.finalRmsMomentCoefficients_W_CgP1, list
-        )
-        self.assertEqual(
-            len(self.basic_unsteady_problem.finalRmsMomentCoefficients_W_CgP1), 0
-        )
-
     def test_steady_problems_tuple_initialization(self):
         """Test that steady_problems tuple is initialized correctly."""
         # steady_problems tuple should be initialized with correct length.
@@ -492,17 +383,6 @@ class TestUnsteadyProblem(unittest.TestCase):
                 steady_problem.operating_point, ps.operating_point.OperatingPoint
             )
 
-    def test_only_final_results_accepts_numpy_bool(self):
-        """Test that only_final_results accepts numpy bool values."""
-        # Create a fresh movement fixture for this test.
-        movement = movement_fixtures.make_basic_movement_fixture()
-        unsteady_problem = ps.problems.UnsteadyProblem(
-            movement=movement,
-            only_final_results=np.bool_(True),
-        )
-        self.assertTrue(unsteady_problem.only_final_results)
-        self.assertIsInstance(unsteady_problem.only_final_results, bool)
-
     def test_initialization_multiple_airplanes(self):
         """Test UnsteadyProblem initialization with multiple Airplanes."""
         # Test that UnsteadyProblem with multiple Airplanes initializes correctly.
@@ -531,31 +411,6 @@ class TestUnsteadyProblemImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.basic_unsteady_problem.movement = new_movement
 
-    def test_immutable_only_final_results_property(self):
-        """Test that only_final_results property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_unsteady_problem.only_final_results = True
-
-    def test_immutable_num_steps_property(self):
-        """Test that num_steps property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_unsteady_problem.num_steps = 100
-
-    def test_immutable_delta_time_property(self):
-        """Test that delta_time property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_unsteady_problem.delta_time = 0.1
-
-    def test_immutable_first_averaging_step_property(self):
-        """Test that first_averaging_step property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_unsteady_problem.first_averaging_step = 0
-
-    def test_immutable_first_results_step_property(self):
-        """Test that first_results_step property is read only."""
-        with self.assertRaises(AttributeError):
-            self.basic_unsteady_problem.first_results_step = 0
-
     def test_immutable_steady_problems_property(self):
         """Test that steady_problems property is read only."""
         with self.assertRaises(AttributeError):
@@ -570,15 +425,6 @@ class TestUnsteadyProblemImmutability(unittest.TestCase):
             self.basic_unsteady_problem.steady_problems.append(
                 problem_fixtures.make_basic_steady_problem_fixture()
             )
-
-    def test_mutable_load_lists(self):
-        """Test that load lists remain mutable for solver population."""
-        # The load lists should be mutable so the solver can populate them.
-        self.basic_unsteady_problem.finalForces_W.append(np.array([1.0, 2.0, 3.0]))
-        self.assertEqual(len(self.basic_unsteady_problem.finalForces_W), 1)
-
-        # Clean up.
-        self.basic_unsteady_problem.finalForces_W.pop()
 
 
 if __name__ == "__main__":

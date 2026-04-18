@@ -26,40 +26,6 @@ def make_basic_panel_fixture():
     return basic_panel_fixture
 
 
-def make_leading_edge_panel_fixture():
-    """This method makes a fixture that is a Panel at the leading edge.
-
-    :return: A Panel at the leading edge configured for testing.
-    """
-    leading_edge_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 0.5, 0.0]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([0.25, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([0.25, 0.5, 0.0]),
-        is_leading_edge=True,
-        is_trailing_edge=False,
-    )
-
-    return leading_edge_panel_fixture
-
-
-def make_trailing_edge_panel_fixture():
-    """This method makes a fixture that is a Panel at the trailing edge.
-
-    :return: A Panel at the trailing edge configured for testing.
-    """
-    trailing_edge_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.75, 0.5, 0.0]),
-        Flpp_G_Cg=np.array([0.75, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([1.0, 0.5, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=True,
-    )
-
-    return trailing_edge_panel_fixture
-
-
 def make_leading_and_trailing_edge_panel_fixture():
     """This method makes a fixture that is a Panel at both leading and trailing edges.
 
@@ -77,80 +43,6 @@ def make_leading_and_trailing_edge_panel_fixture():
     )
 
     return leading_and_trailing_edge_panel_fixture
-
-
-def make_square_panel_fixture():
-    """This method makes a fixture that is a square Panel.
-
-    The Panel is 1.0 m x 1.0 m, lying flat in the xy plane.
-
-    :return: A square Panel configured for testing.
-    """
-    square_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 1.0, 0.0]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([1.0, 1.0, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return square_panel_fixture
-
-
-def make_high_aspect_ratio_panel_fixture():
-    """This method makes a fixture that is a high aspect ratio Panel.
-
-    The Panel has span 4.0 m and chord 1.0 m.
-
-    :return: A high aspect ratio Panel configured for testing.
-    """
-    high_aspect_ratio_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 4.0, 0.0]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([1.0, 0.0, 0.0]),
-        Brpp_G_Cg=np.array([1.0, 4.0, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return high_aspect_ratio_panel_fixture
-
-
-def make_twisted_panel_fixture():
-    """This method makes a fixture that is a twisted (non planar) Panel.
-
-    :return: A twisted Panel configured for testing.
-    """
-    twisted_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.0, 1.0, 0.5]),
-        Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
-        Blpp_G_Cg=np.array([2.0, 0.0, -0.5]),
-        Brpp_G_Cg=np.array([2.0, 1.0, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return twisted_panel_fixture
-
-
-def make_small_panel_fixture():
-    """This method makes a fixture that is a very small Panel.
-
-    The Panel is 0.01 m x 0.01 m.
-
-    :return: A very small Panel configured for testing.
-    """
-    small_panel_fixture = _panel.Panel(
-        Frpp_G_Cg=np.array([0.00, 0.01, 0.0]),
-        Flpp_G_Cg=np.array([0.00, 0.00, 0.0]),
-        Blpp_G_Cg=np.array([0.01, 0.00, 0.0]),
-        Brpp_G_Cg=np.array([0.01, 0.01, 0.0]),
-        is_leading_edge=False,
-        is_trailing_edge=False,
-    )
-
-    return small_panel_fixture
 
 
 def make_panel_with_set_once_attributes_fixture():

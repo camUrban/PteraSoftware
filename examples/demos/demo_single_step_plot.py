@@ -150,21 +150,21 @@ def run_single_step(
     period_z = 0.0
     amplitude_z = 0.0
 
-    main_single_step_movements_list = []
-    reflected_single_step_movements_list = []
+    main_wcs_movements_list = []
+    reflected_wcs_movements_list = []
 
     for i in range(len(example_airplane.wings[0].wing_cross_sections)):
         if i == 0:
-            single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+            wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
                 base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[
                     i
                 ],
             )
-            main_single_step_movements_list.append(single_step_movement)
-            reflected_single_step_movements_list.append(single_step_movement)
+            main_wcs_movements_list.append(wcs_movement)
+            reflected_wcs_movements_list.append(wcs_movement)
 
         else:
-            single_step_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+            wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
                 base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[
                     i
                 ],
@@ -181,10 +181,10 @@ def run_single_step(
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
                 phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
             )
-            main_single_step_movements_list.append(single_step_movement)
-            reflected_single_step_movements_list.append(single_step_movement)
+            main_wcs_movements_list.append(wcs_movement)
+            reflected_wcs_movements_list.append(wcs_movement)
 
-    single_step_v_tail_root_wing_cross_section_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+    v_tail_root_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
         ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -195,7 +195,7 @@ def run_single_step(
         spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
         phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
-    single_step_v_tail_tip_wing_cross_section_movement = ps.movements.single_step.single_step_wing_cross_section_movement.SingleStepWingCrossSectionMovement(
+    v_tail_tip_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
         ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
         periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -209,10 +209,23 @@ def run_single_step(
 
     dephase = 169.0
 
-    single_step_main_wing_movement = (
-        ps.movements.single_step.single_step_wing_movement.SingleStepWingMovement(
-            base_wing=example_airplane.wings[0],
-            single_step_wing_cross_section_movements=main_single_step_movements_list,
+    main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+        base_wing=example_airplane.wings[0],
+        wing_cross_section_movements=main_wcs_movements_list,
+        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+    )
+
+    reflected_main_wing_movement = (
+        ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+            base_wing=example_airplane.wings[1],
+            wing_cross_section_movements=reflected_wcs_movements_list,
             ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
             periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
             spacingLer_Gs_Cgs=("sine", "sine", "sine"),
@@ -224,25 +237,12 @@ def run_single_step(
         )
     )
 
-    single_step_reflected_main_wing_movement = ps.movements.single_step.single_step_wing_movement.SingleStepWingMovement(
-        base_wing=example_airplane.wings[1],
-        single_step_wing_cross_section_movements=reflected_single_step_movements_list,
-        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
-    )
-
-    single_step_v_tail_movement = (
-        ps.movements.single_step.single_step_wing_movement.SingleStepWingMovement(
+    v_tail_wing_movement = (
+        ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
             base_wing=example_airplane.wings[2],
-            single_step_wing_cross_section_movements=[
-                single_step_v_tail_root_wing_cross_section_movement,
-                single_step_v_tail_tip_wing_cross_section_movement,
+            wing_cross_section_movements=[
+                v_tail_root_wcs_movement,
+                v_tail_tip_wcs_movement,
             ],
             ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
             periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -255,41 +255,41 @@ def run_single_step(
         )
     )
 
-    single_step_airplane_movement = ps.movements.single_step.single_step_airplane_movement.SingleStepAirplaneMovement(
-        base_airplane=example_airplane,
-        single_step_wing_movements=[
-            single_step_main_wing_movement,
-            single_step_reflected_main_wing_movement,
-            single_step_v_tail_movement,
-        ],
-        ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
-        periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
-        spacingCg_GP1_CgP1=("sine", "sine", "sine"),
-        phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+    example_airplane_movement = (
+        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+            base_airplane=example_airplane,
+            wing_movements=[
+                main_wing_movement,
+                reflected_main_wing_movement,
+                v_tail_wing_movement,
+            ],
+            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
     )
 
     example_operating_point = ps.operating_point.OperatingPoint(
         rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
     )
 
-    single_step_operating_point_movement = ps.movements.single_step.single_step_operating_point_movement.SingleStepOperatingPointMovement(
+    example_operating_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
         base_operating_point=example_operating_point,
         ampVCg__E=0.0,
         periodVCg__E=0.0,
         spacingVCg__E="sine",
     )
 
-    single_step_movement = (
-        ps.movements.single_step.single_step_movement.SingleStepMovement(
-            single_step_airplane_movements=[single_step_airplane_movement],
-            single_step_operating_point_movement=single_step_operating_point_movement,
-            delta_time=0.03,
-            num_cycles=3,
-        )
+    example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
+        airplane_movements=[example_airplane_movement],
+        operating_point_movement=example_operating_point_movement,
+        delta_time=0.03,
+        num_steps=100,
     )
 
     example_problem = ps.problems.AeroelasticUnsteadyProblem(
-        single_step_movement=single_step_movement,
+        movement=example_movement,
         wing_density=wing_density,
         spring_constant=spring_constant,
         damping_constant=damping_constant,
@@ -301,15 +301,15 @@ def run_single_step(
         only_final_results=False,
     )
 
-    example_solver = ps.coupled_unsteady_ring_vortex_lattice_method.CoupledUnsteadyRingVortexLatticeMethodSolver(
-        coupled_unsteady_problem=example_problem,
+    example_solver = ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
+        aeroelastic_unsteady_problem=example_problem,
     )
 
     example_solver.run(
         prescribed_wake=True,
     )
 
-    problem = example_solver.coupled_unsteady_problem
+    problem = example_solver.aeroelastic_unsteady_problem
 
     # ps.output.animate(
     #     unsteady_solver=example_solver,

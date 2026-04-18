@@ -455,6 +455,7 @@ class Wing:
         # process_wing_symmetry for type 5 symmetry).
         new_wing.symmetric = self.symmetric
         new_wing.mirror_only = self.mirror_only
+        new_wing.single_step_wing = self.single_step_wing
 
         # Copy immutable numpy arrays and make them read-only.
         new_wing._Ler_Gs_Cgs = np.copy(self._Ler_Gs_Cgs)

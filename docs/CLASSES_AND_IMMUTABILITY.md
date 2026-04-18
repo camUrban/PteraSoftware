@@ -2,12 +2,12 @@
 
 This document describes the consistent pattern of immutability and lazy caching across the following core data and geometry classes in the Ptera Software codebase:
 
-- `UnsteadyProblem`
-- `Movement`
-- `AirplaneMovement`
-- `WingMovement`
-- `WingCrossSectionMovement`
-- `OperatingPointMovement`
+- `CoreUnsteadyProblem` / `UnsteadyProblem`
+- `CoreMovement` / `Movement`
+- `CoreAirplaneMovement` / `AirplaneMovement`
+- `CoreWingMovement` / `WingMovement`
+- `CoreWingCrossSectionMovement` / `WingCrossSectionMovement`
+- `CoreOperatingPointMovement` / `OperatingPointMovement`
 - `SteadyProblem`
 - `OperatingPoint`
 - `Airplane`
@@ -18,6 +18,8 @@ This document describes the consistent pattern of immutability and lazy caching 
 - `RingVortex`
 - `HorseshoeVortex`
 - `LineVortex`
+
+The `Core*` classes live in `pterasoftware/_core.py` and own the shared slots and properties. The public classes extend their core parents, sometimes adding additional slots and sometimes inheriting everything with an empty `__slots__`. See each class section below for details on which attributes are defined at which level.
 
 ## Design Principles
 
@@ -85,22 +87,24 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ---
 
-## UnsteadyProblem Class (`problems.py`)
+## CoreUnsteadyProblem / UnsteadyProblem Class (`_core.py`, `problems.py`)
+
+`UnsteadyProblem` extends `CoreUnsteadyProblem`. `CoreUnsteadyProblem` owns all attributes except `movement` and `steady_problems`, which are defined on `UnsteadyProblem`.
 
 ### Attribute Classification
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type                        | Notes                 |
-|------------------------|-----------------------------|-----------------------|
-| `movement`             | `Movement`                  | Movement definition   |
-| `only_final_results`   | `bool`                      | Results flag          |
-| `num_steps`            | `int`                       | Copied from Movement  |
-| `delta_time`           | `float`                     | Copied from Movement  |
-| `first_averaging_step` | `int`                       | Computed during init  |
-| `first_results_step`   | `int`                       | Computed during init  |
-| `max_wake_rows`        | `int \| None`               | Copied from Movement  |
-| `steady_problems`      | `tuple[SteadyProblem, ...]` | Generated during init |
+| Attribute              | Type                        | Defined On              | Notes                 |
+|------------------------|-----------------------------|-------------------------|-----------------------|
+| `movement`             | `Movement`                  | `UnsteadyProblem`       | Movement definition   |
+| `only_final_results`   | `bool`                      | `CoreUnsteadyProblem`   | Results flag          |
+| `num_steps`            | `int`                       | `CoreUnsteadyProblem`   | Copied from Movement  |
+| `delta_time`           | `float`                     | `CoreUnsteadyProblem`   | Copied from Movement  |
+| `first_averaging_step` | `int`                       | `CoreUnsteadyProblem`   | Computed during init  |
+| `first_results_step`   | `int`                       | `CoreUnsteadyProblem`   | Computed during init  |
+| `max_wake_rows`        | `int \| None`               | `CoreUnsteadyProblem`   | Copied from Movement  |
+| `steady_problems`      | `tuple[SteadyProblem, ...]` | `UnsteadyProblem`       | Generated during init |
 
 #### Mutable (populated by solver)
 
@@ -119,40 +123,44 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalRmsMoments_W_CgP1`             | `list[np.ndarray]` | RMS moments                        |
 | `finalRmsMomentCoefficients_W_CgP1`  | `list[np.ndarray]` | RMS moment coefficients            |
 
-**Note**: The solver result lists must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve.
+**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve.
 
-## Movement Class (`movements/movement.py`)
+## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
+
+`Movement` extends `CoreMovement`. `CoreMovement` owns the shared slots (`airplane_movements`, `operating_point_movement`, `delta_time`, `num_steps`, `max_wake_rows`) and derived properties (`lcm_period`, `max_period`, `min_period`, `static`). `Movement` adds cycle/chord counting, wake sizing parameters, and batch pre-generation of `Airplane`s and `OperatingPoint`s.
 
 ### Attribute Classification
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute                  | Type                               | Notes                     |
-|----------------------------|------------------------------------|---------------------------|
-| `airplane_movements`       | `tuple[AirplaneMovement, ...]`     | Tuple prevents mutation   |
-| `operating_point_movement` | `OperatingPointMovement`           | Operating point changes   |
-| `delta_time`               | `float`                            | Time step                 |
-| `num_cycles`               | `int \| None`                      | Number of cycles          |
-| `num_chords`               | `int \| None`                      | Number of chord lengths   |
-| `num_steps`                | `int`                              | Total time steps          |
-| `max_wake_rows`            | `int \| None`                      | Max wake rows per Wing    |
-| `max_wake_chords`          | `int \| None`                      | Max wake in chord lengths |
-| `max_wake_cycles`          | `int \| None`                      | Max wake in motion cycles |
-| `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | Generated Airplanes       |
-| `operating_points`         | `tuple[OperatingPoint, ...]`       | Generated OperatingPoints |
+| Attribute                  | Type                               | Defined On     | Notes                     |
+|----------------------------|------------------------------------|----------------|---------------------------|
+| `airplane_movements`       | `tuple[AirplaneMovement, ...]`     | `CoreMovement` | Tuple prevents mutation   |
+| `operating_point_movement` | `OperatingPointMovement`           | `CoreMovement` | Operating point changes   |
+| `delta_time`               | `float`                            | `CoreMovement` | Time step                 |
+| `num_steps`                | `int`                              | `CoreMovement` | Total time steps          |
+| `max_wake_rows`            | `int \| None`                      | `CoreMovement` | Max wake rows per Wing    |
+| `num_cycles`               | `int \| None`                      | `Movement`     | Number of cycles          |
+| `num_chords`               | `int \| None`                      | `Movement`     | Number of chord lengths   |
+| `max_wake_chords`          | `int \| None`                      | `Movement`     | Max wake in chord lengths |
+| `max_wake_cycles`          | `int \| None`                      | `Movement`     | Max wake in motion cycles |
+| `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | `Movement`     | Generated Airplanes       |
+| `operating_points`         | `tuple[OperatingPoint, ...]`       | `Movement`     | Generated OperatingPoints |
 
 #### Derived from Immutable (use manual lazy caching)
 
-| Property     | Depends On                                       | Notes  |
-|--------------|--------------------------------------------------|--------|
-| `lcm_period` | `airplane_movements`, `operating_point_movement` | Cached |
-| `max_period` | `airplane_movements`, `operating_point_movement` | Cached |
-| `min_period` | `airplane_movements`, `operating_point_movement` | Cached |
-| `static`     | `max_period`                                     | Cached |
+| Property     | Depends On                                       | Defined On     | Notes  |
+|--------------|--------------------------------------------------|----------------|--------|
+| `lcm_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `max_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `min_period` | `airplane_movements`, `operating_point_movement` | `CoreMovement` | Cached |
+| `static`     | `max_period`                                     | `CoreMovement` | Cached |
 
-**Note on `airplanes` and `operating_points`**: These are generated during `__init__` by calling the child movements' `generate_*` methods. Are stored as nested tuples to prevent modification after generation.
+**Note on `airplanes` and `operating_points`**: These are defined on `Movement` and generated during `__init__` by calling the child movements' `generate_*` methods. They are stored as nested tuples to prevent modification after generation.
 
-## AirplaneMovement Class (`movements/airplane_movement.py`)
+## CoreAirplaneMovement / AirplaneMovement Class (`_core.py`, `movements/airplane_movement.py`)
+
+`AirplaneMovement` extends `CoreAirplaneMovement`. All slots are defined on `CoreAirplaneMovement`; `AirplaneMovement` has empty `__slots__` and only narrows the `wing_movements` type to require `WingMovement` children.
 
 ### Attribute Classification
 
@@ -174,7 +182,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
 | `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
 
-## WingMovement Class (`movements/wing_movement.py`)
+## CoreWingMovement / WingMovement Class (`_core.py`, `movements/wing_movement.py`)
+
+`WingMovement` extends `CoreWingMovement`. All slots are defined on `CoreWingMovement`; `WingMovement` has empty `__slots__` and only narrows the `wing_cross_section_movements` type to require `WingCrossSectionMovement` children.
 
 ### Attribute Classification
 
@@ -201,7 +211,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
 | `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
 
-## WingCrossSectionMovement Class (`movements/wing_cross_section_movement.py`)
+## CoreWingCrossSectionMovement / WingCrossSectionMovement Class (`_core.py`, `movements/wing_cross_section_movement.py`)
+
+`WingCrossSectionMovement` extends `CoreWingCrossSectionMovement`. All slots are defined on `CoreWingCrossSectionMovement`; `WingCrossSectionMovement` has empty `__slots__`.
 
 ### Attribute Classification
 
@@ -226,7 +238,9 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `all_periods` | Period arrays | Tuple of unique non zero periods (cached) |
 | `max_period`  | Period arrays | Scalar float, longest period (cached)     |
 
-## OperatingPointMovement Class (`movements/operating_point_movement.py`)
+## CoreOperatingPointMovement / OperatingPointMovement Class (`_core.py`, `movements/operating_point_movement.py`)
+
+`OperatingPointMovement` extends `CoreOperatingPointMovement`. All slots are defined on `CoreOperatingPointMovement`; `OperatingPointMovement` has empty `__slots__`.
 
 ### Attribute Classification
 

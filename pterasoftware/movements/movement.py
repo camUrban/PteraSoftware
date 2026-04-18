@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import copy
 import math
+from typing import cast
 
 import numpy as np
 import scipy.optimize as sp_opt
 
-from .. import _logging, _parameter_validation, _vortices, geometry
+from .. import _core, _logging, _parameter_validation, _vortices, geometry
 from .. import operating_point as operating_point_mod
 from .. import problems
 from . import airplane_movement as airplane_movement_mod
@@ -26,43 +27,7 @@ from . import operating_point_movement as operating_point_movement_mod
 movement_logger = _logging.get_logger("movements.movement")
 
 
-def _lcm(a: float, b: float) -> float:
-    """Calculates the least common multiple of two numbers.
-
-    :param a: First number (period in seconds)
-    :param b: Second number (period in seconds)
-    :return: LCM of a and b. Returns 0.0 if either input is 0.0.
-    """
-    if a == 0.0 or b == 0.0:
-        return 0.0
-    # Convert to integers (periods are typically whole multiples of delta_time)
-    # Use sufficiently large multiplier to preserve precision
-    multiplier = 1000000
-    a_int = int(round(a * multiplier))
-    b_int = int(round(b * multiplier))
-    lcm_int = abs(a_int * b_int) // math.gcd(a_int, b_int)
-    return lcm_int / multiplier
-
-
-def _lcm_multiple(periods: list[float]) -> float:
-    """Calculates the least common multiple of multiple periods.
-
-    :param periods: List of periods in seconds
-    :return: LCM of all periods. Returns 0.0 if all periods are 0.0.
-    """
-    if not periods or all(p == 0.0 for p in periods):
-        return 0.0
-    # Filter out zero periods and calculate LCM
-    non_zero_periods = [p for p in periods if p != 0.0]
-    if not non_zero_periods:
-        return 0.0
-    result = non_zero_periods[0]
-    for period in non_zero_periods[1:]:
-        result = _lcm(result, period)
-    return result
-
-
-class Movement:
+class Movement(_core.CoreMovement):
     """A class used to contain an UnsteadyProblem's movement.
 
     **Contains the following methods:**
@@ -83,21 +48,12 @@ class Movement:
     """
 
     __slots__ = (
-        "_airplane_movements",
-        "_operating_point_movement",
-        "_delta_time",
         "_num_cycles",
         "_num_chords",
-        "_num_steps",
-        "_max_wake_rows",
         "_max_wake_chords",
         "_max_wake_cycles",
         "_airplanes",
         "_operating_points",
-        "_lcm_period",
-        "_max_period",
-        "_min_period",
-        "_static",
     )
 
     def __init__(
@@ -167,7 +123,11 @@ class Movement:
             num_cycles). Must be a positive int if set. The default is None.
         :return: None
         """
-        # Validate and store immutable attributes.
+        # --- Validate types early ---
+        # CoreMovement.__init__() validates these, but Movement needs to use
+        # the parameters before calling super().__init__() (for delta_time
+        # estimation and period computation). Validate here so that bad types
+        # produce clear TypeErrors rather than AttributeErrors.
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
         if len(airplane_movements) < 1:
@@ -177,13 +137,9 @@ class Movement:
                 airplane_movement, airplane_movement_mod.AirplaneMovement
             ):
                 raise TypeError(
-                    "Every element in airplane_movements must be an AirplaneMovement."
+                    "Every element in airplane_movements must be an "
+                    "AirplaneMovement."
                 )
-        # Store as tuple to prevent external mutation.
-        self._airplane_movements: tuple[airplane_movement_mod.AirplaneMovement, ...] = (
-            tuple(airplane_movements)
-        )
-
         if not isinstance(
             operating_point_movement,
             operating_point_movement_mod.OperatingPointMovement,
@@ -191,15 +147,8 @@ class Movement:
             raise TypeError(
                 "operating_point_movement must be an OperatingPointMovement."
             )
-        self._operating_point_movement = operating_point_movement
 
-        # Initialize the caches for the properties derived from the immutable
-        # attributes. These are initialized early because static is accessed below
-        # during __init__ to determine num_steps calculation.
-        self._lcm_period: float | None = None
-        self._max_period: float | None = None
-        self._min_period: float | None = None
-        self._static: bool | None = None
+        # --- Resolve delta_time ---
 
         # Track whether iterative optimization should run after analytical.
         _should_iteratively_optimize_delta_time: bool = False
@@ -221,7 +170,7 @@ class Movement:
             # velocity. This is used as a fallback for static movements and as
             # a starting point for the analytical optimization.
             delta_times = []
-            for airplane_movement in self._airplane_movements:
+            for airplane_movement in airplane_movements:
                 # TODO: Consider making this also average across each Airplane's Wings.
                 c_ref = airplane_movement.base_airplane.c_ref
                 assert c_ref is not None
@@ -235,8 +184,8 @@ class Movement:
             # Run analytical optimization to get a better delta_time that accounts
             # for both freestream and geometry motion velocities.
             delta_time = _analytically_optimize_delta_time(
-                airplane_movements=list(self._airplane_movements),
-                operating_point_movement=self._operating_point_movement,
+                airplane_movements=list(airplane_movements),
+                operating_point_movement=operating_point_movement,
                 initial_delta_time=fast_estimate,
             )
 
@@ -244,14 +193,33 @@ class Movement:
         # as the initial guess.
         if _should_iteratively_optimize_delta_time:
             delta_time = _optimize_delta_time(
-                airplane_movements=list(self._airplane_movements),
-                operating_point_movement=self._operating_point_movement,
+                airplane_movements=list(airplane_movements),
+                operating_point_movement=operating_point_movement,
                 initial_delta_time=delta_time,
             )
-        self._delta_time: float = delta_time
 
-        _static = self.static
+        # --- Compute period properties locally ---
+        # These are needed for num_steps and max_wake calculations before
+        # super().__init__() is called. The same values will be lazily cached
+        # by CoreMovement when accessed via properties.
+        _airplane_movement_max_periods = []
+        for airplane_movement in airplane_movements:
+            _airplane_movement_max_periods.append(airplane_movement.max_period)
+        _max_period = max(
+            max(_airplane_movement_max_periods),
+            operating_point_movement.max_period,
+        )
+        _static = _max_period == 0
 
+        _lcm_period: float = 0.0
+        if not _static:
+            _all_periods: list[float] = []
+            for airplane_movement in airplane_movements:
+                _all_periods.extend(airplane_movement.all_periods)
+            _all_periods.append(operating_point_movement.max_period)
+            _lcm_period = _core.lcm_multiple(_all_periods)
+
+        # --- Resolve num_steps ---
         if num_steps is None:
             if _static:
                 if num_cycles is not None:
@@ -272,7 +240,6 @@ class Movement:
                 min_val=1,
                 min_inclusive=True,
             )
-        self._num_cycles = num_cycles
 
         if num_steps is None:
             if _static:
@@ -294,9 +261,8 @@ class Movement:
                 min_val=1,
                 min_inclusive=True,
             )
-        self._num_chords = num_chords
 
-        if self._num_cycles is not None or self._num_chords is not None:
+        if num_cycles is not None or num_chords is not None:
             if num_steps is not None:
                 raise ValueError(
                     "If either num_cycles or num_chords is not None, num_steps must "
@@ -314,7 +280,7 @@ class Movement:
                 # Find the value of the largest reference chord length of all the
                 # base Airplanes.
                 c_refs = []
-                for airplane_movement in self._airplane_movements:
+                for airplane_movement in airplane_movements:
                     c_ref = airplane_movement.base_airplane.c_ref
                     assert c_ref is not None
                     c_refs.append(c_ref)
@@ -322,23 +288,20 @@ class Movement:
 
                 # Set the number of time steps such that the wake extends back by
                 # some number of reference chord lengths.
-                assert self._num_chords is not None
-                wake_length = self._num_chords * max_c_ref
+                assert num_chords is not None
+                wake_length = num_chords * max_c_ref
                 distance_per_time_step = (
-                    delta_time
-                    * self._operating_point_movement.base_operating_point.vCg__E
+                    delta_time * operating_point_movement.base_operating_point.vCg__E
                 )
                 num_steps = math.ceil(wake_length / distance_per_time_step)
             else:
-                # Set the number of time steps such that the simulation runs for some
-                # number of cycles of all motions. Use the LCM of all periods to ensure
-                # each motion completes an integer number of cycles.
-                assert self._num_cycles is not None
-                num_steps = math.ceil(
-                    self._num_cycles * self.lcm_period / self._delta_time
-                )
-        self._num_steps: int = num_steps
+                # Set the number of time steps such that the simulation runs for
+                # some number of cycles of all motions. Use the LCM of all periods
+                # to ensure each motion completes an integer number of cycles.
+                assert num_cycles is not None
+                num_steps = math.ceil(num_cycles * _lcm_period / delta_time)
 
+        # --- Resolve max_wake_rows ---
         # Validate max_wake_* parameters. At most one can be non None.
         _num_max_wake_set = sum(
             x is not None for x in (max_wake_rows, max_wake_chords, max_wake_cycles)
@@ -358,7 +321,6 @@ class Movement:
                 min_val=1,
                 min_inclusive=True,
             )
-        self._max_wake_chords = max_wake_chords
 
         if max_wake_cycles is not None:
             if _static:
@@ -371,48 +333,59 @@ class Movement:
                 min_val=1,
                 min_inclusive=True,
             )
-        self._max_wake_cycles = max_wake_cycles
 
-        if max_wake_rows is not None:
-            max_wake_rows = _parameter_validation.int_in_range_return_int(
-                max_wake_rows,
-                "max_wake_rows",
-                min_val=1,
-                min_inclusive=True,
-            )
-
-        # Convert max_wake_chords to max_wake_rows using the same formula as num_chords
-        # to num_steps.
-        if self._max_wake_chords is not None:
+        # Convert max_wake_chords to max_wake_rows using the same formula as
+        # num_chords to num_steps.
+        if max_wake_chords is not None:
             c_refs = []
-            for airplane_movement in self._airplane_movements:
+            for airplane_movement in airplane_movements:
                 c_ref = airplane_movement.base_airplane.c_ref
                 assert c_ref is not None
                 c_refs.append(c_ref)
             max_c_ref = max(c_refs)
 
             distance_per_time_step = (
-                self._delta_time
-                * self._operating_point_movement.base_operating_point.vCg__E
+                delta_time * operating_point_movement.base_operating_point.vCg__E
             )
             max_wake_rows = math.ceil(
-                self._max_wake_chords * max_c_ref / distance_per_time_step
+                max_wake_chords * max_c_ref / distance_per_time_step
             )
 
         # Convert max_wake_cycles to max_wake_rows using the same formula as
         # num_cycles to num_steps.
-        if self._max_wake_cycles is not None:
-            max_wake_rows = math.ceil(
-                self._max_wake_cycles * self.lcm_period / self._delta_time
-            )
+        if max_wake_cycles is not None:
+            max_wake_rows = math.ceil(max_wake_cycles * _lcm_period / delta_time)
 
-        self._max_wake_rows = max_wake_rows
+        # --- Initialize CoreMovement ---
+        super().__init__(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            delta_time=delta_time,
+            num_steps=num_steps,
+            max_wake_rows=max_wake_rows,
+        )
 
+        # Pre-populate the lazy caches with values already computed above so
+        # that accessing the inherited properties does not redundantly
+        # recompute them. _max_period, _lcm_period, and _static are set here
+        # because they are always needed during __init__ (via the static
+        # check). _min_period remains lazy.
+        self._max_period = _max_period
+        self._lcm_period = _lcm_period
+        self._static = _static
+
+        # --- Store Movement only attributes ---
+        self._num_cycles = num_cycles
+        self._num_chords = num_chords
+        self._max_wake_chords = max_wake_chords
+        self._max_wake_cycles = max_wake_cycles
+
+        # --- Batch generate ---
         # Generate a list of lists of Airplanes that are the steps through each
         # AirplaneMovement. The first index identifies the AirplaneMovement, and the
         # second index identifies the time step.
         airplanes_temp: list[list[geometry.airplane.Airplane]] = []
-        for airplane_movement in self._airplane_movements:
+        for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
                 airplane_movement.generate_airplanes(
                     num_steps=self._num_steps, delta_time=self._delta_time
@@ -451,7 +424,7 @@ class Movement:
             tuple(airplane_list) for airplane_list in airplanes_temp
         )
 
-        # Generate a lists of OperatingPoints that are the steps through the
+        # Generate a list of OperatingPoints that are the steps through the
         # OperatingPointMovement.
         operating_points_temp = operating_point_movement.generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
@@ -463,18 +436,23 @@ class Movement:
 
     # --- Immutable: read only properties ---
     @property
-    def airplane_movements(self) -> tuple[airplane_movement_mod.AirplaneMovement, ...]:
-        return self._airplane_movements
-
-    @property
     def operating_point_movement(
         self,
     ) -> operating_point_movement_mod.OperatingPointMovement:
+        assert isinstance(
+            self._operating_point_movement,
+            operating_point_movement_mod.OperatingPointMovement,
+        )
         return self._operating_point_movement
 
     @property
-    def delta_time(self) -> float:
-        return self._delta_time
+    def airplane_movements(
+        self,
+    ) -> tuple[airplane_movement_mod.AirplaneMovement, ...]:
+        return cast(
+            tuple[airplane_movement_mod.AirplaneMovement, ...],
+            self._airplane_movements,
+        )
 
     @property
     def num_cycles(self) -> int | None:
@@ -483,14 +461,6 @@ class Movement:
     @property
     def num_chords(self) -> int | None:
         return self._num_chords
-
-    @property
-    def num_steps(self) -> int:
-        return self._num_steps
-
-    @property
-    def max_wake_rows(self) -> int | None:
-        return self._max_wake_rows
 
     @property
     def max_wake_chords(self) -> int | None:
@@ -507,101 +477,6 @@ class Movement:
     @property
     def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
         return self._operating_points
-
-    # --- Immutable derived: manual lazy caching ---
-    @property
-    def lcm_period(self) -> float:
-        """The least common multiple of all motion periods, ensuring all motions
-        complete an integer number of cycles when cycle averaging forces and moments.
-
-        Using the LCM ensures that when cycle averaging forces and moments, we capture a
-        complete cycle of all motions, not just the longest one. For example, if one
-        motion has a period of 2.0 s and another has a period of 3.0 s, the LCM is 6.0,
-        which contains exactly 3 cycles of the first motion and 2 cycles of the second.
-
-        :return: The LCM period in seconds. If all the motion is static, this will be
-            0.0.
-        """
-        if self._lcm_period is None:
-            # Collect all periods from AirplaneMovements
-            all_periods: list[float] = []
-            for airplane_movement in self._airplane_movements:
-                all_periods.extend(airplane_movement.all_periods)
-
-            # Add the OperatingPointMovement period
-            all_periods.append(self._operating_point_movement.max_period)
-
-            self._lcm_period = _lcm_multiple(all_periods)
-        return self._lcm_period
-
-    @property
-    def max_period(self) -> float:
-        """The longest period of motion of Movement's sub movement objects, the
-        motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
-        movement objects.
-
-        Note: For cycle averaging calculations, lcm_period should be used instead of
-        max_period to ensure all motions complete an integer number of cycles.
-
-        :return: The longest period in seconds. If all the motion is static, this will
-            be 0.0.
-        """
-        if self._max_period is None:
-            # Iterate through the AirplaneMovements and find the one with the largest
-            # max period.
-            airplane_movement_max_periods = []
-            for airplane_movement in self._airplane_movements:
-                airplane_movement_max_periods.append(airplane_movement.max_period)
-            max_airplane_period = max(airplane_movement_max_periods)
-
-            # The global max period is the maximum of the max AirplaneMovement period
-            # and the OperatingPointMovement max period.
-            self._max_period = max(
-                max_airplane_period,
-                self._operating_point_movement.max_period,
-            )
-        return self._max_period
-
-    @property
-    def min_period(self) -> float:
-        """The shortest non zero period of motion of Movement's sub movement objects,
-        the motion(s) of its sub sub movement object(s), and the motions of its sub sub
-        sub movement objects.
-
-        :return: The shortest non zero period in seconds. If all the motion is static,
-            this will be 0.0.
-        """
-        if self._min_period is None:
-            # Collect all periods from AirplaneMovements.
-            all_periods: list[float] = []
-            for airplane_movement in self._airplane_movements:
-                all_periods.extend(airplane_movement.all_periods)
-
-            # Add the OperatingPointMovement period.
-            op_period = self._operating_point_movement.max_period
-            if op_period != 0.0:
-                all_periods.append(op_period)
-
-            # Filter out zero periods and find the minimum.
-            non_zero_periods = [p for p in all_periods if p != 0.0]
-            if not non_zero_periods:
-                self._min_period = 0.0
-            else:
-                self._min_period = min(non_zero_periods)
-        return self._min_period
-
-    @property
-    def static(self) -> bool:
-        """Flags if the Movement's sub movement objects, its sub sub movement object(s),
-        and its sub sub sub movement objects all represent no motion.
-
-        :return: True if Movement's sub movement objects, its sub sub movement
-            object(s), and its sub sub sub movement objects all represent no motion.
-            False otherwise.
-        """
-        if self._static is None:
-            self._static = self.max_period == 0
-        return self._static
 
 
 def _compute_wake_area_mismatch(
@@ -788,7 +663,7 @@ def _optimize_delta_time(
         )
     else:
         # Non static case: brute force search over integer num_steps_per_lcm_cycle.
-        lcm_period = _lcm_multiple(non_zero_periods)
+        lcm_period = _core.lcm_multiple(non_zero_periods)
         return _optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1034,7 +909,7 @@ def _analytically_optimize_delta_time(
 
     min_period = min(non_zero_periods)
 
-    lcm_period = _lcm_multiple(non_zero_periods)
+    lcm_period = _core.lcm_multiple(non_zero_periods)
 
     # Step 1: Compute a preliminary delta_time that divides the LCM period into roughly
     # min_period / 100 sized steps. Cap at 1000 steps to prevent excessive computation

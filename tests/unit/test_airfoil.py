@@ -636,7 +636,6 @@ class TestAirfoilImmutability(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for immutability tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
-        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
     def test_immutable_name_property(self):
         """Test that name property is read only."""
@@ -683,11 +682,9 @@ class TestAirfoilDeepCopy(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for deepcopy tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
-        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
         self.custom_outline_airfoil = (
             geometry_fixtures.make_custom_outline_airfoil_fixture()
         )
-        self.resampled_airfoil = geometry_fixtures.make_resampled_airfoil_fixture()
         self.non_resampled_airfoil = (
             geometry_fixtures.make_non_resampled_airfoil_fixture()
         )
@@ -953,7 +950,6 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures for get_resampled_mcl tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
-        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
     def test_get_resampled_mcl_returns_correct_shape(self):
         """Test that get_resampled_mcl returns correct shape."""
@@ -1044,7 +1040,6 @@ class TestAirfoilEdgeCases(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for edge case tests."""
-        self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
 
     def test_minimum_n_points_per_side(self):
         """Test Airfoil with minimum valid n_points_per_side (3)."""

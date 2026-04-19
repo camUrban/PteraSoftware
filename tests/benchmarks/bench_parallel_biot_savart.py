@@ -25,7 +25,7 @@ from pterasoftware._aerodynamics_functions import (
 )
 
 # noinspection PyProtectedMember
-_parallel = _aerodynamics_functions._collapsed_velocities_from_line_vortices_parallel
+_parallel = _aerodynamics_functions._collapsed_velocities_from_line_vortices
 
 
 @njit(cache=True, fastmath=False)

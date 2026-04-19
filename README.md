@@ -167,6 +167,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Savitha N ([Savitha-Akhilu](https://github.com/Savitha-Akhilu))
 * Pedro Bornia ([BorniaPedro](https://github.com/BorniaPedro))
 * Mohamed Abdulghany ([MohamedMG7](https://github.com/MohamedMG7))
+* Hang Haotian ([haotianh9](https://github.com/haotianh9))
 
 ### Supporters
 

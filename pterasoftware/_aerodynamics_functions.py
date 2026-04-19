@@ -803,10 +803,12 @@ def _expanded_velocities_from_line_vortices(
             gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
     return gridVInd_GP1__E
 
+
 # ==== PARALLELIZED IMPLEMENTATION FOR ISSUE #140 ====
 # Parallel outer loop with thread-local accumulators - NO RACE CONDITIONS
 # Each thread processes one complete vortex, then merges results sequentially
 # See: https://github.com/camUrban/PteraSoftware/issues/140
+
 
 @njit(fastmath=False, parallel=True)
 def _collapsed_velocities_from_line_vortices_parallel(
@@ -821,16 +823,13 @@ def _collapsed_velocities_from_line_vortices_parallel(
 ) -> np.ndarray:
     """Parallel vortex loop with thread-local accumulators (Issue #140).
 
-    Parallelizes outer loop (vortices) with each thread processing one complete
-    vortex independently. Results stored in non-overlapping array slices to avoid
-    race conditions. After prange barrier, results are merged serially.
+    Parallelizes outer loop (vortices) with each thread processing one complete vortex
+    independently. Results stored in non-overlapping array slices to avoid race
+    conditions. After prange barrier, results are merged serially.
 
-    Thread safety:
-    - Each thread: unique vortex_id from prange (no conflicts)
-    - Each thread: local_velocities (thread-private)
-    - Each thread: local_counts (thread-private)
-    - Storage: vortex_results[vortex_id] (non-overlapping per thread)
-    - After prange: merge happens at barrier (all threads synchronized)
+    For thread safety, each thread owns a unique vortex_id from prange, its own
+    local_velocities, its own local_counts, and its own vortex_results[vortex_id]. After
+    the prange loop completes, merging happens at barrier.
     """
     num_vortices = stackSlvp_GP1_CgP1.shape[0]
     num_points = stackP_GP1_CgP1.shape[0]
@@ -909,7 +908,12 @@ def _collapsed_velocities_from_line_vortices_parallel(
                         local_counts[3] += 1
                     continue
 
-                c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+                c_4 = (
+                    c_1
+                    * (r1 + r2)
+                    * (r1_times_r2 - c_3)
+                    / (r1_times_r2 * (r3_sq + c_2))
+                )
                 local_velocities[point_id, 0] += c_4 * r3X_GP1
                 local_velocities[point_id, 1] += c_4 * r3Y_GP1
                 local_velocities[point_id, 2] += c_4 * r3Z_GP1
@@ -936,4 +940,3 @@ def _collapsed_velocities_from_line_vortices_parallel(
             singularity_counts[i] += vortex_counts[vortex_id, i]
 
     return result
-

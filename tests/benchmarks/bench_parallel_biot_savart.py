@@ -1,155 +1,184 @@
-"""Comprehensive test: Parallel Biot-Savart kernel correctness and performance."""
+"""Benchmarks correctness and speedup of the parallel Biot-Savart line vortex kernel.
+
+Compares the parallel Numba kernel against the serial kernel to verify matching
+numerical results and measure the parallel speedup across a range of problem sizes.
+"""
 
 import sys
+import timeit
+
+import numba
 import numpy as np
-import time
 
-sys.path.insert(0, '/home/haotian/PteraSoftware')
+# noinspection PyProtectedMember
+from pterasoftware import _aerodynamics_functions
 
-class Mock:
-    def __getattr__(self, name):
-        return Mock()
-    def __call__(self, *args, **kwargs):
-        return Mock()
+# noinspection PyProtectedMember
+_serial = _aerodynamics_functions._collapsed_velocities_from_line_vortices
 
-sys.modules['pyvista'] = Mock()
-sys.modules['pyside6'] = Mock()
+# noinspection PyProtectedMember
+_parallel = _aerodynamics_functions._collapsed_velocities_from_line_vortices_parallel
 
-import importlib.util
-spec = importlib.util.spec_from_file_location(
-    "aero",
-    "/home/haotian/PteraSoftware/pterasoftware/_aerodynamics_functions.py"
-)
-aero = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(aero)
+_SIZES = [
+    ("PD Small", 100, 50),
+    ("PD Medium", 200, 100),
+    ("PD Large", 500, 200),
+    ("PD XLarge", 1000, 500),
+    ("PD Huge", 2000, 1000),
+    ("VD Small", 50, 100),
+    ("VD Medium", 100, 200),
+    ("VD Large", 200, 500),
+    ("VD XLarge", 500, 1000),
+    ("VD Huge", 1000, 2000),
+]
 
-serial = aero._collapsed_velocities_from_line_vortices
-parallel = aero._collapsed_velocities_from_line_vortices_parallel
+
+def _make_inputs(num_points: int, num_vortices: int) -> tuple:
+    """Creates a deterministic set of inputs for a given problem size."""
+    np.random.seed(42)
+    stackP_GP1_CgP1 = np.random.randn(num_points, 3).astype(np.float64)
+    stackSlvp_GP1_CgP1 = np.random.randn(num_vortices, 3).astype(np.float64)
+    stackElvp_GP1_CgP1 = (
+        stackSlvp_GP1_CgP1 + np.random.randn(num_vortices, 3).astype(np.float64) * 0.5
+    )
+    strengths = np.random.randn(num_vortices).astype(np.float64)
+    r_c0s = np.abs(np.random.randn(num_vortices).astype(np.float64)) + 0.01
+    return (
+        stackP_GP1_CgP1,
+        stackSlvp_GP1_CgP1,
+        stackElvp_GP1_CgP1,
+        strengths,
+        r_c0s,
+    )
 
 
-def test_correctness():
-    """Verify parallel version matches serial exactly."""
-    print("=" * 90)
-    print("CORRECTNESS TEST: Parallel vs Serial Implementation")
-    print("=" * 90)
+def bench_correctness() -> bool:
+    """Verifies that the parallel and serial kernels produce matching results.
+
+    :return: True if every problem size passes within tolerance; False otherwise.
+    """
+    print("=" * 70)
+    print("CORRECTNESS")
+    print("=" * 70)
     print()
 
-    test_sizes = [
-        ("Small", 50, 10),
-        ("Medium", 100, 50),
-        ("Large", 200, 100),
-    ]
+    print(
+        f"{'Size':<10} {'Points':<8} {'Vortices':<10} "
+        f"{'Max Error':>11} {'Results':>9} {'Counts':>8} {'Status':>7}"
+    )
+    print("-" * 70)
 
     all_pass = True
 
-    for name, num_points, num_vortices in test_sizes:
-        np.random.seed(42)
-        stackP = np.random.randn(num_points, 3).astype(np.float64)
-        stackS = np.random.randn(num_vortices, 3).astype(np.float64)
-        stackE = stackS + np.random.randn(num_vortices, 3).astype(np.float64) * 0.5
-        strengths = np.random.randn(num_vortices).astype(np.float64)
-        r_c0s = np.abs(np.random.randn(num_vortices).astype(np.float64)) + 0.01
+    for name, num_points, num_vortices in _SIZES:
+        inputs = _make_inputs(num_points, num_vortices)
 
         counts_s = np.zeros(4, dtype=np.int64)
-        result_s = serial(stackP, stackS, stackE, strengths, r_c0s, counts_s)
+        result_s = _serial(*inputs, counts_s)
 
         counts_p = np.zeros(4, dtype=np.int64)
-        result_p = parallel(stackP, stackS, stackE, strengths, r_c0s, counts_p)
+        result_p = _parallel(*inputs, counts_p)
 
-        max_error = np.max(np.abs(result_s - result_p))
-        # Use relative tolerance because parallel changes vortex order (affects FP rounding)
-        results_match = np.allclose(result_s, result_p, rtol=1e-5, atol=1e-10)
+        max_error = float(np.max(np.abs(result_s - result_p)))
+
+        # Parallelizing should preserve sum order, so results should be bit identical.
+        results_match = np.array_equal(result_s, result_p)
         counts_match = np.array_equal(counts_s, counts_p)
 
-        status = "✓ PASS" if (results_match and counts_match) else "✗ FAIL"
-        print(f"  {name:<10} Error: {max_error:.2e}  Results: {results_match}  Counts: {counts_match}  {status}")
+        status = "Pass" if (results_match and counts_match) else "Fail"
+        print(
+            f"{name:<10} {num_points:<8} {num_vortices:<10} "
+            f"{max_error:>11.2e} {str(results_match):>9} {str(counts_match):>8} "
+            f"{status:>7}"
+        )
 
         if not (results_match and counts_match):
             all_pass = False
 
+    print()
+    print('*PD = "Point-Dominated", VD = "Vortex-Dominated"')
+    print()
     return all_pass
 
 
-def test_performance():
-    """Measure performance and speedup across problem sizes."""
-    print("\n" + "=" * 90)
-    print("PERFORMANCE TEST: Speedup Analysis")
-    print("=" * 90)
+def bench_performance() -> float:
+    """Measures performance and speedup across problem sizes.
+
+    :return: The geometric mean speedup (serial / parallel) across all sizes.
+    """
+    print("=" * 70)
+    print("PERFORMANCE")
+    print("=" * 70)
     print()
 
-    test_cases = [
-        ("Small", 100, 50),
-        ("Medium", 200, 100),
-        ("Large", 500, 200),
-        ("XLarge", 1000, 500),
-        ("Huge", 2000, 1000),
-    ]
-
-    print(f"{'Size':<12} {'Points':<10} {'Vortices':<10} {'Serial (ms)':<14} {'Parallel (ms)':<14} {'Speedup':<10}")
-    print("-" * 90)
+    print(
+        f"{'Size':<10} {'Points':<8} {'Vortices':<10} "
+        f"{'Serial (ms)':>12} {'Parallel (ms)':>14} {'Speedup':>10}"
+    )
+    print("-" * 70)
 
     speedups = []
 
-    for name, num_points, num_vortices in test_cases:
-        np.random.seed(42)
-        stackP = np.random.randn(num_points, 3).astype(np.float64)
-        stackS = np.random.randn(num_vortices, 3).astype(np.float64)
-        stackE = stackS + np.random.randn(num_vortices, 3).astype(np.float64) * 0.5
-        strengths = np.random.randn(num_vortices).astype(np.float64)
-        r_c0s = np.abs(np.random.randn(num_vortices).astype(np.float64)) + 0.01
+    for name, num_points, num_vortices in _SIZES:
+        inputs = _make_inputs(num_points, num_vortices)
 
-        # Warm up
-        counts = np.zeros(4, dtype=np.int64)
-        serial(stackP, stackS, stackE, strengths, r_c0s, counts)
+        # Warm up each kernel once so JIT compilation is not attributed to the first
+        # timed call inside autorange.
+        _serial(*inputs, np.zeros(4, dtype=np.int64))
+        _parallel(*inputs, np.zeros(4, dtype=np.int64))
 
-        # Serial
+        # Use autorange to pick a per-sample call count large enough that clock noise
+        # is a negligible fraction, then take the minimum of 5 samples because timing
+        # noise (OS jitter, GC, context switches) can only inflate a sample, never
+        # shorten it.
         counts_s = np.zeros(4, dtype=np.int64)
-        start = time.perf_counter()
-        serial(stackP, stackS, stackE, strengths, r_c0s, counts_s)
-        time_s = time.perf_counter() - start
+        timer_s = timeit.Timer(lambda: _serial(*inputs, counts_s))
+        number_s, _ = timer_s.autorange()
+        time_s = min(timer_s.repeat(repeat=5, number=number_s)) / number_s
 
-        # Parallel
         counts_p = np.zeros(4, dtype=np.int64)
-        start = time.perf_counter()
-        parallel(stackP, stackS, stackE, strengths, r_c0s, counts_p)
-        time_p = time.perf_counter() - start
+        timer_p = timeit.Timer(lambda: _parallel(*inputs, counts_p))
+        number_p, _ = timer_p.autorange()
+        time_p = min(timer_p.repeat(repeat=5, number=number_p)) / number_p
 
-        speedup = time_s / time_p if time_p > 0 else 0
+        speedup = time_s / time_p if time_p > 0 else 0.0
         speedups.append(speedup)
-        status = f"{speedup:.2f}x" + (" ✓ SPEEDUP" if speedup > 1.1 else "")
 
-        print(f"{name:<12} {num_points:<10} {num_vortices:<10} {time_s*1000:>13.2f} {time_p*1000:>13.2f} {status:<10}")
-
-    avg_speedup = np.mean(speedups)
-    max_speedup = np.max(speedups)
+        print(
+            f"{name:<10} {num_points:<8} {num_vortices:<10} "
+            f"{time_s * 1000:>12.2f} {time_p * 1000:>14.2f} {speedup:>9.2f}x"
+        )
 
     print()
-    print(f"Average speedup: {avg_speedup:.2f}x")
-    print(f"Maximum speedup: {max_speedup:.2f}x")
+    print('*PD = "Point-Dominated", VD = "Vortex-Dominated"')
 
-    return avg_speedup
+    # Use the geometric mean because arithmetic mean of ratios overweights
+    # high speedups: 0.5x and 2.0x should average to 1.0x (break-even), not
+    # 1.25x.
+    gmean_speedup = float(np.exp(np.mean(np.log(speedups))))
+    max_speedup = float(np.max(speedups))
+
+    print()
+    print(f"Geometric mean speedup: {gmean_speedup:.2f}x")
+    print(f"Maximum speedup:        {max_speedup:.2f}x")
+    print()
+
+    return gmean_speedup
 
 
 if __name__ == "__main__":
     print()
-    print("ISSUE #140: Parallel Biot-Savart Kernel Implementation")
+    print("Parallel Biot-Savart Kernel Benchmark")
+    print(f"Python {sys.version}")
+    print(f"Numba threads: {numba.get_num_threads()}")
+    print(f"Numba threading layer: {numba.threading_layer()}")
     print()
 
-    correct = test_correctness()
-    avg_speedup = test_performance()
+    correct_summary = bench_correctness()
+    gmean_speedup_summary = bench_performance()
 
-    print("\n" + "=" * 90)
+    print("=" * 70)
     print("SUMMARY")
-    print("=" * 90)
-    print(f"✓ Correctness:        {'PASS' if correct else 'FAIL'}")
-    print(f"✓ Average Speedup:    {avg_speedup:.2f}x")
-    print(f"✓ Race Conditions:    FIXED (thread-local accumulators)")
-    print(f"✓ Singularity Count:  PRESERVED")
-    print()
-
-    if correct and avg_speedup > 1.0:
-        print("✅ IMPLEMENTATION READY FOR PRODUCTION")
-        sys.exit(0)
-    else:
-        print("❌ ISSUES DETECTED")
-        sys.exit(1)
+    print("=" * 70)
+    print(f"Correctness:            {'Pass' if correct_summary else 'Fail'}")
+    print(f"Geometric mean speedup: {gmean_speedup_summary:.2f}x")

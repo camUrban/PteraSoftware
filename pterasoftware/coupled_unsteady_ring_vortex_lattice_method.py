@@ -3,7 +3,7 @@
 **Contains the following classes:**
 
 CoupledUnsteadyRingVortexLatticeMethodSolver: A subclass of
-UnsteadyRingVortexLatticeMethodSolver that solves CoupledUnsteadyProblems using the
+UnsteadyRingVortexLatticeMethodSolver that solves _CoupledUnsteadyProblems using the
 unsteady ring vortex lattice method. This solver handles step-by-step geometry
 initialization and computes aerodynamic loads relative to strip leading edge points
 (SLEP) in addition to the standard center-of-gravity frame.
@@ -37,9 +37,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     UnsteadyRingVortexLatticeMethodSolver
 ):
     """A subclass of UnsteadyRingVortexLatticeMethodSolver that solves
-    CoupledUnsteadyProblems.
+    _CoupledUnsteadyProblems.
 
-    This solver handles CoupledUnsteadyProblems where geometry is initialized and
+    This solver handles _CoupledUnsteadyProblems where geometry is initialized and
     updated on a per-step basis (step-by-step), rather than being fully precomputed. It
     extends the parent class with Strip Leading Edge Point (SLEP) functionality for
     computing aerodynamic moments about the strip leading edge, which is important for
@@ -64,7 +64,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
     **Custom methods:**
 
-    run: Runs the solver on the CoupledUnsteadyProblem with per-step geometry
+    run: Runs the solver on the _CoupledUnsteadyProblem with per-step geometry
     initialization.
 
     initialize_step_geometry: Initializes geometry for a specific step without solving.
@@ -73,23 +73,23 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     """
 
     def __init__(
-        self, coupled_unsteady_problem: problems.CoupledUnsteadyProblem
+        self, coupled_unsteady_problem: problems._CoupledUnsteadyProblem
     ) -> None:
-        """Initialize the solver for a CoupledUnsteadyProblem.
+        """Initialize the solver for a _CoupledUnsteadyProblem.
 
         Sets up the solver infrastructure and initializes SLEP (Strip Leading Edge
         Point) related attributes. The coupled_unsteady_problem is stored before calling
         the parent's __init__() because the parent's initialization calls methods that
         depend on accessing this attribute.
 
-        :param coupled_unsteady_problem: The CoupledUnsteadyProblem to be solved. Steps
+        :param coupled_unsteady_problem: The _CoupledUnsteadyProblem to be solved. Steps
             are retrieved dynamically from this problem during iteration via
             get_steady_problem_at().
         :return: None
         """
-        if not isinstance(coupled_unsteady_problem, problems.CoupledUnsteadyProblem):
+        if not isinstance(coupled_unsteady_problem, problems._CoupledUnsteadyProblem):
             raise TypeError(
-                "coupled_unsteady_problem must be a CoupledUnsteadyProblem."
+                "coupled_unsteady_problem must be a _CoupledUnsteadyProblem."
             )
         # self.coupled_unsteady_problem must be defined before the call to super().__init__()
         # because the parent class's __init__ method calls methods that rely on
@@ -105,7 +105,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
 
         # Store computed steady problems for each time step to be assigned to the
-        # CoupledUnsteadyProblem after solve completes. This avoids overwriting the
+        # _CoupledUnsteadyProblem after solve completes. This avoids overwriting the
         # initial steady problems until data visualization/post-processing stage.
         self.steady_problems_data_storage: list[problems.SteadyProblem] = []
 
@@ -121,7 +121,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         calculate_streamlines: bool | np.bool_ = True,
         show_progress: bool | np.bool_ = True,
     ) -> None:
-        """Runs the solver on the CoupledUnsteadyProblem.
+        """Runs the solver on the _CoupledUnsteadyProblem.
 
         :param prescribed_wake: Set this to True to solve using a prescribed wake model.
             Set to False to use a free-wake, which may be more accurate but will make
@@ -300,7 +300,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
                 )
 
                 # Initialize attributes to hold geometric data that pertain to the current
-                # time step of this CoupledUnsteadyProblem.
+                # time step of this _CoupledUnsteadyProblem.
                 self.panels = np.empty(self.num_panels, dtype=object)
                 self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
                 self.panel_areas = np.zeros(self.num_panels, dtype=float)
@@ -478,7 +478,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         """
 
     def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
-        """Get the SteadyProblem at a given time step via the CoupledUnsteadyProblem.
+        """Get the SteadyProblem at a given time step via the _CoupledUnsteadyProblem.
 
         This is a KEY ABSTRACTION POINT that enables inheritance. The parent
         UnsteadyRingVortexLatticeMethodSolver has nearly identical code that calls this
@@ -489,7 +489,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         :param step: An int representing the time step of the desired SteadyProblem. It
             must be between 0 and num_steps - 1, inclusive.
         :return: The SteadyProblem at the given time step, retrieved from the
-            CoupledUnsteadyProblem's step sequence.
+            _CoupledUnsteadyProblem's step sequence.
         """
         if step < 0 or step >= self.num_steps:
             raise ValueError(

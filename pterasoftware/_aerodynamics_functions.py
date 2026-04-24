@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
@@ -448,7 +448,7 @@ def expanded_velocities_from_horseshoe_vortices(
     return gridVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)
+@njit(cache=True, fastmath=False, parallel=True)
 def _collapsed_velocities_from_line_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,
@@ -522,6 +522,14 @@ def _collapsed_velocities_from_line_vortices(
     if ages is None:
         ages = np.zeros(num_vortices)
 
+    # Pre compute per LineVortex quantities in a serial pass. This hoists invariant
+    # work out of the parallel point loop and correctly counts degenerate filaments,
+    # which are a per LineVortex property, not per point.
+    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_c1 = np.empty(num_vortices)
+    vortex_c2 = np.empty(num_vortices)
+    vortex_r0_times_tol = np.empty(num_vortices)
+
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
@@ -538,24 +546,39 @@ def _collapsed_velocities_from_line_vortices(
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
             singularity_counts[0] += 1
+            vortex_valid[vortex_id] = False
             continue
+
+        vortex_valid[vortex_id] = True
 
         strength = strengths[vortex_id]
         age = ages[vortex_id]
         r_c0 = r_c0s[vortex_id]
 
-        # Pre compute r0 * _tol outside the inner loop.
-        r0_times_tol = r0 * _tol
+        # Pre compute r0 * _tol outside the parallel loop.
+        vortex_r0_times_tol[vortex_id] = r0 * _tol
 
         # Calculate the radius of the LineVortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
-        c_1 = strength / _four_pi
-        c_2 = r0**2.0 * r_c_sq
+        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
-        for point_id in range(num_points):
-            P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
+    # Use per point singularity counts to avoid write races in the parallel loop. Index
+    # mapping: [1] vertex start proximity, [2] vertex end proximity, [3] collinearity.
+    # Index [0] (degenerate filament) is handled in the serial pre pass above.
+    point_singularity_counts = np.zeros((num_points, 4), dtype=np.int64)
+
+    for point_id in prange(num_points):
+        P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
+
+        for vortex_id in range(num_vortices):
+            if not vortex_valid[vortex_id]:
+                continue
+
+            Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
+            Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
             # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
             # the first Airplane's geometry axes).
@@ -582,11 +605,12 @@ def _collapsed_velocities_from_line_vortices(
             # Check for singularities using scale invariant criteria. The vertex
             # proximity checks (r1/r0 and r2/r0 but refactored below to use
             # multiplication instead of slower division) guard 1/r singularities.
+            r0_times_tol = vortex_r0_times_tol[vortex_id]
             if r1 < r0_times_tol:
-                singularity_counts[1] += 1
+                point_singularity_counts[point_id, 1] += 1
                 continue
             if r2 < r0_times_tol:
-                singularity_counts[2] += 1
+                point_singularity_counts[point_id, 2] += 1
                 continue
 
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
@@ -616,17 +640,28 @@ def _collapsed_velocities_from_line_vortices(
                 # induced velocity contribution. These two situations are distinguished
                 # by the sign of the c_3 (the dot product of r1 and r2).
                 if c_3 < 0.0:
-                    singularity_counts[3] += 1
+                    point_singularity_counts[point_id, 3] += 1
                 continue
 
-            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            c_4 = (
+                vortex_c1[vortex_id]
+                * (r1 + r2)
+                * (r1_times_r2 - c_3)
+                / (r1_times_r2 * (r3_sq + vortex_c2[vortex_id]))
+            )
             stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
             stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
             stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
+
+    # Aggregate per point singularity counts into the output array.
+    for k in range(1, 4):
+        for p in range(num_points):
+            singularity_counts[k] += point_singularity_counts[p, k]
+
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)
+@njit(cache=True, fastmath=False, parallel=True)
 def _expanded_velocities_from_line_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackSlvp_GP1_CgP1: np.ndarray,
@@ -700,6 +735,14 @@ def _expanded_velocities_from_line_vortices(
     if ages is None:
         ages = np.zeros(num_vortices)
 
+    # Pre compute per LineVortex quantities in a serial pass. This hoists invariant
+    # work out of the parallel point loop and correctly counts degenerate filaments,
+    # which are a per LineVortex property, not per point.
+    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_c1 = np.empty(num_vortices)
+    vortex_c2 = np.empty(num_vortices)
+    vortex_r0_times_tol = np.empty(num_vortices)
+
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
@@ -716,24 +759,39 @@ def _expanded_velocities_from_line_vortices(
         # Skip degenerate filaments where the start and end points coincide.
         if r0 < _eps:
             singularity_counts[0] += 1
+            vortex_valid[vortex_id] = False
             continue
+
+        vortex_valid[vortex_id] = True
 
         strength = strengths[vortex_id]
         age = ages[vortex_id]
         r_c0 = r_c0s[vortex_id]
 
-        # Pre compute r0 * _tol outside the inner loop.
-        r0_times_tol = r0 * _tol
+        # Pre compute r0 * _tol outside the parallel loop.
+        vortex_r0_times_tol[vortex_id] = r0 * _tol
 
         # Calculate the radius of the LineVortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
-        c_1 = strength / _four_pi
-        c_2 = r0**2.0 * r_c_sq
+        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
-        for point_id in range(num_points):
-            P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
+    # Use per point singularity counts to avoid write races in the parallel loop. Index
+    # mapping: [1] vertex start proximity, [2] vertex end proximity, [3] collinearity.
+    # Index [0] (degenerate filament) is handled in the serial pre pass above.
+    point_singularity_counts = np.zeros((num_points, 4), dtype=np.int64)
+
+    for point_id in prange(num_points):
+        P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
+
+        for vortex_id in range(num_vortices):
+            if not vortex_valid[vortex_id]:
+                continue
+
+            Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
+            Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
             # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
             # the first Airplane's geometry axes).
@@ -760,11 +818,12 @@ def _expanded_velocities_from_line_vortices(
             # Check for singularities using scale invariant criteria. The vertex
             # proximity checks (r1/r0 and r2/r0 but refactored below to use
             # multiplication instead of slower division) guard 1/r singularities.
+            r0_times_tol = vortex_r0_times_tol[vortex_id]
             if r1 < r0_times_tol:
-                singularity_counts[1] += 1
+                point_singularity_counts[point_id, 1] += 1
                 continue
             if r2 < r0_times_tol:
-                singularity_counts[2] += 1
+                point_singularity_counts[point_id, 2] += 1
                 continue
 
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
@@ -794,11 +853,22 @@ def _expanded_velocities_from_line_vortices(
                 # induced velocity contribution. These two situations are distinguished
                 # by the sign of the c_3 (the dot product of r1 and r2).
                 if c_3 < 0.0:
-                    singularity_counts[3] += 1
+                    point_singularity_counts[point_id, 3] += 1
                 continue
 
-            c_4 = c_1 * (r1 + r2) * (r1_times_r2 - c_3) / (r1_times_r2 * (r3_sq + c_2))
+            c_4 = (
+                vortex_c1[vortex_id]
+                * (r1 + r2)
+                * (r1_times_r2 - c_3)
+                / (r1_times_r2 * (r3_sq + vortex_c2[vortex_id]))
+            )
             gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
             gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
             gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
+
+    # Aggregate per point singularity counts into the output array.
+    for k in range(1, 4):
+        for p in range(num_points):
+            singularity_counts[k] += point_singularity_counts[p, k]
+
     return gridVInd_GP1__E

@@ -13,7 +13,7 @@ from . import _oscillation, _parameter_validation, _transformations, geometry
 from . import operating_point as operating_point_mod
 
 if TYPE_CHECKING:
-    from . import problems as problems_mod
+    from . import problems
 
 
 def lcm(a: float, b: float) -> float:
@@ -2367,21 +2367,20 @@ class CoreUnsteadyProblem:
         return self._max_wake_rows
 
     @property
-    def steady_problems(self) -> tuple[problems_mod.SteadyProblem, ...]:
-        """The SteadyProblems for each time step.
-
-        Subclasses must override.
-        """
+    def movement(self) -> CoreMovement:
+        # This stub lets the UnsteadyRingVortexLatticeMethodSolver access movement and
+        # steady_problems on any CoreUnsteadyProblem without knowing the concrete
+        # subclass.
         raise NotImplementedError(
-            "Subclasses of CoreUnsteadyProblem must implement steady_problems."
+            "Subclasses of CoreUnsteadyProblem must override the movement property."
         )
 
     @property
-    def movement(self) -> CoreMovement:
-        """The movement that defines the motion parameters.
-
-        Subclasses must override.
-        """
+    def steady_problems(self) -> tuple[problems.SteadyProblem, ...]:
+        # This stub lets the UnsteadyRingVortexLatticeMethodSolver access movement and
+        # steady_problems on any CoreUnsteadyProblem without knowing the concrete
+        # subclass.
         raise NotImplementedError(
-            "Subclasses of CoreUnsteadyProblem must implement movement."
+            "Subclasses of CoreUnsteadyProblem must override the steady_problems "
+            "property."
         )

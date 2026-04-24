@@ -2,7 +2,12 @@
 
 import pterasoftware as ps
 
-from . import geometry_fixtures, movement_fixtures, operating_point_fixtures
+from . import (
+    core_movement_fixtures,
+    geometry_fixtures,
+    movement_fixtures,
+    operating_point_fixtures,
+)
 
 
 def make_basic_steady_problem_fixture():
@@ -105,3 +110,20 @@ def make_multi_airplane_unsteady_problem_fixture():
     )
 
     return multi_airplane_unsteady_problem_fixture
+
+
+def make_basic_coupled_unsteady_problem_fixture():
+    """This method makes a fixture that is a _CoupledUnsteadyProblem for general testing.
+
+    :return basic_coupled_unsteady_problem_fixture: _CoupledUnsteadyProblem
+        This is the _CoupledUnsteadyProblem configured for general testing.
+    """
+    # SteadyProblem sets GP1_CgP1 attributes on each Panel exactly once, so a fresh
+    # Airplane is required for every _CoupledUnsteadyProblem instance.
+    basic_coupled_unsteady_problem_fixture = ps.problems._CoupledUnsteadyProblem(
+        movement=core_movement_fixtures.make_static_core_movement_fixture(),
+        initial_airplanes=[geometry_fixtures.make_first_airplane_fixture()],
+        initial_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
+    )
+
+    return basic_coupled_unsteady_problem_fixture

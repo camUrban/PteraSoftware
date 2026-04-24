@@ -39,7 +39,6 @@ _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
 # REFACTOR: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
 #  and load coefficients.
-# TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -135,10 +134,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             CoreUnsteadyProblem) to be solved.
         :return: None
         """
-        if not isinstance(unsteady_problem, _core.CoreUnsteadyProblem):
-            raise TypeError(
-                "unsteady_problem must be a CoreUnsteadyProblem (or subclass)."
-            )
+        # Guard direct instantiation of the base solver against coupled problems while
+        # allowing subclasses to pass their own CoreUnsteadyProblem variants via super().
+        if type(self) is UnsteadyRingVortexLatticeMethodSolver and not isinstance(
+            unsteady_problem, problems.UnsteadyProblem
+        ):
+            raise TypeError("unsteady_problem must be an UnsteadyProblem.")
         self.unsteady_problem = unsteady_problem
 
         self._max_wake_rows = self.unsteady_problem.max_wake_rows
@@ -403,10 +404,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
             "Remaining: {remaining}",
         ) as bar:
-            # Initialize all the Airplanes' bound RingVortices.
-            _logger.debug("Initializing all Airplanes' bound RingVortices.")
-            self._initialize_panel_vortices()
-
             # Update the progress bar based on the initialization step's predicted
             # approximate, relative computing time.
             bar.update(n=float(approx_times[0]))
@@ -418,6 +415,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # and OperatingPoint, and freestream velocity (in the first
                 # Airplane's geometry axes, observed from the Earth frame).
                 self._current_step = step
+
+                # Initialize this step's bound RingVortices. The default does an
+                # upfront init for all steps on step 0 and is a no-op thereafter;
+                # coupled subclasses override this hook to init one step at a time.
+                self._initialize_step_vortices(step)
                 current_problem: problems.SteadyProblem = self._get_steady_problem_at(
                     self._current_step
                 )
@@ -510,6 +512,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
                 self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
+                # Hook: subclasses may reinitialize step-specific arrays here.
+                self._reinitialize_step_arrays_hook()
+
                 # Get the pre-allocated (but still all zero) arrays of wake
                 # information that are associated with this time step.
                 self._current_wake_vortex_strengths = self._list_wake_vortex_strengths[
@@ -558,6 +563,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     _logger.debug("Calculating forces and moments.")
                     self._calculate_loads()
 
+                # Hook: subclasses may inject work between load calculation and wake
+                # shedding (e.g. coupled problems update the next step's geometry
+                # from this step's solver results).
+                self._pre_shed_hook(step)
+
                 # Shed RingVortices into the wake.
                 _logger.debug("Shedding RingVortices into the wake.")
                 self._populate_next_airplanes_wake()
@@ -596,9 +606,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             step, "step", 0, True, self.num_steps, False
         )
 
-        # Initialize bound RingVortices for all steps on the first call.
-        if step == 0:
-            self._initialize_panel_vortices()
+        # Initialize bound RingVortices. The base solver's hook does an upfront init
+        # for all steps when step is 0 and is a no-op otherwise; coupled subclasses
+        # override to initialize only the specified step.
+        self._initialize_step_vortices(step)
 
         # Set the current step and related state.
         self._current_step = step
@@ -611,6 +622,44 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if step < self.num_steps - 1:
             self._populate_next_airplanes_wake_vortex_points()
             self._populate_next_airplanes_wake_vortices()
+
+    def _initialize_step_vortices(self, step: int) -> None:
+        """Initializes this time step's bound RingVortices.
+
+        The default implementation initializes bound RingVortices for all time steps
+        upfront on step 0 and is a no-op on subsequent steps. Coupled subclasses
+        override this to initialize only the given step, since their geometry is
+        determined dynamically from the solver's results at the previous step.
+
+        :param step: The time step to initialize.
+        :return: None
+        """
+        if step == 0:
+            _logger.debug("Initializing all Airplanes' bound RingVortices.")
+            self._initialize_panel_vortices()
+
+    def _reinitialize_step_arrays_hook(self) -> None:
+        """Hook for subclasses to reinitialize step specific arrays.
+
+        Called once per time step in run(), after the standard per step arrays are
+        reinitialized and before the wake arrays are retrieved. The default
+        implementation is a no op. Subclasses may override this to zero out or
+        reallocate feature specific arrays at the start of each step.
+
+        :return: None
+        """
+
+    def _pre_shed_hook(self, step: int) -> None:
+        """Hook for subclasses to inject work between load calculation and wake shed.
+
+        Called once per time step in run(), after this step's loads have been calculated
+        and before wake RingVortices are shed. The default implementation is a no op.
+        Coupled subclasses override this to update the next time step's geometry from
+        the current step's solver results.
+
+        :param step: The current time step.
+        :return: None
+        """
 
     def _initialize_panel_vortices(self) -> None:
         """Calculates the locations of the bound RingVortex vertices for all time steps,
@@ -2129,8 +2178,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         num_steps_to_average = self.num_steps - self._first_averaging_step
 
         # Determine if this SteadyProblem's geometry is static or variable.
-        this_movement = self.unsteady_problem.movement
-        static = this_movement.static
+        static = self.unsteady_problem.movement.static
 
         # Initialize ndarrays to hold each Airplane's loads and load coefficients at
         # each of the time steps that calculated the loads.

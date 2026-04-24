@@ -298,7 +298,6 @@ def run_aeroelastic(
         damping_eps=1e-3,
         plot_flap_cycle=False,
         custom_spacing_second_derivative=None,
-        only_final_results=False,
     )
 
     example_solver = ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(

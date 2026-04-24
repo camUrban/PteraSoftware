@@ -31,6 +31,12 @@ This package contains the following modules:
     test_core_unsteady_problem.py: This module contains classes to test
     CoreUnsteadyProblems.
 
+    test_coupled_unsteady_problem.py: This module contains classes to test
+    _CoupledUnsteadyProblems.
+
+    test_coupled_unsteady_ring_vortex_lattice_method.py: This module contains
+    classes to test CoupledUnsteadyRingVortexLatticeMethodSolvers.
+
     test_core_wing_cross_section_movement.py: This module contains classes to test
     CoreWingCrossSectionMovements.
 
@@ -73,6 +79,9 @@ This package contains the following modules:
     test_transformations.py: This module contains classes to test functions in the
     transformations module.
 
+    test_unsteady_ring_vortex_lattice_method.py: This module contains classes to
+    test UnsteadyRingVortexLatticeMethodSolvers.
+
     test_wing.py: This module contains classes to test Wings.
 
     test_wing_cross_section.py: This module contains classes to test WingCrossSections.
@@ -94,6 +103,8 @@ import tests.unit.test_core_operating_point_movement
 import tests.unit.test_core_unsteady_problem
 import tests.unit.test_core_wing_cross_section_movement
 import tests.unit.test_core_wing_movement
+import tests.unit.test_coupled_unsteady_problem
+import tests.unit.test_coupled_unsteady_ring_vortex_lattice_method
 import tests.unit.test_horseshoe_vortex
 import tests.unit.test_line_vortex
 import tests.unit.test_movement
@@ -108,6 +119,7 @@ import tests.unit.test_ring_vortex
 import tests.unit.test_serialization
 import tests.unit.test_slots
 import tests.unit.test_transformations
+import tests.unit.test_unsteady_ring_vortex_lattice_method
 import tests.unit.test_wing
 import tests.unit.test_wing_cross_section
 import tests.unit.test_wing_cross_section_movement

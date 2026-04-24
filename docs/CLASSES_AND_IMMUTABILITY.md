@@ -3,6 +3,7 @@
 This document describes the consistent pattern of immutability and lazy caching across the following core data and geometry classes in the Ptera Software codebase:
 
 - `CoreUnsteadyProblem` / `UnsteadyProblem`
+- `_CoupledUnsteadyProblem`
 - `CoreMovement` / `Movement`
 - `CoreAirplaneMovement` / `AirplaneMovement`
 - `CoreWingMovement` / `WingMovement`
@@ -124,6 +125,23 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalRmsMomentCoefficients_W_CgP1`  | `list[np.ndarray]` | RMS moment coefficients            |
 
 **Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve.
+
+## _CoupledUnsteadyProblem Class (`problems.py`)
+
+`_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (forthcoming `AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`) whose geometry at each time step depends on the solver's results from the previous step. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
+
+All `CoreUnsteadyProblem` attributes (documented in the section above) are inherited unchanged. The additions are:
+
+### Attribute Classification
+
+#### Immutable (set in `__init__`, never modified)
+
+| Attribute         | Type                        | Notes                                                                                                                                                |
+|-------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `movement`        | `CoreMovement`              | Source of `delta_time`, `num_steps`, `max_wake_rows`, and `lcm_period`                                                                               |
+| `steady_problems` | `tuple[SteadyProblem, ...]` | Read-only view of the `_steady_problems` backing list; returned tuple is frozen, but successive calls may return different-length tuples (see below) |
+
+**Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `_CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
 
 ## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
 
@@ -651,4 +669,4 @@ Since `LineVortex` is an internal class whose endpoints ARE updated by parent vo
 
 ## Solver Classes (Not Covered Above)
 
-The three solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingVortexLatticeMethodSolver`, and `UnsteadyRingVortexLatticeMethodSolver`) are intentionally omitted from the immutability and lazy caching patterns described in this document. Unlike the data and geometry classes above, the solver classes are algorithmic classes whose attributes are internal mutable working state in a procedural computation pipeline. They are not shared data that external code accesses or modifies, so immutable properties, set once enforcement, and lazy caching would add significant boilerplate with no meaningful safety benefit. The solver classes do still use `__slots__`, like all other classes in the package, to protect against dynamic attribute assignment typos.
+The four solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingVortexLatticeMethodSolver`, `UnsteadyRingVortexLatticeMethodSolver`, and `CoupledUnsteadyRingVortexLatticeMethodSolver`) are intentionally omitted from the immutability and lazy caching patterns described in this document. Unlike the data and geometry classes above, the solver classes are algorithmic classes whose attributes are internal mutable working state in a procedural computation pipeline. They are not shared data that external code accesses or modifies, so immutable properties, set once enforcement, and lazy caching would add significant boilerplate with no meaningful safety benefit. The solver classes do still use `__slots__`, like all other classes in the package, to protect against dynamic attribute assignment typos.

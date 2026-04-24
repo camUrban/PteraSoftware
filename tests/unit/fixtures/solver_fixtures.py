@@ -2,6 +2,11 @@
 
 import pterasoftware as ps
 
+# noinspection PyProtectedMember
+from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
+    CoupledUnsteadyRingVortexLatticeMethodSolver,
+)
+
 from . import problem_fixtures
 
 
@@ -51,5 +56,21 @@ def make_unsteady_ring_solver_fixture():
             unsteady_problem
         )
     )
+
+    return solver
+
+
+def make_coupled_unsteady_ring_solver_fixture():
+    """This method makes a fixture that is a
+    CoupledUnsteadyRingVortexLatticeMethodSolver for general testing.
+
+    :return solver: CoupledUnsteadyRingVortexLatticeMethodSolver
+        This is the CoupledUnsteadyRingVortexLatticeMethodSolver fixture.
+    """
+    coupled_unsteady_problem = (
+        problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+    )
+
+    solver = CoupledUnsteadyRingVortexLatticeMethodSolver(coupled_unsteady_problem)
 
     return solver

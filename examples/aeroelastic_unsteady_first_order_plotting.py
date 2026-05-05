@@ -308,7 +308,7 @@ def run_aeroelastic(
         prescribed_wake=True,
     )
 
-    problem = example_solver.aeroelastic_unsteady_problem
+    problem = example_solver.unsteady_problem
 
     # ps.output.animate(
     #     unsteady_solver=example_solver,

@@ -14,7 +14,7 @@ None
 from __future__ import annotations
 
 from . import problems
-from .coupled_unsteady_ring_vortex_lattice_method import (
+from ._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
 

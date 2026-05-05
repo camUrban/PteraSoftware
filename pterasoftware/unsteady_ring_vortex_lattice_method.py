@@ -296,24 +296,29 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # these arrays will be filled with data that describe the wake. Using this
         # method eliminates the need for computationally expensive on-the-fly
         # allocation and object copying.
+        first_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
+        first_airplanes = first_problem.airplanes
+
+        # Loop through the first time step's Airplanes to gather their Wings.
+        first_wings: list[tuple[geometry.wing.Wing, ...]] = []
+        for airplane in first_airplanes:
+            first_wings.append(airplane.wings)
+
+        # Iterate through the Wings to get the total number of spanwise Panels.
+        # Panel topology is invariant across time steps.
+        num_spanwise_panels = 0
+        for this_wing_set in first_wings:
+            for this_wing in this_wing_set:
+                _this_wing_num_spanwise_panels = this_wing.num_spanwise_panels
+                assert _this_wing_num_spanwise_panels is not None
+
+                num_spanwise_panels += _this_wing_num_spanwise_panels
+
+        num_wing_panels = 0
+        for airplane in first_airplanes:
+            num_wing_panels += airplane.num_panels
+
         for step in range(self.num_steps):
-            this_problem: problems.SteadyProblem = self._get_steady_problem_at(step)
-            these_airplanes = this_problem.airplanes
-
-            # Loop through this time step's Airplanes to gather their Wings.
-            these_wings: list[tuple[geometry.wing.Wing, ...]] = []
-            for airplane in these_airplanes:
-                these_wings.append(airplane.wings)
-
-            # Iterate through the Wings to get the total number of spanwise Panels.
-            this_num_spanwise_panels = 0
-            for this_wing_set in these_wings:
-                for this_wing in this_wing_set:
-                    _this_wing_num_spanwise_panels = this_wing.num_spanwise_panels
-                    assert _this_wing_num_spanwise_panels is not None
-
-                    this_num_spanwise_panels += _this_wing_num_spanwise_panels
-
             # The number of wake RingVortices is the time step number multiplied by
             # the number of spanwise Panels. This works because the first time step
             # number is 0. If wake truncation is enabled, cap the number of
@@ -322,7 +327,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             if self._max_wake_rows is not None:
                 this_num_chordwise_wake_rows = min(step, self._max_wake_rows)
             this_num_wake_ring_vortices = (
-                this_num_chordwise_wake_rows * this_num_spanwise_panels
+                this_num_chordwise_wake_rows * num_spanwise_panels
             )
 
             # Allocate the ndarrays for this time step.
@@ -366,19 +371,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # progress bar during the simulation initialization.
         approx_times = np.zeros(self.num_steps + 1, dtype=float)
         for step in range(1, self.num_steps):
-            this_problem = self._get_steady_problem_at(step)
-            these_airplanes = this_problem.airplanes
-
-            # Iterate through this time step's Airplanes to get the total number of
-            # Wing Panels.
-            num_wing_panels = 0
-            for airplane in these_airplanes:
-                num_wing_panels += airplane.num_panels
-
             # Calculate the total number of RingVortices analyzed during this step.
-            num_wing_ring_vortices = num_wing_panels
             num_wake_ring_vortices = self.list_num_wake_vortices[step]
-            num_ring_vortices = num_wing_ring_vortices + num_wake_ring_vortices
+            num_ring_vortices = num_wing_panels + num_wake_ring_vortices
 
             # The following constant multipliers were determined empirically. Thus
             # far, they seem to provide for adequately smooth progress bar updating.

@@ -1357,7 +1357,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
+        plotter.add_actor(AxesGCg)
 
         _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
         assert _T_pas_G_Cg_to_Wn_Ler is not None
@@ -1390,7 +1390,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
+        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
 
         _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
         assert _T_pas_Wn_Ler_to_G_Cg is not None
@@ -1452,7 +1452,7 @@ class Wing:
                     symmetric_bounds=False,
                 )
 
-                plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
+                plotter.add_actor(AxesWcsLp_G_Cg)
 
         if self.panels is not None:
             # Initialize empty arrays to hold the Panels' vertices and faces.

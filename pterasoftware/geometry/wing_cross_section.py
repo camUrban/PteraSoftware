@@ -642,7 +642,7 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)  # type: ignore[arg-type]
+            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)
         else:
             AxesWcsLp_Wcsp_lpp = pv.AxesAssembly(
                 x_label="WcsX@Lp",
@@ -697,8 +697,8 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLp_Wcsp_lpp)  # type: ignore[arg-type]
-            plotter.add_actor(AxesWcspLpp)  # type: ignore[arg-type]
+            plotter.add_actor(AxesWcsLp_Wcsp_lpp)
+            plotter.add_actor(AxesWcspLpp)
 
         plotter.enable_parallel_projection()  # type: ignore[call-arg]
 

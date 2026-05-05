@@ -1712,5 +1712,44 @@ class TestApplyTToVectors(unittest.TestCase):
         npt.assert_array_equal(result_zeros_array, zeros_array)
 
 
+class TestComputeOffsetRotationAdjustment(unittest.TestCase):
+    """Tests for the compute_offset_rotation_adjustment function."""
+
+    def test_identity_rotation(self):
+        """Identity rotation should produce zero adjustment."""
+        R = np.eye(3)
+        offset = np.array([1.0, 2.0, 3.0])
+
+        adjustment = _transformations.compute_offset_rotation_adjustment(R, offset)
+
+        npt.assert_allclose(adjustment, np.zeros(3), atol=1e-14)
+
+    def test_zero_offset(self):
+        """Zero offset should always produce zero adjustment."""
+        R = np.eye(3)
+        offset = np.zeros(3)
+
+        adjustment = _transformations.compute_offset_rotation_adjustment(R, offset)
+
+        npt.assert_allclose(adjustment, np.zeros(3), atol=1e-14)
+
+    def test_known_rotation(self):
+        """Test adjustment for a known rotation (90 deg about z-axis)."""
+        angles = np.array([0.0, 0.0, 90.0])
+
+        rot_T = _transformations.generate_rot_T(
+            angles, passive=False, intrinsic=True, order="xyz"
+        )
+        R = rot_T[:3, :3]
+
+        offset = np.array([1.0, 0.0, 0.0])
+
+        adjustment = _transformations.compute_offset_rotation_adjustment(R, offset)
+
+        expected = (np.eye(3) - R) @ offset
+
+        npt.assert_allclose(adjustment, expected, atol=1e-14)
+
+
 if __name__ == "__main__":
     unittest.main()

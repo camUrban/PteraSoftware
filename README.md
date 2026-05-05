@@ -168,6 +168,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Pedro Bornia ([BorniaPedro](https://github.com/BorniaPedro))
 * Mohamed Abdulghany ([MohamedMG7](https://github.com/MohamedMG7))
 * Hang Haotian ([haotianh9](https://github.com/haotianh9))
+* Monisha Sikka ([20086080](https://github.com/20086080))
 
 ### Supporters
 

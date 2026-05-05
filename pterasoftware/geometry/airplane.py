@@ -617,7 +617,7 @@ class Airplane:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
+        plotter.add_actor(AxesGCg)
 
         for wing_id, wing in enumerate(self._wings):
             wing_num = wing_id + 1
@@ -651,7 +651,7 @@ class Airplane:
                 symmetric_bounds=False,
             )
 
-            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
+            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
 
             these_airfoilOutlines_G_Cg = airfoilOutlines_G_Cg[wing_id]
             these_airfoilMcls_G_Cg = airfoilMcls_G_Cg[wing_id]
@@ -709,7 +709,7 @@ class Airplane:
                         symmetric_bounds=False,
                     )
 
-                    plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
+                    plotter.add_actor(AxesWcsLp_G_Cg)
 
             if wing.panels is not None:
                 # Initialize empty arrays to hold the Panels' vertices and faces

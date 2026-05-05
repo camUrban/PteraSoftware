@@ -731,6 +731,7 @@ def animate(
             full_screen=False,
             auto_close=False,
         )
+        assert plotter.ren_win is not None
         plotter.ren_win.SetWindowName("Rendering speed not to scale.")
     else:
         plotter.show(

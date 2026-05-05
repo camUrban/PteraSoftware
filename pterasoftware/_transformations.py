@@ -134,6 +134,27 @@ def generate_rot_T(
     return T
 
 
+def compute_offset_rotation_adjustment(
+    rotation_matrix: np.ndarray,
+    offset: np.ndarray,
+) -> np.ndarray:
+    """Compute the positional adjustment required to rotate about an offset point.
+
+    When a rotation is applied about a point other than the origin, the effective
+    position must be adjusted. This function computes that adjustment vector.
+
+    The adjustment is given by: (I - R) @ offset
+
+    where R is the active rotation matrix and offset is the rotation point.
+
+    :param rotation_matrix: A (3,3) ndarray representing the active rotation matrix.
+    :param offset: A (3,) ndarray representing the rotation point offset.
+    :return: A (3,) ndarray representing the position adjustment.
+    """
+
+    return np.asarray((np.eye(3, dtype=float) - rotation_matrix) @ offset, dtype=float)
+
+
 def generate_2D_rot_R(
     angle: float,
     passive: bool,

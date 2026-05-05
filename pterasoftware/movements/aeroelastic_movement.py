@@ -158,7 +158,7 @@ class AeroelasticMovement(_core.CoreMovement):
         self,
         airplane_movement_index: int,
         step: int,
-        wing_deformation_angles_ixyz: list[np.ndarray] | None = None,
+        wing_deformation_angles_ixyz: list[np.ndarray | None] | None = None,
     ) -> geometry.airplane.Airplane:
         """Creates the Airplane at a single time step for a given
         AeroelasticAirplaneMovement, applying deformation from the solver's structural

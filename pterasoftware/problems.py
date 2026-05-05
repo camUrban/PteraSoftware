@@ -13,7 +13,7 @@ None
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,6 +27,9 @@ from .movements import free_flight_movement as free_flight_movement_mod
 if TYPE_CHECKING:
     from ._coupled_unsteady_ring_vortex_lattice_method import (
         CoupledUnsteadyRingVortexLatticeMethodSolver,
+    )
+    from .aeroelastic_unsteady_ring_vortex_lattice_method import (
+        AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     )
 
 
@@ -531,10 +534,21 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
         return np.repeat(areas[:, :, None], 3, axis=2) * self.wing_density
 
-    def initialize_next_problem(self, solver):
+    def initialize_next_problem(
+        self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver
+    ) -> None:
+        # Circular at module level: the aeroelastic solver imports problems.py.
+        # Needed at runtime for cast().
+        from .aeroelastic_unsteady_ring_vortex_lattice_method import (
+            AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+        )
+
+        aeroelastic_solver = cast(
+            AeroelasticUnsteadyRingVortexLatticeMethodSolver, solver
+        )
 
         step = len(self._steady_problems)
-        deformation_matrices = self.calculate_wing_deformation(solver, step)
+        deformation_matrices = self.calculate_wing_deformation(aeroelastic_solver, step)
 
         # Build the per-wing deformation list. The main wing (index 0) and its
         # symmetric reflection (index 1) both receive the same deformation angles.
@@ -563,7 +577,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
     def calculate_wing_deformation(
         self,
-        solver,
+        solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         step: int,
     ) -> np.ndarray:
         """Compute cumulative wing deformation for the current time step.
@@ -635,7 +649,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
     def _extract_aero_moments(
         self,
-        solver,
+        solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         num_chordwise_panels: int,
         num_spanwise_panels: int,
         num_panels: int,
@@ -663,7 +677,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
     def _calculate_inertial_moments(
         self,
-        solver,
+        solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         wing: geometry.wing.Wing,
         mass_matrix: np.ndarray,
         num_chordwise_panels: int,
@@ -1160,7 +1174,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         self._free_flight_movement = movement
 
-    def initialize_next_problem(self, solver) -> None:
+    def initialize_next_problem(
+        self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver
+    ) -> None:
         """Initialize the next time step's problem.
 
         :param solver: The solver instance providing aerodynamic data from the current

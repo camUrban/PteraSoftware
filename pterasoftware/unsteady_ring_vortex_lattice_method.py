@@ -770,16 +770,27 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     num_chordwise_wake_rows = min(step, self._max_wake_rows)
                 num_wing_wake_vortices = num_chordwise_wake_rows * _num_spanwise_panels
                 if num_wing_wake_vortices > 0:
-                    for wake_row in range(num_chordwise_wake_rows):
-                        start = (
-                            global_wake_ring_vortex_position
-                            + wake_row * _num_spanwise_panels
-                        )
-                        end = start + _num_spanwise_panels
-                        self._currentStackWakeRc0s[start:end] = wing_r_c0
-                        self._current_wake_vortex_ages[start:end] = (
-                            wake_row + 1
-                        ) * self.delta_time
+                    block_start = global_wake_ring_vortex_position
+                    block_end = block_start + num_wing_wake_vortices
+
+                    # The initial core radius is constant across this Wing's
+                    # wake block, so it fills in a single slice.
+                    self._currentStackWakeRc0s[block_start:block_end] = wing_r_c0
+
+                    # Each chordwise wake row is one delta_time older than the
+                    # row shed after it, so row index c (0-based, newest
+                    # first) has age (c + 1) * delta_time. Repeat each row's
+                    # age across that row's spanwise wake vortices to match
+                    # the block layout used by
+                    # _populate_next_airplanes_wake_vortices.
+                    row_ages = (
+                        np.arange(1, num_chordwise_wake_rows + 1, dtype=float)
+                        * self.delta_time
+                    )
+                    self._current_wake_vortex_ages[block_start:block_end] = np.repeat(
+                        row_ages, _num_spanwise_panels
+                    )
+
                     global_wake_ring_vortex_position += num_wing_wake_vortices
 
         if self._current_step > 0:

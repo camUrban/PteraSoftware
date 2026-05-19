@@ -120,8 +120,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_currentStackBlwrvp_GP1_CgP1",
         "list_num_wake_vortices",
         "_list_wake_vortex_strengths",
-        "_list_wake_vortex_ages",
-        "_list_wake_rc0s",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -284,9 +282,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._list_wake_vortex_strengths: list[np.ndarray] = [
             np.zeros(n, dtype=float) for n in wake_sizes_per_step
         ]
-        self._list_wake_vortex_ages: list[np.ndarray] = [
-            np.zeros(n, dtype=float) for n in wake_sizes_per_step
-        ]
         self.listStackBrwrvp_GP1_CgP1: list[np.ndarray] = [
             np.zeros((n, 3), dtype=float) for n in wake_sizes_per_step
         ]
@@ -298,9 +293,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         ]
         self.listStackBlwrvp_GP1_CgP1: list[np.ndarray] = [
             np.zeros((n, 3), dtype=float) for n in wake_sizes_per_step
-        ]
-        self._list_wake_rc0s: list[np.ndarray] = [
-            np.zeros(n, dtype=float) for n in wake_sizes_per_step
         ]
 
         # The current and last time step's center bound line vortex points for the
@@ -343,9 +335,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentStackBlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # The list attributes above (list_num_wake_vortices,
-        # _list_wake_vortex_strengths, _list_wake_vortex_ages,
-        # _list_wake_rc0s, listStack{Br,Fr,Fl,Bl}wrvp_GP1_CgP1) were
-        # pre-allocated above this block.
+        # _list_wake_vortex_strengths, listStack{Br,Fr,Fl,Bl}wrvp_GP1_CgP1)
+        # were pre-allocated above this block.
 
         self._currentStackBoundRc0s: np.ndarray = np.empty(0, dtype=float)
         self._currentStackWakeRc0s: np.ndarray = np.empty(0, dtype=float)
@@ -546,14 +537,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self._current_wake_vortex_strengths = self._list_wake_vortex_strengths[
                     step
                 ]
-                self._current_wake_vortex_ages = self._list_wake_vortex_ages[step]
                 self._currentStackBrwrvp_GP1_CgP1 = self.listStackBrwrvp_GP1_CgP1[step]
                 self._currentStackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
                 self._currentStackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
                 self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
 
                 self._currentStackBoundRc0s = np.zeros(self.num_panels, dtype=float)
-                self._currentStackWakeRc0s = self._list_wake_rc0s[step]
+                num_wake_vortices = self.list_num_wake_vortices[step]
+                self._current_wake_vortex_ages = np.zeros(
+                    num_wake_vortices, dtype=float
+                )
+                self._currentStackWakeRc0s = np.zeros(num_wake_vortices, dtype=float)
 
                 self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
@@ -766,19 +760,27 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                 # Set the wake characteristic core radius for every wake
                 # ring vortex contributed by this Wing at this step. The wake
-                # corner positions, strengths, and ages are already stored in
-                # the per step list arrays aliased to self._currentStack* in
-                # run() and populated by _populate_next_airplanes_wake_vortices.
+                # corner positions and strengths are stored in the per step list arrays
+                # aliased to self._currentStack* in run() and populated by
+                # _populate_next_airplanes_wake_vortices. Ages are derived from row
+                # position because each retained wake row is one delta_time older than
+                # the row before it.
                 num_chordwise_wake_rows = step
                 if self._max_wake_rows is not None:
                     num_chordwise_wake_rows = min(step, self._max_wake_rows)
                 num_wing_wake_vortices = num_chordwise_wake_rows * _num_spanwise_panels
                 if num_wing_wake_vortices > 0:
-                    end = global_wake_ring_vortex_position + num_wing_wake_vortices
-                    self._currentStackWakeRc0s[global_wake_ring_vortex_position:end] = (
-                        wing_r_c0
-                    )
-                    global_wake_ring_vortex_position = end
+                    for wake_row in range(num_chordwise_wake_rows):
+                        start = (
+                            global_wake_ring_vortex_position
+                            + wake_row * _num_spanwise_panels
+                        )
+                        end = start + _num_spanwise_panels
+                        self._currentStackWakeRc0s[start:end] = wing_r_c0
+                        self._current_wake_vortex_ages[start:end] = (
+                            wake_row + 1
+                        ) * self.delta_time
+                    global_wake_ring_vortex_position += num_wing_wake_vortices
 
         if self._current_step > 0:
             last_step = self._current_step - 1
@@ -1741,16 +1743,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
     def _populate_next_airplanes_wake_vortices(self) -> None:
-        """Populates the next time step's wake corner stacks, strengths, and ages.
+        """Populates the next time step's wake corner stacks and strengths.
 
         Each Wing's wake POINT grid (Wing.gridWrvp_GP1_CgP1) was already advected by
         _populate_next_airplanes_wake_vortex_points. This method derives the next step's
-        per wake-cell corner positions, strengths, and ages and writes them directly
-        into the per step list arrays. Strengths come from this step's solved bound ring
-        vortex strengths (for the new front row) and from this step's wake (for
-        inherited rows). Ages are delta_time for the new front row and (last age +
-        delta_time) for inherited rows. The oldest row of this step's wake is dropped
-        when truncation is in effect.
+        per wake-cell corner positions and strengths and writes them directly into the
+        per step list arrays. Strengths come from this step's solved bound ring vortex
+        strengths (for the new front row) and from this step's wake (for inherited
+        rows). The oldest row of this step's wake is dropped when truncation is in
+        effect.
 
         :return: None
         """
@@ -1770,7 +1771,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Output buffers for the next step.
         next_strengths = self._list_wake_vortex_strengths[next_step]
-        next_ages = self._list_wake_vortex_ages[next_step]
         next_stackFr = self.listStackFrwrvp_GP1_CgP1[next_step]
         next_stackFl = self.listStackFlwrvp_GP1_CgP1[next_step]
         next_stackBl = self.listStackBlwrvp_GP1_CgP1[next_step]
@@ -1780,7 +1780,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # When this_num_chordwise_rows is 0 (i.e. step 0 -> 1), they are zero
         # length and never indexed.
         this_strengths = self._list_wake_vortex_strengths[this_step]
-        this_ages = self._list_wake_vortex_ages[this_step]
 
         next_problem = self._get_steady_problem_at(next_step)
         for airplane_id, next_airplane in enumerate(next_problem.airplanes):
@@ -1835,7 +1834,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         te_panel_base : te_panel_base + wing_num_spanwise
                     ]
                 )
-                next_ages[front_start:front_end] = self.delta_time
 
                 # Inherited rows (c >= 1): aged versions of this step's rows
                 # 0 .. inherited_rows - 1. When wake truncation drops the
@@ -1862,9 +1860,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_strengths[new_start:new_end] = this_strengths[
                         old_start:old_end
                     ]
-                    next_ages[new_start:new_end] = (
-                        this_ages[old_start:old_end] + self.delta_time
-                    )
 
     def _calculate_current_movement_velocities_at_collocation_points(
         self,

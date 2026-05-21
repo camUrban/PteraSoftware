@@ -1066,7 +1066,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         bound_singularity_counts: np.ndarray | None = None,
         wake_singularity_counts: np.ndarray | None = None,
     ) -> np.ndarray:
-        """Finds the fluid velocity (in the fiirst Airplane's geometry axes, observed
+        """Finds the fluid velocity (in the first Airplane's geometry axes, observed
         from the Earth frame) at one or more points (in the first Airplane's geometry
         axes, relative to the first Airplane's CG) due to the freestream velocity and
         the induced velocity from every ring vortex.

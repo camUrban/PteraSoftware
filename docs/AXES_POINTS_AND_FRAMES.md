@@ -75,6 +75,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * Ler: leading edge root point
 * Lp: leading point
 * Lpp: leading point parent
+* Slep: strip leading edge point
 * ...pp...: panel point
     * Fr...: front right
     * Fo...: forward outer
@@ -461,6 +462,24 @@ The standard abbreviations and names are given below for reference. See the sect
 * Non-local reference examples
     * Text: ...relative to the first Airplane's second Wing's (3, 2\) bound horseshoe vortex's front line vortex's center point...
     * Variables: ...\_ClvpfBhvr3c2Wn2P1
+
+### 13. Strip leading edge point (SLEP)
+
+* Only relevant in aeroelastic simulations
+* The front-left panel point of the root (innermost) panel of a spanwise strip. Each non-tip WingCrossSection defines one strip and therefore one SLEP. In stacked panel arrays, `_Slep` is used without a numeric index to implicitly mean "relative to the SLEP of the panel's own strip," rather than referring to a single named point.
+* Ownership: Wing
+* Local reference examples
+    * Text: ...relative to the strip leading edge point...
+    * Variables: ...\_Slep
+* Wing-local reference examples
+    * Text: ...relative to the third strip's leading edge point...
+    * Variables: ...\_Slep3
+* Airplane-local reference examples
+    * Text: ...relative to the second Wing's third strip's leading edge point...
+    * Variables: ...\_Slep3Wn2
+* Non-local reference examples
+    * Text: ...relative to the first Airplane's second Wing's third strip's leading edge point...
+    * Variables: ...\_Slep3Wn2P1
 
 ## Reference Frames
 

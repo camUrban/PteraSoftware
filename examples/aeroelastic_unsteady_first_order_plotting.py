@@ -343,7 +343,7 @@ elif B_VALUES:
 else:
     sweep_values = DENSITY_VALUES
     sweep_name = "Wing Density"
-    sweep_symbol = "ρ"
+    sweep_symbol = "rho"
     sweep_kwarg = "wing_density"
 
 # Run for each swept value and collect Curve 16 of the Net Deformation
@@ -381,7 +381,7 @@ plt.plot(
 )
 plt.xlabel("Step")
 plt.ylabel("Angle (degrees)")
-plt.title(f"Net Deformation (Curve {CURVE_INDEX}) — Varying {sweep_name}")
+plt.title(f"Net Deformation (Curve {CURVE_INDEX}) - Varying {sweep_name}")
 plt.legend()
 plt.grid(True)
 filename = f"Net_Deformation_Curve_{CURVE_INDEX}_{sweep_name.replace(' ', '_')}.png"

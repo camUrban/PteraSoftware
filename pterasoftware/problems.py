@@ -951,8 +951,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     ) -> tuple[float, float, float]:
         """Solve the torsional spring-damper ODE for a single wing section.
 
-        Integrates the forced torsional damped harmonic oscillator equation: I*dω/dt =
-        τ_aero + τ_inertial - k*θ - c*ω
+        Integrates the forced torsional damped harmonic oscillator equation: I*d(omega)/dt =
+        tau_aero + tau_inertial - k*theta - c*omega
 
         Returns the angular displacement and velocity at the end of the time step, along
         with the spring-damper restoring moment.
@@ -970,7 +970,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             default is 2.
         :return: A tuple of (theta, omega, spring_moment) where: - theta: Final
             torsional angle (radians). - omega: Final angular velocity (rad/s). -
-            spring_moment: The z-component spring-damper moment τ = -k*θ - c*ω (N*m).
+            spring_moment: The z-component spring-damper moment tau = -k*theta - c*omega (N*m).
         """
         k = self.spring_constant
         c = self.damping_constant
@@ -997,14 +997,14 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Generate the prescribed wing motion inertial torque function.
 
         Extracts the prescribed flapping motion from the wing_movement definition and
-        creates a callable inertial torque function τ_inertial = I * d²θ_prescribed/dt².
+        creates a callable inertial torque function tau_inertial = I * d^2(theta_prescribed)/dt^2.
         Supports sinusoidal and custom spacing functions.
 
         :param span_I: The rotational inertia of the wing span section about the
             flapping axis (kg*m^2).
         :return: A callable function that accepts time and returns the inertial torque
             (N*m) due to the prescribed wing motion acceleration. **Notes:** For
-            sinusoidal spacing: τ = -I * b^2 * sin(b*t + h) * A, where b = 2π/period, h
+            sinusoidal spacing: tau = -I * b^2 * sin(b*t + h) * A, where b = 2*pi/period, h
             = phase, A = amplitude. For custom spacing, requires
             custom_spacing_second_derivative to be defined.
         """
@@ -1044,8 +1044,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     ) -> tuple[float, float]:
         """Numerically integrate the torsional spring-damper ODE.
 
-        Solves the second-order forced ODE: I * d²θ/dt² = τ_aero + τ_inertial(t) - k*θ -
-        c*dθ/dt
+        Solves the second-order forced ODE: I * d^2(theta)/dt^2 = tau_aero + tau_inertial(t) - k*theta -
+        c*d(theta)/dt
 
         using scipy.integrate.solve_ivp with strict tolerances.
 
@@ -1068,7 +1068,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             return float(aero_torque + inertial_torque_func(time))
 
         def ode(time: float, y: np.ndarray) -> np.ndarray:
-            """ODE system: dθ/dt = ω, dω/dt = (τ - c*ω - k*θ)/I."""
+            """ODE system: d(theta)/dt = omega, d(omega)/dt = (tau - c*omega - k*theta)/I."""
             theta, omega = y
             return np.array([omega, (tau(time) - c * omega - k * theta) / I])
 

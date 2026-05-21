@@ -483,12 +483,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             0
         ].wing_movements[0]
 
-        self.per_step_data: list[np.ndarray] = []
         self.net_data: list[np.ndarray] = []
         self.angluar_velocity_data: list[np.ndarray] = []
         self.per_step_inertial: list[np.ndarray] = []
         self.per_step_aero: list[np.ndarray] = []
-        self.per_step_spring: list[np.ndarray] = []
         self.base_wing_positions: np.ndarray = np.zeros(0)
         self.flap_points: list[np.ndarray] = []
 
@@ -799,7 +797,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Store per-step moment components for later analysis/plotting
         self.per_step_inertial.append(inertial_moments.copy())
         self.per_step_aero.append(aeroMoments_GP1_Slep.copy())
-        self.per_step_spring.append(spring_moments.copy())
 
         # Update cumulative deformation (with numerical stability discarding)
         # Accounts for numerical instability causing large aerodynamic forces in initial steps
@@ -807,7 +804,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             self.net_deformation = step_deformation
 
         # Store deformation and angular velocity history
-        self.per_step_data.append(step_deformation)
         self.net_data.append(self.net_deformation.copy())
         self.angluar_velocity_data.append(self.angluar_velocities.copy())
 
@@ -823,9 +819,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         zero_curve = np.zeros((1, np.array(self.per_step_inertial).shape[0]))
 
         # Deformation time histories
-        self.plot_flap_cycle_curves(
-            np.array(self.per_step_data)[:, :, 1].T.tolist(), "Per Step Deformation"
-        )
         self.plot_flap_cycle_curves(
             np.array(self.net_data)[:, :, 1].T.tolist(), "Net Deformation"
         )
@@ -845,12 +838,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 (zero_curve, np.array(self.per_step_aero)[:, :, :, 2].sum(axis=1).T)
             ).tolist(),
             "Per Step Aero Moments",
-        )
-        self.plot_flap_cycle_curves(
-            np.vstack(
-                (zero_curve, np.array(self.per_step_spring)[:, :, 2].sum(axis=1).T)
-            ).tolist(),
-            "Per Step Spring Moments",
         )
 
         # Wing deflection tracking

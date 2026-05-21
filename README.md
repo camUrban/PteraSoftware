@@ -109,6 +109,10 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
 9. A Basic GUI
     * This is still in its alpha stage, but we will be adding more functionality soon.
+10. Aeroelastic Module for Flapping Flight (Expirmental)
+    * This feature enables co-simulation of structural wing deformation and standard Ptera UVLM calculations.
+    * Currently the feature offers a simple torsional spring model for each WingCrossSection.
+    * Experimental validation and improved deformation models coming soon.
 
 ## Installation
 
@@ -130,7 +134,7 @@ Once set up, the `examples/` directory contains scripts that demonstrate the ful
 
 ## Example Output
 
-This package currently supports three different solvers, a steady horseshoe VLM, a steady ring VLM, and an unsteady ring VLM (UVLM). Here are examples of the output you can expect to receive from each of them.
+This package currently supports three different solvers, a steady horseshoe VLM, a steady ring VLM, an unsteady ring VLM (UVLM), and an aeroelastic unsteady ring VLM. Here are examples of the output you can expect to receive from each of them.
 
 ### Steady Horseshoe VLM
 
@@ -143,6 +147,9 @@ This package currently supports three different solvers, a steady horseshoe VLM,
 ### Unsteady Ring VLM
 
 ![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Animate.webp)
+
+### Aeroelastic Unsteady Ring VLM
+![Example Aeroelastic Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/aeroelastic_unsteady_first_order_deformation/Animate.webp)
 
 ## Validation
 

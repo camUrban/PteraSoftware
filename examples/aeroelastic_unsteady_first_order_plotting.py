@@ -18,9 +18,9 @@ DEFAULT_DENSITY = 0.012
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
-K_VALUES: list[float] = []
+K_VALUES: list[float] = [1.0, 4.0, 10.0, 40.0]
 B_VALUES: list[float] = []
-DENSITY_VALUES: list[float] = [0.012, 0.12, 0.3]
+DENSITY_VALUES: list[float] = []
 
 
 def run_aeroelastic(

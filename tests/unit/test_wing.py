@@ -1,5 +1,6 @@
 """This module contains classes to test Wings."""
 
+import copy
 import unittest
 
 import numpy as np
@@ -1538,6 +1539,179 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
         for T in wing.children_T_pas_Wcs_Lp_to_G_Cg:
             with self.assertRaises(ValueError):
                 T[0, 0] = 999.0
+
+
+class TestSingleStepWingMethods(unittest.TestCase):
+    """This class contains unit tests for Wing.explode_wing,
+    Wing.interpolate_between_wing_cross_sections, and the single_step_wing
+    parameter."""
+
+    def _make_wcs_3span(self):
+        """Create a root WCS with num_spanwise_panels=3."""
+        return ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+            num_spanwise_panels=3,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing="uniform",
+        )
+
+    def _make_tip_wcs(self):
+        """Create a tip WCS with num_spanwise_panels=None."""
+        return ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+            num_spanwise_panels=None,
+            chord=0.5,
+            Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing=None,
+        )
+
+    def _make_plain_wing(self, single_step_wing=False):
+        """Create a minimal 2-WCS wing."""
+        return ps.geometry.wing.Wing(
+            wing_cross_sections=[self._make_wcs_3span(), self._make_tip_wcs()],
+            name="Test Wing",
+            Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            symmetric=False,
+            mirror_only=False,
+            single_step_wing=single_step_wing,
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+        )
+
+    def test_single_step_wing_false_wcs_count_unchanged(self):
+        """Test that single_step_wing=False keeps the original two WCS."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        self.assertEqual(len(wing.wing_cross_sections), 2)
+
+    def test_single_step_wing_true_correct_wcs_count(self):
+        """Test that single_step_wing=True with root num_spanwise=3 produces 4 WCS
+        (root copy plus 3 interpolated including the tip)."""
+        wing = self._make_plain_wing(single_step_wing=True)
+        self.assertEqual(len(wing.wing_cross_sections), 4)
+
+    def test_single_step_wing_true_non_tip_have_num_spanwise_one(self):
+        """Test that all non-tip WCS have num_spanwise_panels=1 after explode."""
+        wing = self._make_plain_wing(single_step_wing=True)
+        for wcs in wing.wing_cross_sections[:-1]:
+            with self.subTest(wcs=wcs):
+                self.assertEqual(wcs.num_spanwise_panels, 1)
+
+    def test_single_step_wing_true_tip_has_none_spanwise(self):
+        """Test that the last WCS (tip) has num_spanwise_panels=None after explode."""
+        wing = self._make_plain_wing(single_step_wing=True)
+        self.assertIsNone(wing.wing_cross_sections[-1].num_spanwise_panels)
+
+    def test_single_step_wing_attribute_stored_true(self):
+        """Test that single_step_wing=True is stored on the Wing."""
+        wing = self._make_plain_wing(single_step_wing=True)
+        self.assertTrue(wing.single_step_wing)
+
+    def test_single_step_wing_attribute_stored_false(self):
+        """Test that single_step_wing=False is stored on the Wing."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        self.assertFalse(wing.single_step_wing)
+
+    def test_deepcopy_preserves_single_step_wing_true(self):
+        """Test that deepcopy preserves single_step_wing=True."""
+        wing = self._make_plain_wing(single_step_wing=True)
+        copied = copy.deepcopy(wing)
+        self.assertTrue(copied.single_step_wing)
+
+    def test_deepcopy_preserves_single_step_wing_false(self):
+        """Test that deepcopy preserves single_step_wing=False."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        copied = copy.deepcopy(wing)
+        self.assertFalse(copied.single_step_wing)
+
+    def test_interpolate_returns_correct_count_with_first_wcs(self):
+        """Test that interpolate_between_wing_cross_sections with first_wcs=True
+        returns N+1 WCS (root copy plus N interpolated)."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=True
+        )
+        # N=3: root copy + 3 interpolated = 4 total
+        self.assertEqual(len(result), 4)
+
+    def test_interpolate_returns_correct_count_without_first_wcs(self):
+        """Test that interpolate_between_wing_cross_sections with first_wcs=False
+        returns N WCS (no root copy)."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=False
+        )
+        # N=3: no root copy => 3 WCS total
+        self.assertEqual(len(result), 3)
+
+    def test_interpolate_root_copy_chord(self):
+        """Test that the first WCS in the result has the root chord when
+        first_wcs=True."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=True
+        )
+        self.assertAlmostEqual(result[0].chord, 1.0)
+
+    def test_interpolate_tip_chord(self):
+        """Test that the last WCS in the result has the tip chord."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=True
+        )
+        self.assertAlmostEqual(result[-1].chord, 0.5)
+
+    def test_interpolate_intermediate_chord_linearly_interpolated(self):
+        """Test that intermediate WCS chords are linearly interpolated between
+        root (1.0) and tip (0.5)."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=True
+        )
+        # N=3: t=1/3, 2/3, 3/3
+        # chord at t=1/3: (1 - 1/3)*1.0 + (1/3)*0.5 = 5/6
+        expected_first_interp = (1.0 - 1.0 / 3.0) * 1.0 + (1.0 / 3.0) * 0.5
+        self.assertAlmostEqual(result[1].chord, expected_first_interp, places=10)
+
+    def test_interpolate_lp_y_divided_by_n(self):
+        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WCS is
+        tip_Lp_y / N."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.interpolate_between_wing_cross_sections(
+            self._make_wcs_3span(), self._make_tip_wcs(), first_wcs=False
+        )
+        # tip has Lp_y = 0.5; N=3 => each section Lp_y = 0.5/3
+        expected_lp_y = 0.5 / 3.0
+        for wcs in result:
+            with self.subTest(wcs=wcs):
+                self.assertAlmostEqual(
+                    float(wcs.Lp_Wcsp_Lpp[1]), expected_lp_y, places=10
+                )
+
+    def test_explode_wing_with_two_wcs_returns_correct_count(self):
+        """Test that explode_wing with a 2-WCS input (root: num=3, tip) returns 4
+        WCS."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        self.assertEqual(len(result), 4)
+
+    def test_explode_wing_all_non_tip_have_num_spanwise_one(self):
+        """Test that explode_wing produces WCS where every non-tip entry has
+        num_spanwise_panels=1."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        for wcs in result[:-1]:
+            with self.subTest(wcs=wcs):
+                self.assertEqual(wcs.num_spanwise_panels, 1)
+
+    def test_explode_wing_last_wcs_is_tip(self):
+        """Test that explode_wing produces a final WCS with num_spanwise_panels=None."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        result = wing.explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        self.assertIsNone(result[-1].num_spanwise_panels)
 
 
 if __name__ == "__main__":

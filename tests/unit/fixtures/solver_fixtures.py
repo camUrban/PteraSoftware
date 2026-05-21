@@ -6,8 +6,27 @@ import pterasoftware as ps
 from pterasoftware._coupled_unsteady_ring_vortex_lattice_method import (
     CoupledUnsteadyRingVortexLatticeMethodSolver,
 )
+from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+)
 
 from . import problem_fixtures
+
+
+def make_aeroelastic_unsteady_ring_solver_fixture():
+    """This method makes a fixture that is an
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver for general testing.
+
+    :return solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver
+        This is the AeroelasticUnsteadyRingVortexLatticeMethodSolver fixture.
+    """
+    aeroelastic_problem = (
+        problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+    )
+
+    solver = AeroelasticUnsteadyRingVortexLatticeMethodSolver(aeroelastic_problem)
+
+    return solver
 
 
 def make_steady_horseshoe_solver_fixture():

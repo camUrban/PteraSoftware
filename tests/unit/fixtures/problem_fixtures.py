@@ -10,6 +10,26 @@ from . import (
 )
 
 
+def make_basic_aeroelastic_unsteady_problem_fixture():
+    """This method makes a fixture that is an AeroelasticUnsteadyProblem for testing.
+
+    :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem
+        This is the AeroelasticUnsteadyProblem configured for general testing.
+    """
+    # Create the AeroelasticMovement.
+    aeroelastic_movement = movement_fixtures.make_basic_aeroelastic_movement_fixture()
+
+    # Create and return the AeroelasticUnsteadyProblem.
+    basic_aeroelastic_unsteady_problem_fixture = ps.problems.AeroelasticUnsteadyProblem(
+        movement=aeroelastic_movement,
+        wing_density=0.01,
+        spring_constant=10.0,
+        damping_constant=0.5,
+    )
+
+    return basic_aeroelastic_unsteady_problem_fixture
+
+
 def make_basic_steady_problem_fixture():
     """This method makes a fixture that is a SteadyProblem for general testing.
 

@@ -18,7 +18,7 @@ from typing import cast
 import numpy as np
 import scipy.optimize as sp_opt
 
-from .. import _core, _logging, _parameter_validation, _vortices, geometry
+from .. import _core, _logging, _parameter_validation, geometry
 from .. import operating_point as operating_point_mod
 from .. import problems
 from . import airplane_movement as airplane_movement_mod
@@ -81,15 +81,15 @@ class Movement(_core.CoreMovement):
             changes to the UnsteadyProblem's operating conditions.
         :param delta_time: The time between each time step. Accepts the following: None
             (default): Movement analytically estimates the delta_time that produces wake
-            RingVortices with roughly the same chord length as the bound trailing edge
-            RingVortices, accounting for both freestream and geometry motion velocities.
-            This provides good results across all Strouhal numbers. "optimize": Movement
-            first runs the analytical estimation, then uses that result as an initial
-            guess for an iterative optimization that minimizes the area mismatch between
-            wake RingVortices and their parent bound trailing edge RingVortices. This is
-            slower but may produce slightly more accurate results. Positive number (int
-            or float): Use the specified value directly. All values are converted
-            internally to floats. The units are in seconds.
+            ring vortices with roughly the same chord length as the bound trailing edge
+            ring vortices, accounting for both freestream and geometry motion
+            velocities. This provides good results across all Strouhal numbers.
+            "optimize": Movement first runs the analytical estimation, then uses that
+            result as an initial guess for an iterative optimization that minimizes the
+            area mismatch between wake ring vortices and their parent bound trailing
+            edge ring vortices. This is slower but may produce slightly more accurate
+            results. Positive number (int or float): Use the specified value directly.
+            All values are converted internally to floats. The units are in seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if Movement isn't
             static. If num_steps is not None or if Movement is static, this must be
@@ -111,7 +111,7 @@ class Movement(_core.CoreMovement):
             objects. If num_steps is initialized as None, and Movement is static,
             Movement will calculate a value for num_steps such that the simulation will
             result in a wake extending back by some number of reference chord lengths.
-        :param max_wake_rows: The maximum number of chordwise wake RingVortex rows per
+        :param max_wake_rows: The maximum number of chordwise wake ring vortex rows per
             Wing. Works for both static and non static Movements. Must be a positive int
             if set. At most one of max_wake_rows, max_wake_chords, and max_wake_cycles
             can be non None. The default is None (no truncation).
@@ -479,57 +479,82 @@ class Movement(_core.CoreMovement):
         return self._operating_points
 
 
+# Oversampling factor for the non static cached path. The high resolution
+# Movement is built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps
+# intervals (and therefore one more snapshot) so the maximum and half maximum
+# candidates have integer strides and other candidates stay within roughly
+# half a high resolution step of the nominal time.
+_NON_STATIC_CACHE_OVERSAMPLE: int = 2
+
+
 def _compute_wake_area_mismatch(
     delta_time: float,
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    num_steps: int | None = None,
 ) -> float:
-    """Computes the average area mismatch between wake and bound RingVortices.
+    """Computes the average area mismatch between wake and bound ring vortices.
 
-    Creates a temporary Problem and solver, steps through some number of time steps
-    (geometry only, no aerodynamic solve), and computes the average area mismatch at
-    each step.
+    Builds a temporary Movement and UnsteadyProblem so the panel vertex points are
+    populated in the first Airplane's geometry axes (GP1_CgP1), then computes bound
+    trailing edge ring vortex areas and wake first row ring vortex areas analytically
+    from the panel corners. Skips solver instantiation, the per step
+    initialize_step_geometry walk, the bound corner stack population, and the wake
+    corner stack population.
 
-    The area mismatch metric measures how well the wake RingVortex sizing matches the
-    bound RingVortex sizing. A lower value indicates better matching.
+    The area mismatch metric measures how well the wake ring vortex sizing matches the
+    bound ring vortex sizing. A lower value indicates better matching.
 
     The number of time steps checked is picked to capture the full range of differences
-    in areas for the wake and bound RingVortex child parent pairs. For static cases,
+    in areas for the wake and bound ring vortex child parent pairs. For static cases,
     this is just a single time step. For non static cases, it is enough time steps to
     cover one full maximum length period of motion.
+
+    Bound trailing edge ring vortex back vertices are computed exactly as
+    UnsteadyRingVortexLatticeMethodSolver._initialize_panel_vortices_at would: at step
+    0, panel.B[lr]pp + 0.25 * vInf * dt; at step k > 0, 0.75 * panel.B[lr]pp(k) + 0.25 *
+    panel.B[lr]pp(k - 1) + 0.25 * vInf(k) * dt. For the first wake-row case
+    corresponding to step == 1, the wake ring vortex area reduces algebraically to dt *
+    |cross(Brrvp(k) - Blrvp(k), vInf(k - 1))|. For later steps (step >= 2), the wake
+    first row ring vortex area depends on both current and previous bound trailing edge
+    vertices and is computed using the general quadrilateral-diagonal formula. The
+    advection velocity uses step k - 1 because the solver populates the wake using the
+    previous step's freestream velocity.
 
     :param delta_time: The delta_time value to test. It must be a positive float. Its
         units are in seconds.
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
+    :param num_steps: The number of time steps to simulate. If None (the default),
+        derived from ceil(max_period / delta_time). Callers that already know the
+        intended integer step count should pass it explicitly to match the semantics of
+        the cached non-static evaluator and avoid floating point rounding in the
+        inferred step count.
     :return: The average area mismatch. The absolute percent error between the area of
-        shed wake RingVortices and the area of their parent bound RingVortices (at time
-        step where they were shed). Averaged across all time steps and all pairs of
-        child and parent RingVortices. A lower value indicates better matching.
+        shed wake ring vortices and the area of their parent bound ring vortices (at the
+        time step where they were shed). Averaged across all time steps and all pairs of
+        child and parent ring vortices. A lower value indicates better matching.
     """
-    from .. import problems, unsteady_ring_vortex_lattice_method
-
-    # Deep copy the movement objects to avoid mutating originals during optimization.
     airplane_movements_copy = copy.deepcopy(airplane_movements)
     operating_point_movement_copy = copy.deepcopy(operating_point_movement)
 
-    max_airplane_movement_period = 0.0
-    for airplane_movement in airplane_movements_copy:
-        max_airplane_movement_period = max(
-            airplane_movement.max_period, max_airplane_movement_period
+    if num_steps is None:
+        max_airplane_movement_period = 0.0
+        for airplane_movement in airplane_movements_copy:
+            max_airplane_movement_period = max(
+                airplane_movement.max_period, max_airplane_movement_period
+            )
+
+        max_period = max(
+            max_airplane_movement_period, operating_point_movement_copy.max_period
         )
 
-    max_period = max(
-        max_airplane_movement_period, operating_point_movement_copy.max_period
-    )
+        # Calculate the number of time steps to traverse the max period (or just a
+        # single time step if there is no movement).
+        num_steps = 1
+        if max_period > 0.0:
+            num_steps = math.ceil(max_period / delta_time)
 
-    # Calculate the number of steps to traverse the max period (or just a single step if
-    # there is no movement).
-    num_steps = 1
-    if max_period > 0.0:
-        num_steps = math.ceil(max_period / delta_time)
-
-    # Create a temporary Movement with the trial delta_time.
     temp_movement = Movement(
         airplane_movements=airplane_movements_copy,
         operating_point_movement=operating_point_movement_copy,
@@ -537,79 +562,494 @@ def _compute_wake_area_mismatch(
         num_steps=num_steps,
     )
 
-    # Create an UnsteadyProblem and solver.
+    # UnsteadyProblem populates panel.*_GP1_CgP1 attributes on every Airplane snapshot,
+    # which is the frame the solver's bound ring vortex construction reads.
     temp_problem = problems.UnsteadyProblem(movement=temp_movement)
-    temp_solver = (
-        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-            temp_problem
-        )
-    )
 
-    # Accumulate area mismatch across all steps > 0.
+    if num_steps < 2:
+        return 0.0
+
+    # Cache vInf in GP1_CgP1 frame per step.
+    v_inf_per_step = [
+        steady_problem.operating_point.vInf_GP1__E
+        for steady_problem in temp_problem.steady_problems
+    ]
+
     total_mismatch = 0.0
     num_comparisons = 0
 
-    # Step through the simulation using geometry only initialization.
-    for step in range(num_steps):
-        temp_solver.initialize_step_geometry(step)
+    for step in range(1, num_steps):
+        current_problem = temp_problem.steady_problems[step]
+        previous_problem = temp_problem.steady_problems[step - 1]
+        v_inf_curr = v_inf_per_step[step]
+        v_inf_prev = v_inf_per_step[step - 1]
 
-        # At step > 0, compare wake first row RingVortex areas (current step)
-        # to bound trailing edge RingVortex areas (previous step).
-        if step > 0:
-            # Get the current Airplanes (at step) for wake RingVortices.
-            current_airplanes = temp_solver.steady_problems[step].airplanes
-            # Get the previous Airplanes (at step - 1) for bound RingVortices.
-            previous_airplanes = temp_solver.steady_problems[step - 1].airplanes
+        for airplane_id, current_airplane in enumerate(current_problem.airplanes):
+            previous_airplane = previous_problem.airplanes[airplane_id]
 
-            for airplane_id, airplane in enumerate(current_airplanes):
-                previous_airplane = previous_airplanes[airplane_id]
+            for wing_id, current_wing in enumerate(current_airplane.wings):
+                previous_wing = previous_airplane.wings[wing_id]
 
-                for wing_id, wing in enumerate(airplane.wings):
-                    previous_wing = previous_airplane.wings[wing_id]
+                current_panels = current_wing.panels
+                if current_panels is None:
+                    continue
+                previous_panels = previous_wing.panels
+                if previous_panels is None:
+                    continue
 
-                    # Get the wake RingVortices (first row, chordwise index 0).
-                    wake_ring_vortices = wing.wake_ring_vortices
+                num_chordwise_panels = previous_wing.num_chordwise_panels
+                trailing_edge_chordwise_index = num_chordwise_panels - 1
+                num_spanwise_panels = current_panels.shape[1]
 
-                    assert wake_ring_vortices is not None
+                # Stack TE panel corners across spanwise positions for vectorized math.
+                # Shape: (num_spanwise_panels, 3) per array.
+                Flpp_curr = np.stack(
+                    [
+                        current_panels[trailing_edge_chordwise_index, s].Flpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Frpp_curr = np.stack(
+                    [
+                        current_panels[trailing_edge_chordwise_index, s].Frpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Blpp_curr = np.stack(
+                    [
+                        current_panels[trailing_edge_chordwise_index, s].Blpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Brpp_curr = np.stack(
+                    [
+                        current_panels[trailing_edge_chordwise_index, s].Brpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Flpp_prev = np.stack(
+                    [
+                        previous_panels[trailing_edge_chordwise_index, s].Flpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Frpp_prev = np.stack(
+                    [
+                        previous_panels[trailing_edge_chordwise_index, s].Frpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Blpp_prev = np.stack(
+                    [
+                        previous_panels[trailing_edge_chordwise_index, s].Blpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
+                Brpp_prev = np.stack(
+                    [
+                        previous_panels[trailing_edge_chordwise_index, s].Brpp_GP1_CgP1
+                        for s in range(num_spanwise_panels)
+                    ]
+                )
 
-                    # First row of wake is at chordwise index 0.
-                    num_spanwise = wake_ring_vortices.shape[1]
+                # Bound RingVortex front vertices at step - 1 (panel quarter chord).
+                Flrvp_prev = 0.75 * Flpp_prev + 0.25 * Blpp_prev
+                Frrvp_prev = 0.75 * Frpp_prev + 0.25 * Brpp_prev
 
-                    # Get the trailing edge bound RingVortices from previous step.
-                    previous_panels = previous_wing.panels
-                    if previous_panels is None:
-                        continue
-
-                    num_chordwise_panels = previous_wing.num_chordwise_panels
-                    trailing_edge_chordwise_index = num_chordwise_panels - 1
-
-                    for spanwise_id in range(num_spanwise):
-                        # Get wake RingVortex area (first row, current step).
-                        wake_rv: _vortices.ring_vortex.RingVortex = wake_ring_vortices[
-                            0, spanwise_id
+                # Bound RingVortex back vertices at step - 1 (TE special case).
+                if step - 1 == 0:
+                    Blrvp_prev = Blpp_prev + 0.25 * v_inf_prev * delta_time
+                    Brrvp_prev = Brpp_prev + 0.25 * v_inf_prev * delta_time
+                else:
+                    previous_previous_problem = temp_problem.steady_problems[step - 2]
+                    previous_previous_panels = (
+                        previous_previous_problem.airplanes[airplane_id]
+                        .wings[wing_id]
+                        .panels
+                    )
+                    assert previous_previous_panels is not None
+                    Blpp_prev_prev = np.stack(
+                        [
+                            previous_previous_panels[
+                                trailing_edge_chordwise_index, s
+                            ].Blpp_GP1_CgP1
+                            for s in range(num_spanwise_panels)
                         ]
-                        wake_area = wake_rv.area
-
-                        # Get bound trailing edge RingVortex area (previous step).
-                        trailing_edge_panel = previous_panels[
-                            trailing_edge_chordwise_index, spanwise_id
+                    )
+                    Brpp_prev_prev = np.stack(
+                        [
+                            previous_previous_panels[
+                                trailing_edge_chordwise_index, s
+                            ].Brpp_GP1_CgP1
+                            for s in range(num_spanwise_panels)
                         ]
-                        _bound_rv = trailing_edge_panel.ring_vortex
+                    )
+                    Blrvp_prev = (
+                        0.75 * Blpp_prev
+                        + 0.25 * Blpp_prev_prev
+                        + 0.25 * v_inf_prev * delta_time
+                    )
+                    Brrvp_prev = (
+                        0.75 * Brpp_prev
+                        + 0.25 * Brpp_prev_prev
+                        + 0.25 * v_inf_prev * delta_time
+                    )
 
-                        assert _bound_rv is not None
-                        bound_rv: _vortices.ring_vortex.RingVortex = _bound_rv
+                # Bound area = 0.5 * |cross(Frrvp - Blrvp, Flrvp - Brrvp)|.
+                bound_diag1 = Frrvp_prev - Blrvp_prev
+                bound_diag2 = Flrvp_prev - Brrvp_prev
+                bound_areas = 0.5 * np.linalg.norm(
+                    np.cross(bound_diag1, bound_diag2), axis=1
+                )
 
-                        bound_area = bound_rv.area
+                # Bound TE RingVortex back vertices at the current step. These define
+                # the front of the wake first row RingVortex at the current step.
+                Blrvp_curr = (
+                    0.75 * Blpp_curr + 0.25 * Blpp_prev + 0.25 * v_inf_curr * delta_time
+                )
+                Brrvp_curr = (
+                    0.75 * Brpp_curr + 0.25 * Brpp_prev + 0.25 * v_inf_curr * delta_time
+                )
 
-                        # Accumulate the absolute percent area difference.
-                        epsilon = 1e-12
-                        if abs(bound_area) > epsilon:
-                            total_mismatch += abs(wake_area - bound_area) / bound_area
-                            num_comparisons += 1
+                # Wake first row area depends on how the solver's wake populator
+                # constructs the back vertices. At step 1 (first wake population, run
+                # at solver step 0), there is no preexisting wake grid: the populator
+                # sets row 0 to the bound TE back vertices at step 1 and row 1 to
+                # row 0 + vInf(0) * dt. The area collapses to
+                # dt * |cross(Brrvp_curr - Blrvp_curr, vInf_prev)|. At step k >= 2,
+                # the populator copies the previous step's wake grid forward, advects
+                # it by vInf(k - 1) * dt, then prepends a new front row from bound TE
+                # back vertices at step k. The first wake row's back vertices are
+                # therefore Blrvp_prev + vInf_prev * dt and Brrvp_prev +
+                # vInf_prev * dt, where Blrvp_prev and Brrvp_prev are the previous
+                # step's bound TE back vertices already computed above.
+                if step == 1:
+                    span_vec = Brrvp_curr - Blrvp_curr
+                    wake_areas = delta_time * np.linalg.norm(
+                        np.cross(span_vec, v_inf_prev), axis=1
+                    )
+                else:
+                    Flwrvp = Blrvp_curr
+                    Frwrvp = Brrvp_curr
+                    Blwrvp = Blrvp_prev + v_inf_prev * delta_time
+                    Brwrvp = Brrvp_prev + v_inf_prev * delta_time
+                    wake_diag1 = Frwrvp - Blwrvp
+                    wake_diag2 = Flwrvp - Brwrvp
+                    wake_areas = 0.5 * np.linalg.norm(
+                        np.cross(wake_diag1, wake_diag2), axis=1
+                    )
+
+                epsilon = 1e-12
+                valid = np.abs(bound_areas) > epsilon
+                if np.any(valid):
+                    total_mismatch += float(
+                        np.sum(
+                            np.abs(wake_areas[valid] - bound_areas[valid])
+                            / bound_areas[valid]
+                        )
+                    )
+                    num_comparisons += int(np.sum(valid))
 
     if num_comparisons == 0:
         return 0.0
 
+    return total_mismatch / num_comparisons
+
+
+def _compute_wake_area_mismatches_cached_non_static(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+    lcm_period: float,
+    num_steps_candidates: list[int],
+) -> dict[int, float]:
+    """Computes wake area mismatch for many integer num_steps candidates from one shared
+    high resolution Movement.
+
+    Builds a single Movement with M = _NON_STATIC_CACHE_OVERSAMPLE *
+    max(num_steps_candidates) snapshots covering one LCM period of motion. For each
+    candidate N, the snapshots needed at delta_time = lcm_period / N are looked up via
+    linear interpolation between adjacent high resolution samples, then the same closed
+    form bound and wake area formulas as _compute_wake_area_mismatch are applied. The
+    Movement and UnsteadyProblem cost is paid once per optimizer call rather than once
+    per candidate, which collapses the dominant per evaluation cost into a single up
+    front build.
+
+    The linear interpolation introduces a per panel position error bounded by O(omega^2
+    * dt^2 * amplitude) where dt is the high resolution sample spacing in time. For
+    typical flapping kinematics this is small enough that the optimizer's selected
+    num_steps matches the result that would be obtained from a fresh Movement and
+    UnsteadyProblem build per candidate.
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :param lcm_period: The LCM of all motion periods. It must be a positive float. Its
+        units are in seconds.
+    :param num_steps_candidates: The integer num_steps values to score. Must be non
+        empty and contain only positive ints.
+    :return: A dict mapping each candidate num_steps value to its computed mismatch.
+    """
+    max_candidate = max(num_steps_candidates)
+    high_res_num_intervals = _NON_STATIC_CACHE_OVERSAMPLE * max_candidate
+    high_res_dt = lcm_period / high_res_num_intervals
+    # The Movement covers high_res_num_intervals + 1 snapshots so that one full
+    # LCM period worth of intervals can be sampled.
+    high_res_num_steps = high_res_num_intervals + 1
+
+    airplane_movements_copy = copy.deepcopy(airplane_movements)
+    operating_point_movement_copy = copy.deepcopy(operating_point_movement)
+
+    temp_movement = Movement(
+        airplane_movements=airplane_movements_copy,
+        operating_point_movement=operating_point_movement_copy,
+        delta_time=high_res_dt,
+        num_steps=high_res_num_steps,
+    )
+    temp_problem = problems.UnsteadyProblem(movement=temp_movement)
+
+    first_problem = temp_problem.steady_problems[0]
+
+    # Per (airplane, wing) cache of TE panel corners. Each stored array has
+    # shape (high_res_num_steps, num_spanwise_panels, 3) so that strided
+    # advanced indexing produces (N + 1, num_spanwise_panels, 3) views per
+    # candidate.
+    cache_per_wing: list[dict] = []
+    for airplane_id, airplane in enumerate(first_problem.airplanes):
+        for wing_id, wing in enumerate(airplane.wings):
+            if wing.panels is None:
+                continue
+            num_chordwise = wing.num_chordwise_panels
+            te_idx = num_chordwise - 1
+            num_spanwise = wing.panels.shape[1]
+
+            Flpp = np.empty((high_res_num_steps, num_spanwise, 3), dtype=float)
+            Frpp = np.empty_like(Flpp)
+            Blpp = np.empty_like(Flpp)
+            Brpp = np.empty_like(Flpp)
+
+            for step in range(high_res_num_steps):
+                step_panels = (
+                    temp_problem.steady_problems[step]
+                    .airplanes[airplane_id]
+                    .wings[wing_id]
+                    .panels
+                )
+                assert step_panels is not None
+                for s in range(num_spanwise):
+                    panel = step_panels[te_idx, s]
+                    Flpp[step, s] = panel.Flpp_GP1_CgP1
+                    Frpp[step, s] = panel.Frpp_GP1_CgP1
+                    Blpp[step, s] = panel.Blpp_GP1_CgP1
+                    Brpp[step, s] = panel.Brpp_GP1_CgP1
+
+            cache_per_wing.append(
+                {
+                    "Flpp": Flpp,
+                    "Frpp": Frpp,
+                    "Blpp": Blpp,
+                    "Brpp": Brpp,
+                }
+            )
+
+    v_inf_high_res = np.array(
+        [
+            steady_problem.operating_point.vInf_GP1__E
+            for steady_problem in temp_problem.steady_problems
+        ]
+    )
+
+    results: dict[int, float] = {}
+    for num_steps in num_steps_candidates:
+        results[num_steps] = _evaluate_cached_wake_area_mismatch(
+            cache_per_wing=cache_per_wing,
+            v_inf_high_res=v_inf_high_res,
+            lcm_period=lcm_period,
+            high_res_num_intervals=high_res_num_intervals,
+            num_steps=num_steps,
+        )
+    return results
+
+
+def _evaluate_cached_wake_area_mismatch(
+    cache_per_wing: list[dict],
+    v_inf_high_res: np.ndarray,
+    lcm_period: float,
+    high_res_num_intervals: int,
+    num_steps: int,
+) -> float:
+    """Evaluates wake area mismatch at one candidate num_steps using a shared cache.
+
+    Maps each candidate step k in [0, num_steps - 1] to a fractional high resolution
+    index k * high_res_num_intervals / num_steps and linearly interpolates the cached
+    panel corners and freestream between adjacent high resolution samples. Linear
+    interpolation has O(dt^2) error in panel position for smooth motion, which is small
+    enough at the oversampling factors used here that the integer num_steps picked by
+    the optimizer matches the result obtained from a fresh per candidate Movement and
+    UnsteadyProblem build. When the fractional index is an integer (e.g. for candidates
+    that divide high_res_num_intervals exactly) the interpolation reduces to a direct
+    lookup. The resulting per panel positions feed the same closed form bound and wake
+    area formulas as _compute_wake_area_mismatch.
+
+    :param cache_per_wing: A list of per (airplane, wing) caches produced by
+        _compute_wake_area_mismatches_cached_non_static. Each entry is a dict with keys
+        "Flpp", "Frpp", "Blpp", "Brpp" mapping to (high_res_num_intervals + 1,
+        num_spanwise_panels, 3) ndarrays of trailing edge panel corner positions in the
+        first Airplane's geometry axes (GP1_CgP1).
+    :param v_inf_high_res: A (high_res_num_intervals + 1, 3) ndarray of freestream
+        velocity samples in the first Airplane's geometry axes (GP1_CgP1), one per high
+        resolution snapshot.
+    :param lcm_period: The LCM of all motion periods. It must be a positive float. Its
+        units are in seconds.
+    :param high_res_num_intervals: The number of high resolution intervals covering one
+        LCM period. The cached arrays have high_res_num_intervals + 1 samples along
+        their leading axis.
+    :param num_steps: The candidate integer number of steps per LCM period to score.
+        Must be a positive int. Returns 0.0 immediately for num_steps < 2 since at least
+        one step pair is needed for a comparison.
+    :return: The average area mismatch at this candidate. The absolute percent error
+        between the area of shed wake RingVortices and the area of their parent bound
+        RingVortices (at the time step where they were shed). Averaged across all time
+        steps and all pairs of child and parent RingVortices. A lower value indicates
+        better matching.
+    """
+    if num_steps < 2:
+        return 0.0
+
+    delta_time = lcm_period / num_steps
+
+    # Linear interpolation mapping from candidate steps to high resolution
+    # samples. The floor index gives the lower bracketing sample; the fractional
+    # part is the interpolation weight on the next sample. Only num_steps
+    # candidate samples are generated since the comparison loop reads indices
+    # [0, num_steps - 1]; the t = lcm_period sample would be dead.
+    fractional_indices = np.arange(num_steps) * high_res_num_intervals / num_steps
+    floor_indices = np.floor(fractional_indices).astype(int)
+    weights_next = fractional_indices - floor_indices
+    next_indices = floor_indices + 1
+    weights_floor = 1.0 - weights_next
+    # Reshape weights for broadcasting against (num_samples, num_spanwise, 3)
+    # panel arrays.
+    weights_floor_b = weights_floor[:, None, None]
+    weights_next_b = weights_next[:, None, None]
+    # Reshape weights for broadcasting against (num_samples, 3) vInf arrays.
+    weights_floor_v = weights_floor[:, None]
+    weights_next_v = weights_next[:, None]
+
+    total_mismatch = 0.0
+    num_comparisons = 0
+
+    for cache in cache_per_wing:
+        # Sample and linearly interpolate the cached panel attribute arrays at
+        # the candidate step times. Each result has shape (num_steps,
+        # num_spanwise_panels, 3); v_inf has shape (num_steps, 3).
+        Flpp = (
+            weights_floor_b * cache["Flpp"][floor_indices]
+            + weights_next_b * cache["Flpp"][next_indices]
+        )
+        Frpp = (
+            weights_floor_b * cache["Frpp"][floor_indices]
+            + weights_next_b * cache["Frpp"][next_indices]
+        )
+        Blpp = (
+            weights_floor_b * cache["Blpp"][floor_indices]
+            + weights_next_b * cache["Blpp"][next_indices]
+        )
+        Brpp = (
+            weights_floor_b * cache["Brpp"][floor_indices]
+            + weights_next_b * cache["Brpp"][next_indices]
+        )
+        v_inf = (
+            weights_floor_v * v_inf_high_res[floor_indices]
+            + weights_next_v * v_inf_high_res[next_indices]
+        )
+
+        # Comparison axis: index i in [0, num_steps - 2] maps to
+        # step = i + 1, prev_step = i. Slice the panel arrays accordingly so
+        # bound and wake area calculations can run as one vectorized batch
+        # rather than a Python step loop.
+        Flpp_prev_arr = Flpp[: num_steps - 1]
+        Frpp_prev_arr = Frpp[: num_steps - 1]
+        Blpp_prev_arr = Blpp[: num_steps - 1]
+        Brpp_prev_arr = Brpp[: num_steps - 1]
+        Blpp_curr_arr = Blpp[1:num_steps]
+        Brpp_curr_arr = Brpp[1:num_steps]
+        v_inf_prev_arr = v_inf[: num_steps - 1, None, :]
+        v_inf_curr_arr = v_inf[1:num_steps, None, :]
+
+        # Bound RingVortex front vertices at the previous step (panel quarter
+        # chord, no derivative term).
+        Flrvp_prev = 0.75 * Flpp_prev_arr + 0.25 * Blpp_prev_arr
+        Frrvp_prev = 0.75 * Frpp_prev_arr + 0.25 * Brpp_prev_arr
+
+        # Bound RingVortex back vertices at the previous step. For comparison
+        # index 0 (prev_step == 0) there is no panel at step - 2; substituting
+        # the step - 1 panel makes the derivative formula collapse to the
+        # solver's no-derivative form 0.75*Blpp + 0.25*Blpp + 0.25*vInf*dt =
+        # Blpp + 0.25*vInf*dt, so we get the correct value for both i == 0 and
+        # i >= 1 from a single vectorized expression.
+        Blpp_prev_prev_arr = np.concatenate(
+            [Blpp_prev_arr[:1], Blpp_prev_arr[:-1]], axis=0
+        )
+        Brpp_prev_prev_arr = np.concatenate(
+            [Brpp_prev_arr[:1], Brpp_prev_arr[:-1]], axis=0
+        )
+        Blrvp_prev = (
+            0.75 * Blpp_prev_arr
+            + 0.25 * Blpp_prev_prev_arr
+            + 0.25 * v_inf_prev_arr * delta_time
+        )
+        Brrvp_prev = (
+            0.75 * Brpp_prev_arr
+            + 0.25 * Brpp_prev_prev_arr
+            + 0.25 * v_inf_prev_arr * delta_time
+        )
+
+        # Bound areas across all comparison steps. Shape: (num_steps - 1,
+        # num_spanwise_panels).
+        bound_diag1 = Frrvp_prev - Blrvp_prev
+        bound_diag2 = Flrvp_prev - Brrvp_prev
+        bound_areas = 0.5 * np.linalg.norm(np.cross(bound_diag1, bound_diag2), axis=-1)
+
+        # Bound RingVortex back vertices at the current step. These are the
+        # front vertices of the wake first row at the current step.
+        Blrvp_curr = (
+            0.75 * Blpp_curr_arr
+            + 0.25 * Blpp_prev_arr
+            + 0.25 * v_inf_curr_arr * delta_time
+        )
+        Brrvp_curr = (
+            0.75 * Brpp_curr_arr
+            + 0.25 * Brpp_prev_arr
+            + 0.25 * v_inf_curr_arr * delta_time
+        )
+
+        # Wake first row back vertices. At comparison index 0 (step == 1, first
+        # wake population) the solver sets row 1 = row 0 + vInf * dt, so the
+        # wake's back row is the bound TE back at the *current* step advected.
+        # At i >= 1 the wake's back row is the bound TE back at the *previous*
+        # step advected. Substituting Blrvp_curr[0] for index 0 of the previous
+        # step array makes a single vectorized expression cover both cases.
+        Blrvp_prev_for_wake = np.concatenate([Blrvp_curr[:1], Blrvp_prev[1:]], axis=0)
+        Brrvp_prev_for_wake = np.concatenate([Brrvp_curr[:1], Brrvp_prev[1:]], axis=0)
+        Flwrvp = Blrvp_curr
+        Frwrvp = Brrvp_curr
+        Blwrvp = Blrvp_prev_for_wake + v_inf_prev_arr * delta_time
+        Brwrvp = Brrvp_prev_for_wake + v_inf_prev_arr * delta_time
+        wake_diag1 = Frwrvp - Blwrvp
+        wake_diag2 = Flwrvp - Brwrvp
+        wake_areas = 0.5 * np.linalg.norm(np.cross(wake_diag1, wake_diag2), axis=-1)
+
+        epsilon = 1e-12
+        valid = np.abs(bound_areas) > epsilon
+        if np.any(valid):
+            total_mismatch += float(
+                np.sum(
+                    np.abs(wake_areas[valid] - bound_areas[valid]) / bound_areas[valid]
+                )
+            )
+            num_comparisons += int(np.sum(valid))
+
+    if num_comparisons == 0:
+        return 0.0
     return total_mismatch / num_comparisons
 
 
@@ -621,8 +1061,8 @@ def _optimize_delta_time(
 ) -> float:
     """Finds an optimal delta_time by minimizing wake area mismatch.
 
-    Optimizes delta_time to minimize the area mismatch between wake RingVortices and
-    their parent bound trailing edge RingVortices. This produces better results at high
+    Optimizes delta_time to minimize the area mismatch between wake ring vortices and
+    their parent bound trailing edge ring vortices. This produces better results at high
     Strouhal numbers where motion induced velocity is significant.
 
     For non static Movements, the optimization uses a brute force search over integer
@@ -634,8 +1074,9 @@ def _optimize_delta_time(
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
-    :param initial_delta_time: The initial estimate from the fast calculation. It must
-        be a positive float. Its units are in seconds.
+    :param initial_delta_time: The initial estimate, typically the result of
+        _analytically_optimize_delta_time. It must be a positive float. Its units are in
+        seconds.
     :param mismatch_cutoff: A positive float for the optimization's convergence
         threshold. Only used for static Movements. When the average area mismatch (which
         is an absolute percent error) falls below this value, the search terminates
@@ -809,15 +1250,23 @@ def _optimize_delta_time_non_static(
         + str(max_num_steps)
     )
 
+    candidates = list(range(min_num_steps, max_num_steps + 1))
+
+    # Build one high resolution Movement and score every integer candidate against it
+    # by linearly interpolating the cached panel corners. This collapses the per
+    # candidate Movement and UnsteadyProblem cost into a single up front build for
+    # the entire bracket.
+    cached_mismatches = _compute_wake_area_mismatches_cached_non_static(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        lcm_period=lcm_period,
+        num_steps_candidates=candidates,
+    )
     best_num_steps = min_num_steps
     best_mismatch = float("inf")
-
-    for num_steps in range(min_num_steps, max_num_steps + 1):
+    for num_steps in candidates:
+        mismatch = cached_mismatches[num_steps]
         delta_time = lcm_period / num_steps
-        mismatch = _compute_wake_area_mismatch(
-            delta_time, airplane_movements, operating_point_movement
-        )
-
         movement_logger.info(
             "\tnum_steps="
             + str(num_steps)
@@ -826,7 +1275,6 @@ def _optimize_delta_time_non_static(
             + ", mismatch="
             + str(round(mismatch, 6))
         )
-
         if mismatch < best_mismatch:
             best_mismatch = mismatch
             best_num_steps = num_steps
@@ -866,10 +1314,10 @@ def _analytically_optimize_delta_time(
 ) -> float:
     """Analytically estimates the optimal delta_time from wake displacement.
 
-    Estimates the delta_time that produces wake RingVortices with roughly the same chord
-    length as the bound trailing edge RingVortices, accounting for both freestream and
-    geometry motion velocities. This is faster than _optimize_delta_time but may be
-    slightly less accurate.
+    Estimates the delta_time that produces wake ring vortices with roughly the same
+    chord length as the bound trailing edge ring vortices, accounting for both
+    freestream and geometry motion velocities. This is faster than _optimize_delta_time
+    but may be slightly less accurate.
 
     The algorithm works by: (1) computing a very small preliminary delta_time as the
     minimum motion period divided by 100 (capped by a maximum of 1000 total time steps
@@ -878,13 +1326,13 @@ def _analytically_optimize_delta_time(
     coordinates transformed into the first Airplane's geometry axes), (3) measuring the
     average wake displacement per time step for each Wing's trailing edge Panels
     (combining freestream velocity and geometry motion, both in the first Airplane's
-    geometry axes), and (4) choosing a delta_time such that each wake RingVortex has
-    approximately the same chord as its parent bound RingVortex (averaged across the one
-    LCM period).
+    geometry axes), and (4) choosing a delta_time such that each wake ring vortex has
+    approximately the same chord as its parent bound ring vortex (averaged across the
+    one LCM period).
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
-    :param initial_delta_time: The initial estimate from the fast calculation. It must
+    :param initial_delta_time: The initial estimate from the chord-based seed. It must
         be a positive float. Its units are in seconds. Used as a fallback for static
         Movements or degenerate cases.
     :return: The analytically optimized delta_time value. Its units are in seconds.
@@ -966,7 +1414,7 @@ def _analytically_optimize_delta_time(
             num_spanwise = _panels.shape[1]
 
             # Compute the mean chordwise width of trailing edge Panels. This is
-            # the target chord length for wake RingVortices. We use the trailing
+            # the target chord length for wake ring vortices. We use the trailing
             # edge Panel chord directly (rather than standard_mean_chord /
             # num_chordwise) because non uniform chordwise spacing can cause
             # trailing edge Panels to have different chords than average.
@@ -1053,7 +1501,7 @@ def _analytically_optimize_delta_time(
             # Average distance over one LCM period per spanwise Panel.
             average_distance = total_distance / num_measurements
             # The desired number of steps per LCM period is such that each wake
-            # RingVortex chord equals the trailing edge bound Panel chord.
+            # ring vortex chord equals the trailing edge bound Panel chord.
             wing_num_steps_per_lcm = average_distance / mean_te_panel_chord
             wing_num_steps_values.append(wing_num_steps_per_lcm)
             wing_num_spanwise_panels_values.append(num_spanwise)
@@ -1097,7 +1545,7 @@ def _analytically_optimize_delta_time(
 
     # Warn if the result implies fewer than 20 time steps per minimum period of motion.
     # This indicates the trailing edge Panels are large relative to the motion, so
-    # matching wake RingVortex area to bound RingVortex area requires a time step that
+    # matching wake ring vortex area to bound ring vortex area requires a time step that
     # is large compared to the minimum period. This results in poor temporal resolution
     # of the fastest motion. Increasing the number of chordwise Panels or switching to
     # cosine chordwise spacing (which concentrates Panels at the leading and trailing

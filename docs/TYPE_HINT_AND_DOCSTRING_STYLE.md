@@ -108,7 +108,7 @@ Use `cast()` sparingly, only when the type checker cannot infer what you know to
 from typing import cast
 
 # For dtype=object arrays where we know the element type
-ring_vortex = cast(_vortices.ring_vortex.RingVortex, object_array[i, j], )
+panel = cast(_panel.Panel, object_array[i, j])
 ```
 
 **Use `cast()` when:**
@@ -117,7 +117,7 @@ ring_vortex = cast(_vortices.ring_vortex.RingVortex, object_array[i, j], )
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
 
-**Avoid `cast()` for `Type | None` → `Type` narrowing** - use `assert` instead for runtime safety.
+**Avoid `cast()` for `Type | None` -> `Type` narrowing** - use `assert` instead for runtime safety.
 
 ### Module Alias Pattern
 
@@ -187,11 +187,10 @@ This approach:
 4. **Begin descriptions with article + shape/type info for arrays** (e.g., "A (4,4) ndarray of floats...")
 5. **Use present tense for descriptions** (e.g., "Returns..." not "Will return...")
 6. **Avoid starting descriptions with "This..."**
-7. **Never use em-dashes (—) or en-dashes (–); always use hyphens (-)**
-8. **Never use multiplication sign (×); use lowercase x**
-9. **Never use pi symbol (π); write "pi"**
-10. **Never use approximately-equal sign (≈); use "~"**
-11. **Place closing triple-quotes on their own line**
+7. **Follow the ASCII Only rule in [WRITING_STYLE.md](WRITING_STYLE.md)**, which covers all character substitutions (dashes, math symbols, smart quotes, ellipsis, arrows, emojis, and other typographic Unicode) used across the project's prose, comments, and docstrings.
+8. **Place closing triple-quotes on their own line**
+9. **Summary line is a single sentence.** Any additional description goes in a new paragraph after a blank line. docformatter enforces this: if the first paragraph contains multiple sentences, it moves all but the first into a new paragraph.
+10. **No blank line between the closing triple-quotes and the next line of code.** docformatter enforces this too: a blank gap after the docstring will be removed.
 
 ### Module-Level Docstrings
 
@@ -721,9 +720,11 @@ def _get_mcl_points(
     chordwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
     """Takes in the inner and outer Airfoils of a wing section and its normalized
-    chordwise coordinates. It returns a list of four column vectors containing the
-    normalized components of the positions of points along the mean camber line (MCL)
-    (in each Airfoil's axes, relative to each Airfoil's leading point).
+    chordwise coordinates.
+
+    It returns a list of four column vectors containing the normalized components of
+    the positions of points along the mean camber line (MCL) (in each Airfoil's axes,
+    relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
     :param outer_airfoil: The wing section's outer Airfoil.
@@ -823,6 +824,7 @@ def add_control_surface(
     self, deflection: float | int, hinge_point: float | int
 ) -> Airfoil:
     """Returns a version of the Airfoil with a control surface added at a given point.
+
     It is called during meshing.
 
     :param deflection: The control deflection in degrees. Deflection downwards is
@@ -857,7 +859,9 @@ def get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
     """Returns a ndarray of points along the mean camber line (MCL), resampled from the
-    mcl_A_outline attribute. It is used to discretize the MCL for meshing.
+    mcl_A_outline attribute.
+
+    It is used to discretize the MCL for meshing.
 
     :param mcl_fractions: A (N,) array-like object of floats representing normalized
         distances along the MCL (from the leading to the trailing edge) at which to
@@ -954,4 +958,3 @@ param: Type1 | Type2
 - All existing code should gradually be updated to match this style
 - Use `docformatter` or similar tools to help maintain consistent formatting
 - Shape information is critical and must always be included in docstrings for arrays
-- Avoid using hyphens or other forms of dashes in docstrings or comments. This is because they are often incorrectly wrapped by docformatter and incorrectly rendered in PyCharm's quick documentation. For example, even though not standard grammar, it's okay to write "non symmetric" instead of "non-symmetric".

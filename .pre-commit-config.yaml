@@ -1,20 +1,94 @@
 repos:
+  # Fixers: normalize bytes first so later hooks see clean files.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+        name: fixer    end-of-files
+      - id: trailing-whitespace
+        name: fixer    trailing-whitespace
+      - id: mixed-line-ending
+        name: fixer    mixed-line-endings
+        args: [--fix=lf]
+      - id: fix-byte-order-marker
+        name: fixer    byte-order-marks
+      - id: requirements-txt-fixer
+        name: fixer    requirements-txt
+  # Auto-formatters: rewrite code on top of the normalized bytes.
   - repo: https://github.com/pycqa/isort
-    rev: 7.0.0
+    rev: a333737ed43df02b18e6c95477ea1b285b3de15a  # frozen: 8.0.1a3
     hooks:
       - id: isort
+        name: fixer    isort
   - repo: https://github.com/psf/black
-    rev: 25.11.0
+    rev: c6755bb741b6481d6b3d3bb563c83fa060db96c9  # frozen: 26.3.1
     hooks:
       - id: black
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
+        name: fixer    black
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.7
+    rev: 0032269a0e65c068af9cd86c9a8859a0ddd568d6  # frozen: v1.7.8
     hooks:
       - id: docformatter
+        name: fixer    docformatter
         additional_dependencies: [tomli]
         args: [--in-place, --config, ./pyproject.toml]
         files: ^pterasoftware/
+  # Validators: read-only, run against the final state.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+        name: checker  merge-conflicts
+      - id: check-case-conflict
+        name: checker  case-conflicts
+      - id: check-illegal-windows-names
+        name: checker  illegal-names
+      - id: check-symlinks
+        name: checker  lost-symlinks
+      - id: destroyed-symlinks
+        name: checker  destroyed-symlinks
+      - id: check-yaml
+        name: checker  yaml-files
+      - id: check-toml
+        name: checker  toml-files
+      - id: check-xml
+        name: checker  xml-files
+      - id: check-json
+        name: checker  json-files
+      - id: detect-private-key
+        name: checker  private-keys
+      - id: forbid-submodules
+        name: checker  submodules
+      - id: check-vcs-permalinks
+        name: checker  vcs-permalinks
+      - id: check-executables-have-shebangs
+        name: checker  exec-shebangs
+      - id: check-shebang-scripts-are-executable
+        name: checker  shebang-execs
+      - id: check-added-large-files
+        name: checker  large-files
+      - id: debug-statements
+        name: checker  debug-statements
+  - repo: https://github.com/codespell-project/codespell
+    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
+    hooks:
+      - id: codespell
+        name: checker  codespell
+        # The rendered HTML reports embed base64-encoded TTFs. Random byte sequences in
+        # the base64 stream collide with codespell's small typo dictionary (e.g., AEr,
+        # ABL, gEs), so exclude the reports tree where these blobs live.
+        exclude: ^docs/_static/benchmarks/.*\.html$
+  - repo: local
+    hooks:
+      - id: ascii-only
+        name: checker  ascii-only
+        entry: python scripts/check_ascii_only.py
+        language: system
+        types: [text]
+        exclude: '\.ui$'
+      - id: mypy
+        name: checker  mypy
+        entry: mypy pterasoftware
+        language: system
+        always_run: true
+        pass_filenames: false

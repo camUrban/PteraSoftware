@@ -2,7 +2,7 @@
 
 Uses private serialization functions directly because the public save() and load()
 restrict top level objects to public classes. The benchmark covers all classes in the
-registry, including internal ones like LineVortex and Panel.
+registry, including internal ones like Panel.
 """
 
 import gzip
@@ -22,13 +22,6 @@ from pterasoftware._panel import Panel
 from pterasoftware._serialization import _object_from_dict, _object_to_dict
 
 # noinspection PyProtectedMember
-from pterasoftware._vortices._line_vortex import LineVortex
-
-# noinspection PyProtectedMember
-from pterasoftware._vortices.horseshoe_vortex import HorseshoeVortex
-
-# noinspection PyProtectedMember
-from pterasoftware._vortices.ring_vortex import RingVortex
 from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing
@@ -116,39 +109,6 @@ def _benchmark(name: str, obj: object) -> None:
     )
     print(f"    Compression ratio (compact / gzip): {compact_size / gz_size:.1f}x")
     print()
-
-
-def _make_line_vortex() -> LineVortex:
-    """Creates a typical LineVortex."""
-    return LineVortex(
-        Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0]),
-        Elvp_GP1_CgP1=np.array([1.0, 0.5, 0.0]),
-        strength=1.0,
-    )
-
-
-def _make_ring_vortex() -> RingVortex:
-    """Creates a typical RingVortex."""
-    ring_vortex = RingVortex(
-        Frrvp_GP1_CgP1=np.array([1.0, 0.0, 0.0]),
-        Flrvp_GP1_CgP1=np.array([1.0, 1.0, 0.0]),
-        Blrvp_GP1_CgP1=np.array([0.0, 1.0, 0.0]),
-        Brrvp_GP1_CgP1=np.array([0.0, 0.0, 0.0]),
-        strength=1.0,
-    )
-    ring_vortex.age = 0.05
-    return ring_vortex
-
-
-def _make_horseshoe_vortex() -> HorseshoeVortex:
-    """Creates a typical HorseshoeVortex."""
-    return HorseshoeVortex(
-        Frhvp_GP1_CgP1=np.array([1.0, 0.0, 0.0]),
-        Flhvp_GP1_CgP1=np.array([1.0, 1.0, 0.0]),
-        leftLegVector_GP1=np.array([-1.0, 0.0, 0.0]),
-        left_right_leg_lengths=20.0,
-        strength=1.0,
-    )
 
 
 def _make_airfoil() -> Airfoil:
@@ -441,9 +401,6 @@ if __name__ == "__main__":
     print("=" * 60)
     print()
 
-    _benchmark("LineVortex", _make_line_vortex())
-    _benchmark("RingVortex", _make_ring_vortex())
-    _benchmark("HorseshoeVortex", _make_horseshoe_vortex())
     _benchmark("Airfoil", _make_airfoil())
     _benchmark("OperatingPoint", _make_operating_point())
     _benchmark("WingCrossSection", _make_wing_cross_section())

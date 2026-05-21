@@ -272,7 +272,7 @@ class TestGenerateRotT(unittest.TestCase):
         npt.assert_allclose(v_rotated_sequential, v_rotated_composed, atol=1e-14)
 
     def test_large_angle_handling(self):
-        """Tests handling of large angles beyond ±180 degrees.
+        """Tests handling of large angles beyond +/-180 degrees.
 
         :return: None
         """
@@ -460,7 +460,7 @@ class TestGenerate2DRotR(unittest.TestCase):
         npt.assert_allclose(R_act_180, R_act_180_expected, atol=1e-14)
 
     def test_large_angle_handling(self):
-        """Tests handling of large angles beyond ±180 degrees.
+        """Tests handling of large angles beyond +/-180 degrees.
 
         :return: None
         """

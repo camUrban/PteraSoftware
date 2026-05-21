@@ -1,6 +1,6 @@
 # TODO: Redo the convergence analysis for this simulation and update the relevant
 #  parameters if necessary.
-"""This script runs a validation case of Ptera Software’s UVLM.
+"""This script runs a validation case of Ptera Software's UVLM.
 
 I first emulate the geometry and kinematics of a flapping robotic test stand from
 "Experimental and Analytical Pressure Characterization of a Rigid Flapping Wing for
@@ -13,10 +13,10 @@ WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 20
 More information can be found in my accompanying report: "Validating an Open-Source
 UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach." """
 
-# Import Python’s math package.
+# Import Python's math package.
 import math
 
-# Import NumPy and MatPlotLib’s PyPlot package.
+# Import NumPy and MatPlotLib's PyPlot package.
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -46,7 +46,7 @@ tip_inset = 0.005
 # some small midline offset. This value is in meters.
 wing_midline_offset = 0.005
 
-# Import the extracted points from the paper’s diagram of the planform. The resulting
+# Import the extracted points from the paper's diagram of the planform. The resulting
 # array is of the form [spanwise coordinate, chordwise coordinate], and is ordered
 # from the leading edge root, to the tip, to the trailing edge root. The origin is
 # the trailing edge root point. The positive spanwise axis extends from root to tip
@@ -104,7 +104,7 @@ chordwise_spacing = "uniform"
 # Calculate the spanwise distance between the WingCrossSections.
 spanwise_step = (half_span - tip_inset) / num_spanwise_sections
 
-# Define four ndarrays to hold the leading and trailing points of each section’s left
+# Define four ndarrays to hold the leading and trailing points of each section's left
 # and right WingCrossSections (in wing axes projected onto its xy-plane, relative to
 # the leading edge root point).
 stackLeftLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
@@ -440,7 +440,7 @@ validation_solver.run(prescribed_wake=True)
 validation_num_steps = validation_movement.num_steps
 validation_delta_time = validation_movement.delta_time
 
-# Create a variable to hold the time in seconds at each of the simulation’s time steps.
+# Create a variable to hold the time in seconds at each of the simulation's time steps.
 times = np.linspace(
     0,
     validation_num_steps * validation_delta_time,
@@ -636,7 +636,7 @@ for force_id, expNetForceZ_GP1 in enumerate(stackExpNetForcesZ_G):
 # z-component multiplied by negative one.
 exp_lifts = -1 * stackExpNetForcesZ_W
 
-# Get this solver’s SteadyProblems' Airplanes.
+# Get this solver's SteadyProblems' Airplanes.
 airplanes = []
 for steady_problem in validation_solver.steady_problems:
     airplanes.append(steady_problem.airplanes[0])

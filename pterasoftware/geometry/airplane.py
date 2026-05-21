@@ -617,7 +617,7 @@ class Airplane:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)
+        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
         for wing_id, wing in enumerate(self._wings):
             wing_num = wing_id + 1
@@ -651,7 +651,7 @@ class Airplane:
                 symmetric_bounds=False,
             )
 
-            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
+            plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
 
             these_airfoilOutlines_G_Cg = airfoilOutlines_G_Cg[wing_id]
             these_airfoilMcls_G_Cg = airfoilMcls_G_Cg[wing_id]
@@ -709,7 +709,7 @@ class Airplane:
                         symmetric_bounds=False,
                     )
 
-                    plotter.add_actor(AxesWcsLp_G_Cg)
+                    plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
 
             if wing.panels is not None:
                 # Initialize empty arrays to hold the Panels' vertices and faces
@@ -787,9 +787,10 @@ class Airplane:
 
     @staticmethod
     def process_wing_symmetry(wing: wing_mod.Wing) -> list[wing_mod.Wing]:
-        """Processes a Wing to determine what type of symmetry it has. If necessary, it
-        then modifies the Wing. If type 5 symmetry is detected, it also creates a second
-        reflected Wing. Finally, it returns a list of Wings.
+        """Processes a Wing to determine what type of symmetry it has.
+
+        If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
+        creates a second reflected Wing. Finally, it returns a list of Wings.
 
         :param wing: The Wing to process for symmetry analysis and potential
             modification.

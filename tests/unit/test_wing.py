@@ -1077,7 +1077,6 @@ class TestWingDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.num_spanwise_panels)
         self.assertIsNone(copied.num_panels)
         self.assertIsNone(copied.panels)
-        self.assertIsNone(copied.wake_ring_vortices)
         self.assertIsNone(copied.gridWrvp_GP1_CgP1)
 
     def test_deepcopy_meshed_wing_preserves_mesh_metadata(self):
@@ -1113,7 +1112,7 @@ class TestWingDeepCopy(unittest.TestCase):
                 npt.assert_array_equal(copied_panel.Frpp_G_Cg, orig_panel.Frpp_G_Cg)
 
     def test_deepcopy_resets_wake_state(self):
-        """Test that deepcopy resets wake state to empty arrays."""
+        """Test that deepcopy resets wake state to an empty array."""
         import copy
 
         original = self.type_1_wing
@@ -1121,13 +1120,8 @@ class TestWingDeepCopy(unittest.TestCase):
 
         copied = copy.deepcopy(original)
 
-        self.assertIsNotNone(copied.wake_ring_vortices)
         self.assertIsNotNone(copied.gridWrvp_GP1_CgP1)
-        self.assertEqual(copied.wake_ring_vortices.shape[0], 0)
         self.assertEqual(copied.gridWrvp_GP1_CgP1.shape[0], 0)
-        self.assertEqual(
-            copied.wake_ring_vortices.shape[1], original.num_spanwise_panels
-        )
         self.assertEqual(
             copied.gridWrvp_GP1_CgP1.shape[1], original.num_spanwise_panels + 1
         )

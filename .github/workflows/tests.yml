@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -13,46 +16,48 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
         dependency-set: ["min", "latest"]
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        cache-dependency-path: |
-          requirements.txt
-          requirements_min.txt
-    - name: Setup headless display
-      uses: pyvista/setup-headless-display-action@v3
-    - name: Install minimum dependencies
-      if: ${{ matrix.dependency-set == 'min' }}
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements_min.txt
-    - name: Install latest dependencies
-      if: ${{ matrix.dependency-set == 'latest' }}
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Install Codecov
-      if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
-      run: |
-        pip install codecov
-    - name: Run tests without coverage
-      if: ${{ !(matrix.python-version == '3.13' && matrix.dependency-set == 'latest') }}
-      run: |
-        python -m unittest discover -s tests
-    - name: Run tests with coverage and generate coverage report
-      if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
-      env:
-        NUMBA_JIT_COVERAGE: "1"
-      run: |
-        coverage run --source=pterasoftware -m unittest discover -s tests
-        coverage xml -o coverage.xml
-    - name: Upload coverage report to Codecov
-      if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.xml
-        fail_ci_if_error: true
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            requirements_min.txt
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@5bc8de3bc71fcda7a96439571287a554901541a0 # v4.3
+      - name: Install minimum dependencies
+        if: ${{ matrix.dependency-set == 'min' }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_min.txt
+      - name: Install latest dependencies
+        if: ${{ matrix.dependency-set == 'latest' }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Install Codecov
+        if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
+        run: |
+          pip install codecov
+      - name: Run tests without coverage
+        if: ${{ !(matrix.python-version == '3.13' && matrix.dependency-set == 'latest') }}
+        run: |
+          python -m unittest discover -s tests
+      - name: Run tests with coverage and generate coverage report
+        if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
+        env:
+          NUMBA_JIT_COVERAGE: "1"
+        run: |
+          coverage run --source=pterasoftware -m unittest discover -s tests
+          coverage xml -o coverage.xml
+      - name: Upload coverage report to Codecov
+        if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true

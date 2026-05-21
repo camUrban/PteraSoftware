@@ -535,7 +535,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         for copied_wing in copied.wings:
-            self.assertEqual(copied_wing.wake_ring_vortices.shape[0], 0)
             self.assertEqual(copied_wing.gridWrvp_GP1_CgP1.shape[0], 0)
 
     def test_deepcopy_copied_airplane_is_functional(self):

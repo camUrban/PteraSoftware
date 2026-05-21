@@ -83,7 +83,7 @@ class AeroelasticMovement(_core.CoreMovement):
             positive number (int or float). It will be converted internally to a float.
         :param num_steps: The number of time steps to simulate. It must be a positive
             int.
-        :param max_wake_rows: The maximum number of chordwise wake RingVortex rows per
+        :param max_wake_rows: The maximum number of chordwise wake ring vortex rows per
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """

@@ -464,8 +464,9 @@ def nD_number_vectorLike_return_float(value: Any, name: str) -> np.ndarray:
 
 
 def fourByFour_number_arrayLike_return_float(value: Any, name: str) -> np.ndarray:
-    """Validates a value is a (4,4) array-like object. It then returns it as a (4,4)
-    ndarray of floats.
+    """Validates a value is a (4,4) array-like object.
+
+    It then returns it as a (4,4) ndarray of floats.
 
     np.nan, np.inf, and -np.inf aren't valid values.
 

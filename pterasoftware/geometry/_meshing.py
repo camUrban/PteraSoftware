@@ -366,7 +366,6 @@ def _get_mcl_points(
         components, and (4) the outer Airfoil's MCL points' x components. The values are
         normalized from 0.0 to 1.0 and are unitless.
     """
-
     # Make the MCLs for each Airfoil. First index is point number, second index is
     # the coordinates of that point on the MCL (in each Airfoil's axes, relative to
     # each Airfoil's leading point).

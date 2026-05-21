@@ -6,8 +6,6 @@ from typing import cast
 
 import numpy as np
 
-from . import _vortices
-
 
 class Panel:
     """A class used to contain the panels of a Wing.
@@ -131,8 +129,6 @@ class Panel:
         "_Cpp_GP1_CgP1",
         "_unitNormal_GP1",
         # Mutable
-        "ring_vortex",
-        "horseshoe_vortex",
         "forces_GP1",
         "moments_GP1_CgP1",
         "forces_W",
@@ -231,10 +227,7 @@ class Panel:
         self._Cpp_GP1_CgP1: np.ndarray | None = None
         self._unitNormal_GP1: np.ndarray | None = None
 
-        # Initialize mutable attributes to hold the Panel's RingVortex and
-        # HorseshoeVortex and the loads on this Panel.
-        self.ring_vortex: _vortices.ring_vortex.RingVortex | None = None
-        self.horseshoe_vortex: _vortices.horseshoe_vortex.HorseshoeVortex | None = None
+        # Initialize mutable attributes to hold the loads on this Panel.
         self.forces_GP1: np.ndarray | None = None
         self.moments_GP1_CgP1: np.ndarray | None = None
         self.forces_W: np.ndarray | None = None
@@ -251,8 +244,7 @@ class Panel:
         the unit normal vector, the area, and the aspect ratio).
 
         The copy resets to None: (1) global positions (in the first Airplane's geometry
-        axes), (2) cached global geometric properties, (3) vortex objects (ring_vortex,
-        horseshoe_vortex), and (4) loads.
+        axes), (2) cached global geometric properties, and (3) loads.
 
         :param memo: A dict used by the copy module to track already copied objects and
             avoid infinite recursion.
@@ -337,8 +329,8 @@ class Panel:
         new_panel._area = self._area
         new_panel._aspect_ratio = self._aspect_ratio
 
-        # Set global positions, cached global geometric attributes, vortex objects, and
-        # loads to None (the solver will set/create/compute these).
+        # Set global positions, cached global geometric attributes and loads to None
+        # (the solver will set/create/compute these).
         new_panel._Frpp_GP1_CgP1 = None
         new_panel._Flpp_GP1_CgP1 = None
         new_panel._Blpp_GP1_CgP1 = None
@@ -351,8 +343,6 @@ class Panel:
         new_panel._Flbvp_GP1_CgP1 = None
         new_panel._Cpp_GP1_CgP1 = None
         new_panel._unitNormal_GP1 = None
-        new_panel.ring_vortex = None
-        new_panel.horseshoe_vortex = None
         new_panel.forces_GP1 = None
         new_panel.moments_GP1_CgP1 = None
         new_panel.forces_W = None

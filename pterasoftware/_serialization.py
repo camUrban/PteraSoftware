@@ -23,11 +23,6 @@ from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
 from ._panel import Panel
 
 # noinspection PyProtectedMember
-from ._vortices._line_vortex import LineVortex
-
-# noinspection PyProtectedMember
-from ._vortices.horseshoe_vortex import HorseshoeVortex
-from ._vortices.ring_vortex import RingVortex
 from .geometry.airfoil import Airfoil
 from .geometry.airplane import Airplane
 from .geometry.wing import Wing
@@ -58,7 +53,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 2
+_FORMAT_VERSION = 3
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -85,9 +80,6 @@ _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
 
 # Maps class names to their types for deserialization dispatch.
 _CLASS_REGISTRY: dict[str, type] = {
-    "LineVortex": LineVortex,
-    "RingVortex": RingVortex,
-    "HorseshoeVortex": HorseshoeVortex,
     "Airfoil": Airfoil,
     "OperatingPoint": OperatingPoint,
     "WingCrossSection": WingCrossSection,
@@ -107,10 +99,9 @@ _CLASS_REGISTRY: dict[str, type] = {
 }
 
 # Classes that can be saved and loaded as top level objects via save() and load().
-# Internal classes (LineVortex, RingVortex, HorseshoeVortex, Panel) are excluded
-# because they are not part of the public API and their structure may change without
-# a format version bump. They are still serializable as nested objects within public
-# classes.
+# Internal classes (e.g., Panel) are excluded because they are not part of the public
+# API and their structure may change without a format version bump. They are still
+# serializable as nested objects within public classes.
 _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
     {
         "Airfoil",
@@ -157,8 +148,8 @@ def save(path: str | Path, obj: object) -> None:
 
     :param path: The file path to save to. Should end with ".json" or ".json.gz".
     :param obj: The Ptera Software object to save. Must be a public Ptera Software class
-        (e.g., Airplane, SteadyProblem, or a solver). Internal classes such as Panel and
-        LineVortex cannot be saved directly.
+        (e.g., Airplane, SteadyProblem, or a solver). Internal classes such as Panel
+        cannot be saved directly.
     :return: None
     """
     path = Path(path)

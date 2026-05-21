@@ -14,8 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get the headerlink anchor if it exists
       const headerlink = h1.querySelector('a.headerlink');
 
-      // Split by period and rejoin with period + line break
-      const parts = text.replace(/\s*¶\s*$/, '').split('.');
+      // Split by period and rejoin with period + line break. The escape
+      // matches the pilcrow (U+00B6) Sphinx appends to heading anchors.
+      const parts = text.replace(/\s*\u00B6\s*$/, '').split('.');
 
       // Clear the heading
       h1.innerHTML = '';

@@ -19,54 +19,11 @@ import numpy as np
 import pterasoftware as ps
 
 # noinspection PyProtectedMember
-from pterasoftware import _panel, _vortices
-
-# noinspection PyProtectedMember
-from pterasoftware._vortices import _line_vortex
+from pterasoftware import _panel
 
 # ---------------------------------------------------------------------------
 # Helper functions for creating instances.
 # ---------------------------------------------------------------------------
-
-
-def _make_line_vortex() -> _line_vortex.LineVortex:
-    """Creates a basic LineVortex for benchmarking.
-
-    :return: A LineVortex with unit strength.
-    """
-    return _line_vortex.LineVortex(
-        Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0], dtype=float),
-        Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0], dtype=float),
-        strength=1.0,
-    )
-
-
-def _make_ring_vortex() -> _vortices.ring_vortex.RingVortex:
-    """Creates a basic RingVortex for benchmarking.
-
-    :return: A RingVortex with unit strength.
-    """
-    return _vortices.ring_vortex.RingVortex(
-        Frrvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-        Flrvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-        Blrvp_GP1_CgP1=np.array([1.0, -0.5, 0.0], dtype=float),
-        Brrvp_GP1_CgP1=np.array([1.0, 0.5, 0.0], dtype=float),
-        strength=1.0,
-    )
-
-
-def _make_horseshoe_vortex() -> _vortices.horseshoe_vortex.HorseshoeVortex:
-    """Creates a basic HorseshoeVortex for benchmarking.
-
-    :return: A HorseshoeVortex with unit strength.
-    """
-    return _vortices.horseshoe_vortex.HorseshoeVortex(
-        Frhvp_GP1_CgP1=np.array([0.0, 0.5, 0.0], dtype=float),
-        Flhvp_GP1_CgP1=np.array([0.0, -0.5, 0.0], dtype=float),
-        leftLegVector_GP1=np.array([1.0, 0.0, 0.0], dtype=float),
-        left_right_leg_lengths=20.0,
-        strength=1.0,
-    )
 
 
 def _make_panel() -> _panel.Panel:
@@ -439,9 +396,6 @@ def bench_per_instance_memory() -> None:
     # Build instances in dependency order. The higher level classes are more
     # expensive to construct, but we only need one instance of each.
     instances = {
-        "LineVortex": _make_line_vortex(),
-        "RingVortex": _make_ring_vortex(),
-        "HorseshoeVortex": _make_horseshoe_vortex(),
         "Panel": _make_panel(),
         "Airfoil": _make_airfoil(),
         "WingCrossSection": _make_wing_cross_section(),
@@ -548,27 +502,6 @@ def bench_attribute_access() -> None:
         number=num_iterations,
     )
 
-    # RingVortex: read strength (property with getter), write age.
-    ring_vortex = _make_ring_vortex()
-    rv_read_time = timeit.timeit(
-        "ring_vortex.strength",
-        globals={"ring_vortex": ring_vortex},
-        number=num_iterations,
-    )
-    rv_write_time = timeit.timeit(
-        "ring_vortex.age = 5",
-        globals={"ring_vortex": ring_vortex},
-        number=num_iterations,
-    )
-
-    # HorseshoeVortex: read strength.
-    horseshoe = _make_horseshoe_vortex()
-    hv_read_time = timeit.timeit(
-        "horseshoe.strength",
-        globals={"horseshoe": horseshoe},
-        number=num_iterations,
-    )
-
     print(f"{'Benchmark':<45} {'Time (ms)':>12} {'Per op (ns)':>12}")
     print("-" * 69)
     print(
@@ -580,21 +513,6 @@ def bench_attribute_access() -> None:
         f"{'Panel.area cached read':<45} "
         f"{panel_cache_read_time * 1000:>12.2f} "
         f"{panel_cache_read_time / num_iterations * 1e9:>12.1f}"
-    )
-    print(
-        f"{'RingVortex.strength read':<45} "
-        f"{rv_read_time * 1000:>12.2f} "
-        f"{rv_read_time / num_iterations * 1e9:>12.1f}"
-    )
-    print(
-        f"{'RingVortex.age write':<45} "
-        f"{rv_write_time * 1000:>12.2f} "
-        f"{rv_write_time / num_iterations * 1e9:>12.1f}"
-    )
-    print(
-        f"{'HorseshoeVortex.strength read':<45} "
-        f"{hv_read_time * 1000:>12.2f} "
-        f"{hv_read_time / num_iterations * 1e9:>12.1f}"
     )
 
     print()
@@ -616,36 +534,12 @@ def bench_object_creation() -> None:
 
     num_iterations = 10_000
 
-    lv_time = timeit.timeit(
-        "_make_line_vortex()",
-        globals={"_make_line_vortex": _make_line_vortex},
-        number=num_iterations,
-    )
-
-    rv_time = timeit.timeit(
-        "_make_ring_vortex()",
-        globals={"_make_ring_vortex": _make_ring_vortex},
-        number=num_iterations,
-    )
-
     panel_time = timeit.timeit(
         "_make_panel()",
         globals={"_make_panel": _make_panel},
         number=num_iterations,
     )
 
-    print(f"{'Class':<25} {'Total (ms)':>12} {'Per object (us)':>16}")
-    print("-" * 53)
-    print(
-        f"{'LineVortex':<25} "
-        f"{lv_time * 1000:>12.2f} "
-        f"{lv_time / num_iterations * 1e6:>16.2f}"
-    )
-    print(
-        f"{'RingVortex':<25} "
-        f"{rv_time * 1000:>12.2f} "
-        f"{rv_time / num_iterations * 1e6:>16.2f}"
-    )
     print(
         f"{'Panel':<25} "
         f"{panel_time * 1000:>12.2f} "
@@ -664,7 +558,6 @@ if __name__ == "__main__":
     print()
     print("Ptera Software __slots__ Benchmark")
     print(f"Python {sys.version}")
-    print(f"Has __slots__: {hasattr(_line_vortex.LineVortex, '__slots__')}")
     print()
 
     bench_per_instance_memory()

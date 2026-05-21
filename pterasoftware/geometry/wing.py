@@ -111,8 +111,8 @@ class Wing:
 
     The symmetric, mirror_only, symmetryNormal_G, and symmetryPoint_G_Cg attributes
     remain mutable as they may be modified by Airplane.process_wing_symmetry() for type
-    5 symmetry handling. The wake_ring_vortices and gridWrvp_GP1_CgP1 attributes are
-    mutable as they are modified during simulation.
+    5 symmetry handling. The gridWrvp_GP1_CgP1 attribute is mutable as it is modified
+    during simulation.
 
     Every Wing has its own axis system, known as wing axes. The user sets the
     relationship between these axes and geometry axes with the Ler_Gs_Cgs and
@@ -161,7 +161,6 @@ class Wing:
         "_panels",
         # Mutable (wake)
         "gridWrvp_GP1_CgP1",
-        "wake_ring_vortices",
         # Caches from immutable
         "_T_pas_G_Cg_to_Wn_Ler",
         "_T_pas_Wn_Ler_to_G_Cg",
@@ -389,7 +388,6 @@ class Wing:
 
         # Mutable wake state.
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
-        self.wake_ring_vortices: np.ndarray | None = None
 
         # Caches for properties derived from immutable attributes. These are populated
         # on first access and preserved in deepcopy.
@@ -423,11 +421,10 @@ class Wing:
         is deep copied), and (5) caches for properties derived from immutable attributes
         (transformation matrices, basis vectors, children transformation matrices).
 
-        The copy resets: (1) wake state (wake_ring_vortices and gridWrvp_GP1_CgP1 are
-        reset to empty arrays with correct shape if meshed, or None if not meshed), and
-        (2) caches for properties derived from set once attributes (projected_area,
-        wetted_area, average_panel_aspect_ratio, span, standard_mean_chord,
-        mean_aerodynamic_chord).
+        The copy resets: (1) wake state (gridWrvp_GP1_CgP1 is reset to an empty array
+        with correct shape if meshed, or None if not meshed), and (2) caches for
+        properties derived from set once attributes (projected_area, wetted_area,
+        average_panel_aspect_ratio, span, standard_mean_chord, mean_aerodynamic_chord).
 
         :param memo: A dict used by the copy module to track already copied objects and
             avoid infinite recursion.
@@ -491,14 +488,10 @@ class Wing:
 
         # Reset wake state to empty arrays with correct shape (if meshed).
         if self._num_spanwise_panels is not None:
-            new_wing.wake_ring_vortices = np.zeros(
-                (0, self._num_spanwise_panels), dtype=object
-            )
             new_wing.gridWrvp_GP1_CgP1 = np.empty(
                 (0, self._num_spanwise_panels + 1, 3), dtype=float
             )
         else:
-            new_wing.wake_ring_vortices = None
             new_wing.gridWrvp_GP1_CgP1 = None
 
         # Preserve caches for properties derived from immutable attributes.
@@ -1265,11 +1258,7 @@ class Wing:
         # Calculate the number of panels on this wing.
         self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
-        # Initialize empty arrays to hold this wing's wake RingVortices and its wake
-        # RingVortex points.
-        self.wake_ring_vortices = np.zeros(
-            (0, computed_num_spanwise_panels), dtype=object
-        )
+        # Initialize an empty array to hold this Wing's wake ring vortex points.
         self.gridWrvp_GP1_CgP1 = np.empty(
             (0, computed_num_spanwise_panels + 1, 3), dtype=float
         )
@@ -1357,7 +1346,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesGCg)
+        plotter.add_actor(AxesGCg)  # type: ignore[arg-type]
 
         _T_pas_G_Cg_to_Wn_Ler = self.T_pas_G_Cg_to_Wn_Ler
         assert _T_pas_G_Cg_to_Wn_Ler is not None
@@ -1390,7 +1379,7 @@ class Wing:
             symmetric_bounds=False,
         )
 
-        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)
+        plotter.add_actor(AxesWLerWcs1Lp1_G_Cg)  # type: ignore[arg-type]
 
         _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
         assert _T_pas_Wn_Ler_to_G_Cg is not None
@@ -1452,7 +1441,7 @@ class Wing:
                     symmetric_bounds=False,
                 )
 
-                plotter.add_actor(AxesWcsLp_G_Cg)
+                plotter.add_actor(AxesWcsLp_G_Cg)  # type: ignore[arg-type]
 
         if self.panels is not None:
             # Initialize empty arrays to hold the Panels' vertices and faces.
@@ -1520,9 +1509,10 @@ class Wing:
         wcs2: wing_cross_section_mod.WingCrossSection,
         first_wcs: bool,
     ) -> list[wing_cross_section_mod.WingCrossSection]:
-        """Wing cross section panels are between the line of wcs1 and wcs2. When
-        exploding a wing to 1 spanwise panel per cross section, we need to interpolate
-        the intermediate cross sections.
+        """Wing cross section panels are between the line of wcs1 and wcs2.
+
+        When exploding a wing to 1 spanwise panel per cross section, we need to
+        interpolate the intermediate cross sections.
 
         :param wcs1: The first WingCrossSection.
         :param wcs2: The second WingCrossSection.
@@ -1534,7 +1524,6 @@ class Wing:
         :return: A list of WingCrossSections representing the interpolated cross
             sections
         """
-
         interpolated = []
 
         if first_wcs:

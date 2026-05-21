@@ -1350,6 +1350,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         """Test that _optimize_delta_time_non_static returns a positive float."""
         from pterasoftware._core import lcm_multiple
         from pterasoftware.movements.movement import (
+            _analytically_optimize_delta_time,
             _optimize_delta_time_non_static,
         )
 
@@ -1366,8 +1367,15 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
             all_periods.extend(airplane_movement.all_periods)
         lcm_period = lcm_multiple(all_periods)
 
-        # Use a larger initial_delta_time to reduce the brute force search range.
-        initial_delta_time = 0.1
+        # Seed with the analytical result so the brute force bracket is centered
+        # near the true optimum, mirroring real usage. The analytical's
+        # initial_delta_time is only used as a fallback for fully static
+        # Movements, so any positive placeholder works here.
+        initial_delta_time = _analytically_optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=1.0,
+        )
 
         optimized_delta_time = _optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
@@ -1383,6 +1391,7 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         """Test that _optimize_delta_time_non_static result divides LCM period evenly."""
         from pterasoftware._core import lcm_multiple
         from pterasoftware.movements.movement import (
+            _analytically_optimize_delta_time,
             _optimize_delta_time_non_static,
         )
 
@@ -1399,7 +1408,15 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
             all_periods.extend(airplane_movement.all_periods)
         lcm_period = lcm_multiple(all_periods)
 
-        initial_delta_time = 0.1
+        # Seed with the analytical result so the brute force bracket is centered
+        # near the true optimum, mirroring real usage. The analytical's
+        # initial_delta_time is only used as a fallback for fully static
+        # Movements, so any positive placeholder works here.
+        initial_delta_time = _analytically_optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=1.0,
+        )
 
         optimized_delta_time = _optimize_delta_time_non_static(
             airplane_movements=airplane_movements,
@@ -1420,7 +1437,10 @@ class TestOptimizeDeltaTime(unittest.TestCase):
     def test_returns_positive_float_within_bounds(self):
         """Test that _optimize_delta_time returns a positive float within expected
         bounds."""
-        from pterasoftware.movements.movement import _optimize_delta_time
+        from pterasoftware.movements.movement import (
+            _analytically_optimize_delta_time,
+            _optimize_delta_time,
+        )
 
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -1429,10 +1449,17 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Use a larger initial_delta_time to reduce the brute force search range.
-        # The fixture has a period of 2.0 s, so 0.1 s gives ~20 steps per period,
-        # and the search range is ~10 to ~40 steps (~30 evaluations).
-        initial_delta_time = 0.1
+        # Seed the iterative optimizer with the analytical result. This keeps the
+        # brute force bracket centered near the true optimum so the search does
+        # not hit either bound, mirroring real usage. The initial_delta_time
+        # passed to _analytically_optimize_delta_time is only used as a fallback
+        # for fully static Movements, so any positive placeholder works here
+        # since the fixture has motion.
+        initial_delta_time = _analytically_optimize_delta_time(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            initial_delta_time=1.0,
+        )
 
         # For non static movements, brute force search is used (mismatch_cutoff is
         # ignored).
@@ -2048,6 +2075,138 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
 
+class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
+    """Tests for the _compute_wake_area_mismatches_cached_non_static function."""
+
+    def test_returns_dict_with_all_candidate_keys(self):
+        """Test that the result dict has exactly the input candidates as keys, with
+        non-negative float values."""
+        from pterasoftware.movements.movement import (
+            _compute_wake_area_mismatches_cached_non_static,
+        )
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # The basic fixture has period 2.0 s; the cached helper accepts lcm_period
+        # directly rather than rederiving it.
+        lcm_period = 2.0
+        candidates = [2, 3, 4]
+
+        results = _compute_wake_area_mismatches_cached_non_static(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            lcm_period=lcm_period,
+            num_steps_candidates=candidates,
+        )
+
+        self.assertEqual(set(results.keys()), set(candidates))
+        for value in results.values():
+            self.assertIsInstance(value, float)
+            self.assertGreaterEqual(value, 0.0)
+
+    def test_does_not_mutate_original_movements(self):
+        """Test that the cached helper does not mutate the original objects."""
+        from pterasoftware.movements.movement import (
+            _compute_wake_area_mismatches_cached_non_static,
+        )
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        original_base_airplane = airplane_movements[0].base_airplane
+
+        _compute_wake_area_mismatches_cached_non_static(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            lcm_period=2.0,
+            num_steps_candidates=[2, 4],
+        )
+
+        self.assertIs(
+            airplane_movements[0].base_airplane,
+            original_base_airplane,
+        )
+
+    def test_agrees_with_uncached_at_exact_divisor_candidates(self):
+        """Test that the cached helper matches _compute_wake_area_mismatch at
+        candidates where linear interpolation reduces to a direct lookup.
+
+        With _NON_STATIC_CACHE_OVERSAMPLE = 2 and max_candidate = 4, the high
+        resolution Movement has 8 intervals. Candidates 2 and 4 both divide 8
+        exactly, so their fractional sample indices are all integers and the
+        cached evaluator's interpolation weights collapse to a direct lookup.
+        Under that condition the cached result must equal the uncached result
+        at the same delta_time to within floating-point round-off.
+        """
+        from pterasoftware.movements.movement import (
+            _compute_wake_area_mismatch,
+            _compute_wake_area_mismatches_cached_non_static,
+        )
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        lcm_period = 2.0
+        candidates = [2, 4]
+
+        cached_results = _compute_wake_area_mismatches_cached_non_static(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            lcm_period=lcm_period,
+            num_steps_candidates=candidates,
+        )
+
+        for num_steps in candidates:
+            delta_time = lcm_period / num_steps
+            uncached_result = _compute_wake_area_mismatch(
+                delta_time=delta_time,
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_steps=num_steps,
+            )
+            self.assertAlmostEqual(
+                cached_results[num_steps], uncached_result, places=10
+            )
+
+
+class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
+    """Tests for the _evaluate_cached_wake_area_mismatch function."""
+
+    def test_returns_zero_for_num_steps_below_two(self):
+        """Test that the evaluator returns 0.0 when num_steps is less than 2,
+        since at least one step pair is needed for a comparison."""
+        import numpy as np
+
+        from pterasoftware.movements.movement import (
+            _evaluate_cached_wake_area_mismatch,
+        )
+
+        # The function returns early before touching cache_per_wing or
+        # v_inf_high_res, so minimal placeholder inputs are sufficient.
+        result = _evaluate_cached_wake_area_mismatch(
+            cache_per_wing=[],
+            v_inf_high_res=np.zeros((1, 3)),
+            lcm_period=1.0,
+            high_res_num_intervals=1,
+            num_steps=1,
+        )
+
+        self.assertEqual(result, 0.0)
+
+
 class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
     """Tests for warnings in _optimize_delta_time_non_static."""
 
@@ -2056,8 +2215,9 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         bound.
 
         This test uses mocking to avoid running the expensive optimization. We mock
-        _compute_wake_area_mismatch to return decreasing values as num_steps increases,
-        forcing the best value to be at min_num_steps (lower bound).
+        _compute_wake_area_mismatches_cached_non_static to return mismatches that
+        increase with num_steps, forcing the best value to be at min_num_steps (lower
+        bound).
         """
         import logging
 
@@ -2073,18 +2233,23 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         lcm_period = 2.0  # Fixture has period 2.0.
         initial_delta_time = 0.1  # Results in ~20 steps, search range ~10 to ~41.
 
-        # Mock _compute_wake_area_mismatch to return values that decrease with
-        # increasing delta_time (fewer steps), so the best is at min_num_steps
-        # (lower bound = largest delta_time).
+        # Mock the cached batch evaluator to return mismatches that increase
+        # with num_steps, so the best is at min_num_steps (lower bound = largest
+        # delta_time). Mirrors the original 1.0 / delta_time shape via
+        # delta_time = lcm_period / num_steps.
         # noinspection PyUnusedLocal
-        def mock_mismatch(dt, am, opm):
-            # Mismatch decreases as delta_time increases (fewer steps).
-            return 1.0 / dt
+        def mock_cached_mismatches(
+            airplane_movements,
+            operating_point_movement,
+            lcm_period,
+            num_steps_candidates,
+        ):
+            return {n: float(n) / lcm_period for n in num_steps_candidates}
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatch",
-                side_effect=mock_mismatch,
+                "pterasoftware.movements.movement._compute_wake_area_mismatches_cached_non_static",
+                side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
                 "pterasoftware.movements.movement", level=logging.WARNING
@@ -2111,8 +2276,9 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         bound.
 
         This test uses mocking to avoid running the expensive optimization. We mock
-        _compute_wake_area_mismatch to return increasing values as num_steps increases,
-        forcing the best value to be at max_num_steps (upper bound).
+        _compute_wake_area_mismatches_cached_non_static to return mismatches that
+        decrease with num_steps, forcing the best value to be at max_num_steps (upper
+        bound).
         """
         import logging
 
@@ -2128,18 +2294,23 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         lcm_period = 2.0  # Fixture has period 2.0.
         initial_delta_time = 0.1  # Results in ~20 steps, search range ~10 to ~41.
 
-        # Mock _compute_wake_area_mismatch to return values that decrease with
-        # decreasing delta_time (more steps), so the best is at max_num_steps
-        # (upper bound = smallest delta_time).
+        # Mock the cached batch evaluator to return mismatches that decrease
+        # with num_steps, so the best is at max_num_steps (upper bound =
+        # smallest delta_time). Mirrors the original delta_time * 10.0 shape
+        # via delta_time = lcm_period / num_steps.
         # noinspection PyUnusedLocal
-        def mock_mismatch(dt, am, opm):
-            # Mismatch decreases as delta_time decreases (more steps).
-            return dt * 10.0
+        def mock_cached_mismatches(
+            airplane_movements,
+            operating_point_movement,
+            lcm_period,
+            num_steps_candidates,
+        ):
+            return {n: 10.0 * lcm_period / float(n) for n in num_steps_candidates}
 
         with (
             patch(
-                "pterasoftware.movements.movement._compute_wake_area_mismatch",
-                side_effect=mock_mismatch,
+                "pterasoftware.movements.movement._compute_wake_area_mismatches_cached_non_static",
+                side_effect=mock_cached_mismatches,
             ),
             self.assertLogs(
                 "pterasoftware.movements.movement", level=logging.WARNING

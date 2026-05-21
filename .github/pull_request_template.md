@@ -12,7 +12,7 @@ Link any related issues using GitHub's syntax. For bugs, write, "Fixes #<issue n
 
 ## Changes
 
-List the changes you made in bullet points.
+* List the changes you made in bullet points.
 
 ## Dependency Updates
 
@@ -42,6 +42,6 @@ Identify the option that best describes the impact of your change, then delete t
 * [ ] If any major functionality was added or significantly changed, I have added or updated tests in the `tests` package.
 * [ ] Code locally passes all tests in the `tests` package.
 * [ ] This PR passes the ReadTheDocs build check (this runs automatically with the other workflows).
-* [ ] This PR passes the `black`, `codespell`, and `isort` GitHub actions.
+* [ ] This PR passes the `ascii-only`, `black`, `codespell`, `docformatter`, `isort`, and `pre-commit-hooks` GitHub actions.
 * [ ] This PR passes the `mypy` GitHub action.
 * [ ] This PR passes all the `tests` GitHub actions.

@@ -20,7 +20,7 @@ _squire = 1.0e-4
 # unitless.
 _lamb = 1.25643
 
-# The local machine error is used to detect degenerate (zero length) LineVortices.
+# The local machine error is used to detect degenerate (zero length) line vortices.
 _eps = np.finfo(float).eps
 
 # The relative tolerance for scale invariant singularity checks. It provides two orders
@@ -46,7 +46,7 @@ def collapsed_velocities_from_ring_vortices(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of RingVortices and
+    """Takes in a group of points and the attributes of a group of ring vortices and
     finds the cumulative induced velocity at every point.
 
     This function's performance has been highly optimized for unsteady simulations via
@@ -57,30 +57,30 @@ def collapsed_velocities_from_ring_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackBrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        M RingVortices' back right vertices (in the first Airplane's geometry axes,
+        M ring vortices' back right vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackFrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front right vertices (in the first Airplane's geometry axes,
-        relative to the first Airplane's CG). The units are in meters.
+        the M ring vortices' front right vertices (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' front left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackBlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' back left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' back left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        RingVortices. The units are in meters squared per second.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each LineVortices'
+        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
         parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across all four legs.
-    :param ages: For bound RingVortices, this must be None. For RingVortices that have
+    :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M RingVortices in seconds. The default is None.
+        ages of the M ring vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
@@ -102,7 +102,7 @@ def collapsed_velocities_from_ring_vortices(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
 
-    # Get the velocity induced by each leg of each RingVortex (in the first Airplane's
+    # Get the velocity induced by each leg of each ring vortex (in the first Airplane's
     # geometry axes, observed from the Earth frame).
     for i in range(4):
         stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
@@ -131,9 +131,9 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of RingVortices and
-    finds the cumulative induced velocity at every point due to the RingVortices' left
-    and right LineVortex legs.
+    """Takes in a group of points and the attributes of a group of ring vortices and
+    finds the cumulative induced velocity at every point due to the ring vortices' left
+    and right line vortex legs.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -143,36 +143,36 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackBrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        M RingVortices' back right vertices (in the first Airplane's geometry axes,
+        M ring vortices' back right vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackFrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front right vertices (in the first Airplane's geometry axes,
-        relative to the first Airplane's CG). The units are in meters.
+        the M ring vortices' front right vertices (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' front left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackBlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' back left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' back left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        RingVortices. The units are in meters squared per second.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each LineVortices'
+        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
         parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across both legs.
-    :param ages: For bound RingVortices, this must be None. For RingVortices that have
+    :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M RingVortices in seconds. The default is None.
+        ages of the M ring vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
         the N points (in the first Airplane's geometry axes, observed from the Earth
-        frame) due to the M RingVortices' left and right LineVortex legs. The units are
-        in meters per second.
+        frame) due to the M ring vortices' left and right line vortex legs. The units
+        are in meters per second.
     """
     listStackSlvp_GP1_CgP1 = [
         stackBrrvp_GP1_CgP1,
@@ -185,7 +185,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
 
-    # Get the velocity induced by the left and right legs of each RingVortex (in the
+    # Get the velocity induced by the left and right legs of each ring vortex (in the
     # first Airplane's geometry axes, observed from the Earth frame).
     for i in range(2):
         stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
@@ -214,8 +214,8 @@ def expanded_velocities_from_ring_vortices(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of RingVortices and
-    finds the induced velocity at every point due to each RingVortex.
+    """Takes in a group of points and the attributes of a group of ring vortices and
+    finds the induced velocity at every point due to each ring vortex.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -225,35 +225,35 @@ def expanded_velocities_from_ring_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackBrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        M RingVortices' back right vertices (in the first Airplane's geometry axes,
+        M ring vortices' back right vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackFrrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front right vertices (in the first Airplane's geometry axes,
-        relative to the first Airplane's CG). The units are in meters.
+        the M ring vortices' front right vertices (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' front left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' front left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackBlrvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M RingVortices' back left vertices (in the first Airplane's geometry axes,
+        the M ring vortices' back left vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        RingVortices. The units are in meters squared per second.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        RingVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each LineVortices'
+        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
         parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across all four legs.
-    :param ages: For bound RingVortices, this must be None. For RingVortices that have
+    :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M RingVortices in seconds. The default is None.
+        ages of the M ring vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
-        due to each of the M RingVortices. The units are in meters per second.
+        due to each of the M ring vortices. The units are in meters per second.
     """
     listStackSlvp_GP1_CgP1 = [
         stackBrrvp_GP1_CgP1,
@@ -270,7 +270,7 @@ def expanded_velocities_from_ring_vortices(
 
     gridVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], strengths.shape[0], 3))
 
-    # Get the velocity induced by each leg of each RingVortex (in the first Airplane's
+    # Get the velocity induced by each leg of each ring vortex (in the first Airplane's
     # geometry axes, observed from the Earth frame).
     for i in range(4):
         gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
@@ -286,8 +286,8 @@ def expanded_velocities_from_ring_vortices(
     return gridVInd_GP1__E
 
 
-# TODO: Remove the ability to specify HorseshoeVortex ages they are never used in
-#  unsteady simulations.
+# TODO: Remove the ability to specify horseshoe vortex ages, since they are never used
+#  in unsteady simulations.
 @njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
@@ -300,8 +300,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     singularity_counts: np.ndarray,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of HorseshoeVortices and
-    finds the cumulative induced velocity at every point.
+    """Takes in a group of points and the attributes of a group of horseshoe vortices
+    and finds the cumulative induced velocity at every point.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -311,23 +311,23 @@ def collapsed_velocities_from_horseshoe_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackBrhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        M HorseshoeVortices' back right vertices (in the first Airplane's geometry axes,
-        relative to the first Airplane's CG). The units are in meters.
+        M horseshoe vortices' back right vertices (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFrhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' front right vertices (in the first Airplane's geometry
+        the M horseshoe vortices' front right vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFlhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' front left vertices (in the first Airplane's geometry
+        the M horseshoe vortices' front left vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
     :param stackBlhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' back left vertices (in the first Airplane's geometry
+        the M horseshoe vortices' back left vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        HorseshoeVortices. The units are in meters squared per second.
+        horseshoe vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 3.0% the chord length of each
-        LineVortices' parent Wing. The units are in meters.
+        horseshoe vortices. Based on results from Ramasamy and Leishman (2007), a
+        reasonable value that works across scales is 3.0% the chord length of each line
+        vortex's parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
@@ -351,7 +351,7 @@ def collapsed_velocities_from_horseshoe_vortices(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
 
-    # Get the velocity induced by each leg of each HorseshoeVortex (in the first
+    # Get the velocity induced by each leg of each horseshoe vortex (in the first
     # Airplane's geometry axes, observed from the Earth frame).
     for i in range(3):
         stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
@@ -367,8 +367,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     return stackVInd_GP1__E
 
 
-# TODO: Remove the ability to specify HorseshoeVortex ages they are never used in
-#  unsteady simulations.
+# TODO: Remove the ability to specify horseshoe vortex ages, since they are never used
+#  in unsteady simulations.
 @njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
@@ -381,8 +381,8 @@ def expanded_velocities_from_horseshoe_vortices(
     singularity_counts: np.ndarray,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of HorseshoeVortices and
-    finds the induced velocity at every point due to each HorseshoeVortex.
+    """Takes in a group of points and the attributes of a group of horseshoe vortices
+    and finds the induced velocity at every point due to each horseshoe vortex.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -392,23 +392,23 @@ def expanded_velocities_from_horseshoe_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackBrhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        M HorseshoeVortices' back right vertices (in the first Airplane's geometry axes,
-        relative to the first Airplane's CG). The units are in meters.
+        M horseshoe vortices' back right vertices (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFrhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' front right vertices (in the first Airplane's geometry
+        the M horseshoe vortices' front right vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
     :param stackFlhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' front left vertices (in the first Airplane's geometry
+        the M horseshoe vortices' front left vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
     :param stackBlhvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M HorseshoeVortices' back left vertices (in the first Airplane's geometry
+        the M horseshoe vortices' back left vertices (in the first Airplane's geometry
         axes, relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of M
-        HorseshoeVortices. The units are in meters squared per second.
+    :param strengths: A (M,) ndarray of floats representing the strengths of M horseshoe
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        HorseshoeVortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 3.0% the chord length of each
-        LineVortices' parent Wing. The units are in meters.
+        horseshoe vortices. Based on results from Ramasamy and Leishman (2007), a
+        reasonable value that works across scales is 3.0% the chord length of each line
+        vortex's parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
@@ -417,7 +417,7 @@ def expanded_velocities_from_horseshoe_vortices(
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
-        due to each of the M HorseshoeVortices. The units are in meters per second.
+        due to each of the M horseshoe vortices. The units are in meters per second.
     """
     listStackSlvp_GP1_CgP1 = [
         stackBrhvp_GP1_CgP1,
@@ -432,7 +432,7 @@ def expanded_velocities_from_horseshoe_vortices(
 
     gridVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], strengths.shape[0], 3))
 
-    # Get the velocity induced by each leg of each HorseshoeVortex (in the first
+    # Get the velocity induced by each leg of each horseshoe vortex (in the first
     # Airplane's geometry axes, observed from the Earth frame).
     for i in range(3):
         gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
@@ -459,12 +459,12 @@ def _collapsed_velocities_from_line_vortices(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of LineVortices and
+    """Takes in a group of points and the attributes of a group of line vortices and
     finds the cumulative induced velocity at every point.
 
     This function uses a modified version of the Biot-Savart law to create a smooth
-    induced velocity decay based on a LineVortex's core radius. The core radius grows
-    from an initial value based on the LineVortex's age.
+    induced velocity decay based on a line vortex's core radius. The core radius grows
+    from an initial value based on the line vortex's age.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -486,24 +486,24 @@ def _collapsed_velocities_from_line_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackSlvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' starting vertices (in the first Airplane's geometry axes,
+        the M line vortices' starting vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' ending vertices (in the first Airplane's geometry axes,
+        the M line vortices' ending vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        LineVortices. The units are in meters squared per second.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M line
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each LineVortices'
+        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
         parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across calls.
-    :param ages: For bound LineVortices, this must be None. For LineVortices that have
+    :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M LineVortices in seconds. The default is None.
+        ages of the M line vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
@@ -517,14 +517,14 @@ def _collapsed_velocities_from_line_vortices(
     # the first Airplane's geometry axes, observed from the Earth frame).
     stackVInd_GP1__E = np.zeros((num_points, 3))
 
-    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # If the user didn't specify any ages, set the age of each line vortex to 0.0
     # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
 
-    # Pre compute per LineVortex quantities in a serial pass. This hoists invariant
+    # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
-    # which are a per LineVortex property, not per point.
+    # which are a per line vortex property, not per point.
     vortex_valid = np.empty(num_vortices, dtype=np.bool_)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
@@ -534,7 +534,7 @@ def _collapsed_velocities_from_line_vortices(
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-        # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
+        # The r0_GP1 vector goes from the line vortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
         r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
@@ -558,7 +558,7 @@ def _collapsed_velocities_from_line_vortices(
         # Pre compute r0 * _tol outside the parallel loop.
         vortex_r0_times_tol[vortex_id] = r0 * _tol
 
-        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # Calculate the radius of the line vortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
@@ -580,13 +580,13 @@ def _collapsed_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
             # the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
-            # The r2_GP1 vector goes from P_GP1_CgP1 to the LineVortex's end point (in
+            # The r2_GP1 vector goes from P_GP1_CgP1 to the line vortex's end point (in
             # the first Airplane's geometry axes).
             r2X_GP1 = Elvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r2Y_GP1 = Elvp_GP1_CgP1[1] - P_GP1_CgP1[1]
@@ -672,12 +672,12 @@ def _expanded_velocities_from_line_vortices(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of LineVortices and
-    finds the induced velocity at every point due to each LineVortex.
+    """Takes in a group of points and the attributes of a group of line vortices and
+    finds the induced velocity at every point due to each line vortex.
 
     This function uses a modified version of the Biot-Savart law to create a smooth
-    induced velocity decay based on a LineVortex's core radius. The core radius grows
-    from an initial value based on the LineVortex's age.
+    induced velocity decay based on a line vortex's core radius. The core radius grows
+    from an initial value based on the line vortex's age.
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
@@ -699,29 +699,29 @@ def _expanded_velocities_from_line_vortices(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackSlvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of M
-        LineVortices' starting vertices (in the first Airplane's geometry axes, relative
-        to the first Airplane's CG). The units are in meters.
-    :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' ending vertices (in the first Airplane's geometry axes,
+        line vortices' starting vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
-    :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        LineVortices. The units are in meters squared per second.
+    :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
+        the M line vortices' ending vertices (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG). The units are in meters.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M line
+        vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        LineVortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each LineVortices'
+        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
         parent Wing. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across calls.
-    :param ages: For bound LineVortices, this must be None. For LineVortices that have
+    :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M LineVortices in seconds. The default is None.
+        ages of the M line vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
-        due to each of the M LineVortices. The units are in meters per second.
+        due to each of the M line vortices. The units are in meters per second.
     """
     num_vortices = stackSlvp_GP1_CgP1.shape[0]
     num_points = stackP_GP1_CgP1.shape[0]
@@ -730,14 +730,14 @@ def _expanded_velocities_from_line_vortices(
     # first Airplane's geometry axes, observed from the Earth frame).
     gridVInd_GP1__E = np.zeros((num_points, num_vortices, 3))
 
-    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # If the user didn't specify any ages, set the age of each line vortex to 0.0
     # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
 
-    # Pre compute per LineVortex quantities in a serial pass. This hoists invariant
+    # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
-    # which are a per LineVortex property, not per point.
+    # which are a per line vortex property, not per point.
     vortex_valid = np.empty(num_vortices, dtype=np.bool_)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
@@ -747,7 +747,7 @@ def _expanded_velocities_from_line_vortices(
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-        # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
+        # The r0_GP1 vector goes from the line vortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
         r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
@@ -771,7 +771,7 @@ def _expanded_velocities_from_line_vortices(
         # Pre compute r0 * _tol outside the parallel loop.
         vortex_r0_times_tol[vortex_id] = r0 * _tol
 
-        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # Calculate the radius of the line vortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
@@ -793,13 +793,13 @@ def _expanded_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
             # the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
-            # The r2_GP1 vector goes from P_GP1_CgP1 to the LineVortex's end point (in
+            # The r2_GP1 vector goes from P_GP1_CgP1 to the line vortex's end point (in
             # the first Airplane's geometry axes).
             r2X_GP1 = Elvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r2Y_GP1 = Elvp_GP1_CgP1[1] - P_GP1_CgP1[1]

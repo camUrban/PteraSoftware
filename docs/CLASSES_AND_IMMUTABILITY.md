@@ -16,9 +16,6 @@ This document describes the consistent pattern of immutability and lazy caching 
 - `WingCrossSection`
 - `Airfoil`
 - `Panel`
-- `RingVortex`
-- `HorseshoeVortex`
-- `LineVortex`
 
 The `Core*` classes live in `pterasoftware/_core.py` and own the shared slots and properties. The public classes extend their core parents, sometimes adding additional slots and sometimes inheriting everything with an empty `__slots__`. See each class section below for details on which attributes are defined at which level.
 
@@ -554,116 +551,10 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 | Attribute          | Type                      | Notes                |
 |--------------------|---------------------------|----------------------|
-| `ring_vortex`      | `RingVortex \| None`      | Attached vortex      |
-| `horseshoe_vortex` | `HorseshoeVortex \| None` | Attached vortex      |
 | `forces_GP1`       | `np.ndarray \| None`      | Computed forces      |
 | `moments_GP1_CgP1` | `np.ndarray \| None`      | Computed moments     |
 | `forces_W`         | `np.ndarray \| None`      | Forces in wind axes  |
 | `moments_W_CgP1`   | `np.ndarray \| None`      | Moments in wind axes |
-
----
-
-## RingVortex Class (`_vortices/ring_vortex.py`)
-
-### Attribute Classification
-
-#### Immutable (set in `__init__`, never modified)
-
-| Attribute        | Type         | Notes              |
-|------------------|--------------|--------------------|
-| `Frrvp_GP1_CgP1` | `np.ndarray` | Front right corner |
-| `Flrvp_GP1_CgP1` | `np.ndarray` | Front left corner  |
-| `Blrvp_GP1_CgP1` | `np.ndarray` | Back left corner   |
-| `Brrvp_GP1_CgP1` | `np.ndarray` | Back right corner  |
-
-#### Derived from Immutable (use manual lazy caching)
-
-| Property        | Depends On  | Notes             |
-|-----------------|-------------|-------------------|
-| `Crvp_GP1_CgP1` | All corners | Centroid position |
-| `area`          | All corners | Vortex area       |
-
-#### Mutable (solver sets these)
-
-| Attribute  | Type    | Notes                                         |
-|------------|---------|-----------------------------------------------|
-| `strength` | `float` | Vortex strength (solver finds this)           |
-| `age`      | `float` | Age in simulation time (incremented for wake) |
-
-#### Derived (special: child objects)
-
-| Property    | Depends On                                     | Notes              |
-|-------------|------------------------------------------------|--------------------|
-| `front_leg` | `Frrvp_GP1_CgP1`, `Flrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-| `left_leg`  | `Flrvp_GP1_CgP1`, `Blrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-| `back_leg`  | `Blrvp_GP1_CgP1`, `Brrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-| `right_leg` | `Brrvp_GP1_CgP1`, `Frrvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-
-**Note on legs**: The leg `LineVortex` objects depend on both geometry (immutable) and `strength` (mutable). Since `strength` is set by the solver AFTER the vortex is created, we propagate strength updates to existing legs. Since legs are accessed repeatedly during induced velocity calculations, option 2 (keeping the current propagation) is more efficient.
-
----
-
-## HorseshoeVortex Class (`_vortices/horseshoe_vortex.py`)
-
-### Attribute Classification
-
-#### Immutable (set in `__init__`, never modified)
-
-| Attribute                | Type         | Notes                              |
-|--------------------------|--------------|------------------------------------|
-| `Frhvp_GP1_CgP1`         | `np.ndarray` | Front right point                  |
-| `Flhvp_GP1_CgP1`         | `np.ndarray` | Front left point                   |
-| `leftLegVector_GP1`      | `np.ndarray` | Direction of left leg (normalized) |
-| `left_right_leg_lengths` | `float`      | Length of semi-infinite legs       |
-
-#### Derived from Immutable (use manual lazy caching)
-
-| Property         | Depends On                                                      | Notes            |
-|------------------|-----------------------------------------------------------------|------------------|
-| `Brhvp_GP1_CgP1` | `Frhvp_GP1_CgP1`, `leftLegVector_GP1`, `left_right_leg_lengths` | Back right point |
-| `Blhvp_GP1_CgP1` | `Flhvp_GP1_CgP1`, `leftLegVector_GP1`, `left_right_leg_lengths` | Back left point  |
-
-#### Mutable (solver sets these)
-
-| Attribute  | Type    | Notes           |
-|------------|---------|-----------------|
-| `strength` | `float` | Vortex strength |
-
-#### Derived (child objects)
-
-| Property     | Depends On                                     | Notes              |
-|--------------|------------------------------------------------|--------------------|
-| `right_leg`  | `Brhvp_GP1_CgP1`, `Frhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-| `finite_leg` | `Frhvp_GP1_CgP1`, `Flhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-| `left_leg`   | `Flhvp_GP1_CgP1`, `Blhvp_GP1_CgP1`, `strength` | Child `LineVortex` |
-
----
-
-## LineVortex Class (`_vortices/_line_vortex.py`)
-
-### Attribute Classification
-
-Since `LineVortex` is an internal class whose endpoints ARE updated by parent vortex classes when their corners change, we need to consider whether this mutation actually happens.
-
-#### Immutable (set in `__init__`)
-
-| Attribute       | Type         | Notes       |
-|-----------------|--------------|-------------|
-| `Slvp_GP1_CgP1` | `np.ndarray` | Start point |
-| `Elvp_GP1_CgP1` | `np.ndarray` | End point   |
-
-#### Derived from Immutable (use manual lazy caching)
-
-| Property        | Depends On                       | Notes        |
-|-----------------|----------------------------------|--------------|
-| `vector_GP1`    | `Elvp_GP1_CgP1`, `Slvp_GP1_CgP1` | Line vector  |
-| `Clvp_GP1_CgP1` | `Slvp_GP1_CgP1`, `vector_GP1`    | Center point |
-
-#### Mutable
-
-| Attribute  | Type    | Notes                    |
-|------------|---------|--------------------------|
-| `strength` | `float` | Updated by parent vortex |
 
 ---
 

@@ -768,10 +768,11 @@ class Airfoil:
 
     @staticmethod
     def _validate_outline_preliminary(outline_A_lp: Any) -> np.ndarray:
-        """Validates the basic structure of a user's provided outline_A_lp. Only checks
-        for issues that cannot be fixed by normalization. Orientation dependent checks
-        (like x monotonicity) are deferred to _validate_outline_final() since they must
-        be performed after rotation correction.
+        """Validates the basic structure of a user's provided outline_A_lp.
+
+        Only checks for issues that cannot be fixed by normalization. Orientation
+        dependent checks (like x monotonicity) are deferred to _validate_outline_final()
+        since they must be performed after rotation correction.
 
         :param outline_A_lp: The input to validate (can be any type initially).
         :return: The validated version of outline_A_lp as a (N,2) ndarray of floats.

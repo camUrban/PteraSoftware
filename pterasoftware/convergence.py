@@ -459,9 +459,10 @@ def analyze_steady_convergence(
 
             convergence_logger.info("\t\t\tStarting simulation...")
 
-            # Run the steady solver and time how long it takes to execute.
+            # Run the steady solver and time how long it takes to execute. Skip the
+            # streamline trace since it does not affect convergence metrics.
             iter_start = time.time()
-            this_solver.run()
+            this_solver.run(calculate_streamlines=False)
             iter_stop = time.time()
             this_iter_time = iter_stop - iter_start
 
@@ -1937,7 +1938,6 @@ def _get_wing_section_num_spanwise_panels(
     :return: The number of spanwise Panels that results in an average Panel aspect ratio
         closest to the desired value.
     """
-
     this_num_spanwise_panels = start_val
     average_panel_aspect_ratios = []
 

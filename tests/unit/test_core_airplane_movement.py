@@ -845,7 +845,7 @@ class TestVariableGeometryFallback(unittest.TestCase):
         )
 
         # Use parameters that would normally trigger optimization.
-        # Period = 0.1s, delta_time = 0.01s → steps_per_period = 10
+        # Period = 0.1s, delta_time = 0.01s -> steps_per_period = 10
         # num_steps = 30 > steps_per_period, so optimization would apply.
         num_steps = 30
         delta_time = 0.01

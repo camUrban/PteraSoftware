@@ -13,16 +13,28 @@
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_AND_COORDINATE_SYSTEMS.md` and `AXES_POINTS_AND_FRAMES.md` documents when naming vector-valued variables or things such as transformation and rotation matrices.
 - Do not use `wcs` (or any other abbreviation) for "wing cross section" or "WingCrossSection" in variable names. Instead, always write it out in full (e.g., `wing_cross_section`, `wing_cross_section_movement`, etc.).
 
-## Formatting with Black
+## Running Black
 
-```bash
-cd ${WORKSPACE} && ".venv/Scripts/python.exe" black .
+Black is configured as a pre-commit hook. Run it with:
+
+```shell
+pre-commit run --all-files black
 ```
 
-## Running a CodeSpell Spell Check
+## Running CodeSpell
 
-```bash
-cd ${WORKSPACE} && ".venv/Scripts/codespell.exe" --ignore-words=.codespell-ignore.txt --skip="*/_build/*,*.dat"
+CodeSpell is configured as a pre-commit hook. Run it with:
+
+```shell
+pre-commit run --all-files codespell
+```
+
+## Running mypy
+
+mypy is configured as a pre-commit hook. Run it with:
+
+```shell
+pre-commit run --all-files mypy
 ```
 
 ## Imports

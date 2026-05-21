@@ -1,0 +1,109 @@
+Production vs reference wake area mismatch comparison
+==============================================================================
+Geometry: single mirrored flapping main wing, 8 x 6 panels per half wing
+Kinematics: amp = 15.0 deg, vCg__E = 10.0 m/s
+Strouhal sweep: [0.1, 0.2, 0.3, 0.4, 0.6, 0.8]
+delta_time multipliers for agreement check: [0.5, 0.75, 1.0, 1.5, 2.0]
+
+--- St = 0.10 (period = 3.1058 s, seed_dt = 0.026774 s) ---
+  dt = 0.013387 s  |  production = 0.4280917987  |  reference = 0.4280917987  |  rel_diff = 1.82e-15
+  dt = 0.020081 s  |  production = 0.1989221691  |  reference = 0.1989221691  |  rel_diff = 0.00e+00
+  dt = 0.026774 s  |  production = 0.0442020107  |  reference = 0.0442020107  |  rel_diff = 9.42e-16
+  dt = 0.040162 s  |  production = 0.3361677731  |  reference = 0.3361677731  |  rel_diff = 8.26e-16
+  dt = 0.053549 s  |  production = 0.6036557961  |  reference = 0.6036557961  |  rel_diff = 1.29e-15
+  max relative mismatch difference: 1.82e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 1.13s (number=1)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 123.15s (number=1)
+  optimizer wall:  production = 1.13s  |  reference = 123.15s  |  speedup = 108.88x
+  optimizer dt:    production = 0.026774 s  |  reference = 0.026774 s  |  rel_diff = 0.00e+00
+
+--- St = 0.20 (period = 1.5529 s, seed_dt = 0.026321 s) ---
+  dt = 0.013160 s  |  production = 0.4213345040  |  reference = 0.4213345040  |  rel_diff = 2.64e-16
+  dt = 0.019740 s  |  production = 0.1896008899  |  reference = 0.1896008899  |  rel_diff = 2.93e-16
+  dt = 0.026321 s  |  production = 0.0652303902  |  reference = 0.0652303902  |  rel_diff = 1.49e-15
+  dt = 0.039481 s  |  production = 0.3505608815  |  reference = 0.3505608815  |  rel_diff = 6.33e-16
+  dt = 0.052641 s  |  production = 0.6192057786  |  reference = 0.6192057786  |  rel_diff = 8.96e-16
+  max relative mismatch difference: 1.49e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 0.58s (number=1)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 26.14s (number=1)
+  optimizer wall:  production = 0.58s  |  reference = 26.14s  |  speedup = 45.39x
+  optimizer dt:    production = 0.026321 s  |  reference = 0.026321 s  |  rel_diff = 0.00e+00
+
+--- St = 0.30 (period = 1.0353 s, seed_dt = 0.025251 s) ---
+  dt = 0.012625 s  |  production = 0.4197017308  |  reference = 0.4197017308  |  rel_diff = 1.85e-15
+  dt = 0.018938 s  |  production = 0.1951030382  |  reference = 0.1951030382  |  rel_diff = 4.27e-16
+  dt = 0.025251 s  |  production = 0.0961566300  |  reference = 0.0961566300  |  rel_diff = 1.73e-15
+  dt = 0.037876 s  |  production = 0.3543978998  |  reference = 0.3543978998  |  rel_diff = 4.70e-16
+  dt = 0.050501 s  |  production = 0.6217269134  |  reference = 0.6217269134  |  rel_diff = 1.79e-16
+  max relative mismatch difference: 1.85e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 0.40s (number=1)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 11.76s (number=1)
+  optimizer wall:  production = 0.40s  |  reference = 11.76s  |  speedup = 29.34x
+  optimizer dt:    production = 0.025882 s  |  reference = 0.025882 s  |  rel_diff = 0.00e+00
+
+--- St = 0.40 (period = 0.7765 s, seed_dt = 0.024264 s) ---
+  dt = 0.012132 s  |  production = 0.4129216568  |  reference = 0.4129216568  |  rel_diff = 4.03e-16
+  dt = 0.018198 s  |  production = 0.2100816228  |  reference = 0.2100816228  |  rel_diff = 1.98e-15
+  dt = 0.024264 s  |  production = 0.1335641190  |  reference = 0.1335641190  |  rel_diff = 2.08e-16
+  dt = 0.036396 s  |  production = 0.3650310094  |  reference = 0.3650310094  |  rel_diff = 7.60e-16
+  dt = 0.048529 s  |  production = 0.6331073171  |  reference = 0.6331073171  |  rel_diff = 1.75e-16
+  max relative mismatch difference: 1.98e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 0.31s (number=1)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 6.85s (number=1)
+  optimizer wall:  production = 0.31s  |  reference = 6.85s  |  speedup = 21.88x
+  optimizer dt:    production = 0.025047 s  |  reference = 0.025047 s  |  rel_diff = 0.00e+00
+
+--- St = 0.60 (period = 0.5176 s, seed_dt = 0.021568 s) ---
+  dt = 0.010784 s  |  production = 0.4150124067  |  reference = 0.4150124067  |  rel_diff = 1.34e-15
+  dt = 0.016176 s  |  production = 0.2650903575  |  reference = 0.2650903575  |  rel_diff = 1.26e-15
+  dt = 0.021568 s  |  production = 0.2140561702  |  reference = 0.2140561702  |  rel_diff = 5.19e-16
+  dt = 0.032352 s  |  production = 0.3592549615  |  reference = 0.3592549615  |  rel_diff = 9.27e-16
+  dt = 0.043137 s  |  production = 0.6167612004  |  reference = 0.6167612004  |  rel_diff = 9.00e-16
+  max relative mismatch difference: 1.34e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 0.23s (number=1)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 3.79s (number=1)
+  optimizer wall:  production = 0.23s  |  reference = 3.79s  |  speedup = 16.52x
+  optimizer dt:    production = 0.023529 s  |  reference = 0.023529 s  |  rel_diff = 0.00e+00
+
+WARNING - pterasoftware.movements.movement - Analytical optimization result implies only 20.0 time steps per minimum period of motion. This may cause poor temporal resolution. Consider increasing the number of chordwise Panels or switching to cosine chordwise spacing to reduce the trailing edge Panels' chord lengths.
+--- St = 0.80 (period = 0.3882 s, seed_dt = 0.019411 s) ---
+  dt = 0.009706 s  |  production = 0.4263680830  |  reference = 0.4263680830  |  rel_diff = 7.81e-16
+  dt = 0.014559 s  |  production = 0.3165360490  |  reference = 0.3165360490  |  rel_diff = 8.77e-16
+  dt = 0.019411 s  |  production = 0.2811100301  |  reference = 0.2811100301  |  rel_diff = 1.18e-15
+  dt = 0.029117 s  |  production = 0.3522361739  |  reference = 0.3522361739  |  rel_diff = 4.73e-16
+  dt = 0.038823 s  |  production = 0.5733999458  |  reference = 0.5733999458  |  rel_diff = 0.00e+00
+  max relative mismatch difference: 1.18e-15
+  running production optimizer (3 repeats with autorange)...
+  production min wall: 0.20s (number=2)
+  running reference optimizer (3 repeats with autorange)...
+  reference min wall: 2.57s (number=1)
+  optimizer wall:  production = 0.20s  |  reference = 2.57s  |  speedup = 12.93x
+  optimizer dt:    production = 0.021568 s  |  reference = 0.021568 s  |  rel_diff = 0.00e+00
+
+==============================================================================
+Summary
+==============================================================================
+   St   mismatch diff   prod wall    ref wall   speedup   optim diff
+--------------------------------------------------------------------
+ 0.10        1.82e-15       1.13s     123.15s   108.88x     0.00e+00
+ 0.20        1.49e-15       0.58s      26.14s    45.39x     0.00e+00
+ 0.30        1.85e-15       0.40s      11.76s    29.34x     0.00e+00
+ 0.40        1.98e-15       0.31s       6.85s    21.88x     0.00e+00
+ 0.60        1.34e-15       0.23s       3.79s    16.52x     0.00e+00
+ 0.80        1.18e-15       0.20s       2.57s    12.93x     0.00e+00
+
+Total optimizer wall:  production = 2.85s  |  reference = 174.26s
+Geometric mean speedup: 29.64x
+Maximum speedup:        108.88x
+Worst mismatch relative difference across all checks: 1.98e-15
+Worst optimizer dt relative difference across all St: 0.00e+00

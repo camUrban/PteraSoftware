@@ -6,13 +6,6 @@ import numpy as np
 from pterasoftware._panel import Panel
 
 # noinspection PyProtectedMember
-from pterasoftware._vortices._line_vortex import LineVortex
-
-# noinspection PyProtectedMember
-from pterasoftware._vortices.horseshoe_vortex import HorseshoeVortex
-
-# noinspection PyProtectedMember
-from pterasoftware._vortices.ring_vortex import RingVortex
 from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing
@@ -26,55 +19,6 @@ from pterasoftware.movements.wing_cross_section_movement import (
 from pterasoftware.movements.wing_movement import WingMovement
 from pterasoftware.operating_point import OperatingPoint
 from pterasoftware.problems import SteadyProblem, UnsteadyProblem
-
-
-def make_basic_line_vortex_fixture() -> LineVortex:
-    """This method makes a fixture that is a LineVortex with basic configuration for
-    serialization testing.
-
-    :return basic_line_vortex_fixture: LineVortex
-        This is a LineVortex extending from [0.0, 0.0, 0.0] to [1.0, 0.0, 0.0] (in the
-        first Airplane's geometry axes, relative to the first Airplane's CG) with unit
-        strength.
-    """
-    return LineVortex(
-        Slvp_GP1_CgP1=np.array([0.0, 0.0, 0.0]),
-        Elvp_GP1_CgP1=np.array([1.0, 0.0, 0.0]),
-        strength=1.0,
-    )
-
-
-def make_basic_ring_vortex_fixture() -> RingVortex:
-    """This method makes a fixture that is a RingVortex with basic configuration for
-    serialization testing.
-
-    :return basic_ring_vortex_fixture: RingVortex
-        This is a unit square RingVortex with unit strength.
-    """
-    return RingVortex(
-        Frrvp_GP1_CgP1=np.array([1.0, 0.0, 0.0]),
-        Flrvp_GP1_CgP1=np.array([1.0, 1.0, 0.0]),
-        Blrvp_GP1_CgP1=np.array([0.0, 1.0, 0.0]),
-        Brrvp_GP1_CgP1=np.array([0.0, 0.0, 0.0]),
-        strength=1.0,
-    )
-
-
-def make_basic_horseshoe_vortex_fixture() -> HorseshoeVortex:
-    """This method makes a fixture that is a HorseshoeVortex with basic configuration
-    for serialization testing.
-
-    :return basic_horseshoe_vortex_fixture: HorseshoeVortex
-        This is a HorseshoeVortex with unit strength and semi infinite legs of length
-        20.0 meters.
-    """
-    return HorseshoeVortex(
-        Frhvp_GP1_CgP1=np.array([1.0, 0.0, 0.0]),
-        Flhvp_GP1_CgP1=np.array([1.0, 1.0, 0.0]),
-        leftLegVector_GP1=np.array([-1.0, 0.0, 0.0]),
-        left_right_leg_lengths=20.0,
-        strength=1.0,
-    )
 
 
 def make_basic_panel_fixture() -> Panel:

@@ -151,7 +151,6 @@ def compute_offset_rotation_adjustment(
     :param offset: A (3,) ndarray representing the rotation point offset.
     :return: A (3,) ndarray representing the position adjustment.
     """
-
     return np.asarray((np.eye(3, dtype=float) - rotation_matrix) @ offset, dtype=float)
 
 

@@ -45,10 +45,6 @@ class TestPanel(unittest.TestCase):
         self.assertIsNone(panel.local_chordwise_position)
         self.assertIsNone(panel.local_spanwise_position)
 
-        # Test that vortex attributes are None initially
-        self.assertIsNone(panel.ring_vortex)
-        self.assertIsNone(panel.horseshoe_vortex)
-
         # Test that force and moment attributes are None initially
         self.assertIsNone(panel.forces_GP1)
         self.assertIsNone(panel.moments_GP1_CgP1)
@@ -185,7 +181,7 @@ class TestPanel(unittest.TestCase):
         normal_G = np.array([0.0, 1.0, 1.0])  # Will be normalized internally
         projected_area = panel.calculate_projected_area(normal_G)
 
-        # Should be area * cos(45°) = area / sqrt(2)
+        # Should be area * cos(45 deg) = area / sqrt(2)
         expected_projected_area = panel.area / np.sqrt(2)
         self.assertAlmostEqual(projected_area, expected_projected_area, places=10)
 
@@ -962,19 +958,6 @@ class TestPanelDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.Flbvp_GP1_CgP1)
         self.assertIsNone(copied.Cpp_GP1_CgP1)
         self.assertIsNone(copied.unitNormal_GP1)
-
-    def test_deepcopy_resets_vortices_to_none(self):
-        """Test that deepcopy resets ring_vortex and horseshoe_vortex to None."""
-        original = panel_fixtures.make_basic_panel_fixture()
-
-        # Set a mock value for ring_vortex and horseshoe_vortex.
-        original.ring_vortex = "mock_ring_vortex"
-        original.horseshoe_vortex = "mock_horseshoe_vortex"
-
-        copied = copy.deepcopy(original)
-
-        self.assertIsNone(copied.ring_vortex)
-        self.assertIsNone(copied.horseshoe_vortex)
 
     def test_deepcopy_resets_loads_to_none(self):
         """Test that deepcopy resets force and moment attributes to None."""

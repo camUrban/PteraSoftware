@@ -48,7 +48,7 @@ def _collapsed_serial_reference(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of LineVortices and
+    """Takes in a group of points and the attributes of a group of line vortices and
     finds the cumulative induced velocity at every point.
 
     This is a local copy of the package's original serial collapsed Biot-Savart kernel,
@@ -61,22 +61,22 @@ def _collapsed_serial_reference(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackSlvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' starting vertices (in the first Airplane's geometry axes,
+        the M line vortices' starting vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' ending vertices (in the first Airplane's geometry axes,
+        the M line vortices' ending vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        LineVortices. The units are in meters squared per second.
+        line vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        LineVortices. The units are in meters.
+        line vortices. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across calls.
-    :param ages: For bound LineVortices, this must be None. For LineVortices that have
+    :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M LineVortices in seconds. The default is None.
+        ages of the M line vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
@@ -90,7 +90,7 @@ def _collapsed_serial_reference(
     # the first Airplane's geometry axes, observed from the Earth frame).
     stackVInd_GP1__E = np.zeros((num_points, 3))
 
-    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # If the user didn't specify any ages, set the age of each line vortex to 0.0
     # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
@@ -99,7 +99,7 @@ def _collapsed_serial_reference(
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-        # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
+        # The r0_GP1 vector goes from the line vortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
         r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
@@ -120,7 +120,7 @@ def _collapsed_serial_reference(
         # Pre compute r0 * _tol outside the inner loop.
         r0_times_tol = r0 * _tol
 
-        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # Calculate the radius of the line vortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
@@ -130,13 +130,13 @@ def _collapsed_serial_reference(
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
             # the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
-            # The r2_GP1 vector goes from P_GP1_CgP1 to the LineVortex's end point (in
+            # The r2_GP1 vector goes from P_GP1_CgP1 to the line vortex's end point (in
             # the first Airplane's geometry axes).
             r2X_GP1 = Elvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r2Y_GP1 = Elvp_GP1_CgP1[1] - P_GP1_CgP1[1]
@@ -213,8 +213,8 @@ def _expanded_serial_reference(
     ages: np.ndarray | None = None,
     nu: float = 0.0,
 ) -> np.ndarray:
-    """Takes in a group of points and the attributes of a group of LineVortices and
-    finds the induced velocity at every point due to each LineVortex.
+    """Takes in a group of points and the attributes of a group of line vortices and
+    finds the induced velocity at every point due to each line vortex.
 
     This is a local copy of the package's original serial expanded Biot-Savart kernel,
     kept in the benchmark so the parallel kernel can be timed against a same algorithm
@@ -226,27 +226,27 @@ def _expanded_serial_reference(
         points (in the first Airplane's geometry axes, relative to the first Airplane's
         CG). The units are in meters.
     :param stackSlvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of M
-        LineVortices' starting vertices (in the first Airplane's geometry axes, relative
+        line vortices' starting vertices (in the first Airplane's geometry axes, relative
         to the first Airplane's CG). The units are in meters.
     :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
-        the M LineVortices' ending vertices (in the first Airplane's geometry axes,
+        the M line vortices' ending vertices (in the first Airplane's geometry axes,
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
-        LineVortices. The units are in meters squared per second.
+        line vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        LineVortices. The units are in meters.
+        line vortices. The units are in meters.
     :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
         counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
         start proximity, [2] vertex end proximity, [3] collinearity. Counts are
         incremented in place and accumulate across calls.
-    :param ages: For bound LineVortices, this must be None. For LineVortices that have
+    :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
-        ages of the M LineVortices in seconds. The default is None.
+        ages of the M line vortices in seconds. The default is None.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
         points (in the first Airplane's geometry axes, observed from the Earth frame)
-        due to each of the M LineVortices. The units are in meters per second.
+        due to each of the M line vortices. The units are in meters per second.
     """
     num_vortices = stackSlvp_GP1_CgP1.shape[0]
     num_points = stackP_GP1_CgP1.shape[0]
@@ -255,7 +255,7 @@ def _expanded_serial_reference(
     # first Airplane's geometry axes, observed from the Earth frame).
     gridVInd_GP1__E = np.zeros((num_points, num_vortices, 3))
 
-    # If the user didn't specify any ages, set the age of each LineVortex to 0.0
+    # If the user didn't specify any ages, set the age of each line vortex to 0.0
     # seconds.
     if ages is None:
         ages = np.zeros(num_vortices)
@@ -264,7 +264,7 @@ def _expanded_serial_reference(
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
         Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-        # The r0_GP1 vector goes from the LineVortex's start point to its end point (in
+        # The r0_GP1 vector goes from the line vortex's start point to its end point (in
         # the first Airplane's geometry axes).
         r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
         r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
@@ -285,7 +285,7 @@ def _expanded_serial_reference(
         # Pre compute r0 * _tol outside the inner loop.
         r0_times_tol = r0 * _tol
 
-        # Calculate the radius of the LineVortex's core squared. The initial core radius
+        # Calculate the radius of the line vortex's core squared. The initial core radius
         # ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
@@ -295,13 +295,13 @@ def _expanded_serial_reference(
         for point_id in range(num_points):
             P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the LineVortex's start point (in
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
             # the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
-            # The r2_GP1 vector goes from P_GP1_CgP1 to the LineVortex's end point (in
+            # The r2_GP1 vector goes from P_GP1_CgP1 to the line vortex's end point (in
             # the first Airplane's geometry axes).
             r2X_GP1 = Elvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r2Y_GP1 = Elvp_GP1_CgP1[1] - P_GP1_CgP1[1]

@@ -72,7 +72,7 @@ def make_random_points_fixture():
 
 
 def make_simple_ring_vortex_arrays_fixture():
-    """This method makes a fixture containing arrays describing a single RingVortex
+    """This method makes a fixture containing arrays describing a single ring vortex
     for testing velocity calculation functions.
 
     :return tuple of ndarrays
@@ -99,11 +99,11 @@ def make_simple_ring_vortex_arrays_fixture():
 
 
 def make_multiple_ring_vortex_arrays_fixture():
-    """This method makes a fixture containing arrays describing multiple RingVortices
+    """This method makes a fixture containing arrays describing multiple ring vortices
     for testing velocity calculation functions.
 
     :return tuple of ndarrays
-        This returns a tuple containing arrays for 3 RingVortices:
+        This returns a tuple containing arrays for 3 ring vortices:
         - stackBrrvp_GP1_CgP1: (3, 3) ndarray of floats
         - stackFrrvp_GP1_CgP1: (3, 3) ndarray of floats
         - stackFlrvp_GP1_CgP1: (3, 3) ndarray of floats
@@ -135,7 +135,7 @@ def make_multiple_ring_vortex_arrays_fixture():
 
 def make_simple_horseshoe_vortex_arrays_fixture():
     """This method makes a fixture containing arrays describing a single
-    HorseshoeVortex for testing velocity calculation functions.
+    horseshoe vortex for testing velocity calculation functions.
 
     :return tuple of ndarrays
         This returns a tuple containing:
@@ -162,10 +162,10 @@ def make_simple_horseshoe_vortex_arrays_fixture():
 
 def make_multiple_horseshoe_vortex_arrays_fixture():
     """This method makes a fixture containing arrays describing multiple
-    HorseshoeVortices for testing velocity calculation functions.
+    horseshoe vortices for testing velocity calculation functions.
 
     :return tuple of ndarrays
-        This returns a tuple containing arrays for 2 HorseshoeVortices:
+        This returns a tuple containing arrays for 2 horseshoe vortices:
         - stackBrhvp_GP1_CgP1: (2, 3) ndarray of floats
         - stackFrhvp_GP1_CgP1: (2, 3) ndarray of floats
         - stackFlhvp_GP1_CgP1: (2, 3) ndarray of floats
@@ -225,7 +225,7 @@ def make_rc0s_fixture(num_vortices):
 
 
 def make_degenerate_ring_vortex_arrays_fixture():
-    """Makes a fixture containing arrays describing a degenerate RingVortex with
+    """Makes a fixture containing arrays describing a degenerate ring vortex with
     all four corners at the same point for testing the degenerate filament
     singularity guard.
 
@@ -253,7 +253,7 @@ def make_degenerate_ring_vortex_arrays_fixture():
 
 
 def make_degenerate_horseshoe_vortex_arrays_fixture():
-    """Makes a fixture containing arrays describing a degenerate HorseshoeVortex
+    """Makes a fixture containing arrays describing a degenerate horseshoe vortex
     with all four points at the same location for testing the degenerate filament
     singularity guard.
 

@@ -2,13 +2,13 @@
 
 ***
 
-[![DOI](https://zenodo.org/badge/249337717.svg)](https://doi.org/10.5281/zenodo.19229119)
-![license](https://img.shields.io/github/license/camUrban/PteraSoftware?color=blue)
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.19229119-blue)](https://doi.org/10.5281/zenodo.19229119)
+![license](https://img.shields.io/badge/license-MIT-blue)
 ![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=main)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
 ![python](https://img.shields.io/pypi/pyversions/pterasoftware)
 ![types](https://img.shields.io/pypi/types/pterasoftware)
-![code style](https://img.shields.io/badge/code%20style-black-black)
+![code style](https://img.shields.io/badge/code_style-black-black)
 ![source rank](https://img.shields.io/librariesio/sourcerank/pypi/PteraSoftware?color=blue&label=source%20rank)
 
 ***
@@ -169,6 +169,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Mohamed Abdulghany ([MohamedMG7](https://github.com/MohamedMG7))
 * Hang Haotian ([haotianh9](https://github.com/haotianh9))
 * Monisha Sikka ([20086080](https://github.com/20086080))
+* Cameron Hendrikse ([MonoChromatical](https://github.com/MonoChromatical))
 
 ### Supporters
 

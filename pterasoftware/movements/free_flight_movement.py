@@ -86,7 +86,7 @@ class FreeFlightMovement(_core.CoreMovement):
             simulate before the free flight time steps. It must be a positive int.
         :param free_num_steps: The number of free flight time steps to simulate after
             the prescribed time steps. It must be a positive int.
-        :param max_wake_rows: The maximum number of chordwise wake RingVortex rows per
+        :param max_wake_rows: The maximum number of chordwise wake ring vortex rows per
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """

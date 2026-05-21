@@ -44,22 +44,22 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 ##### Local reference examples
 
 * Variables: angles\_E\_to\_B\_izyx
-* Text: …angles describing the orientation of the body axes relative to the Earth axes using an intrinsic zy'x" sequence…
+* Text: ...angles describing the orientation of the body axes relative to the Earth axes using an intrinsic zy'x" sequence...
 
 ##### Wing-local reference examples
 
 * Variables: angles\_Wcs1\_to\_Wn\_izyx
-* Text: …angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic zy'x" sequence…
+* Text: ...angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic zy'x" sequence...
 
 ##### Airplane-local reference examples
 
 * Variables: angles\_Wn2\_to\_G\_izyx
-* Text: …angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic zy'x" sequence…
+* Text: ...angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic zy'x" sequence...
 
 ##### Non-local reference examples
 
 * Variables: angles\_BP1\_to\_E\_exyz
-* Text: …angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic xyz sequence…
+* Text: ...angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic xyz sequence...
 
 ### Active Angle Vectors
 
@@ -78,7 +78,7 @@ Active angle vectors give instructions for rotating a vector within its current 
 #### Active Angle Vector Examples
 
 * Variables: angles\_act\_izyx
-* Text: …angles for rotation using an intrinsic zy'x" sequence…
+* Text: ...angles for rotation using an intrinsic zy'x" sequence...
 
 ### Implementation Notes
 
@@ -106,25 +106,25 @@ For vector with components (x, y, z) that is given relative to a reference point
 #### Overview of Passive Matrices
 
 * Ptera Software uses two passive matrix types:
-    * R\_pas\_…: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
-    * T\_pas\_…: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
+    * R\_pas\_...: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
+    * T\_pas\_...: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 
 #### Passive Matrix Name Patterns
 
 ##### 3x3 Rotation Matrices
 
 * R\_pas\_\[source axes ID\]\_to\_\[target axes ID\]
-* …rotation matrix R, which maps from \[source axes name\] to \[target axes name\]…
+* ...rotation matrix R, which maps from \[source axes name\] to \[target axes name\]...
 
 ##### 4x4 General Transformation Matrices
 
 * T\_pas\_\[source axes ID\]\_\[source point ID\]\_to\_\[target axes ID\]\_\[target point ID\]
-* …transformation matrix T, which maps in homogeneous coordinates from \[source axes name\] relative to \[source point ID\] to \[target axes name\] relative to \[target point ID\]…
+* ...transformation matrix T, which maps in homogeneous coordinates from \[source axes name\] relative to \[source point ID\] to \[target axes name\] relative to \[target point ID\]...
 
 ##### Examples:
 
-* R\_pas\_W\_to\_B: …rotation matrix R, which maps from wind axes to body axes…
-* T\_pas\_Wn\_Ler\_to\_G\_I: …which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point…
+* R\_pas\_W\_to\_B: ...rotation matrix R, which maps from wind axes to body axes...
+* T\_pas\_Wn\_Ler\_to\_G\_I: ...which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point...
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.
 
@@ -141,16 +141,16 @@ See the section on angle vectors for examples that can be adapted to form text r
 ##### 3x3 Rotation Matrices
 
 * [variable name]\_R\_act
-* …[variable name], a matrix for active rotations…
+* ...[variable name], a matrix for active rotations...
 
 ##### 4x4 General Transformation Matrices
 
 * [variable name]\_T\_act
-* …[variable name], a matrix for active transformations in homogeneous coordinates…
+* ...[variable name], a matrix for active transformations in homogeneous coordinates...
 
 ##### Examples:
 
-* mirror\_T\_act: …mirror, a matrix for active transformations in homogeneous coordinates…
-* translate\_wing\_T\_act: …translate_wing, a matrix for active transformations in homogeneous coordinates…
+* mirror\_T\_act: ...mirror, a matrix for active transformations in homogeneous coordinates...
+* translate\_wing\_T\_act: ...translate_wing, a matrix for active transformations in homogeneous coordinates...
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.

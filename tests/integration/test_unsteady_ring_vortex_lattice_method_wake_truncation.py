@@ -105,31 +105,36 @@ class TestWakeTruncation(unittest.TestCase):
 
     def test_wake_size_is_capped(self):
         """Test that the truncated simulation's wake has exactly max_wake_rows chordwise
-        rows per Wing at the final time step."""
-        final_airplane = self.truncated_solver.current_airplanes[0]
+        rows at the final time step."""
+        solver = self.truncated_solver
+        final_step = solver.num_steps - 1
 
-        for wing in final_airplane.wings:
-            wake_ring_vortices = wing.wake_ring_vortices
-            self.assertIsNotNone(wake_ring_vortices)
+        # Total spanwise panel count summed over all wings of all airplanes.
+        total_spanwise_panels = sum(
+            wing.num_spanwise_panels
+            for airplane in solver.current_airplanes
+            for wing in airplane.wings
+        )
+        expected_num_wake_vortices = self.max_wake_rows * total_spanwise_panels
 
-            num_chordwise_wake_rows = wake_ring_vortices.shape[0]
-            self.assertEqual(num_chordwise_wake_rows, self.max_wake_rows)
+        self.assertEqual(
+            solver.list_num_wake_vortices[final_step], expected_num_wake_vortices
+        )
 
     def test_non_truncated_wake_is_larger(self):
-        """Test that the non truncated simulation's wake is larger than the truncated
-        simulation's wake."""
-        non_truncated_airplane = self.non_truncated_solver.current_airplanes[0]
-        truncated_airplane = self.truncated_solver.current_airplanes[0]
+        """Test that the non truncated simulation's wake has more chordwise rows than
+        the truncated simulation's wake at the final time step."""
+        non_truncated_final_step = self.non_truncated_solver.num_steps - 1
+        truncated_final_step = self.truncated_solver.num_steps - 1
 
-        for wing_id in range(len(non_truncated_airplane.wings)):
-            non_truncated_wake = non_truncated_airplane.wings[
-                wing_id
-            ].wake_ring_vortices
-            truncated_wake = truncated_airplane.wings[wing_id].wake_ring_vortices
-            self.assertIsNotNone(non_truncated_wake)
-            self.assertIsNotNone(truncated_wake)
+        non_truncated_num_wake_vortices = (
+            self.non_truncated_solver.list_num_wake_vortices[non_truncated_final_step]
+        )
+        truncated_num_wake_vortices = self.truncated_solver.list_num_wake_vortices[
+            truncated_final_step
+        ]
 
-            self.assertGreater(non_truncated_wake.shape[0], truncated_wake.shape[0])
+        self.assertGreater(non_truncated_num_wake_vortices, truncated_num_wake_vortices)
 
     def test_truncated_loads_close_to_non_truncated(self):
         """Test that the truncated simulation's loads are close to the non truncated

@@ -143,7 +143,7 @@ def draw(
         back of the Wings. If True, the solver's streamlines must have already been
         calculated. Can be a bool or a numpy bool and will be converted internally to a
         bool. The default is False.
-    :param show_wake_vortices: Set this to True to show any wake RingVortices. If True,
+    :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
         already been run. Can be a bool or a numpy bool and will be converted internally
         to a bool. The default is False.
@@ -227,7 +227,7 @@ def draw(
         draw_operating_point = solver.steady_problems[draw_step].operating_point
         qInf__E = draw_operating_point.qInf__E
 
-        # If showing wake RingVortices, get their surfaces and plot them.
+        # If showing wake ring vortices, get their surfaces and plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 solver, draw_step
@@ -323,7 +323,7 @@ def draw(
                 smooth_shading=False,
             )
 
-        # Add reflected wake RingVortex surfaces if they are being shown.
+        # Add reflected wake ring vortex surfaces if they are being shown.
         if show_wake_vortices:
             plotter.add_mesh(
                 _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
@@ -472,7 +472,7 @@ def animate(
         the Panels uniformly. If the solver has been run, it can also be "induced drag",
         "side force", or "lift", which respectively use each Panel's induced drag, side
         force, and lift coefficient. The default is None.
-    :param show_wake_vortices: Set this to True to show any wake RingVortices. If True,
+    :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
     :param save: Set this to True to save the image as a WebP. It can be a bool or a
@@ -778,7 +778,7 @@ def animate(
                 color=animate_text_color,
             )
 
-        # If showing wake RingVortices, get their surfaces and plot them.
+        # If showing wake ring vortices, get their surfaces and plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
@@ -848,7 +848,7 @@ def animate(
                     smooth_shading=False,
                 )
 
-            # Add reflected wake RingVortex surfaces if they are being shown.
+            # Add reflected wake ring vortex surfaces if they are being shown.
             if show_wake_vortices:
                 plotter.add_mesh(
                     _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
@@ -1679,12 +1679,12 @@ def _get_wake_ring_vortex_surfaces(
     step: int,
 ) -> pv.PolyData:
     """Returns the PolyData representation of the surfaces of an
-    UnsteadyRingVortexLatticeMethodSolver's wake RingVortices at a given time step.
+    UnsteadyRingVortexLatticeMethodSolver's wake ring vortices at a given time step.
 
-    :param solver: The UnsteadyRingVortexLatticeMethodSolver with the wake RingVortices
+    :param solver: The UnsteadyRingVortexLatticeMethodSolver with the wake ring vortices
         to process.
-    :param step: The time step at which to process the wake RingVortices.
-    :return: The PolyData representation of the wake RingVortices.
+    :param step: The time step at which to process the wake ring vortices.
+    :return: The PolyData representation of the wake ring vortices.
     """
     num_wake_ring_vortices = solver.list_num_wake_vortices[step]
     stackFrwrvp_GP1_CgP1 = solver.listStackFrwrvp_GP1_CgP1[step]
@@ -1692,7 +1692,7 @@ def _get_wake_ring_vortex_surfaces(
     stackBlwrvp_GP1_CgP1 = solver.listStackBlwrvp_GP1_CgP1[step]
     stackBrwrvp_GP1_CgP1 = solver.listStackBrwrvp_GP1_CgP1[step]
 
-    # Initialize empty ndarrays to hold each wake RingVortex's vertices and face.
+    # Initialize empty ndarrays to hold each wake ring vortex's vertices and face.
     wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
     wake_ring_vortex_faces = np.zeros(0, dtype=int)
 
@@ -1721,8 +1721,8 @@ def _get_wake_ring_vortex_surfaces(
             dtype=int,
         )
 
-        # Stack this wake RingVortex's vertices and faces to the ndarrays of all wake
-        # RingVortices' vertices and faces.
+        # Stack this wake ring vortex's vertices and faces to the ndarrays of all wake
+        # ring vortices' vertices and faces.
         wake_ring_vortex_vertices = np.vstack(
             (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
         )
@@ -1730,10 +1730,7 @@ def _get_wake_ring_vortex_surfaces(
             (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
         )
 
-        # Increment the wake RingVortex counter.
-        wake_ring_vortex_num += 1
-
-    # Return the wake RingVortex surfaces.
+    # Return the wake ring vortex surfaces.
     return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
 
 

@@ -342,7 +342,7 @@ del example_problem
 
 # Run the solver.
 example_solver.run(
-    prescribed_wake=True,
+    prescribed_wake=False,
 )
 
 # Call the animate function on the solver. This produces a GIF of the wake being

@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from typing import cast
 
+import numpy as np
+
 from . import _logging, problems
 from .unsteady_ring_vortex_lattice_method import UnsteadyRingVortexLatticeMethodSolver
 
@@ -75,3 +77,27 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
     def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
         return self._coupled_problem.get_steady_problem(step)
+
+    def run(
+        self,
+        prescribed_wake: bool | np.bool_ = True,
+        calculate_streamlines: bool | np.bool_ = True,
+        show_progress: bool | np.bool_ = True,
+    ) -> None:
+        """Runs the solver and refreshes the steady_problems snapshot afterward.
+
+        The parent solver caches steady_problems at construction time. For coupled
+        problems the list grows step by step, so the snapshot must be refreshed once the
+        run completes.
+
+        :param prescribed_wake: See UnsteadyRingVortexLatticeMethodSolver.run().
+        :param calculate_streamlines: See UnsteadyRingVortexLatticeMethodSolver.run().
+        :param show_progress: See UnsteadyRingVortexLatticeMethodSolver.run().
+        :return: None
+        """
+        super().run(
+            prescribed_wake=prescribed_wake,
+            calculate_streamlines=calculate_streamlines,
+            show_progress=show_progress,
+        )
+        self.steady_problems = self._coupled_problem.steady_problems

@@ -459,6 +459,32 @@ class TestWing(unittest.TestCase):
         with self.assertRaises(ValueError):
             geometry_fixtures.make_invalid_root_wing_fixture()
 
+    def test_symmetry_point_none_when_symmetric_raises_value_error(self):
+        """Test that symmetryPoint_G_Cg=None with symmetric=True raises ValueError."""
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        with self.assertRaises(ValueError):
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[root_wcs, tip_wcs],
+                symmetric=True,
+                mirror_only=False,
+                symmetryNormal_G=[0.0, 1.0, 0.0],
+                symmetryPoint_G_Cg=None,
+            )
+
+    def test_symmetry_point_not_none_when_no_symmetry_raises_value_error(self):
+        """Test that symmetryPoint_G_Cg not None with no symmetry raises ValueError."""
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        with self.assertRaises(ValueError):
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[root_wcs, tip_wcs],
+                symmetric=False,
+                mirror_only=False,
+                symmetryNormal_G=None,
+                symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
+            )
+
     def test_span_simple_rectangular_wing(self):
         """Test span calculation for simple rectangular Wing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
@@ -1268,6 +1294,46 @@ class TestWingDeepCopy(unittest.TestCase):
         self.assertIsNotNone(mean_aerodynamic_chord)
         self.assertGreater(span, 0.0)
         self.assertGreater(projected_area, 0.0)
+
+    def test_deepcopy_meshed_wing_with_populated_axis_caches(self):
+        """Test deepcopy of a meshed Wing whose WnX_G, WnY_G, and WnZ_G caches
+        have been populated by accessing those properties.
+
+        Accessing the axis-vector properties forces the lazy-computed arrays to
+        be cached as non-None, which exercises the not-None copy branches inside
+        __deepcopy__ that are skipped when only calling generate_mesh.
+        """
+        import copy
+
+        import numpy.testing as npt
+
+        original = self.type_1_wing
+        original.generate_mesh(1)
+
+        # Access cached properties to populate internal caches before deepcopy.
+        _wn_x = original.WnX_G
+        _wn_y = original.WnY_G
+        _wn_z = original.WnZ_G
+        _children_to_wcs = original.children_T_pas_Wn_Ler_to_Wcs_Lp
+        _children_from_wcs = original.children_T_pas_Wcs_Lp_to_Wn_Ler
+
+        copied = copy.deepcopy(original)
+
+        # Verify the copied wing has matching axis vectors.
+        npt.assert_array_equal(copied.WnX_G, original.WnX_G)
+        npt.assert_array_equal(copied.WnY_G, original.WnY_G)
+        npt.assert_array_equal(copied.WnZ_G, original.WnZ_G)
+
+        # Verify the children transformation matrices are copied correctly.
+        for i in range(len(original.wing_cross_sections)):
+            npt.assert_array_equal(
+                copied.children_T_pas_Wn_Ler_to_Wcs_Lp[i],
+                original.children_T_pas_Wn_Ler_to_Wcs_Lp[i],
+            )
+            npt.assert_array_equal(
+                copied.children_T_pas_Wcs_Lp_to_Wn_Ler[i],
+                original.children_T_pas_Wcs_Lp_to_Wn_Ler[i],
+            )
 
 
 class TestWingGetPlottableData(unittest.TestCase):

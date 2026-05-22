@@ -1,6 +1,7 @@
 """This module contains classes to test Airplanes."""
 
 import unittest
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import numpy.testing as npt
@@ -171,6 +172,43 @@ class TestAirplane(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[test_wing], b_ref="large")
+
+    def test_s_ref_none_with_none_projected_area_raises(self):
+        """Test that s_ref=None raises ValueError when wing's projected_area is None."""
+        with patch.object(
+            ps.geometry.wing.Wing,
+            "projected_area",
+            new_callable=PropertyMock,
+            return_value=None,
+        ):
+            test_wing = geometry_fixtures.make_type_1_wing_fixture()
+            with self.assertRaises(ValueError):
+                ps.geometry.airplane.Airplane(wings=[test_wing])
+
+    def test_c_ref_none_with_none_mean_aerodynamic_chord_raises(self):
+        """Test that c_ref=None raises ValueError when wing's mean_aerodynamic_chord
+        is None."""
+        with patch.object(
+            ps.geometry.wing.Wing,
+            "mean_aerodynamic_chord",
+            new_callable=PropertyMock,
+            return_value=None,
+        ):
+            test_wing = geometry_fixtures.make_type_1_wing_fixture()
+            with self.assertRaises(ValueError):
+                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0)
+
+    def test_b_ref_none_with_none_span_raises(self):
+        """Test that b_ref=None raises ValueError when wing's span is None."""
+        with patch.object(
+            ps.geometry.wing.Wing,
+            "span",
+            new_callable=PropertyMock,
+            return_value=None,
+        ):
+            test_wing = geometry_fixtures.make_type_1_wing_fixture()
+            with self.assertRaises(ValueError):
+                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
 
     def test_num_panels_calculation(self):
         """Test that num_panels is calculated correctly from all Wings."""

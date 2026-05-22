@@ -1,6 +1,7 @@
 """This module contains classes to test the AeroelasticUnsteadyProblem class."""
 
 import unittest
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 
@@ -167,3 +168,118 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.assertAlmostEqual(
             torque_func_2(t_eval), 2.0 * torque_func_1(t_eval), places=10
         )
+
+    def test_generate_inertial_torque_function_uniform_spacing_raises(self):
+        """Test that generate_inertial_torque_function raises ValueError when the
+        wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
+        self.problem.spacing = "uniform"
+        with self.assertRaises(ValueError):
+            self.problem.generate_inertial_torque_function(span_I=1.0)
+
+    def test_generate_inertial_torque_function_callable_spacing_no_derivative_raises(
+        self,
+    ):
+        """Test that generate_inertial_torque_function raises ValueError when the
+        spacing is a callable but custom_spacing_second_derivative is None."""
+        self.problem.spacing = lambda t: np.sin(t)
+        self.problem.custom_spacing_second_derivative = None
+        with self.assertRaises(ValueError):
+            self.problem.generate_inertial_torque_function(span_I=1.0)
+
+    def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
+        """Test that generate_inertial_torque_function returns a callable when the
+        spacing is callable and custom_spacing_second_derivative is provided."""
+        self.problem.spacing = lambda t: np.sin(t)
+        self.problem.custom_spacing_second_derivative = lambda t: -np.sin(t)
+        torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
+        self.assertTrue(callable(torque_func))
+        result = torque_func(0.5)
+        self.assertAlmostEqual(result, -np.sin(0.5) * 2.0, places=10)
+
+    def test_plot_aeroelastic_results_calls_plot_flap_cycle_curves_four_times(self):
+        """Test that _plot_aeroelastic_results calls plot_flap_cycle_curves exactly
+        four times with the correct titles."""
+        self.problem.per_step_inertial = [np.zeros((1, 1, 3))]
+        self.problem.per_step_aero = [np.zeros((1, 1, 3))]
+        self.problem.net_data = [np.zeros((2, 3))]
+        self.problem.flap_points = [np.zeros((1, 1, 3))]
+
+        with patch.object(self.problem, "plot_flap_cycle_curves") as mock_plot:
+            self.problem._plot_aeroelastic_results()
+
+        self.assertEqual(mock_plot.call_count, 4)
+        titles = [call.args[1] for call in mock_plot.call_args_list]
+        self.assertIn("Net Deformation", titles)
+        self.assertIn("Per Step Inertial Moments", titles)
+        self.assertIn("Per Step Aero Moments", titles)
+        self.assertIn("Flap Points Z", titles)
+
+    def test_plot_flap_cycle_curves_executes_without_error(self):
+        """Test that plot_flap_cycle_curves runs without error when matplotlib
+        calls are mocked."""
+        with patch("pterasoftware.problems.plt") as mock_plt:
+            self.problem.plot_flap_cycle_curves(
+                data=[[0.0, 1.0, 2.0], [3.0, 4.0, 5.0]],
+                title="Test Plot",
+            )
+
+        mock_plt.figure.assert_called_once()
+        mock_plt.show.assert_called_once()
+        mock_plt.savefig.assert_called_once_with("Test_Plot.png")
+
+    def test_calculate_wing_deformation_calls_plot_at_final_step(self):
+        """Test that calculate_wing_deformation calls _plot_aeroelastic_results when
+        plot_flap_cycle=True and step equals num_steps-1."""
+        self.problem.plot_flap_cycle = True
+
+        mock_solver = MagicMock()
+        dummy_moments = np.zeros((1, 1, 3))
+        dummy_thetas = np.zeros(
+            self.problem.steady_problems[0].airplanes[0].wings[0].num_spanwise_panels
+            + 1
+        )
+        dummy_omegas = np.zeros_like(dummy_thetas)
+        dummy_spring = np.zeros(
+            (
+                self.problem.steady_problems[0]
+                .airplanes[0]
+                .wings[0]
+                .num_spanwise_panels,
+                3,
+            )
+        )
+        dummy_deformation = np.zeros(
+            (
+                self.problem.steady_problems[0]
+                .airplanes[0]
+                .wings[0]
+                .num_spanwise_panels
+                + 1,
+                3,
+            )
+        )
+
+        with (
+            patch.object(
+                self.problem, "_extract_aero_moments", return_value=dummy_moments
+            ),
+            patch.object(
+                self.problem, "_calculate_inertial_moments", return_value=dummy_moments
+            ),
+            patch.object(
+                self.problem,
+                "calculate_spring_moments",
+                return_value=(dummy_thetas, dummy_omegas, dummy_spring),
+            ),
+            patch.object(
+                self.problem,
+                "_build_deformation_vector",
+                return_value=dummy_deformation,
+            ),
+            patch.object(self.problem, "_apply_moment_updates"),
+            patch.object(self.problem, "_plot_aeroelastic_results") as mock_plot,
+        ):
+            final_step = self.problem.num_steps - 1
+            self.problem.calculate_wing_deformation(mock_solver, step=final_step)
+
+        mock_plot.assert_called_once()

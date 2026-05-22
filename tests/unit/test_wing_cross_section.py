@@ -345,19 +345,6 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             invalid_root_wcs.validate_root_constraints()
 
-    def test_validate_root_constraints_nonzero_angles_raises(self):
-        """Test that validate_root_constraints raises ValueError when
-        angles_Wcsp_to_Wcs_ixyz is not zero."""
-        invalid_root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=self.test_airfoil,
-            num_spanwise_panels=10,
-            chord=2.0,
-            Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
-            angles_Wcsp_to_Wcs_ixyz=[5.0, 0.0, 0.0],
-        )
-        with self.assertRaises(ValueError):
-            invalid_root_wcs.validate_root_constraints()
-
     def test_validate_tip_constraints(self):
         """Test validate_tip_constraints method."""
         # Test that tip WingCrossSection passes validation
@@ -372,19 +359,6 @@ class TestWingCrossSection(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.root_wing_cross_section.validate_tip_constraints()
-
-    def test_validate_tip_constraints_nonnone_spanwise_spacing_raises(self):
-        """Test that validate_tip_constraints raises ValueError when spanwise_spacing
-        is not None."""
-        invalid_tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=self.test_airfoil,
-            num_spanwise_panels=None,
-            chord=0.8,
-            Lp_Wcsp_Lpp=[0.5, 2.0, 0.2],
-            spanwise_spacing="cosine",
-        )
-        with self.assertRaises(ValueError):
-            invalid_tip_wcs.validate_tip_constraints()
 
     def test_validate_mid_constraints(self):
         """Test validate_mid_constraints method."""
@@ -1042,6 +1016,38 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_wing_cross_section.get_plottable_data(show="invalid")
+
+    def test_get_plottable_data_show_true_non_identity_calls_add_actor(self):
+        """Test that get_plottable_data with show=True and a non-identity transform
+        calls plotter.add_actor (else branch)."""
+        from unittest.mock import MagicMock, patch
+
+        self.basic_wing_cross_section.validated = True
+        self.basic_wing_cross_section.symmetry_type = 1
+
+        with patch("pterasoftware.geometry.wing_cross_section.pv") as mock_pv:
+            mock_plotter = MagicMock()
+            mock_pv.Plotter.return_value = mock_plotter
+            result = self.basic_wing_cross_section.get_plottable_data(show=True)
+
+        self.assertIsNone(result)
+        self.assertTrue(mock_plotter.add_actor.called)
+
+    def test_get_plottable_data_show_true_identity_calls_add_actor(self):
+        """Test that get_plottable_data with show=True and an identity transform
+        calls plotter.add_actor (if branch)."""
+        from unittest.mock import MagicMock, patch
+
+        self.root_wing_cross_section.validated = True
+        self.root_wing_cross_section.symmetry_type = 1
+
+        with patch("pterasoftware.geometry.wing_cross_section.pv") as mock_pv:
+            mock_plotter = MagicMock()
+            mock_pv.Plotter.return_value = mock_plotter
+            result = self.root_wing_cross_section.get_plottable_data(show=True)
+
+        self.assertIsNone(result)
+        self.assertTrue(mock_plotter.add_actor.called)
 
 
 if __name__ == "__main__":

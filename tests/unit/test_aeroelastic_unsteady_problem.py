@@ -227,6 +227,19 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         mock_plt.show.assert_called_once()
         mock_plt.savefig.assert_called_once_with("Test_Plot.png")
 
+    def test_plot_flap_cycle_curves_with_flap_cycle_overlay(self):
+        """Test that plot_flap_cycle_curves plots the flap_cycle overlay when
+        provided."""
+        with patch("pterasoftware.problems.plt") as mock_plt:
+            self.problem.plot_flap_cycle_curves(
+                data=[[0.0, 1.0, 2.0]],
+                title="Test Plot",
+                flap_cycle=[0.5, 1.5, 2.5],
+            )
+
+        # One call for the data curve, one for the flap_cycle overlay.
+        self.assertEqual(mock_plt.plot.call_count, 2)
+
     def test_calculate_wing_deformation_calls_plot_at_final_step(self):
         """Test that calculate_wing_deformation calls _plot_aeroelastic_results when
         plot_flap_cycle=True and step equals num_steps-1."""

@@ -459,7 +459,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         self.prev_velocities: list[np.ndarray] = []
         self.positions: list[np.ndarray] = []
         self.net_deformation: np.ndarray = np.zeros((0, 3))
-        self.angluar_velocities: np.ndarray = np.zeros((0, 3))
+        self.angular_velocities: np.ndarray = np.zeros((0, 3))
 
         # Tunable Parameters
         self.wing_density = wing_density  # per unit height kg/m^2
@@ -483,7 +483,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         ].wing_movements[0]
 
         self.net_data: list[np.ndarray] = []
-        self.angluar_velocity_data: list[np.ndarray] = []
+        self.angular_velocity_data: list[np.ndarray] = []
         self.per_step_inertial: list[np.ndarray] = []
         self.per_step_aero: list[np.ndarray] = []
         self.base_wing_positions: np.ndarray = np.zeros(0)
@@ -603,7 +603,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Initialize deformation state if needed
         if self.net_deformation.size == 0:
             self.net_deformation = np.zeros((num_spanwise_panels + 1, 3))
-            self.angluar_velocities = np.zeros((num_spanwise_panels + 1, 3))
+            self.angular_velocities = np.zeros((num_spanwise_panels + 1, 3))
 
         # Extract aerodynamic and inertial moments
         aeroMoments_GP1_Slep = self._extract_aero_moments(
@@ -770,7 +770,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :return: None
         """
         # Update angular velocity state
-        self.angluar_velocities[:, 1] = omegas
+        self.angular_velocities[:, 1] = omegas
 
         # Generate the reference (undeformed) airplane at this step to get the
         # baseline panel positions for tracking wing deflection.
@@ -804,7 +804,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Store deformation and angular velocity history
         self.net_data.append(self.net_deformation.copy())
-        self.angluar_velocity_data.append(self.angluar_velocities.copy())
+        self.angular_velocity_data.append(self.angular_velocities.copy())
 
     def _plot_aeroelastic_results(self) -> None:
         """Generate and display time-history plots of aeroelastic results.
@@ -889,7 +889,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             omega0: float = 0.0
             if span_panel != 0:
                 theta0 = self.net_deformation[span_panel][1]
-                omega0 = self.angluar_velocities[span_panel][1]
+                omega0 = self.angular_velocities[span_panel][1]
 
             dt = self.movement.delta_time
             mass = mass_matrix[:, span_panel, :].sum()

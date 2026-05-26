@@ -109,8 +109,8 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
 9. A Basic GUI
     * This is still in its alpha stage, but we will be adding more functionality soon.
-10. Aeroelastic Module for Flapping Flight (Expirmental)
-    * This feature enables co-simulation of structural wing deformation and standard Ptera UVLM calculations.
+10. Aeroelastic Module for Flapping Flight (Experimental)
+    * This feature enables co-simulation of structural wing deformation and standard Ptera Software UVLM calculations.
     * Currently the feature offers a simple torsional spring model for each WingCrossSection.
     * Experimental validation and improved deformation models coming soon.
 

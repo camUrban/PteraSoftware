@@ -48,12 +48,13 @@ Requires Python 3.11, but active development is done in 3.13
         - `pre-commit-hooks.yml`
         - `tests.yml`
     - `pull_request_template.md`
-- `.venv/`: Directory for the Python virtual environment (not included in version control)
+- `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
+- `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
     - `examples_expected_output/`: Example output files for verification
     - `hero_graphics/`: Scripts and assets for the README hero graphic
-    - `private/`: Directory with documentation not included in this repository's version control
+    - `private/`: Directory with documentation not included in this repository's version control (may be missing if the private repo hasn't been cloned and linked to this local repo)
         - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
         - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
         - `katz_plotkin_d/`: A recreation of Appendix D, which includes example Fortran programs, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
@@ -113,10 +114,6 @@ Requires Python 3.11, but active development is done in 3.13
 - `scripts/`: Directory with maintenance and tooling scripts
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
 - `tests/`: Directory with unit and integration tests
-    - `benchmarks/`: Performance benchmark scripts and saved results
-        - `bench_parallel_biot_savart.py`
-        - `bench_serialization.py`
-        - `bench_slots.py`
     - `integration/`: Integration tests for combined functionality
         - `fixtures/`: Fixtures for integration tests
             - `airplane_fixtures.py`

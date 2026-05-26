@@ -4,7 +4,6 @@
 # Explicitly protect high-risk files/directories
 /.claude/                   @camUrban
 /.github/                   @camUrban
-/benchmarks/                @camUrban
 /pterasoftware/             @camUrban
 /.gitignore                 @camUrban
 /.pre-commit-config.yaml    @camUrban

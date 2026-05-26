@@ -96,6 +96,60 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
+
+def _load_benchmark_host_info() -> dict[str, str]:
+    """Read docs/_static/benchmarks/host.json into MyST substitutions.
+
+    The benchmark publish workflow at PteraSoftwareBenchmarks drops host.json
+    alongside the chart artifacts under docs/_static/benchmarks/. Fallback
+    strings are returned when the file is absent (fresh checkout before the
+    first benchmark publish has landed) so docs/website/performance.md still
+    builds.
+    """
+    import json
+
+    path = Path(__file__).parent.parent / "_static" / "benchmarks" / "host.json"
+    fallback = {
+        "host_os": "Pending first benchmark publish",
+        "host_cpu": "Pending first benchmark publish",
+        "host_cores": "n/a",
+        "host_governor": "n/a",
+        "host_memory_mb": "n/a",
+        "host_swappiness": "n/a",
+        "host_thp": "n/a",
+        "host_gpu": "Pending first benchmark publish",
+        "host_gpu_driver": "n/a",
+        "host_cuda": "n/a",
+        "host_storage": "Pending first benchmark publish",
+    }
+    if not path.exists():
+        return fallback
+    payload = json.loads(path.read_text())
+    os_info = payload.get("os", {})
+    cpu = payload.get("cpu", {})
+    memory = payload.get("memory", {})
+    gpu = payload.get("gpu", {})
+    storage = payload.get("storage", {})
+    os_label = (
+        f"{os_info.get('name', '')} {os_info.get('version', '')}".strip() or "unknown"
+    )
+    return {
+        "host_os": os_label,
+        "host_cpu": cpu.get("model", "unknown"),
+        "host_cores": str(cpu.get("logical_cores", "unknown")),
+        "host_governor": cpu.get("governor", "unknown"),
+        "host_memory_mb": str(memory.get("total_mb", "unknown")),
+        "host_swappiness": str(memory.get("swappiness", "unknown")),
+        "host_thp": memory.get("transparent_hugepages", "unknown"),
+        "host_gpu": gpu.get("model", "unknown"),
+        "host_gpu_driver": gpu.get("driver_version", "unknown"),
+        "host_cuda": gpu.get("cuda_version", "unknown"),
+        "host_storage": storage.get("model", "unknown"),
+    }
+
+
+myst_substitutions = _load_benchmark_host_info()
+
 # Suppress warnings that are informational or unavoidable
 suppress_warnings = [
     "toc.not_included",  # Template files not in toctree (expected)
@@ -149,7 +203,7 @@ napoleon_attr_annotations = True
 html_theme = "furo"
 html_title = "PteraSoftware"
 html_favicon = "favicon/favicon.ico"
-html_static_path = ["_static", "Black_Text_Logo.png", "Logo.png"]
+html_static_path = ["_static", "../_static", "Black_Text_Logo.png", "Logo.png"]
 # Optionally also copy to site root (may be ignored by some builders)
 html_extra_path = ["favicon"]
 

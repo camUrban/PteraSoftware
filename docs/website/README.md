@@ -7,6 +7,7 @@
 self
 examples
 api
+performance
 ```
 
 ```{toctree}

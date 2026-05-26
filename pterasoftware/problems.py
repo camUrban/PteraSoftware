@@ -22,7 +22,6 @@ from scipy.integrate import solve_ivp
 from . import _core, _parameter_validation, _transformations, geometry, movements
 from . import operating_point as operating_point_mod
 from .movements import aeroelastic_movement as aeroelastic_movement_mod
-from .movements import free_flight_movement as free_flight_movement_mod
 
 if TYPE_CHECKING:
     from ._coupled_unsteady_ring_vortex_lattice_method import (
@@ -1111,64 +1110,3 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         plt.grid(True)
         plt.savefig(f"{title.replace(' ', '_')}.png")
         plt.show()
-
-
-class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
-    """A subclass of _CoupledUnsteadyProblem for free flight simulations.
-
-    This class manages the geometry for free flight simulations where the operating
-    point is updated by the solver at each time step based on the computed aerodynamic
-    forces and moments. The airplane geometry is precomputed by the FreeFlightMovement,
-    but the operating point evolves dynamically.
-
-    **Contains the following methods:**
-
-    initialize_next_problem: Initializes the next step's problem with an updated
-    operating point from the FreeFlightMovement.
-
-    **Contains the following class attributes:**
-
-    None
-    """
-
-    __slots__ = ("_free_flight_movement",)
-
-    def __init__(
-        self,
-        movement: free_flight_movement_mod.FreeFlightMovement,
-    ) -> None:
-        """The initialization method.
-
-        :param movement: A FreeFlightMovement object containing the precomputed airplane
-            geometry and mutable operating point for the free flight simulation.
-        :param only_final_results: If True, only calculate forces and moments for the
-            final motion cycle. Can be a bool or numpy bool and will be converted to
-            bool internally. The default is False.
-        :return: None
-        """
-        if not isinstance(movement, free_flight_movement_mod.FreeFlightMovement):
-            raise TypeError("movement must be a FreeFlightMovement.")
-
-        # Extract the initial airplanes (one per airplane movement, at step 0).
-        initial_airplanes = [airplane_tuple[0] for airplane_tuple in movement.airplanes]
-        initial_operating_point = movement.operating_point_movement.operating_points[0]
-
-        super().__init__(
-            movement=movement,
-            initial_airplanes=initial_airplanes,
-            initial_operating_point=initial_operating_point,
-        )
-
-        self._free_flight_movement = movement
-
-    def initialize_next_problem(
-        self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver
-    ) -> None:
-        """Initialize the next time step's problem.
-
-        :param solver: The solver instance providing aerodynamic data from the current
-            time step.
-        :return: None
-        :raises NotImplementedError: Always. Free flight solver not yet implemented.
-        """
-        raise NotImplementedError("Free flight solver not yet implemented.")

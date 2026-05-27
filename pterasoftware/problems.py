@@ -534,14 +534,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     def initialize_next_problem(
         self, solver: CoupledUnsteadyRingVortexLatticeMethodSolver
     ) -> None:
-        # Circular at module level: the aeroelastic solver imports problems.py.
-        # Needed at runtime for cast().
-        from .aeroelastic_unsteady_ring_vortex_lattice_method import (
-            AeroelasticUnsteadyRingVortexLatticeMethodSolver,
-        )
-
         aeroelastic_solver = cast(
-            AeroelasticUnsteadyRingVortexLatticeMethodSolver, solver
+            "AeroelasticUnsteadyRingVortexLatticeMethodSolver", solver
         )
 
         step = len(self._steady_problems)

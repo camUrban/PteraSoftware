@@ -119,6 +119,8 @@ panel = cast(_panel.Panel, object_array[i, j])
 
 **Avoid `cast()` for `Type | None` -> `Type` narrowing** - use `assert` instead for runtime safety.
 
+When the type being cast to lives across a circular import boundary, use the string form (`cast("OtherClass", value)`). See "Casting Across a Circular Dependency" below.
+
 ### Module Alias Pattern
 
 Import modules with aliases:
@@ -174,6 +176,24 @@ This approach:
 - Prevents circular import errors
 - Requires no string quotes around type hints
 - Is the default behavior in Python 3.11+
+
+#### Casting Across a Circular Dependency
+
+`from __future__ import annotations` defers type-hint evaluation but does not help with `cast()`, which is a runtime call whose first argument is evaluated. When narrowing a type that lives across a circular boundary, use the string form of `cast()` so the type name does not need to be importable at runtime:
+
+```python
+from typing import TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from .other_module import OtherClass
+
+
+def narrow(value):
+    other = cast("OtherClass", value)
+    ...
+```
+
+The `TYPE_CHECKING` import gives mypy the symbol for static resolution; the string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
 
 ---
 

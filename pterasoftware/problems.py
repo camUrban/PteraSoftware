@@ -402,7 +402,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         damping_constant: float,
         aero_scaling: float = 1.0,
         moment_scaling_factor: float = 1.0,
-        damping_eps: float = 1e-3,
         plot_flap_cycle: bool = False,
         custom_spacing_second_derivative=None,
     ) -> None:
@@ -428,9 +427,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param moment_scaling_factor: A scaling factor applied to the computed wing
             deformation angles (unitless). The default is 1.0. Useful for adjusting the
             magnitude of structural response.
-        :param damping_eps: The critical damping tolerance used for diagnostics
-            (unitless). The default is 1e-3. This parameter is not currently used in the
-            solver.
         :param plot_flap_cycle: If True, plots time histories of moments and
             deformations at the end of the simulation. The default is False.
         :param custom_spacing_second_derivative: An optional callable function of time
@@ -470,7 +466,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         self.spring_constant = spring_constant
         self.damping_constant = damping_constant
         self.aero_scaling = aero_scaling
-        self.damping_eps = damping_eps  # critical damping tolerance
 
         # Permanent parameters
         self.step_discards = (

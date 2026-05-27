@@ -326,7 +326,6 @@ example_problem = ps.problems.AeroelasticUnsteadyProblem(
     damping_constant=1.0,
     aero_scaling=1.0,
     moment_scaling_factor=1.0,
-    damping_eps=1e-3,
     plot_flap_cycle=False,
     custom_spacing_second_derivative=None,
 )

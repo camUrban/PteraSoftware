@@ -19,7 +19,6 @@ skip = "docs/_build/*,*.dat"
 [tool.coverage.run]
 source = ["pterasoftware"]
 omit = [
-    "pterasoftware/movements/aeroelastic_*.py",
     "pterasoftware/movements/free_flight_*.py",
 ]
 

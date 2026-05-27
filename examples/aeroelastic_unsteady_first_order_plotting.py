@@ -13,7 +13,7 @@ CURVE_INDEX = 16
 
 # Default values used when a parameter is not being swept
 DEFAULT_K = 1.0
-DEFAULT_B = 40.0
+DEFAULT_B = 1.0
 DEFAULT_DENSITY = 0.012
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the

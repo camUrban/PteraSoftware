@@ -126,9 +126,10 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         used for analyzing wing loading and deformation characteristics relative to the
         wing root.
 
-        The method: 1. Calls parent's implementation to get CG-based moments 2. Updates
-        bound vortex positions relative to SLEP points 3. Recalculates all moment
-        contributions in the SLEP frame 4. Stores SLEP moments in self.moments_GP1_Slep
+        The method first calls the parent's implementation to get CG-based moments, then
+        updates bound vortex positions relative to SLEP points, recalculates all moment
+        contributions in the SLEP frame, and stores the SLEP moments in
+        self.moments_GP1_Slep.
 
         :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
             (in the first Airplane's geometry axes, relative to the first Airplane's CG)

@@ -1,10 +1,13 @@
-"""Contains the SteadyProblem and UnsteadyProblem classes.
+"""Contains the SteadyProblem, UnsteadyProblem, and AeroelasticUnsteadyProblem classes.
 
 **Contains the following classes:**
 
 SteadyProblem: A class used to contain steady aerodynamics problems.
 
 UnsteadyProblem: A class used to contain unsteady aerodynamics problems.
+
+AeroelasticUnsteadyProblem: A class used to couple unsteady aerodynamics with wing
+structural dynamics (torsional spring-mass-damper model) for aeroelastic simulations.
 
 **Contains the following functions:**
 

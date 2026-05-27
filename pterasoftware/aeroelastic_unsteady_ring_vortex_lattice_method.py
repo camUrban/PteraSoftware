@@ -3,10 +3,10 @@
 **Contains the following classes:**
 
 AeroelasticUnsteadyRingVortexLatticeMethodSolver: A subclass of
-CoupledUnsteadyRingVortexLatticeMethodSolver that extends the coupled solver with Strip
-Leading Edge Point (SLEP) functionality for computing aerodynamic moments about the
-strip leading edge. This is used for aeroelastic simulations where wing deformations are
-coupled with aerodynamic loads.
+CoupledUnsteadyRingVortexLatticeMethodSolver that solves AeroelasticUnsteadyProblems,
+extending the coupled solver with Strip Leading Edge Point (SLEP) functionality for
+computing aerodynamic moments about the strip leading edge so that wing deformations can
+be coupled with aerodynamic loads.
 
 **Contains the following functions:**
 
@@ -34,11 +34,10 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     deformation characteristics relative to the wing root.
 
     **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:**
-
-    - Initializes and maintains SLEP index mapping and position arrays - Overrides
-    _reinitialize_step_arrays_hook() to reinitialize SLEP arrays each step - Overrides
-    _load_calculation_moment_processing_hook() to compute SLEP-based moments - Computes
-    bound vortex positions relative to strip leading edge points
+    initializes and maintains SLEP index mapping and position arrays, overrides
+    ``_reinitialize_step_arrays_hook`` to reset SLEP arrays each step, overrides
+    ``_load_calculation_moment_processing_hook`` to compute SLEP moments, and computes
+    bound vortex positions relative to strip leading edge points.
     """
 
     def __init__(

@@ -177,9 +177,14 @@ h1, article h1 {
   text-transform: uppercase;
 }
 
-/* API reference module headings (multi-line with periods) */
+/* API reference module headings (multi-line with periods).
+ * Sized so that the longest period-separated segment in any module path
+ * (currently aeroelastic_unsteady_ring_vortex_lattice_method, 47 chars) fits
+ * on one line in the article container at every desktop breakpoint without
+ * needing breaks at underscores. Increase this if module names get longer
+ * than what fits at the smallest content width. */
 h1.api-module-heading {
-  font-size: 2.1rem;
+  font-size: 1.55rem;
 }
 
 h2, article h2 {
@@ -381,10 +386,14 @@ body[data-theme="dark"] article h3 {
   color: var(--ptera-red) !important;
 }
 
-/* Smoother hover transitions */
+/* Smoother hover transitions.
+ * Font shrunk so the longest module names (e.g.
+ * aeroelastic_unsteady_ring_vortex_lattice_method, 47 chars) fit in the 20em
+ * sidebar without overflowing. Adjust if module names get longer. */
 .sidebar-tree a {
   transition: color 0.15s ease, background-color 0.15s ease;
   border-radius: 4px;
+  font-size: 0.78rem;
 }
 
 /* Caption styling in sidebar */
@@ -396,6 +405,14 @@ body[data-theme="dark"] article h3 {
   font-size: 0.75rem;
   color: var(--ptera-gray-dark);
   margin-top: 1.5rem;
+}
+
+/* Right TOC entries.
+ * Same rationale as the sidebar font shrink: keep long names
+ * (e.g. method/attribute names on AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+ * from overflowing the narrower right column. */
+.toc-tree a {
+  font-size: 0.62rem;
 }
 
 /* GitHub link in sidebar */
@@ -629,6 +646,15 @@ table.longtable td:first-child {
   font-family: var(--font-stack-code);
 }
 
+/* AutoAPI module "Classes" summary table.
+ * The table is generated with fixed 40/60 column widths, so long class names
+ * like AeroelasticUnsteadyRingVortexLatticeMethodSolver wrap in column 1.
+ * Shrink the table font slightly so the class names fit on one line at all
+ * desktop breakpoints. */
+#classes table {
+  font-size: 0.88rem;
+}
+
 /* --------------------------------------------------------------------------
    API Documentation - Wrap Long Signatures
    -------------------------------------------------------------------------- */
@@ -768,6 +794,14 @@ dl.py dd {
   h1, article h1 {
     font-size: 2.25rem;
   }
+
+  /* The sidebar container width does not scale with html's 110% bump but
+   * rem-based fonts inside it do, so the text-to-container ratio worsens here.
+   * Drop the rem value by ~1/1.1 to keep the effective pixel size aligned with
+   * smaller breakpoints. */
+  .sidebar-tree a {
+    font-size: 0.74rem;
+  }
 }
 
 /* Large screens - both sidebars visible */
@@ -779,6 +813,11 @@ dl.py dd {
   h2, article h2 {
     font-size: 1.45rem;
   }
+
+  /* Trim sidebar text a touch so the longest module names fit cleanly. */
+  .sidebar-tree a {
+    font-size: 0.75rem;
+  }
 }
 
 /* Medium screens - TOC hidden, left sidebar visible */
@@ -789,6 +828,17 @@ dl.py dd {
 
   h2, article h2 {
     font-size: 1.4rem;
+  }
+
+  /* Same sidebar-text trim as the next breakpoint up. */
+  .sidebar-tree a {
+    font-size: 0.75rem;
+  }
+
+  /* Shrink the api module heading enough that the longest period-separated
+   * segment fits at the content width available in this range. */
+  h1.api-module-heading {
+    font-size: 1.45rem;
   }
 }
 

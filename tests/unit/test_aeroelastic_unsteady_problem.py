@@ -1,7 +1,7 @@
 """This module contains classes to test the AeroelasticUnsteadyProblem class."""
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import numpy as np
 
@@ -172,29 +172,44 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_torque_function_uniform_spacing_raises(self):
         """Test that generate_inertial_torque_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
-        self.problem.spacing = "uniform"
-        with self.assertRaises(ValueError):
-            self.problem.generate_inertial_torque_function(span_I=1.0)
+        with patch.object(
+            ps.problems.AeroelasticUnsteadyProblem,
+            "spacing",
+            new_callable=PropertyMock,
+            return_value="uniform",
+        ):
+            with self.assertRaises(ValueError):
+                self.problem.generate_inertial_torque_function(span_I=1.0)
 
     def test_generate_inertial_torque_function_callable_spacing_no_derivative_raises(
         self,
     ):
         """Test that generate_inertial_torque_function raises ValueError when the
         spacing is a callable but custom_spacing_second_derivative is None."""
-        self.problem.spacing = lambda t: np.sin(t)
         self.problem.custom_spacing_second_derivative = None
-        with self.assertRaises(ValueError):
-            self.problem.generate_inertial_torque_function(span_I=1.0)
+        with patch.object(
+            ps.problems.AeroelasticUnsteadyProblem,
+            "spacing",
+            new_callable=PropertyMock,
+            return_value=lambda t: np.sin(t),
+        ):
+            with self.assertRaises(ValueError):
+                self.problem.generate_inertial_torque_function(span_I=1.0)
 
     def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
         """Test that generate_inertial_torque_function returns a callable when the
         spacing is callable and custom_spacing_second_derivative is provided."""
-        self.problem.spacing = lambda t: np.sin(t)
         self.problem.custom_spacing_second_derivative = lambda t: -np.sin(t)
-        torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
-        self.assertTrue(callable(torque_func))
-        result = torque_func(0.5)
-        self.assertAlmostEqual(result, -np.sin(0.5) * 2.0, places=10)
+        with patch.object(
+            ps.problems.AeroelasticUnsteadyProblem,
+            "spacing",
+            new_callable=PropertyMock,
+            return_value=lambda t: np.sin(t),
+        ):
+            torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
+            self.assertTrue(callable(torque_func))
+            result = torque_func(0.5)
+            self.assertAlmostEqual(result, -np.sin(0.5) * 2.0, places=10)
 
     def test_plot_aeroelastic_results_calls_plot_flap_cycle_curves_four_times(self):
         """Test that _plot_aeroelastic_results calls plot_flap_cycle_curves exactly

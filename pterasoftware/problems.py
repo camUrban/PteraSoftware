@@ -401,6 +401,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         spring_constant: float,
         damping_constant: float,
         aero_scaling: float = 1.0,
+        step_discards: int = 5,
         moment_scaling_factor: float = 1.0,
         plot_flap_cycle: bool = False,
         custom_spacing_second_derivative=None,
@@ -424,6 +425,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             the viscous damping in the spring-mass-damper system.
         :param aero_scaling: A scaling factor applied to aerodynamic moments (unitless).
             The default is 1.0. Use values less than 1 to reduce aerodynamic influence.
+        :param step_discards: The number of initial time steps to discard for numerical
+            stability (there are inconsistent startup effects from the UVLM solver).
+            During these steps, the solver will run but the results will not be applied
+            to the deformation of the wings. The default is 5.
         :param moment_scaling_factor: A scaling factor applied to the computed wing
             deformation angles (unitless). The default is 1.0. Useful for adjusting the
             magnitude of structural response.
@@ -469,16 +474,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Permanent parameters
         self.step_discards = (
-            5  # number of initial steps to discard for numerical stability
+            step_discards  # number of initial steps to discard for numerical stability
         )
-        self.spacing = (
-            self._aeroelastic_movement.airplane_movements[0]
-            .wing_movements[0]
-            .spacingAngles_Gs_to_Wn_ixyz[0]
-        )
-        self.wing_movement = self._aeroelastic_movement.airplane_movements[
-            0
-        ].wing_movements[0]
 
         self.net_data: list[np.ndarray] = []
         self.angular_velocity_data: list[np.ndarray] = []
@@ -489,6 +486,16 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # For custom spacing defined in movement.
         self.custom_spacing_second_derivative = custom_spacing_second_derivative
+
+    @property
+    def wing_movement(self):
+        """Return the primary wing movement definition used by the aeroelastic model."""
+        return self._aeroelastic_movement.airplane_movements[0].wing_movements[0]
+
+    @property
+    def spacing(self):
+        """Return the primary wing spacing definition for prescribed flapping motion."""
+        return self.wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
 
     def calculate_wing_panel_accelerations(self) -> np.ndarray:
         """Compute panel accelerations using finite difference of stored positions.
@@ -899,10 +906,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
             theta, omega, moment = self.calculate_torsional_spring_moment(
                 dt,
-                # A potential knob to tweak in representation of the torsional inertia
-                # I=mass * (wing.wing_cross_sections[span_panel].chord ** 2) / 2,
                 I=1 / 2 * mass * (L**2),
-                # I=span_I,
                 theta0=theta0,
                 omega0=omega0,
                 aero_span_moment=aero_span_moment,

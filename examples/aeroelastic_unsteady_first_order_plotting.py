@@ -294,6 +294,7 @@ def run_aeroelastic(
         spring_constant=spring_constant,
         damping_constant=damping_constant,
         aero_scaling=1.0,
+        step_discards=5,
         moment_scaling_factor=1.0,
         plot_flap_cycle=False,
         custom_spacing_second_derivative=None,

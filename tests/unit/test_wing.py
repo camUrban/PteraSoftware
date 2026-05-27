@@ -1794,6 +1794,22 @@ class TestSingleStepWingMethods(unittest.TestCase):
         result = wing.explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
         self.assertIsNone(result[-1].num_spanwise_panels)
 
+    def test_explode_wing_rejects_non_uniform_spanwise_spacing(self):
+        """Test that explode_wing raises ValueError when a non tip WCS uses cosine
+        spanwise spacing, since the explosion assumes uniformly distributed
+        intermediates."""
+        wing = self._make_plain_wing(single_step_wing=False)
+        cosine_root = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+            num_spanwise_panels=3,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing="cosine",
+        )
+        with self.assertRaises(ValueError):
+            wing.explode_wing([cosine_root, self._make_tip_wcs()])
+
 
 if __name__ == "__main__":
     unittest.main()

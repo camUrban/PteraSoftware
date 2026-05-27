@@ -253,7 +253,11 @@ class Wing:
             units are meters. The default is None.
         :param single_step_wing: Set this to True to have the explode_wing method called
             on this Wing during initialization, which will return a NEW Wing where all
-            panels are broken into single strips for deformation.
+            panels are broken into single strips for deformation. When True, every non
+            tip WingCrossSection in wing_cross_sections must have
+            spanwise_spacing="uniform"; the explosion assumes uniformly spaced
+            intermediates and rejects other spacings rather than silently overriding
+            them.
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: The type of spacing between the Wing's chordwise
@@ -1548,8 +1552,12 @@ class Wing:
             t = (i + 1) / N  # interpolation parameter between 0 and 1
 
             chord = (1 - t) * wcs1.chord + t * wcs2.chord
+            # Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz are parent-relative deltas (see
+            # WingCrossSection's constructor docstring), so each of the N intermediates
+            # carries 1/N of wcs2's delta and the chain composes back to wcs2's offset
+            # and twist. This is exact only when the intermediates are uniformly
+            # spaced, which explode_wing enforces by validating the input.
             Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
-            # angles_Wcsp_to_Wcs_ixyz = tuple((1 - t) * np.array(wcs1.angles_Wcsp_to_Wcs_ixyz) + t * np.array(wcs2.angles_Wcsp_to_Wcs_ixyz))
             angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
             is_final_section = wcs2.num_spanwise_panels is None and i == N - 1
 
@@ -1574,9 +1582,26 @@ class Wing:
         """Takes a list of WingCrossSections and returns a new list where all cross
         sections have num_spanwise_panels = 1.
 
-        :param wing_cross_sections: The list of wing cross sections to explode.
+        The interpolation distributes each non-tip WingCrossSection's parent-relative
+        offset and twist uniformly across its N intermediates, which is exact only
+        when the source WingCrossSection specifies uniform spanwise spacing. Non
+        uniform spacings (for example "cosine") would silently be replaced with
+        uniform spacing in the output mesh, so this method rejects them up front.
+
+        :param wing_cross_sections: The list of wing cross sections to explode. Every
+            non tip WingCrossSection must have spanwise_spacing="uniform".
         :return: A new list of exploded wing cross sections.
+        :raises ValueError: If any non tip WingCrossSection has a spanwise_spacing
+            other than "uniform".
         """
+        for i, wing_cross_section in enumerate(wing_cross_sections[:-1]):
+            if wing_cross_section.spanwise_spacing != "uniform":
+                raise ValueError(
+                    f"wing_cross_sections[{i}].spanwise_spacing is "
+                    f'"{wing_cross_section.spanwise_spacing}", but exploding a Wing '
+                    f'(single_step_wing=True) requires "uniform" on every non tip '
+                    f"WingCrossSection."
+                )
 
         new_cross_sections = []
 

@@ -55,7 +55,7 @@ def run_aeroelastic(
                 control_surface_hinge_point=0.75,
                 control_surface_deflection=0.0,
                 spanwise_spacing=(
-                    "cosine" if i < len(cross_section_chords) - 1 else None
+                    "uniform" if i < len(cross_section_chords) - 1 else None
                 ),
                 airfoil=ps.geometry.airfoil.Airfoil(
                     name="naca2412",

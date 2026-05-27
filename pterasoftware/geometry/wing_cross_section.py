@@ -173,7 +173,10 @@ class WingCrossSection:
             is 0.0 degrees.
         :param spanwise_spacing: For non tip WingCrossSections, this can be "cosine" or
             "uniform". I highly recommend using cosine spacing. For tip
-            WingCrossSections it must be None.
+            WingCrossSections it must be None. If the parent Wing has
+            single_step_wing=True, every non tip WingCrossSection must use "uniform"
+            because the explosion distributes parent-relative offsets and twists
+            uniformly across each WingCrossSection's intermediates.
         :return: None
         """
         # Validate airfoil (immutable).

@@ -305,3 +305,121 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             self.problem.calculate_wing_deformation(mock_solver, step=final_step)
 
         mock_plot.assert_called_once()
+
+
+class TestRecordNullStepForWing(unittest.TestCase):
+    """This class contains unit tests for the _record_null_step_for_wing method and
+    the standard WingMovement code path in calculate_wing_deformation."""
+
+    def setUp(self):
+        """Set up a fresh AeroelasticUnsteadyProblem for each test."""
+        self.problem_aero = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+        self.problem_std = (
+            problem_fixtures.make_aeroelastic_unsteady_problem_with_standard_wing_fixture()
+        )
+
+    def test_record_null_step_for_wing_appends_one_entry_to_each_history_list(self):
+        """Test that _record_null_step_for_wing appends exactly one entry to each
+        per-wing history list."""
+        wing_idx = 0
+        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
+        before = len(self.problem_aero.per_step_inertial_per_wing[wing_idx])
+
+        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
+
+        self.assertEqual(
+            len(self.problem_aero.per_step_inertial_per_wing[wing_idx]), before + 1
+        )
+        self.assertEqual(
+            len(self.problem_aero.per_step_aero_per_wing[wing_idx]), before + 1
+        )
+        self.assertEqual(len(self.problem_aero.net_data_per_wing[wing_idx]), before + 1)
+        self.assertEqual(
+            len(self.problem_aero.angular_velocity_data_per_wing[wing_idx]), before + 1
+        )
+        self.assertEqual(
+            len(self.problem_aero.flap_points_per_wing[wing_idx]), before + 1
+        )
+
+    def test_record_null_step_for_wing_inertial_and_aero_shape_and_values(self):
+        """Test that _record_null_step_for_wing appends zero moment arrays with shape
+        (num_chordwise_panels, num_spanwise_panels, 3)."""
+        wing_idx = 0
+        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
+
+        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
+
+        expected_shape = (wing.num_chordwise_panels, wing.num_spanwise_panels, 3)
+        appended_inertial = self.problem_aero.per_step_inertial_per_wing[wing_idx][-1]
+        appended_aero = self.problem_aero.per_step_aero_per_wing[wing_idx][-1]
+
+        self.assertEqual(appended_inertial.shape, expected_shape)
+        self.assertEqual(appended_aero.shape, expected_shape)
+        np.testing.assert_array_equal(appended_inertial, np.zeros(expected_shape))
+        np.testing.assert_array_equal(appended_aero, np.zeros(expected_shape))
+
+    def test_record_null_step_for_wing_net_data_shape_and_values(self):
+        """Test that _record_null_step_for_wing appends a zero net_data array with
+        shape (num_deformation_rows, 3)."""
+        wing_idx = 0
+        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
+        num_deformation_rows = self.problem_aero.net_deformation_per_wing[
+            wing_idx
+        ].shape[0]
+
+        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
+
+        appended_net = self.problem_aero.net_data_per_wing[wing_idx][-1]
+        appended_ang = self.problem_aero.angular_velocity_data_per_wing[wing_idx][-1]
+        expected_shape = (num_deformation_rows, 3)
+
+        self.assertEqual(appended_net.shape, expected_shape)
+        self.assertEqual(appended_ang.shape, expected_shape)
+        np.testing.assert_array_equal(appended_net, np.zeros(expected_shape))
+        np.testing.assert_array_equal(appended_ang, np.zeros(expected_shape))
+
+    def test_record_null_step_for_wing_flap_points_shape_and_values(self):
+        """Test that _record_null_step_for_wing appends a zero flap_points array with
+        shape (num_chordwise_panels, num_spanwise_panels, 3)."""
+        wing_idx = 0
+        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
+
+        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
+
+        appended_flap = self.problem_aero.flap_points_per_wing[wing_idx][-1]
+        expected_shape = (wing.num_chordwise_panels, wing.num_spanwise_panels, 3)
+
+        self.assertEqual(appended_flap.shape, expected_shape)
+        np.testing.assert_array_equal(appended_flap, np.zeros(expected_shape))
+
+    def test_calculate_wing_deformation_returns_none_for_standard_wing_movement(self):
+        """Test that calculate_wing_deformation returns None for a wing backed by a
+        standard WingMovement (the else branch)."""
+        mock_solver = MagicMock()
+
+        results = self.problem_std.calculate_wing_deformation(
+            solver=mock_solver, step=0
+        )
+
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
+    def test_calculate_wing_deformation_appends_history_for_standard_wing_movement(
+        self,
+    ):
+        """Test that calculate_wing_deformation populates history lists when a wing is
+        backed by a standard WingMovement."""
+        mock_solver = MagicMock()
+        wing_idx = 0
+
+        self.problem_std.calculate_wing_deformation(solver=mock_solver, step=0)
+
+        self.assertEqual(len(self.problem_std.per_step_inertial_per_wing[wing_idx]), 1)
+        self.assertEqual(len(self.problem_std.per_step_aero_per_wing[wing_idx]), 1)
+        self.assertEqual(len(self.problem_std.net_data_per_wing[wing_idx]), 1)
+        self.assertEqual(
+            len(self.problem_std.angular_velocity_data_per_wing[wing_idx]), 1
+        )
+        self.assertEqual(len(self.problem_std.flap_points_per_wing[wing_idx]), 1)

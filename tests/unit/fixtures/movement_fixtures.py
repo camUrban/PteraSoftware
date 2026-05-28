@@ -230,6 +230,107 @@ def make_movement_with_custom_delta_time_fixture():
     return movement_with_custom_delta_time_fixture
 
 
+def make_aeroelastic_movement_with_standard_wing_fixture():
+    """This method makes a fixture that is an AeroelasticMovement whose
+    AeroelasticAirplaneMovement holds a standard WingMovement instead of an
+    AeroelasticWingMovement.
+
+    This exercises the code path in AeroelasticAirplaneMovement.
+    generate_airplane_at_time_step where the else branch calls
+    WingMovement.generate_wing_at_time_step(step, delta_time) without deformation.
+
+    :return make_aeroelastic_movement_with_standard_wing_fixture: AeroelasticMovement
+        This is the AeroelasticMovement configured with a standard WingMovement child
+        for testing the non-aeroelastic wing code path.
+    """
+    # Create a shared airfoil for both wing cross sections.
+    airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
+
+    # Create the root WingCrossSection. The first WingCrossSection of a Wing must have
+    # Lp_Wcsp_Lpp=(0,0,0).
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=airfoil,
+        num_spanwise_panels=1,
+        chord=1.0,
+        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spanwise_spacing="uniform",
+    )
+
+    # Create the tip WingCrossSection.
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+        airfoil=airfoil,
+        num_spanwise_panels=None,
+        chord=0.5,
+        Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spanwise_spacing=None,
+    )
+
+    # Create the Wing.
+    wing = ps.geometry.wing.Wing(
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+        name="Test Wing",
+        Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+        angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        symmetric=False,
+        mirror_only=False,
+        single_step_wing=False,
+        num_chordwise_panels=2,
+        chordwise_spacing="uniform",
+    )
+
+    # Create the Airplane.
+    airplane = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Test Airplane",
+        Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        weight=0.0,
+    )
+
+    # Use standard WingCrossSectionMovements rather than aeroelastic ones.
+    root_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
+        )
+    )
+    tip_wing_cross_section_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
+        )
+    )
+
+    # Use a standard WingMovement instead of an AeroelasticWingMovement.
+    wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=airplane.wings[0],
+        wing_cross_section_movements=[
+            root_wing_cross_section_movement,
+            tip_wing_cross_section_movement,
+        ],
+    )
+
+    # Create the AeroelasticAirplaneMovement with a standard WingMovement child.
+    airplane_movement = (
+        ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+            base_airplane=airplane,
+            wing_movements=[wing_movement],
+        )
+    )
+
+    # Create the OperatingPointMovement.
+    op_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+        base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
+    )
+
+    # Create and return the AeroelasticMovement.
+    return ps.movements.aeroelastic_movement.AeroelasticMovement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=op_point_movement,
+        delta_time=0.1,
+        num_steps=3,
+    )
+
+
 def make_movement_with_multiple_airplanes_fixture():
     """This method makes a fixture that is a Movement with multiple AirplaneMovements.
 

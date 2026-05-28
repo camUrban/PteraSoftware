@@ -336,7 +336,6 @@ example_problem = ps.problems.AeroelasticUnsteadyProblem(
     step_discards=5,
     moment_scaling_factor=1.0,
     plot_flap_cycle=False,
-    custom_spacing_second_derivative=None,
 )
 
 # Define a new solver. We'll create an AeroelasticUnsteadyRingVortexLatticeMethodSolver,

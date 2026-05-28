@@ -405,7 +405,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         step_discards: int = 5,
         moment_scaling_factor: float = 1.0,
         plot_flap_cycle: bool = False,
-        custom_spacing_second_derivative=None,
     ) -> None:
         """The initialization method.
 
@@ -435,10 +434,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             magnitude of structural response.
         :param plot_flap_cycle: If True, plots time histories of moments and
             deformations at the end of the simulation. The default is False.
-        :param custom_spacing_second_derivative: An optional callable function of time
-            that returns the second time derivative of a custom wing motion spacing
-            function. Required if custom (non-sinusoidal) wing motion spacing is used.
-            The default is None.
         :return: None
         """
         if not isinstance(movement, aeroelastic_movement_mod.AeroelasticMovement):
@@ -490,18 +485,18 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Per-wing undeformed baseline positions. Indexed as [wing_idx].
         self.base_wing_positions_per_wing: list[np.ndarray] = []
 
-        # For custom spacing defined in movement. Keyed by wing index.
-        self.custom_spacing_second_derivative: dict[int, object] | None = (
-            custom_spacing_second_derivative
-        )
-
         # Initialize per-wing state now that we have the initial airplane geometry.
         self._initialize_per_wing_state(initial_airplane)
 
     @property
-    def wing_movement(self):
+    def wing_movement(
+        self,
+    ) -> aeroelastic_wing_movement_mod.AeroelasticWingMovement:
         """Return the primary wing movement definition used by the aeroelastic model."""
-        return self._aeroelastic_movement.airplane_movements[0].wing_movements[0]
+        return cast(
+            aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+            self._aeroelastic_movement.airplane_movements[0].wing_movements[0],
+        )
 
     def _initialize_per_wing_state(self, airplane: geometry.airplane.Airplane) -> None:
         """Allocate per-wing state arrays sized to the airplane geometry.
@@ -1046,7 +1041,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 aero_span_moment=aero_span_moment,
                 step=step,
                 span_I=span_I,
-                wing_idx=wing_idx,
                 wing_movement=wing_movement,
             )
             d += W / 2
@@ -1064,7 +1058,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         aero_span_moment: float,
         step: int,
         span_I: float,
-        wing_idx: int = 0,
         wing_movement: (
             aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
         ) = None,
@@ -1086,8 +1079,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param step: The current time step index (used for inertial torque evaluation).
         :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).
             This is the actual inertia used in the ODE solver.
-        :param wing_idx: Index of the wing in airplane.wings. Used to look up the
-            custom spacing second derivative. The default is 0.
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
             parameters are used. When None, falls back to self.wing_movement. The
             default is None.
@@ -1109,9 +1100,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             theta0,
             omega0,
             aero_span_moment,
-            self.generate_inertial_torque_function(
-                span_I, wing_movement=wing_movement, wing_idx=wing_idx
-            ),
+            self.generate_inertial_torque_function(span_I, wing_movement=wing_movement),
         )
 
         return theta, omega
@@ -1122,7 +1111,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         wing_movement: (
             aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
         ) = None,
-        wing_idx: int = 0,
     ):
         """Generate the prescribed wing motion inertial torque function.
 
@@ -1135,14 +1123,12 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
             parameters are used. When None, falls back to self.wing_movement. The
             default is None.
-        :param wing_idx: Index of the wing in airplane.wings. Used to look up a
-            wing-specific custom spacing second derivative in
-            custom_spacing_second_derivative when it is a dict. The default is 0.
         :return: A callable function that accepts time and returns the inertial torque
             (N*m) due to the prescribed wing motion acceleration. **Notes:** For
             sinusoidal spacing: tau = -I * b^2 * sin(b*t + h) * A, where b = 2*pi/period, h
-            = phase, A = amplitude. For custom spacing, requires
-            custom_spacing_second_derivative to be defined.
+            = phase, A = amplitude. For custom spacing, uses the wing movement's
+            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which its constructor guarantees
+            is present whenever the spacing is a custom callable.
         """
         _wing_movement = (
             wing_movement if wing_movement is not None else self.wing_movement
@@ -1159,19 +1145,11 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 "cannot be used for inertial torque function."
             )
         elif callable(spacing):
-            # Resolve the custom second derivative for this wing.
-            if isinstance(self.custom_spacing_second_derivative, dict):
-                deriv = self.custom_spacing_second_derivative.get(wing_idx)
-            else:
-                deriv = self.custom_spacing_second_derivative
-            if deriv is not None:
-                assert callable(deriv)
-                torque_func = lambda time: deriv(time) * span_I
-            else:
-                raise ValueError(
-                    "Custom spacing function provided without second derivative "
-                    "function for inertial torque calculation."
-                )
+            # The wing movement's constructor guarantees a matching second derivative
+            # whenever the spacing component is a custom callable.
+            deriv = _wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
+            assert deriv is not None
+            torque_func = lambda time: deriv(time) * span_I
 
         return torque_func
 

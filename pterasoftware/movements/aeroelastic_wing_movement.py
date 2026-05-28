@@ -13,6 +13,7 @@ None
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from typing import cast
 
 import numpy as np
 
@@ -57,7 +58,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     parent AeroelasticMovement.
     """
 
-    __slots__ = ()
+    __slots__ = ("_spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",)
 
     def __init__(
         self,
@@ -96,6 +97,9 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             0.0,
             0.0,
         ),
+        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz: (
+            Sequence[Callable[[float], float] | None] | None
+        ) = None,
     ) -> None:
         """The initialization method.
 
@@ -179,6 +183,19 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             about when angles_Gs_to_Wn_ixyz oscillates. When set to (0, 0, 0), rotation
             occurs about the leading edge root point (default behavior). The units are
             in meters. The default is (0.0, 0.0, 0.0).
+        :param spacingAnglesSecondDerivative_Gs_to_Wn_ixyz: An optional sequence with
+            shape (3,) holding the analytical second time derivative of each
+            spacingAngles_Gs_to_Wn_ixyz component, used by the aeroelastic solver to
+            compute the inertial torque from the prescribed flapping acceleration. Each
+            element is either a callable that accepts a time (in seconds) and returns
+            the second derivative (in radians per second squared, before amplitude
+            scaling), or None when the corresponding spacing component does not need
+            one. Under the current model only the x (flap) component is consulted. A
+            component whose spacing is a custom callable must have a non-None derivative
+            here; "sine" and "uniform" components do not (their derivatives are handled
+            analytically or rejected as non-differentiable when the torque is
+            generated). When None, no component has a custom derivative. The default is
+            None.
         :return: None
         """
         # Validate that every element is an AeroelasticWingCrossSectionMovement,
@@ -208,6 +225,71 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             phaseAngles_Gs_to_Wn_ixyz=phaseAngles_Gs_to_Wn_ixyz,
             rotationPointOffset_Gs_Ler=rotationPointOffset_Gs_Ler,
         )
+
+        # Validate the second-derivative companion to spacingAngles_Gs_to_Wn_ixyz.
+        if spacingAnglesSecondDerivative_Gs_to_Wn_ixyz is None:
+            derivatives: tuple[Callable[[float], float] | None, ...] = (
+                None,
+                None,
+                None,
+            )
+        else:
+            if (
+                not isinstance(
+                    spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, (list, tuple)
+                )
+                or len(spacingAnglesSecondDerivative_Gs_to_Wn_ixyz) != 3
+            ):
+                raise ValueError(
+                    "spacingAnglesSecondDerivative_Gs_to_Wn_ixyz must be None or a "
+                    "3-element sequence."
+                )
+            for i, derivative in enumerate(spacingAnglesSecondDerivative_Gs_to_Wn_ixyz):
+                if derivative is not None and not callable(derivative):
+                    raise TypeError(
+                        "Each element of spacingAnglesSecondDerivative_Gs_to_Wn_ixyz "
+                        "must be a callable or None, got "
+                        f"{type(derivative).__name__} at index {i}."
+                    )
+            derivatives = tuple(spacingAnglesSecondDerivative_Gs_to_Wn_ixyz)
+
+        # A custom (callable) spacing has no analytical derivative the solver can take,
+        # so it must be paired with a second-derivative function for the inertial torque
+        # calculation. Reject the mismatch here rather than when the torque is generated.
+        for i, spacing in enumerate(self.spacingAngles_Gs_to_Wn_ixyz):
+            if callable(spacing) and derivatives[i] is None:
+                raise ValueError(
+                    "A custom (callable) spacingAngles_Gs_to_Wn_ixyz requires a "
+                    "matching spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, but element "
+                    f"{i} has a callable spacing with no derivative."
+                )
+
+        self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz = derivatives
+
+    def __deepcopy__(self, memo: dict) -> AeroelasticWingMovement:
+        """Creates a deep copy of this AeroelasticWingMovement.
+
+        Extends the parent deep copy to also copy this class's second-derivative
+        companion to the angular spacing.
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new instance with copied attributes.
+        """
+        new_movement = cast(AeroelasticWingMovement, super().__deepcopy__(memo))
+
+        # Copy the tuple directly (immutable; holds callables or None per component).
+        new_movement._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz = (
+            self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
+        )
+
+        return new_movement
+
+    @property
+    def spacingAnglesSecondDerivative_Gs_to_Wn_ixyz(
+        self,
+    ) -> tuple[Callable[[float], float] | None, ...]:
+        return self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
 
     def generate_wing_at_time_step(
         self,

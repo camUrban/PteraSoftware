@@ -182,32 +182,43 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.problem.generate_inertial_torque_function(span_I=1.0)
 
-    def test_generate_inertial_torque_function_callable_spacing_no_derivative_raises(
-        self,
-    ):
-        """Test that generate_inertial_torque_function raises ValueError when the
-        spacing is a callable but custom_spacing_second_derivative is None."""
-        self.problem.custom_spacing_second_derivative = None
-        wing_movement = self.problem.wing_movement
-        with patch.object(
-            type(wing_movement),
-            "spacingAngles_Gs_to_Wn_ixyz",
-            new_callable=PropertyMock,
-            return_value=(lambda t: np.sin(t), "sine", "sine"),
-        ):
-            with self.assertRaises(ValueError):
-                self.problem.generate_inertial_torque_function(span_I=1.0)
+    def test_aeroelastic_wing_movement_callable_spacing_no_derivative_raises(self):
+        """Test that AeroelasticWingMovement raises ValueError when a spacing component
+        is a custom callable but no matching second derivative is provided."""
+        base_wing = self.problem.wing_movement.base_wing
+        wcs_movements = [
+            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                base_wing_cross_section=wcs
+            )
+            for wcs in base_wing.wing_cross_sections
+        ]
+        with self.assertRaises(ValueError):
+            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+                base_wing=base_wing,
+                wing_cross_section_movements=wcs_movements,
+                ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+                spacingAngles_Gs_to_Wn_ixyz=(lambda t: np.sin(t), "sine", "sine"),
+                phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            )
 
     def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
-        """Test that generate_inertial_torque_function returns a callable when the
-        spacing is callable and custom_spacing_second_derivative is provided."""
-        self.problem.custom_spacing_second_derivative = {0: lambda t: -np.sin(t)}
+        """Test that generate_inertial_torque_function uses the wing movement's second
+        derivative when the spacing is a custom callable."""
         wing_movement = self.problem.wing_movement
-        with patch.object(
-            type(wing_movement),
-            "spacingAngles_Gs_to_Wn_ixyz",
-            new_callable=PropertyMock,
-            return_value=(lambda t: np.sin(t), "sine", "sine"),
+        with (
+            patch.object(
+                type(wing_movement),
+                "spacingAngles_Gs_to_Wn_ixyz",
+                new_callable=PropertyMock,
+                return_value=(lambda t: np.sin(t), "sine", "sine"),
+            ),
+            patch.object(
+                type(wing_movement),
+                "spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",
+                new_callable=PropertyMock,
+                return_value=(lambda t: -np.sin(t), None, None),
+            ),
         ):
             torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
             self.assertTrue(callable(torque_func))

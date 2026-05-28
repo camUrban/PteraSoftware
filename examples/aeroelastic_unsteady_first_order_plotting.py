@@ -298,7 +298,6 @@ def run_aeroelastic(
         step_discards=5,
         moment_scaling_factor=1.0,
         plot_flap_cycle=False,
-        custom_spacing_second_derivative=None,
     )
 
     example_solver = ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(

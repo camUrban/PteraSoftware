@@ -67,6 +67,10 @@ repos:
         name: checker  shebang-execs
       - id: check-added-large-files
         name: checker  large-files
+        # The reference output tree holds rendered animations (webp) and plots that
+        # exceed the default 500 KB ceiling. Exclude it so example artifacts can be
+        # committed without raising the global limit.
+        exclude: ^docs/examples_expected_output/
       - id: debug-statements
         name: checker  debug-statements
   - repo: https://github.com/codespell-project/codespell

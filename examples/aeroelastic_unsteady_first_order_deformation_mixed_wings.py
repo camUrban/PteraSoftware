@@ -1,7 +1,12 @@
-"""This script is a variant of aeroelastic_unsteady_first_order_deformation.py where
-aeroelastic structural deformation is applied only to the main wing. The reflected
-wing follows the same prescribed flapping motion but uses a standard WingMovement
-with no aeroelastic deformation."""
+"""This script is an example of how to run Ptera Software's
+AeroelasticUnsteadyRingVortexLatticeMethodSolver with an airplane whose wings mix
+aeroelastic deformation and prescribed rigid motion.
+
+The main wing deforms under its own aerodynamic loads using an AeroelasticWingMovement,
+while its reflected counterpart and the V-tail follow prescribed motion rigidly using
+standard WingMovements. This demonstrates that the solver applies first-order
+deformation per wing, driven by each wing's own loads, rather than to every wing on the
+airplane."""
 
 import pterasoftware as ps
 
@@ -59,12 +64,12 @@ wing_1 = ps.geometry.wing.Wing(
     chordwise_spacing="uniform",
 )
 
-# Actually generating the airplane. A tail is added to the airplane, but it is not
-# split into strips for deformation as currently only the first wing is considered
-# for deformation in the codebase. Fututre versions of this feature could allow for
-# the deformation of multiple wings. For now, it is convenient to not split the tail
-# into single strip wing cross sections as it reduces the number of movement variables
-# that need to be defined.
+# Actually generate the airplane. The V-tail is added as a second lifting surface but
+# is not split into deformation strips, because it follows prescribed rigid motion
+# rather than deforming. The solver deforms each wing from its own aerodynamic loads,
+# but only wings backed by an AeroelasticWingMovement; wings backed by a standard
+# WingMovement stay rigid. Leaving the tail rigid also keeps its movement definition
+# simpler, since it then needs no per-strip cross sections.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         wing_1,

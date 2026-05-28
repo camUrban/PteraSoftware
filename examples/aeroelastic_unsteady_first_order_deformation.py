@@ -1,6 +1,6 @@
-"""This is script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a non-static
-Movement."""
+"""This script is an example of how to run Ptera Software's
+AeroelasticUnsteadyRingVortexLatticeMethodSolver with a flapping airplane whose main
+wing deforms under its own aerodynamic loads."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
@@ -68,12 +68,12 @@ wing_1 = ps.geometry.wing.Wing(
     chordwise_spacing="uniform",
 )
 
-# Actually generating the airplane. A tail is added to the airplane, but it is not
-# split into strips for deformation as currently only the first wing is considered
-# for deformation in the codebase. Fututre versions of this feature could allow for
-# the deformation of multiple wings. For now, it is convenient to not split the tail
-# into single strip wing cross sections as it reduces the number of movement variables
-# that need to be defined.
+# Actually generate the airplane. The V-tail is added as a second lifting surface but
+# is not split into deformation strips, because it follows prescribed rigid motion
+# rather than deforming. The solver deforms each wing from its own aerodynamic loads,
+# but only wings backed by an AeroelasticWingMovement; the V-tail uses a standard
+# WingMovement and stays rigid. Leaving the tail rigid also keeps its movement
+# definition simpler, since it then needs no per-strip cross sections.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         wing_1,

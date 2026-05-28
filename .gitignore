@@ -150,6 +150,11 @@ Draw.webp
 * Moments.png
 * Moment Coefficients.png
 
+# The canonical reference outputs under docs/examples_expected_output/ are committed
+# copies of these artifacts, so re-include that tree after the usage-artifact ignores
+# above.
+!docs/examples_expected_output/**
+
 # This symlink folder contains reference documentation that shouldn't be uploaded.
 /docs/private
 

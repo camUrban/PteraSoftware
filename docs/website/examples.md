@@ -15,6 +15,7 @@ Unsteady Ring VLM Solver with Multiple Airplanes <examples/unsteady_ring_vortex_
 Unsteady Ring VLM Solver with Ground Effect <examples/unsteady_ring_vortex_lattice_method_solver_static_ground_effect>
 Aeroelastic Unsteady Ring VLM Solver with First-Order Deformation <examples/aeroelastic_unsteady_first_order_deformation>
 Aeroelastic Unsteady Ring VLM Solver with First-Order Deformation Plotting <examples/aeroelastic_unsteady_first_order_plotting>
+Aeroelastic Unsteady Ring VLM Solver with First-Order Deformation of Mixed Wings <examples/aeroelastic_unsteady_first_order_deformation_mixed_wings>
 ```
 
 ## Convergence

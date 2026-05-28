@@ -507,18 +507,15 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Allocate per-wing state arrays sized to the airplane geometry.
 
         Called once from __init__ after the initial airplane is generated. Iterates over
-        every Wing in the airplane and allocates:
-
-        - net_deformation_per_wing: zero-valued (N_span+1, 3) deformation accumulator. -
-        angular_velocities_per_wing: zero-valued (N_span+1, 3) velocity store. -
-        positions_per_wing: empty history list for panel center positions. -
-        per_step_inertial_per_wing: empty history list for inertial moment arrays. -
-        per_step_aero_per_wing: empty history list for aero moment arrays. -
-        net_data_per_wing: empty history list for cumulative deformation snapshots. -
-        angular_velocity_data_per_wing: empty history list for angular velocity
-        snapshots. - flap_points_per_wing: empty history list for wing deflection
-        offsets. - base_wing_positions_per_wing: unset marker (zero-size array) for the
-        undeformed baseline.
+        every Wing in the airplane and appends one entry per wing to each per-wing state
+        list. The deformation accumulator (net_deformation_per_wing) and the angular
+        velocity store (angular_velocities_per_wing) are each a zero-valued (N_span+1,
+        3) array. The history lists start empty: positions_per_wing holds panel center
+        positions, per_step_inertial_per_wing and per_step_aero_per_wing hold inertial
+        and aerodynamic moment arrays, net_data_per_wing holds cumulative deformation
+        snapshots, angular_velocity_data_per_wing holds angular velocity snapshots, and
+        flap_points_per_wing holds wing deflection offsets. The undeformed baseline
+        (base_wing_positions_per_wing) starts as a zero-size array marking it as unset.
 
         :param airplane: The initial Airplane whose Wings define the geometry.
         :return: None
@@ -929,8 +926,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Generate and display time-history plots of aeroelastic results.
 
         Creates plots of per-step and cumulative deformations, moment components
-        (inertial, aerodynamic, spring), and wing deflection points. Useful for
-        visualizing the aeroelastic coupling behavior.
+        (inertial, aerodynamic), and wing deflection points. Useful for visualizing the
+        aeroelastic coupling behavior.
 
         :param wing_idx: Index of the wing in airplane.wings whose data is plotted. The
             default is 0.
@@ -1084,7 +1081,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param I: The rotational inertia about the flapping axis (kg*m^2).
         :param theta0: Initial torsional angle at the start of the time step (radians).
         :param omega0: Initial angular velocity at the start of the time step (rad/s).
-        :param aero_span_moment: The z-component aerodynamic moment summed over
+        :param aero_span_moment: The y-component aerodynamic moment summed over
             chordwise panels for this spanwise section (N*m).
         :param step: The current time step index (used for inertial torque evaluation).
         :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).

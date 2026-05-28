@@ -90,7 +90,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that calculate_wing_panel_accelerations returns zeros_like the
         position when only one position is stored."""
         dummy_pos = np.ones((2, 1, 3))
-        self.problem.positions.append(dummy_pos)
+        self.problem.positions_per_wing[0].append(dummy_pos)
         accel = self.problem.calculate_wing_panel_accelerations()
         np.testing.assert_array_equal(accel, np.zeros_like(dummy_pos))
 
@@ -172,11 +172,12 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_torque_function_uniform_spacing_raises(self):
         """Test that generate_inertial_torque_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
+        wing_movement = self.problem.wing_movement
         with patch.object(
-            ps.problems.AeroelasticUnsteadyProblem,
-            "spacing",
+            type(wing_movement),
+            "spacingAngles_Gs_to_Wn_ixyz",
             new_callable=PropertyMock,
-            return_value="uniform",
+            return_value=("uniform", "sine", "sine"),
         ):
             with self.assertRaises(ValueError):
                 self.problem.generate_inertial_torque_function(span_I=1.0)
@@ -187,11 +188,12 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that generate_inertial_torque_function raises ValueError when the
         spacing is a callable but custom_spacing_second_derivative is None."""
         self.problem.custom_spacing_second_derivative = None
+        wing_movement = self.problem.wing_movement
         with patch.object(
-            ps.problems.AeroelasticUnsteadyProblem,
-            "spacing",
+            type(wing_movement),
+            "spacingAngles_Gs_to_Wn_ixyz",
             new_callable=PropertyMock,
-            return_value=lambda t: np.sin(t),
+            return_value=(lambda t: np.sin(t), "sine", "sine"),
         ):
             with self.assertRaises(ValueError):
                 self.problem.generate_inertial_torque_function(span_I=1.0)
@@ -199,12 +201,13 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
         """Test that generate_inertial_torque_function returns a callable when the
         spacing is callable and custom_spacing_second_derivative is provided."""
-        self.problem.custom_spacing_second_derivative = lambda t: -np.sin(t)
+        self.problem.custom_spacing_second_derivative = {0: lambda t: -np.sin(t)}
+        wing_movement = self.problem.wing_movement
         with patch.object(
-            ps.problems.AeroelasticUnsteadyProblem,
-            "spacing",
+            type(wing_movement),
+            "spacingAngles_Gs_to_Wn_ixyz",
             new_callable=PropertyMock,
-            return_value=lambda t: np.sin(t),
+            return_value=(lambda t: np.sin(t), "sine", "sine"),
         ):
             torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
             self.assertTrue(callable(torque_func))
@@ -214,10 +217,10 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_plot_aeroelastic_results_calls_plot_flap_cycle_curves_four_times(self):
         """Test that _plot_aeroelastic_results calls plot_flap_cycle_curves exactly
         four times with the correct titles."""
-        self.problem.per_step_inertial = [np.zeros((1, 1, 3))]
-        self.problem.per_step_aero = [np.zeros((1, 1, 3))]
-        self.problem.net_data = [np.zeros((2, 3))]
-        self.problem.flap_points = [np.zeros((1, 1, 3))]
+        self.problem.per_step_inertial_per_wing[0] = [np.zeros((1, 1, 3))]
+        self.problem.per_step_aero_per_wing[0] = [np.zeros((1, 1, 3))]
+        self.problem.net_data_per_wing[0] = [np.zeros((2, 3))]
+        self.problem.flap_points_per_wing[0] = [np.zeros((1, 1, 3))]
 
         with patch.object(self.problem, "plot_flap_cycle_curves") as mock_plot:
             self.problem._plot_aeroelastic_results()

@@ -199,7 +199,7 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
         self.assertIsInstance(problem, ps.problems.AeroelasticUnsteadyProblem)
         # initialize_next_problem is called for steps 1 through num_steps - 1.
         expected_net_data_length = 19  # num_steps - 1 = 20 - 1
-        self.assertEqual(len(problem.net_data), expected_net_data_length)
+        self.assertEqual(len(problem.net_data_per_wing[0]), expected_net_data_length)
 
 
 class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
@@ -245,10 +245,12 @@ class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
         low_density_problem = self.low_density_solver.unsteady_problem
         high_density_problem = self.high_density_solver.unsteady_problem
 
-        low_density_outermost_thetas = np.array(low_density_problem.net_data)[:, -1, 1]
-        high_density_outermost_thetas = np.array(high_density_problem.net_data)[
-            :, -1, 1
-        ]
+        low_density_outermost_thetas = np.array(
+            low_density_problem.net_data_per_wing[0]
+        )[:, -1, 1]
+        high_density_outermost_thetas = np.array(
+            high_density_problem.net_data_per_wing[0]
+        )[:, -1, 1]
 
         max_theta_low_density = float(np.max(np.abs(low_density_outermost_thetas)))
         max_theta_high_density = float(np.max(np.abs(high_density_outermost_thetas)))

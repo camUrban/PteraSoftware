@@ -187,28 +187,37 @@ for i in range(len(example_airplane.wings[0].wing_cross_sections)):
 
 
 # Now define the v-tail's root and tip WingCrossSections' WingCrossSectionMovements.
-v_tail_root_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
-    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+# The V-tail is not an aeroelastic surface, so we use standard WingCrossSectionMovements
+# and a standard WingMovement. This keeps the V-tail mesh consistent across all time
+# steps without applying any structural deformation.
+v_tail_root_wcs_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    )
 )
-v_tail_tip_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-    base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-    ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+v_tail_tip_wcs_movement = (
+    ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    )
 )
+# Reflected V-tail WingCrossSectionMovements reuse the same static motion as the
+# original V-tail. Both halves are symmetric and neither deforms.
 
 # This dephase parameter is used to make the wing start in a flat position
 dephase = 169.0
@@ -243,7 +252,7 @@ reflected_main_wing_movement = (
     )
 )
 
-v_tail_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[2],
     wing_cross_section_movements=[
         v_tail_root_wcs_movement,
@@ -281,7 +290,6 @@ example_airplane_movement = (
     )
 )
 
-# Delete the extraneous pointers to the WingMovements.
 del main_wing_movement
 del reflected_main_wing_movement
 del v_tail_wing_movement
@@ -324,7 +332,7 @@ example_problem = ps.problems.AeroelasticUnsteadyProblem(
     wing_density=0.012,
     spring_constant=10.0,
     damping_constant=1.0,
-    aero_scaling=1.0,
+    aero_scaling=0.01,
     step_discards=5,
     moment_scaling_factor=1.0,
     plot_flap_cycle=False,

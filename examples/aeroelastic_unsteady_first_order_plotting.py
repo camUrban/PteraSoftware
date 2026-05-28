@@ -184,29 +184,32 @@ def run_aeroelastic(
             main_wcs_movements_list.append(wcs_movement)
             reflected_wcs_movements_list.append(wcs_movement)
 
-    v_tail_root_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    v_tail_root_wcs_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
+            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        )
     )
-    v_tail_tip_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-        base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
-        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-        phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-        ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+    v_tail_tip_wcs_movement = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
+            ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+            phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+        )
     )
-
     dephase = 169.0
 
     main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
@@ -237,22 +240,20 @@ def run_aeroelastic(
         )
     )
 
-    v_tail_wing_movement = (
-        ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-            base_wing=example_airplane.wings[2],
-            wing_cross_section_movements=[
-                v_tail_root_wcs_movement,
-                v_tail_tip_wcs_movement,
-            ],
-            ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            spacingLer_Gs_Cgs=("sine", "sine", "sine"),
-            phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-            periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-            spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-        )
+    v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=example_airplane.wings[2],
+        wing_cross_section_movements=[
+            v_tail_root_wcs_movement,
+            v_tail_tip_wcs_movement,
+        ],
+        ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        spacingLer_Gs_Cgs=("sine", "sine", "sine"),
+        phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+        phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
 
     example_airplane_movement = (
@@ -316,7 +317,7 @@ def run_aeroelastic(
     #     show_wake_vortices=True,
     #     save=True,
     # )
-    return problem.net_data, problem
+    return problem.net_data_per_wing[0], problem
 
 
 # Determine which parameter is being swept

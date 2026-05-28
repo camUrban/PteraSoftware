@@ -19,6 +19,7 @@ import numpy as np
 
 from .. import _core, _oscillation, geometry
 from . import aeroelastic_wing_movement as aeroelastic_wing_movement_mod
+from . import wing_movement as wing_movement_mod
 
 
 class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
@@ -53,7 +54,10 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
     def __init__(
         self,
         base_airplane: geometry.airplane.Airplane,
-        wing_movements: list[aeroelastic_wing_movement_mod.AeroelasticWingMovement],
+        wing_movements: list[
+            aeroelastic_wing_movement_mod.AeroelasticWingMovement
+            | wing_movement_mod.WingMovement
+        ],
         ampCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         periodCg_GP1_CgP1: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         spacingCg_GP1_CgP1: np.ndarray | Sequence[str | Callable[[float], float]] = (
@@ -67,9 +71,11 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
 
         :param base_airplane: The base Airplane from which the Airplane at each time
             step will be created.
-        :param wing_movements: A list of the AeroelasticWingMovements associated with
-            each of the base Airplane's Wings. It must have the same length as the base
-            Airplane's list of Wings.
+        :param wing_movements: A list of the wing movements associated with each of the
+            base Airplane's Wings. Each element must be either an
+            AeroelasticWingMovement (which will receive structural deformation at each
+            time step) or a WingMovement (which will be advanced without deformation).
+            The list must have the same length as the base Airplane's list of Wings.
         :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             AeroelasticAirplaneMovement's changes in its Airplanes' Cg_GP1_CgP1
@@ -109,17 +115,20 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             0.0).
         :return: None
         """
-        # Validate that every element is an AeroelasticWingMovement, not just a
-        # CoreWingMovement. CoreAirplaneMovement.__init__() validates at the Core
-        # level, but AeroelasticAirplaneMovement enforces the stricter type.
+        # Validate that every element is an AeroelasticWingMovement or a
+        # WingMovement. CoreAirplaneMovement.__init__() validates at the Core level,
+        # but AeroelasticAirplaneMovement enforces this stricter requirement.
         for wing_movement in wing_movements:
             if not isinstance(
                 wing_movement,
-                aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+                (
+                    aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+                    wing_movement_mod.WingMovement,
+                ),
             ):
                 raise TypeError(
                     "Every element in wing_movements must be an "
-                    "AeroelasticWingMovement."
+                    "AeroelasticWingMovement or a WingMovement."
                 )
 
         super().__init__(
@@ -135,9 +144,17 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
     @property
     def wing_movements(
         self,
-    ) -> tuple[aeroelastic_wing_movement_mod.AeroelasticWingMovement, ...]:
+    ) -> tuple[
+        aeroelastic_wing_movement_mod.AeroelasticWingMovement
+        | wing_movement_mod.WingMovement,
+        ...,
+    ]:
         return cast(
-            tuple[aeroelastic_wing_movement_mod.AeroelasticWingMovement, ...],
+            tuple[
+                aeroelastic_wing_movement_mod.AeroelasticWingMovement
+                | wing_movement_mod.WingMovement,
+                ...,
+            ],
             self._wing_movements,
         )
 
@@ -204,7 +221,8 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
         # Generate the Wings for this time step, threading deformation to
-        # each AeroelasticWingMovement child.
+        # each AeroelasticWingMovement child. WingMovement children are advanced
+        # without deformation.
         these_wings = []
         for i, wing_movement in enumerate(self.wing_movements):
             # Extract this Wing's deformation, or None.
@@ -212,13 +230,21 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             if wing_deformation_angles_ixyz is not None:
                 this_deformation = wing_deformation_angles_ixyz[i]
 
-            these_wings.append(
-                wing_movement.generate_wing_at_time_step(
-                    step,
-                    delta_time,
-                    deformation_angles_ixyz=this_deformation,
+            if isinstance(
+                wing_movement,
+                aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+            ):
+                these_wings.append(
+                    wing_movement.generate_wing_at_time_step(
+                        step,
+                        delta_time,
+                        deformation_angles_ixyz=this_deformation,
+                    )
                 )
-            )
+            else:
+                these_wings.append(
+                    wing_movement.generate_wing_at_time_step(step, delta_time)
+                )
 
         return geometry.airplane.Airplane(
             wings=these_wings,

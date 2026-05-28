@@ -962,7 +962,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             np.vstack(
                 (
                     zero_curve,
-                    np.array(self.per_step_aero_per_wing[wing_idx])[:, :, :, 2]
+                    np.array(self.per_step_aero_per_wing[wing_idx])[:, :, :, 1]
                     .sum(axis=1)
                     .T,
                 )
@@ -1020,7 +1020,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         omegas = np.zeros(num_spanwise_panels + 1)
         d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
         for span_panel in range(num_spanwise_panels):
-            aero_span_moment = np.sum(aero_moments[:, span_panel, 2])
+            aero_span_moment = np.sum(aero_moments[:, span_panel, 1])
             theta0: float = 0.0
             omega0: float = 0.0
             if span_panel != 0:

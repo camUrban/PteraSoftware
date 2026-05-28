@@ -332,10 +332,10 @@ example_problem = ps.problems.AeroelasticUnsteadyProblem(
     wing_density=0.012,
     spring_constant=10.0,
     damping_constant=1.0,
-    aero_scaling=0.01,
+    aero_scaling=1.0,
     step_discards=5,
     moment_scaling_factor=1.0,
-    plot_flap_cycle=False,
+    plot_flap_cycle=True,
     custom_spacing_second_derivative=None,
 )
 

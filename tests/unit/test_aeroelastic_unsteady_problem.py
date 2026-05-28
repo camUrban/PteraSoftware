@@ -267,15 +267,6 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             + 1
         )
         dummy_omegas = np.zeros_like(dummy_thetas)
-        dummy_spring = np.zeros(
-            (
-                self.problem.steady_problems[0]
-                .airplanes[0]
-                .wings[0]
-                .num_spanwise_panels,
-                3,
-            )
-        )
         dummy_deformation = np.zeros(
             (
                 self.problem.steady_problems[0]
@@ -297,7 +288,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             patch.object(
                 self.problem,
                 "calculate_spring_moments",
-                return_value=(dummy_thetas, dummy_omegas, dummy_spring),
+                return_value=(dummy_thetas, dummy_omegas),
             ),
             patch.object(
                 self.problem,

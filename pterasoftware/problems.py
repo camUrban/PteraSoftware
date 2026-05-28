@@ -372,8 +372,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     calculate_wing_deformation: Computes cumulative wing deformation for the current
     step.
 
-    calculate_spring_moments: Calculates spring-damper moments acting on each spanwise
-    section.
+    calculate_spring_moments: Solves the torsional spring-damper ODE for each spanwise
+    section, returning angular states.
 
     calculate_torsional_spring_moment: Solves the torsional spring-damper ODE for a
     single span section.
@@ -617,8 +617,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             num_panels,
         )
 
-        # Calculate spring moments and deformation via ODE integration
-        thetas, omegas, spring_moments = self.calculate_spring_moments(
+        # Calculate deformation via ODE integration
+        thetas, omegas = self.calculate_spring_moments(
             num_spanwise_panels=num_spanwise_panels,
             wing=wing,
             mass_matrix=mass_matrix,
@@ -634,7 +634,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             omegas=omegas,
             inertial_moments=inertial_moments,
             aeroMoments_GP1_Slep=aeroMoments_GP1_Slep,
-            spring_moments=spring_moments,
         )
 
         # Plot results at end of simulation if enabled
@@ -750,7 +749,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         omegas: np.ndarray,
         inertial_moments: np.ndarray,
         aeroMoments_GP1_Slep: np.ndarray,
-        spring_moments: np.ndarray,
     ) -> None:
         """Update internal moment and deformation state arrays.
 
@@ -765,7 +763,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             moments.
         :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero
             moments.
-        :param spring_moments: An (N_spanwise, 3) ndarray of spring-damper moments.
         :return: None
         """
         # Update angular velocity state
@@ -856,8 +853,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         mass_matrix: np.ndarray,
         aero_moments: np.ndarray,
         step: int,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Calculate spring-damper moments and angular states for each spanwise section.
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Solve the torsional spring-damper ODE for each spanwise section.
 
         Solves the torsional spring-damper ODE independently for each spanwise section,
         accounting for aerodynamic moments, inertial forces, and structural properties.
@@ -870,15 +867,13 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param aero_moments: An (N_chordwise, N_spanwise, 3) ndarray of aerodynamic
             moments from the aerodynamic solver.
         :param step: The current time step index.
-        :return: A tuple of three ndarrays: - thetas: (N_spanwise+1,) ndarray of
+        :return: A tuple of two ndarrays: - thetas: (N_spanwise+1,) ndarray of
             torsional angles (radians) at each station. - omegas: (N_spanwise+1,)
-            ndarray of angular velocities (rad/s) at each station. - spring_moments:
-            (N_spanwise, 3) ndarray of spring-damper moment vectors. **Notes:** The
+            ndarray of angular velocities (rad/s) at each station. **Notes:** The
             rotational inertia is computed as: I = (1/12)*M*(L^2 + W^2) + M*d^2, where M
             is panel mass, L is chord, W is span width, and d is distance from the
             flapping axis (computed cumulatively using the parallel axis theorem).
         """
-        spring_moments = np.zeros((num_spanwise_panels, 3))
         thetas = np.zeros(num_spanwise_panels + 1)
         omegas = np.zeros(num_spanwise_panels + 1)
         d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
@@ -904,7 +899,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             W: float = float(np.linalg.norm(wing.panels[0][span_panel].frontLeg_G))
             d += W / 2
             span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
-            theta, omega, moment = self.calculate_torsional_spring_moment(
+            theta, omega = self.calculate_torsional_spring_moment(
                 dt,
                 I=1 / 2 * mass * (L**2),
                 theta0=theta0,
@@ -916,9 +911,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             d += W / 2
             thetas[span_panel + 1] = theta
             omegas[span_panel + 1] = omega
-            spring_moments[span_panel] = np.array([0, moment, 0])
 
-        return thetas, omegas, spring_moments
+        return thetas, omegas
 
     def calculate_torsional_spring_moment(
         self,
@@ -930,14 +924,13 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         step: int,
         span_I: float,
         num_steps: int = 2,
-    ) -> tuple[float, float, float]:
+    ) -> tuple[float, float]:
         """Solve the torsional spring-damper ODE for a single wing section.
 
-        Integrates the forced torsional damped harmonic oscillator equation: I*d(omega)/dt =
-        tau_aero + tau_inertial - k*theta - c*omega
+        Integrates the forced torsional damped harmonic oscillator equation:
+        I*d(omega)/dt = tau_aero + tau_inertial - k*theta - c*omega
 
-        Returns the angular displacement and velocity at the end of the time step, along
-        with the spring-damper restoring moment.
+        Returns the angular displacement and velocity at the end of the time step.
 
         :param dt: The time step duration (seconds).
         :param I: The rotational inertia about the flapping axis (kg*m^2).
@@ -950,9 +943,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             This is the actual inertia used in the ODE solver.
         :param num_steps: Number of time sub-steps for numerical integration. The
             default is 2.
-        :return: A tuple of (theta, omega, spring_moment) where: - theta: Final
-            torsional angle (radians). - omega: Final angular velocity (rad/s). -
-            spring_moment: The z-component spring-damper moment tau = -k*theta - c*omega (N*m).
+        :return: A tuple of (theta, omega) where: - theta: Final torsional angle
+            (radians). - omega: Final angular velocity (rad/s).
         """
         k = self.spring_constant
         c = self.damping_constant
@@ -970,10 +962,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             self.generate_inertial_torque_function(span_I),
         )
 
-        # Internal spring-damper moment (restoring force from structural springs/dampers)
-        spring_moment = -k * theta - c * omega
-
-        return theta, omega, spring_moment
+        return theta, omega
 
     def generate_inertial_torque_function(self, span_I: float):
         """Generate the prescribed wing motion inertial torque function.

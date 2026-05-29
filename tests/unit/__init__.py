@@ -24,6 +24,9 @@ This package contains the following modules:
     test_aeroelastic_unsteady_ring_vortex_lattice_method.py: This module contains
     classes to test AeroelasticUnsteadyRingVortexLatticeMethodSolvers.
 
+    test_aeroelastic_wing_cross_section_movement.py: This module contains classes to
+    test AeroelasticWingCrossSectionMovements.
+
     test_aeroelastic_wing_movement.py: This module contains classes to test
     AeroelasticWingMovements.
 
@@ -108,6 +111,7 @@ import tests.unit.test_aeroelastic_airplane_movement
 import tests.unit.test_aeroelastic_operating_point_movement
 import tests.unit.test_aeroelastic_unsteady_problem
 import tests.unit.test_aeroelastic_unsteady_ring_vortex_lattice_method
+import tests.unit.test_aeroelastic_wing_cross_section_movement
 import tests.unit.test_aeroelastic_wing_movement
 import tests.unit.test_airfoil
 import tests.unit.test_airplane

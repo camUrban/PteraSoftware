@@ -195,8 +195,10 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
 
         :return: None
         """
-        problem = self.solver.unsteady_problem
-        self.assertIsInstance(problem, ps.problems.AeroelasticUnsteadyProblem)
+        self.assertIsInstance(
+            self.solver.unsteady_problem, ps.problems.AeroelasticUnsteadyProblem
+        )
+        problem = self.solver._aeroelastic_problem
         # initialize_next_problem is called for steps 1 through num_steps - 1.
         expected_net_data_length = 19  # num_steps - 1 = 20 - 1
         self.assertEqual(len(problem.net_data_per_wing[0]), expected_net_data_length)
@@ -242,8 +244,8 @@ class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
 
         :return: None
         """
-        low_density_problem = self.low_density_solver.unsteady_problem
-        high_density_problem = self.high_density_solver.unsteady_problem
+        low_density_problem = self.low_density_solver._aeroelastic_problem
+        high_density_problem = self.high_density_solver._aeroelastic_problem
 
         low_density_outermost_thetas = np.array(
             low_density_problem.net_data_per_wing[0]

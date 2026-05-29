@@ -39,6 +39,15 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             ps.problems.AeroelasticUnsteadyProblem,
         )
 
+    def test_aeroelastic_problem_property_narrows_unsteady_problem(self):
+        """Test that the _aeroelastic_problem property returns the same object as
+        unsteady_problem, narrowed to AeroelasticUnsteadyProblem."""
+        self.assertIs(self.solver._aeroelastic_problem, self.solver.unsteady_problem)
+        self.assertIsInstance(
+            self.solver._aeroelastic_problem,
+            ps.problems.AeroelasticUnsteadyProblem,
+        )
+
     def test_num_panels_positive(self):
         """Test that num_panels is a positive integer."""
         self.assertIsInstance(self.solver.num_panels, int)

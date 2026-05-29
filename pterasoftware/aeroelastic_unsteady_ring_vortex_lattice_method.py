@@ -15,6 +15,8 @@ None
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 
 from . import _functions, problems
@@ -109,6 +111,19 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         self.stackFlpp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self.stack_leading_edge_points: np.ndarray = np.empty(0, dtype=float)
+
+    @property
+    def _aeroelastic_problem(self) -> problems.AeroelasticUnsteadyProblem:
+        """The solver's AeroelasticUnsteadyProblem, narrowed from the inherited
+        unsteady_problem.
+
+        The inherited unsteady_problem slot is typed as the base CoreUnsteadyProblem so
+        the parent solver can hold any coupled problem. This solver's constructor only
+        accepts an AeroelasticUnsteadyProblem, so the cast here is safe.
+
+        :return: This solver's AeroelasticUnsteadyProblem.
+        """
+        return cast(problems.AeroelasticUnsteadyProblem, self.unsteady_problem)
 
     def _reinitialize_step_arrays_hook(self) -> None:
         """Reinitialize SLEP arrays at the start of each time step.

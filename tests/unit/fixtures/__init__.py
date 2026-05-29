@@ -18,6 +18,9 @@ This package contains the following modules:
     aeroelastic_wing_cross_section_movement_fixtures.py: This module contains functions
     to create AeroelasticWingCrossSectionMovements for use in tests.
 
+    aeroelastic_wing_movement_fixtures.py: This module contains functions to create
+    AeroelasticWingMovements for use in tests.
+
     airplane_movement_fixtures.py: This module contains functions to create
     AirplaneMovements for use in tests.
 
@@ -76,6 +79,7 @@ This package contains the following modules:
 import tests.unit.fixtures.aerodynamics_functions_fixtures
 import tests.unit.fixtures.aeroelastic_operating_point_movement_fixtures
 import tests.unit.fixtures.aeroelastic_wing_cross_section_movement_fixtures
+import tests.unit.fixtures.aeroelastic_wing_movement_fixtures
 import tests.unit.fixtures.airplane_movement_fixtures
 import tests.unit.fixtures.core_airplane_movement_fixtures
 import tests.unit.fixtures.core_movement_fixtures

@@ -342,12 +342,19 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
             _make_base_wing_and_wing_cross_section_movements()
         )
 
-    def _make_wing_movement(self, spacingAnglesSecondDerivative_Gs_to_Wn_ixyz):
-        """Construct an AeroelasticWingMovement with sine angular spacing and the given
-        second derivative argument.
+    def _make_wing_movement(
+        self,
+        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz,
+        spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    ):
+        """Construct an AeroelasticWingMovement with the given angular spacing and second
+        derivative arguments.
 
         :param spacingAnglesSecondDerivative_Gs_to_Wn_ixyz: The value to pass for the
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz parameter.
+        :param spacingAngles_Gs_to_Wn_ixyz: The value to pass for the
+            spacingAngles_Gs_to_Wn_ixyz parameter. The default is ("sine", "sine",
+            "sine").
         :return: The constructed AeroelasticWingMovement.
         """
         return ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
@@ -355,7 +362,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
             wing_cross_section_movements=self.wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-            spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+            spacingAngles_Gs_to_Wn_ixyz=spacingAngles_Gs_to_Wn_ixyz,
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=spacingAnglesSecondDerivative_Gs_to_Wn_ixyz,
         )
@@ -408,11 +415,15 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
         a tuple, and stored correctly.
         """
 
+        def custom_spacing(t):
+            return 0.0
+
         def deriv_func(t):
             return -1.0 * t
 
         aeroelastic_wing_movement = self._make_wing_movement(
-            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None]
+            spacingAngles_Gs_to_Wn_ixyz=(custom_spacing, "sine", "sine"),
+            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None],
         )
 
         result = aeroelastic_wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
@@ -452,6 +463,21 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
                 phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             )
 
+    def test_non_callable_spacing_with_derivative_raises(self):
+        """Test that a non-None spacingAnglesSecondDerivative_Gs_to_Wn_ixyz component
+        paired with a named (non callable) spacingAngles_Gs_to_Wn_ixyz component raises
+        ValueError.
+        """
+
+        def deriv_func(t):
+            return -1.0 * t
+
+        with self.assertRaises(ValueError):
+            self._make_wing_movement(
+                spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+                spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None],
+            )
+
 
 class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
     """This is a class with functions to test deep copying AeroelasticWingMovements."""
@@ -482,6 +508,9 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
             _make_base_wing_and_wing_cross_section_movements()
         )
 
+        def custom_spacing(t):
+            return 0.0
+
         def deriv_func(t):
             return -1.0 * t
 
@@ -491,7 +520,7 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-                spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+                spacingAngles_Gs_to_Wn_ixyz=(custom_spacing, "sine", "sine"),
                 phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
                 spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[deriv_func, None, None],
             )

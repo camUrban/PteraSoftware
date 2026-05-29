@@ -166,7 +166,11 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             and accept a float as input and return a float. The custom function is
             scaled by ampAngles_Gs_to_Wn_ixyz, shifted horizontally and vertically by
             phaseAngles_Gs_to_Wn_ixyz and the base value, with the period set by
-            periodAngles_Gs_to_Wn_ixyz. The default is ("sine", "sine", "sine").
+            periodAngles_Gs_to_Wn_ixyz. A component set to a custom callable must be
+            paired with a matching spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
+            component, and a "sine" or "uniform" component must not be; see that
+            parameter for the full pairing rule. The default is ("sine", "sine",
+            "sine").
         :param phaseAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
             with shape (3,) representing the phase offsets of the elements in the first
             time step's Wing's angles_Gs_to_Wn_ixyz parameter relative to the base
@@ -189,13 +193,16 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             compute the inertial torque from the prescribed flapping acceleration. Each
             element is either a callable that accepts a time (in seconds) and returns
             the second derivative (in radians per second squared, before amplitude
-            scaling), or None when the corresponding spacing component does not need
-            one. Under the current model only the x (flap) component is consulted. A
-            component whose spacing is a custom callable must have a non-None derivative
-            here; "sine" and "uniform" components do not (their derivatives are handled
-            analytically or rejected as non-differentiable when the torque is
-            generated). When None, no component has a custom derivative. The default is
-            None.
+            scaling), or None when the corresponding spacing component does not have
+            one. Under the current model only the x (flap) component is consulted. Each
+            component must agree with its matching spacingAngles_Gs_to_Wn_ixyz
+            component: a custom (callable) spacing must have a non-None derivative here,
+            and a "sine" or "uniform" spacing must have None here (their derivatives are
+            handled analytically or rejected as non-differentiable when the torque is
+            generated, so a supplied derivative would be ignored). Either mismatch
+            raises a ValueError. When None, every component is None, which is valid only
+            when no spacingAngles_Gs_to_Wn_ixyz component is a custom callable. The
+            default is None.
         :return: None
         """
         # Validate that every element is an AeroelasticWingCrossSectionMovement,
@@ -253,15 +260,26 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
                     )
             derivatives = tuple(spacingAnglesSecondDerivative_Gs_to_Wn_ixyz)
 
-        # A custom (callable) spacing has no analytical derivative the solver can take,
-        # so it must be paired with a second-derivative function for the inertial torque
-        # calculation. Reject the mismatch here rather than when the torque is generated.
+        # The second derivative is meaningful only for a custom (callable) spacing
+        # component, so the two must agree per component. A callable spacing has no
+        # analytical derivative the solver can take, so it must be paired with one. A
+        # named ("sine" or "uniform") spacing already has its derivative handled
+        # analytically or rejected as non-differentiable when the torque is generated,
+        # so a supplied derivative would be silently ignored. Reject either mismatch
+        # here rather than when the torque is generated.
         for i, spacing in enumerate(self.spacingAngles_Gs_to_Wn_ixyz):
-            if callable(spacing) and derivatives[i] is None:
+            spacing_is_callable = callable(spacing)
+            if spacing_is_callable and derivatives[i] is None:
                 raise ValueError(
                     "A custom (callable) spacingAngles_Gs_to_Wn_ixyz requires a "
                     "matching spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, but element "
                     f"{i} has a callable spacing with no derivative."
+                )
+            if not spacing_is_callable and derivatives[i] is not None:
+                raise ValueError(
+                    "A spacingAnglesSecondDerivative_Gs_to_Wn_ixyz may only be given "
+                    "for a custom (callable) spacingAngles_Gs_to_Wn_ixyz, but element "
+                    f"{i} has a '{spacing}' spacing with a derivative."
                 )
 
         self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz = derivatives

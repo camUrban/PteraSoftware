@@ -4,6 +4,7 @@ This document describes the consistent pattern of immutability and lazy caching 
 
 - `CoreUnsteadyProblem` / `UnsteadyProblem`
 - `_CoupledUnsteadyProblem`
+- `AeroelasticUnsteadyProblem`
 - `CoreMovement` / `Movement`
 - `CoreAirplaneMovement` / `AirplaneMovement`
 - `CoreWingMovement` / `WingMovement`
@@ -125,7 +126,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ## _CoupledUnsteadyProblem Class (`problems.py`)
 
-`_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (forthcoming `AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`) whose geometry at each time step depends on the solver's results from the previous step. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
+`_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem`, documented below, and the forthcoming `FreeFlightUnsteadyProblem`) whose geometry at each time step depends on the solver's results from the previous step. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
 
 All `CoreUnsteadyProblem` attributes (documented in the section above) are inherited unchanged. The additions are:
 
@@ -139,6 +140,49 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 | `steady_problems` | `tuple[SteadyProblem, ...]` | Read-only view of the `_steady_problems` backing list; returned tuple is frozen, but successive calls may return different-length tuples (see below) |
 
 **Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `_CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
+
+## AeroelasticUnsteadyProblem Class (`problems.py`)
+
+`AeroelasticUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with a torsional spring-mass-damper structural model so that each wing's deformation at a given time step is driven by the previous step's aerodynamic, inertial, and spring-restoring moments. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the structural configuration (set once at construction) and the per-wing structural state (populated as the solve advances).
+
+### Attribute Classification
+
+#### Immutable (set in `__init__`, never modified)
+
+Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
+
+| Attribute               | Type    | Backing Slot             | Notes                                                  |
+|-------------------------|---------|--------------------------|--------------------------------------------------------|
+| `wing_density`          | `float` | `_wing_density`          | Mass per unit span area (kg/m^2)                       |
+| `spring_constant`       | `float` | `_spring_constant`       | Torsional spring stiffness (N*m/rad)                   |
+| `damping_constant`      | `float` | `_damping_constant`      | Torsional damping coefficient (N*m*s/rad)              |
+| `aero_scaling`          | `float` | `_aero_scaling`          | Scaling factor applied to aerodynamic moments          |
+| `moment_scaling_factor` | `float` | `_moment_scaling_factor` | Scaling factor applied to deformation angles           |
+| `step_discards`         | `int`   | `_step_discards`         | Number of initial steps discarded for stability        |
+| `plot_flap_cycle`       | `bool`  | `_plot_flap_cycle`       | Whether to plot time histories at the end of the solve |
+
+#### Derived from Immutable (read-only property, no backing slot)
+
+| Property                | Depends On              | Notes                                                                                         |
+|-------------------------|-------------------------|-----------------------------------------------------------------------------------------------|
+| `_aeroelastic_movement` | `_movement`             | Typed-narrow cast of the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
+| `wing_movement`         | `_aeroelastic_movement` | The first airplane movement's first wing movement, cast to `AeroelasticWingMovement`          |
+
+#### Mutable (populated by solver)
+
+These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to or reassigned element-wise by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
+
+| Attribute                        | Type                     | Notes                                                  |
+|----------------------------------|--------------------------|--------------------------------------------------------|
+| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles, per wing        |
+| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state, per wing               |
+| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history, indexed `[wing][step]`  |
+| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history, indexed `[wing][step]`        |
+| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history, indexed `[wing][step]`     |
+| `net_data_per_wing`              | `list[list[np.ndarray]]` | Cumulative deformation snapshots, indexed `[wing][step]` |
+| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots, indexed `[wing][step]`     |
+| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets, indexed `[wing][step]`        |
+| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions, per wing          |
 
 ## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
 
@@ -560,4 +604,4 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 ## Solver Classes (Not Covered Above)
 
-The four solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingVortexLatticeMethodSolver`, `UnsteadyRingVortexLatticeMethodSolver`, and `CoupledUnsteadyRingVortexLatticeMethodSolver`) are intentionally omitted from the immutability and lazy caching patterns described in this document. Unlike the data and geometry classes above, the solver classes are algorithmic classes whose attributes are internal mutable working state in a procedural computation pipeline. They are not shared data that external code accesses or modifies, so immutable properties, set once enforcement, and lazy caching would add significant boilerplate with no meaningful safety benefit. The solver classes do still use `__slots__`, like all other classes in the package, to protect against dynamic attribute assignment typos.
+The five solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingVortexLatticeMethodSolver`, `UnsteadyRingVortexLatticeMethodSolver`, `CoupledUnsteadyRingVortexLatticeMethodSolver`, and `AeroelasticUnsteadyRingVortexLatticeMethodSolver`) are intentionally omitted from the immutability and lazy caching patterns described in this document. Unlike the data and geometry classes above, the solver classes are algorithmic classes whose attributes are internal mutable working state in a procedural computation pipeline. They are not shared data that external code accesses or modifies, so immutable properties, set once enforcement, and lazy caching would add significant boilerplate with no meaningful safety benefit. The solver classes do still use `__slots__`, like all other classes in the package, to protect against dynamic attribute assignment typos.

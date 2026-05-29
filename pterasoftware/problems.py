@@ -395,6 +395,25 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     ODE integration to produce structural deformations.
     """
 
+    __slots__ = (
+        "_wing_density",
+        "_spring_constant",
+        "_damping_constant",
+        "_aero_scaling",
+        "_step_discards",
+        "_moment_scaling_factor",
+        "_plot_flap_cycle",
+        "net_deformation_per_wing",
+        "angular_velocities_per_wing",
+        "positions_per_wing",
+        "per_step_inertial_per_wing",
+        "per_step_aero_per_wing",
+        "net_data_per_wing",
+        "angular_velocity_data_per_wing",
+        "flap_points_per_wing",
+        "base_wing_positions_per_wing",
+    )
+
     def __init__(
         self,
         movement: aeroelastic_movement_mod.AeroelasticMovement,
@@ -450,22 +469,17 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             initial_operating_point=movement.operating_points[0],
         )
 
-        # Store a typed reference for aeroelastic-specific operations.
-        self._aeroelastic_movement: aeroelastic_movement_mod.AeroelasticMovement = (
-            movement
-        )
-
-        self.plot_flap_cycle = plot_flap_cycle
+        self._plot_flap_cycle = plot_flap_cycle
 
         # Tunable Parameters
-        self.wing_density = wing_density  # per unit height kg/m^2
-        self.moment_scaling_factor = moment_scaling_factor
-        self.spring_constant = spring_constant
-        self.damping_constant = damping_constant
-        self.aero_scaling = aero_scaling
+        self._wing_density = wing_density  # per unit height kg/m^2
+        self._moment_scaling_factor = moment_scaling_factor
+        self._spring_constant = spring_constant
+        self._damping_constant = damping_constant
+        self._aero_scaling = aero_scaling
 
         # Permanent parameters
-        self.step_discards = (
+        self._step_discards = (
             step_discards  # number of initial steps to discard for numerical stability
         )
 
@@ -488,6 +502,18 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Initialize per-wing state now that we have the initial airplane geometry.
         self._initialize_per_wing_state(initial_airplane)
 
+    # --- Immutable: read only properties ---
+    @property
+    def _aeroelastic_movement(
+        self,
+    ) -> aeroelastic_movement_mod.AeroelasticMovement:
+        # The parent stores the movement as a CoreMovement in _movement. The constructor
+        # guarantees it is an AeroelasticMovement, so the cast here is safe.
+        return cast(
+            aeroelastic_movement_mod.AeroelasticMovement,
+            self._movement,
+        )
+
     @property
     def wing_movement(
         self,
@@ -497,6 +523,34 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             aeroelastic_wing_movement_mod.AeroelasticWingMovement,
             self._aeroelastic_movement.airplane_movements[0].wing_movements[0],
         )
+
+    @property
+    def wing_density(self) -> float:
+        return self._wing_density
+
+    @property
+    def spring_constant(self) -> float:
+        return self._spring_constant
+
+    @property
+    def damping_constant(self) -> float:
+        return self._damping_constant
+
+    @property
+    def aero_scaling(self) -> float:
+        return self._aero_scaling
+
+    @property
+    def moment_scaling_factor(self) -> float:
+        return self._moment_scaling_factor
+
+    @property
+    def step_discards(self) -> int:
+        return self._step_discards
+
+    @property
+    def plot_flap_cycle(self) -> bool:
+        return self._plot_flap_cycle
 
     def _initialize_per_wing_state(self, airplane: geometry.airplane.Airplane) -> None:
         """Allocate per-wing state arrays sized to the airplane geometry.

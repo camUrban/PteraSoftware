@@ -1661,3 +1661,154 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsNot(
             copied.current_operating_point, self.solver.current_operating_point
         )
+
+
+class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticUnsteadyProblem. Core-owned properties are tested at the
+    CoreUnsteadyProblem level; this class tests AeroelasticUnsteadyProblem-specific
+    slots, properties, and deepcopy.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticUnsteadyProblem slots tests."""
+        self.problem = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticUnsteadyProblem."""
+        self.assertTrue(hasattr(ps.problems.AeroelasticUnsteadyProblem, "__slots__"))
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticUnsteadyProblem instances have no __dict__."""
+        self.assertFalse(hasattr(self.problem, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.problem.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticUnsteadyProblem is a subclass of
+        _CoupledUnsteadyProblem.
+        """
+        self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
+
+    def test_config_property_access(self):
+        """Test that the immutable structural config properties are accessible."""
+        self.assertIsInstance(self.problem.wing_density, float)
+        self.assertIsInstance(self.problem.spring_constant, float)
+        self.assertIsInstance(self.problem.damping_constant, float)
+        self.assertIsInstance(self.problem.aero_scaling, float)
+        self.assertIsInstance(self.problem.moment_scaling_factor, float)
+        self.assertIsInstance(self.problem.step_discards, int)
+        self.assertIsInstance(self.problem.plot_flap_cycle, bool)
+
+    def test_movement_property_access(self):
+        """Test that the movement properties are accessible and correctly typed."""
+        self.assertIsInstance(
+            self.problem.movement,
+            ps.movements.aeroelastic_movement.AeroelasticMovement,
+        )
+        self.assertIsInstance(
+            self.problem._aeroelastic_movement,
+            ps.movements.aeroelastic_movement.AeroelasticMovement,
+        )
+        self.assertIsInstance(
+            self.problem.wing_movement,
+            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+        )
+        self.assertIsInstance(self.problem.steady_problems, tuple)
+
+    def test_mutable_state_access(self):
+        """Test that the mutable per-wing solver state lists are accessible."""
+        self.assertIsInstance(self.problem.net_deformation_per_wing, list)
+        self.assertIsInstance(self.problem.angular_velocities_per_wing, list)
+        self.assertIsInstance(self.problem.positions_per_wing, list)
+        self.assertIsInstance(self.problem.per_step_inertial_per_wing, list)
+        self.assertIsInstance(self.problem.per_step_aero_per_wing, list)
+        self.assertIsInstance(self.problem.net_data_per_wing, list)
+        self.assertIsInstance(self.problem.angular_velocity_data_per_wing, list)
+        self.assertIsInstance(self.problem.flap_points_per_wing, list)
+        self.assertIsInstance(self.problem.base_wing_positions_per_wing, list)
+
+    def test_deepcopy(self):
+        """Test that copy.deepcopy produces a correct independent copy."""
+        copied = copy.deepcopy(self.problem)
+
+        # Verify the copy is a separate instance.
+        self.assertIsNot(copied, self.problem)
+
+        # Verify config property values match.
+        self.assertEqual(copied.wing_density, self.problem.wing_density)
+        self.assertEqual(copied.spring_constant, self.problem.spring_constant)
+        self.assertEqual(copied.damping_constant, self.problem.damping_constant)
+
+        # Verify the movement is independent.
+        self.assertIsNot(copied.movement, self.problem.movement)
+
+
+class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticUnsteadyRingVortexLatticeMethodSolver
+        slots tests.
+        """
+        self.solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on
+        AeroelasticUnsteadyRingVortexLatticeMethodSolver.
+        """
+        self.assertTrue(
+            hasattr(
+                ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+                "__slots__",
+            )
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticUnsteadyRingVortexLatticeMethodSolver instances have no
+        __dict__.
+        """
+        self.assertFalse(hasattr(self.solver, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.solver.nonexistent_attribute = 42
+
+    def test_property_access(self):
+        """Test that the SLEP attributes remain accessible after adding __slots__."""
+        self.assertIsInstance(
+            self.solver.unsteady_problem,
+            ps.problems.AeroelasticUnsteadyProblem,
+        )
+        self.assertIsInstance(self.solver.slep_point_indices, np.ndarray)
+        self.assertIsInstance(self.solver.stackCblvpr_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stackCblvpf_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stackCblvpl_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stackCblvpb_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stackCpp_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stackFlpp_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver.stack_leading_edge_points, np.ndarray)
+
+    def test_deepcopy(self):
+        """Test that copy.deepcopy produces a correct independent copy."""
+        copied = copy.deepcopy(self.solver)
+
+        # Verify the copy is a separate instance.
+        self.assertIsNot(copied, self.solver)
+
+        # Verify objects are independent.
+        self.assertIsNot(copied.unsteady_problem, self.solver.unsteady_problem)
+
+        # Verify SLEP index values match.
+        npt.assert_array_equal(
+            copied.slep_point_indices, self.solver.slep_point_indices
+        )

@@ -10,9 +10,11 @@ from . import (
 )
 
 
-def make_basic_aeroelastic_unsteady_problem_fixture():
+def make_basic_aeroelastic_unsteady_problem_fixture(plot_flap_cycle=False):
     """This method makes a fixture that is an AeroelasticUnsteadyProblem for testing.
 
+    :param plot_flap_cycle: If True, the returned problem plots time histories at the
+        end of the simulation. The default is False.
     :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem
         This is the AeroelasticUnsteadyProblem configured for general testing.
     """
@@ -25,6 +27,7 @@ def make_basic_aeroelastic_unsteady_problem_fixture():
         wing_density=0.01,
         spring_constant=10.0,
         damping_constant=0.5,
+        plot_flap_cycle=plot_flap_cycle,
     )
 
     return basic_aeroelastic_unsteady_problem_fixture

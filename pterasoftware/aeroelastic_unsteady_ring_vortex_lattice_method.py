@@ -40,6 +40,18 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     bound vortex positions relative to strip leading edge points.
     """
 
+    __slots__ = (
+        "slep_point_indices",
+        "stackCblvpr_GP1_Slep",
+        "stackCblvpf_GP1_Slep",
+        "stackCblvpl_GP1_Slep",
+        "stackCblvpb_GP1_Slep",
+        "stackCpp_GP1_Slep",
+        "stackFlpp_GP1_CgP1",
+        "moments_GP1_Slep",
+        "stack_leading_edge_points",
+    )
+
     def __init__(
         self,
         aeroelastic_unsteady_problem: problems.AeroelasticUnsteadyProblem,

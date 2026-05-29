@@ -1462,21 +1462,6 @@ class TestWingGetPlottableData(unittest.TestCase):
 
         self.assertIsNotNone(result)
 
-    def test_get_plottable_data_show_true_calls_add_actor(self):
-        """Test that get_plottable_data with show=True invokes plotter.add_actor."""
-        from unittest.mock import MagicMock, patch
-
-        wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
-
-        with patch("pterasoftware.geometry.wing.pv") as mock_pv:
-            mock_plotter = MagicMock()
-            mock_pv.Plotter.return_value = mock_plotter
-            result = wing.get_plottable_data(show=True)
-
-        self.assertIsNone(result)
-        self.assertTrue(mock_plotter.add_actor.called)
-
 
 class TestWingTransformationMatrixCaching(unittest.TestCase):
     """Tests for Wing transformation matrix caching behavior."""

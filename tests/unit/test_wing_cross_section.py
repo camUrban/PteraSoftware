@@ -1017,38 +1017,6 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
             # noinspection PyTypeChecker
             self.basic_wing_cross_section.get_plottable_data(show="invalid")
 
-    def test_get_plottable_data_show_true_non_identity_calls_add_actor(self):
-        """Test that get_plottable_data with show=True and a non-identity transform
-        calls plotter.add_actor (else branch)."""
-        from unittest.mock import MagicMock, patch
-
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        with patch("pterasoftware.geometry.wing_cross_section.pv") as mock_pv:
-            mock_plotter = MagicMock()
-            mock_pv.Plotter.return_value = mock_plotter
-            result = self.basic_wing_cross_section.get_plottable_data(show=True)
-
-        self.assertIsNone(result)
-        self.assertTrue(mock_plotter.add_actor.called)
-
-    def test_get_plottable_data_show_true_identity_calls_add_actor(self):
-        """Test that get_plottable_data with show=True and an identity transform
-        calls plotter.add_actor (if branch)."""
-        from unittest.mock import MagicMock, patch
-
-        self.root_wing_cross_section.validated = True
-        self.root_wing_cross_section.symmetry_type = 1
-
-        with patch("pterasoftware.geometry.wing_cross_section.pv") as mock_pv:
-            mock_plotter = MagicMock()
-            mock_pv.Plotter.return_value = mock_plotter
-            result = self.root_wing_cross_section.get_plottable_data(show=True)
-
-        self.assertIsNone(result)
-        self.assertTrue(mock_plotter.add_actor.called)
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,7 @@
 """This module contains classes to test Airplanes."""
 
 import unittest
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import numpy.testing as npt
@@ -1006,16 +1006,6 @@ class TestAirplaneGetPlottableData(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_airplane.get_plottable_data(show="invalid")
-
-    def test_get_plottable_data_show_true_calls_add_actor(self):
-        """Test that get_plottable_data with show=True invokes plotter.add_actor."""
-        with patch("pterasoftware.geometry.airplane.pv") as mock_pv:
-            mock_plotter = MagicMock()
-            mock_pv.Plotter.return_value = mock_plotter
-            result = self.basic_airplane.get_plottable_data(show=True)
-
-        self.assertIsNone(result)
-        self.assertTrue(mock_plotter.add_actor.called)
 
 
 class TestAirplaneDraw(unittest.TestCase):

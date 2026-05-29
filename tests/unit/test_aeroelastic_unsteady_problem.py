@@ -182,26 +182,6 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.problem.generate_inertial_torque_function(span_I=1.0)
 
-    def test_aeroelastic_wing_movement_callable_spacing_no_derivative_raises(self):
-        """Test that AeroelasticWingMovement raises ValueError when a spacing component
-        is a custom callable but no matching second derivative is provided."""
-        base_wing = self.problem.wing_movement.base_wing
-        wcs_movements = [
-            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-                base_wing_cross_section=wcs
-            )
-            for wcs in base_wing.wing_cross_sections
-        ]
-        with self.assertRaises(ValueError):
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
-                base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
-                ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
-                periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-                spacingAngles_Gs_to_Wn_ixyz=(lambda t: np.sin(t), "sine", "sine"),
-                phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-            )
-
     def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
         """Test that generate_inertial_torque_function uses the wing movement's second
         derivative when the spacing is a custom callable."""

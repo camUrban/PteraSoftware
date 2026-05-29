@@ -12,6 +12,18 @@ This package contains the following modules:
     test_aerodynamics_functions.py: This module contains a class to test aerodynamics
     functions.
 
+    test_aeroelastic_airplane_movement.py: This module contains classes to test
+    AeroelasticAirplaneMovements.
+
+    test_aeroelastic_unsteady_problem.py: This module contains classes to test
+    AeroelasticUnsteadyProblems.
+
+    test_aeroelastic_unsteady_ring_vortex_lattice_method.py: This module contains
+    classes to test AeroelasticUnsteadyRingVortexLatticeMethodSolvers.
+
+    test_aeroelastic_wing_movement.py: This module contains classes to test
+    AeroelasticWingMovements.
+
     test_airfoil.py: This module contains classes to test Airfoils.
 
     test_airplane.py: This module contains classes to test Airplanes.
@@ -89,6 +101,10 @@ This package contains the following modules:
 """
 
 import tests.unit.test_aerodynamics_functions
+import tests.unit.test_aeroelastic_airplane_movement
+import tests.unit.test_aeroelastic_unsteady_problem
+import tests.unit.test_aeroelastic_unsteady_ring_vortex_lattice_method
+import tests.unit.test_aeroelastic_wing_movement
 import tests.unit.test_airfoil
 import tests.unit.test_airplane
 import tests.unit.test_airplane_movement

@@ -9,6 +9,19 @@ import pterasoftware as ps
 class TestLazyModuleImports(unittest.TestCase):
     """Tests for lazy module imports via __getattr__."""
 
+    def test_lazy_module_import_aeroelastic_unsteady_ring(self):
+        """Accessing aeroelastic_unsteady_ring_vortex_lattice_method module should
+        trigger lazy import.
+
+        :return: None
+        """
+        module = ps.aeroelastic_unsteady_ring_vortex_lattice_method
+        self.assertIsNotNone(module)
+        self.assertEqual(
+            module.__name__,
+            "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method",
+        )
+
     def test_lazy_module_import_convergence(self):
         """Accessing convergence module should trigger lazy import.
 

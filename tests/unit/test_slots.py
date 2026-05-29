@@ -13,6 +13,10 @@ from pterasoftware import _core, _panel
 
 # noinspection PyProtectedMember
 from tests.unit.fixtures import (
+    aeroelastic_airplane_movement_fixtures,
+    aeroelastic_operating_point_movement_fixtures,
+    aeroelastic_wing_cross_section_movement_fixtures,
+    aeroelastic_wing_movement_fixtures,
     airplane_movement_fixtures,
     core_airplane_movement_fixtures,
     core_movement_fixtures,
@@ -1660,6 +1664,228 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsNot(copied.unsteady_problem, self.solver.unsteady_problem)
         self.assertIsNot(
             copied.current_operating_point, self.solver.current_operating_point
+        )
+
+
+class TestAeroelasticOperatingPointMovementSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticOperatingPointMovement. All property and deepcopy behavior is tested at
+    the CoreOperatingPointMovement level. This class verifies that the public subclass
+    preserves __slots__ enforcement.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticOperatingPointMovement slots tests."""
+        self.aopm = (
+            aeroelastic_operating_point_movement_fixtures.make_sine_spacing_aeroelastic_operating_point_movement_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticOperatingPointMovement."""
+        self.assertTrue(
+            hasattr(
+                ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement,
+                "__slots__",
+            )
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticOperatingPointMovement instances have no __dict__."""
+        self.assertFalse(hasattr(self.aopm, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.aopm.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticOperatingPointMovement is a subclass of
+        CoreOperatingPointMovement.
+        """
+        self.assertIsInstance(self.aopm, _core.CoreOperatingPointMovement)
+
+
+class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticWingCrossSectionMovement. All property and deepcopy behavior is tested at
+    the CoreWingCrossSectionMovement level. This class verifies that the public subclass
+    preserves __slots__ enforcement.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticWingCrossSectionMovement slots tests."""
+        self.awcsm = (
+            aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticWingCrossSectionMovement."""
+        self.assertTrue(
+            hasattr(
+                ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement,
+                "__slots__",
+            )
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticWingCrossSectionMovement instances have no __dict__."""
+        self.assertFalse(hasattr(self.awcsm, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.awcsm.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticWingCrossSectionMovement is a subclass of
+        CoreWingCrossSectionMovement.
+        """
+        self.assertIsInstance(self.awcsm, _core.CoreWingCrossSectionMovement)
+
+
+class TestAeroelasticWingMovementSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticWingMovement. The second-derivative slot's property and deepcopy behavior
+    is tested in test_aeroelastic_wing_movement.py, and Core-owned behavior at the
+    CoreWingMovement level. This class verifies that the public subclass preserves
+    __slots__ enforcement.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticWingMovement slots tests."""
+        self.aeroelastic_wing_movement = (
+            aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticWingMovement."""
+        self.assertTrue(
+            hasattr(
+                ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
+                "__slots__",
+            )
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticWingMovement instances have no __dict__."""
+        self.assertFalse(hasattr(self.aeroelastic_wing_movement, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.aeroelastic_wing_movement.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticWingMovement is a subclass of CoreWingMovement."""
+        self.assertIsInstance(self.aeroelastic_wing_movement, _core.CoreWingMovement)
+
+
+class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on
+    AeroelasticAirplaneMovement. All property and deepcopy behavior is tested at the
+    CoreAirplaneMovement level. This class verifies that the public subclass preserves
+    __slots__ enforcement.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticAirplaneMovement slots tests."""
+        self.aeroelastic_airplane_movement = (
+            aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticAirplaneMovement."""
+        self.assertTrue(
+            hasattr(
+                ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
+                "__slots__",
+            )
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticAirplaneMovement instances have no __dict__."""
+        self.assertFalse(hasattr(self.aeroelastic_airplane_movement, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.aeroelastic_airplane_movement.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticAirplaneMovement is a subclass of
+        CoreAirplaneMovement.
+        """
+        self.assertIsInstance(
+            self.aeroelastic_airplane_movement, _core.CoreAirplaneMovement
+        )
+
+
+class TestAeroelasticMovementSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on AeroelasticMovement.
+    Core-owned properties are tested at the CoreMovement level. This class tests
+    AeroelasticMovement-specific slots and deepcopy.
+    """
+
+    def setUp(self):
+        """Set up test fixtures for AeroelasticMovement slots tests."""
+        self.aeroelastic_movement = (
+            movement_fixtures.make_basic_aeroelastic_movement_fixture()
+        )
+
+    def test_slots_defined(self):
+        """Test that __slots__ is defined on AeroelasticMovement."""
+        self.assertTrue(
+            hasattr(ps.movements.aeroelastic_movement.AeroelasticMovement, "__slots__")
+        )
+
+    def test_no_instance_dict(self):
+        """Test that AeroelasticMovement instances have no __dict__."""
+        self.assertFalse(hasattr(self.aeroelastic_movement, "__dict__"))
+
+    def test_dynamic_attribute_raises(self):
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            self.aeroelastic_movement.nonexistent_attribute = 42
+
+    def test_subclass(self):
+        """Test that AeroelasticMovement is a subclass of CoreMovement."""
+        self.assertIsInstance(self.aeroelastic_movement, _core.CoreMovement)
+
+    def test_property_access(self):
+        """Test that AeroelasticMovement-specific properties are accessible.
+
+        AeroelasticMovement pre generates OperatingPoints but not Airplanes, so it
+        exposes operating_points but no airplanes property.
+        """
+        self.assertIsInstance(self.aeroelastic_movement.operating_points, tuple)
+        self.assertEqual(
+            len(self.aeroelastic_movement.operating_points),
+            self.aeroelastic_movement.num_steps,
+        )
+
+    def test_deepcopy(self):
+        """Test that copy.deepcopy produces a correct independent copy."""
+        copied = copy.deepcopy(self.aeroelastic_movement)
+
+        # Verify the copy is a separate instance.
+        self.assertIsNot(copied, self.aeroelastic_movement)
+
+        # Verify AeroelasticMovement-specific property values match.
+        self.assertEqual(
+            len(copied.operating_points),
+            len(self.aeroelastic_movement.operating_points),
+        )
+
+        # Verify AeroelasticAirplaneMovements are independent.
+        self.assertIsNot(
+            copied.airplane_movements[0],
+            self.aeroelastic_movement.airplane_movements[0],
+        )
+
+        # Verify the AeroelasticOperatingPointMovement is independent.
+        self.assertIsNot(
+            copied.operating_point_movement,
+            self.aeroelastic_movement.operating_point_movement,
         )
 
 

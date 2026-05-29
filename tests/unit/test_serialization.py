@@ -29,12 +29,26 @@ from pterasoftware._serialization import (
     load,
     save,
 )
+from pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method import (
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+)
 
 # noinspection PyProtectedMember
 from pterasoftware.geometry.airfoil import Airfoil
 from pterasoftware.geometry.airplane import Airplane
 from pterasoftware.geometry.wing import Wing
 from pterasoftware.geometry.wing_cross_section import WingCrossSection
+from pterasoftware.movements.aeroelastic_airplane_movement import (
+    AeroelasticAirplaneMovement,
+)
+from pterasoftware.movements.aeroelastic_movement import AeroelasticMovement
+from pterasoftware.movements.aeroelastic_operating_point_movement import (
+    AeroelasticOperatingPointMovement,
+)
+from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
+    AeroelasticWingCrossSectionMovement,
+)
+from pterasoftware.movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from pterasoftware.movements.airplane_movement import AirplaneMovement
 from pterasoftware.movements.movement import Movement
 from pterasoftware.movements.operating_point_movement import OperatingPointMovement
@@ -43,7 +57,11 @@ from pterasoftware.movements.wing_cross_section_movement import (
 )
 from pterasoftware.movements.wing_movement import WingMovement
 from pterasoftware.operating_point import OperatingPoint
-from pterasoftware.problems import SteadyProblem, UnsteadyProblem
+from pterasoftware.problems import (
+    AeroelasticUnsteadyProblem,
+    SteadyProblem,
+    UnsteadyProblem,
+)
 from pterasoftware.steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
@@ -53,7 +71,11 @@ from pterasoftware.steady_ring_vortex_lattice_method import (
 from pterasoftware.unsteady_ring_vortex_lattice_method import (
     UnsteadyRingVortexLatticeMethodSolver,
 )
-from tests.unit.fixtures import serialization_fixtures
+from tests.unit.fixtures import (
+    problem_fixtures,
+    serialization_fixtures,
+    solver_fixtures,
+)
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
@@ -1722,4 +1744,212 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
             save(path, solver)
             result = load(path)
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
+        self.assertTrue(result.ran)
+
+
+class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
+    """This class contains methods for testing aeroelastic movement class
+    serialization round trips.
+    """
+
+    def setUp(self):
+        """Build a shared AeroelasticUnsteadyProblem to source the movement graph.
+
+        :return: None
+        """
+        self.problem = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+
+    def test_aeroelastic_movement(self):
+        """Tests that an AeroelasticMovement survives a full round trip.
+
+        :return: None
+        """
+        movement = self.problem.movement
+        result = _deserialize_value(_serialize_value(movement))
+        assert isinstance(result, AeroelasticMovement)
+        self.assertEqual(len(result.operating_points), len(movement.operating_points))
+
+    def test_aeroelastic_airplane_movement(self):
+        """Tests that an AeroelasticAirplaneMovement survives a full round trip.
+
+        :return: None
+        """
+        airplane_movement = self.problem.movement.airplane_movements[0]
+        result = _deserialize_value(_serialize_value(airplane_movement))
+        assert isinstance(result, AeroelasticAirplaneMovement)
+        self.assertEqual(
+            result.base_airplane.name, airplane_movement.base_airplane.name
+        )
+
+    def test_aeroelastic_wing_movement(self):
+        """Tests that an AeroelasticWingMovement survives a full round trip, including
+        its all-None second-derivative companion.
+
+        :return: None
+        """
+        wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
+        result = _deserialize_value(_serialize_value(wing_movement))
+        assert isinstance(result, AeroelasticWingMovement)
+        self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
+        self.assertEqual(
+            result.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz,
+            wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz,
+        )
+
+    def test_aeroelastic_wing_cross_section_movement(self):
+        """Tests that an AeroelasticWingCrossSectionMovement survives a full round
+        trip.
+
+        :return: None
+        """
+        wing_cross_section_movement = (
+            self.problem.movement.airplane_movements[0]
+            .wing_movements[0]
+            .wing_cross_section_movements[0]
+        )
+        result = _deserialize_value(_serialize_value(wing_cross_section_movement))
+        assert isinstance(result, AeroelasticWingCrossSectionMovement)
+
+    def test_aeroelastic_operating_point_movement(self):
+        """Tests that an AeroelasticOperatingPointMovement survives a full round trip.
+
+        :return: None
+        """
+        operating_point_movement = self.problem.movement.operating_point_movement
+        result = _deserialize_value(_serialize_value(operating_point_movement))
+        assert isinstance(result, AeroelasticOperatingPointMovement)
+
+    def test_custom_callable_spacing_is_not_serializable(self):
+        """Tests that an AeroelasticWingMovement with a custom callable angular spacing
+        raises on serialization, matching the standard movement-class behavior.
+
+        :return: None
+        """
+        wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
+        custom_wing_movement = AeroelasticWingMovement(
+            base_wing=wing_movement.base_wing,
+            wing_cross_section_movements=list(
+                wing_movement.wing_cross_section_movements
+            ),
+            ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+            spacingAngles_Gs_to_Wn_ixyz=(lambda time: 0.0, "sine", "sine"),
+            phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[lambda time: 0.0, None, None],
+        )
+        with self.assertRaises(ValueError):
+            _serialize_value(custom_wing_movement)
+
+
+class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
+    """This class contains methods for testing AeroelasticUnsteadyProblem
+    serialization round trips.
+    """
+
+    def test_round_trip(self):
+        """Tests that an AeroelasticUnsteadyProblem survives a full round trip.
+
+        :return: None
+        """
+        problem = problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        result = _deserialize_value(_serialize_value(problem))
+        assert isinstance(result, AeroelasticUnsteadyProblem)
+        self.assertEqual(result.num_steps, problem.num_steps)
+        self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
+        self.assertEqual(result.wing_density, problem.wing_density)
+        self.assertEqual(result.spring_constant, problem.spring_constant)
+        self.assertEqual(result.damping_constant, problem.damping_constant)
+        self.assertEqual(result.step_discards, problem.step_discards)
+
+    def test_save_load_round_trip(self):
+        """Tests that an AeroelasticUnsteadyProblem survives a save/load round trip.
+
+        :return: None
+        """
+        problem = problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "aeroelastic.json"
+            save(path, problem)
+            result = load(path)
+        assert isinstance(result, AeroelasticUnsteadyProblem)
+        self.assertEqual(result.num_steps, problem.num_steps)
+
+
+class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
+    """This class contains methods for testing
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver serialization round trips.
+    """
+
+    def test_pre_run_round_trip(self):
+        """Tests that a pre run aeroelastic solver survives round trip.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        result = _deserialize_value(_serialize_value(solver))
+        assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+        self.assertFalse(result.ran)
+
+    def test_solved_round_trip(self):
+        """Tests that a solved aeroelastic solver survives a full round trip.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        solver.run()
+        result = _deserialize_value(_serialize_value(solver))
+        assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+        self.assertTrue(result.ran)
+        self.assertEqual(result.num_steps, solver.num_steps)
+
+    def test_shared_reference_identity(self):
+        """Tests that the solver's reconstructed steady problems are the same objects
+        as those reachable through its AeroelasticUnsteadyProblem after round trip.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        solver.run()
+        result = _deserialize_value(_serialize_value(solver))
+        assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+        for reconstructed, problem_side in zip(
+            result.steady_problems, result.unsteady_problem.steady_problems
+        ):
+            self.assertIs(reconstructed, problem_side)
+
+    def test_per_wing_state_round_trip(self):
+        """Tests that the AeroelasticUnsteadyProblem's per-wing deformation state
+        survives the solver round trip.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        solver.run()
+        result = _deserialize_value(_serialize_value(solver))
+        assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+        original = solver.unsteady_problem
+        reconstructed = result.unsteady_problem
+        self.assertEqual(
+            len(reconstructed.net_deformation_per_wing),
+            len(original.net_deformation_per_wing),
+        )
+        npt.assert_array_equal(
+            reconstructed.net_deformation_per_wing[0],
+            original.net_deformation_per_wing[0],
+        )
+
+    def test_save_load_round_trip(self):
+        """Tests that a solved aeroelastic solver survives a save/load round trip.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        solver.run()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "aeroelastic_solver.json"
+            save(path, solver)
+            result = load(path)
+        assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         self.assertTrue(result.ran)

@@ -23,17 +23,29 @@ from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
 from ._panel import Panel
 
 # noinspection PyProtectedMember
+from .aeroelastic_unsteady_ring_vortex_lattice_method import (
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver,
+)
 from .geometry.airfoil import Airfoil
 from .geometry.airplane import Airplane
 from .geometry.wing import Wing
 from .geometry.wing_cross_section import WingCrossSection
+from .movements.aeroelastic_airplane_movement import AeroelasticAirplaneMovement
+from .movements.aeroelastic_movement import AeroelasticMovement
+from .movements.aeroelastic_operating_point_movement import (
+    AeroelasticOperatingPointMovement,
+)
+from .movements.aeroelastic_wing_cross_section_movement import (
+    AeroelasticWingCrossSectionMovement,
+)
+from .movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from .movements.airplane_movement import AirplaneMovement
 from .movements.movement import Movement
 from .movements.operating_point_movement import OperatingPointMovement
 from .movements.wing_cross_section_movement import WingCrossSectionMovement
 from .movements.wing_movement import WingMovement
 from .operating_point import OperatingPoint
-from .problems import SteadyProblem, UnsteadyProblem
+from .problems import AeroelasticUnsteadyProblem, SteadyProblem, UnsteadyProblem
 from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
 )
@@ -53,7 +65,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 3
+_FORMAT_VERSION = 4
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -96,6 +108,13 @@ _CLASS_REGISTRY: dict[str, type] = {
     "OperatingPointMovement": OperatingPointMovement,
     "UnsteadyProblem": UnsteadyProblem,
     "UnsteadyRingVortexLatticeMethodSolver": UnsteadyRingVortexLatticeMethodSolver,
+    "AeroelasticMovement": AeroelasticMovement,
+    "AeroelasticAirplaneMovement": AeroelasticAirplaneMovement,
+    "AeroelasticWingMovement": AeroelasticWingMovement,
+    "AeroelasticWingCrossSectionMovement": AeroelasticWingCrossSectionMovement,
+    "AeroelasticOperatingPointMovement": AeroelasticOperatingPointMovement,
+    "AeroelasticUnsteadyProblem": AeroelasticUnsteadyProblem,
+    "AeroelasticUnsteadyRingVortexLatticeMethodSolver": AeroelasticUnsteadyRingVortexLatticeMethodSolver,
 }
 
 # Classes that can be saved and loaded as top level objects via save() and load().
@@ -119,6 +138,13 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
         "OperatingPointMovement",
         "UnsteadyProblem",
         "UnsteadyRingVortexLatticeMethodSolver",
+        "AeroelasticMovement",
+        "AeroelasticAirplaneMovement",
+        "AeroelasticWingMovement",
+        "AeroelasticWingCrossSectionMovement",
+        "AeroelasticOperatingPointMovement",
+        "AeroelasticUnsteadyProblem",
+        "AeroelasticUnsteadyRingVortexLatticeMethodSolver",
     }
 )
 

@@ -23,7 +23,7 @@ wing_cross_sections = []
 # is always None). This is because we deform each strip of wing cross section independently by
 # modeling them as torsional springs, and that model only really works if those strips are thin.
 # Note that if you want to go thinner for the same base definition, you can increase the number
-# of spanwise panels and ensure that in Wing you set the single_step_wing parameter to True,
+# of spanwise panels and ensure that in Wing you set the explode_into_strips parameter to True,
 # which will ensure that the wing is split back up into single strips for deformation.
 for i in range(len(cross_section_chords)):
     wing_cross_sections.append(
@@ -47,7 +47,7 @@ for i in range(len(cross_section_chords)):
         )
     )
 
-# Primary wing definition. Note that the single_step_wing parameter is set to True,
+# Primary wing definition. Note that the explode_into_strips parameter is set to True,
 # which means that the wing will be split into strips for deformation, and each
 # strip will be modeled as a torsional spring.
 wing_1 = ps.geometry.wing.Wing(
@@ -59,7 +59,7 @@ wing_1 = ps.geometry.wing.Wing(
     mirror_only=False,
     symmetryNormal_G=(0.0, 1.0, 0.0),
     symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-    single_step_wing=True,
+    explode_into_strips=True,
     num_chordwise_panels=6,
     chordwise_spacing="uniform",
 )
@@ -115,7 +115,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-            single_step_wing=False,
+            explode_into_strips=False,
             num_chordwise_panels=6,
             chordwise_spacing="uniform",
         ),

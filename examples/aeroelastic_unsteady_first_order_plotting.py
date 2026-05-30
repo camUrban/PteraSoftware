@@ -75,7 +75,7 @@ def run_aeroelastic(
         mirror_only=False,
         symmetryNormal_G=(0.0, 1.0, 0.0),
         symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-        single_step_wing=True,
+        explode_into_strips=True,
         num_chordwise_panels=6,
         chordwise_spacing="uniform",
     )
@@ -125,7 +125,7 @@ def run_aeroelastic(
                 mirror_only=False,
                 symmetryNormal_G=(0.0, 1.0, 0.0),
                 symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-                single_step_wing=False,
+                explode_into_strips=False,
                 num_chordwise_panels=6,
                 chordwise_spacing="uniform",
             ),

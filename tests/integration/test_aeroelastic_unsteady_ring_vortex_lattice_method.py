@@ -94,7 +94,7 @@ def _make_aeroelastic_solver(
         mirror_only=False,
         symmetryNormal_G=(0.0, 1.0, 0.0),
         symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-        single_step_wing=False,
+        explode_into_strips=False,
         num_chordwise_panels=2,
         chordwise_spacing="uniform",
     )

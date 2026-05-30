@@ -42,7 +42,7 @@ def make_basic_aeroelastic_movement_fixture():
         angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
-        single_step_wing=False,
+        explode_into_strips=False,
         num_chordwise_panels=2,
         chordwise_spacing="uniform",
     )
@@ -275,7 +275,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture():
         angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
         symmetric=False,
         mirror_only=False,
-        single_step_wing=False,
+        explode_into_strips=False,
         num_chordwise_panels=2,
         chordwise_spacing="uniform",
     )

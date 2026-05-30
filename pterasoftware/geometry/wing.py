@@ -153,7 +153,6 @@ class Wing:
         "mirror_only",
         "symmetryNormal_G",
         "symmetryPoint_G_Cg",
-        "single_step_wing",
         # Set once
         "_symmetry_type",
         "_num_spanwise_panels",
@@ -190,7 +189,7 @@ class Wing:
         mirror_only: bool | np.bool_ = False,
         symmetryNormal_G: None | np.ndarray | Sequence[float | int] = None,
         symmetryPoint_G_Cg: None | np.ndarray | Sequence[float | int] = None,
-        single_step_wing: bool | np.bool_ = False,
+        explode_into_strips: bool | np.bool_ = False,
         num_chordwise_panels: int = 8,
         chordwise_spacing: str = "cosine",
     ) -> None:
@@ -251,13 +250,14 @@ class Wing:
             either are True. For more details on how this parameter interacts with
             symmetryNormal_G, symmetric, and mirror_only, see the class docstring. The
             units are meters. The default is None.
-        :param single_step_wing: Set this to True to have the explode_wing method called
-            on this Wing during initialization, which will return a NEW Wing where all
-            panels are broken into single strips for deformation. When True, every non
-            tip WingCrossSection in wing_cross_sections must have
-            spanwise_spacing="uniform"; the explosion assumes uniformly spaced
-            intermediates and rejects other spacings rather than silently overriding
-            them.
+        :param explode_into_strips: Set this to True to have the explode_wing method
+            called on this Wing during initialization, replacing wing_cross_sections
+            with a new list in which every panel is broken into single spanwise strips
+            for deformation. When True, every non tip WingCrossSection in
+            wing_cross_sections must have spanwise_spacing="uniform"; the explosion
+            assumes uniformly spaced intermediates and rejects other spacings rather
+            than silently overriding them. This parameter is consumed during
+            initialization and is not stored as an attribute.
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: The type of spacing between the Wing's chordwise
@@ -270,10 +270,10 @@ class Wing:
         wing_cross_sections = _parameter_validation.non_empty_list_return_list(
             wing_cross_sections, "wing_cross_sections"
         )
-        self.single_step_wing = _parameter_validation.boolLike_return_bool(
-            single_step_wing, "single_step_wing"
+        explode_into_strips = _parameter_validation.boolLike_return_bool(
+            explode_into_strips, "explode_into_strips"
         )
-        if single_step_wing:
+        if explode_into_strips:
             wing_cross_sections = self.explode_wing(wing_cross_sections)
         num_wing_cross_sections = len(wing_cross_sections)
         if num_wing_cross_sections < 2:
@@ -456,7 +456,6 @@ class Wing:
         # process_wing_symmetry for type 5 symmetry).
         new_wing.symmetric = self.symmetric
         new_wing.mirror_only = self.mirror_only
-        new_wing.single_step_wing = self.single_step_wing
 
         # Copy immutable numpy arrays and make them read-only.
         new_wing._Ler_Gs_Cgs = np.copy(self._Ler_Gs_Cgs)
@@ -1599,7 +1598,7 @@ class Wing:
                 raise ValueError(
                     f"wing_cross_sections[{i}].spanwise_spacing is "
                     f'"{wing_cross_section.spanwise_spacing}", but exploding a Wing '
-                    f'(single_step_wing=True) requires "uniform" on every non tip '
+                    f'(explode_into_strips=True) requires "uniform" on every non tip '
                     f"WingCrossSection."
                 )
 

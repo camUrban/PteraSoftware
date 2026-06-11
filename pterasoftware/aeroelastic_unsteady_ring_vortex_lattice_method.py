@@ -78,20 +78,24 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
 
-        # Initialize SLEP (Strip Leading Edge Point) information. For each airplane
-        # and wing, we track the panel index where each new spanwise strip begins.
-        # This allows efficient computation of moments about the strip leading edge
-        # (wing root to tip).
+        # Initialize SLEP (Strip Leading Edge Point) information. The solver's flat
+        # panel stack is ordered chord-major within each wing (all spanwise
+        # positions of the first chordwise row, then all spanwise positions of the
+        # second chordwise row, and so on), with the wings stacked in order. For
+        # each panel, we record the flat index of the panel at the same wing and
+        # spanwise position in the first chordwise row, because that panel's
+        # front-left point is the strip's leading edge point, which the strip's
+        # moments are taken about.
         panel_count = 0
         slep_point_indices_list: list[int] = []
         for airplane in first_steady_problem.airplanes:
             for wing in airplane.wings:
-                for wing_cross_section in wing.wing_cross_sections:
-                    # Record the first panel index for this wing cross-section
-                    # (start of strip).
-                    slep_point_indices_list.append(panel_count)
-                    if wing_cross_section.num_spanwise_panels is not None:
-                        panel_count += wing_cross_section.num_spanwise_panels
+                num_spanwise_panels = wing.num_spanwise_panels
+                assert num_spanwise_panels is not None
+                for _ in range(wing.num_chordwise_panels):
+                    for spanwise_position in range(num_spanwise_panels):
+                        slep_point_indices_list.append(panel_count + spanwise_position)
+                panel_count += wing.num_chordwise_panels * num_spanwise_panels
         self.slep_point_indices: np.ndarray = np.array(
             slep_point_indices_list, dtype=int
         )
@@ -207,10 +211,9 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         """Transform bound RingVortex leg center positions from CG-relative to SLEP-
         relative.
 
-        For each panel, this method: 1. Gets the front-left panel point (leading edge)
-        from each panel 2. Maps panels to their corresponding strip's leading edge point
-        using slep_point_indices 3. Subtracts the SLEP position from all vortex leg
-        center positions 4. Subtracts the SLEP position from collocation points
+        Gathers the front-left panel point from each panel, maps each panel to its
+        strip's leading edge point using slep_point_indices, and subtracts that SLEP
+        position from the vortex leg center positions and the collocation points.
 
         This prepares positions for computing moments about the strip leading edge,
         which is important for analyzing local wing loading and deformations.
@@ -219,14 +222,9 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         """
         for panel_num, panel in enumerate(self.panels):
             self.stackFlpp_GP1_CgP1[panel_num] = panel.Flpp_GP1_CgP1
-        slep_points = self.stackFlpp_GP1_CgP1[self.slep_point_indices]
-        slep_map = (
-            np.searchsorted(
-                self.slep_point_indices, np.arange(self.num_panels), side="right"
-            )
-            - 1
-        )
-        self.stack_leading_edge_points = np.array([slep_points[i] for i in slep_map])
+        self.stack_leading_edge_points = self.stackFlpp_GP1_CgP1[
+            self.slep_point_indices
+        ]
         self.stackCblvpr_GP1_Slep = (
             self.stackCblvpr_GP1_CgP1 - self.stack_leading_edge_points
         )

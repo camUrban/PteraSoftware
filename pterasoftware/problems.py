@@ -1267,6 +1267,16 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                     wing_idx,
                 )
 
+                # A mirror-meshed Wing's panel grid runs tip to root spanwise,
+                # while the structural solve and the WingCrossSection movements
+                # that consume its output run root to tip, so flip the spanwise
+                # axis of the per-panel arrays to put them in root-to-tip strip
+                # order.
+                if wing.mirror_only:
+                    mass_matrix = mass_matrix[:, ::-1, :]
+                    aeroMoments_GP1_Slep = aeroMoments_GP1_Slep[:, ::-1, :]
+                    inertial_moments = inertial_moments[:, ::-1, :]
+
                 thetas, omegas = self.calculate_spring_moments(
                     num_spanwise_panels=num_spanwise_panels,
                     wing=wing,
@@ -1428,12 +1438,14 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         deflection points relative to the undeformed baseline.
 
         :param step: The current time step index.
-        :param step_deformation: The (N_spanwise+1, 3) deformation vector for this step.
-        :param omegas: An (N_spanwise+1,) ndarray of angular velocities.
+        :param step_deformation: The (N_spanwise+1, 3) deformation vector for this step,
+            with its stations in root-to-tip order.
+        :param omegas: An (N_spanwise+1,) ndarray of angular velocities, with its
+            stations in root-to-tip order.
         :param inertial_moments: An (N_chordwise, N_spanwise, 3) ndarray of inertial
-            moments.
+            moments, with the spanwise axis in root-to-tip order.
         :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero
-            moments.
+            moments, with the spanwise axis in root-to-tip order.
         :param wing_idx: Index of the wing in airplane.wings (and the per-wing lists).
         :return: None
         """
@@ -1554,11 +1566,18 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         Uses the parallel axis theorem to compute rotational inertia about the flapping
         axis.
 
+        The spanwise section index runs root to tip, matching the order of the Wing's
+        wing_cross_sections, and the mass_matrix and aero_moments arrays must be
+        supplied with their spanwise axes in that same root-to-tip order (the caller
+        flips them for mirror-meshed Wings, whose panel grids run tip to root).
+
         :param num_spanwise_panels: Number of spanwise panel rows in the wing.
         :param wing: The Wing object containing geometric and structural definitions.
-        :param mass_matrix: An (N_chordwise, N_spanwise, 3) ndarray of panel masses.
+        :param mass_matrix: An (N_chordwise, N_spanwise, 3) ndarray of panel masses,
+            with the spanwise axis in root-to-tip order.
         :param aero_moments: An (N_chordwise, N_spanwise, 3) ndarray of aerodynamic
-            moments from the aerodynamic solver.
+            moments from the aerodynamic solver, with the spanwise axis in root-to-tip
+            order.
         :param step: The current time step index.
         :param wing_idx: Index of the wing in airplane.wings.
         :param wing_movement: The AeroelasticWingMovement providing the prescribed
@@ -1592,7 +1611,17 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 + wing.wing_cross_sections[span_panel + 1].chord
             ) / 2
             assert wing.panels is not None
-            W: float = float(np.linalg.norm(wing.panels[0][span_panel].frontLeg_G))
+            # The span_panel index runs root to tip, matching the
+            # wing_cross_sections list, but a mirror-meshed Wing's panel grid
+            # runs tip to root spanwise, so map the index when reading panel
+            # geometry.
+            if wing.mirror_only:
+                panel_span_index = num_spanwise_panels - 1 - span_panel
+            else:
+                panel_span_index = span_panel
+            W: float = float(
+                np.linalg.norm(wing.panels[0][panel_span_index].frontLeg_G)
+            )
             d += W / 2
             span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
             theta, omega = self.calculate_torsional_spring_moment(

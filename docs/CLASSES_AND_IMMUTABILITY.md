@@ -230,7 +230,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Construction-only parameters
 
-`extra_xml` and `mujoco_assets` are constructor parameters, not attributes: both are validated here for structural shape (each a dict or None; `extra_xml` keys restricted to the permitted injection points and values to strings; `mujoco_assets` mapping string filenames to bytes), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so neither has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo. See Construction-Only Parameters under Design Principles.
+`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo. See Construction-Only Parameters under Design Principles.
 
 ## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
 
@@ -710,7 +710,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Construction-only parameters
 
-`extra_xml` and `mujoco_assets` are constructor parameters, not attributes: both shape the generated model during initialization and are then discarded, so neither has a slot or an attribute-category entry above. `extra_xml` is folded into `xml_str`, so its content survives indirectly through the stored XML, while `mujoco_assets` is passed to MuJoCo's `from_xml_string` and not retained at all, which is why an asset-based model cannot be rebuilt from `xml_str` alone. `MuJoCoModel` does not validate them: it is private and validates nothing, so they arrive already validated for structural shape from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo. See Construction-Only Parameters under Design Principles.
+`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three shape the generated model during initialization and are then discarded, so none has a slot or an attribute-category entry above. `integrator` and `extra_xml` are folded into `xml_str`, so their content survives indirectly through the stored XML, while `mujoco_assets` is passed to MuJoCo's `from_xml_string` and not retained at all, which is why an asset-based model cannot be rebuilt from `xml_str` alone. `MuJoCoModel` does not validate them: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo. See Construction-Only Parameters under Design Principles.
 
 ---
 

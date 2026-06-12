@@ -166,6 +166,39 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 mujoco_assets={"dummy.stl": "not bytes"},
             )
 
+    def test_integrator_type_validation(self):
+        """Test that integrator must be a str."""
+        movement, mass = _movement_and_mass()
+        with self.assertRaises(TypeError):
+            ps.problems.FreeFlightUnsteadyProblem(
+                movement=movement,
+                mass=mass,
+                I_BP1_CgP1=np.eye(3, dtype=float),
+                integrator=4,
+            )
+
+    def test_integrator_value_validation(self):
+        """Test that integrator must be a supported MuJoCo integrator."""
+        movement, mass = _movement_and_mass()
+        with self.assertRaises(ValueError):
+            ps.problems.FreeFlightUnsteadyProblem(
+                movement=movement,
+                mass=mass,
+                I_BP1_CgP1=np.eye(3, dtype=float),
+                integrator="rk4",
+            )
+
+    def test_integrator_forwarded_to_mujoco_model(self):
+        """Test that the integrator choice reaches the generated MuJoCo XML."""
+        movement, mass = _movement_and_mass()
+        problem = ps.problems.FreeFlightUnsteadyProblem(
+            movement=movement,
+            mass=mass,
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            integrator="implicitfast",
+        )
+        self.assertIn('integrator="implicitfast"', problem._mujoco_model.xml_str)
+
     def test_external_loads_fn_default_none(self):
         """Test that external_loads_fn defaults to None."""
         self.assertIsNone(self.problem.external_loads_fn)

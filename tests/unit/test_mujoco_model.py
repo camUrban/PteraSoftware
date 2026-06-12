@@ -33,6 +33,29 @@ class TestMuJoCoModelInit(unittest.TestCase):
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         self.assertIn(str(delta_time), self.model.xml_str)
 
+    def test_xml_str_contains_default_integrator(self):
+        """Test that the generated XML defaults to the RK4 integrator."""
+        self.assertIn('integrator="RK4"', self.model.xml_str)
+
+    def test_accepts_integrator(self):
+        """Test that MuJoCoModel accepts an integrator, injects it into the XML, and
+        the compiled model uses it.
+        """
+        model = _mujoco_model.MuJoCoModel(
+            name="integrator_test",
+            mass=1.0,
+            omegas_BP1__E=(0.0, 0.0, 0.0),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=(10.0, 0.0, 0.0),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            integrator="implicitfast",
+        )
+        self.assertIn('integrator="implicitfast"', model.xml_str)
+        self.assertEqual(
+            model._model.opt.integrator, mujoco.mjtIntegrator.mjINT_IMPLICITFAST
+        )
+
     def test_model_is_mj_model(self):
         """Test that the internal model object is an MjModel."""
         self.assertIsInstance(self.model._model, mujoco.MjModel)

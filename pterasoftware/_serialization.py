@@ -87,7 +87,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 6
+_FORMAT_VERSION = 7
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -200,9 +200,13 @@ _UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
 # on deserialization to preserve object identity.
 _MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
 
-# Slots on MuJoCoModel that wrap native MuJoCo state and cannot be serialized. They are
-# rebuilt from the serialized XML string on deserialization via MuJoCoModel._rebuild_engine.
-_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
+# Slots on MuJoCoModel that are serialized as null. _model and _data wrap native MuJoCo
+# state and are rebuilt from the serialized XML string on deserialization via
+# MuJoCoModel._rebuild_engine. _mujoco_assets holds raw bytes and is only ever falsy
+# when serialization succeeds, because a model with assets raises on save.
+_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset(
+    {"_model", "_data", "_mujoco_assets"}
+)
 
 
 def save(path: str | Path, obj: object) -> None:
@@ -434,6 +438,18 @@ def _object_to_dict(
     # The MuJoCoModel's native model and data objects cannot be serialized; they are
     # rebuilt from the XML string on deserialization.
     if isinstance(obj, MuJoCoModel):
+        # An asset-based model cannot survive that rebuild: the engine is recreated
+        # from the stored XML alone, whose asset references would be unresolvable.
+        # Refuse to save rather than produce a file that fails on load.
+        # This module is inherently coupled to class internals, so reading a private
+        # attribute directly is acceptable here.
+        # noinspection PyProtectedMember
+        if obj._mujoco_assets:
+            raise ValueError(
+                "A MuJoCoModel built with mujoco_assets cannot be saved: the engine "
+                "is rebuilt on load from the stored XML alone, so the asset "
+                "references would be unresolvable."
+            )
         _skip_slots = _skip_slots | _MUJOCO_MODEL_SKIP_SLOTS
 
     result: dict[str, Any] = {"_type": class_name}

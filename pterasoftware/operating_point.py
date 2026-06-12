@@ -162,7 +162,10 @@ class OperatingPoint:
         :param externalFX_W: The additional thrust or drag on a problem's Airplane(s)
             (in wind axes) not due to the Airplanes' Wings. It is useful for trim
             analyses. It must be a number (int or float) and will be converted
-            internally to a float. The units are in Newtons. The default is 0.0.
+            internally to a float. The units are in Newtons. The default is 0.0. The
+            free-flight solver never applies externalFX_W and raises if it is non-zero;
+            model thrust there with FreeFlightUnsteadyProblem's external_loads_fn
+            instead.
         :param nu: The fluid's kinematic viscosity. The units are in meters squared per
             second. This parameter is only used in the unsteady ring vortex lattice
             method's vortex core growth model. It must be a positive number and will be

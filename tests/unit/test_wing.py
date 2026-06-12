@@ -1082,8 +1082,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_new_instance(self):
         """Test that deepcopy creates a new Wing instance."""
-        import copy
-
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
@@ -1092,8 +1090,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_wing_parameters(self):
         """Test that deepcopy preserves Wing parameters."""
-        import copy
-
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
@@ -1109,8 +1105,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_independent_arrays(self):
         """Test that deepcopy creates independent copies of numpy arrays."""
-        import copy
-
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
@@ -1119,8 +1113,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_independent_wing_cross_sections(self):
         """Test that deepcopy creates independent WingCrossSection copies."""
-        import copy
-
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
@@ -1135,8 +1127,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_symmetry_attributes(self):
         """Test that deepcopy preserves symmetry attributes correctly."""
-        import copy
-
         original = self.type_4_wing
         copied = copy.deepcopy(original)
 
@@ -1149,8 +1139,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_none_symmetry_attributes(self):
         """Test that deepcopy handles None symmetry attributes correctly."""
-        import copy
-
         original = self.type_1_wing
         copied = copy.deepcopy(original)
 
@@ -1159,8 +1147,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_unmeshed_wing(self):
         """Test that deepcopy handles unmeshed Wings correctly."""
-        import copy
-
         original = self.type_1_wing
         self.assertIsNone(original.panels)
 
@@ -1174,8 +1160,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_meshed_wing_preserves_mesh_metadata(self):
         """Test that deepcopy preserves mesh metadata for meshed Wings."""
-        import copy
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1187,8 +1171,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_meshed_wing_preserves_panels(self):
         """Test that deepcopy preserves Panels for meshed Wings."""
-        import copy
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1206,8 +1188,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_resets_wake_state(self):
         """Test that deepcopy resets wake state to an empty array."""
-        import copy
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1222,8 +1202,6 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_independence_modifying_copy_mutable_attrs(self):
         """Test that modifying mutable attributes on the copy does not affect the
         original."""
-        import copy
-
         original = self.type_4_wing
         original.generate_mesh(4)
         original_symmetric = original.symmetric
@@ -1242,8 +1220,6 @@ class TestWingDeepCopy(unittest.TestCase):
     def test_deepcopy_independence_modifying_original_mutable_attrs(self):
         """Test that modifying mutable attributes on the original does not affect the
         copy."""
-        import copy
-
         original = self.type_4_wing
         original.generate_mesh(4)
 
@@ -1313,8 +1289,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_geometric_properties(self):
         """Test that deepcopy preserves geometric property calculations."""
-        import copy
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1328,8 +1302,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_type_4_wing(self):
         """Test that deepcopy works correctly for type 4 symmetric Wings."""
-        import copy
-
         original = self.type_4_wing
         original.generate_mesh(4)
 
@@ -1342,8 +1314,6 @@ class TestWingDeepCopy(unittest.TestCase):
 
     def test_deepcopy_copied_wing_is_functional(self):
         """Test that copied Wings are fully functional."""
-        import copy
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1369,10 +1339,6 @@ class TestWingDeepCopy(unittest.TestCase):
         be cached as non-None, which exercises the not-None copy branches inside
         __deepcopy__ that are skipped when only calling generate_mesh.
         """
-        import copy
-
-        import numpy.testing as npt
-
         original = self.type_1_wing
         original.generate_mesh(1)
 
@@ -1678,7 +1644,8 @@ class TestSingleStepWingMethods(unittest.TestCase):
     Wing.interpolate_between_wing_cross_sections, and the explode_into_strips
     parameter."""
 
-    def _make_wcs_3span(self):
+    @staticmethod
+    def _make_wcs_3span():
         """Create a root WCS with num_spanwise_panels=3."""
         return ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
@@ -1689,7 +1656,8 @@ class TestSingleStepWingMethods(unittest.TestCase):
             spanwise_spacing="uniform",
         )
 
-    def _make_tip_wcs(self):
+    @staticmethod
+    def _make_tip_wcs():
         """Create a tip WCS with num_spanwise_panels=None."""
         return ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),

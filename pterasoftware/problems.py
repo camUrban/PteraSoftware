@@ -380,6 +380,11 @@ _EXTRA_XML_INJECTION_POINTS = frozenset(
     {"default", "asset", "visual", "worldbody", "body"}
 )
 
+# The permitted values for FreeFlightUnsteadyProblem's integrator parameter. Each names
+# a MuJoCo numerical integrator that MuJoCoModel sets in the generated model XML's
+# option element.
+_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
+
 
 class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     """A class used to contain problems with coupled unsteady aerodynamics and rigid
@@ -418,8 +423,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
     external_loads_fn: A callable that computes additional forces and moments to apply
     to the Airplane during the simulation, or None.
-
-    mujoco_model: The MuJoCoModel used for rigid body dynamics integration.
     """
 
     __slots__ = (
@@ -449,6 +452,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             ]
             | None
         ) = None,
+        integrator: str = "RK4",
         extra_xml: dict[str, str] | None = None,
         mujoco_assets: dict[str, bytes] | None = None,
     ) -> None:
@@ -479,7 +483,15 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             return value is validated on the callable's first invocation; a return that
             is not a pair of (3,) finite numeric vectors raises a descriptive error. The
             physical correctness of the forces and moments themselves is not checked.
-            Setting this to None applies no additional loads. The default is None.
+            Setting this to None applies no additional loads. The default is None. This
+            is the only mechanism for non-aerodynamic loads in free flight: the
+            OperatingPoint's externalFX_W is never applied and must be zero.
+        :param integrator: A str naming the MuJoCo integrator used to advance the rigid
+            body dynamics. It must be one of "Euler", "RK4", "implicit", or
+            "implicitfast". The choice is baked into the generated MuJoCo model XML, so
+            it survives saving and loading. "RK4" is accurate for smooth dynamics but
+            handles contacts poorly, so runs with collision geometry (injected via
+            extra_xml) should prefer "implicit" or "implicitfast". The default is "RK4".
         :param extra_xml: A dict mapping injection point names to XML fragment strings
             to inject into the MuJoCo model's XML. Supported keys are "default",
             "asset", "visual", "worldbody", and "body". Setting this to None injects no
@@ -491,7 +503,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             for the MuJoCo model. Setting this to None provides no extra assets. The
             default is None. The argument is checked to be a dict (or None) mapping
             string filenames to bytes; whether a referenced asset is actually supplied
-            is left to MuJoCo, so this is an advanced-user parameter.
+            is left to MuJoCo, so this is an advanced-user parameter. A
+            FreeFlightUnsteadyProblem built with mujoco_assets cannot be saved: save()
+            raises, because the saved engine is rebuilt on load from the stored XML
+            alone, whose asset references would be unresolvable.
         :return: None
         """
         if not isinstance(movement, free_flight_movement.FreeFlightMovement):
@@ -553,6 +568,17 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 "simulation, leave both g_E and the weight at zero)."
             )
 
+        # The free-flight dynamics never apply externalFX_W: non-aerodynamic loads
+        # enter free flight only through external_loads_fn, which is strictly more
+        # capable (full force and moment, time varying). A nonzero value would be
+        # silently ignored, so raise instead.
+        if initial_operating_point.externalFX_W != 0.0:
+            raise ValueError(
+                "The OperatingPoint's externalFX_W must be zero for free flight. The "
+                "free-flight dynamics never apply externalFX_W; use external_loads_fn "
+                "to model thrust or other additional loads."
+            )
+
         if external_loads_fn is not None and not callable(external_loads_fn):
             raise TypeError("external_loads_fn must be callable or None.")
         self._external_loads_fn = external_loads_fn
@@ -569,11 +595,22 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         self.moments_W_Cg: list[np.ndarray] = []
         self.momentCoefficients_W_Cg: list[np.ndarray] = []
 
+        # Validate the integrator name against the supported MuJoCo integrators. The
+        # MuJoCoModel sets the validated name in the generated model XML's option
+        # element, so the choice survives saving and loading.
+        integrator = _parameter_validation.str_return_str(integrator, "integrator")
+        if integrator not in _MUJOCO_INTEGRATORS:
+            raise ValueError(
+                f"integrator '{integrator}' is not a supported MuJoCo integrator; "
+                f"expected one of {sorted(_MUJOCO_INTEGRATORS)}."
+            )
+
         # Validate the extra_xml injection-point dict (it must be a dict, or None, whose
         # keys are permitted injection points and whose values are XML fragment strings)
         # and rebuild it from the validated values. Deeper XML correctness is left to
-        # MuJoCo's own parser. These two arguments are the only raw user input forwarded
-        # to the MuJoCoModel, which performs no validation of its own.
+        # MuJoCo's own parser. The integrator, extra_xml, and mujoco_assets arguments
+        # are the only raw user input forwarded to the MuJoCoModel, which performs no
+        # validation of its own.
         if extra_xml is not None:
             if not isinstance(extra_xml, dict):
                 raise TypeError("extra_xml must be a dict or None.")
@@ -620,6 +657,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             ),
             I_BP1_CgP1=self._I_BP1_CgP1,
             delta_time=movement.delta_time,
+            integrator=integrator,
             extra_xml=extra_xml,
             mujoco_assets=mujoco_assets,
         )
@@ -647,10 +685,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         | None
     ):
         return self._external_loads_fn
-
-    @property
-    def mujoco_model(self) -> _mujoco_model.MuJoCoModel:
-        return self._mujoco_model
 
     @property
     def _free_flight_movement(self) -> free_flight_movement.FreeFlightMovement:

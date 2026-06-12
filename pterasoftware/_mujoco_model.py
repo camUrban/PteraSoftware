@@ -60,6 +60,7 @@ class MuJoCoModel:
         "_initial_key_frame_id",
         "_initial_qpos",
         "_initial_qvel",
+        "_mujoco_assets",
     )
 
     def __init__(
@@ -71,6 +72,7 @@ class MuJoCoModel:
         vCg_E__E: np.ndarray,
         I_BP1_CgP1: np.ndarray,
         delta_time: float | int,
+        integrator: str = "RK4",
         extra_xml: dict[str, str] | None = None,
         mujoco_assets: dict[str, bytes] | None = None,
     ) -> None:
@@ -98,6 +100,9 @@ class MuJoCoModel:
             FreeFlightUnsteadyProblem, which validates that it is symmetric.
         :param delta_time: The time, in seconds, between each time step. Supplied by
             FreeFlightUnsteadyProblem from the Movement.
+        :param integrator: A str naming the MuJoCo integrator to set in the generated
+            model XML's option element. Validated by FreeFlightUnsteadyProblem before
+            being passed here. The default is "RK4".
         :param extra_xml: A dict (or None) mapping injection point names to XML fragment
             strings to inject into the generated MuJoCo XML. Supported keys are
             "default", "asset", and "visual" (inserted as top level elements),
@@ -108,8 +113,10 @@ class MuJoCoModel:
         :param mujoco_assets: A dict (or None) mapping virtual filenames to their binary
             contents. These are passed to MuJoCo's from_xml_string as the assets
             parameter, allowing meshes and other binary files to be loaded without
-            writing to disk. Validated by FreeFlightUnsteadyProblem before being passed
-            here. The default is None, which provides no extra assets.
+            writing to disk. The dict is retained, which lets the serialization layer
+            refuse to save an asset-based model. Validated by FreeFlightUnsteadyProblem
+            before being passed here. The default is None, which provides no extra
+            assets.
         :return: None
         """
         start_key_frame_name: str = "start"
@@ -171,7 +178,7 @@ class MuJoCoModel:
         # Initialize the immutable attributes.
         self._xml_str: str = f"""
         <mujoco model="{name}">
-          <option timestep="{delta_time}" integrator="RK4" gravity="{gravity_str}"/>
+          <option timestep="{delta_time}" integrator="{integrator}" gravity="{gravity_str}"/>
 
           {extra_default}
           {extra_asset}
@@ -203,6 +210,11 @@ class MuJoCoModel:
         else:
             # noinspection PyArgumentList
             self._model = mujoco.MjModel.from_xml_string(self._xml_str)
+
+        # Retain the assets dict so the serialization layer can refuse to save an
+        # asset-based model: the engine is rebuilt on load from the stored XML alone,
+        # whose asset references would be unresolvable.
+        self._mujoco_assets: dict[str, bytes] | None = mujoco_assets
 
         # Set the internal model's time step to be the same as the simulation's.
         self._model.opt.timestep = delta_time
@@ -238,10 +250,6 @@ class MuJoCoModel:
         return self._xml_str
 
     @property
-    def model(self) -> mujoco.MjModel:
-        return self._model
-
-    @property
     def body_id(self) -> int:
         return self._body_id
 
@@ -256,11 +264,6 @@ class MuJoCoModel:
     @property
     def initial_qvel(self) -> np.ndarray:
         return self._initial_qvel
-
-    # --- Mutable: read only properties ---
-    @property
-    def data(self) -> mujoco.MjData:
-        return self._data
 
     # --- Other methods ---
     def apply_loads(
@@ -384,9 +387,9 @@ class MuJoCoModel:
         them from the XML string and resets the data to the initial keyframe, matching
         the state established at construction. The live, post-run data state is not
         restored: the canonical per-step state lives in the FreeFlightUnsteadyProblem's
-        steady problems. Models built with mujoco_assets (such as meshes) cannot be
-        rebuilt, since the assets are not retained, so the XML string's references to
-        them are unresolvable.
+        steady problems. Models built with mujoco_assets (such as meshes) never reach
+        this method: the serialization layer refuses to save them, since the rebuilt
+        engine could not resolve the XML string's asset references.
 
         :return: None
         """

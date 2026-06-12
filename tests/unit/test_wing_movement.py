@@ -4,6 +4,7 @@ import unittest
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
+    core_wing_cross_section_movement_fixtures,
     geometry_fixtures,
     wing_cross_section_movement_fixtures,
     wing_movement_fixtures,
@@ -40,8 +41,6 @@ class TestWingMovement(unittest.TestCase):
 
     def test_rejects_core_wing_cross_section_movement_children(self):
         """Test that WingMovement rejects CoreWingCrossSectionMovement instances."""
-        from tests.unit.fixtures import core_wing_cross_section_movement_fixtures
-
         base_wing = geometry_fixtures.make_origin_wing_fixture()
         wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),

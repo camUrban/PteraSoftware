@@ -71,6 +71,7 @@ class MuJoCoModel:
         vCg_E__E: np.ndarray,
         I_BP1_CgP1: np.ndarray,
         delta_time: float | int,
+        integrator: str = "RK4",
         extra_xml: dict[str, str] | None = None,
         mujoco_assets: dict[str, bytes] | None = None,
     ) -> None:
@@ -98,6 +99,9 @@ class MuJoCoModel:
             FreeFlightUnsteadyProblem, which validates that it is symmetric.
         :param delta_time: The time, in seconds, between each time step. Supplied by
             FreeFlightUnsteadyProblem from the Movement.
+        :param integrator: A str naming the MuJoCo integrator to set in the generated
+            model XML's option element. Validated by FreeFlightUnsteadyProblem before
+            being passed here. The default is "RK4".
         :param extra_xml: A dict (or None) mapping injection point names to XML fragment
             strings to inject into the generated MuJoCo XML. Supported keys are
             "default", "asset", and "visual" (inserted as top level elements),
@@ -171,7 +175,7 @@ class MuJoCoModel:
         # Initialize the immutable attributes.
         self._xml_str: str = f"""
         <mujoco model="{name}">
-          <option timestep="{delta_time}" integrator="RK4" gravity="{gravity_str}"/>
+          <option timestep="{delta_time}" integrator="{integrator}" gravity="{gravity_str}"/>
 
           {extra_default}
           {extra_asset}

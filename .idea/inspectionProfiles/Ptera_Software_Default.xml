@@ -54,7 +54,6 @@
           <option value="numpy.number" />
           <option value="numpy.object_" />
           <option value="object" />
-          <option value="numpy.object_" />
         </list>
       </option>
       <option name="reportedTypes">

@@ -156,6 +156,11 @@ class TestMuJoCoModelInit(unittest.TestCase):
             mujoco_assets=mujoco_assets,
         )
         self.assertIsInstance(model, _mujoco_model.MuJoCoModel)
+        self.assertIs(model._mujoco_assets, mujoco_assets)
+
+    def test_mujoco_assets_default_none(self):
+        """Test that the retained mujoco_assets defaults to None."""
+        self.assertIsNone(self.model._mujoco_assets)
 
     def test_rotated_initial_orientation(self):
         """Test that a rotated initial orientation produces correct initial state."""

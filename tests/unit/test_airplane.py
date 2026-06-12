@@ -1,5 +1,6 @@
 """This module contains classes to test Airplanes."""
 
+import copy
 import unittest
 from unittest.mock import PropertyMock, patch
 
@@ -465,8 +466,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_new_instance(self):
         """Test that deepcopy creates a new Airplane instance."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -475,8 +474,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_airplane_parameters(self):
         """Test that deepcopy preserves Airplane parameters."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -489,8 +486,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_independent_cg_array(self):
         """Test that deepcopy creates an independent copy of Cg_GP1_CgP1."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -498,8 +493,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_creates_independent_wings(self):
         """Test that deepcopy creates independent Wing copies."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -510,8 +503,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_multi_wing_airplane(self):
         """Test that deepcopy works correctly for multi wing Airplanes."""
-        import copy
-
         original = self.multi_wing_airplane
         copied = copy.deepcopy(original)
 
@@ -523,8 +514,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_resets_forces_and_moments(self):
         """Test that deepcopy resets forces and moments to None."""
-        import copy
-
         original = self.basic_airplane
         original.forces_W = np.array([1.0, 2.0, 3.0])
         original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
@@ -540,8 +529,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_num_panels(self):
         """Test that deepcopy preserves the total number of Panels."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -549,8 +536,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_wing_panels(self):
         """Test that deepcopy preserves Wing Panels."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -567,8 +552,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_resets_wing_wake_state(self):
         """Test that deepcopy resets wake state in all Wings."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -577,8 +560,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_copied_airplane_is_functional(self):
         """Test that copied Airplanes are fully functional."""
-        import copy
-
         original = self.basic_airplane
         copied = copy.deepcopy(original)
 
@@ -594,8 +575,6 @@ class TestAirplaneDeepCopy(unittest.TestCase):
 
     def test_deepcopy_first_airplane(self):
         """Test that deepcopy works correctly for first Airplane (Cg at origin)."""
-        import copy
-
         original = self.first_airplane
         copied = copy.deepcopy(original)
 

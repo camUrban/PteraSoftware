@@ -317,6 +317,7 @@ def make_basic_coupled_unsteady_problem_fixture():
     """
     # SteadyProblem sets GP1_CgP1 attributes on each Panel exactly once, so a fresh
     # Airplane is required for every _CoupledUnsteadyProblem instance.
+    # noinspection PyProtectedMember
     basic_coupled_unsteady_problem_fixture = ps.problems._CoupledUnsteadyProblem(
         movement=core_movement_fixtures.make_static_core_movement_fixture(),
         initial_airplanes=[geometry_fixtures.make_first_airplane_fixture()],

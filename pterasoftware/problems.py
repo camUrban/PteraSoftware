@@ -501,7 +501,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             for the MuJoCo model. Setting this to None provides no extra assets. The
             default is None. The argument is checked to be a dict (or None) mapping
             string filenames to bytes; whether a referenced asset is actually supplied
-            is left to MuJoCo, so this is an advanced-user parameter.
+            is left to MuJoCo, so this is an advanced-user parameter. A
+            FreeFlightUnsteadyProblem built with mujoco_assets cannot be saved: save()
+            raises, because the saved engine is rebuilt on load from the stored XML
+            alone, whose asset references would be unresolvable.
         :return: None
         """
         if not isinstance(movement, free_flight_movement.FreeFlightMovement):

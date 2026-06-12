@@ -1999,6 +1999,25 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.initial_qpos, model.initial_qpos)
         npt.assert_array_equal(result.initial_qvel, model.initial_qvel)
 
+    def test_mujoco_assets_model_is_not_serializable(self):
+        """Tests that a MuJoCoModel built with mujoco_assets raises on serialization,
+        since the engine rebuilt on load could not resolve the asset references.
+
+        :return: None
+        """
+        model = MuJoCoModel(
+            name="assets_test",
+            mass=1.0,
+            omegas_BP1__E=np.zeros(3, dtype=float),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=np.array([10.0, 0.0, 0.0]),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            mujoco_assets={"dummy.txt": b"placeholder"},
+        )
+        with self.assertRaises(ValueError):
+            _serialize_value(model)
+
     def test_rebuilt_engine_is_functional(self):
         """Tests that a round-tripped MuJoCoModel can be queried and stepped, confirming
         its native model and data objects were rebuilt from the XML string.
@@ -2148,6 +2167,19 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
 
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
             external_loads_fn=external_loads_fn
+        )
+        with self.assertRaises(ValueError):
+            _serialize_value(problem)
+
+    def test_mujoco_assets_problem_is_not_serializable(self):
+        """Tests that a FreeFlightUnsteadyProblem whose MuJoCoModel was built with
+        mujoco_assets raises on serialization, matching the external_loads_fn
+        disposition.
+
+        :return: None
+        """
+        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+            mujoco_assets={"dummy.txt": b"placeholder"}
         )
         with self.assertRaises(ValueError):
             _serialize_value(problem)

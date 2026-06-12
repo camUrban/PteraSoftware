@@ -60,6 +60,7 @@ class MuJoCoModel:
         "_initial_key_frame_id",
         "_initial_qpos",
         "_initial_qvel",
+        "_mujoco_assets",
     )
 
     def __init__(
@@ -112,8 +113,10 @@ class MuJoCoModel:
         :param mujoco_assets: A dict (or None) mapping virtual filenames to their binary
             contents. These are passed to MuJoCo's from_xml_string as the assets
             parameter, allowing meshes and other binary files to be loaded without
-            writing to disk. Validated by FreeFlightUnsteadyProblem before being passed
-            here. The default is None, which provides no extra assets.
+            writing to disk. The dict is retained, which lets the serialization layer
+            refuse to save an asset-based model. Validated by FreeFlightUnsteadyProblem
+            before being passed here. The default is None, which provides no extra
+            assets.
         :return: None
         """
         start_key_frame_name: str = "start"
@@ -207,6 +210,11 @@ class MuJoCoModel:
         else:
             # noinspection PyArgumentList
             self._model = mujoco.MjModel.from_xml_string(self._xml_str)
+
+        # Retain the assets dict so the serialization layer can refuse to save an
+        # asset-based model: the engine is rebuilt on load from the stored XML alone,
+        # whose asset references would be unresolvable.
+        self._mujoco_assets: dict[str, bytes] | None = mujoco_assets
 
         # Set the internal model's time step to be the same as the simulation's.
         self._model.opt.timestep = delta_time
@@ -379,9 +387,9 @@ class MuJoCoModel:
         them from the XML string and resets the data to the initial keyframe, matching
         the state established at construction. The live, post-run data state is not
         restored: the canonical per-step state lives in the FreeFlightUnsteadyProblem's
-        steady problems. Models built with mujoco_assets (such as meshes) cannot be
-        rebuilt, since the assets are not retained, so the XML string's references to
-        them are unresolvable.
+        steady problems. Models built with mujoco_assets (such as meshes) never reach
+        this method: the serialization layer refuses to save them, since the rebuilt
+        engine could not resolve the XML string's asset references.
 
         :return: None
         """

@@ -204,7 +204,7 @@ def make_with_body_rates_unsteady_problem_fixture():
 
 
 def make_basic_free_flight_unsteady_problem_fixture(
-    base_operating_point=None, external_loads_fn=None
+    base_operating_point=None, external_loads_fn=None, mujoco_assets=None
 ):
     """This method makes a fixture that is a FreeFlightUnsteadyProblem for general
     testing.
@@ -216,6 +216,9 @@ def make_basic_free_flight_unsteady_problem_fixture(
         A callable that computes additional forces and moments to apply to the Airplane
         during the simulation. If None, no additional loads are applied. The default is
         None.
+    :param mujoco_assets: dict or None
+        A dict mapping virtual filenames to their binary contents for the MuJoCo model.
+        If None, no extra assets are provided. The default is None.
     :return basic_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem
         This is the FreeFlightUnsteadyProblem configured for general testing.
     """
@@ -290,6 +293,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
         mass=mass,
         I_BP1_CgP1=np.diag([1.0, 1.0, 1.0]),
         external_loads_fn=external_loads_fn,
+        mujoco_assets=mujoco_assets,
     )
 
     return basic_free_flight_unsteady_problem_fixture

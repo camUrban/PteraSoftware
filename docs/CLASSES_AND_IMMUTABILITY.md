@@ -230,7 +230,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Construction-only parameters
 
-`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo. See Construction-Only Parameters under Design Principles.
+`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo. A problem built with `mujoco_assets` cannot be saved: the `MuJoCoModel` retains the assets dict, and the serialization layer raises rather than write a file whose rebuilt engine could not resolve the asset references. See Construction-Only Parameters under Design Principles.
 
 ## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
 
@@ -693,14 +693,15 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type             | Notes                                                 |
-|------------------------|------------------|-------------------------------------------------------|
-| `xml_str`              | `str`            | Generated MuJoCo XML                                  |
-| `_model`               | `mujoco.MjModel` | Compiled MuJoCo model; private slot with no property  |
-| `body_id`              | `int`            | MuJoCo body ID for the Airplane                       |
-| `initial_key_frame_id` | `int`            | MuJoCo key frame ID for initial conditions            |
-| `initial_qpos`         | `np.ndarray`     | Initial generalized positions (computed during init)  |
-| `initial_qvel`         | `np.ndarray`     | Initial generalized velocities (computed during init) |
+| Attribute              | Type                       | Notes                                                                                                    |
+|------------------------|----------------------------|----------------------------------------------------------------------------------------------------------|
+| `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                     |
+| `_model`               | `mujoco.MjModel`           | Compiled MuJoCo model; private slot with no property                                                     |
+| `body_id`              | `int`                      | MuJoCo body ID for the Airplane                                                                          |
+| `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                               |
+| `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                     |
+| `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                    |
+| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or None); private slot with no property; a truthy value makes the model unsaveable |
 
 #### Mutable
 
@@ -710,7 +711,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Construction-only parameters
 
-`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three shape the generated model during initialization and are then discarded, so none has a slot or an attribute-category entry above. `integrator` and `extra_xml` are folded into `xml_str`, so their content survives indirectly through the stored XML, while `mujoco_assets` is passed to MuJoCo's `from_xml_string` and not retained at all, which is why an asset-based model cannot be rebuilt from `xml_str` alone. `MuJoCoModel` does not validate them: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo. See Construction-Only Parameters under Design Principles.
+`integrator` and `extra_xml` are constructor parameters, not attributes: both shape the generated model during initialization, are folded into `xml_str` (so their content survives indirectly through the stored XML), and are then discarded, so neither has a slot or an attribute-category entry above. `mujoco_assets`, by contrast, is retained in the `_mujoco_assets` slot after being passed to MuJoCo's `from_xml_string`: an asset-based model cannot be rebuilt from `xml_str` alone, so the serialization layer reads the slot and raises on save rather than write a file that fails on load (the slot itself is serialized as null, since it can only ever be falsy when saving succeeds). `MuJoCoModel` does not validate any of the three: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo. See Construction-Only Parameters under Design Principles.
 
 ---
 

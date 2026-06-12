@@ -238,10 +238,6 @@ class MuJoCoModel:
         return self._xml_str
 
     @property
-    def model(self) -> mujoco.MjModel:
-        return self._model
-
-    @property
     def body_id(self) -> int:
         return self._body_id
 
@@ -256,11 +252,6 @@ class MuJoCoModel:
     @property
     def initial_qvel(self) -> np.ndarray:
         return self._initial_qvel
-
-    # --- Mutable: read only properties ---
-    @property
-    def data(self) -> mujoco.MjData:
-        return self._data
 
     # --- Other methods ---
     def apply_loads(

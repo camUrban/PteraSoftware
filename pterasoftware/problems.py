@@ -418,8 +418,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
     external_loads_fn: A callable that computes additional forces and moments to apply
     to the Airplane during the simulation, or None.
-
-    mujoco_model: The MuJoCoModel used for rigid body dynamics integration.
     """
 
     __slots__ = (
@@ -647,10 +645,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         | None
     ):
         return self._external_loads_fn
-
-    @property
-    def mujoco_model(self) -> _mujoco_model.MuJoCoModel:
-        return self._mujoco_model
 
     @property
     def _free_flight_movement(self) -> free_flight_movement.FreeFlightMovement:

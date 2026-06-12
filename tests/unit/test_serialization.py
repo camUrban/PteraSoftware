@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import numpy.testing as npt
 
+# noinspection PyProtectedMember
 from pterasoftware._mujoco_model import MuJoCoModel
 
 # noinspection PyProtectedMember
@@ -1990,7 +1991,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        model = self.problem.mujoco_model
+        model = self.problem._mujoco_model
         result = _deserialize_value(_serialize_value(model))
         assert isinstance(result, MuJoCoModel)
         self.assertEqual(result.xml_str, model.xml_str)
@@ -2004,7 +2005,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        result = _deserialize_value(_serialize_value(self.problem.mujoco_model))
+        result = _deserialize_value(_serialize_value(self.problem._mujoco_model))
         assert isinstance(result, MuJoCoModel)
         state = result.get_state()
         self.assertEqual(
@@ -2115,9 +2116,9 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.I_BP1_CgP1, problem.I_BP1_CgP1)
         self.assertEqual(result.mass, problem.mass)
         self.assertIsNone(result.external_loads_fn)
-        self.assertIsInstance(result.mujoco_model, MuJoCoModel)
+        self.assertIsInstance(result._mujoco_model, MuJoCoModel)
         # The rebuilt MuJoCoModel is functional.
-        result.mujoco_model.step()
+        result._mujoco_model.step()
 
     def test_load_history_round_trip(self):
         """Tests that recorded load-history arrays survive a round trip.
@@ -2141,6 +2142,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
 
+        # noinspection PyUnusedLocal
         def external_loads_fn(operating_point, airplane):
             return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
 

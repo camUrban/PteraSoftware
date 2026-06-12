@@ -19,6 +19,7 @@ def _movement_and_mass():
     :return: A tuple of the FreeFlightMovement and the consistent mass in kilograms.
     """
     fixture_problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+    # noinspection PyProtectedMember
     return fixture_problem._free_flight_movement, fixture_problem.mass
 
 
@@ -172,6 +173,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
     def test_external_loads_fn_stored_when_callable(self):
         """Test that a callable external_loads_fn is stored and returned."""
 
+        # noinspection PyUnusedLocal
         def external_loads_fn(operating_point, airplane):
             return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
 
@@ -265,7 +267,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         # noinspection PyProtectedMember
         from pterasoftware import _mujoco_model
 
-        self.assertIsInstance(self.problem.mujoco_model, _mujoco_model.MuJoCoModel)
+        self.assertIsInstance(self.problem._mujoco_model, _mujoco_model.MuJoCoModel)
 
     def test_mass_attribute(self):
         """Test that mass is stored as a float."""
@@ -346,7 +348,8 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.problem._mujoco_model = mock_model
         return mock_model
 
-    def _primed_problem_and_solver(self, external_loads_fn):
+    @staticmethod
+    def _primed_problem_and_solver(external_loads_fn):
         """Build a problem carrying the given external_loads_fn and a primed mock solver.
 
         Mirrors setUp's load priming and _mock_mujoco_model, but for a fresh problem that
@@ -629,11 +632,6 @@ class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):
         """Test that the external_loads_fn property is read only."""
         with self.assertRaises(AttributeError):
             self.problem.external_loads_fn = None
-
-    def test_immutable_mujoco_model_property(self):
-        """Test that the mujoco_model property is read only."""
-        with self.assertRaises(AttributeError):
-            self.problem.mujoco_model = None
 
     def test_immutable_num_steps_property(self):
         """Test that the num_steps property is read only."""

@@ -159,38 +159,38 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute               | Type    | Backing Slot             | Notes                                                  |
-|-------------------------|---------|--------------------------|--------------------------------------------------------|
-| `wing_density`          | `float` | `_wing_density`          | Mass per unit span area (kg/m^2)                       |
-| `spring_constant`       | `float` | `_spring_constant`       | Torsional spring stiffness (N*m/rad)                   |
-| `damping_constant`      | `float` | `_damping_constant`      | Torsional damping coefficient (N*m*s/rad)              |
-| `aero_scaling`          | `float` | `_aero_scaling`          | Scaling factor applied to aerodynamic moments          |
-| `moment_scaling_factor` | `float` | `_moment_scaling_factor` | Scaling factor applied to deformation angles           |
-| `step_discards`         | `int`   | `_step_discards`         | Number of initial steps discarded for stability        |
-| `plot_flap_cycle`       | `bool`  | `_plot_flap_cycle`       | Whether to plot time histories at the end of the solve |
+| Attribute               | Type    | Notes                                                  |
+|-------------------------|---------|--------------------------------------------------------|
+| `wing_density`          | `float` | Mass per unit span area (kg/m^2)                       |
+| `spring_constant`       | `float` | Torsional spring stiffness (N*m/rad)                   |
+| `damping_constant`      | `float` | Torsional damping coefficient (N*m*s/rad)              |
+| `aero_scaling`          | `float` | Scaling factor applied to aerodynamic moments          |
+| `moment_scaling_factor` | `float` | Scaling factor applied to deformation angles           |
+| `step_discards`         | `int`   | Number of initial steps discarded for stability        |
+| `plot_flap_cycle`       | `bool`  | Whether to plot time histories at the end of the solve |
 
 #### Derived from Immutable (read-only property, no backing slot)
 
-| Property                | Depends On              | Notes                                                                                         |
-|-------------------------|-------------------------|-----------------------------------------------------------------------------------------------|
+| Property                | Depends On              | Notes                                                                                               |
+|-------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|
 | `_aeroelastic_movement` | `_movement`             | Typed-narrow cast of the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
-| `wing_movement`         | `_aeroelastic_movement` | The first airplane movement's first wing movement, cast to `AeroelasticWingMovement`          |
+| `wing_movement`         | `_aeroelastic_movement` | The first airplane movement's first wing movement, cast to `AeroelasticWingMovement`                |
 
 #### Mutable (populated by solver)
 
 These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to or reassigned element-wise by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
 
-| Attribute                        | Type                     | Notes                                                  |
-|----------------------------------|--------------------------|--------------------------------------------------------|
-| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles, per wing        |
-| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state, per wing               |
-| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history, indexed `[wing][step]`  |
-| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history, indexed `[wing][step]`        |
-| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history, indexed `[wing][step]`     |
+| Attribute                        | Type                     | Notes                                                    |
+|----------------------------------|--------------------------|----------------------------------------------------------|
+| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles, per wing          |
+| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state, per wing                 |
+| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history, indexed `[wing][step]`    |
+| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history, indexed `[wing][step]`          |
+| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history, indexed `[wing][step]`       |
 | `net_data_per_wing`              | `list[list[np.ndarray]]` | Cumulative deformation snapshots, indexed `[wing][step]` |
-| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots, indexed `[wing][step]`     |
-| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets, indexed `[wing][step]`        |
-| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions, per wing          |
+| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots, indexed `[wing][step]`       |
+| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets, indexed `[wing][step]`          |
+| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions, per wing            |
 
 ## FreeFlightUnsteadyProblem Class (`problems.py`)
 
@@ -202,12 +202,13 @@ These lists are allocated in `__init__` with one entry per wing in the initial a
 
 Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute           | Type               | Backing Slot         | Notes                                                                                                                                   |
-|---------------------|--------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| `I_BP1_CgP1`        | `np.ndarray`       | `_I_BP1_CgP1`        | Inertia matrix in the first Airplane's body axes about its CG (kg*m^2); the array itself is set read-only                               |
-| `mass`              | `float`            | `_mass`              | Mass of the first Airplane (kg)                                                                                                          |
-| `external_loads_fn` | `Callable \| None` | `_external_loads_fn` | Optional callback returning additional (force, moment) loads to apply each step, or None                                                |
-| `mujoco_model`      | `MuJoCoModel`      | `_mujoco_model`      | Rigid body dynamics engine; the reference is fixed while the engine's own state advances during the solve (see the MuJoCoModel section) |
+| Attribute           | Type               | Notes                                                                                                     |
+|---------------------|--------------------|-----------------------------------------------------------------------------------------------------------|
+| `I_BP1_CgP1`        | `np.ndarray`       | Inertia matrix in the first Airplane's body axes about its CG (kg*m^2); the array itself is set read-only |
+| `mass`              | `float`            | Mass of the first Airplane (kg)                                                                           |
+| `external_loads_fn` | `Callable \| None` | Optional callback returning additional (force, moment) loads to apply each step, or None                  |
+
+The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJoCoModel`). Like the attributes above, it is set in `__init__` and never reassigned, and the reference stays fixed while the engine's own state advances during the solve. It has no public property: users never interact with the engine directly (see the MuJoCoModel section).
 
 #### Derived from Immutable (read-only property, no backing slot)
 
@@ -332,7 +333,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 `AeroelasticWingMovement` extends `CoreWingMovement` directly, as a feature-specific sibling of `WingMovement`. It inherits every attribute above unchanged and adds the one immutable slot below, stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute                                     | Type                           | Notes                                                                                                                                                                                                          |
+| Attribute                                     | Type                           | Notes                                                                                                                                                                                                           |
 |-----------------------------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `spacingAnglesSecondDerivative_Gs_to_Wn_ixyz` | `tuple[Callable \| None, ...]` | Per-basis-direction (x, y, z) analytical second time derivative of the matching custom angular spacing; an entry is a callable when its `spacingAngles_Gs_to_Wn_ixyz` component is a custom callable, else None |
 
@@ -389,8 +390,8 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 `FreeFlightOperatingPointMovement` extends `CoreOperatingPointMovement` directly, as a feature-specific sibling of `OperatingPointMovement`. It inherits every attribute above unchanged and adds the one mutable slot below, since its `OperatingPoint`s are produced by the solver's rigid body dynamics integration rather than prescribed.
 
-| Attribute          | Type                   | Notes                                                                                                                                                                                                                                          |
-|--------------------|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Attribute          | Type                   | Notes                                                                                                                                                                                                                                            |
+|--------------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `operating_points` | `list[OperatingPoint]` | Mutable OperatingPoint history; seeded with the base OperatingPoint at step 0, then the solver appends one per step. A plain mutable slot rather than a read-only property, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem` |
 
 ## SteadyProblem Class (`problems.py`)
@@ -695,7 +696,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 | Attribute              | Type             | Notes                                                 |
 |------------------------|------------------|-------------------------------------------------------|
 | `xml_str`              | `str`            | Generated MuJoCo XML                                  |
-| `model`                | `mujoco.MjModel` | Compiled MuJoCo model                                 |
+| `_model`               | `mujoco.MjModel` | Compiled MuJoCo model; private slot with no property  |
 | `body_id`              | `int`            | MuJoCo body ID for the Airplane                       |
 | `initial_key_frame_id` | `int`            | MuJoCo key frame ID for initial conditions            |
 | `initial_qpos`         | `np.ndarray`     | Initial generalized positions (computed during init)  |
@@ -703,9 +704,9 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Mutable
 
-| Attribute | Type            | Notes                                                   |
-|-----------|-----------------|---------------------------------------------------------|
-| `data`    | `mujoco.MjData` | Mutated by `apply_loads`, `step`, `reset`, `mj_forward` |
+| Attribute | Type            | Notes                                                                                  |
+|-----------|-----------------|----------------------------------------------------------------------------------------|
+| `_data`   | `mujoco.MjData` | Mutated by `apply_loads`, `step`, `reset`, `mj_forward`; private slot with no property |
 
 #### Construction-only parameters
 

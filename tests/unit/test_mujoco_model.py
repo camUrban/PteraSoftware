@@ -34,12 +34,12 @@ class TestMuJoCoModelInit(unittest.TestCase):
         self.assertIn(str(delta_time), self.model.xml_str)
 
     def test_model_is_mj_model(self):
-        """Test that the model property returns an MjModel."""
-        self.assertIsInstance(self.model.model, mujoco.MjModel)
+        """Test that the internal model object is an MjModel."""
+        self.assertIsInstance(self.model._model, mujoco.MjModel)
 
     def test_data_is_mj_data(self):
-        """Test that the data property returns an MjData."""
-        self.assertIsInstance(self.model.data, mujoco.MjData)
+        """Test that the internal data object is an MjData."""
+        self.assertIsInstance(self.model._data, mujoco.MjData)
 
     def test_body_id_is_int(self):
         """Test that body_id is an int."""
@@ -72,17 +72,17 @@ class TestMuJoCoModelInit(unittest.TestCase):
         expected_mass = mujoco_model_fixtures.make_basic_mujoco_model_mass_fixture()
 
         body_id = self.model.body_id
-        actual_mass = self.model.model.body_mass[body_id]
+        actual_mass = self.model._model.body_mass[body_id]
         self.assertAlmostEqual(actual_mass, expected_mass, places=10)
 
     def test_timestep_set_on_model(self):
         """Test that the MuJoCo model timestep matches delta_time."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
-        self.assertAlmostEqual(self.model.model.opt.timestep, delta_time, places=14)
+        self.assertAlmostEqual(self.model._model.opt.timestep, delta_time, places=14)
 
     def test_gravity_disabled_in_mujoco(self):
         """Test that gravity is set to zero in the MuJoCo model."""
-        npt.assert_array_equal(self.model.model.opt.gravity, [0.0, 0.0, 0.0])
+        npt.assert_array_equal(self.model._model.opt.gravity, [0.0, 0.0, 0.0])
 
     def test_accepts_extra_xml(self):
         """Test that MuJoCoModel accepts extra_xml and injects it into the XML."""
@@ -181,11 +181,6 @@ class TestMuJoCoModelImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.model.xml_str = "new xml"
 
-    def test_immutable_model_raises_attribute_error(self):
-        """Test that setting model raises AttributeError."""
-        with self.assertRaises(AttributeError):
-            self.model.model = None
-
     def test_immutable_body_id_raises_attribute_error(self):
         """Test that setting body_id raises AttributeError."""
         with self.assertRaises(AttributeError):
@@ -205,11 +200,6 @@ class TestMuJoCoModelImmutability(unittest.TestCase):
         """Test that setting initial_qvel raises AttributeError."""
         with self.assertRaises(AttributeError):
             self.model.initial_qvel = np.zeros(6)
-
-    def test_immutable_data_raises_attribute_error(self):
-        """Test that setting data raises AttributeError."""
-        with self.assertRaises(AttributeError):
-            self.model.data = None
 
     def test_initial_qpos_is_read_only_array(self):
         """Test that initial_qpos array is not writeable."""
@@ -235,7 +225,7 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
         moments_E_CgP1 = np.array([0.0, 0.0, 0.0])
         self.model.apply_loads(forces_E, moments_E_CgP1)
 
-        applied = self.model.data.xfrc_applied[self.model.body_id]
+        applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[0:3], forces_E, atol=1e-14)
 
     def test_apply_loads_sets_moments(self):
@@ -244,7 +234,7 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
         moments_E_CgP1 = np.array([4.0, 5.0, 6.0])
         self.model.apply_loads(forces_E, moments_E_CgP1)
 
-        applied = self.model.data.xfrc_applied[self.model.body_id]
+        applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[3:6], moments_E_CgP1, atol=1e-14)
 
     def test_apply_loads_overwrites_previous(self):
@@ -252,7 +242,7 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
         self.model.apply_loads([1.0, 2.0, 3.0], [4.0, 5.0, 6.0])
         self.model.apply_loads([10.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
-        applied = self.model.data.xfrc_applied[self.model.body_id]
+        applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[0:3], [10.0, 0.0, 0.0], atol=1e-14)
         npt.assert_allclose(applied[3:6], [0.0, 0.0, 0.0], atol=1e-14)
 
@@ -268,7 +258,7 @@ class TestMuJoCoModelStep(unittest.TestCase):
         """Test that step advances the simulation time by delta_time."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         self.model.step()
-        self.assertAlmostEqual(self.model.data.time, delta_time, places=14)
+        self.assertAlmostEqual(self.model._data.time, delta_time, places=14)
 
     def test_multiple_steps_advance_time(self):
         """Test that multiple steps advance time correctly."""
@@ -276,7 +266,7 @@ class TestMuJoCoModelStep(unittest.TestCase):
         num_steps = 10
         for _ in range(num_steps):
             self.model.step()
-        self.assertAlmostEqual(self.model.data.time, num_steps * delta_time, places=10)
+        self.assertAlmostEqual(self.model._data.time, num_steps * delta_time, places=10)
 
     def test_step_with_force_changes_velocity(self):
         """Test that stepping with an applied force changes the velocity."""
@@ -381,7 +371,7 @@ class TestMuJoCoModelReset(unittest.TestCase):
         self.model.step()
         self.model.step()
         self.model.reset()
-        self.assertAlmostEqual(self.model.data.time, 0.0, places=14)
+        self.assertAlmostEqual(self.model._data.time, 0.0, places=14)
 
     def test_reset_restores_initial_qpos(self):
         """Test that reset restores initial generalized positions."""
@@ -390,7 +380,7 @@ class TestMuJoCoModelReset(unittest.TestCase):
         for _ in range(10):
             self.model.step()
         self.model.reset()
-        npt.assert_allclose(self.model.data.qpos, initial_qpos, atol=1e-14)
+        npt.assert_allclose(self.model._data.qpos, initial_qpos, atol=1e-14)
 
     def test_reset_restores_initial_qvel(self):
         """Test that reset restores initial generalized velocities."""
@@ -399,13 +389,13 @@ class TestMuJoCoModelReset(unittest.TestCase):
         for _ in range(10):
             self.model.step()
         self.model.reset()
-        npt.assert_allclose(self.model.data.qvel, initial_qvel, atol=1e-14)
+        npt.assert_allclose(self.model._data.qvel, initial_qvel, atol=1e-14)
 
     def test_reset_clears_applied_loads(self):
         """Test that reset clears any applied loads."""
         self.model.apply_loads([100.0, 200.0, 300.0], [10.0, 20.0, 30.0])
         self.model.reset()
-        applied = self.model.data.xfrc_applied[self.model.body_id]
+        applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_array_equal(applied, np.zeros(6))
 
     def test_reset_produces_same_state_as_init(self):
@@ -459,7 +449,7 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         With a 90 degree pitch about the y axis, the body's +x direction points along
         Earth -z, its +y direction along Earth +y, and its +z direction along Earth +x.
         """
-        xmat = self.model.data.xmat[self.model.body_id].reshape(3, 3)
+        xmat = self.model._data.xmat[self.model.body_id].reshape(3, 3)
         npt.assert_allclose(xmat[:, 0], [0.0, 0.0, -1.0], atol=1e-10)
         npt.assert_allclose(xmat[:, 1], [0.0, 1.0, 0.0], atol=1e-10)
         npt.assert_allclose(xmat[:, 2], [1.0, 0.0, 0.0], atol=1e-10)

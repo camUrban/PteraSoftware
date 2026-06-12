@@ -188,6 +188,14 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 integrator="rk4",
             )
 
+    def test_externalFX_W_validation(self):
+        """Test that a nonzero externalFX_W on the initial OperatingPoint raises."""
+        base_operating_point = ps.operating_point.OperatingPoint(externalFX_W=10.0)
+        with self.assertRaises(ValueError):
+            problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+                base_operating_point=base_operating_point
+            )
+
     def test_integrator_forwarded_to_mujoco_model(self):
         """Test that the integrator choice reaches the generated MuJoCo XML."""
         movement, mass = _movement_and_mass()

@@ -483,7 +483,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             return value is validated on the callable's first invocation; a return that
             is not a pair of (3,) finite numeric vectors raises a descriptive error. The
             physical correctness of the forces and moments themselves is not checked.
-            Setting this to None applies no additional loads. The default is None.
+            Setting this to None applies no additional loads. The default is None. This
+            is the only mechanism for non-aerodynamic loads in free flight: the
+            OperatingPoint's externalFX_W is never applied and must be zero.
         :param integrator: A str naming the MuJoCo integrator used to advance the rigid
             body dynamics. It must be one of "Euler", "RK4", "implicit", or
             "implicitfast". The choice is baked into the generated MuJoCo model XML, so
@@ -564,6 +566,17 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 f"mass * |g_E| is {expected_weight} N. Set the Airplane's weight, the "
                 "mass, and the OperatingPoint's g_E so they agree (for a zero-gravity "
                 "simulation, leave both g_E and the weight at zero)."
+            )
+
+        # The free-flight dynamics never apply externalFX_W: non-aerodynamic loads
+        # enter free flight only through external_loads_fn, which is strictly more
+        # capable (full force and moment, time varying). A nonzero value would be
+        # silently ignored, so raise instead.
+        if initial_operating_point.externalFX_W != 0.0:
+            raise ValueError(
+                "The OperatingPoint's externalFX_W must be zero for free flight. The "
+                "free-flight dynamics never apply externalFX_W; use external_loads_fn "
+                "to model thrust or other additional loads."
             )
 
         if external_loads_fn is not None and not callable(external_loads_fn):

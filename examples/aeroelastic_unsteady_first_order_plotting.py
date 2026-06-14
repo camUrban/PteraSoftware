@@ -294,7 +294,7 @@ def run_aeroelastic(
         wing_density=wing_density,
         spring_constant=spring_constant,
         damping_constant=damping_constant,
-        aero_scaling=1.0,
+        aero_scaling=1.0 / 57.3,
         step_discards=5,
         moment_scaling_factor=1.0,
         plot_flap_cycle=False,

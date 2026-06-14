@@ -1194,11 +1194,17 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             aeroelastic_solver, next_step
         )
 
+        # The structural model works in radians; the geometry API expects degrees.
+        wing_deformation_angles_ixyz_deg = [
+            np.rad2deg(arr) if arr is not None else None
+            for arr in wing_deformation_angles_ixyz
+        ]
+
         # Generate the deformed airplane at this step.
         airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
-            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz,
+            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz_deg,
         )
         operating_point = self._aeroelastic_movement.operating_points[next_step]
 
@@ -1729,7 +1735,15 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         h = np.deg2rad(_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
         spacing = _wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
         if spacing == "sine":
-            torque_func = lambda time: -1 * (b**2) * np.sin(b * time + h) * amp * span_I
+            # amp is in degrees (ampAngles_Gs_to_Wn_ixyz); convert to radians so
+            # the inertial torque (N*m) is consistent with the SI spring-damper ODE.
+            torque_func = (
+                lambda time: -1
+                * (b**2)
+                * np.sin(b * time + h)
+                * np.deg2rad(amp)
+                * span_I
+            )
         elif spacing == "uniform":
             raise ValueError(
                 "Sawtooth function (uniform spacing) is not differentiable, "
@@ -1740,7 +1754,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             # whenever the spacing component is a custom callable.
             deriv = _wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
             assert deriv is not None
-            torque_func = lambda time: deriv(time) * span_I
+            # deriv is the second derivative before amplitude scaling; amp is in
+            # degrees, so convert to radians to keep torque in N*m.
+            torque_func = lambda time: np.deg2rad(amp) * deriv(time) * span_I
 
         return torque_func
 

@@ -2237,7 +2237,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # with num_steps, so the best is at min_num_steps (lower bound = largest
         # delta_time). Mirrors the original 1.0 / delta_time shape via
         # delta_time = lcm_period / num_steps.
-        # noinspection PyUnusedLocal
+        # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
             airplane_movements,
             operating_point_movement,
@@ -2298,7 +2298,7 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         # with num_steps, so the best is at max_num_steps (upper bound =
         # smallest delta_time). Mirrors the original delta_time * 10.0 shape
         # via delta_time = lcm_period / num_steps.
-        # noinspection PyUnusedLocal
+        # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
             airplane_movements,
             operating_point_movement,

@@ -8,7 +8,7 @@ Free flight support is single-airplane for now, so this document describes the s
 
 A body with a freejoint is a six degree of freedom floating body. MuJoCo describes its configuration with a seven element generalized position array (`qpos`: three position components followed by a four component orientation quaternion) and its motion with a six element generalized velocity array (`qvel`: three linear components followed by three angular components). External loads are applied through the body's six element `xfrc_applied` entry (three force components followed by three torque components). The sections below interpret each block.
 
-### Position (qpos[0:3])
+### Position (qpos\[0:3])
 
 `qpos[0:3]` is the position of the first Airplane's CG (in Earth axes, relative to the Earth origin), in meters. No transformation is needed.
 
@@ -16,7 +16,7 @@ A body with a freejoint is a six degree of freedom floating body. MuJoCo describ
 position_E_Eo = qpos[0:3]
 ```
 
-### Orientation Quaternion (qpos[3:7])
+### Orientation Quaternion (qpos\[3:7])
 
 `qpos[3:7]` is the body's orientation quaternion in scalar-first format, [w, x, y, z]. It encodes the active rotation from Earth axes to the first Airplane's body axes (the active rotation that carries a frame from the Earth orientation to the body orientation). MuJoCoModel sets it from the initial passive orientation matrix R_pas_BP1_to_E (the rotation block of T_pas_BP1_CgP1_to_E_CgP1):
 
@@ -39,7 +39,7 @@ R_pas_E_to_BP1 = R_pas_BP1_to_E.T
 
 Verification: with the body rotated 90 degrees about the Earth y axis, the body's +x direction points along Earth -z. The test showed `xmat[:, 0] = [0, 0, -1]`, confirming that the columns of `xmat` are the body axes expressed in Earth axes.
 
-### Linear Velocity (qvel[0:3])
+### Linear Velocity (qvel\[0:3])
 
 `qvel[0:3]` is the linear velocity of the first Airplane's CG (in Earth axes, observed from the Earth frame), in meters per second. No transformation is needed.
 
@@ -49,7 +49,7 @@ velocity_E__E = qvel[0:3]
 
 Verification: when a force along Earth +x is applied to a rotated body, the velocity grows along Earth +x regardless of the body's orientation.
 
-### Angular Velocity (qvel[3:6])
+### Angular Velocity (qvel\[3:6])
 
 This is the most error-prone block. `qvel[3:6]` is in body axes, not Earth axes. It is the angular velocity of the first Airplane's body axes (in the first Airplane's body axes, observed from the Earth frame), in radians per second. Ptera Software works in degrees per second, so MuJoCoModel converts:
 
@@ -65,7 +65,7 @@ omegas_E__E = np.rad2deg(xmat @ qvel[3:6])
 
 Verification: with the body rotated 90 degrees about the y axis (so the body's +x direction equals Earth -z), setting `qvel[3:6] = [1, 0, 0]` produced rotation about Earth -z, not Earth +x, proving that `qvel[3:6]` is expressed in body axes.
 
-### Applied Forces (xfrc_applied[body_id][0:3])
+### Applied Forces (xfrc_applied\[body_id]\[0:3])
 
 `xfrc_applied[body_id][0:3]` is the external force applied to the body at its CG (in Earth axes), in Newtons. No transformation is needed when the force is already in Earth axes.
 
@@ -73,7 +73,7 @@ Verification: with the body rotated 90 degrees about the y axis (so the body's +
 xfrc_applied[body_id][0:3] = forces_E
 ```
 
-### Applied Torques (xfrc_applied[body_id][3:6])
+### Applied Torques (xfrc_applied\[body_id]\[3:6])
 
 `xfrc_applied[body_id][3:6]` is the external torque applied to the body about its CG (in Earth axes, relative to the first Airplane's CG), in Newton meters. No transformation is needed when the moment is already in Earth axes.
 

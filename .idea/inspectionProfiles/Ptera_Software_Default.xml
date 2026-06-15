@@ -23,6 +23,46 @@
     <inspection_tool class="PyNewStyleGenericSyntaxInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyNewTypeInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyPep8NamingInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="PyStringConversionWithoutDunderMethodInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredTypes">
+        <list>
+          <option value="types.NoneType" />
+          <option value="_io.TextIOWrapper" />
+          <option value="str" />
+          <option value="int" />
+          <option value="float" />
+          <option value="complex" />
+          <option value="set" />
+          <option value="frozenset" />
+          <option value="bytes" />
+          <option value="bytearray" />
+          <option value="memoryview" />
+          <option value="slice" />
+          <option value="list" />
+          <option value="dict" />
+          <option value="bool" />
+          <option value="range" />
+          <option value="tuple" />
+          <option value="pathlib.PurePath" />
+          <option value="uuid.UUID" />
+          <option value="decimal.Decimal" />
+          <option value="fractions.Fraction" />
+          <option value="numpy.floating" />
+          <option value="numpy.ndarray" />
+          <option value="numpy.dtype" />
+          <option value="_collections_abc.Buffer" />
+          <option value="numpy.number" />
+          <option value="numpy.object_" />
+          <option value="object" />
+        </list>
+      </option>
+      <option name="reportedTypes">
+        <list>
+          <option value="types.FunctionType" />
+          <option value="type" />
+        </list>
+      </option>
+    </inspection_tool>
     <inspection_tool class="PyTypeCheckerInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyTypeHintsInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyUnboundLocalVariableInspection" enabled="false" level="WARNING" enabled_by_default="false" />

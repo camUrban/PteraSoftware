@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import numpy.testing as npt
 
+# noinspection PyProtectedMember
 from pterasoftware._mujoco_model import MuJoCoModel
 
 # noinspection PyProtectedMember
@@ -1990,7 +1991,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        model = self.problem.mujoco_model
+        model = self.problem._mujoco_model
         result = _deserialize_value(_serialize_value(model))
         assert isinstance(result, MuJoCoModel)
         self.assertEqual(result.xml_str, model.xml_str)
@@ -1998,13 +1999,32 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.initial_qpos, model.initial_qpos)
         npt.assert_array_equal(result.initial_qvel, model.initial_qvel)
 
+    def test_mujoco_assets_model_is_not_serializable(self):
+        """Tests that a MuJoCoModel built with mujoco_assets raises on serialization,
+        since the engine rebuilt on load could not resolve the asset references.
+
+        :return: None
+        """
+        model = MuJoCoModel(
+            name="assets_test",
+            mass=1.0,
+            omegas_BP1__E=np.zeros(3, dtype=float),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=np.array([10.0, 0.0, 0.0]),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            mujoco_assets={"dummy.txt": b"placeholder"},
+        )
+        with self.assertRaises(ValueError):
+            _serialize_value(model)
+
     def test_rebuilt_engine_is_functional(self):
         """Tests that a round-tripped MuJoCoModel can be queried and stepped, confirming
         its native model and data objects were rebuilt from the XML string.
 
         :return: None
         """
-        result = _deserialize_value(_serialize_value(self.problem.mujoco_model))
+        result = _deserialize_value(_serialize_value(self.problem._mujoco_model))
         assert isinstance(result, MuJoCoModel)
         state = result.get_state()
         self.assertEqual(
@@ -2115,9 +2135,9 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.I_BP1_CgP1, problem.I_BP1_CgP1)
         self.assertEqual(result.mass, problem.mass)
         self.assertIsNone(result.external_loads_fn)
-        self.assertIsInstance(result.mujoco_model, MuJoCoModel)
+        self.assertIsInstance(result._mujoco_model, MuJoCoModel)
         # The rebuilt MuJoCoModel is functional.
-        result.mujoco_model.step()
+        result._mujoco_model.step()
 
     def test_load_history_round_trip(self):
         """Tests that recorded load-history arrays survive a round trip.
@@ -2141,11 +2161,25 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         :return: None
         """
 
+        # noinspection PyUnusedLocal
         def external_loads_fn(operating_point, airplane):
             return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
 
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
             external_loads_fn=external_loads_fn
+        )
+        with self.assertRaises(ValueError):
+            _serialize_value(problem)
+
+    def test_mujoco_assets_problem_is_not_serializable(self):
+        """Tests that a FreeFlightUnsteadyProblem whose MuJoCoModel was built with
+        mujoco_assets raises on serialization, matching the external_loads_fn
+        disposition.
+
+        :return: None
+        """
+        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+            mujoco_assets={"dummy.txt": b"placeholder"}
         )
         with self.assertRaises(ValueError):
             _serialize_value(problem)

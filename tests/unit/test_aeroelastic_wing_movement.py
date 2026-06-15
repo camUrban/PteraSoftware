@@ -415,6 +415,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
         a tuple, and stored correctly.
         """
 
+        # noinspection PyUnusedLocal
         def custom_spacing(t):
             return 0.0
 
@@ -450,6 +451,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
         matching second derivative raises ValueError.
         """
 
+        # noinspection PyUnusedLocal
         def custom_spacing(t):
             return 0.0
 
@@ -508,6 +510,7 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
             _make_base_wing_and_wing_cross_section_movements()
         )
 
+        # noinspection PyUnusedLocal
         def custom_spacing(t):
             return 0.0
 

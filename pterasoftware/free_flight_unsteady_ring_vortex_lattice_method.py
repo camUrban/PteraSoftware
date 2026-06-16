@@ -47,8 +47,10 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
     **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:** sets
     _models_body_rates to True so the inherited constructor permits non-zero body rates,
-    and overrides _currentOmegasRad_GP1__E to supply the current OperatingPoint's body
-    angular rate (in the first Airplane's geometry axes, in radians per second).
+    and overrides _currentOmegasRad_GP1__E and _convectionOmegasRad_GP1__E to supply the
+    current and next OperatingPoints' body angular rates (in the first Airplane's
+    geometry axes, in radians per second), the latter used when convecting the wake to
+    the next time step.
     """
 
     __slots__ = ()
@@ -101,4 +103,27 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
             are in radians per second.
         """
         omegas_GP1__E = self.current_operating_point.omegas_BP1__E * _BP1_TO_GP1_FLIP
+        return cast(np.ndarray, np.deg2rad(omegas_GP1__E))
+
+    def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
+        """Finds the next time step's body angular velocity (in the first Airplane's
+        geometry axes, observed from the Earth frame) used to convect the wake.
+
+        **Notes:**
+
+        The wake convects over the interval ending at the next time step, so its
+        apparent velocity from body rotation uses the next OperatingPoint's body rate
+        rather than the current step's. The next OperatingPoint stores the body angular
+        rate in the first Airplane's body axes, in degrees per second. This method
+        transforms it to the first Airplane's geometry axes and converts it to radians
+        per second for the omega cross r calculation in _apply_body_rate.
+
+        :return: A (3,) ndarray of floats representing the next time step's body angular
+            velocity (in the first Airplane's geometry axes, observed from the Earth
+            frame). Its units are in radians per second.
+        """
+        next_operating_point = self._get_steady_problem_at(
+            self._current_step + 1
+        ).operating_point
+        omegas_GP1__E = next_operating_point.omegas_BP1__E * _BP1_TO_GP1_FLIP
         return cast(np.ndarray, np.deg2rad(omegas_GP1__E))

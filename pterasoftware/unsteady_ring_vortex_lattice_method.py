@@ -963,10 +963,31 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         return _ZERO_OMEGAS_RAD_GP1__E
 
+    def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
+        """Finds the body angular velocity (in the first Airplane's geometry axes,
+        observed from the Earth frame) used to convect the wake to the next time step.
+
+        **Notes:**
+
+        The wake convects over the interval that ends at the next time step, so its
+        apparent velocity from body rotation is evaluated with the next time step's body
+        rate (the interval's end frame) rather than the current step's. The base solver
+        does not model body rotation and returns a zero vector, which makes
+        _apply_body_rate a no-op. The free-flight solver overrides this to return the
+        next OperatingPoint's body rate, converted from the body axes (in degrees per
+        second) to the first Airplane's geometry axes (in radians per second).
+
+        :return: A (3,) ndarray of floats representing the body angular velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame). Its units
+            are in radians per second.
+        """
+        return _ZERO_OMEGAS_RAD_GP1__E
+
     def _apply_body_rate(
         self,
         stackPoints_GP1_CgP1: np.ndarray,
         stackBaseV_GP1__E: np.ndarray,
+        omegasRad_GP1__E: np.ndarray | None = None,
     ) -> np.ndarray:
         """Adds the apparent velocity from body rotation (omega cross r) to a stack of
         velocities.
@@ -976,9 +997,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         The apparent velocity at a point due to body rotation is opposite the motion of
         that point, so it is the negative of the cross product of the body angular
         velocity and the point's position vector (relative to the first Airplane's CG).
-        When the solver does not model body rotation, _currentOmegasRad_GP1__E returns a
-        zero vector and the base velocities are returned unchanged, so solvers that do
-        not model body rates incur no per-point cost.
+        When the body angular velocity is a zero vector (as it always is for solvers
+        that do not model body rotation), the base velocities are returned unchanged, so
+        those solvers incur no per-point cost.
 
         :param stackPoints_GP1_CgP1: A (M, 3) ndarray of floats representing the points
             (in the first Airplane's geometry axes, relative to the first Airplane's CG)
@@ -987,11 +1008,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
             (in the first Airplane's geometry axes, observed from the Earth frame) to
             which the body-rotation velocity is added. Its units are in meters per
             second.
+        :param omegasRad_GP1__E: A (3,) ndarray of floats (or None) representing the
+            body angular velocity (in the first Airplane's geometry axes, observed from
+            the Earth frame) to use, in radians per second. If None, the current time
+            step's body rate (_currentOmegasRad_GP1__E) is used. Wake convection passes
+            the next time step's rate instead. The default is None.
         :return: A (M, 3) ndarray of floats representing the base velocities plus the
             apparent velocity from body rotation (in the first Airplane's geometry axes,
             observed from the Earth frame). Its units are in meters per second.
         """
-        omegasRad_GP1__E = self._currentOmegasRad_GP1__E()
+        if omegasRad_GP1__E is None:
+            omegasRad_GP1__E = self._currentOmegasRad_GP1__E()
         if not np.any(omegasRad_GP1__E):
             return stackBaseV_GP1__E
         return stackBaseV_GP1__E - np.cross(omegasRad_GP1__E, stackPoints_GP1_CgP1)
@@ -1183,6 +1210,60 @@ class UnsteadyRingVortexLatticeMethodSolver:
             point due to the summed effects of the freestream velocity and the induced
             velocity from every ring vortex. The units are in meters per second.
         """
+        return cast(
+            np.ndarray,
+            self._calculate_induced_velocity(
+                stackP_GP1_CgP1,
+                bound_singularity_counts,
+                wake_singularity_counts,
+            )
+            + self._currentVInf_GP1__E,
+        )
+
+    def _calculate_induced_velocity(
+        self,
+        stackP_GP1_CgP1: np.ndarray | Sequence[Sequence[float | int]],
+        bound_singularity_counts: np.ndarray | None = None,
+        wake_singularity_counts: np.ndarray | None = None,
+    ) -> np.ndarray:
+        """Finds the induced velocity (in the first Airplane's geometry axes, observed
+        from the Earth frame) at one or more points (in the first Airplane's geometry
+        axes, relative to the first Airplane's CG) due to every ring vortex, excluding
+        the freestream velocity.
+
+        When an image surface is defined on the OperatingPoint, the returned velocity
+        also includes the induced velocity from image bound and wake ring vortices
+        reflected across that surface.
+
+        **Notes:**
+
+        This is the induced part of calculate_solution_velocity, which adds the current
+        time step's freestream velocity to this result. Wake convection calls this
+        method directly so that it can add the next time step's freestream instead.
+
+        This method assumes that the correct strengths for the ring vortices have
+        already been calculated and set.
+
+        This method also does not include the velocity due to the Movement's motion at
+        any of the points provided, as it has no way of knowing if any of the points lie
+        on panels.
+
+        :param stackP_GP1_CgP1: An array-like object of numbers (int or float) with
+            shape (N,3) representing the positions of the evaluation points (in the
+            first Airplane's geometry axes, relative to the first Airplane's CG). Can be
+            a tuple, list, or ndarray. Values are converted to floats internally. The
+            units are in meters.
+        :param bound_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from bound ring vortices. If None,
+            counts are discarded.
+        :param wake_singularity_counts: An optional (4,) ndarray of int64 for
+            accumulating singularity event counts from wake ring vortices. If None,
+            counts are discarded.
+        :return: A (N,3) ndarray of floats representing the induced velocity (in the
+            first Airplane's geometry axes, observed from the Earth frame) at each
+            evaluation point due to every ring vortex (and its image, when an image
+            surface is defined). The units are in meters per second.
+        """
         stackP_GP1_CgP1 = (
             _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
                 stackP_GP1_CgP1, "stackP_GP1_CgP1"
@@ -1274,9 +1355,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return cast(
             np.ndarray,
-            stackBoundRingVInd_GP1_E
-            + stackWakeRingVInd_GP1_E
-            + self._currentVInf_GP1__E,
+            stackBoundRingVInd_GP1_E + stackWakeRingVInd_GP1_E,
         )
 
     def _calculate_loads(self) -> None:
@@ -1661,6 +1740,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
             next_airplanes = next_problem.airplanes
 
+            # The wake convects over the interval ending at the next time step, so it is
+            # transported with the next time step's freestream and body rate (the
+            # interval's end frame) rather than the current step's. For a static
+            # OperatingPoint these equal the current step's values, leaving the result
+            # bit-for-bit unchanged; they differ only when the OperatingPoint varies in
+            # time, as it does every step in free flight.
+            convectionVInf_GP1__E = next_problem.operating_point.vInf_GP1__E
+            convectionOmegasRad_GP1__E = self._convectionOmegasRad_GP1__E()
+
             # Iterate through this time step's Airplanes' successor objects.
             for airplane_id, next_airplane in enumerate(next_airplanes):
 
@@ -1730,15 +1818,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # axes, observed from the Earth frame). Otherwise, batch one
                         # solution-velocity call across all of the row's points.
                         if self._prescribed_wake:
-                            vRowWrvp_GP1__E = self._currentVInf_GP1__E
+                            vRowWrvp_GP1__E = convectionVInf_GP1__E
                         else:
                             stackRowWrvp_GP1_CgP1 = next_wing.gridWrvp_GP1_CgP1.reshape(
                                 -1, 3
                             )
-                            stackVRowWrvp_GP1__E = self.calculate_solution_velocity(
-                                stackRowWrvp_GP1_CgP1,
-                                bound_singularity_counts=bound_singularity_counts,
-                                wake_singularity_counts=wake_singularity_counts,
+                            # Take the induced velocity at the current step and add the
+                            # next step's freestream (the interval's end frame), rather
+                            # than the current step's freestream that
+                            # calculate_solution_velocity would add.
+                            stackVRowWrvp_GP1__E = (
+                                self._calculate_induced_velocity(
+                                    stackRowWrvp_GP1_CgP1,
+                                    bound_singularity_counts=bound_singularity_counts,
+                                    wake_singularity_counts=wake_singularity_counts,
+                                )
+                                + convectionVInf_GP1__E
                             )
                             vRowWrvp_GP1__E = stackVRowWrvp_GP1__E.reshape(
                                 next_wing.gridWrvp_GP1_CgP1.shape
@@ -1756,6 +1851,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         vRowWrvp_GP1__E = self._apply_body_rate(
                             next_wing.gridWrvp_GP1_CgP1,
                             vRowWrvp_GP1__E,
+                            convectionOmegasRad_GP1__E,
                         )
 
                         # Build the second new row by advecting the first row.
@@ -1788,15 +1884,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         # axes, observed from the Earth frame). Otherwise, batch one
                         # solution-velocity call across the entire aged grid.
                         if self._prescribed_wake:
-                            vGridWrvp_GP1__E = self._currentVInf_GP1__E
+                            vGridWrvp_GP1__E = convectionVInf_GP1__E
                         else:
                             stackGridWrvp_GP1_CgP1 = (
                                 next_wing.gridWrvp_GP1_CgP1.reshape(-1, 3)
                             )
-                            stackVGridWrvp_GP1__E = self.calculate_solution_velocity(
-                                stackGridWrvp_GP1_CgP1,
-                                bound_singularity_counts=bound_singularity_counts,
-                                wake_singularity_counts=wake_singularity_counts,
+                            # Take the induced velocity at the current step and add the
+                            # next step's freestream (the interval's end frame), rather
+                            # than the current step's freestream that
+                            # calculate_solution_velocity would add.
+                            stackVGridWrvp_GP1__E = (
+                                self._calculate_induced_velocity(
+                                    stackGridWrvp_GP1_CgP1,
+                                    bound_singularity_counts=bound_singularity_counts,
+                                    wake_singularity_counts=wake_singularity_counts,
+                                )
+                                + convectionVInf_GP1__E
                             )
                             vGridWrvp_GP1__E = stackVGridWrvp_GP1__E.reshape(
                                 next_wing.gridWrvp_GP1_CgP1.shape
@@ -1814,6 +1917,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         vGridWrvp_GP1__E = self._apply_body_rate(
                             next_wing.gridWrvp_GP1_CgP1,
                             vGridWrvp_GP1__E,
+                            convectionOmegasRad_GP1__E,
                         )
 
                         # Advect the entire aged grid in one vector add.

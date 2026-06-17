@@ -12,8 +12,8 @@ import pterasoftware as ps
 CURVE_INDEX = 16
 
 # Default values used when a parameter is not being swept
-DEFAULT_K = 10.0
-DEFAULT_B = 1000
+DEFAULT_K = 1000.0
+DEFAULT_B = 1000.0
 DEFAULT_DENSITY = 6
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the

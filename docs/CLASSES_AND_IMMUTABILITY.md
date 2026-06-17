@@ -705,9 +705,9 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Mutable
 
-| Attribute | Type            | Notes                                                                                  |
-|-----------|-----------------|----------------------------------------------------------------------------------------|
-| `_data`   | `mujoco.MjData` | Mutated by `apply_loads`, `step`, `reset`, `mj_forward`; private slot with no property |
+| Attribute | Type            | Notes                                                                                                   |
+|-----------|-----------------|---------------------------------------------------------------------------------------------------------|
+| `_data`   | `mujoco.MjData` | Mutated by `apply_loads`, `step`, `reset`, `restore_state`, `mj_forward`; private slot with no property |
 
 #### Construction-only parameters
 

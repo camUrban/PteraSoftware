@@ -12,13 +12,13 @@ import pterasoftware as ps
 CURVE_INDEX = 16
 
 # Default values used when a parameter is not being swept
-DEFAULT_K = 1.0
-DEFAULT_B = 1.0
-DEFAULT_DENSITY = 0.012
+DEFAULT_K = 10.0
+DEFAULT_B = 1000
+DEFAULT_DENSITY = 6
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
-K_VALUES: list[float] = [1.0, 4.0, 10.0, 40.0]
+K_VALUES: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
 B_VALUES: list[float] = []
 DENSITY_VALUES: list[float] = []
 
@@ -27,6 +27,7 @@ def run_aeroelastic(
     spring_constant: float = DEFAULT_K,
     damping_constant: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
+    animate: bool = False,
 ) -> tuple[list, object]:
     """Run the aeroelastic solver and return the net deformation data.
 
@@ -294,7 +295,7 @@ def run_aeroelastic(
         wing_density=wing_density,
         spring_constant=spring_constant,
         damping_constant=damping_constant,
-        aero_scaling=1.0 / 57.3,
+        aero_scaling=1.0,
         step_discards=5,
         moment_scaling_factor=1.0,
         plot_flap_cycle=False,
@@ -310,12 +311,13 @@ def run_aeroelastic(
 
     problem = example_solver.unsteady_problem
 
-    # ps.output.animate(
-    #     unsteady_solver=example_solver,
-    #     scalar_type="lift",
-    #     show_wake_vortices=True,
-    #     save=True,
-    # )
+    if animate:
+        ps.output.animate(
+            unsteady_solver=example_solver,
+            scalar_type="lift",
+            show_wake_vortices=True,
+            save=True,
+        )
     return problem.net_data_per_wing[0], problem
 
 
@@ -351,9 +353,11 @@ results = {}
 flap_angle = None
 for val in sweep_values:
     print(f"Running with {sweep_symbol}={val}...")
-    net_data, problem = run_aeroelastic(**{sweep_kwarg: val})
+    net_data, problem = run_aeroelastic(**{sweep_kwarg: val}, animate=False)
     # Extract y-component (torsional angle) for Curve 16 across all time steps
-    curve_16 = np.array(net_data)[:, CURVE_INDEX, 1].tolist()
+    curve_16 = (
+        np.array(net_data)[:, CURVE_INDEX, 1] * 180 / np.pi
+    ).tolist()  # Convert to degrees
     results[val] = curve_16
     print(f"  Completed {sweep_symbol}={val}, {len(curve_16)} steps")
 

@@ -617,7 +617,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # Hook: subclasses may inject work between load calculation and wake
                 # shedding (e.g. coupled problems update the next step's geometry
                 # from this step's solver results).
-                self._pre_shed_hook(step)
+                self._update_next_step_hook(step)
 
                 # Shed ring vortices into the wake.
                 _logger.debug("Shedding ring vortices into the wake.")
@@ -709,8 +709,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-    def _pre_shed_hook(self, step: int) -> None:
-        """Hook for subclasses to inject work between load calculation and wake shed.
+    def _update_next_step_hook(self, step: int) -> None:
+        """Hook for subclasses to update the next time step from this step's results.
 
         Called once per time step in run(), after this step's loads have been calculated
         and before wake ring vortices are shed. The default implementation is a no op.

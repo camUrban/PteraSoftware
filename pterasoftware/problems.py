@@ -385,6 +385,21 @@ _EXTRA_XML_INJECTION_POINTS = frozenset(
 # option element.
 _MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
 
+# Parameters governing the strongly coupled free-flight sub-iteration, which drives the
+# aerodynamic loads and the rigid body state to mutual consistency within each free-
+# flight time step. The maximum iteration count caps the work spent per step; a step that
+# reaches it is accepted anyway with a warning. The relative and absolute tolerances form
+# the mixed convergence test on the weighting-matrix-nondimensionalized state residual.
+# The divergence tolerance guards the Aitken relaxation factor against a collapsing
+# denominator. The initial relaxation factor under-relaxes the first update before the
+# Aitken formula takes over. These are module constants for now; the iteration cap and
+# tunables are slated to become validated, serialized constructor parameters later.
+_SUBITERATION_MAX_ITERATIONS = 20
+_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
+_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
+_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
+_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
+
 
 class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     """A class used to contain problems with coupled unsteady aerodynamics and rigid
@@ -858,13 +873,102 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             environmental quantities are carried across to the new OperatingPoint.
         :return: The OperatingPoint describing the new rigid body state.
         """
-        position_E_Eo = state["position_E_Eo"]
-        R_pas_E_to_BP1 = state["R_pas_E_to_BP1"]
-        velocity_E__E = state["velocity_E__E"]
-        omegas_BP1__E = state["omegas_BP1__E"]
+        angles_E_to_BP1_izyx = _transformations.R_to_angles_izyx(
+            state["R_pas_E_to_BP1"]
+        )
 
+        return self._build_next_operating_point(
+            position_E_Eo=state["position_E_Eo"],
+            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
+            velocity_E__E=state["velocity_E__E"],
+            omegas_BP1__E=state["omegas_BP1__E"],
+            reference_operating_point=reference_operating_point,
+        )
+
+    def _operating_point_from_vector(
+        self,
+        x: np.ndarray,
+        reference_operating_point: operating_point_mod.OperatingPoint,
+    ) -> operating_point_mod.OperatingPoint:
+        """Builds the next OperatingPoint from a rigid body state 12-vector.
+
+        The 12-vector is a relaxed trial state of the sub-iteration, expressed in Earth
+        axes with angular quantities in radians (see _state_to_vector). Unlike a MuJoCo
+        state, a relaxed trial state need not correspond to any state MuJoCo produced,
+        so the OperatingPoint is built from the 12-vector directly. The attitude is
+        converted from radians to degrees and the angular rate is rotated from Earth
+        axes back into the first Airplane's body axes and converted to degrees per
+        second, the form the OperatingPoint expects.
+
+        :param x: A (12,) ndarray of floats representing the rigid body state 12-vector,
+            as produced by _state_to_vector.
+        :param reference_operating_point: The current OperatingPoint, whose
+            environmental quantities are carried across to the new OperatingPoint.
+        :return: The OperatingPoint describing the trial rigid body state.
+        """
+        position_E_Eo = x[0:3]
+        anglesRad_E_to_BP1_izyx = x[3:6]
+        velocity_E__E = x[6:9]
+        omegasRad_E__E = x[9:12]
+
+        angles_E_to_BP1_izyx = np.rad2deg(anglesRad_E_to_BP1_izyx)
+
+        # Rotate the angular rate from Earth axes back into the first Airplane's body
+        # axes and convert to degrees per second for the OperatingPoint.
+        T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
+            angles=angles_E_to_BP1_izyx,
+            passive=True,
+            intrinsic=True,
+            order="zyx",
+        )
+        omegas_BP1__E = np.rad2deg(
+            _transformations.apply_T_to_vectors(
+                T_pas_E_CgP1_to_BP1_CgP1, omegasRad_E__E, is_position=False
+            )
+        )
+
+        return self._build_next_operating_point(
+            position_E_Eo=position_E_Eo,
+            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
+            velocity_E__E=velocity_E__E,
+            omegas_BP1__E=omegas_BP1__E,
+            reference_operating_point=reference_operating_point,
+        )
+
+    def _build_next_operating_point(
+        self,
+        position_E_Eo: np.ndarray,
+        angles_E_to_BP1_izyx: np.ndarray,
+        velocity_E__E: np.ndarray,
+        omegas_BP1__E: np.ndarray,
+        reference_operating_point: operating_point_mod.OperatingPoint,
+    ) -> operating_point_mod.OperatingPoint:
+        """Builds the next OperatingPoint from already-extracted rigid body components.
+
+        Derives the speed, angle of attack, and sideslip angle from the velocity and
+        attitude, and carries the environmental quantities (fluid density, surface
+        geometry, external force, kinematic viscosity, and gravity) across from the
+        reference OperatingPoint unchanged. The attitude and angular rate are supplied
+        in the form the OperatingPoint expects: the intrinsic zyx Euler angles from
+        Earth axes to the first Airplane's body axes in degrees, and the body angular
+        rate in the first Airplane's body axes in degrees per second.
+
+        :param position_E_Eo: A (3,) ndarray of floats representing the first Airplane's
+            CG position (in Earth axes, relative to the Earth origin) in meters.
+        :param angles_E_to_BP1_izyx: A (3,) ndarray of floats representing the intrinsic
+            zyx Euler angles from Earth axes to the first Airplane's body axes, in
+            degrees.
+        :param velocity_E__E: A (3,) ndarray of floats representing the first Airplane's
+            CG velocity (in Earth axes, observed from the Earth frame) in meters per
+            second.
+        :param omegas_BP1__E: A (3,) ndarray of floats representing the body angular
+            rate (in the first Airplane's body axes, observed from the Earth frame) in
+            degrees per second.
+        :param reference_operating_point: The current OperatingPoint, whose
+            environmental quantities are carried across to the new OperatingPoint.
+        :return: The OperatingPoint describing the new rigid body state.
+        """
         vCg__E = float(np.linalg.norm(velocity_E__E))
-        angles_E_to_BP1_izyx = _transformations.R_to_angles_izyx(R_pas_E_to_BP1)
         T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
             angles=angles_E_to_BP1_izyx,
             passive=True,
@@ -890,6 +994,82 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             nu=reference_operating_point.nu,
             g_E=reference_operating_point.g_E,
             omegas_BP1__E=omegas_BP1__E,
+        )
+
+    def _state_to_vector(self, state: _mujoco_model._MuJoCoState) -> np.ndarray:
+        """Converts a MuJoCo state to the rigid body state 12-vector.
+
+        The 12-vector concatenates the four blocks of the rigid body state, all
+        expressed in Earth axes with angular quantities in radians, so the sub-
+        iteration's residuals and updates are plain vector arithmetic: the CG position
+        (relative to the Earth origin, in meters), the intrinsic zyx Euler angles from
+        Earth axes to the first Airplane's body axes (in radians), the CG velocity
+        (observed from the Earth frame, in meters per second), and the body angular rate
+        (observed from the Earth frame, in radians per second). The MuJoCo state carries
+        the attitude as an orientation matrix and the angular rate in the first
+        Airplane's body axes in degrees per second, so this method extracts the Euler
+        angles, rotates the rate into Earth axes, and converts both angular quantities
+        to radians.
+
+        :param state: A MuJoCo state, as returned by MuJoCoModel.get_state.
+        :return: A (12,) ndarray of floats representing the rigid body state 12-vector.
+        """
+        R_pas_E_to_BP1 = state["R_pas_E_to_BP1"]
+
+        position_E_Eo = state["position_E_Eo"]
+        anglesRad_E_to_BP1_izyx = np.deg2rad(
+            _transformations.R_to_angles_izyx(R_pas_E_to_BP1)
+        )
+        velocity_E__E = state["velocity_E__E"]
+        # Rotate the angular rate from the first Airplane's body axes into Earth axes
+        # (v_E = R_pas_E_to_BP1.T @ v_BP1, a proper rotation that preserves the axial-
+        # vector sign) and convert to radians per second.
+        omegasRad_E__E = R_pas_E_to_BP1.T @ np.deg2rad(state["omegas_BP1__E"])
+
+        return np.concatenate(
+            [position_E_Eo, anglesRad_E_to_BP1_izyx, velocity_E__E, omegasRad_E__E]
+        )
+
+    def _build_relaxation_weights(self) -> np.ndarray:
+        """Builds the diagonal of the sub-iteration weighting matrix D.
+
+        D nondimensionalizes the rigid body state 12-vector so the convergence test and
+        the Aitken inner products combine its four blocks (position, attitude, velocity,
+        and angular rate) on a common scale despite their differing units and their
+        differing powers of the time step under a load perturbation. It is diagonal and
+        block constant, ordered like the state as (position, attitude, velocity, angular
+        rate):
+
+            D = diag( (1 / L_ref) I3, (1 / theta_ref) I3,
+                      (delta_time / L_ref) I3, (delta_time / theta_ref) I3 )
+
+        The reference length L_ref is the first Airplane's reference chord. The reference
+        angle theta_ref is mass * L_ref**2 / I_bar, with I_bar the mean of the body
+        inertia's principal moments (one third of its trace), a rotation invariant chosen
+        so D stays constant as the body reorients. The delta_time factors on the velocity
+        and angular-rate blocks convert a rate into the increment it produces over one
+        step, lifting those blocks to match the configuration blocks. All inputs are
+        fixed for a run, so D is constant.
+
+        :return: A (12,) ndarray of floats representing the diagonal of the weighting
+            matrix D.
+        """
+        airplane = self._free_flight_movement.airplanes[0][0]
+        L_ref = airplane.c_ref
+        assert L_ref is not None
+
+        mean_inertia = float(np.trace(self._I_BP1_CgP1)) / 3.0
+        theta_ref = self._mass * L_ref**2 / mean_inertia
+
+        delta_time = self.delta_time
+
+        return np.concatenate(
+            [
+                np.full(3, 1.0 / L_ref),
+                np.full(3, 1.0 / theta_ref),
+                np.full(3, delta_time / L_ref),
+                np.full(3, delta_time / theta_ref),
+            ]
         )
 
     def _commit_next_problem(

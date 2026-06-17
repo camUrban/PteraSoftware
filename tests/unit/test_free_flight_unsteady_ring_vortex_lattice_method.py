@@ -130,11 +130,19 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         expected_omegasRad_GP1__E = np.deg2rad(np.array([-1.0, 2.0, -3.0]))
         np.testing.assert_allclose(omegasRad_GP1__E, expected_omegasRad_GP1__E)
 
-    def test_inherits_empty_slots(self):
-        """Test that the subclass declares __slots__ = () so it does not gain an instance
-        __dict__ that would defeat the parent's __slots__.
+    def test_declares_substep_slots(self):
+        """Test that the subclass declares exactly the strongly coupled sub-iteration's
+        transient slots and so does not gain an instance __dict__ that would defeat the
+        parent's __slots__.
         """
-        self.assertEqual(FreeFlightUnsteadyRingVortexLatticeMethodSolver.__slots__, ())
+        self.assertEqual(
+            FreeFlightUnsteadyRingVortexLatticeMethodSolver.__slots__,
+            (
+                "_substep_stackVIndGridWrvp_GP1__E",
+                "_substep_gamma_n",
+                "_substep_gamma_n_minus_1",
+            ),
+        )
         with self.assertRaises(AttributeError):
             self.solver.not_a_real_attribute = 42
 

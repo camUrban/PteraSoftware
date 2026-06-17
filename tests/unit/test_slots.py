@@ -2346,9 +2346,10 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
 
 class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver. The solver adds no stored state of
-    its own (its body-rate contribution is computed through hooks), so this class
-    verifies __slots__ enforcement and that the inherited problem remains accessible.
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver. The solver's only stored state is the
+    transient working state for the strongly coupled sub-iteration (cleared after each
+    step), so this class verifies __slots__ enforcement and that the inherited problem
+    remains accessible.
     """
 
     def setUp(self):

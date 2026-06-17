@@ -1708,6 +1708,66 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return np.array(moments_GP1_CgP1)
 
+    def _calculate_wake_grid_induced_velocities(
+        self,
+        bound_singularity_counts: np.ndarray,
+        wake_singularity_counts: np.ndarray,
+    ) -> list[list[np.ndarray]]:
+        """Calculates the induced velocity at each Wing's aged wake ring vortex point
+        grid.
+
+        This is the induced (Biot-Savart) part of the wake transport velocity that ages
+        the existing wake over the interval ending at the next time step. It reads only
+        the current time step's bound geometry, bound strengths, and wake, so it is
+        independent of the next time step's body state. The base solver calls it inline
+        once per step; a strongly coupled free-flight sub-iteration instead precomputes
+        it once per step and reuses it across trials, adding the next step's freestream
+        and body rate (the iterate-dependent frame part) per trial in
+        _populate_next_airplanes_wake_vortex_points.
+
+        Only the aged grid present past the first time step is handled here. The first
+        step's single shed row is built directly in
+        _populate_next_airplanes_wake_vortex_points, and a prescribed wake convects with
+        the freestream alone and never calls this method.
+
+        :param bound_singularity_counts: A (4,) ndarray of int64 for accumulating
+            singularity event counts from bound ring vortices.
+        :param wake_singularity_counts: A (4,) ndarray of int64 for accumulating
+            singularity event counts from wake ring vortices.
+        :return: A list, indexed [airplane_id][wing_id], of (N, 3) ndarrays of floats.
+            Each holds the induced velocity (the tag stackVIndGridWrvp_GP1__E: in the
+            first Airplane's geometry axes, observed from the Earth frame) at that
+            Wing's aged wake ring vortex point grid, with N the number of points in the
+            grid. Its units are in meters per second.
+        """
+        stackVIndGridWrvp_GP1__E: list[list[np.ndarray]] = []
+
+        # Iterate through the current time step's Airplanes and Wings, matching the
+        # [airplane_id][wing_id] indexing used by
+        # _populate_next_airplanes_wake_vortex_points.
+        for this_airplane in self.current_airplanes:
+            airplaneStackVIndGridWrvp_GP1__E: list[np.ndarray] = []
+
+            for this_wing in this_airplane.wings:
+                _thisGridWrvp_GP1_CgP1 = this_wing.gridWrvp_GP1_CgP1
+                assert _thisGridWrvp_GP1_CgP1 is not None
+
+                # Evaluate the induced velocity at the aged grid's points. These are the
+                # current step's wake ring vortex points, which the next step's grid is
+                # a copy of, so this matches the points the assembly advects.
+                stackGridWrvp_GP1_CgP1 = _thisGridWrvp_GP1_CgP1.reshape(-1, 3)
+                airplaneStackVIndGridWrvp_GP1__E.append(
+                    self._calculate_induced_velocity(
+                        stackGridWrvp_GP1_CgP1,
+                        bound_singularity_counts=bound_singularity_counts,
+                        wake_singularity_counts=wake_singularity_counts,
+                    )
+                )
+
+            stackVIndGridWrvp_GP1__E.append(airplaneStackVIndGridWrvp_GP1__E)
+
+        return stackVIndGridWrvp_GP1__E
+
     def _populate_next_airplanes_wake(self) -> None:
         """Updates the next time step's Airplanes' wakes.
 
@@ -1720,10 +1780,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next time step's Airplanes' wake ring vortices.
         self._populate_next_airplanes_wake_vortices()
 
-    def _populate_next_airplanes_wake_vortex_points(self) -> None:
+    def _populate_next_airplanes_wake_vortex_points(
+        self,
+        stackVIndGridWrvp_GP1__E: list[list[np.ndarray]] | None = None,
+    ) -> None:
         """Populates the locations of the next time step's Airplanes' wake ring vortex
         points.
 
+        :param stackVIndGridWrvp_GP1__E: An optional list, indexed
+            [airplane_id][wing_id], of (N, 3) ndarrays of floats holding the induced
+            velocity (in the first Airplane's geometry axes, observed from the Earth
+            frame) at each Wing's aged wake ring vortex point grid, in meters per
+            second. This is the iterate-independent part of the wake transport velocity;
+            a strongly coupled free-flight sub-iteration precomputes it once per step
+            (via _calculate_wake_grid_induced_velocities) and passes it in to reuse it
+            across trials. When None, it is computed here. It is unused on the first
+            time step, whose wake is a single freshly shed row rather than an aged grid,
+            and for a prescribed wake, which convects with the freestream alone. The
+            default is None.
         :return: None
         """
         # Check that this isn't the last time step.
@@ -1745,6 +1819,23 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # time, as it does every step in free flight.
             convectionVInf_GP1__E = next_problem.operating_point.vInf_GP1__E
             convectionOmegasRad_GP1__E = self._convectionOmegasRad_GP1__E()
+
+            # The induced (Biot-Savart) part of the aged wake grid's transport velocity
+            # reads only the current step's bound geometry, strengths, and wake, so it is
+            # independent of the next step's body state. When a caller has not already
+            # computed it, compute it once here for all Wings; a strongly coupled free-
+            # flight sub-iteration instead precomputes it once per step and passes it in
+            # to reuse it unchanged across trials. It is only needed past the first time
+            # step, where an aged grid exists, and only for a free wake, since a
+            # prescribed wake convects with the freestream alone.
+            if (
+                stackVIndGridWrvp_GP1__E is None
+                and self._current_step > 0
+                and not self._prescribed_wake
+            ):
+                stackVIndGridWrvp_GP1__E = self._calculate_wake_grid_induced_velocities(
+                    bound_singularity_counts, wake_singularity_counts
+                )
 
             # Iterate through this time step's Airplanes' successor objects.
             for airplane_id, next_airplane in enumerate(next_airplanes):
@@ -1878,24 +1969,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # If the wake is prescribed, the velocity at every point is
                         # the freestream velocity (in the first Airplane's geometry
-                        # axes, observed from the Earth frame). Otherwise, batch one
-                        # solution-velocity call across the entire aged grid.
+                        # axes, observed from the Earth frame). Otherwise, add the next
+                        # step's freestream (the interval's end frame, rather than the
+                        # current step's freestream that calculate_solution_velocity
+                        # would add) to the induced velocity at the aged grid, computed
+                        # up front for this call or supplied by a strongly coupled sub-
+                        # iteration that reuses it across trials.
                         if self._prescribed_wake:
                             vGridWrvp_GP1__E = convectionVInf_GP1__E
                         else:
-                            stackGridWrvp_GP1_CgP1 = (
-                                next_wing.gridWrvp_GP1_CgP1.reshape(-1, 3)
-                            )
-                            # Take the induced velocity at the current step and add the
-                            # next step's freestream (the interval's end frame), rather
-                            # than the current step's freestream that
-                            # calculate_solution_velocity would add.
+                            assert stackVIndGridWrvp_GP1__E is not None
                             stackVGridWrvp_GP1__E = (
-                                self._calculate_induced_velocity(
-                                    stackGridWrvp_GP1_CgP1,
-                                    bound_singularity_counts=bound_singularity_counts,
-                                    wake_singularity_counts=wake_singularity_counts,
-                                )
+                                stackVIndGridWrvp_GP1__E[airplane_id][wing_id]
                                 + convectionVInf_GP1__E
                             )
                             vGridWrvp_GP1__E = stackVGridWrvp_GP1__E.reshape(

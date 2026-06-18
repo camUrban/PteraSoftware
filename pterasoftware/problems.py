@@ -20,6 +20,7 @@ None
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
@@ -29,6 +30,8 @@ from scipy.integrate import solve_ivp
 
 from . import (
     _core,
+    _fixed_point_relaxation,
+    _logging,
     _mujoco_model,
     _parameter_validation,
     _transformations,
@@ -47,6 +50,11 @@ if TYPE_CHECKING:
     from .aeroelastic_unsteady_ring_vortex_lattice_method import (
         AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     )
+    from .free_flight_unsteady_ring_vortex_lattice_method import (
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    )
+
+_logger = _logging.get_logger("problems")
 
 
 class SteadyProblem:
@@ -1100,6 +1108,142 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         )
         self._steady_problems.append(next_steady_problem)
 
+    def _advance_strongly_coupled(
+        self,
+        solver: FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        current_airplane: geometry.airplane.Airplane,
+        current_operating_point: operating_point_mod.OperatingPoint,
+        step: int,
+    ) -> None:
+        """Advances the body to the next step by the strongly coupled sub-iteration.
+
+        Within one free flight time step, drives the aerodynamic loads and the rigid
+        body state to mutual consistency by an Aitken-relaxed fixed-point iteration on
+        the rigid body state 12-vector. The snapshot MuJoCo state and the solver's
+        frozen step data are saved once. Each iteration evaluates the aerodynamic loads
+        at the current trial state, integrates the body from the snapshot under those
+        loads, and relaxes the trial state toward the dynamics-propagated state until
+        the weighted residual passes the convergence test or the iteration cap is
+        reached. The accepted state is the final dynamics-propagated state (a genuine
+        MuJoCo trajectory output), and its OperatingPoint is committed as the next
+        step's. The solver's current-step state is then restored for the inherited run
+        loop's official wake build.
+
+        :param solver: The FreeFlightUnsteadyRingVortexLatticeMethodSolver providing the
+            aerodynamic evaluation at each trial state.
+        :param current_airplane: The first Airplane at the current step, carrying the
+            current step's solved aerodynamic loads, used to seed the iteration.
+        :param current_operating_point: The current step's OperatingPoint, the reference
+            for the environmental quantities carried into each trial OperatingPoint.
+        :param step: The current time step index (zero indexed).
+        :return: None
+        """
+        # Freeze: snapshot the MuJoCo state and the current step's state 12-vector while
+        # the model is still at it, the solver's frozen step data, and the weighting.
+        # Build the transient next-step SteadyProblem over a scratch copy of the
+        # prescribed next-step Airplane, so the trials evaluate aerodynamics on the copy
+        # and the canonical Airplane's set-once panel coordinates are reserved for the
+        # official SteadyProblem committed once the solve accepts. Its OperatingPoint is a
+        # placeholder; the trial OperatingPoint is supplied to each trial.
+        snapshot = self._mujoco_model.save_state()
+        snapshot_x = self._state_to_vector(self._mujoco_model.get_state())
+        next_airplane = self._free_flight_movement.airplanes[0][step + 1]
+        transient_next_steady_problem = SteadyProblem(
+            airplanes=[copy.deepcopy(next_airplane)],
+            operating_point=current_operating_point,
+        )
+        solver.freeze_substep(transient_next_steady_problem)
+        weights = self._build_relaxation_weights()
+
+        # Seed the iteration with the loose step, S(x_n, l_n), evaluated from the snapshot.
+        snapshot_interval_loads = self._assemble_interval_loads(
+            current_operating_point, current_airplane, step
+        )
+        trial_x = self._state_to_vector(self._advance_body(snapshot_interval_loads))
+
+        relaxation_factor = _SUBITERATION_INITIAL_RELAXATION_FACTOR
+        previous_residual: np.ndarray | None = None
+        residual_norm = 0.0
+        converged = False
+
+        for iteration in range(_SUBITERATION_MAX_ITERATIONS + 1):
+            # Aerodynamic loads at the trial state: build the trial OperatingPoint,
+            # evaluate the aerodynamics at it, and assemble the Earth-axes interval load.
+            trial_operating_point = self._operating_point_from_vector(
+                trial_x, current_operating_point
+            )
+            trial_airplane = solver.evaluate_trial_aero_loads(
+                trial_operating_point, step
+            )
+            interval_loads = self._assemble_interval_loads(
+                trial_operating_point, trial_airplane, step
+            )
+
+            # Integrate the body from the snapshot under the trial load.
+            self._mujoco_model.restore_state(snapshot)
+            propagated_x = self._state_to_vector(self._advance_body(interval_loads))
+
+            residual = propagated_x - trial_x
+            increment = trial_x - snapshot_x
+            residual_norm = _fixed_point_relaxation.weighted_norm(weights, residual)
+
+            # The relaxation factor applied this iteration: the initial factor on the
+            # first iteration, the Aitken factor thereafter.
+            if iteration > 0:
+                assert previous_residual is not None
+                relaxation_factor = _fixed_point_relaxation.aitken_relaxation_factor(
+                    weights,
+                    residual,
+                    previous_residual,
+                    relaxation_factor,
+                    _SUBITERATION_INITIAL_RELAXATION_FACTOR,
+                    _SUBITERATION_DIVERGENCE_TOLERANCE,
+                )
+
+            _logger.debug(
+                "Free flight sub-iteration: step %d, iteration %d, weighted residual "
+                "norm %g, relaxation factor %g.",
+                step,
+                iteration,
+                residual_norm,
+                relaxation_factor,
+            )
+
+            if _fixed_point_relaxation.is_converged(
+                weights,
+                residual,
+                increment,
+                _SUBITERATION_RELATIVE_TOLERANCE,
+                _SUBITERATION_ABSOLUTE_TOLERANCE,
+            ):
+                converged = True
+                break
+
+            if iteration == _SUBITERATION_MAX_ITERATIONS:
+                break
+
+            trial_x = trial_x + relaxation_factor * residual
+            previous_residual = residual
+
+        if not converged:
+            _logger.warning(
+                "Free flight sub-iteration at step %d reached the %d-iteration cap "
+                "without converging; accepting the capped iterate with weighted residual "
+                "norm %g.",
+                step,
+                _SUBITERATION_MAX_ITERATIONS,
+                residual_norm,
+            )
+
+        # Accept: the final dynamics-propagated state, at which the model now sits, is the
+        # next step's state. Commit its OperatingPoint, then restore the solver's current-
+        # step state for the official wake build in the inherited run loop.
+        accepted_operating_point = self._operating_point_from_state(
+            self._mujoco_model.get_state(), current_operating_point
+        )
+        self._commit_next_problem(accepted_operating_point, step)
+        solver.restore_substep(step)
+
     def initialize_next_problem(
         self,
         solver: CoupledUnsteadyRingVortexLatticeMethodSolver,
@@ -1107,14 +1251,14 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     ) -> None:
         """Initializes the next time step's SteadyProblem from rigid body dynamics.
 
-        On every step except the last one, steps the MuJoCo dynamics forward, extracts
-        the new state, and creates the next SteadyProblem with the new OperatingPoint
-        and the prescribed Airplane geometry for the next step. During the free flight
-        phase (once the step index reaches the movement's prescribed_num_steps), it
-        first transforms the aerodynamic loads into Earth axes and applies them, along
-        with weight and any external loads, to the MuJoCo model before stepping. During
-        the prescribed phase, those loads are withheld so the body coasts at its initial
-        trimmed condition while the wake develops. On every step (including the last
+        On every step except the last one, advances the MuJoCo dynamics and creates the
+        next SteadyProblem with the new OperatingPoint and the prescribed Airplane
+        geometry for the next step. During the prescribed phase, the loads are withheld
+        so the body coasts at its initial trimmed condition while the wake develops, and
+        the body advances once. During the free flight phase (once the step index
+        reaches the movement's prescribed_num_steps), the aerodynamic loads and the
+        rigid body state are driven to mutual consistency by the strongly coupled sub-
+        iteration before the next step is committed. On every step (including the last
         one), records the current step's loads in the load history lists.
 
         :param solver: The CoupledUnsteadyRingVortexLatticeMethodSolver instance
@@ -1136,17 +1280,30 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         aeroMoments_W_CgP1 = current_airplane.moments_W_CgP1
 
         if step < self.num_steps - 1:
-            # Assemble the interval load (withheld in the prescribed phase), advance the
-            # rigid body dynamics under it, then build and commit the next step's
-            # SteadyProblem from the new state.
-            interval_loads_E = self._assemble_interval_loads(
-                current_operating_point, current_airplane, step
-            )
-            new_state = self._advance_body(interval_loads_E)
-            next_operating_point = self._operating_point_from_state(
-                new_state, current_operating_point
-            )
-            self._commit_next_problem(next_operating_point, step)
+            if step >= self._free_flight_movement.prescribed_num_steps:
+                # Free flight phase: drive the loads and the body state to mutual
+                # consistency before committing the next step.
+                self._advance_strongly_coupled(
+                    cast(
+                        "FreeFlightUnsteadyRingVortexLatticeMethodSolver",
+                        solver,
+                    ),
+                    current_airplane,
+                    current_operating_point,
+                    step,
+                )
+            else:
+                # Prescribed phase: the loads are withheld, so the body coasts at its
+                # trimmed condition while the wake develops. Advance once and commit the
+                # next step's SteadyProblem from the new state.
+                interval_loads_E = self._assemble_interval_loads(
+                    current_operating_point, current_airplane, step
+                )
+                new_state = self._advance_body(interval_loads_E)
+                next_operating_point = self._operating_point_from_state(
+                    new_state, current_operating_point
+                )
+                self._commit_next_problem(next_operating_point, step)
 
         # Store the current step's loads in the load history.
         self.forces_W.append(np.copy(aeroForces_W))

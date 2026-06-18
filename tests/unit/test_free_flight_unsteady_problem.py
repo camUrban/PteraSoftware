@@ -463,21 +463,6 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_called_once()
 
-    def test_applies_loads_and_steps_dynamics_on_free_step(self):
-        """Test that on a free flight phase step the MuJoCo model is both loaded and
-        stepped, so the rigid body dynamics are integrated.
-        """
-        mock_model = self._mock_mujoco_model()
-
-        # The first free flight step is the one indexed by prescribed_num_steps. For the
-        # basic fixture this is a non final step.
-        first_free_step = self.problem._free_flight_movement.prescribed_num_steps
-
-        self.problem.initialize_next_problem(self.solver, step=first_free_step)
-
-        mock_model.apply_loads.assert_called_once()
-        mock_model.step.assert_called_once()
-
     def test_records_loads_on_non_final_step(self):
         """Test that the current Airplane's loads are recorded on a non final step."""
         self._mock_mujoco_model()
@@ -616,28 +601,6 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             problem.initialize_next_problem(solver, step=0)
-
-    def test_external_loads_fn_validated_only_once(self):
-        """Test that the external_loads_fn return is validated only on the first call,
-        so a later malformed (but arithmetically broadcastable) return is not re-checked.
-        """
-        external_loads_fn = MagicMock(
-            side_effect=[
-                (np.zeros(3, dtype=float), np.zeros(3, dtype=float)),
-                (np.array([np.inf, 0.0, 0.0], dtype=float), np.zeros(3, dtype=float)),
-            ]
-        )
-        problem, solver = self._primed_problem_and_solver(external_loads_fn)
-
-        # The external_loads_fn is invoked once on the first step (in the prescribed
-        # phase) to validate its return fail-fast, and again on the first free flight step
-        # to apply its loads. The first call validates and passes; the second is not
-        # re-validated, so the non finite return does not raise from validation.
-        first_free_step = problem._free_flight_movement.prescribed_num_steps
-        problem.initialize_next_problem(solver, step=0)
-        problem.initialize_next_problem(solver, step=first_free_step)
-
-        self.assertEqual(external_loads_fn.call_count, 2)
 
 
 class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):

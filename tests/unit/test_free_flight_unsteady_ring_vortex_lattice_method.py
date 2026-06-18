@@ -138,6 +138,9 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(
             FreeFlightUnsteadyRingVortexLatticeMethodSolver.__slots__,
             (
+                "_substep_next_step",
+                "_substep_next_steady_problem",
+                "_substep_next_operating_point",
                 "_substep_stackVIndGridWrvp_GP1__E",
                 "_substep_gamma_n",
                 "_substep_gamma_n_minus_1",

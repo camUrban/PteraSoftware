@@ -1816,8 +1816,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # interval's end frame) rather than the current step's. For a static
             # OperatingPoint these equal the current step's values, leaving the result
             # bit-for-bit unchanged; they differ only when the OperatingPoint varies in
-            # time, as it does every step in free flight.
-            convectionVInf_GP1__E = next_problem.operating_point.vInf_GP1__E
+            # time, as it does every step in free flight. The OperatingPoint is fetched
+            # through _operating_point_at so the strongly coupled free-flight solver can
+            # supply the trial OperatingPoint for an as-yet-uncommitted next step.
+            convectionVInf_GP1__E = self._operating_point_at(
+                self._current_step + 1
+            ).vInf_GP1__E
             convectionOmegasRad_GP1__E = self._convectionOmegasRad_GP1__E()
 
             # The induced (Biot-Savart) part of the aged wake grid's transport velocity
@@ -2478,6 +2482,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         return self.steady_problems[step]
 
+    def _operating_point_at(self, step: int) -> operating_point.OperatingPoint:
+        """Gets the OperatingPoint to use for a given time step's geometry and wake.
+
+        By default this is the OperatingPoint of the SteadyProblem at that step. It is a
+        separate dynamic dispatch point so coupled subclasses can supply an
+        OperatingPoint other than the one bound to a committed SteadyProblem. The
+        strongly coupled free- flight solver overrides it during a sub-iteration to
+        supply the trial OperatingPoint for the next step, whose canonical SteadyProblem
+        has not yet been committed.
+
+        :param step: The time step of the desired OperatingPoint.
+        :return: The OperatingPoint to use at the given time step.
+        """
+        return self._get_steady_problem_at(step).operating_point
+
     def _initialize_panel_vortices_at(self, step: int) -> None:
         """Calculates the bound ring vortex corner positions at a given time step and
         stores them in the per step list arrays.
@@ -2489,8 +2508,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         steady_problem = self._get_steady_problem_at(step)
 
         # Find the freestream velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at this time step.
-        this_operating_point = steady_problem.operating_point
+        # from the Earth frame) at this time step. The OperatingPoint is fetched through
+        # _operating_point_at so the strongly coupled free-flight solver can supply the
+        # trial OperatingPoint for an as-yet-uncommitted next step.
+        this_operating_point = self._operating_point_at(step)
         vInf_GP1__E = this_operating_point.vInf_GP1__E
 
         stackFr = self._listStackFrbrvp_GP1_CgP1[step]

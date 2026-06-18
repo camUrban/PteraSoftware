@@ -183,6 +183,7 @@ exclude_patterns = [
     "../CLASSES_AND_IMMUTABILITY.md",
     "../CODE_STYLE.md",
     "../MUJOCO_CONVENTIONS.md",
+    "../STRONG_COUPLING.md",
     "../TYPE_HINT_AND_DOCSTRING_STYLE.md",
     "../WRITING_STYLE.md",
     # Exclude brand files directory

@@ -393,16 +393,11 @@ _EXTRA_XML_INJECTION_POINTS = frozenset(
 # option element.
 _MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
 
-# Parameters governing the strongly coupled free-flight sub-iteration, which drives the
-# aerodynamic loads and the rigid body state to mutual consistency within each free-
-# flight time step. The maximum iteration count caps the work spent per step; a step that
-# reaches it is accepted anyway with a warning. The relative and absolute tolerances form
-# the mixed convergence test on the weighting-matrix-nondimensionalized state residual.
-# The divergence tolerance guards the Aitken relaxation factor against a collapsing
+# Strongly coupled free-flight sub-iteration tunables. The relative and absolute
+# tolerances form the mixed convergence test on the nondimensionalized state residual. The
+# divergence tolerance guards the Aitken relaxation factor against a collapsing
 # denominator. The initial relaxation factor under-relaxes the first update before the
-# Aitken formula takes over. These are module constants for now; the iteration cap and
-# tunables are slated to become validated, serialized constructor parameters later.
-_SUBITERATION_MAX_ITERATIONS = 20
+# Aitken formula takes over.
 _SUBITERATION_RELATIVE_TOLERANCE = 1e-6
 _SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
 _SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
@@ -453,6 +448,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         "_mass",
         "_external_loads_fn",
         "_external_loads_validated",
+        "_k_max",
         "_mujoco_model",
         "forces_W",
         "forceCoefficients_W",
@@ -475,6 +471,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             ]
             | None
         ) = None,
+        k_max: int = 20,
         integrator: str = "RK4",
         extra_xml: dict[str, str] | None = None,
         mujoco_assets: dict[str, bytes] | None = None,
@@ -509,6 +506,15 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             Setting this to None applies no additional loads. The default is None. This
             is the only mechanism for non-aerodynamic loads in free flight: the
             OperatingPoint's externalFX_W is never applied and must be zero.
+        :param k_max: An int giving the maximum number of strongly coupled sub-
+            iterations per free-flight time step. Each time step drives the aerodynamic
+            loads and the rigid body state to mutual consistency with an Aitken-relaxed
+            fixed-point sub-iteration; this caps the iterations spent before the step is
+            accepted. A step that reaches the cap without converging is accepted anyway,
+            with a warning. It must be greater than zero and will be converted
+            internally to an int. Raising it trades more work per step for a tighter
+            solve when convergence is slow, which can happen for a very light vehicle (a
+            large added-mass ratio). The default is 20.
         :param integrator: A str naming the MuJoCo integrator used to advance the rigid
             body dynamics. It must be one of "Euler", "RK4", "implicit", or
             "implicitfast". The choice is baked into the generated MuJoCo model XML, so
@@ -611,6 +617,16 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         # function's first invocation in initialize_next_problem, rather than every step.
         self._external_loads_validated = False
 
+        # The cap on the strongly coupled sub-iteration count per free-flight time step.
+        # The remaining sub-iteration tunables stay module constants by design (they are
+        # universal dimensionless constants), so the cap is the only one exposed.
+        self._k_max = _parameter_validation.int_in_range_return_int(
+            k_max,
+            "k_max",
+            min_val=0,
+            min_inclusive=False,
+        )
+
         # Initialize empty lists to hold the loads and load coefficients experienced by
         # each time step's Airplane.
         self.forces_W: list[np.ndarray] = []
@@ -693,6 +709,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     @property
     def mass(self) -> float:
         return self._mass
+
+    @property
+    def k_max(self) -> int:
+        return self._k_max
 
     @property
     def external_loads_fn(
@@ -1166,7 +1186,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         residual_norm = 0.0
         converged = False
 
-        for iteration in range(_SUBITERATION_MAX_ITERATIONS + 1):
+        for iteration in range(self.k_max + 1):
             # Aerodynamic loads at the trial state: build the trial OperatingPoint,
             # evaluate the aerodynamics at it, and assemble the Earth-axes interval load.
             trial_operating_point = self._operating_point_from_vector(
@@ -1219,7 +1239,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 converged = True
                 break
 
-            if iteration == _SUBITERATION_MAX_ITERATIONS:
+            if iteration == self.k_max:
                 break
 
             trial_x = trial_x + relaxation_factor * residual
@@ -1231,7 +1251,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 "without converging; accepting the capped iterate with weighted residual "
                 "norm %g.",
                 step,
-                _SUBITERATION_MAX_ITERATIONS,
+                self.k_max,
                 residual_norm,
             )
 

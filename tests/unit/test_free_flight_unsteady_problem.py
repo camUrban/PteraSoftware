@@ -207,6 +207,43 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIn('integrator="implicitfast"', problem._mujoco_model.xml_str)
 
+    def test_k_max_type_validation(self):
+        """Test that k_max must be an int."""
+        movement, mass = _movement_and_mass()
+        with self.assertRaises(TypeError):
+            ps.problems.FreeFlightUnsteadyProblem(
+                movement=movement,
+                mass=mass,
+                I_BP1_CgP1=np.eye(3, dtype=float),
+                k_max=20.0,
+            )
+
+    def test_k_max_value_validation(self):
+        """Test that k_max must be greater than zero."""
+        movement, mass = _movement_and_mass()
+        with self.assertRaises(ValueError):
+            ps.problems.FreeFlightUnsteadyProblem(
+                movement=movement,
+                mass=mass,
+                I_BP1_CgP1=np.eye(3, dtype=float),
+                k_max=0,
+            )
+
+    def test_k_max_default(self):
+        """Test that k_max defaults to 20."""
+        self.assertEqual(self.problem.k_max, 20)
+
+    def test_k_max_stored(self):
+        """Test that a valid k_max is stored and returned."""
+        movement, mass = _movement_and_mass()
+        problem = ps.problems.FreeFlightUnsteadyProblem(
+            movement=movement,
+            mass=mass,
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            k_max=7,
+        )
+        self.assertEqual(problem.k_max, 7)
+
     def test_external_loads_fn_default_none(self):
         """Test that external_loads_fn defaults to None."""
         self.assertIsNone(self.problem.external_loads_fn)

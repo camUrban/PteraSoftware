@@ -2134,10 +2134,27 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
         npt.assert_array_equal(result.I_BP1_CgP1, problem.I_BP1_CgP1)
         self.assertEqual(result.mass, problem.mass)
+        self.assertEqual(result.k_max, problem.k_max)
         self.assertIsNone(result.external_loads_fn)
         self.assertIsInstance(result._mujoco_model, MuJoCoModel)
         # The rebuilt MuJoCoModel is functional.
         result._mujoco_model.step()
+
+    def test_non_default_k_max_round_trip(self):
+        """Tests that a non-default k_max survives a round trip.
+
+        :return: None
+        """
+        fixture = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+        problem = FreeFlightUnsteadyProblem(
+            movement=fixture._free_flight_movement,
+            mass=fixture.mass,
+            I_BP1_CgP1=fixture.I_BP1_CgP1,
+            k_max=5,
+        )
+        result = _deserialize_value(_serialize_value(problem))
+        assert isinstance(result, FreeFlightUnsteadyProblem)
+        self.assertEqual(result.k_max, 5)
 
     def test_load_history_round_trip(self):
         """Tests that recorded load-history arrays survive a round trip.

@@ -388,7 +388,7 @@ ps.output.log_results(solver=loaded_solver)
 
 # Call the draw function on the loaded solver. For a free flight solver, the geometry is
 # drawn in Earth axes at the final time step's true flight pose, so the airplane appears
-# where and how it ended up after final time step. Press any key to close the plotter
+# where and how it ended up after the final time step. Press any key to close the plotter
 # after it draws the output.
 ps.output.draw(
     solver=loaded_solver,

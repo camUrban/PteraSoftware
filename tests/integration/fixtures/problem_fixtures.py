@@ -235,3 +235,49 @@ def make_simple_glider_free_flight_problem():
     )
 
     return simple_glider_free_flight_problem
+
+
+def make_flapping_free_flight_problem():
+    """This function creates the flapping-wing FreeFlightUnsteadyProblem to be used as a
+    fixture.
+
+    The mass properties are reused from the simple glider; this airframe is a coupling
+    demonstration and is not separately tuned or verified for static stability. The
+    inertia matrix is expressed in the first Airplane's body axes relative to the first
+    Airplane's center of gravity, which is at the geometry origin. The off-diagonal terms
+    are the body-axes products of inertia. No external loads are applied, so the airplane
+    is driven only by its flapping aerodynamics, gravity, and inertia.
+
+    :return flapping_free_flight_problem: FreeFlightUnsteadyProblem
+        This is the flapping-wing FreeFlightUnsteadyProblem fixture.
+    """
+    flapping_free_flight_movement = (
+        movement_fixtures.make_flapping_free_flight_movement()
+    )
+
+    # Derive the mass from the airplane's weight and gravitational field so that the
+    # weight == mass * |g_E| consistency holds (the weight and standard gravity are set
+    # on the airplane and operating-point fixtures).
+    base_airplane = flapping_free_flight_movement.airplane_movements[0].base_airplane
+    base_g_E = (
+        flapping_free_flight_movement.operating_point_movement.base_operating_point.g_E
+    )
+    mass = base_airplane.weight / float(np.linalg.norm(base_g_E))
+
+    I_BP1_CgP1 = np.array(
+        [
+            [155.614, 0.0, -45.658],
+            [0.0, 398.513, 0.0],
+            [-45.658, 0.0, 508.699],
+        ],
+        dtype=float,
+    )
+
+    flapping_free_flight_problem = ps.problems.FreeFlightUnsteadyProblem(
+        movement=flapping_free_flight_movement,
+        mass=mass,
+        I_BP1_CgP1=I_BP1_CgP1,
+        external_loads_fn=None,
+    )
+
+    return flapping_free_flight_problem

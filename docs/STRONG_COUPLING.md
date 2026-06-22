@@ -135,7 +135,7 @@ The stored and relaxed variable is the increment:
 
 $$\Delta \mathbf{x}^{(k)}_{n+1} := \mathbf{x}^{(k)}_{n+1} - \mathbf{x}_n$$
 
-The absolute state is reconstructed only inside calls to $S$ and $A$. Because the sub-iteration algorithm touch only differences (residuals and inter-iterate updates), the increment and absolute parameterizations generate identical iterate sequences; the increment is preferred for floating-point hygiene and to keep Euler-angle arithmetic in a small, wrap-free neighborhood.
+The absolute state is reconstructed only inside calls to $S$ and $A$. Because the sub-iteration algorithm touches only differences (residuals and inter-iterate updates), the increment and absolute parameterizations generate identical iterate sequences; the increment is preferred for floating-point hygiene and to keep Euler-angle arithmetic in a small, wrap-free neighborhood.
 
 ## 5. Sub-iteration algorithm (solve for snapshot $n{+}1$)
 

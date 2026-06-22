@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 import numpy as np
 
 import pterasoftware as ps
+
+# noinspection PyProtectedMember
 from pterasoftware import _transformations
 from tests.unit.fixtures import problem_fixtures
 

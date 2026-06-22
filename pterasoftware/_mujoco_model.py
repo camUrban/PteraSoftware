@@ -10,7 +10,7 @@ import numpy as np
 from . import _transformations
 
 
-class _MuJoCoState(TypedDict):
+class MuJoCoState(TypedDict):
     """The state returned by MuJoCoModel.get_state."""
 
     position_E_Eo: np.ndarray
@@ -313,7 +313,7 @@ class MuJoCoModel:
         """
         mujoco.mj_step(self._model, self._data)
 
-    def get_state(self) -> _MuJoCoState:
+    def get_state(self) -> MuJoCoState:
         """Extracts the current position, orientation, velocity, and angular velocity of
         the model.
 

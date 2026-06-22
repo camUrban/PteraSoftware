@@ -859,7 +859,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
     def _advance_body(
         self, interval_loads_E: tuple[np.ndarray, np.ndarray] | None
-    ) -> _mujoco_model._MuJoCoState:
+    ) -> _mujoco_model.MuJoCoState:
         """Applies the interval load (if any) and steps the dynamics, returning the new
         state.
 
@@ -886,7 +886,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
     def _operating_point_from_state(
         self,
-        state: _mujoco_model._MuJoCoState,
+        state: _mujoco_model.MuJoCoState,
         reference_operating_point: operating_point_mod.OperatingPoint,
     ) -> operating_point_mod.OperatingPoint:
         """Builds the next OperatingPoint from a MuJoCo state.
@@ -963,8 +963,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             reference_operating_point=reference_operating_point,
         )
 
+    @staticmethod
     def _build_next_operating_point(
-        self,
         position_E_Eo: np.ndarray,
         angles_E_to_BP1_izyx: np.ndarray,
         velocity_E__E: np.ndarray,
@@ -1024,7 +1024,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             omegas_BP1__E=omegas_BP1__E,
         )
 
-    def _state_to_vector(self, state: _mujoco_model._MuJoCoState) -> np.ndarray:
+    @staticmethod
+    def _state_to_vector(state: _mujoco_model.MuJoCoState) -> np.ndarray:
         """Converts a MuJoCo state to the rigid body state 12-vector.
 
         The 12-vector concatenates the four blocks of the rigid body state, all

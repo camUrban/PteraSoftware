@@ -2,6 +2,7 @@
 FreeFlightUnsteadyRingVortexLatticeMethodSolver class."""
 
 import unittest
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 
@@ -148,6 +149,140 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         )
         with self.assertRaises(AttributeError):
             self.solver.not_a_real_attribute = 42
+
+
+class TestFreeFlightSolverSubstepDispatch(unittest.TestCase):
+    """Tests for the substep-aware geometry and operating point dispatch overrides."""
+
+    def setUp(self):
+        """Set up a fresh solver for each dispatch test."""
+        self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
+
+    def test_get_steady_problem_at_dispatches_on_substep_state(self):
+        """Test that _get_steady_problem_at returns the transient next-step SteadyProblem
+        only for the next step during a sub-iteration, and otherwise defers to the
+        committed accessor.
+        """
+        committed = self.solver._get_steady_problem_at(0)
+        transient = MagicMock()
+
+        self.solver._substep_next_step = 1
+        self.solver._substep_next_steady_problem = transient
+
+        # The transient problem is returned for the matching next step only.
+        self.assertIs(self.solver._get_steady_problem_at(1), transient)
+        # A non-matching step falls through to the committed accessor.
+        self.assertIs(self.solver._get_steady_problem_at(0), committed)
+
+        # With no transient problem set, the committed accessor is used.
+        self.solver._substep_next_steady_problem = None
+        self.assertIs(self.solver._get_steady_problem_at(0), committed)
+
+    def test_operating_point_at_dispatches_on_substep_state(self):
+        """Test that _operating_point_at returns the trial OperatingPoint only for the
+        next step during a sub-iteration, and otherwise defers to the committed accessor.
+        """
+        committed_operating_point = self.solver._operating_point_at(0)
+        trial_operating_point = MagicMock()
+
+        self.solver._substep_next_step = 1
+        self.solver._substep_next_operating_point = trial_operating_point
+
+        # The trial operating point is returned for the matching next step only.
+        self.assertIs(self.solver._operating_point_at(1), trial_operating_point)
+        # A non-matching step falls through to the committed accessor.
+        self.assertIs(self.solver._operating_point_at(0), committed_operating_point)
+
+        # With no trial operating point set, the committed accessor is used.
+        self.solver._substep_next_operating_point = None
+        self.assertIs(self.solver._operating_point_at(0), committed_operating_point)
+
+
+class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
+    """Tests for the transient working state freeze_substep and restore_substep manage."""
+
+    def setUp(self):
+        """Set up a fresh solver for each lifecycle test."""
+        self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
+
+    def test_freeze_substep_snapshots_strengths_as_copies(self):
+        """Test that freeze_substep records the next step, stores the transient
+        SteadyProblem, and snapshots the current and previous bound vortex strengths as
+        independent copies.
+
+        The snapshots must be copies, because the trials overwrite the solver's strength
+        arrays while evaluating the next step, and a view would carry that mutation into
+        the snapshot.
+        """
+        self.solver._current_step = 0
+        self.solver._current_bound_vortex_strengths = np.array(
+            [1.0, 2.0, 3.0], dtype=float
+        )
+        self.solver._last_bound_vortex_strengths = np.array(
+            [4.0, 5.0, 6.0], dtype=float
+        )
+        next_steady_problem = MagicMock()
+
+        self.solver.freeze_substep(next_steady_problem)
+
+        self.assertEqual(self.solver._substep_next_step, 1)
+        self.assertIs(self.solver._substep_next_steady_problem, next_steady_problem)
+        self.assertIsNone(self.solver._substep_next_operating_point)
+        np.testing.assert_array_equal(
+            self.solver._substep_gamma_n, np.array([1.0, 2.0, 3.0])
+        )
+        np.testing.assert_array_equal(
+            self.solver._substep_gamma_n_minus_1, np.array([4.0, 5.0, 6.0])
+        )
+
+        # Mutating the source strengths must not change the snapshots.
+        self.solver._current_bound_vortex_strengths[0] = 999.0
+        self.solver._last_bound_vortex_strengths[0] = 999.0
+        self.assertEqual(self.solver._substep_gamma_n[0], 1.0)
+        self.assertEqual(self.solver._substep_gamma_n_minus_1[0], 4.0)
+
+    def test_freeze_substep_skips_induced_precompute_for_prescribed_wake(self):
+        """Test that freeze_substep leaves the frozen wake induced velocities unset for a
+        prescribed wake, which has no induced transport to precompute.
+        """
+        self.solver._prescribed_wake = True
+        self.solver._current_step = 0
+        self.solver._current_bound_vortex_strengths = np.ones(3, dtype=float)
+        self.solver._last_bound_vortex_strengths = np.zeros(3, dtype=float)
+
+        self.solver.freeze_substep(MagicMock())
+
+        self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
+
+    def test_restore_substep_clears_transient_state(self):
+        """Test that restore_substep re-evaluates the current step and clears every
+        transient sub-iteration slot.
+
+        A leftover non-None slot would redirect the next step's geometry and wake reads
+        to a stale scratch copy, so the clearing is a correctness contract. The
+        re-evaluation of the current step's aerodynamics is stubbed, since reconstructing
+        it is the inherited solver's behavior, not this method's.
+        """
+        self.solver._substep_next_step = 1
+        self.solver._substep_next_steady_problem = MagicMock()
+        self.solver._substep_next_operating_point = MagicMock()
+        self.solver._substep_stackVIndGridWrvp_GP1__E = [[np.zeros(3, dtype=float)]]
+        self.solver._substep_gamma_n = np.ones(3, dtype=float)
+        self.solver._substep_gamma_n_minus_1 = np.zeros(3, dtype=float)
+
+        with patch.object(
+            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+            "_evaluate_step_aerodynamics",
+        ) as mock_evaluate_step_aerodynamics:
+            self.solver.restore_substep(step=0)
+
+        mock_evaluate_step_aerodynamics.assert_called_once()
+        self.assertIsNone(self.solver._substep_next_step)
+        self.assertIsNone(self.solver._substep_next_steady_problem)
+        self.assertIsNone(self.solver._substep_next_operating_point)
+        self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
+        self.assertIsNone(self.solver._substep_gamma_n)
+        self.assertIsNone(self.solver._substep_gamma_n_minus_1)
 
 
 if __name__ == "__main__":

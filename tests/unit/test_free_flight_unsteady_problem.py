@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import numpy as np
 
 import pterasoftware as ps
+from pterasoftware import _transformations
 from tests.unit.fixtures import problem_fixtures
 
 
@@ -688,6 +689,154 @@ class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):
         """Test that load lists remain mutable for solver population."""
         self.problem.forces_W.append(np.array([1.0, 2.0, 3.0]))
         self.assertEqual(len(self.problem.forces_W), 1)
+
+
+class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
+    """Tests for the rigid body state conversions the sub-iteration relies on."""
+
+    def setUp(self):
+        """Set up a fresh FreeFlightUnsteadyProblem and its reference OperatingPoint."""
+        self.problem = (
+            problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+        )
+        self.reference_operating_point = self.problem.steady_problems[0].operating_point
+
+    def test_state_to_vector_block_layout_and_units(self):
+        """Test that _state_to_vector concatenates the position, attitude, velocity, and
+        angular rate blocks in order, with the angular quantities converted to radians.
+
+        With an identity orientation the attitude block is zero and the body angular
+        rate carries into the Earth frame unchanged, so the only conversion to check is
+        degrees per second to radians per second on the angular rate.
+        """
+        state = {
+            "position_E_Eo": np.array([1.0, 2.0, 3.0], dtype=float),
+            "R_pas_E_to_BP1": np.eye(3, dtype=float),
+            "velocity_E__E": np.array([4.0, 5.0, 6.0], dtype=float),
+            "omegas_BP1__E": np.array([7.0, 8.0, 9.0], dtype=float),
+            "time": self.problem.delta_time,
+        }
+
+        x = self.problem._state_to_vector(state)
+
+        expected_x = np.concatenate(
+            [
+                np.array([1.0, 2.0, 3.0]),
+                np.zeros(3),
+                np.array([4.0, 5.0, 6.0]),
+                np.deg2rad(np.array([7.0, 8.0, 9.0])),
+            ]
+        )
+        self.assertEqual(x.shape, (12,))
+        np.testing.assert_allclose(x, expected_x)
+
+    def test_state_vector_round_trips_through_operating_point(self):
+        """Test that a state converted to the 12-vector and back into an OperatingPoint
+        reproduces the position, speed, attitude, and body angular rate.
+
+        The round trip pins the attitude and angular rate conversions in
+        _state_to_vector against their inverses in _operating_point_from_vector, which a
+        single one-way check cannot, since the angular rate is rotated into the Earth
+        frame one way and back the other.
+        """
+        angles_E_to_BP1_izyx = np.array([10.0, 20.0, 30.0], dtype=float)
+        R_pas_E_to_BP1 = _transformations.generate_rot_T(
+            angles=angles_E_to_BP1_izyx,
+            passive=True,
+            intrinsic=True,
+            order="zyx",
+        )[:3, :3]
+        position_E_Eo = np.array([1.0, -2.0, 3.0], dtype=float)
+        velocity_E__E = np.array([12.0, -3.0, 4.0], dtype=float)
+        omegas_BP1__E = np.array([5.0, -6.0, 7.0], dtype=float)
+        state = {
+            "position_E_Eo": position_E_Eo,
+            "R_pas_E_to_BP1": R_pas_E_to_BP1,
+            "velocity_E__E": velocity_E__E,
+            "omegas_BP1__E": omegas_BP1__E,
+            "time": self.problem.delta_time,
+        }
+
+        x = self.problem._state_to_vector(state)
+        operating_point = self.problem._operating_point_from_vector(
+            x, self.reference_operating_point
+        )
+
+        np.testing.assert_allclose(operating_point.CgP1_E_Eo, position_E_Eo)
+        self.assertAlmostEqual(
+            operating_point.vCg__E, float(np.linalg.norm(velocity_E__E))
+        )
+        np.testing.assert_allclose(
+            operating_point.angles_E_to_BP1_izyx, angles_E_to_BP1_izyx
+        )
+        np.testing.assert_allclose(operating_point.omegas_BP1__E, omegas_BP1__E)
+
+    def test_operating_point_from_vector_carries_environment_from_reference(self):
+        """Test that _operating_point_from_vector carries the environmental quantities
+        across from the reference OperatingPoint unchanged.
+
+        Only the rigid body state comes from the 12-vector; the fluid density, kinematic
+        viscosity, gravity, surface geometry, and external force are inherited.
+        """
+        x = np.zeros(12, dtype=float)
+        x[6] = 10.0
+
+        operating_point = self.problem._operating_point_from_vector(
+            x, self.reference_operating_point
+        )
+
+        reference = self.reference_operating_point
+        self.assertEqual(operating_point.rho, reference.rho)
+        self.assertEqual(operating_point.nu, reference.nu)
+        np.testing.assert_array_equal(operating_point.g_E, reference.g_E)
+        np.testing.assert_array_equal(
+            operating_point.surfaceNormal_E, reference.surfaceNormal_E
+        )
+        np.testing.assert_array_equal(
+            operating_point.surfacePoint_E_Eo, reference.surfacePoint_E_Eo
+        )
+        self.assertEqual(operating_point.externalFX_W, reference.externalFX_W)
+
+
+class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
+    """Tests for the sub-iteration weighting matrix diagonal."""
+
+    def test_build_relaxation_weights_matches_formula(self):
+        """Test that _build_relaxation_weights builds the weighting diagonal from the
+        reference chord, mass, inertia, and time step per its definition.
+
+        A non-identity inertia is used so the mean of the principal moments (one third of
+        the trace) is exercised rather than collapsing to one. The velocity and angular
+        rate blocks must equal the position and attitude blocks scaled by the time step.
+        """
+        movement, mass = _movement_and_mass()
+        problem = ps.problems.FreeFlightUnsteadyProblem(
+            movement=movement,
+            mass=mass,
+            I_BP1_CgP1=np.diag([2.0, 3.0, 4.0]),
+        )
+
+        weights = problem._build_relaxation_weights()
+
+        L_ref = problem._free_flight_movement.airplanes[0][0].c_ref
+        mean_inertia = (2.0 + 3.0 + 4.0) / 3.0
+        theta_ref = mass * L_ref**2 / mean_inertia
+        delta_time = problem.delta_time
+        expected_weights = np.concatenate(
+            [
+                np.full(3, 1.0 / L_ref),
+                np.full(3, 1.0 / theta_ref),
+                np.full(3, delta_time / L_ref),
+                np.full(3, delta_time / theta_ref),
+            ]
+        )
+
+        self.assertEqual(weights.shape, (12,))
+        np.testing.assert_allclose(weights, expected_weights)
+
+        # The rate blocks are the configuration blocks scaled by the time step.
+        np.testing.assert_allclose(weights[6:9], delta_time * weights[0:3])
+        np.testing.assert_allclose(weights[9:12], delta_time * weights[3:6])
 
 
 if __name__ == "__main__":

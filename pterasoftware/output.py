@@ -13,9 +13,11 @@ its subclasses (the aeroelastic or free flight solver).
 
 plot_results_versus_time: Plots the loads and load coefficients of an
 UnsteadyRingVortexLatticeMethodSolver or one of its subclasses (the aeroelastic or free
-flight solver) as a function of time.
+flight solver) as a function of time. For a free flight solver, it also plots the first
+Airplane's six-degree-of-freedom state history.
 
-log_results: Logs a solver's load and load coefficients.
+log_results: Logs a solver's load and load coefficients, and, for a free flight solver,
+the first Airplane's initial and final six-degree-of-freedom state.
 """
 
 from __future__ import annotations
@@ -42,6 +44,7 @@ from . import (
     steady_ring_vortex_lattice_method,
     unsteady_ring_vortex_lattice_method,
 )
+from .movements import free_flight_movement as free_flight_movement_mod
 
 _logger = _logging.get_logger("output")
 
@@ -86,13 +89,15 @@ _prism = [
     "#666666",
 ]
 [
-    _drag_color,
-    _side_color,
-    _lift_color,
-    _roll_color,
-    _pitch_color,
-    _yaw_color,
-] = _prism[3:9]
+    _alpha_color,
+    _beta_color,
+    _linear_x_color,
+    _linear_y_color,
+    _linear_z_color,
+    _angular_x_color,
+    _angular_y_color,
+    _angular_z_color,
+] = _prism[1:9]
 
 # Set constants for the color maps, scalar bars, and text boxes.
 _color_map_num_sig = 3
@@ -1194,10 +1199,18 @@ def plot_results_versus_time(
     or one of its subclasses (the aeroelastic or free flight solver) as a function of
     time.
 
+    For a FreeFlightUnsteadyRingVortexLatticeMethodSolver, this also plots the first
+    Airplane's six-degree-of-freedom state history: its position, velocity, orientation,
+    angular velocity, and aerodynamic angles versus time. These describe the first
+    Airplane, the rigid body the dynamics integrate, so they are plotted once for the
+    whole simulation rather than per Airplane.
+
     :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver whose loads and
         load coefficients will be plotted. Its subclasses, the
         AeroelasticUnsteadyRingVortexLatticeMethodSolver and the
-        FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted. For a
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, the first Airplane's state
+        history is plotted as well.
     :param show: Set this to True to show the plots. It can be a bool or a numpy bool
         and will be converted internally to a bool. The default is True.
     :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
@@ -1334,7 +1347,7 @@ def plot_results_versus_time(
             times,
             -forces_W[airplane_id, 0],
             label="Induced Drag",
-            color=_drag_color,
+            color=_linear_x_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1343,7 +1356,7 @@ def plot_results_versus_time(
             times,
             forces_W[airplane_id, 1],
             label="Side Force",
-            color=_side_color,
+            color=_linear_y_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1352,7 +1365,7 @@ def plot_results_versus_time(
             times,
             -forces_W[airplane_id, 2],
             label="Lift",
-            color=_lift_color,
+            color=_linear_z_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1361,7 +1374,7 @@ def plot_results_versus_time(
             times,
             -forceCoefficients_W[airplane_id, 0],
             label="Induced Drag Coefficient",
-            color=_drag_color,
+            color=_linear_x_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1370,7 +1383,7 @@ def plot_results_versus_time(
             times,
             forceCoefficients_W[airplane_id, 1],
             label="Side Force Coefficient",
-            color=_side_color,
+            color=_linear_y_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1379,7 +1392,7 @@ def plot_results_versus_time(
             times,
             -forceCoefficients_W[airplane_id, 2],
             label="Lift Coefficient",
-            color=_lift_color,
+            color=_linear_z_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1387,8 +1400,8 @@ def plot_results_versus_time(
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 0],
-            label="Roll",
-            color=_roll_color,
+            label="Rolling Moment",
+            color=_angular_x_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1396,8 +1409,8 @@ def plot_results_versus_time(
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 1],
-            label="Pitch",
-            color=_pitch_color,
+            label="Pitching Moment",
+            color=_angular_y_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1405,8 +1418,8 @@ def plot_results_versus_time(
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 2],
-            label="Yaw",
-            color=_yaw_color,
+            label="Yawing Moment",
+            color=_angular_z_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1414,8 +1427,8 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 0],
-            label="Roll Coefficient",
-            color=_roll_color,
+            label="Rolling Moment Coefficient",
+            color=_angular_x_color,
             marker=".",
             markevery=(_marker_spacing * 0 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1423,8 +1436,8 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 1],
-            label="Pitch Coefficient",
-            color=_pitch_color,
+            label="Pitching Moment Coefficient",
+            color=_angular_y_color,
             marker=".",
             markevery=(_marker_spacing * 1 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1432,8 +1445,8 @@ def plot_results_versus_time(
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 2],
-            label="Yaw Coefficient",
-            color=_yaw_color,
+            label="Yawing Moment Coefficient",
+            color=_angular_z_color,
             marker=".",
             markevery=(_marker_spacing * 2 / 3, _marker_spacing),
             markersize=_marker_size,
@@ -1509,6 +1522,113 @@ def plot_results_versus_time(
                 dpi=300,
             )
 
+    # For a free flight solver, also plot the first Airplane's six-degree-of-freedom
+    # state history. This is plotted once for the whole simulation, since the state
+    # describes the first Airplane, the single rigid body the dynamics integrate.
+    if isinstance(
+        unsteady_solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        # Narrow the movement to a FreeFlightMovement so its operating point history is
+        # typed. The solver type guarantees this, so the assert documents the invariant.
+        movement = unsteady_solver.unsteady_problem.movement
+        assert isinstance(movement, free_flight_movement_mod.FreeFlightMovement)
+        operating_points = movement.operating_point_movement.operating_points
+
+        # The state history covers every time step, starting at time step 0, so it uses
+        # its own time array rather than the results-averaging window above.
+        num_state_steps = len(operating_points)
+        state_times = np.linspace(
+            0.0,
+            delta_time * (num_state_steps - 1),
+            num_state_steps,
+            endpoint=True,
+        )
+
+        # Initialize matrices to hold the state quantities at every time step.
+        positions_E_Eo = np.zeros((3, num_state_steps), dtype=float)
+        velocities_E__E = np.zeros((3, num_state_steps), dtype=float)
+        anglesDeg_E_to_BP1_izyx = np.zeros((3, num_state_steps), dtype=float)
+        omegasDeg_BP1__E = np.zeros((3, num_state_steps), dtype=float)
+        alphas = np.zeros(num_state_steps, dtype=float)
+        betas = np.zeros(num_state_steps, dtype=float)
+
+        # Iterate through the time steps and extract each step's state.
+        for step, this_operating_point in enumerate(operating_points):
+            positions_E_Eo[:, step] = this_operating_point.CgP1_E_Eo
+            velocities_E__E[:, step] = _velocity_E__E_from_operating_point(
+                this_operating_point
+            )
+            anglesDeg_E_to_BP1_izyx[:, step] = this_operating_point.angles_E_to_BP1_izyx
+            omegasDeg_BP1__E[:, step] = this_operating_point.omegas_BP1__E
+            alphas[step] = this_operating_point.alpha
+            betas[step] = this_operating_point.beta
+
+        # The state describes the first Airplane (the rigid body MuJoCo integrates), so
+        # the plot titles and file names use the first Airplane's name.
+        airplane_name = unsteady_solver.steady_problems[0].airplanes[0].name
+
+        _plot_state_history(
+            state_times,
+            [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
+            ["X Component", "Y Component", "Z Component"],
+            [_linear_x_color, _linear_y_color, _linear_z_color],
+            airplane_name
+            + " Position (in Earth Axes, Relative to the Earth Origin) vs. Time",
+            "Position (m)",
+            save,
+            airplane_name + " Position.png",
+        )
+        _plot_state_history(
+            state_times,
+            [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
+            ["X Component", "Y Component", "Z Component"],
+            [_linear_x_color, _linear_y_color, _linear_z_color],
+            airplane_name
+            + " Velocity (in Earth Axes, Observed from the Earth Frame) vs. Time",
+            "Velocity (m/s)",
+            save,
+            airplane_name + " Velocity.png",
+        )
+        _plot_state_history(
+            state_times,
+            [
+                anglesDeg_E_to_BP1_izyx[0],
+                anglesDeg_E_to_BP1_izyx[1],
+                anglesDeg_E_to_BP1_izyx[2],
+            ],
+            ["Roll Angle", "Pitch Angle", "Yaw Angle"],
+            [_angular_x_color, _angular_y_color, _angular_z_color],
+            airplane_name
+            + " Orientation (from Earth Axes to the First Airplane's Body Axes Using "
+            + "an Intrinsic zy'x\" Sequence) vs. Time",
+            "Orientation (deg)",
+            save,
+            airplane_name + " Orientation.png",
+        )
+        _plot_state_history(
+            state_times,
+            [omegasDeg_BP1__E[0], omegasDeg_BP1__E[1], omegasDeg_BP1__E[2]],
+            ["Roll Rate", "Pitch Rate", "Yaw Rate"],
+            [_angular_x_color, _angular_y_color, _angular_z_color],
+            airplane_name
+            + " Angular Velocity (of the First Airplane's Body Axes, Observed from the "
+            + " Earth Frame) vs. Time",
+            "Angular Velocity (deg/s)",
+            save,
+            airplane_name + " Angular Velocity.png",
+        )
+        _plot_state_history(
+            state_times,
+            [alphas, betas],
+            ["Angle of Attack", "Sideslip Angle"],
+            [_alpha_color, _beta_color],
+            airplane_name + " Aerodynamic Angles vs. Time",
+            "Angle (deg)",
+            save,
+            airplane_name + " Aerodynamic Angles.png",
+        )
+
     # If the user wants to show the plots, do so. This is done outside the loop so
     # that plt.show() is only called once after all figures are created.
     if show:
@@ -1530,13 +1650,19 @@ def log_results(
     The logging level must be set to INFO or lower in order to see results. See
     set_up_logging for details on configuring the logging level.
 
+    For a FreeFlightUnsteadyRingVortexLatticeMethodSolver, this also logs the first
+    Airplane's initial and final six-degree-of-freedom state: its position, velocity,
+    orientation, angular velocity, and aerodynamic angles.
+
     :param solver: The solver whose load and load coefficients will be logged. This can
         be a SteadyHorseshoeVortexLatticeMethodSolver, a
         SteadyRingVortexLatticeMethodSolver, or an
         UnsteadyRingVortexLatticeMethodSolver. The
         UnsteadyRingVortexLatticeMethodSolver's subclasses, the
         AeroelasticUnsteadyRingVortexLatticeMethodSolver and the
-        FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted. For a
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, the first Airplane's initial
+        and final state is logged as well.
     :return: None
     """
     if isinstance(
@@ -1559,8 +1685,8 @@ def log_results(
             solver_type = "variable geometry unsteady"
     else:
         raise TypeError(
-            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, "
-            "a SteadyRingVortexLatticeMethodSolver, or an "
+            "solver must be a SteadyHorseshoeVortexLatticeMethodSolver, a "
+            "SteadyRingVortexLatticeMethodSolver, or an "
             "UnsteadyRingVortexLatticeMethodSolver."
         )
 
@@ -1570,18 +1696,18 @@ def log_results(
     padding_spaces = 2
 
     col1 = [
-        "FX_W",
-        "FY_W",
-        "FZ_W",
-        "MX_W_Cg",
-        "MY_W_Cg",
-        "MZ_W_Cg",
+        "fX_W",
+        "fY_W",
+        "fZ_W",
+        "mX_W_CgP1",
+        "mY_W_CgP1",
+        "mZ_W_CgP1",
         "cFX_W",
         "cFY_W",
         "cFZ_W",
-        "cMX_W_Cg",
-        "cMY_W_Cg",
-        "cMZ_W_Cg",
+        "cMX_W_CgP1",
+        "cMY_W_CgP1",
+        "cMZ_W_CgP1",
     ]
     col1 = [label + ":" for label in col1]
     col1_space = max(len(elem) for elem in col1) + padding_spaces
@@ -1617,10 +1743,15 @@ def log_results(
 
         match solver_type:
             case "steady":
-                title1 = f"{pad}Forces (in wind axes):"
-                title2 = f"{pad}Moments (in wind axes, relative to the CG):"
-                title3 = f"{pad}Force Coefficients (in wind axes):"
-                title4 = f"{pad}Moment Coefficients (in wind axes, relative to the CG):"
+                title1 = f"{pad}Forces (in Wind Axes):"
+                title2 = (
+                    f"{pad}Moments (in Wind Axes, Relative to the First Airplane's CG):"
+                )
+                title3 = f"{pad}Force Coefficients (in Wind Axes):"
+                title4 = (
+                    f"{pad}Moment Coefficients (in Wind Axes, Relative to the First "
+                    f"Airplane's CG):"
+                )
 
                 _forces_W = airplane.forces_W
                 assert _forces_W is not None
@@ -1648,12 +1779,15 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = f"{pad}Final Forces (in wind axes):"
-                title2 = f"{pad}Final Moments (in wind axes, relative to the CG):"
-                title3 = f"{pad}Final Force Coefficients (in wind axes):"
+                title1 = f"{pad}Final Forces (in Wind Axes):"
+                title2 = (
+                    f"{pad}Final Moments (in Wind Axes, Relative to the First "
+                    f"Airplane's CG):"
+                )
+                title3 = f"{pad}Final Force Coefficients (in Wind Axes):"
                 title4 = (
-                    f"{pad}Final Moment Coefficients (in wind axes, relative to "
-                    f"the CG):"
+                    f"{pad}Final Moment Coefficients (in Wind Axes, Relative to "
+                    f"the First Airplane's CG):"
                 )
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
@@ -1671,15 +1805,15 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = f"{pad}Final Cycle-Averaged Forces (in wind axes):"
+                title1 = f"{pad}Final Cycle-Averaged Forces (in Wind Axes):"
                 title2 = (
-                    f"{pad}Final Cycle-Averaged Moments (in wind axes, relative "
-                    f"to the CG):"
+                    f"{pad}Final Cycle-Averaged Moments (in Wind Axes, Relative to the "
+                    f"First Airplane's CG):"
                 )
-                title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in wind axes):"
+                title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in Wind Axes):"
                 title4 = (
-                    f"{pad}Final Cycle-Averaged Moment Coefficients (in wind "
-                    f"axes, relative to the CG):"
+                    f"{pad}Final Cycle-Averaged Moment Coefficients (in Wind Axes, "
+                    f"Relative to the First Airplane's CG):"
                 )
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
@@ -1768,6 +1902,228 @@ def log_results(
         # line to separate them.
         if (airplane_num + 1) < solver.num_airplanes:
             _logger.info("")
+
+    # For a free flight solver, also log the first Airplane's initial and final
+    # six-degree-of-freedom state. This is logged once, since the state describes the
+    # first Airplane, the single rigid body the dynamics integrate.
+    if isinstance(
+        solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        # Narrow the movement to a FreeFlightMovement so its operating point history is
+        # typed. The solver type guarantees this, so the assert documents the invariant.
+        movement = solver.unsteady_problem.movement
+        assert isinstance(movement, free_flight_movement_mod.FreeFlightMovement)
+        operating_points = movement.operating_point_movement.operating_points
+
+        final_time = solver.delta_time * (len(operating_points) - 1)
+
+        _logger.info("")
+        _logger.info("The First Airplane's Free Flight State History:")
+
+        # Each vector state quantity is broken into one row per component, mirroring
+        # the per-component force and moment rows above, and each component row is
+        # labeled with its variable-convention name. The four group headers are logged
+        # before their first component (at flat indices 0, 3, 6, and 9), and the
+        # component labels are padded to a common width so the values align.
+        state_component_labels = [
+            "cgP1X_E_Eo",
+            "cgP1Y_E_Eo",
+            "cgP1Z_E_Eo",
+            "angleX_E_to_BP1_izyx",
+            "angleY_E_to_BP1_izyx",
+            "angleZ_E_to_BP1_izyx",
+            "vCgP1X_E__E",
+            "vCgP1Y_E__E",
+            "vCgP1Z_E__E",
+            "omegaX_BP1__E",
+            "omegaY_BP1__E",
+            "omegaZ_BP1__E",
+        ]
+        state_component_labels = [label + ":" for label in state_component_labels]
+        state_component_units = ["m"] * 3 + ["deg"] * 3 + ["m/s"] * 3 + ["deg/s"] * 3
+        state_component_space = (
+            max(len(label) for label in state_component_labels) + 2 * padding_spaces
+        )
+
+        state_group_header_position = (
+            f"{2 * pad}Position (of the First Airplane's CG, in Earth Axes, Relative "
+            f"to the Earth Origin):"
+        )
+        state_group_header_orientation = (
+            f"{2 * pad}Orientation (from Earth Axes to the First Airplane's Body Axes "
+            f"Using an Intrinsic zy'x\" Sequence):"
+        )
+        state_group_header_velocity = (
+            f"{2 * pad}Velocity (of the First Airplane's CG, in Earth Axes, Observed "
+            f"from the Earth Frame):"
+        )
+        state_group_header_angular_velocity = (
+            f"{2 * pad}Angular Velocity (of the First Airplane's Body Axes, Observed "
+            f"from the Earth Frame):"
+        )
+
+        # Log the initial state (at time step 0) and the final state.
+        for state_label, state_time, this_operating_point in [
+            ("Initial State", 0.0, operating_points[0]),
+            ("Final State", final_time, operating_points[-1]),
+        ]:
+            CgP1_E_Eo = this_operating_point.CgP1_E_Eo
+            angles_E_to_BP1_izyx = this_operating_point.angles_E_to_BP1_izyx
+            velocity_E__E = _velocity_E__E_from_operating_point(this_operating_point)
+            omegas_BP1__E = this_operating_point.omegas_BP1__E
+
+            state_component_values = [
+                CgP1_E_Eo[0],
+                CgP1_E_Eo[1],
+                CgP1_E_Eo[2],
+                angles_E_to_BP1_izyx[0],
+                angles_E_to_BP1_izyx[1],
+                angles_E_to_BP1_izyx[2],
+                velocity_E__E[0],
+                velocity_E__E[1],
+                velocity_E__E[2],
+                omegas_BP1__E[0],
+                omegas_BP1__E[1],
+                omegas_BP1__E[2],
+            ]
+            state_component_values = [
+                f"{np.round(value, 3)} {unit}"
+                for value, unit in zip(state_component_values, state_component_units)
+            ]
+
+            _logger.info(f"{pad}{state_label} (at t = {state_time:.3f} s):")
+
+            for i in range(len(state_component_labels)):
+                if i == 0:
+                    _logger.info(state_group_header_position)
+                elif i == 3:
+                    _logger.info(state_group_header_orientation)
+                elif i == 6:
+                    _logger.info(state_group_header_velocity)
+                elif i == 9:
+                    _logger.info(state_group_header_angular_velocity)
+
+                _logger.info(
+                    f"{3 * pad}{state_component_labels[i]:<{state_component_space}}"
+                    f"{state_component_values[i]}"
+                )
+
+            # The aerodynamic angles are scalars, so each is logged as a single row
+            # labeled with its variable-convention name. The labels are padded to a
+            # common width so the two values align with each other.
+            alpha_label = "Angle of Attack (alpha):"
+            beta_label = "Sideslip Angle (beta):"
+            aerodynamic_angle_space = (
+                max(len(alpha_label), len(beta_label)) + padding_spaces
+            )
+            _logger.info(
+                f"{2 * pad}{alpha_label:<{aerodynamic_angle_space}}"
+                f"{np.round(this_operating_point.alpha, 3)} deg"
+            )
+            _logger.info(
+                f"{2 * pad}{beta_label:<{aerodynamic_angle_space}}"
+                f"{np.round(this_operating_point.beta, 3)} deg"
+            )
+
+
+def _velocity_E__E_from_operating_point(
+    this_operating_point: operating_point_mod.OperatingPoint,
+) -> np.ndarray:
+    """Returns the first Airplane's CG velocity (in Earth axes, observed from the Earth
+    frame) for a free flight OperatingPoint.
+
+    The CG velocity is the negative of the freestream velocity, since the freestream (a
+    still airmass) is entirely due to the first Airplane's motion. The OperatingPoint
+    stores the freestream velocity in the first Airplane's geometry axes, so it is
+    rotated into Earth axes here.
+
+    :param this_operating_point: The OperatingPoint whose CG velocity will be returned.
+    :return: A (3,) ndarray of floats representing the first Airplane's CG velocity (in
+        Earth axes, observed from the Earth frame) in meters per second.
+    """
+    vInf_E__E = _transformations.apply_T_to_vectors(
+        this_operating_point.T_pas_GP1_CgP1_to_E_CgP1,
+        this_operating_point.vInf_GP1__E,
+        is_position=False,
+    )
+    return -vInf_E__E
+
+
+def _plot_state_history(
+    times: np.ndarray,
+    series: list[np.ndarray],
+    labels: list[str],
+    colors: list[str],
+    title: str,
+    y_label: str,
+    save: bool,
+    save_name: str,
+) -> None:
+    """Plots one free flight state-history figure: a set of series sharing a y-axis,
+    plotted against time and styled to match the load plots of plot_results_versus_time.
+
+    :param times: A (num_steps,) ndarray of floats representing the time, in seconds, at
+        each time step.
+    :param series: A list of (num_steps,) ndarrays of floats, one per line to plot.
+    :param labels: A list of the legend labels, one per series.
+    :param colors: A list of the line colors, one per series.
+    :param title: The figure's title.
+    :param y_label: The figure's y-axis label.
+    :param save: Set this to True to save the figure as a PNG.
+    :param save_name: The file name to save the figure under if save is True.
+    :return: None
+    """
+    figure, axes = plt.subplots()
+
+    # Remove the plot's top and right spines.
+    axes.spines.right.set_visible(False)
+    axes.spines.top.set_visible(False)
+
+    # Format the plot's spine and label colors.
+    axes.spines.bottom.set_color(_text_color_normalized)
+    axes.spines.left.set_color(_text_color_normalized)
+    axes.xaxis.label.set_color(_text_color_normalized)
+    axes.yaxis.label.set_color(_text_color_normalized)
+
+    # Format the plot's tick colors.
+    axes.tick_params(axis="x", colors=_text_color_normalized)
+    axes.tick_params(axis="y", colors=_text_color_normalized)
+
+    # Format the plot's background colors.
+    figure.patch.set_facecolor(_figure_background_color)
+    axes.set_facecolor(_figure_background_color)
+
+    # Populate the plot, staggering the markers across the series.
+    num_series = len(series)
+    for series_id, (this_series, label, color) in enumerate(
+        zip(series, labels, colors)
+    ):
+        axes.plot(
+            times,
+            this_series,
+            label=label,
+            color=color,
+            marker=".",
+            markevery=(_marker_spacing * series_id / num_series, _marker_spacing),
+            markersize=_marker_size,
+        )
+
+    # Name the plot's axis labels and title.
+    axes.set_xlabel("Time (s)", color=_text_color_normalized)
+    axes.set_ylabel(y_label, color=_text_color_normalized)
+    axes.set_title(title, color=_text_color_normalized)
+
+    # Format the plot's legend.
+    axes.legend(
+        facecolor=_figure_background_color,
+        edgecolor=_figure_background_color,
+        labelcolor=_text_color_normalized,
+    )
+
+    # Save the figure as a PNG if the user wants to do so.
+    if save:
+        figure.savefig(save_name, dpi=300)
 
 
 def _get_panel_surfaces(

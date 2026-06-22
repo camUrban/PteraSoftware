@@ -1613,7 +1613,7 @@ def plot_results_versus_time(
             [_angular_x_color, _angular_y_color, _angular_z_color],
             airplane_name
             + " Angular Velocity (of the First Airplane's Body Axes, Observed from the "
-            + " Earth Frame) vs. Time",
+            + "Earth Frame) vs. Time",
             "Angular Velocity (deg/s)",
             save,
             airplane_name + " Angular Velocity.png",

@@ -2488,7 +2488,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         By default this is the OperatingPoint of the SteadyProblem at that step. It is a
         separate dynamic dispatch point so coupled subclasses can supply an
         OperatingPoint other than the one bound to a committed SteadyProblem. The
-        strongly coupled free- flight solver overrides it during a sub-iteration to
+        strongly coupled free-flight solver overrides it during a sub-iteration to
         supply the trial OperatingPoint for the next step, whose canonical SteadyProblem
         has not yet been committed.
 

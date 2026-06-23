@@ -162,8 +162,10 @@ class WingCrossSection:
             flaps). With "asymmetric", mirrored control surfaces have opposite
             deflections (like ailerons). The default is None. For Wings with type 4 or 5
             symmetry, this parameter must be specified. For Wings with type 1, 2, or 3
-            symmetry, this parameter must be None. This validation is performed by the
-            parent Airplane during Wing processing.
+            symmetry, this parameter must be None. The root WingCrossSection of a type 4
+            Wing cannot be "asymmetric" with a nonzero deflection, since the mirrored
+            halves would tear the mesh at the shared centerline. This validation is
+            performed by the parent Airplane during Wing processing.
         :param control_surface_hinge_point: The location of the control surface hinge
             from the leading edge as a fraction of chord. It must be a float in the
             range (0.0, 1.0). The default is 0.75.

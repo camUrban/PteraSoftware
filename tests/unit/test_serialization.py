@@ -833,7 +833,8 @@ class TestSaveLoad(unittest.TestCase):
         self.assertIn("_dirty", data)
 
     def test_format_version_mismatch_raises(self):
-        """Tests that loading a file with a mismatched format version raises.
+        """Tests that loading a file with a mismatched format version raises, reporting
+        both format versions and naming no package version.
 
         :return: None
         """
@@ -844,10 +845,15 @@ class TestSaveLoad(unittest.TestCase):
             with open(path) as f:
                 data = json.load(f)
             data["_format_version"] = 9999
+            data["_pterasoftware_version"] = "4.0.0"
             with open(path, "w") as f:
                 json.dump(data, f)
-            with self.assertRaises(ValueError):
+            with self.assertRaises(ValueError) as context:
                 load(path)
+        message = str(context.exception)
+        self.assertIn("9999", message)
+        self.assertIn(str(_FORMAT_VERSION), message)
+        self.assertNotIn("4.0.0", message)
 
     def test_save_accepts_string_path(self):
         """Tests that save accepts a string path in addition to a Path object.

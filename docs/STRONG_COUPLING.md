@@ -154,18 +154,26 @@ The snapshot-$n$ load is recycled as the zeroth trial for the interval load: pre
 For $k = 0, 1, 2, \dots, k_{\max}$:
 
 1. At the trial state, build the trial bound geometry and wake, $\mathbf{B}^{(k)}_{n+1} = G\big(\mathbf{x}^{(k)}_{n+1}, t_{n+1}\big)$ and $W^{(k)}_{n+1} = P\big(\mathbf{x}_n, \mathbf{x}^{(k)}_{n+1}, \mathbf{B}_n, \boldsymbol{\Gamma}_n, \mathbf{B}^{(k)}_{n+1}, W_n\big)$, then evaluate the load:
+
    $$\mathbf{l}^{(k)}_{n+1} = A\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, \boldsymbol{\Gamma}_n, W^{(k)}_{n+1}\big)$$
+
    This yields the trial strengths $\boldsymbol{\Gamma}^{(k)}_{n+1} = C\big(\mathbf{x}^{(k)}_{n+1},\, \mathbf{B}^{(k)}_{n+1},\, W^{(k)}_{n+1}\big)$ internally.
 2. Dynamics under the trial load (MuJoCo restored to $\mathbf{x}_n$ first):
+
    $$\tilde{\mathbf{x}}^{(k)}_{n+1} = S\big(\mathbf{x}_n,\, \mathbf{l}^{(k)}_{n+1}\big)$$
 3. Residual (two candidates for the same snapshot):
+
    $$\mathbf{r}^{(k)}_{n+1} = \tilde{\mathbf{x}}^{(k)}_{n+1} - \mathbf{x}^{(k)}_{n+1}$$
 4. Test for convergence. Accept at $K_{n+1} := k$ and exit once the weighted residual satisfies the bound:
+
    $$\big\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \big\| \,\le\, \varepsilon_{\text{rel}}\, \big\| \mathbf{D}\, \Delta \mathbf{x}^{(k)}_{n+1} \big\| \,+\, \varepsilon_{\text{abs}}$$
 5. Compute the relaxation factor. $\lambda^{(0)}_{n+1} = \lambda_{\text{init}}$; for $k \ge 1$, Aitken $\Delta^2$ in the $\mathbf{D}$-weighted inner product:
+
    $$\lambda^{(k)}_{n+1} = -\lambda^{(k-1)}_{n+1}\, \frac{\Big\langle \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1},\, \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big\rangle}{\Big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \Big\|^2}$$
+
    The factor falls back to $\lambda_{\text{init}}$ if the denominator is small relative to the residual, $\big\| \mathbf{D}\big(\mathbf{r}^{(k)}_{n+1} - \mathbf{r}^{(k-1)}_{n+1}\big) \big\|^2 \le \epsilon_{\text{div}}\, \big\| \mathbf{D}\, \mathbf{r}^{(k-1)}_{n+1} \big\|^2$ (Section 8). All differences are taken across $k$ at fixed tag $n{+}1$.
 6. Update:
+
    $$\mathbf{x}^{(k+1)}_{n+1} = \mathbf{x}^{(k)}_{n+1} + \lambda^{(k)}_{n+1}\, \mathbf{r}^{(k)}_{n+1}$$
 
 Log $\big\| \mathbf{D}\, \mathbf{r}^{(k)}_{n+1} \big\|$ and $\lambda^{(k)}_{n+1}$ at every iteration for diagnostics.
@@ -291,6 +299,6 @@ The chosen $\lambda_{\text{init}} = 0.5$ is deliberately more conservative than 
 
 ## Inspirations
 
-- Causin, P., Gerbeau, J.-F., & Nobile, F. (2005). Added-mass effect in the design of partitioned algorithms for fluid-structure problems. Computer Methods in Applied Mechanics and Engineering, 194(42-44), 4506-4527.
-- Kuettler, U., & Wall, W. A. (2008). Fixed-point fluid-structure interaction solvers with dynamic relaxation. Computational Mechanics, 43(1), 61-72.
-- del Carre, A., et al. (2019). SHARPy: A dynamic aeroelastic simulation toolbox for very flexible aircraft and wind turbines. Journal of Open Source Software, 4(44), 1885. https://github.com/ImperialCollegeLondon/sharpy
+- Causin, P., Gerbeau, J. F. & Nobile, F. Added-mass effect in the design of partitioned algorithms for fluid-structure problems. *Computer Methods in Applied Mechanics and Engineering* **194**, 4506-4527 (2005).
+- Kuettler, U. & Wall, W. A. Fixed-point fluid-structure interaction solvers with dynamic relaxation. *Comput Mech* **43**, 61-72 (2008).
+- Carre, A. del, Munoz-Simon, A., Goizueta, N. & Palacios, R. SHARPy: A dynamic aeroelastic simulation toolbox for very flexible aircraft and wind turbines. *Journal of Open Source Software* **4**, 1885 (2019).

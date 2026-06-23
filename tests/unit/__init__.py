@@ -64,6 +64,9 @@ This package contains the following modules:
     test_coupled_unsteady_ring_vortex_lattice_method.py: This module contains
     classes to test CoupledUnsteadyRingVortexLatticeMethodSolvers.
 
+    test_fixed_point_relaxation.py: This module contains classes to test the fixed
+    point relaxation functions.
+
     test_free_flight_airplane_movement.py: This module contains classes to test
     FreeFlightAirplaneMovements.
 
@@ -158,6 +161,7 @@ import tests.unit.test_core_wing_cross_section_movement
 import tests.unit.test_core_wing_movement
 import tests.unit.test_coupled_unsteady_problem
 import tests.unit.test_coupled_unsteady_ring_vortex_lattice_method
+import tests.unit.test_fixed_point_relaxation
 import tests.unit.test_free_flight_airplane_movement
 import tests.unit.test_free_flight_movement
 import tests.unit.test_free_flight_operating_point_movement

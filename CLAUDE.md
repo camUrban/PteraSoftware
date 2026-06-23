@@ -74,6 +74,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
     - `MUJOCO_CONVENTIONS.md`: Definitive interpretation of MuJoCo state variables and their mapping to Ptera Software's axes, points, frames, and transformations
     - `RUNNING_TESTS_AND_TYPE_CHECKS.md`: Instructions for running tests and type checks **READ BEFORE RUNNING TESTS OR TYPE CHECKS LOCALLY**
+    - `STRONG_COUPLING.md`: Mathematical framework for the strongly coupled free-flight UVLM-MuJoCo solver: the fixed-point sub-iteration, Aitken relaxation, the weighting matrix, and the convergence tolerances
     - `TYPE_HINT_AND_DOCSTRING_STYLE.md`: Guidelines for type hinting and docstring formatting: **READ BEFORE CONTRIBUTING ANY CODE OR WRITING ANY DOCSTRINGS**
     - `WRITING_STYLE.md`: Guidelines for writing style in comments and documentation: **READ BEFORE WRITING ANY DOCUMENTATION, DOCSTRINGS, OR COMMENTS**
 - `examples/`: Directory with example scripts for users
@@ -105,6 +106,7 @@ Requires Python 3.11, but active development is done in 3.13
     - `_aerodynamics_functions.py`: Induced velocity functions
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
+    - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
     - `_functions.py`: Shared utility functions
     - `_logging.py`: Contains function for setting up logging
     - `_mujoco_model.py`: Contains the MuJoCoModel class.

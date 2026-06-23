@@ -844,8 +844,8 @@ class TestSaveLoad(unittest.TestCase):
             save(path, operating_point)
             with open(path) as f:
                 data = json.load(f)
-            writing_version = data["_pterasoftware_version"]
             data["_format_version"] = 9999
+            data["_pterasoftware_version"] = "4.0.0"
             with open(path, "w") as f:
                 json.dump(data, f)
             with self.assertRaises(ValueError) as context:
@@ -853,7 +853,7 @@ class TestSaveLoad(unittest.TestCase):
         message = str(context.exception)
         self.assertIn("9999", message)
         self.assertIn(str(_FORMAT_VERSION), message)
-        self.assertNotIn(writing_version, message)
+        self.assertNotIn("4.0.0", message)
 
     def test_save_accepts_string_path(self):
         """Tests that save accepts a string path in addition to a Path object.

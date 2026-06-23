@@ -10,7 +10,7 @@ import numpy as np
 from . import _transformations
 
 
-class _MuJoCoState(TypedDict):
+class MuJoCoState(TypedDict):
     """The state returned by MuJoCoModel.get_state."""
 
     position_E_Eo: np.ndarray
@@ -34,6 +34,10 @@ class MuJoCoModel:
 
     reset: Resets the model's state to the initial conditions, time to zero seconds, and
     removes any applied loads.
+
+    save_state: Saves and returns a snapshot of the model's current integration state.
+
+    restore_state: Restores the model to a previously saved integration state.
 
     **Notes:**
 
@@ -309,7 +313,7 @@ class MuJoCoModel:
         """
         mujoco.mj_step(self._model, self._data)
 
-    def get_state(self) -> _MuJoCoState:
+    def get_state(self) -> MuJoCoState:
         """Extracts the current position, orientation, velocity, and angular velocity of
         the model.
 
@@ -374,6 +378,56 @@ class MuJoCoModel:
 
         # Remove any applied loads.
         self._data.xfrc_applied[:] = 0.0
+
+        # Run forward kinematics to update dependent quantities.
+        mujoco.mj_forward(self._model, self._data)
+
+    def save_state(self) -> np.ndarray:
+        """Saves and returns a snapshot of the model's current integration state.
+
+        **Notes:**
+
+        The snapshot is MuJoCo's integration state (the generalized positions and
+        velocities, the time, the applied loads in xfrc_applied, and the constraint
+        solver warm start), captured through MuJoCo's native state API. Its size and
+        buffer layout vary across MuJoCo versions, so the size is queried from
+        mj_stateSize at runtime and the snapshot is treated as opaque. It is transient
+        within a time step and must never be serialized. Pair it with restore_state to
+        return the model to this state.
+
+        :return: A (N,) ndarray of floats representing the model's integration state
+            snapshot, where N is the integration state size reported by mj_stateSize.
+        """
+        state_size = mujoco.mj_stateSize(
+            self._model, mujoco.mjtState.mjSTATE_INTEGRATION
+        )
+        state = np.empty(state_size, dtype=float)
+        mujoco.mj_getState(
+            self._model, self._data, state, mujoco.mjtState.mjSTATE_INTEGRATION
+        )
+
+        return state
+
+    def restore_state(self, state: np.ndarray) -> None:
+        """Restores the model to a previously saved integration state.
+
+        **Notes:**
+
+        Takes a snapshot produced by save_state and writes it back through MuJoCo's
+        native state API, then runs forward kinematics so the derived quantities (such
+        as the orientation matrix get_state reads) match the restored configuration.
+        Restoring the constraint solver warm start alongside the generalized positions
+        and velocities, the time, and the applied loads makes re-stepping from the
+        restored state reproducible.
+
+        :param state: A (N,) ndarray of floats representing an integration state
+            snapshot produced by this model's save_state, where N is the integration
+            state size reported by mj_stateSize.
+        :return: None
+        """
+        mujoco.mj_setState(
+            self._model, self._data, state, mujoco.mjtState.mjSTATE_INTEGRATION
+        )
 
         # Run forward kinematics to update dependent quantities.
         mujoco.mj_forward(self._model, self._data)

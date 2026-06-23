@@ -833,7 +833,8 @@ class TestSaveLoad(unittest.TestCase):
         self.assertIn("_dirty", data)
 
     def test_format_version_mismatch_raises(self):
-        """Tests that loading a file with a mismatched format version raises.
+        """Tests that loading a file with a mismatched format version raises, reporting
+        both format versions and naming no package version.
 
         :return: None
         """
@@ -844,10 +845,15 @@ class TestSaveLoad(unittest.TestCase):
             with open(path) as f:
                 data = json.load(f)
             data["_format_version"] = 9999
+            data["_pterasoftware_version"] = "4.0.0"
             with open(path, "w") as f:
                 json.dump(data, f)
-            with self.assertRaises(ValueError):
+            with self.assertRaises(ValueError) as context:
                 load(path)
+        message = str(context.exception)
+        self.assertIn("9999", message)
+        self.assertIn(str(_FORMAT_VERSION), message)
+        self.assertNotIn("4.0.0", message)
 
     def test_save_accepts_string_path(self):
         """Tests that save accepts a string path in addition to a Path object.
@@ -2134,10 +2140,27 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
         npt.assert_array_equal(result.I_BP1_CgP1, problem.I_BP1_CgP1)
         self.assertEqual(result.mass, problem.mass)
+        self.assertEqual(result.k_max, problem.k_max)
         self.assertIsNone(result.external_loads_fn)
         self.assertIsInstance(result._mujoco_model, MuJoCoModel)
         # The rebuilt MuJoCoModel is functional.
         result._mujoco_model.step()
+
+    def test_non_default_k_max_round_trip(self):
+        """Tests that a non-default k_max survives a round trip.
+
+        :return: None
+        """
+        fixture = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+        problem = FreeFlightUnsteadyProblem(
+            movement=fixture._free_flight_movement,
+            mass=fixture.mass,
+            I_BP1_CgP1=fixture.I_BP1_CgP1,
+            k_max=5,
+        )
+        result = _deserialize_value(_serialize_value(problem))
+        assert isinstance(result, FreeFlightUnsteadyProblem)
+        self.assertEqual(result.k_max, 5)
 
     def test_load_history_round_trip(self):
         """Tests that recorded load-history arrays survive a round trip.

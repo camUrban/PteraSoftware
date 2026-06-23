@@ -149,6 +149,11 @@ Draw.webp
 * Force Coefficients.png
 * Moments.png
 * Moment Coefficients.png
+* Position.png
+* Velocity.png
+* Orientation.png
+* Angular Velocity.png
+* Aerodynamic Angles.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores

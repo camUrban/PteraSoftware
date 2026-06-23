@@ -184,6 +184,54 @@ class TestAirfoil(unittest.TestCase):
         )
         self.assertIs(result, self.naca0012_airfoil)
 
+    def test_add_control_surface_deflects_trailing_edge_in_z(self):
+        """A positive deflection lowers the trailing edge along wing cross section z,
+        and an equal negative deflection raises it by an equal amount.
+
+        The Airfoil's mean camber line is in airfoil axes, whose y-component is the
+        wing cross section z-component: the airfoil embeds in wing cross section axes
+        with the chord along x, the span along y, and the thickness along z. A positive
+        deflection is defined as downward, toward wing cross section -z, so the trailing
+        edge's z-component must decrease for a positive deflection and increase by the
+        same magnitude for an equal-magnitude negative deflection.
+        """
+        hinge_point = 0.75
+        deflection = 5.0
+        airfoil = self.naca0012_airfoil
+
+        assert airfoil.mcl_A_lp is not None
+        undeflected_trailingZ_A_lp = airfoil.mcl_A_lp[
+            np.argmax(airfoil.mcl_A_lp[:, 0]), 1
+        ]
+
+        deflected_down_airfoil = airfoil.add_control_surface(
+            deflection=deflection, hinge_point=hinge_point
+        )
+        deflected_up_airfoil = airfoil.add_control_surface(
+            deflection=-deflection, hinge_point=hinge_point
+        )
+
+        assert deflected_down_airfoil.mcl_A_lp is not None
+        assert deflected_up_airfoil.mcl_A_lp is not None
+        down_trailingZ_A_lp = deflected_down_airfoil.mcl_A_lp[
+            np.argmax(deflected_down_airfoil.mcl_A_lp[:, 0]), 1
+        ]
+        up_trailingZ_A_lp = deflected_up_airfoil.mcl_A_lp[
+            np.argmax(deflected_up_airfoil.mcl_A_lp[:, 0]), 1
+        ]
+
+        # A positive (downward) deflection decreases the trailing edge z-component.
+        self.assertLess(down_trailingZ_A_lp, undeflected_trailingZ_A_lp)
+
+        # An equal-magnitude negative (upward) deflection increases it.
+        self.assertGreater(up_trailingZ_A_lp, undeflected_trailingZ_A_lp)
+
+        # The decrease and the increase have equal magnitude.
+        self.assertAlmostEqual(
+            undeflected_trailingZ_A_lp - down_trailingZ_A_lp,
+            up_trailingZ_A_lp - undeflected_trailingZ_A_lp,
+        )
+
     def test_parameter_validation_invalid_inputs(self):
         """Test that invalid parameters raise appropriate errors."""
         # Test outlines with insufficient points in upper portion. These outlines have

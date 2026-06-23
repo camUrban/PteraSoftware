@@ -87,7 +87,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 7
+_FORMAT_VERSION = 10
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -217,6 +217,13 @@ def save(path: str | Path, obj: object) -> None:
     Gzip compression typically reduces file sizes by 10x or more, and plain ".json"
     files use indented formatting that further increases their size.
 
+    The file records an internal serialization format version. load() accepts a file
+    only when that format version matches the running code's exactly, and there is no
+    migration of files written under a different format version. The format version is
+    independent of the package version and bumps whenever the serialized structure
+    changes. To read a saved file later, run a build of Ptera Software whose format
+    version matches the file's.
+
     :param path: The file path to save to. Should end with ".json" or ".json.gz".
     :param obj: The Ptera Software object to save. Must be a public Ptera Software class
         (e.g., Airplane, SteadyProblem, or a solver). Internal classes such as Panel
@@ -266,6 +273,12 @@ def load(path: str | Path, max_size: int | None = None) -> object:
 
     If the path ends with ".json.gz", the input is gzip decompressed automatically.
 
+    The file records an internal serialization format version. A file is accepted only
+    when that format version matches the running code's exactly, and there is no
+    migration of files written under a different format version. A mismatch raises a
+    ValueError reporting the file's format version and the running code's. To read the
+    file, run a build of Ptera Software whose format version matches the file's.
+
     :param path: The file path to load from.
     :param max_size: The maximum decompressed size in bytes for gzip files. If None, the
         default of 4 GB is used. Set this to a larger value if loading very large
@@ -296,12 +309,18 @@ def load(path: str | Path, max_size: int | None = None) -> object:
 
     data = json.loads(raw)
 
-    # Check format version compatibility.
+    # Check format version compatibility. A file loads only when its stored format
+    # version matches the running code's, and there is no migration path, so a mismatch
+    # is unrecoverable under the running code. The error reports both format versions
+    # only. It names no package version to install: the gate keys on the format integer,
+    # not the package version, and the stored _pterasoftware_version is provenance that
+    # does not reliably identify a build at the file's format version.
     file_version = data.get("_format_version")
     if file_version != _FORMAT_VERSION:
         raise ValueError(
-            f"Format version mismatch: file has version {file_version}, but the "
-            f"current code expects version {_FORMAT_VERSION}."
+            f"Format version mismatch: file has format version {file_version}, but the "
+            f"current code uses format version {_FORMAT_VERSION}. A file loads only "
+            f"under a build of Ptera Software whose format version matches the file's."
         )
 
     # Validate that the top level type is a public saveable class.

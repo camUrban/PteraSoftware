@@ -551,6 +551,105 @@ def make_simple_glider_airplane():
     return simple_glider_airplane
 
 
+def make_flapping_free_flight_airplane():
+    """This function creates the flapping-wing Airplane used for free flight testing.
+
+    This is the same airframe as the flapping-wing free flight example: a cambered main
+    wing (which flaps symmetrically, defined in the matching movement fixture) plus a
+    symmetric V-tail. Unlike the simple glider, this airframe is not tuned for static
+    stability or trim; it exists to exercise the strongly coupled free flight solver
+    under the large, oscillatory loads that flapping produces.
+
+    The main wing's root is offset from the symmetry plane (its Ler_Gs_Cgs has a nonzero
+    y component), so it has type 5 symmetry and is split into two separate, mirrored
+    Wings; the matching movement fixture flaps both halves with the same amplitude to
+    keep the flapping symmetric. The V-tail's root lies on the symmetry plane, so it
+    stays a single mirrored Wing.
+
+    The mesh densities here are coarser than the example's, and the airfoils use the
+    default resampling rather than the example's dense override, which keeps the strongly
+    coupled flapping integration test affordable. The coupling behavior under test is a
+    property of the continuous geometry and mass properties, not of the discretization.
+
+    :return flapping_free_flight_airplane: Airplane
+        This is the flapping-wing Airplane fixture.
+    """
+    flapping_free_flight_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                        num_spanwise_panels=4,
+                        chord=1.75,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        spanwise_spacing="cosine",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
+                        num_spanwise_panels=None,
+                        chord=1.5,
+                        Lp_Wcsp_Lpp=(0.75, 6.0, 1.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="Main Wing",
+                Ler_Gs_Cgs=(0.0, 0.5, 0.0),
+                angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                symmetric=True,
+                mirror_only=False,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=6,
+                chordwise_spacing="uniform",
+            ),
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=4,
+                        chord=1.5,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        spanwise_spacing="uniform",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=None,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.5, 2.0, 1.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="V-Tail",
+                Ler_Gs_Cgs=(5.0, 0.0, 0.0),
+                angles_Gs_to_Wn_ixyz=(0.0, -5.0, 0.0),
+                symmetric=True,
+                mirror_only=False,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=6,
+                chordwise_spacing="uniform",
+            ),
+        ],
+        name="Flapping Airplane",
+        Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        weight=420.0,
+        s_ref=None,
+        c_ref=None,
+        b_ref=None,
+    )
+    return flapping_free_flight_airplane
+
+
 def make_surface_effect_airplane():
     """This function creates a simple single-wing Airplane for surface effect testing.
 

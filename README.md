@@ -184,6 +184,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Hang Haotian ([haotianh9](https://github.com/haotianh9))
 * Monisha Sikka ([20086080](https://github.com/20086080))
 * Cameron Hendrikse ([MonoChromatical](https://github.com/MonoChromatical))
+* Abdullah Imran ([codexabdullah](https://github.com/codexabdullah))
 
 ### Supporters
 

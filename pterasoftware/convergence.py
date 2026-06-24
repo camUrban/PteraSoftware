@@ -779,6 +779,8 @@ def analyze_unsteady_convergence(
     "saturated" Panel aspect ratio or wake state.
 
     :param ref_problem: The UnsteadyProblem whose converged parameters will be found.
+        This must be a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
+        AeroelasticUnsteadyProblem, neither of which is supported.
     :param prescribed_wake: Determines if a prescribed wake state should be analyzed. If
         this parameter is False, then the ``free_wake`` parameter must be set to True.
         Can be a bool or a numpy bool and will be converted to a bool internally. The
@@ -830,7 +832,10 @@ def analyze_unsteady_convergence(
     """
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.UnsteadyProblem):
-        raise TypeError("ref_problem must be an UnsteadyProblem.")
+        raise TypeError(
+            "ref_problem must be a standard UnsteadyProblem, not a "
+            "FreeFlightUnsteadyProblem or an AeroelasticUnsteadyProblem."
+        )
 
     # Validate the wake type parameters.
     prescribed_wake = _parameter_validation.boolLike_return_bool(

@@ -463,10 +463,12 @@ def analyze_unsteady_trim(
     cutoff value. If no trim condition is found within the maximum number of function
     calls, the function returns None values and logs a critical error.
 
-    :param problem: The UnsteadyProblem whose trim condition will be found. The
-        UnsteadyProblem's Movement must contain exactly one AirplaneMovement. The
-        problem's OperatingPointMovement's base OperatingPoint will be modified during
-        the trim search.
+    :param problem: The UnsteadyProblem whose trim condition will be found. This must be
+        a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
+        AeroelasticUnsteadyProblem, neither of which is supported. The UnsteadyProblem's
+        Movement must contain exactly one AirplaneMovement. The problem's
+        OperatingPointMovement's base OperatingPoint will be modified during the trim
+        search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
@@ -504,7 +506,10 @@ def analyze_unsteady_trim(
     """
     # Validate the problem parameter.
     if not isinstance(problem, problems.UnsteadyProblem):
-        raise TypeError("problem must be an UnsteadyProblem.")
+        raise TypeError(
+            "problem must be a standard UnsteadyProblem, not a "
+            "FreeFlightUnsteadyProblem or an AeroelasticUnsteadyProblem."
+        )
     if len(problem.movement.airplane_movements) != 1:
         raise ValueError(
             "The UnsteadyProblem's Movement must contain exactly one AirplaneMovement "

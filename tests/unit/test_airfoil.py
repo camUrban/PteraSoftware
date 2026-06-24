@@ -1212,7 +1212,3 @@ class TestAirfoilEdgeCases(unittest.TestCase):
             ps.geometry.airfoil.Airfoil(
                 name="int_outline", outline_A_lp=outline_int, resample=False
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -241,7 +241,3 @@ class TestLoggerHierarchy(unittest.TestCase):
 
         self.assertIn("pterasoftware.test_module", output)
         self.assertIn("Test message", output)
-
-
-if __name__ == "__main__":
-    unittest.main()

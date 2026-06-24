@@ -541,7 +541,3 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
             ],
             deriv_func,
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -283,7 +283,3 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
         self.assertIsNone(self.solver._substep_gamma_n)
         self.assertIsNone(self.solver._substep_gamma_n_minus_1)
-
-
-if __name__ == "__main__":
-    unittest.main()

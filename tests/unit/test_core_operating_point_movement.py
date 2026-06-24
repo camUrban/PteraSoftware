@@ -661,7 +661,3 @@ class TestCoreOperatingPointMovementImmutability(unittest.TestCase):
         """Test that phaseVCg__E property is read only."""
         with self.assertRaises(AttributeError):
             self.basic_core_op_movement.phaseVCg__E = 45.0
-
-
-if __name__ == "__main__":
-    unittest.main()

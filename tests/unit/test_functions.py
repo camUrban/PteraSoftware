@@ -345,7 +345,3 @@ class TestInterpBetweenPoints(unittest.TestCase):
         expected = end_points[:, np.newaxis, :]
 
         npt.assert_allclose(interpolated_points, expected, atol=1e-14)
-
-
-if __name__ == "__main__":
-    unittest.main()

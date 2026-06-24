@@ -1831,7 +1831,3 @@ class TestLogSingularityCounts(unittest.TestCase):
 
         self.assertEqual(len(cm.output), 1)
         self.assertIn("ERROR", cm.output[0])
-
-
-if __name__ == "__main__":
-    unittest.main()

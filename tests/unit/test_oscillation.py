@@ -126,7 +126,3 @@ class TestOscillation(unittest.TestCase):
 
         # Verify output is equal to base.
         npt.assert_allclose(result, self.static_base, rtol=1e-10, atol=1e-14)
-
-
-if __name__ == "__main__":
-    unittest.main()

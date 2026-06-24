@@ -2277,7 +2277,3 @@ class TestComputeOffsetRotationAdjustment(unittest.TestCase):
         expected = (np.eye(3) - R) @ offset
 
         npt.assert_allclose(adjustment, expected, atol=1e-14)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -839,7 +839,3 @@ class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
         # The rate blocks are the configuration blocks scaled by the time step.
         np.testing.assert_allclose(weights[6:9], delta_time * weights[0:3])
         np.testing.assert_allclose(weights[9:12], delta_time * weights[3:6])
-
-
-if __name__ == "__main__":
-    unittest.main()

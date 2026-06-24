@@ -1785,7 +1785,3 @@ class TestOperatingPoint(unittest.TestCase):
         """Test that integer inputs for omegas_BP1__E are converted to floats."""
         op = ps.operating_point.OperatingPoint(omegas_BP1__E=(1, -2, 3))
         self.assertEqual(op.omegas_BP1__E.dtype, float)
-
-
-if __name__ == "__main__":
-    unittest.main()

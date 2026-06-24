@@ -126,7 +126,3 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         self.assertIs(
             self.solver._apply_body_rate(points, base_velocity), base_velocity
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

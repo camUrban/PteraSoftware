@@ -56,7 +56,3 @@ class TestWingCrossSectionMovement(unittest.TestCase):
                 wing_cross_section,
                 ps.geometry.wing_cross_section.WingCrossSection,
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

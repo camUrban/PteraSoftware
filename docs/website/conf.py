@@ -21,7 +21,6 @@ autodoc_mock_imports = [
     "mujoco",
     "numba",
     "numpy",
-    "PySide6",
     "pyvista",
     "scipy",
     "tqdm",

@@ -31,11 +31,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# PyInstaller: Usually these files are written by a python script from a template before PyInstaller builds the exe, so
-# as to inject date/other infos into it.
-*.manifest
-*.spec
-
 # These are the installer logs to ignore.
 pip-log.txt
 pip-delete-this-directory.txt
@@ -139,8 +134,6 @@ cython_debug/
 # These are folders and files created by releasing.
 /build
 /dist
-/Output
-.spec
 
 # These are files and folders created by usage to ignore
 Animate.webp

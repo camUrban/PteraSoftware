@@ -351,7 +351,7 @@ class MuJoCoModel:
         # Airplane's body axes to Earth axes. To get R_pas_E_to_BP1, we take the
         # transpose.
         R_pas_BP1_to_E = self._data.xmat[self._body_id].reshape(3, 3)
-        # REFACTOR: Consider creating an invert_R_pas function in _transformations.py
+        # TODO: Consider creating an invert_R_pas function in _transformations.py
         #  and calling it here.
         R_pas_E_to_BP1 = R_pas_BP1_to_E.T
 

@@ -1513,7 +1513,3 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         # Second deepcopy with same memo should return same object.
         copied2 = copy.deepcopy(original, memo)
         self.assertIs(copied1, copied2)
-
-
-if __name__ == "__main__":
-    unittest.main()

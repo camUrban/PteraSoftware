@@ -202,12 +202,12 @@ These lists are allocated in `__init__` with one entry per wing in the initial a
 
 Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute           | Type               | Notes                                                                                                     |
-|---------------------|--------------------|-----------------------------------------------------------------------------------------------------------|
-| `I_BP1_CgP1`        | `np.ndarray`       | Inertia matrix in the first Airplane's body axes about its CG (kg*m^2); the array itself is set read-only |
-| `mass`              | `float`            | Mass of the first Airplane (kg)                                                                           |
+| Attribute           | Type               | Notes                                                                                                        |
+|---------------------|--------------------|--------------------------------------------------------------------------------------------------------------|
+| `I_BP1_CgP1`        | `np.ndarray`       | Inertia matrix in the first Airplane's body axes about its CG (kg*m^2); the array itself is set read-only    |
+| `mass`              | `float`            | Mass of the first Airplane (kg)                                                                              |
 | `k_max`             | `int`              | Maximum strongly coupled sub-iterations per free-flight time step (a capped step is accepted with a warning) |
-| `external_loads_fn` | `Callable \| None` | Optional callback returning additional (force, moment) loads to apply each step, or None                  |
+| `external_loads_fn` | `Callable \| None` | Optional callback returning additional (force, moment) loads to apply each step, or None                     |
 
 The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJoCoModel`). Like the attributes above, it is set in `__init__` and never reassigned, and the reference stays fixed while the engine's own state advances during the solve. It has no public property: users never interact with the engine directly (see the MuJoCoModel section).
 

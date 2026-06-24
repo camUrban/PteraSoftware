@@ -104,26 +104,26 @@ def generate_rot_T(
         must be distinct.
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
-    angleX_rad, angleY_rad, angleZ_rad = np.deg2rad(angles)
+    angleXRad, angleYRad, angleZRad = np.deg2rad(angles)
 
     x_R_act = np.array(
         [
             [1.0, 0.0, 0.0],
-            [0.0, np.cos(angleX_rad), -np.sin(angleX_rad)],
-            [0.0, np.sin(angleX_rad), np.cos(angleX_rad)],
+            [0.0, np.cos(angleXRad), -np.sin(angleXRad)],
+            [0.0, np.sin(angleXRad), np.cos(angleXRad)],
         ]
     )
     y_R_act = np.array(
         [
-            [np.cos(angleY_rad), 0.0, np.sin(angleY_rad)],
+            [np.cos(angleYRad), 0.0, np.sin(angleYRad)],
             [0.0, 1.0, 0.0],
-            [-np.sin(angleY_rad), 0.0, np.cos(angleY_rad)],
+            [-np.sin(angleYRad), 0.0, np.cos(angleYRad)],
         ]
     )
     z_R_act = np.array(
         [
-            [np.cos(angleZ_rad), -np.sin(angleZ_rad), 0.0],
-            [np.sin(angleZ_rad), np.cos(angleZ_rad), 0.0],
+            [np.cos(angleZRad), -np.sin(angleZRad), 0.0],
+            [np.sin(angleZRad), np.cos(angleZRad), 0.0],
             [0.0, 0.0, 1.0],
         ]
     )
@@ -205,12 +205,12 @@ def generate_2D_rot_R(
         rotates vectors in "A" axes (``rPrime_A=R@r_A``).
     :return: The rotation matrix as a (2,2) ndarray of floats.
     """
-    angle_rad = np.deg2rad(angle)
+    angleRad = np.deg2rad(angle)
 
     R_act = np.array(
         [
-            [np.cos(angle_rad), -np.sin(angle_rad)],
-            [np.sin(angle_rad), np.cos(angle_rad)],
+            [np.cos(angleRad), -np.sin(angleRad)],
+            [np.sin(angleRad), np.cos(angleRad)],
         ],
         dtype=float,
     )

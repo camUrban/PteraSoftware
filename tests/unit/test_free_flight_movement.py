@@ -449,7 +449,3 @@ class TestFreeFlightMovementImmutability(unittest.TestCase):
         """Test that airplane_movements property is read only."""
         with self.assertRaises(AttributeError):
             self.basic_free_flight_movement.airplane_movements = ()
-
-
-if __name__ == "__main__":
-    unittest.main()

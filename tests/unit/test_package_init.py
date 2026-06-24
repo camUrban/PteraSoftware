@@ -268,7 +268,3 @@ class TestInvalidAttributeAccess(unittest.TestCase):
 
         self.assertIn("nonexistent_module", str(context.exception))
         self.assertIn("has no attribute", str(context.exception))
-
-
-if __name__ == "__main__":
-    unittest.main()

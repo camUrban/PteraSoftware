@@ -15,7 +15,6 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Convergence Analysis**: Automatic search for converged parameters
 - **Aeroelasticity**: First-order structural wing deformation coupled to the UVLM via a torsional spring-mass-damper model (beta)
 - **Free Flight**: Six-degree-of-freedom flight dynamics from UVLM aerodynamics coupled to MuJoCo rigid-body dynamics (beta)
-- **GUI Interface**: Basic GUI available (beta stage)
 - **Visualization Tools**: 3D mesh visualization and 2D plotting of results
 - **Save and Load**: JSON serialization of solved simulations without pickle security risks
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
@@ -29,7 +28,6 @@ Requires Python 3.11, but active development is done in 3.13
 - **NumPy/SciPy**: Core numerical computations
 - **Numba**: JIT compilation for performance-critical loops
 - **PyVista**: 3D mesh processing and visualization
-- **PySide6**: GUI framework
 - **Matplotlib**: 2D plotting and analysis output
 
 ## Architecture Overview
@@ -78,7 +76,6 @@ Requires Python 3.11, but active development is done in 3.13
     - `TYPE_HINT_AND_DOCSTRING_STYLE.md`: Guidelines for type hinting and docstring formatting: **READ BEFORE CONTRIBUTING ANY CODE OR WRITING ANY DOCSTRINGS**
     - `WRITING_STYLE.md`: Guidelines for writing style in comments and documentation: **READ BEFORE WRITING ANY DOCUMENTATION, DOCSTRINGS, OR COMMENTS**
 - `examples/`: Directory with example scripts for users
-- `gui/`: Directory with GUI source code
 - `pterasoftware/`: Main package with modular solver architecture
     - `geometry/`: Package with aircraft geometry classes
         - `_airfoils/`: Directory containing data files with airfoil coordinates
@@ -237,13 +234,10 @@ Requires Python 3.11, but active development is done in 3.13
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file
 - `.readthedocs.yaml`: Read the Docs build configuration
-- `BUILD.md`: Instructions for building the GUI
 - `codecov.yml`: Codecov configuration for test coverage reporting
 - `CONTRIBUTING.md`: Contribution guidelines for developers
-- `make_installer.iss`: Inno Setup script for building Windows installer
 - `MANIFEST.in`: Manifest file for packaging
 - `mypy.ini`: MyPy configuration file
-- `pterasoftware.spec`: PyInstaller specification file for building executables
 - `pyproject.toml`: Project configuration file
 - `README.md`: Project overview and installation instructions for developers
 - `requirements.txt`: Full list of runtime dependencies with version constraints

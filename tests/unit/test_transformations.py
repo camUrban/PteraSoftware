@@ -2093,9 +2093,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         """
         vCg__E = 10.0
         expected_alpha = 5.0
-        alpha_rad = np.deg2rad(expected_alpha)
+        alphaRad = np.deg2rad(expected_alpha)
         vInf_BP1__E = np.array(
-            [-vCg__E * np.cos(alpha_rad), 0.0, -vCg__E * np.sin(alpha_rad)]
+            [-vCg__E * np.cos(alphaRad), 0.0, -vCg__E * np.sin(alphaRad)]
         )
 
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
@@ -2111,9 +2111,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         """
         vCg__E = 10.0
         expected_alpha = -7.5
-        alpha_rad = np.deg2rad(expected_alpha)
+        alphaRad = np.deg2rad(expected_alpha)
         vInf_BP1__E = np.array(
-            [-vCg__E * np.cos(alpha_rad), 0.0, -vCg__E * np.sin(alpha_rad)]
+            [-vCg__E * np.cos(alphaRad), 0.0, -vCg__E * np.sin(alphaRad)]
         )
 
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
@@ -2130,9 +2130,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         """
         vCg__E = 10.0
         expected_beta = 8.0
-        beta_rad = np.deg2rad(expected_beta)
+        betaRad = np.deg2rad(expected_beta)
         vInf_BP1__E = np.array(
-            [-vCg__E * np.cos(beta_rad), -vCg__E * np.sin(beta_rad), 0.0]
+            [-vCg__E * np.cos(betaRad), -vCg__E * np.sin(betaRad), 0.0]
         )
 
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
@@ -2148,9 +2148,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         """
         vCg__E = 10.0
         expected_beta = -3.0
-        beta_rad = np.deg2rad(expected_beta)
+        betaRad = np.deg2rad(expected_beta)
         vInf_BP1__E = np.array(
-            [-vCg__E * np.cos(beta_rad), -vCg__E * np.sin(beta_rad), 0.0]
+            [-vCg__E * np.cos(betaRad), -vCg__E * np.sin(betaRad), 0.0]
         )
 
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
@@ -2174,13 +2174,13 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         vCg__E = 10.0
         expected_alpha = 6.0
         expected_beta = -15.0
-        alpha_rad = np.deg2rad(expected_alpha)
-        beta_rad = np.deg2rad(expected_beta)
+        alphaRad = np.deg2rad(expected_alpha)
+        betaRad = np.deg2rad(expected_beta)
         vCg_BP1__E = vCg__E * np.array(
             [
-                np.cos(alpha_rad) * np.cos(beta_rad),
-                np.cos(alpha_rad) * np.sin(beta_rad),
-                np.sin(alpha_rad),
+                np.cos(alphaRad) * np.cos(betaRad),
+                np.cos(alphaRad) * np.sin(betaRad),
+                np.sin(alphaRad),
             ]
         )
         vInf_BP1__E = -vCg_BP1__E

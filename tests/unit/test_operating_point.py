@@ -1575,9 +1575,9 @@ class TestOperatingPoint(unittest.TestCase):
         op = self.with_tilted_surface_op
         normal = op.surfaceNormal_GP1
 
-        theta_deg = 190.0
-        theta_rad = np.deg2rad(theta_deg)
-        expected_normal = np.array([np.sin(theta_rad), 0.0, -np.cos(theta_rad)])
+        theta = 190.0
+        thetaRad = np.deg2rad(theta)
+        expected_normal = np.array([np.sin(thetaRad), 0.0, -np.cos(thetaRad)])
         npt.assert_allclose(normal, expected_normal, atol=1e-14)
 
         # The normal should still be a unit vector.

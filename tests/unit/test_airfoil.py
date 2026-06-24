@@ -370,8 +370,8 @@ class TestAirfoil(unittest.TestCase):
         )
 
         # Rotate the outline by 20 degrees (exceeds 15 degree limit)
-        angle_rad = np.deg2rad(20.0)
-        cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
+        angleRad = np.deg2rad(20.0)
+        cos_a, sin_a = np.cos(angleRad), np.sin(angleRad)
         rotation_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
         rotated_outline = (rotation_matrix @ valid_outline.T).T
 
@@ -401,8 +401,8 @@ class TestAirfoil(unittest.TestCase):
         )
 
         # Rotate the outline by 10 degrees (within 15 degree limit)
-        angle_rad = np.deg2rad(10.0)
-        cos_a, sin_a = np.cos(angle_rad), np.sin(angle_rad)
+        angleRad = np.deg2rad(10.0)
+        cos_a, sin_a = np.cos(angleRad), np.sin(angleRad)
         rotation_matrix = np.array([[cos_a, -sin_a], [sin_a, cos_a]])
         rotated_outline = (rotation_matrix @ valid_outline.T).T
 

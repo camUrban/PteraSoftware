@@ -164,9 +164,12 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
 
         # Rotational kinetic energy, using the body-axes angular velocity (converted from
         # degrees per second to radians per second) and inertia matrix.
-        omegas_rad = np.deg2rad(self.omegas_BP1__E)
+        omegasRad_BP1__E = np.deg2rad(self.omegas_BP1__E)
         rotational_kinetic_energies = np.array(
-            [0.5 * omega @ self.inertia_matrix @ omega for omega in omegas_rad]
+            [
+                0.5 * omegaRad @ self.inertia_matrix @ omegaRad
+                for omegaRad in omegasRad_BP1__E
+            ]
         )
 
         total_energies = (

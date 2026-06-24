@@ -34,12 +34,6 @@ from . import (
 
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
-# A body angular velocity of zero (in the first Airplane's geometry axes, observed from
-# the Earth frame, in radians per second). Solvers that do not model body rotation return
-# this from _currentOmegasRad_GP1__E so that _apply_body_rate is a no-op.
-_ZERO_OMEGAS_RAD_GP1__E = np.zeros(3, dtype=float)
-_ZERO_OMEGAS_RAD_GP1__E.flags.writeable = False
-
 
 # TODO: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
 #  and load coefficients.
@@ -958,7 +952,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        return _ZERO_OMEGAS_RAD_GP1__E
+        zeroOmegasRad_GP1__E = np.zeros(3, dtype=float)
+        zeroOmegasRad_GP1__E.flags.writeable = False
+        return zeroOmegasRad_GP1__E
 
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
         """Finds the body angular velocity (in the first Airplane's geometry axes,
@@ -978,7 +974,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        return _ZERO_OMEGAS_RAD_GP1__E
+        zeroOmegasRad_GP1__E = np.zeros(3, dtype=float)
+        zeroOmegasRad_GP1__E.flags.writeable = False
+        return zeroOmegasRad_GP1__E
 
     def _apply_body_rate(
         self,

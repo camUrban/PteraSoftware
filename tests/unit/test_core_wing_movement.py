@@ -581,11 +581,11 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Calculate expected custom harmonic wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
-        x_rad = 2 * np.pi * times / 1.0
+        xRad = 2 * np.pi * times / 1.0
         expected_x = (
             0.15
             * (3.0 / (2.0 * np.sqrt(2.0)))
-            * (np.sin(x_rad) + (1.0 / 3.0) * np.sin(3.0 * x_rad))
+            * (np.sin(xRad) + (1.0 / 3.0) * np.sin(3.0 * xRad))
         )
 
         # Assert that the generated positions match the expected custom wave.
@@ -606,11 +606,11 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Calculate expected custom harmonic wave values.
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
-        x_rad = 2 * np.pi * times / 1.0
+        xRad = 2 * np.pi * times / 1.0
         expected_x = (
             10.0
             * (3.0 / (2.0 * np.sqrt(2.0)))
-            * (np.sin(x_rad) + (1.0 / 3.0) * np.sin(3.0 * x_rad))
+            * (np.sin(xRad) + (1.0 / 3.0) * np.sin(3.0 * xRad))
         )
 
         # Assert that the generated angles match the expected custom wave.
@@ -690,9 +690,9 @@ class TestCoreWingMovement(unittest.TestCase):
         # So (I - R) @ [0, 0.5, 0] = [0, 0.5*(1 - cos(theta)), -0.5*sin(theta)]
         # Thus y_adj = 0.5*(1 - cos(theta)) and z_adj = -0.5*sin(theta)
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
-        angles_x_rad = np.deg2rad(10.0 * np.sin(2 * np.pi * times / 1.0))
-        expected_y = 0.5 * (1.0 - np.cos(angles_x_rad))
-        expected_z = -0.5 * np.sin(angles_x_rad)
+        stackAngleXRads = np.deg2rad(10.0 * np.sin(2 * np.pi * times / 1.0))
+        expected_y = 0.5 * (1.0 - np.cos(stackAngleXRads))
+        expected_z = -0.5 * np.sin(stackAngleXRads)
 
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)

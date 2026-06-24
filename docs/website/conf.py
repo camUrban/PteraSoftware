@@ -159,6 +159,15 @@ suppress_warnings = [
 
 autosectionlabel_prefix_document = True
 
+# AutoAPI renders docstrings as reStructuredText, where a vector magnitude written
+# with bars (for example, "|g_E|") parses as a substitution reference. Define those
+# tokens so the reference resolves to the literal barred text instead of emitting an
+# "Undefined substitution referenced" build error, without annotating the docstrings
+# themselves.
+rst_prolog = r"""
+.. |g_E| replace:: \|g_E\|
+"""
+
 # Use README as the landing page (instead of index)
 root_doc = "README"
 

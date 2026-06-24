@@ -603,18 +603,6 @@ def _compute_wake_area_mismatch(
 
                 # Stack TE panel corners across spanwise positions for vectorized math.
                 # Shape: (num_spanwise_panels, 3) per array.
-                Flpp_curr = np.stack(
-                    [
-                        current_panels[trailing_edge_chordwise_index, s].Flpp_GP1_CgP1
-                        for s in range(num_spanwise_panels)
-                    ]
-                )
-                Frpp_curr = np.stack(
-                    [
-                        current_panels[trailing_edge_chordwise_index, s].Frpp_GP1_CgP1
-                        for s in range(num_spanwise_panels)
-                    ]
-                )
                 Blpp_curr = np.stack(
                     [
                         current_panels[trailing_edge_chordwise_index, s].Blpp_GP1_CgP1

@@ -41,7 +41,7 @@ _ZERO_OMEGAS_RAD_GP1__E = np.zeros(3, dtype=float)
 _ZERO_OMEGAS_RAD_GP1__E.flags.writeable = False
 
 
-# REFACTOR: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
+# TODO: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
 #  and load coefficients.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.

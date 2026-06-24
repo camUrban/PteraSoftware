@@ -218,7 +218,3 @@ class TestCoreUnsteadyProblemImmutability(unittest.TestCase):
 
         # Clean up.
         self.core_unsteady_problem.finalForces_W.pop()
-
-
-if __name__ == "__main__":
-    unittest.main()

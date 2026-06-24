@@ -174,7 +174,3 @@ class TestWakeTruncation(unittest.TestCase):
 
             # The point grid has one more row than the vortex grid.
             self.assertEqual(grid.shape[0], self.max_wake_rows + 1)
-
-
-if __name__ == "__main__":
-    unittest.main()

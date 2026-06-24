@@ -1806,7 +1806,3 @@ class TestSingleStepWingMethods(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             wing.explode_wing([cosine_root, self._make_tip_wcs()])
-
-
-if __name__ == "__main__":
-    unittest.main()

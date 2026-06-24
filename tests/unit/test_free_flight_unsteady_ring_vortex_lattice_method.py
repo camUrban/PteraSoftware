@@ -84,14 +84,14 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(rotating_problem)
         self.assertIsInstance(solver, FreeFlightUnsteadyRingVortexLatticeMethodSolver)
 
-    def test_current_omegas_rad_without_rotation_is_zero(self):
+    def test_current_omegas_without_rotation_is_zero(self):
         """Test that _currentOmegasRad_GP1__E returns a zero vector when the current
         OperatingPoint carries no body rotation.
         """
         omegasRad_GP1__E = self.solver._currentOmegasRad_GP1__E()
         np.testing.assert_array_equal(omegasRad_GP1__E, np.zeros(3))
 
-    def test_current_omegas_rad_transforms_body_rate(self):
+    def test_current_omegas_transforms_body_rate(self):
         """Test that _currentOmegasRad_GP1__E transforms the current OperatingPoint's
         body rate from the body axes in degrees per second to the geometry axes in
         radians per second.
@@ -111,7 +111,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         expected_omegasRad_GP1__E = np.deg2rad(np.array([0.0, 0.0, -1.0]))
         np.testing.assert_allclose(omegasRad_GP1__E, expected_omegasRad_GP1__E)
 
-    def test_current_omegas_rad_negates_x_and_z_preserves_y(self):
+    def test_current_omegas_negates_x_and_z_preserves_y(self):
         """Test that _currentOmegasRad_GP1__E negates the x and z components and
         preserves the y component when transforming the body rate from the body axes to
         the geometry axes.
@@ -283,7 +283,3 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
         self.assertIsNone(self.solver._substep_gamma_n)
         self.assertIsNone(self.solver._substep_gamma_n_minus_1)
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -28,7 +28,3 @@ class TestSteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
                 rotating_problem
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

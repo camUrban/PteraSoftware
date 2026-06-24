@@ -30,7 +30,3 @@ class TestSteadyHorseshoeVortexLatticeMethodSolver(unittest.TestCase):
             ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
                 rotating_problem
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

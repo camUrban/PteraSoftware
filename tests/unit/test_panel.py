@@ -996,7 +996,3 @@ class TestPanelDeepCopy(unittest.TestCase):
         self.assertIsNotNone(copied.area)
         npt.assert_array_equal(copied.rightLeg_G, original.rightLeg_G)
         self.assertEqual(copied.area, original.area)
-
-
-if __name__ == "__main__":
-    unittest.main()

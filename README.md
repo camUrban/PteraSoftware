@@ -115,8 +115,6 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * This feature couples Ptera Software's UVLM with six-degree-of-freedom rigid body dynamics, using the MuJoCo physics engine, so an aircraft flies a free trajectory under its own aerodynamic loads, weight, and inertia.
     * The body's motion updates the aerodynamics at every time step, capturing the two-way coupling between flight dynamics and unsteady aerodynamics.
     * Currently this feature supports single-airplane free flight.
-11. A Basic GUI
-    * This is still in its alpha stage, but we will be adding more functionality soon.
 
 ## Installation
 

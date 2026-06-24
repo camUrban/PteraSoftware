@@ -1072,7 +1072,3 @@ class TestAirplaneDraw(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_airplane.draw(save=False, testing="invalid")
-
-
-if __name__ == "__main__":
-    unittest.main()

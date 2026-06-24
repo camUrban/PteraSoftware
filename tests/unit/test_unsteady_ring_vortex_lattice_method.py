@@ -110,7 +110,7 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         """Test that the base solver does not model body rates by default."""
         self.assertFalse(self.solver._models_body_rates)
 
-    def test_current_omegas_rad_default_is_zero(self):
+    def test_current_omegas_default_is_zero(self):
         """Test that the default _currentOmegasRad_GP1__E returns a zero vector, so the
         base solver contributes no body-rotation velocity.
         """
@@ -126,7 +126,3 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         self.assertIs(
             self.solver._apply_body_rate(points, base_velocity), base_velocity
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

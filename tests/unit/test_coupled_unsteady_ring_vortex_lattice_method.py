@@ -85,7 +85,3 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(CoupledUnsteadyRingVortexLatticeMethodSolver.__slots__, ())
         with self.assertRaises(AttributeError):
             self.solver.not_a_real_attribute = 42
-
-
-if __name__ == "__main__":
-    unittest.main()

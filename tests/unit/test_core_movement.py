@@ -516,7 +516,3 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         # The max_period should be 5.0 (from CoreOperatingPointMovement, larger than
         # 2.0).
         self.assertEqual(core_movement.max_period, 5.0)
-
-
-if __name__ == "__main__":
-    unittest.main()

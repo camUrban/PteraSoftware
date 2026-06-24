@@ -201,7 +201,3 @@ class TestAeroelasticMovement(unittest.TestCase):
                 rtol=1e-10,
                 atol=1e-14,
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,3 +1,5 @@
+"""This module contains a class to test the analyze_unsteady_trim function."""
+
 import unittest
 
 import pterasoftware as ps
@@ -5,11 +7,12 @@ from tests.unit.fixtures import problem_fixtures
 
 
 class TestAnalyzeUnsteadyTrim(unittest.TestCase):
-    """This class contains unit tests for the analyze_unsteady_trim function."""
+    """A class with functions to test analyze_unsteady_trim."""
 
-    def setUp(self):
-        """Set up test fixtures."""
-        self.problem = problem_fixtures.make_basic_unsteady_problem_fixture()
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures once for all analyze_unsteady_trim tests."""
+        cls.problem = problem_fixtures.make_basic_unsteady_problem_fixture()
 
     def test_problem_validation(self):
         """Test problem parameter validation."""
@@ -215,6 +218,16 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 objective_cut_off=0.0,
             )
 
+        with self.assertRaises(ValueError):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                objective_cut_off=-1.0,
+            )
+
     def test_num_calls_validation(self):
         """Test num_calls parameter validation."""
 
@@ -226,6 +239,26 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 beta_bounds=(-20.0, 20.0),
                 boundsExternalFX_W=(-1000.0, 1000.0),
                 num_calls=0,
+            )
+
+        with self.assertRaises(TypeError):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                num_calls=1.5,
+            )
+
+        with self.assertRaises(ValueError):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                num_calls=-1,
             )
 
     def test_base_operating_point_parameter_bounds_validation(self):

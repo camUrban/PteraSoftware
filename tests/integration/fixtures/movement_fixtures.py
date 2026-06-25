@@ -496,27 +496,25 @@ def make_simple_glider_free_flight_movement():
         operating_point_fixtures.make_simple_glider_operating_point()
     )
 
-    # Build a static FreeFlightWingMovement for each of the glider's three Wings.
+    # Build a static WingMovement for each of the glider's three Wings.
     wing_movements = []
     for wing in simple_glider_airplane.wings:
         wing_cross_section_movements = [
-            ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section
             )
             for wing_cross_section in wing.wing_cross_sections
         ]
         wing_movements.append(
-            ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+            ps.movements.wing_movement.WingMovement(
                 base_wing=wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
         )
 
-    simple_glider_airplane_movement = (
-        ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-            base_airplane=simple_glider_airplane,
-            wing_movements=wing_movements,
-        )
+    simple_glider_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=simple_glider_airplane,
+        wing_movements=wing_movements,
     )
 
     simple_glider_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
@@ -568,7 +566,7 @@ def make_flapping_free_flight_movement():
     wing_movements = []
     for wing_index, wing in enumerate(flapping_airplane.wings):
         wing_cross_section_movements = [
-            ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=wing_cross_section
             )
             for wing_cross_section in wing.wing_cross_sections
@@ -580,7 +578,7 @@ def make_flapping_free_flight_movement():
             ampAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
             periodAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
         wing_movements.append(
-            ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+            ps.movements.wing_movement.WingMovement(
                 base_wing=wing,
                 wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=ampAngles_Gs_to_Wn_ixyz,
@@ -588,11 +586,9 @@ def make_flapping_free_flight_movement():
             )
         )
 
-    flapping_airplane_movement = (
-        ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-            base_airplane=flapping_airplane,
-            wing_movements=wing_movements,
-        )
+    flapping_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=flapping_airplane,
+        wing_movements=wing_movements,
     )
 
     flapping_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(

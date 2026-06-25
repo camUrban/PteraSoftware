@@ -477,9 +477,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         :param movement: The FreeFlightMovement that defines the prescribed Airplane
             geometry for this FreeFlightUnsteadyProblem. The initial Airplane and
             OperatingPoint are derived from the FreeFlightMovement at the first time
-            step. The FreeFlightMovement must contain exactly one
-            FreeFlightAirplaneMovement; multi-airplane free flight is not supported in
-            this release.
+            step. The FreeFlightMovement must contain exactly one AirplaneMovement;
+            multi-airplane free flight is not supported in this release.
         :param mass: A number (int or float) representing the mass of the Airplane. It
             must be greater than zero and will be converted internally to a float. The
             units are in kilograms. It must satisfy weight == mass * |g_E| within
@@ -539,7 +538,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         if len(movement.airplane_movements) != 1:
             raise ValueError(
-                "movement must have exactly one FreeFlightAirplaneMovement. "
+                "movement must have exactly one AirplaneMovement. "
                 "Multi-airplane free flight is not supported in this release."
             )
 

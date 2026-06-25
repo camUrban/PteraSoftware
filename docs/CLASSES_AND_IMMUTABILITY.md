@@ -40,7 +40,7 @@ Most attribute falls into one of these categories:
 
 A constructor parameter is not always retained as an attribute. Some parameters shape how an object is built but are deliberately discarded once construction finishes: they have no `__slots__` entry, appear in no attribute-category table, and are not serialized or deep copied, because nothing reads them after `__init__`. They are still validated exactly like their stored counterparts.
 
-`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing.explode_wing` to replace the supplied wing cross sections with single-strip cross sections, then plays no further role. Storing it would only create a stale provenance flag, since an exploded Wing is indistinguishable from one defined with single-strip cross sections directly. So the validated value lives in a local variable inside `__init__` and is never assigned to `self`, while still passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`.
+`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections, then plays no further role. Storing it would only create a stale provenance flag, since an exploded Wing is indistinguishable from one defined with single-strip cross sections directly. So the validated value lives in a local variable inside `__init__` and is never assigned to `self`, while still passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`.
 
 ### Key Decisions
 
@@ -558,7 +558,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Construction-only parameters
 
-`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `explode_wing` during initialization and is then discarded, so it has no slot and no attribute-category entry above. See Construction-Only Parameters under Design Principles.
+`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `_explode_wing` during initialization and is then discarded, so it has no slot and no attribute-category entry above. See Construction-Only Parameters under Design Principles.
 
 ## WingCrossSection Class (`geometry/wing_cross_section.py`)
 

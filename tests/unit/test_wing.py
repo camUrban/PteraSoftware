@@ -1639,7 +1639,7 @@ class TestWingTransformationMatrixCaching(unittest.TestCase):
                 T[0, 0] = 999.0
 
 
-class TestSingleStepWingMethods(unittest.TestCase):
+class TestExplodeIntoStripsMethods(unittest.TestCase):
     """This class contains unit tests for Wing._explode_wing,
     Wing._interpolate_between_wing_cross_sections, and the explode_into_strips
     parameter."""

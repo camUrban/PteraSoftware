@@ -172,12 +172,12 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# Now define each Wing's FreeFlightWingMovements (and the FreeFlightWingCrossSection-
-# Movements they contain). The main Wing was defined with symmetric=True,
-# mirror_only=False, and a symmetry plane coincident with its axes' xz-plane, giving it
-# type 4 symmetry (see the Wing class documentation for more details on symmetry types),
-# so it stays a single Wing and is not split into a separate reflected Wing. The Airplane
-# therefore has exactly three Wings, and we need one FreeFlightWingMovement per Wing.
+# Now define each Wing's WingMovements (and the WingCrossSectionMovements they contain).
+# The main Wing was defined with symmetric=True, mirror_only=False, and a symmetry plane
+# coincident with its axes' xz-plane, giving it type 4 symmetry (see the Wing class
+# documentation for more details on symmetry types), so it stays a single Wing and is not
+# split into a separate reflected Wing. The Airplane therefore has exactly three Wings,
+# and we need one WingMovement per Wing.
 #
 # This is a free flight of a rigid glider, so there is no prescribed flapping or
 # deformation: every prescribed-motion amplitude is left at its zero default. The only
@@ -187,25 +187,23 @@ example_airplane = ps.geometry.airplane.Airplane(
 wing_movements = []
 for wing in example_airplane.wings:
     wing_cross_section_movements = [
-        ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in wing.wing_cross_sections
     ]
     wing_movements.append(
-        ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
     )
 
-# Now define the example airplane's FreeFlightAirplaneMovement. As with the Wings, the
+# Now define the example airplane's AirplaneMovement. As with the Wings, the
 # airplane-level prescribed motion is left at its zero defaults.
-airplane_movement = (
-    ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-        base_airplane=example_airplane,
-        wing_movements=wing_movements,
-    )
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    base_airplane=example_airplane,
+    wing_movements=wing_movements,
 )
 
 # Delete the extraneous pointer to the WingMovements, as these are now contained within
@@ -244,7 +242,7 @@ operating_point_movement = (
 # Delete the extraneous pointer.
 del example_operating_point
 
-# Define the FreeFlightMovement. This contains the FreeFlightAirplaneMovement and the
+# Define the FreeFlightMovement. This contains the AirplaneMovement and the
 # FreeFlightOperatingPointMovement. The glider first holds its trimmed condition for
 # prescribed_num_steps time steps so the wake can develop, then the solver releases the
 # rigid body dynamics for the remaining free_num_steps time steps.

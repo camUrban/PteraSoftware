@@ -60,7 +60,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             )
 
     def test_single_airplane_movement_validation(self):
-        """Test that the FreeFlightMovement has exactly one FreeFlightAirplaneMovement."""
+        """Test that the FreeFlightMovement has exactly one AirplaneMovement."""
         movement, mass = _movement_and_mass()
         two_airplane_movement = ps.movements.free_flight_movement.FreeFlightMovement(
             airplane_movements=[

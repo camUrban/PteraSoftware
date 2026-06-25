@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import cast
 
 from .. import _core, _parameter_validation, geometry
-from . import free_flight_airplane_movement as free_flight_airplane_movement_mod
+from . import airplane_movement as airplane_movement_mod
 from . import (
     free_flight_operating_point_movement as free_flight_operating_point_movement_mod,
 )
@@ -59,9 +59,7 @@ class FreeFlightMovement(_core.CoreMovement):
 
     def __init__(
         self,
-        airplane_movements: list[
-            free_flight_airplane_movement_mod.FreeFlightAirplaneMovement
-        ],
+        airplane_movements: list[airplane_movement_mod.AirplaneMovement],
         operating_point_movement: free_flight_operating_point_movement_mod.FreeFlightOperatingPointMovement,
         delta_time: float | int,
         prescribed_num_steps: int,
@@ -75,8 +73,8 @@ class FreeFlightMovement(_core.CoreMovement):
         requirement. See the Wing class documentation for more information on symmetry
         types.
 
-        :param airplane_movements: A list of the FreeFlightAirplaneMovements associated
-            with each of the FreeFlightUnsteadyProblem's Airplanes.
+        :param airplane_movements: A list of the AirplaneMovements associated with each
+            of the FreeFlightUnsteadyProblem's Airplanes.
         :param operating_point_movement: A FreeFlightOperatingPointMovement holding the
             initial OperatingPoint. The solver populates its mutable operating_points
             list during simulation.
@@ -90,17 +88,17 @@ class FreeFlightMovement(_core.CoreMovement):
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """
-        # Validate that every element is a FreeFlightAirplaneMovement, not just
-        # a CoreAirplaneMovement. CoreMovement.__init__() validates at the Core
-        # level, but FreeFlightMovement enforces the stricter type.
+        # Validate that every element is an AirplaneMovement.
+        # CoreMovement.__init__() validates at the Core level, but
+        # FreeFlightMovement enforces the concrete type.
         for airplane_movement in airplane_movements:
             if not isinstance(
                 airplane_movement,
-                free_flight_airplane_movement_mod.FreeFlightAirplaneMovement,
+                airplane_movement_mod.AirplaneMovement,
             ):
                 raise TypeError(
-                    "Every element in airplane_movements must be a "
-                    "FreeFlightAirplaneMovement."
+                    "Every element in airplane_movements must be an "
+                    "AirplaneMovement."
                 )
 
         # Validate that operating_point_movement is a
@@ -144,8 +142,8 @@ class FreeFlightMovement(_core.CoreMovement):
 
         # --- Batch generate Airplanes ---
         # Generate a list of lists of Airplanes that are the steps through each
-        # FreeFlightAirplaneMovement. The first index identifies the
-        # FreeFlightAirplaneMovement, and the second index identifies the time
+        # AirplaneMovement. The first index identifies the
+        # AirplaneMovement, and the second index identifies the time
         # step.
         airplanes_temp: list[list[geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
@@ -173,7 +171,7 @@ class FreeFlightMovement(_core.CoreMovement):
                     base_symmetry_type = base_wing_symmetry_types[wing_id]
                     if wing.symmetry_type != base_symmetry_type:
                         raise ValueError(
-                            f"Wing {wing_id} in FreeFlightAirplaneMovement "
+                            f"Wing {wing_id} in AirplaneMovement "
                             f"{airplane_movement_id} changed from type "
                             f"{base_symmetry_type} symmetry at time step 0 "
                             f"to type {wing.symmetry_type} symmetry at time "
@@ -203,9 +201,9 @@ class FreeFlightMovement(_core.CoreMovement):
     @property
     def airplane_movements(
         self,
-    ) -> tuple[free_flight_airplane_movement_mod.FreeFlightAirplaneMovement, ...]:
+    ) -> tuple[airplane_movement_mod.AirplaneMovement, ...]:
         return cast(
-            tuple[free_flight_airplane_movement_mod.FreeFlightAirplaneMovement, ...],
+            tuple[airplane_movement_mod.AirplaneMovement, ...],
             self._airplane_movements,
         )
 

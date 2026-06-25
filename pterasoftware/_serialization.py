@@ -48,15 +48,10 @@ from .movements.aeroelastic_wing_cross_section_movement import (
 )
 from .movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from .movements.airplane_movement import AirplaneMovement
-from .movements.free_flight_airplane_movement import FreeFlightAirplaneMovement
 from .movements.free_flight_movement import FreeFlightMovement
 from .movements.free_flight_operating_point_movement import (
     FreeFlightOperatingPointMovement,
 )
-from .movements.free_flight_wing_cross_section_movement import (
-    FreeFlightWingCrossSectionMovement,
-)
-from .movements.free_flight_wing_movement import FreeFlightWingMovement
 from .movements.movement import Movement
 from .movements.operating_point_movement import OperatingPointMovement
 from .movements.wing_cross_section_movement import WingCrossSectionMovement
@@ -87,7 +82,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 11
+_FORMAT_VERSION = 12
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -138,9 +133,6 @@ _CLASS_REGISTRY: dict[str, type] = {
     "AeroelasticUnsteadyProblem": AeroelasticUnsteadyProblem,
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver": AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     "FreeFlightMovement": FreeFlightMovement,
-    "FreeFlightAirplaneMovement": FreeFlightAirplaneMovement,
-    "FreeFlightWingMovement": FreeFlightWingMovement,
-    "FreeFlightWingCrossSectionMovement": FreeFlightWingCrossSectionMovement,
     "FreeFlightOperatingPointMovement": FreeFlightOperatingPointMovement,
     "FreeFlightUnsteadyProblem": FreeFlightUnsteadyProblem,
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver": FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -176,9 +168,6 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
         "AeroelasticUnsteadyProblem",
         "AeroelasticUnsteadyRingVortexLatticeMethodSolver",
         "FreeFlightMovement",
-        "FreeFlightAirplaneMovement",
-        "FreeFlightWingMovement",
-        "FreeFlightWingCrossSectionMovement",
         "FreeFlightOperatingPointMovement",
         "FreeFlightUnsteadyProblem",
         "FreeFlightUnsteadyRingVortexLatticeMethodSolver",

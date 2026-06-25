@@ -250,14 +250,14 @@ class Wing:
             either are True. For more details on how this parameter interacts with
             symmetryNormal_G, symmetric, and mirror_only, see the class docstring. The
             units are meters. The default is None.
-        :param explode_into_strips: Set this to True to have the explode_wing method
-            called on this Wing during initialization, replacing wing_cross_sections
-            with a new list in which every panel is broken into single spanwise strips
-            for deformation. When True, every non tip WingCrossSection in
-            wing_cross_sections must have spanwise_spacing="uniform"; the explosion
-            assumes uniformly spaced intermediates and rejects other spacings rather
-            than silently overriding them. This parameter is consumed during
-            initialization and is not stored as an attribute.
+        :param explode_into_strips: Set this to True to replace wing_cross_sections
+            during initialization with a new list in which every panel is broken into
+            single spanwise strips for deformation. When True, every non tip
+            WingCrossSection in wing_cross_sections must have
+            spanwise_spacing="uniform"; the explosion assumes uniformly spaced
+            intermediates and rejects other spacings rather than silently overriding
+            them. This parameter is consumed during initialization and is not stored as
+            an attribute.
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: The type of spacing between the Wing's chordwise
@@ -274,7 +274,7 @@ class Wing:
             explode_into_strips, "explode_into_strips"
         )
         if explode_into_strips:
-            wing_cross_sections = self.explode_wing(wing_cross_sections)
+            wing_cross_sections = self._explode_wing(wing_cross_sections)
         num_wing_cross_sections = len(wing_cross_sections)
         if num_wing_cross_sections < 2:
             raise ValueError("wing_cross_sections must contain at least two elements.")
@@ -1506,43 +1506,25 @@ class Wing:
 
         return None
 
-    def interpolate_between_wing_cross_sections(
-        self,
+    @staticmethod
+    def _interpolate_between_wing_cross_sections(
         wcs1: wing_cross_section_mod.WingCrossSection,
         wcs2: wing_cross_section_mod.WingCrossSection,
-        first_wcs: bool,
     ) -> list[wing_cross_section_mod.WingCrossSection]:
-        """Wing cross section panels are between the line of wcs1 and wcs2.
+        """Build the single-panel WingCrossSections spanning from just past wcs1 through
+        wcs2.
 
         When exploding a wing to 1 spanwise panel per cross section, we need to
-        interpolate the intermediate cross sections.
+        interpolate the intermediate cross sections. This returns the N sections
+        downstream of wcs1, where N is wcs1's spanwise panel count. The section at wcs1
+        itself is seeded once by _explode_wing, so it is not repeated here.
 
         :param wcs1: The first WingCrossSection.
         :param wcs2: The second WingCrossSection.
-        :param first_wcs: Whether wcs1 is the first WingCrossSection of the wing. If
-            True, the method will include a WingCrossSection with the same parameters as
-            wcs1 in the output list. If False, it will not, since it will have already
-            been included as the last interpolated WingCrossSection between the previous
-            pair of WingCrossSections.
         :return: A list of WingCrossSections representing the interpolated cross
             sections
         """
         interpolated = []
-
-        if first_wcs:
-            interpolated.append(
-                wing_cross_section_mod.WingCrossSection(
-                    num_spanwise_panels=1,
-                    chord=wcs1.chord,
-                    Lp_Wcsp_Lpp=wcs1.Lp_Wcsp_Lpp,
-                    angles_Wcsp_to_Wcs_ixyz=wcs1.angles_Wcsp_to_Wcs_ixyz,
-                    control_surface_symmetry_type=wcs1.control_surface_symmetry_type,
-                    control_surface_hinge_point=wcs1.control_surface_hinge_point,
-                    control_surface_deflection=wcs1.control_surface_deflection,
-                    spanwise_spacing="uniform",
-                    airfoil=wcs1.airfoil,
-                )
-            )
 
         N = wcs1.num_spanwise_panels
         assert N is not None, "wcs1.num_spanwise_panels must not be None"
@@ -1555,7 +1537,7 @@ class Wing:
             # WingCrossSection's constructor docstring), so each of the N intermediates
             # carries 1/N of wcs2's delta and the chain composes back to wcs2's offset
             # and twist. This is exact only when the intermediates are uniformly
-            # spaced, which explode_wing enforces by validating the input.
+            # spaced, which _explode_wing enforces by validating the input.
             Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
             angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
             is_final_section = wcs2.num_spanwise_panels is None and i == N - 1
@@ -1575,7 +1557,7 @@ class Wing:
             )
         return interpolated
 
-    def explode_wing(
+    def _explode_wing(
         self, wing_cross_sections: list[wing_cross_section_mod.WingCrossSection]
     ) -> list[wing_cross_section_mod.WingCrossSection]:
         """Takes a list of WingCrossSections and returns a new list where all cross
@@ -1602,12 +1584,29 @@ class Wing:
                     f"WingCrossSection."
                 )
 
-        new_cross_sections = []
+        # Seed the result with the root strip, then fill in the single-panel sections
+        # spanning each adjacent pair. Seeding the root here, rather than inside the
+        # per-pair interpolation, keeps that helper independent of its position in the
+        # wing.
+        root = wing_cross_sections[0]
+        new_cross_sections = [
+            wing_cross_section_mod.WingCrossSection(
+                num_spanwise_panels=1,
+                chord=root.chord,
+                Lp_Wcsp_Lpp=root.Lp_Wcsp_Lpp,
+                angles_Wcsp_to_Wcs_ixyz=root.angles_Wcsp_to_Wcs_ixyz,
+                control_surface_symmetry_type=root.control_surface_symmetry_type,
+                control_surface_hinge_point=root.control_surface_hinge_point,
+                control_surface_deflection=root.control_surface_deflection,
+                spanwise_spacing="uniform",
+                airfoil=root.airfoil,
+            )
+        ]
 
         for i in range(len(wing_cross_sections) - 1):
             new_cross_sections.extend(
-                self.interpolate_between_wing_cross_sections(
-                    wing_cross_sections[i], wing_cross_sections[i + 1], i == 0
+                self._interpolate_between_wing_cross_sections(
+                    wing_cross_sections[i], wing_cross_sections[i + 1]
                 )
             )
 

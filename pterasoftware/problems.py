@@ -450,10 +450,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         "_external_loads_validated",
         "_k_max",
         "_mujoco_model",
-        "forces_W",
-        "forceCoefficients_W",
-        "moments_W_Cg",
-        "momentCoefficients_W_Cg",
     )
 
     def __init__(
@@ -626,13 +622,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             min_val=0,
             min_inclusive=False,
         )
-
-        # Initialize empty lists to hold the loads and load coefficients experienced by
-        # each time step's Airplane.
-        self.forces_W: list[np.ndarray] = []
-        self.forceCoefficients_W: list[np.ndarray] = []
-        self.moments_W_Cg: list[np.ndarray] = []
-        self.momentCoefficients_W_Cg: list[np.ndarray] = []
 
         # Validate the integrator name against the supported MuJoCo integrators. The
         # MuJoCoModel sets the validated name in the generated model XML's option
@@ -1279,8 +1268,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         the body advances once. During the free flight phase (once the step index
         reaches the movement's prescribed_num_steps), the aerodynamic loads and the
         rigid body state are driven to mutual consistency by the strongly coupled sub-
-        iteration before the next step is committed. On every step (including the last
-        one), records the current step's loads in the load history lists.
+        iteration before the next step is committed.
 
         :param solver: The CoupledUnsteadyRingVortexLatticeMethodSolver instance
             providing aerodynamic data from the current time step.
@@ -1289,16 +1277,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         """
         current_airplane = solver.current_airplanes[0]
         current_operating_point = solver.current_operating_point
-
-        # The solver populates these load attributes via _calculate_loads before
-        # invoking this method.
-        assert current_airplane.forces_W is not None
-        assert current_airplane.forceCoefficients_W is not None
-        assert current_airplane.moments_W_CgP1 is not None
-        assert current_airplane.momentCoefficients_W_CgP1 is not None
-
-        aeroForces_W = current_airplane.forces_W
-        aeroMoments_W_CgP1 = current_airplane.moments_W_CgP1
 
         if step < self.num_steps - 1:
             if step >= self._free_flight_movement.prescribed_num_steps:
@@ -1325,14 +1303,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                     new_state, current_operating_point
                 )
                 self._commit_next_problem(next_operating_point, step)
-
-        # Store the current step's loads in the load history.
-        self.forces_W.append(np.copy(aeroForces_W))
-        self.forceCoefficients_W.append(np.copy(current_airplane.forceCoefficients_W))
-        self.moments_W_Cg.append(np.copy(aeroMoments_W_CgP1))
-        self.momentCoefficients_W_Cg.append(
-            np.copy(current_airplane.momentCoefficients_W_CgP1)
-        )
 
 
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):

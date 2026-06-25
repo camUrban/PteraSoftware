@@ -817,10 +817,6 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.problem.mass, float)
         self.assertIsInstance(self.problem.k_max, int)
         self.assertIsNone(self.problem.external_loads_fn)
-        self.assertIsInstance(self.problem.forces_W, list)
-        self.assertIsInstance(self.problem.forceCoefficients_W, list)
-        self.assertIsInstance(self.problem.moments_W_Cg, list)
-        self.assertIsInstance(self.problem.momentCoefficients_W_Cg, list)
 
 
 class TestCoreOperatingPointMovementSlots(unittest.TestCase):

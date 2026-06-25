@@ -219,15 +219,11 @@ The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJ
 
 #### Mutable (populated by solver)
 
-These are allocated in `__init__` (the four load-history lists as empty lists, the validation guard as `False`) and updated by the problem's `initialize_next_problem` as the solver advances. They are plain slots rather than read-only properties because they must change after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
+This is allocated in `__init__` (the validation guard as `False`) and updated by the problem's `initialize_next_problem` on the `external_loads_fn`'s first invocation. It is a plain slot rather than a read-only property because it must change after construction.
 
-| Attribute                   | Type               | Notes                                                                                                      |
-|-----------------------------|--------------------|------------------------------------------------------------------------------------------------------------|
-| `forces_W`                  | `list[np.ndarray]` | Per-step aerodynamic force history, in wind axes                                                           |
-| `forceCoefficients_W`       | `list[np.ndarray]` | Per-step aerodynamic force coefficient history                                                             |
-| `moments_W_Cg`              | `list[np.ndarray]` | Per-step aerodynamic moment history, in wind axes about the CG                                             |
-| `momentCoefficients_W_Cg`   | `list[np.ndarray]` | Per-step aerodynamic moment coefficient history                                                            |
-| `_external_loads_validated` | `bool`             | Once-only guard; flips to `True` after the `external_loads_fn` return is validated on its first invocation |
+| Attribute                   | Type   | Notes                                                                                                      |
+|-----------------------------|--------|------------------------------------------------------------------------------------------------------------|
+| `_external_loads_validated` | `bool` | Once-only guard; flips to `True` after the `external_loads_fn` return is validated on its first invocation |
 
 #### Construction-only parameters
 

@@ -2162,21 +2162,6 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
 
-    def test_load_history_round_trip(self):
-        """Tests that recorded load-history arrays survive a round trip.
-
-        :return: None
-        """
-        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-        problem.forces_W.append(np.array([1.0, 2.0, 3.0], dtype=float))
-        problem.forceCoefficients_W.append(np.array([0.1, 0.2, 0.3], dtype=float))
-        problem.moments_W_Cg.append(np.array([4.0, 5.0, 6.0], dtype=float))
-        problem.momentCoefficients_W_Cg.append(np.array([0.4, 0.5, 0.6], dtype=float))
-        result = _deserialize_value(_serialize_value(problem))
-        assert isinstance(result, FreeFlightUnsteadyProblem)
-        npt.assert_array_equal(result.forces_W[0], problem.forces_W[0])
-        npt.assert_array_equal(result.moments_W_Cg[0], problem.moments_W_Cg[0])
-
     def test_custom_external_loads_fn_is_not_serializable(self):
         """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn raises
         on serialization, matching the custom-callable disposition used elsewhere.

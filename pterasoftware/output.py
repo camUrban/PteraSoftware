@@ -1445,31 +1445,55 @@ def plot_results_versus_time(
         # Find and format this Airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
         airplane_name_snake = airplane_name.lower().replace(" ", "_")
-        force_title = airplane_name + " Forces vs. Time"
-        force_coefficient_title = airplane_name + " Force Coefficients vs. Time"
-        moment_title = airplane_name + " Moments vs. Time"
-        moment_coefficient_title = airplane_name + " Moment Coefficients vs. Time"
+        force_title = airplane_name + " Forces"
+        force_coefficient_title = airplane_name + " Force Coefficients"
+        moment_title = airplane_name + " Moments"
+        moment_coefficient_title = airplane_name + " Moment Coefficients"
+        force_subtitle = "(in Wind Axes)"
+        force_coefficient_subtitle = "(in Wind Axes)"
+        moment_subtitle = "(in Wind Axes, Relative to the First Airplane's CG)"
+        moment_coefficient_subtitle = (
+            "(in Wind Axes, Relative to the First Airplane's CG)"
+        )
 
-        # Name the plots' axis labels and titles.
+        # Name the plots' axis labels, titles, and subtitles. The main title
+        # uses suptitle at the default size, and the subtitle uses set_title at
+        # a smaller size so the two render at different scales.
         force_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         force_axes.set_ylabel("Force (N)", color=_text_color_normalized)
-        force_axes.set_title(force_title, color=_text_color_normalized)
+        force_figure.suptitle(force_title, color=_text_color_normalized)
+        force_axes.set_title(
+            force_subtitle, color=_text_color_normalized, fontsize="small"
+        )
         force_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         force_coefficients_axes.set_ylabel(
             "Force Coefficient", color=_text_color_normalized
         )
-        force_coefficients_axes.set_title(
+        force_coefficients_figure.suptitle(
             force_coefficient_title, color=_text_color_normalized
+        )
+        force_coefficients_axes.set_title(
+            force_coefficient_subtitle,
+            color=_text_color_normalized,
+            fontsize="small",
         )
         moment_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         moment_axes.set_ylabel("Moment (N m)", color=_text_color_normalized)
-        moment_axes.set_title(moment_title, color=_text_color_normalized)
+        moment_figure.suptitle(moment_title, color=_text_color_normalized)
+        moment_axes.set_title(
+            moment_subtitle, color=_text_color_normalized, fontsize="small"
+        )
         moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         moment_coefficients_axes.set_ylabel(
             "Moment Coefficient", color=_text_color_normalized
         )
-        moment_coefficients_axes.set_title(
+        moment_coefficients_figure.suptitle(
             moment_coefficient_title, color=_text_color_normalized
+        )
+        moment_coefficients_axes.set_title(
+            moment_coefficient_subtitle,
+            color=_text_color_normalized,
+            fontsize="small",
         )
 
         # Format the plots' legends. The handler map normalizes legend line
@@ -1578,8 +1602,9 @@ def plot_results_versus_time(
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
             ["X Component", "Y Component", "Z Component"],
             [_linear_x_color, _linear_y_color, _linear_z_color],
-            airplane_name
-            + " Position (in Earth Axes, Relative to the Earth Origin) vs. Time",
+            airplane_name + " Position",
+            "(of the First Airplane's CG, in Earth Axes, Relative to the "
+            "Earth Origin)",
             "Position (m)",
             save,
             airplane_name_snake + "_position.png",
@@ -1589,8 +1614,9 @@ def plot_results_versus_time(
             [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
             ["X Component", "Y Component", "Z Component"],
             [_linear_x_color, _linear_y_color, _linear_z_color],
-            airplane_name
-            + " Velocity (in Earth Axes, Observed from the Earth Frame) vs. Time",
+            airplane_name + " Velocity",
+            "(of the First Airplane's CG, in Earth Axes, Observed from the "
+            "Earth Frame)",
             "Velocity (m/s)",
             save,
             airplane_name_snake + "_velocity.png",
@@ -1604,9 +1630,9 @@ def plot_results_versus_time(
             ],
             ["Roll Angle", "Pitch Angle", "Yaw Angle"],
             [_angular_x_color, _angular_y_color, _angular_z_color],
-            airplane_name
-            + " Orientation (from Earth Axes to the First Airplane's Body Axes Using "
-            + "an Intrinsic zy'x\" Sequence) vs. Time",
+            airplane_name + " Orientation",
+            "(of the First Airplane's Body Axes Relative to Earth Axes "
+            "Using an Intrinsic zy'x\" Sequence)",
             "Orientation (deg)",
             save,
             airplane_name_snake + "_orientation.png",
@@ -1616,9 +1642,8 @@ def plot_results_versus_time(
             [omegasDeg_BP1__E[0], omegasDeg_BP1__E[1], omegasDeg_BP1__E[2]],
             ["Roll Rate", "Pitch Rate", "Yaw Rate"],
             [_angular_x_color, _angular_y_color, _angular_z_color],
-            airplane_name
-            + " Angular Velocity (of the First Airplane's Body Axes, Observed from the "
-            + "Earth Frame) vs. Time",
+            airplane_name + " Angular Velocity",
+            "(in the First Airplane's Body Axes, Observed from the " "Earth Frame)",
             "Angular Velocity (deg/s)",
             save,
             airplane_name_snake + "_angular_velocity.png",
@@ -1628,7 +1653,8 @@ def plot_results_versus_time(
             [alphas, betas],
             ["Angle of Attack", "Sideslip Angle"],
             [_alpha_color, _beta_color],
-            airplane_name + " Aerodynamic Angles vs. Time",
+            airplane_name + " Aerodynamic Angles",
+            "",
             "Angle (deg)",
             save,
             airplane_name_snake + "_aerodynamic_angles.png",
@@ -1956,15 +1982,15 @@ def log_results(
             f"to the Earth Origin):"
         )
         state_group_header_orientation = (
-            f"{2 * pad}Orientation (from Earth Axes to the First Airplane's Body Axes "
-            f"Using an Intrinsic zy'x\" Sequence):"
+            f"{2 * pad}Orientation (of the First Airplane's Body Axes Relative to "
+            f"Earth Axes Using an Intrinsic zy'x\" Sequence):"
         )
         state_group_header_velocity = (
             f"{2 * pad}Velocity (of the First Airplane's CG, in Earth Axes, Observed "
             f"from the Earth Frame):"
         )
         state_group_header_angular_velocity = (
-            f"{2 * pad}Angular Velocity (of the First Airplane's Body Axes, Observed "
+            f"{2 * pad}Angular Velocity (in the First Airplane's Body Axes, Observed "
             f"from the Earth Frame):"
         )
 
@@ -2061,6 +2087,7 @@ def _plot_state_history(
     labels: list[str],
     colors: list[str],
     title: str,
+    subtitle: str,
     y_label: str,
     save: bool,
     save_name: str,
@@ -2074,6 +2101,8 @@ def _plot_state_history(
     :param labels: A list of the legend labels, one per series.
     :param colors: A list of the line colors, one per series.
     :param title: The figure's title.
+    :param subtitle: A smaller line below the title describing the axes, points, and
+        frames of the plotted quantity. Pass an empty string to omit.
     :param y_label: The figure's y-axis label.
     :param save: Set this to True to save the figure as a PNG.
     :param save_name: The file name to save the figure under if save is True.
@@ -2115,10 +2144,12 @@ def _plot_state_history(
             solid_capstyle="butt",
         )
 
-    # Name the plot's axis labels and title.
+    # Name the plot's axis labels, title, and subtitle.
     axes.set_xlabel("Time (s)", color=_text_color_normalized)
     axes.set_ylabel(y_label, color=_text_color_normalized)
-    axes.set_title(title, color=_text_color_normalized)
+    figure.suptitle(title, color=_text_color_normalized)
+    if subtitle:
+        axes.set_title(subtitle, color=_text_color_normalized, fontsize="small")
 
     # Format the plot's legend.
     axes.legend(

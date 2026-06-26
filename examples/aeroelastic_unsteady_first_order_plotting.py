@@ -384,6 +384,8 @@ plt.ylabel("Angle (degrees)")
 plt.title(f"Net Deformation (Curve {CURVE_INDEX}) - Varying {sweep_name}")
 plt.legend()
 plt.grid(True)
-filename = f"Net_Deformation_Curve_{CURVE_INDEX}_{sweep_name.replace(' ', '_')}.png"
+filename = (
+    f"net_deformation_curve_{CURVE_INDEX}_{sweep_name.lower().replace(' ', '_')}.png"
+)
 plt.savefig(filename)
 plt.show()

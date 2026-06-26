@@ -127,10 +127,10 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
         original_bytes = webp_path.stat().st_size
         name = webp_path.name
 
-        if name == "Draw.webp" and draw_kwargs is not None:
+        if name == "draw.webp" and draw_kwargs is not None:
             render_func = ps.output.draw
             render_kwargs = {**draw_kwargs, "solver": loaded_solver}
-        elif name == "Animate.webp" and animate_kwargs is not None:
+        elif name == "animate.webp" and animate_kwargs is not None:
             render_func = ps.output.animate
             render_kwargs = {**animate_kwargs, "unsteady_solver": loaded_solver}
         else:

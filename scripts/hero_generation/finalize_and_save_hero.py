@@ -1,6 +1,6 @@
 """Renames the preview hero graphics to their permanent names.
 
-Run this script after you are satisfied with the current Animate.webp and Draw.webp
+Run this script after you are satisfied with the current animate.webp and draw.webp
 produced by load_and_visualize_hero.py. It overwrites the saved hero graphics with the
 new previews.
 """
@@ -12,8 +12,8 @@ _hero_graphics_dir = (
 )
 
 preview_to_final = {
-    "Animate.webp": "hero_animated.webp",
-    "Draw.webp": "hero_static.webp",
+    "animate.webp": "hero_animated.webp",
+    "draw.webp": "hero_static.webp",
 }
 
 for preview_name, final_name in preview_to_final.items():

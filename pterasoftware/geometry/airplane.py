@@ -531,7 +531,7 @@ class Airplane:
             )
             webp.save_image(
                 img=image,
-                file_path=f"{self._name}_geometry.webp",
+                file_path=f"{self._name.lower().replace(' ', '_')}_geometry.webp",
                 lossless=False,
                 quality=quality,
             )

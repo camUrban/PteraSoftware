@@ -569,7 +569,7 @@ def draw(
         )
 
         webp.save_image(
-            img=image, file_path="Draw.webp", lossless=False, quality=_quality
+            img=image, file_path="draw.webp", lossless=False, quality=_quality
         )
 
     # Close all Plotters.
@@ -1183,7 +1183,7 @@ def animate(
     if save:
         # Convert the list of WebP Images to an WebP animation.
         webp.save_images(
-            images, "Animate.webp", fps=actual_fps, lossless=False, quality=_quality
+            images, "animate.webp", fps=actual_fps, lossless=False, quality=_quality
         )
 
     # Close all the Plotters.
@@ -1454,6 +1454,7 @@ def plot_results_versus_time(
 
         # Find and format this Airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
+        airplane_name_snake = airplane_name.lower().replace(" ", "_")
         force_title = airplane_name + " Forces vs. Time"
         force_coefficient_title = airplane_name + " Force Coefficients vs. Time"
         moment_title = airplane_name + " Moments vs. Time"
@@ -1506,19 +1507,19 @@ def plot_results_versus_time(
         # Save the figures as PNGs if the user wants to do so.
         if save:
             force_figure.savefig(
-                airplane_name + " Forces.png",
+                airplane_name_snake + "_forces.png",
                 dpi=300,
             )
             force_coefficients_figure.savefig(
-                airplane_name + " Force Coefficients.png",
+                airplane_name_snake + "_force_coefficients.png",
                 dpi=300,
             )
             moment_figure.savefig(
-                airplane_name + " Moments.png",
+                airplane_name_snake + "_moments.png",
                 dpi=300,
             )
             moment_coefficients_figure.savefig(
-                airplane_name + " Moment Coefficients.png",
+                airplane_name_snake + "_moment_coefficients.png",
                 dpi=300,
             )
 
@@ -1567,6 +1568,7 @@ def plot_results_versus_time(
         # The state describes the first Airplane (the rigid body MuJoCo integrates), so
         # the plot titles and file names use the first Airplane's name.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[0].name
+        airplane_name_snake = airplane_name.lower().replace(" ", "_")
 
         _plot_state_history(
             state_times,
@@ -1577,7 +1579,7 @@ def plot_results_versus_time(
             + " Position (in Earth Axes, Relative to the Earth Origin) vs. Time",
             "Position (m)",
             save,
-            airplane_name + " Position.png",
+            airplane_name_snake + "_position.png",
         )
         _plot_state_history(
             state_times,
@@ -1588,7 +1590,7 @@ def plot_results_versus_time(
             + " Velocity (in Earth Axes, Observed from the Earth Frame) vs. Time",
             "Velocity (m/s)",
             save,
-            airplane_name + " Velocity.png",
+            airplane_name_snake + "_velocity.png",
         )
         _plot_state_history(
             state_times,
@@ -1604,7 +1606,7 @@ def plot_results_versus_time(
             + "an Intrinsic zy'x\" Sequence) vs. Time",
             "Orientation (deg)",
             save,
-            airplane_name + " Orientation.png",
+            airplane_name_snake + "_orientation.png",
         )
         _plot_state_history(
             state_times,
@@ -1616,7 +1618,7 @@ def plot_results_versus_time(
             + "Earth Frame) vs. Time",
             "Angular Velocity (deg/s)",
             save,
-            airplane_name + " Angular Velocity.png",
+            airplane_name_snake + "_angular_velocity.png",
         )
         _plot_state_history(
             state_times,
@@ -1626,7 +1628,7 @@ def plot_results_versus_time(
             airplane_name + " Aerodynamic Angles vs. Time",
             "Angle (deg)",
             save,
-            airplane_name + " Aerodynamic Angles.png",
+            airplane_name_snake + "_aerodynamic_angles.png",
         )
 
     # If the user wants to show the plots, do so. This is done outside the loop so

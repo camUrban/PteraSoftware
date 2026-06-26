@@ -1,6 +1,6 @@
 """Loads the saved hero simulation and generates preview graphics.
 
-This produces Animate.webp and Draw.webp in the current directory. Run this script
+This produces animate.webp and draw.webp in the current directory. Run this script
 repeatedly while iterating on the simulation or visualization parameters. Once
 satisfied, run finalize_and_save_hero.py to promote the previews to the permanent hero
 graphics.
@@ -48,9 +48,9 @@ ps.output.animate(
 )
 
 for name, render_func, render_kwargs in [
-    ("Draw.webp", ps.output.draw, {"solver": loaded_hero_solver, **_DRAW_KWARGS}),
+    ("draw.webp", ps.output.draw, {"solver": loaded_hero_solver, **_DRAW_KWARGS}),
     (
-        "Animate.webp",
+        "animate.webp",
         ps.output.animate,
         {"unsteady_solver": loaded_hero_solver, **_ANIMATE_KWARGS},
     ),

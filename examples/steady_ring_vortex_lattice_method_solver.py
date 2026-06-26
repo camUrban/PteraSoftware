@@ -99,7 +99,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                 ),
             ],
             name="Horizontal Stabilizer",
-            Ler_Gs_Cgs=(5.5, 0.0, 2.0),
+            Ler_Gs_Cgs=(5.5, 0.0, 2.05),
             angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
             symmetric=True,
             mirror_only=False,

@@ -1840,8 +1840,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             (t[0], t[-1]),
             np.array([theta0, omega0]),
             t_eval=t,
-            rtol=1e-9,
-            atol=1e-12,
+            rtol=1e-3,
+            atol=1e-4,
         )
 
         theta = float(sol.y[0][-1])

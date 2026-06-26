@@ -27,13 +27,14 @@ def run_aeroelastic(
     spring_constant: float = DEFAULT_K,
     damping_constant: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
-) -> tuple[list, object]:
+) -> tuple[list[np.ndarray], ps.problems.AeroelasticUnsteadyProblem]:
     """Run the aeroelastic solver and return the net deformation data.
 
     :param spring_constant: The torsional spring stiffness value.
     :param damping_constant: The damping constant value.
     :param wing_density: The wing density per unit height (kg/m^2).
-    :return: A tuple of (net_data list, solved problem object).
+    :return: A tuple of the first Wing's net deformation data and the solved
+        AeroelasticUnsteadyProblem.
     """
 
     # Wing cross section initialization
@@ -309,6 +310,7 @@ def run_aeroelastic(
     )
 
     problem = example_solver.unsteady_problem
+    assert isinstance(problem, ps.problems.AeroelasticUnsteadyProblem)
 
     # ps.output.animate(
     #     unsteady_solver=example_solver,
@@ -369,6 +371,7 @@ for val in sweep_values:
         flap_angle = (amp * np.sin((2 * np.pi / period) * t + phase)).tolist()
 
 # Overlay plot of Curve 16 Net Deformation for all swept values
+assert flap_angle is not None
 plt.figure(figsize=(12, 6), dpi=200)
 for val, curve in results.items():
     plt.plot(range(len(curve)), curve, label=f"{sweep_symbol}={val}")

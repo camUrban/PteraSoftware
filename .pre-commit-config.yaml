@@ -92,7 +92,7 @@ repos:
         exclude: '\.ui$'
       - id: mypy
         name: checker  mypy
-        entry: mypy pterasoftware
+        entry: mypy pterasoftware examples
         language: system
         always_run: true
         pass_filenames: false

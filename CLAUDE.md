@@ -59,7 +59,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
     - `examples_expected_output/`: Example output files for verification
-    - `hero_graphics/`: Scripts and assets for the README hero graphic
+    - `hero_graphics/`: Assets for the README hero graphic
     - `private/`: Directory with documentation not included in this repository's version control (may be missing if the private repo hasn't been cloned and linked to this local repo)
         - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
         - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
@@ -120,6 +120,10 @@ Requires Python 3.11, but active development is done in 3.13
     - `trim.py`: Trim analysis functionality
     - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 - `scripts/`: Directory with maintenance and tooling scripts
+    - `hero_generation/`: Scripts for creating and finalizing the README hero graphic
+        - `create_solve_and_save_hero.py`: Creates, solves, and saves the hero simulation
+        - `finalize_and_save_hero.py`: Renames preview hero graphics to their permanent names
+        - `load_and_visualize_hero.py`: Loads the saved hero simulation and generates preview graphics
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)

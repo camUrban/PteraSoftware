@@ -301,11 +301,11 @@ example_solver.run(
 # Save the solved solver to a compressed JSON file. This allows us to load the results
 # later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
-ps.save("example_free_flight_solver.json.gz", example_solver)
+ps.save("example_solver.json.gz", example_solver)
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
-loaded_solver = ps.load("example_free_flight_solver.json.gz")
+loaded_solver = ps.load("example_solver.json.gz")
 
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,

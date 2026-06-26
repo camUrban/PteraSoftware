@@ -1,4 +1,4 @@
-"""This is script is an example of how to run Ptera Software's
+"""This script is an example of how to run Ptera Software's
 UnsteadyRingVortexLatticeMethodSolver on three Airplanes, flying in formation, each with
 custom geometry and non static motion."""
 
@@ -319,10 +319,19 @@ solver.run(
     show_progress=True,
 )
 
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+ps.save("solver.json.gz", solver)
+
+# Load the saved solver. The loaded object is identical to the original and can be
+# passed to any output function.
+loaded_solver = ps.load("solver.json.gz")
+
 # Now that we have run the solver, we can create an animation of the results.
 ps.output.animate(
-    unsteady_solver=solver,
+    unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    save=False,
+    save=True,
 )

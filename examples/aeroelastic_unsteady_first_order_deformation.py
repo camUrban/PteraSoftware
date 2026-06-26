@@ -14,21 +14,20 @@ import pterasoftware as ps
 # The same caveats apply to the other classes, methods, and functions I call in this
 # script.
 
-# Wing cross section initialization
-# offsets for the spacing
+# Initialize the WingCrossSection parameters.
+# Define the offsets for the spacing.
 num_spanwise_panels = 2
 Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
 cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
 wing_cross_sections = []
 
-# Initialization loop for our wing cross sections. Here we are defining automatically
-# wing cross sections with a variable set of chords. All of the wing cross sections for
-# deformation simulation are defined to have num_spanwise_panels=1 (except the wing tip which
-# is always None). This is because we deform each strip of wing cross section independently by
-# modeling them as torsional springs, and that model only really works if those strips are thin.
-# Note that if you want to go thinner for the same base definition, you can increase the number
-# of spanwise panels and ensure that in Wing you set the explode_into_strips parameter to True,
-# which will ensure that the wing is split back up into single strips for deformation.
+# Define WingCrossSections with a variable set of chords. All WingCrossSections for the
+# deformation simulation have num_spanwise_panels=1 (except the wing tip, which is
+# always None). This is because each strip of WingCrossSection deforms independently as
+# a torsional spring, and that model only works well if the strips are thin. To go
+# thinner for the same base definition, increase the number of spanwise panels and set
+# the explode_into_strips parameter to True on the Wing, which splits it back into
+# single strips for deformation.
 for i in range(len(cross_section_chords)):
     wing_cross_sections.append(
         ps.geometry.wing_cross_section.WingCrossSection(
@@ -51,9 +50,9 @@ for i in range(len(cross_section_chords)):
         )
     )
 
-# Primary wing definition. Note that the explode_into_strips parameter is set to True,
-# which means that the wing will be split into strips for deformation, and each
-# strip will be modeled as a torsional spring.
+# Define the primary Wing. Note that the explode_into_strips parameter is set to True,
+# which means that the Wing will be split into strips for deformation, and each strip
+# will be modeled as a torsional spring.
 wing_1 = ps.geometry.wing.Wing(
     wing_cross_sections=wing_cross_sections,
     name="Main Wing",
@@ -132,14 +131,14 @@ example_airplane = ps.geometry.airplane.Airplane(
 )
 
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
-# symmetry plane offset non-coincident with the Wing's axes yz-plane. Therefore,
+# symmetry plane offset non-coincident with the Wing's axes yz plane. Therefore,
 # that Wing had type 5 symmetry (see the Wing class documentation for more details on
 # symmetry types). Therefore, it was actually split into two Wings, the with the
 # second Wing being a reflected version of the first. Therefore, we need to define a
 # WingMovement for this reflected Wing. To start, we'll first define the reflected
 # main wing's root and tip WingCrossSections' WingCrossSectionMovements.
 
-# definitions for wing cross section movement parameters
+# Define the WingCrossSectionMovement parameters.
 dephase_x = 0.0
 period_x = 0.0
 amplitude_x = 0.0
@@ -152,16 +151,16 @@ dephase_z = 0.0
 period_z = 0.0
 amplitude_z = 0.0
 
-# A list of wing cross section movements for the main wing
+# Create a list of WingCrossSectionMovements for the main Wing.
 main_wcs_movements_list = []
 
-# A list of wing cross section movements for the reflected wing
+# Create a list of WingCrossSectionMovements for the reflected Wing.
 reflected_wcs_movements_list = []
 
-# A loop for defining the movement for the main wing and its reflected counterpart's wing
-# cross sections. Each wing cross section has its own AeroelasticWingCrossSectionMovement
-# which allows the solver to apply deformation angles at each time step based on the
-# aerodynamic loads.
+# Define the movement for the main Wing and its reflected counterpart's
+# WingCrossSections. Each WingCrossSection has its own
+# AeroelasticWingCrossSectionMovement, which allows the solver to apply deformation
+# angles at each time step based on the aerodynamic loads.
 for i in range(len(example_airplane.wings[0].wing_cross_sections)):
     if i == 0:
         wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
@@ -219,7 +218,7 @@ v_tail_tip_wcs_movement = (
 # Reflected V-tail WingCrossSectionMovements reuse the same static motion as the
 # original V-tail. Both halves are symmetric and neither deforms.
 
-# This dephase parameter is used to make the wing start in a flat position
+# This dephase parameter is used to make the Wing start in a flat position.
 dephase = 169.0
 
 # Now define the main wing's AeroelasticWingMovement, the reflected main wing's

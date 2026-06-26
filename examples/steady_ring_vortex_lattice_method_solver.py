@@ -1,4 +1,4 @@
-"""This is script is an example of how to run Ptera Software's
+"""This script is an example of how to run Ptera Software's
 SteadyRingVortexLatticeMethodSolver with a custom Airplane."""
 
 # First, import the software's main package. Note that if you wished to import this
@@ -194,15 +194,24 @@ del example_problem
 # Run the solver.
 example_solver.run()
 
-# Call this function from the output module to log the results.
-ps.output.log_results(example_solver)
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+ps.save("example_solver.json.gz", example_solver)
 
-# Call the output module's draw function on the solver.
+# Load the saved solver. The loaded object is identical to the original and can be
+# passed to any output function.
+loaded_solver = ps.load("example_solver.json.gz")
+
+# Call this function from the output module to log the results.
+ps.output.log_results(loaded_solver)
+
+# Call the output module's draw function on the loaded solver.
 ps.output.draw(
-    solver=example_solver,
+    solver=loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
-    save=False,
+    save=True,
     testing=False,
 )

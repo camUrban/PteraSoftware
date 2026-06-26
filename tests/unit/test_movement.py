@@ -2456,7 +2456,3 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
             upper_bound_warning_found,
             "Expected warning about upper bound not found.",
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

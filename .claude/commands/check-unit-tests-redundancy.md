@@ -17,7 +17,6 @@ Follow these steps carefully and track your progress:
 - [ ] Document findings in a redundancy report
 - [ ] Present the report to the user and get confirmation before removing anything
 - [ ] Remove or consolidate redundant tests
-- [ ] Update `__init__.py` files if any files were removed
 
 ## Omissions
 
@@ -64,7 +63,6 @@ These steps are both handled by other slash commands.
     - Delete clearly redundant tests
     - Consolidate tests that verify the same thing
     - Keep the most comprehensive version when consolidating
-6. **Update `__init__.py` files** if any modules were removed or renamed.
 
 ## Guidelines for Judgment Calls
 
@@ -97,4 +95,3 @@ Before finalizing:
 - [ ] Redundancy report has been generated
 - [ ] No useful tests were accidentally removed
 - [ ] Remaining tests still provide comprehensive coverage
-- [ ] `__init__.py` files are updated if needed

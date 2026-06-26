@@ -7,6 +7,5 @@ docformatter
 isort
 mypy
 pre-commit
-PyInstaller
 scipy-stubs
 twine

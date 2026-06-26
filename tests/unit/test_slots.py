@@ -815,6 +815,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.problem.I_BP1_CgP1, np.ndarray)
         self.assertEqual(self.problem.I_BP1_CgP1.shape, (3, 3))
         self.assertIsInstance(self.problem.mass, float)
+        self.assertIsInstance(self.problem.k_max, int)
         self.assertIsNone(self.problem.external_loads_fn)
         self.assertIsInstance(self.problem.forces_W, list)
         self.assertIsInstance(self.problem.forceCoefficients_W, list)
@@ -2346,9 +2347,10 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
 
 class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver. The solver adds no stored state of
-    its own (its body-rate contribution is computed through hooks), so this class
-    verifies __slots__ enforcement and that the inherited problem remains accessible.
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver. The solver's only stored state is the
+    transient working state for the strongly coupled sub-iteration (cleared after each
+    step), so this class verifies __slots__ enforcement and that the inherited problem
+    remains accessible.
     """
 
     def setUp(self):

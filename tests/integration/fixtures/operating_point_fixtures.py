@@ -81,3 +81,26 @@ def make_simple_glider_operating_point():
         g_E=(0.0, 0.0, 9.80665),
     )
     return operating_point_fixture
+
+
+def make_flapping_free_flight_operating_point():
+    """This function creates the initial OperatingPoint for the flapping-wing free
+    flight test.
+
+    The initial body orientation pitches the airplane nose up by the angle of attack
+    (with zero sideslip), which places the initial velocity along the horizontal Earth x
+    axis at the start of free flight. No external thrust is applied; in free flight the
+    propulsion comes from the flapping motion rather than an external force.
+
+    :return operating_point_fixture: OperatingPoint
+        This is the flapping-wing OperatingPoint fixture.
+    """
+    operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=12.9,
+        alpha=3.3,
+        beta=0.0,
+        angles_E_to_BP1_izyx=(0.0, 3.3, 0.0),
+        g_E=(0.0, 0.0, 9.80665),
+    )
+    return operating_point_fixture

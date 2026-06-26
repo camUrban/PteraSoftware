@@ -31,8 +31,8 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     results at the previous step, so bound vortices cannot be initialized upfront. This
     class inherits the parent's run() and initialize_step_geometry() unchanged and
     overrides three hooks: _initialize_step_vortices (per step bound vortex init),
-    _pre_shed_hook (calls _CoupledUnsteadyProblem.initialize_next_problem between
-    steps), and _get_steady_problem_at (dynamic dispatch through the problem's
+    _update_next_step_hook (calls _CoupledUnsteadyProblem.initialize_next_problem
+    between steps), and _get_steady_problem_at (dynamic dispatch through the problem's
     get_steady_problem accessor).
 
     **Contains the following methods:**
@@ -68,7 +68,7 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         _logger.debug(f"Initializing step {step}'s bound ring vortices.")
         self._initialize_panel_vortices_at(step)
 
-    def _pre_shed_hook(self, step: int) -> None:
+    def _update_next_step_hook(self, step: int) -> None:
         self._coupled_unsteady_problem.initialize_next_problem(self, step)
         if step < self.num_steps - 1:
             self._initialize_panel_vortices_at(step + 1)

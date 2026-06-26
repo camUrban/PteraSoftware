@@ -454,6 +454,199 @@ class TestMuJoCoModelReset(unittest.TestCase):
         self.assertAlmostEqual(reset_state["time"], initial_state["time"], places=14)
 
 
+class TestMuJoCoModelSaveState(unittest.TestCase):
+    """This class contains methods for testing MuJoCoModel.save_state."""
+
+    def setUp(self):
+        """Set up test fixtures for save_state tests."""
+        self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
+
+    def test_save_state_returns_ndarray(self):
+        """Test that save_state returns an ndarray."""
+        snapshot = self.model.save_state()
+        self.assertIsInstance(snapshot, np.ndarray)
+
+    def test_save_state_is_one_dimensional(self):
+        """Test that the saved snapshot is a one dimensional array."""
+        snapshot = self.model.save_state()
+        self.assertEqual(snapshot.ndim, 1)
+
+    def test_save_state_is_float_array(self):
+        """Test that the saved snapshot is a float array, as MuJoCo's state API
+        requires.
+        """
+        snapshot = self.model.save_state()
+        self.assertEqual(snapshot.dtype, np.float64)
+
+    def test_save_state_length_matches_integration_state_size(self):
+        """Test that the snapshot length matches MuJoCo's integration state size.
+
+        The size is queried from mj_stateSize at runtime rather than hard coded, since
+        the buffer layout varies across MuJoCo versions within the pin.
+        """
+        snapshot = self.model.save_state()
+        expected_size = mujoco.mj_stateSize(
+            self.model._model, mujoco.mjtState.mjSTATE_INTEGRATION
+        )
+        self.assertEqual(snapshot.shape, (expected_size,))
+
+    def test_save_state_does_not_alias_internal_data(self):
+        """Test that the snapshot does not alias the model's live data.
+
+        Advancing the simulation after saving must leave a previously saved snapshot
+        unchanged.
+        """
+        snapshot = self.model.save_state()
+        snapshot_before = snapshot.copy()
+
+        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        for _ in range(10):
+            self.model.step()
+
+        npt.assert_array_equal(snapshot, snapshot_before)
+
+    def test_save_state_captures_distinct_states(self):
+        """Test that snapshots taken at different states differ."""
+        snapshot_initial = self.model.save_state()
+
+        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        for _ in range(10):
+            self.model.step()
+        snapshot_advanced = self.model.save_state()
+
+        self.assertFalse(np.array_equal(snapshot_initial, snapshot_advanced))
+
+
+class TestMuJoCoModelRestoreState(unittest.TestCase):
+    """This class contains methods for testing MuJoCoModel.restore_state."""
+
+    def setUp(self):
+        """Set up test fixtures for restore_state tests."""
+        self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
+
+    def test_restore_state_restores_position(self):
+        """Test that restore_state restores the position."""
+        saved_state = self.model.get_state()
+        snapshot = self.model.save_state()
+
+        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        for _ in range(10):
+            self.model.step()
+        self.model.restore_state(snapshot)
+
+        restored_state = self.model.get_state()
+        npt.assert_allclose(
+            restored_state["position_E_Eo"], saved_state["position_E_Eo"], atol=1e-14
+        )
+
+    def test_restore_state_restores_velocity(self):
+        """Test that restore_state restores the velocity."""
+        saved_state = self.model.get_state()
+        snapshot = self.model.save_state()
+
+        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        for _ in range(10):
+            self.model.step()
+        self.model.restore_state(snapshot)
+
+        restored_state = self.model.get_state()
+        npt.assert_allclose(
+            restored_state["velocity_E__E"], saved_state["velocity_E__E"], atol=1e-14
+        )
+
+    def test_restore_state_restores_time(self):
+        """Test that restore_state restores the simulation time."""
+        for _ in range(5):
+            self.model.step()
+        saved_state = self.model.get_state()
+        snapshot = self.model.save_state()
+
+        for _ in range(10):
+            self.model.step()
+        self.model.restore_state(snapshot)
+
+        restored_state = self.model.get_state()
+        self.assertAlmostEqual(restored_state["time"], saved_state["time"], places=14)
+
+    def test_restore_state_restores_orientation_and_angular_velocity(self):
+        """Test that restore_state restores the orientation and angular velocity.
+
+        Restoring must recompute the derived orientation matrix, so get_state reports the
+        restored attitude even without an intervening step. A rotated model is stepped so
+        both quantities evolve to a non trivial state before the snapshot.
+        """
+        model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
+        for _ in range(5):
+            model.step()
+        saved_state = model.get_state()
+        snapshot = model.save_state()
+
+        model.apply_loads([0.0, 0.0, 0.0], [10.0, 20.0, 30.0])
+        for _ in range(10):
+            model.step()
+        model.restore_state(snapshot)
+
+        restored_state = model.get_state()
+        npt.assert_allclose(
+            restored_state["R_pas_E_to_BP1"], saved_state["R_pas_E_to_BP1"], atol=1e-12
+        )
+        npt.assert_allclose(
+            restored_state["omegas_BP1__E"], saved_state["omegas_BP1__E"], atol=1e-12
+        )
+
+    def test_restore_state_restores_applied_loads(self):
+        """Test that restore_state restores the applied loads.
+
+        The integration state snapshot includes xfrc_applied, where apply_loads persists
+        the applied loads, so restoring returns them.
+        """
+        self.model.apply_loads([1.0, 2.0, 3.0], [4.0, 5.0, 6.0])
+        snapshot = self.model.save_state()
+
+        self.model.apply_loads([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.restore_state(snapshot)
+
+        applied = self.model._data.xfrc_applied[self.model.body_id]
+        npt.assert_array_equal(applied[0:3], [1.0, 2.0, 3.0])
+        npt.assert_array_equal(applied[3:6], [4.0, 5.0, 6.0])
+
+    def test_restore_state_enables_reproducible_restepping(self):
+        """Test that re-stepping from a restored state reproduces the trajectory.
+
+        Saving the state, stepping under a load, then restoring and stepping under the
+        same load reproduces the first outcome exactly. This reproducible re-stepping is
+        what the strongly coupled sub-iteration relies on.
+        """
+        self.model.apply_loads([5.0, 0.0, 0.0], [0.0, 0.0, 1.0])
+        for _ in range(5):
+            self.model.step()
+        snapshot = self.model.save_state()
+
+        self.model.apply_loads([20.0, 10.0, 0.0], [0.0, 1.0, 0.0])
+        self.model.step()
+        first_state = self.model.get_state()
+
+        self.model.restore_state(snapshot)
+
+        self.model.apply_loads([20.0, 10.0, 0.0], [0.0, 1.0, 0.0])
+        self.model.step()
+        second_state = self.model.get_state()
+
+        npt.assert_array_equal(
+            second_state["position_E_Eo"], first_state["position_E_Eo"]
+        )
+        npt.assert_array_equal(
+            second_state["velocity_E__E"], first_state["velocity_E__E"]
+        )
+        npt.assert_array_equal(
+            second_state["omegas_BP1__E"], first_state["omegas_BP1__E"]
+        )
+        npt.assert_array_equal(
+            second_state["R_pas_E_to_BP1"], first_state["R_pas_E_to_BP1"]
+        )
+        self.assertEqual(second_state["time"], first_state["time"])
+
+
 class TestMuJoCoModelConventions(unittest.TestCase):
     """This class contains methods verifying the MuJoCo axis conventions documented in
     MUJOCO_CONVENTIONS.md.
@@ -548,7 +741,3 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         self.assertGreater(velocity_E__E[0], 0.0)
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[1]))
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[2]))
-
-
-if __name__ == "__main__":
-    unittest.main()

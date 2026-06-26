@@ -1016,7 +1016,3 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_wing_cross_section.get_plottable_data(show="invalid")
-
-
-if __name__ == "__main__":
-    unittest.main()

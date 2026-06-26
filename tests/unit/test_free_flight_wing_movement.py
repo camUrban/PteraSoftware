@@ -86,7 +86,3 @@ class TestFreeFlightWingMovement(unittest.TestCase):
             wing,
             ps.geometry.wing.Wing,
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

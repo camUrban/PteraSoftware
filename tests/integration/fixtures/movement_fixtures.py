@@ -534,3 +534,79 @@ def make_simple_glider_free_flight_movement():
     )
 
     return simple_glider_free_flight_movement
+
+
+def make_flapping_free_flight_movement():
+    """This function creates the flapping-wing FreeFlightMovement to be used as a
+    fixture.
+
+    The main wing flaps symmetrically (a 15 degree amplitude at 1 Hz) while the V-tail
+    stays static. The main wing has type 5 symmetry, so it is split into two mirrored
+    Wings (the airplane's first two Wings); both halves flap with the same amplitude so
+    the flapping stays laterally symmetric. The airplane first holds its initial
+    condition for prescribed_num_steps time steps so the wake can develop, then the
+    solver releases the rigid body dynamics for the remaining free_num_steps time steps,
+    where the strongly coupled sub-iteration engages.
+
+    The step counts are much smaller than the example's; they are enough to develop a
+    wake and exercise the strongly coupled free flight phase under oscillatory flapping
+    loads while keeping the integration test affordable.
+
+    :return flapping_free_flight_movement: FreeFlightMovement
+        This is the flapping-wing FreeFlightMovement fixture.
+    """
+    flapping_airplane = airplane_fixtures.make_flapping_free_flight_airplane()
+    flapping_operating_point = (
+        operating_point_fixtures.make_flapping_free_flight_operating_point()
+    )
+
+    # The main wing's two mirrored halves are the airplane's first two Wings; flap both
+    # with the same 15 degree, 1 Hz roll amplitude so the flapping is symmetric. The
+    # V-tail (the third Wing) stays static.
+    flapping_wing_indices = (0, 1)
+
+    wing_movements = []
+    for wing_index, wing in enumerate(flapping_airplane.wings):
+        wing_cross_section_movements = [
+            ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+                base_wing_cross_section=wing_cross_section
+            )
+            for wing_cross_section in wing.wing_cross_sections
+        ]
+        if wing_index in flapping_wing_indices:
+            ampAngles_Gs_to_Wn_ixyz = (15.0, 0.0, 0.0)
+            periodAngles_Gs_to_Wn_ixyz = (1.0, 0.0, 0.0)
+        else:
+            ampAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
+            periodAngles_Gs_to_Wn_ixyz = (0.0, 0.0, 0.0)
+        wing_movements.append(
+            ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+                base_wing=wing,
+                wing_cross_section_movements=wing_cross_section_movements,
+                ampAngles_Gs_to_Wn_ixyz=ampAngles_Gs_to_Wn_ixyz,
+                periodAngles_Gs_to_Wn_ixyz=periodAngles_Gs_to_Wn_ixyz,
+            )
+        )
+
+    flapping_airplane_movement = (
+        ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
+            base_airplane=flapping_airplane,
+            wing_movements=wing_movements,
+        )
+    )
+
+    flapping_operating_point_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
+        base_operating_point=flapping_operating_point,
+    )
+
+    flapping_free_flight_movement = (
+        ps.movements.free_flight_movement.FreeFlightMovement(
+            airplane_movements=[flapping_airplane_movement],
+            operating_point_movement=flapping_operating_point_movement,
+            delta_time=0.01292,
+            prescribed_num_steps=5,
+            free_num_steps=10,
+        )
+    )
+
+    return flapping_free_flight_movement

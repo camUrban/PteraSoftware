@@ -170,7 +170,3 @@ class TestCoupledUnsteadyProblemImmutability(unittest.TestCase):
 
         self.assertEqual(len(self.problem._steady_problems), 2)
         self.assertIs(self.problem._steady_problems[1], next_steady_problem)
-
-
-if __name__ == "__main__":
-    unittest.main()

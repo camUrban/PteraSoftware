@@ -31,11 +31,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# PyInstaller: Usually these files are written by a python script from a template before PyInstaller builds the exe, so
-# as to inject date/other infos into it.
-*.manifest
-*.spec
-
 # These are the installer logs to ignore.
 pip-log.txt
 pip-delete-this-directory.txt
@@ -139,8 +134,6 @@ cython_debug/
 # These are folders and files created by releasing.
 /build
 /dist
-/Output
-.spec
 
 # These are files and folders created by usage to ignore
 Animate.webp
@@ -149,6 +142,11 @@ Draw.webp
 * Force Coefficients.png
 * Moments.png
 * Moment Coefficients.png
+* Position.png
+* Velocity.png
+* Orientation.png
+* Angular Velocity.png
+* Aerodynamic Angles.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores

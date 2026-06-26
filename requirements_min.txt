@@ -3,7 +3,6 @@ matplotlib == 3.9.3
 mujoco == 3.2.6
 numba == 0.61.0
 numpy == 2.1.0
-PySide6 == 6.8.1
 pyvista == 0.45.0
 scipy == 1.15.0
 tqdm == 4.66.3

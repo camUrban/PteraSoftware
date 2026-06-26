@@ -433,6 +433,58 @@ class TestAirplane(unittest.TestCase):
             # Reflected Wing should have None-type control surface symmetry
             self.assertEqual(reflected_wcs.control_surface_symmetry_type, None)
 
+    def test_process_wing_symmetry_type_4_asymmetric_root_raises(self):
+        """A type 4 Wing whose root cross section (on the coincident symmetry plane)
+        has an asymmetric control surface with a nonzero deflection must raise.
+
+        The original and mirrored halves would deflect that shared cross section in
+        opposite directions, tearing the mesh at the centerline seam.
+        """
+        root_wcs = (
+            geometry_fixtures.make_root_asymmetric_control_surface_wing_cross_section_fixture()
+        )
+        tip_wcs = (
+            geometry_fixtures.make_tip_wing_cross_section_with_control_surface_fixture()
+        )
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[root_wcs, tip_wcs],
+            Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+            angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+            symmetric=True,
+            mirror_only=False,
+            symmetryNormal_G=[0.0, 1.0, 0.0],
+            symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
+            num_chordwise_panels=8,
+            chordwise_spacing="cosine",
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+
+    def test_process_wing_symmetry_type_4_asymmetric_tip_allowed(self):
+        """A type 4 Wing may carry an asymmetric control surface on an off-plane cross
+        section (an outboard aileron), since only the shared root cross section tears
+        the mesh. The guard must reject the root case without over-restricting this one.
+        """
+        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        root_wcs.control_surface_symmetry_type = "symmetric"
+        tip_wcs = (
+            geometry_fixtures.make_asymmetric_control_surface_wing_cross_section_fixture()
+        )
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[root_wcs, tip_wcs],
+            Ler_Gs_Cgs=[1.0, 0.0, 0.5],
+            angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
+            symmetric=True,
+            mirror_only=False,
+            symmetryNormal_G=[0.0, 1.0, 0.0],
+            symmetryPoint_G_Cg=[1.0, 0.0, 0.5],
+            num_chordwise_panels=8,
+            chordwise_spacing="cosine",
+        )
+        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].symmetry_type, 4)
+
     def test_airplane_with_various_wing_combinations(self):
         """Test Airplane with various combinations of Wing types."""
         # Mix of different Wing types
@@ -1020,7 +1072,3 @@ class TestAirplaneDraw(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_airplane.draw(save=False, testing="invalid")
-
-
-if __name__ == "__main__":
-    unittest.main()

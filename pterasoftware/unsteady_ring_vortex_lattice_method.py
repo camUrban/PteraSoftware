@@ -34,14 +34,8 @@ from . import (
 
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
-# A body angular velocity of zero (in the first Airplane's geometry axes, observed from
-# the Earth frame, in radians per second). Solvers that do not model body rotation return
-# this from _currentOmegasRad_GP1__E so that _apply_body_rate is a no-op.
-_ZERO_OMEGAS_RAD_GP1__E = np.zeros(3, dtype=float)
-_ZERO_OMEGAS_RAD_GP1__E.flags.writeable = False
 
-
-# REFACTOR: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
+# TODO: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads
 #  and load coefficients.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
@@ -481,143 +475,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     + "."
                 )
 
-                # TODO: I think these steps are redundant, at least during the first
-                #  time step. Consider dropping them.
-                # Initialize attributes to hold aerodynamic data that pertain to the
-                # simulation at this time step.
-                self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
-                self._currentStackFreestreamWingInfluences__E = np.zeros(
-                    self.num_panels, dtype=float
-                )
-                self._currentGridWingWingInfluences__E = np.zeros(
-                    (self.num_panels, self.num_panels), dtype=float
-                )
-                self._currentStackWakeWingInfluences__E = np.zeros(
-                    self.num_panels, dtype=float
-                )
-                self._current_bound_vortex_strengths = np.ones(
-                    self.num_panels, dtype=float
-                )
-                # _last_bound_vortex_strengths is left alone here. At step 0 it is
-                # the zeros allocated in __init__. At step > 0 it holds the
-                # previous step's solved strengths, captured at the end of the
-                # previous step's _calculate_vortex_strengths.
-
-                # Initialize attributes to hold geometric data that pertain to this
-                # UnsteadyProblem.
-                self.panels = np.empty(self.num_panels, dtype=object)
-                self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.panel_areas = np.zeros(self.num_panels, dtype=float)
-
-                self.stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self._stackLastCpp_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-
-                self.stackBrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackFrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackFlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackBlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self._lastStackBrbrvp_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackFrbrvp_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackFlbrvp_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackBlbrvp_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-
-                self.stackCblvpr_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpf_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpl_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackCblvpb_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self._lastStackCblvpr_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpf_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpl_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-                self._lastStackCblvpb_GP1_CgP1 = np.zeros(
-                    (self.num_panels, 3), dtype=float
-                )
-
-                self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-                self.stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-
-                # Initialize variables to hold details about each Panel's location on
-                # its Wing.
-                self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
-                self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
-
-                # Hook: subclasses may reinitialize step-specific arrays here.
-                self._reinitialize_step_arrays_hook()
-
-                # Get the pre-allocated (but still all zero) arrays of wake
-                # information that are associated with this time step.
-                self._current_wake_vortex_strengths = self._list_wake_vortex_strengths[
-                    step
-                ]
-                self._currentStackBrwrvp_GP1_CgP1 = self.listStackBrwrvp_GP1_CgP1[step]
-                self._currentStackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
-                self._currentStackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
-                self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
-
-                self._currentStackBoundRc0s = np.zeros(self.num_panels, dtype=float)
-                num_wake_vortices = self.list_num_wake_vortices[step]
-                self._current_wake_vortex_ages = np.zeros(
-                    num_wake_vortices, dtype=float
-                )
-                self._currentStackWakeRc0s = np.zeros(num_wake_vortices, dtype=float)
-
-                self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
-
-                # Collapse the geometry matrices into 1D ndarrays of attributes.
-                _logger.debug("Collapsing the geometry.")
-                self._collapse_geometry()
-
-                # Find the matrix of Wing Wing influence coefficients associated with
-                # the Airplanes' geometries at this time step.
-                _logger.debug("Calculating the Wing Wing influences.")
-                self._calculate_wing_wing_influences()
-
-                # Find the normal velocity (in the first Airplane's geometry axes,
-                # observed from the Earth frame) at every collocation point due
-                # solely to the freestream.
-                _logger.debug("Calculating the freestream Wing influences.")
-                self._calculate_freestream_wing_influences()
-
-                # Find the normal velocity (in the first Airplane's geometry axes,
-                # observed from the Earth frame) at every collocation point due
-                # solely to the wake ring vortices.
-                _logger.debug("Calculating the wake Wing influences.")
-                self._calculate_wake_wing_influences()
-
-                # Solve for each bound ring vortex's strength.
-                _logger.debug("Calculating bound ring vortex strengths.")
-                self._calculate_vortex_strengths()
-
-                # Solve for the forces (in the first Airplane's geometry axes) and
-                # moments (in the first Airplane's geometry axes, relative to the
-                # first Airplane's CG) on each Panel.
-                if self._current_step >= self.first_results_step:
-                    _logger.debug("Calculating forces and moments.")
-                    self._calculate_loads()
+                # Reinitialize the per step working arrays, collapse the geometry,
+                # solve the bound ring vortex circulation, and (past the first results
+                # step) calculate the loads for this time step.
+                self._evaluate_step_aerodynamics()
 
                 # Hook: subclasses may inject work between load calculation and wake
                 # shedding (e.g. coupled problems update the next step's geometry
                 # from this step's solver results).
-                self._pre_shed_hook(step)
+                self._update_next_step_hook(step)
 
                 # Shed ring vortices into the wake.
                 _logger.debug("Shedding ring vortices into the wake.")
@@ -647,6 +513,131 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Mark that the solver has run.
         self.ran = True
+
+    def _evaluate_step_aerodynamics(self) -> None:
+        """Evaluates the aerodynamics for the current time step.
+
+        Reinitializes the per step working arrays, collapses the bound and wake geometry
+        into the solver's stacks, assembles and solves the bound ring vortex
+        circulation, and (once past the first results step) calculates the loads.
+
+        The caller must have already set the current step, Airplanes, and
+        OperatingPoint, and built this step's bound ring vortex geometry, before calling
+        this method. Resetting the bound ring vortex strengths to ones is owned by this
+        method, so it can be re-invoked to re-evaluate the aerodynamics at a new body
+        state within a single time step (as the strongly coupled free flight sub-
+        iteration does) without the caller managing that precondition.
+
+        :return: None
+        """
+        step = self._current_step
+
+        # TODO: I think these steps are redundant, at least during the first
+        #  time step. Consider dropping them.
+        # Initialize attributes to hold aerodynamic data that pertain to the
+        # simulation at this time step.
+        self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
+        self._currentStackFreestreamWingInfluences__E = np.zeros(
+            self.num_panels, dtype=float
+        )
+        self._currentGridWingWingInfluences__E = np.zeros(
+            (self.num_panels, self.num_panels), dtype=float
+        )
+        self._currentStackWakeWingInfluences__E = np.zeros(self.num_panels, dtype=float)
+        self._current_bound_vortex_strengths = np.ones(self.num_panels, dtype=float)
+        # _last_bound_vortex_strengths is left alone here. At step 0 it is
+        # the zeros allocated in __init__. At step > 0 it holds the
+        # previous step's solved strengths, captured at the end of the
+        # previous step's _calculate_vortex_strengths.
+
+        # Initialize attributes to hold geometric data that pertain to this
+        # UnsteadyProblem.
+        self.panels = np.empty(self.num_panels, dtype=object)
+        self.stackUnitNormals_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.panel_areas = np.zeros(self.num_panels, dtype=float)
+
+        self.stackCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackLastCpp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        self.stackBrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackBlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackBrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackFrbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackFlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackBlbrvp_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        self.stackCblvpr_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpf_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpl_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackCblvpb_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackCblvpr_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackCblvpf_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackCblvpl_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._lastStackCblvpb_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        self.stackRbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackFbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackLbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self.stackBbrv_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+
+        # Initialize variables to hold details about each Panel's location on
+        # its Wing.
+        self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_leading_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
+        self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
+
+        # Hook: subclasses may reinitialize step-specific arrays here.
+        self._reinitialize_step_arrays_hook()
+
+        # Get the pre-allocated (but still all zero) arrays of wake
+        # information that are associated with this time step.
+        self._current_wake_vortex_strengths = self._list_wake_vortex_strengths[step]
+        self._currentStackBrwrvp_GP1_CgP1 = self.listStackBrwrvp_GP1_CgP1[step]
+        self._currentStackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
+        self._currentStackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
+        self._currentStackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
+
+        self._currentStackBoundRc0s = np.zeros(self.num_panels, dtype=float)
+        num_wake_vortices = self.list_num_wake_vortices[step]
+        self._current_wake_vortex_ages = np.zeros(num_wake_vortices, dtype=float)
+        self._currentStackWakeRc0s = np.zeros(num_wake_vortices, dtype=float)
+
+        self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
+
+        # Collapse the geometry matrices into 1D ndarrays of attributes.
+        _logger.debug("Collapsing the geometry.")
+        self._collapse_geometry()
+
+        # Find the matrix of Wing Wing influence coefficients associated with
+        # the Airplanes' geometries at this time step.
+        _logger.debug("Calculating the Wing Wing influences.")
+        self._calculate_wing_wing_influences()
+
+        # Find the normal velocity (in the first Airplane's geometry axes,
+        # observed from the Earth frame) at every collocation point due
+        # solely to the freestream.
+        _logger.debug("Calculating the freestream Wing influences.")
+        self._calculate_freestream_wing_influences()
+
+        # Find the normal velocity (in the first Airplane's geometry axes,
+        # observed from the Earth frame) at every collocation point due
+        # solely to the wake ring vortices.
+        _logger.debug("Calculating the wake Wing influences.")
+        self._calculate_wake_wing_influences()
+
+        # Solve for each bound ring vortex's strength.
+        _logger.debug("Calculating bound ring vortex strengths.")
+        self._calculate_vortex_strengths()
+
+        # Solve for the forces (in the first Airplane's geometry axes) and
+        # moments (in the first Airplane's geometry axes, relative to the
+        # first Airplane's CG) on each Panel.
+        if self._current_step >= self.first_results_step:
+            _logger.debug("Calculating forces and moments.")
+            self._calculate_loads()
 
     def initialize_step_geometry(self, step: int) -> None:
         """Initializes geometry for a specific step without solving.
@@ -709,8 +700,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
 
-    def _pre_shed_hook(self, step: int) -> None:
-        """Hook for subclasses to inject work between load calculation and wake shed.
+    def _update_next_step_hook(self, step: int) -> None:
+        """Hook for subclasses to update the next time step from this step's results.
 
         Called once per time step in run(), after this step's loads have been calculated
         and before wake ring vortices are shed. The default implementation is a no op.
@@ -961,7 +952,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        return _ZERO_OMEGAS_RAD_GP1__E
+        zeroOmegasRad_GP1__E = np.zeros(3, dtype=float)
+        zeroOmegasRad_GP1__E.flags.writeable = False
+        return zeroOmegasRad_GP1__E
 
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
         """Finds the body angular velocity (in the first Airplane's geometry axes,
@@ -981,7 +974,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             first Airplane's geometry axes, observed from the Earth frame). Its units
             are in radians per second.
         """
-        return _ZERO_OMEGAS_RAD_GP1__E
+        zeroOmegasRad_GP1__E = np.zeros(3, dtype=float)
+        zeroOmegasRad_GP1__E.flags.writeable = False
+        return zeroOmegasRad_GP1__E
 
     def _apply_body_rate(
         self,
@@ -1711,6 +1706,66 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return np.array(moments_GP1_CgP1)
 
+    def _calculate_wake_grid_induced_velocities(
+        self,
+        bound_singularity_counts: np.ndarray,
+        wake_singularity_counts: np.ndarray,
+    ) -> list[list[np.ndarray]]:
+        """Calculates the induced velocity at each Wing's aged wake ring vortex point
+        grid.
+
+        This is the induced (Biot-Savart) part of the wake transport velocity that ages
+        the existing wake over the interval ending at the next time step. It reads only
+        the current time step's bound geometry, bound strengths, and wake, so it is
+        independent of the next time step's body state. The base solver calls it inline
+        once per step; a strongly coupled free-flight sub-iteration instead precomputes
+        it once per step and reuses it across trials, adding the next step's freestream
+        and body rate (the iterate-dependent frame part) per trial in
+        _populate_next_airplanes_wake_vortex_points.
+
+        Only the aged grid present past the first time step is handled here. The first
+        step's single shed row is built directly in
+        _populate_next_airplanes_wake_vortex_points, and a prescribed wake convects with
+        the freestream alone and never calls this method.
+
+        :param bound_singularity_counts: A (4,) ndarray of int64 for accumulating
+            singularity event counts from bound ring vortices.
+        :param wake_singularity_counts: A (4,) ndarray of int64 for accumulating
+            singularity event counts from wake ring vortices.
+        :return: A list, indexed [airplane_id][wing_id], of (N, 3) ndarrays of floats.
+            Each holds the induced velocity (the tag stackVIndGridWrvp_GP1__E: in the
+            first Airplane's geometry axes, observed from the Earth frame) at that
+            Wing's aged wake ring vortex point grid, with N the number of points in the
+            grid. Its units are in meters per second.
+        """
+        stackVIndGridWrvp_GP1__E: list[list[np.ndarray]] = []
+
+        # Iterate through the current time step's Airplanes and Wings, matching the
+        # [airplane_id][wing_id] indexing used by
+        # _populate_next_airplanes_wake_vortex_points.
+        for this_airplane in self.current_airplanes:
+            airplaneStackVIndGridWrvp_GP1__E: list[np.ndarray] = []
+
+            for this_wing in this_airplane.wings:
+                _thisGridWrvp_GP1_CgP1 = this_wing.gridWrvp_GP1_CgP1
+                assert _thisGridWrvp_GP1_CgP1 is not None
+
+                # Evaluate the induced velocity at the aged grid's points. These are the
+                # current step's wake ring vortex points, which the next step's grid is
+                # a copy of, so this matches the points the assembly advects.
+                stackGridWrvp_GP1_CgP1 = _thisGridWrvp_GP1_CgP1.reshape(-1, 3)
+                airplaneStackVIndGridWrvp_GP1__E.append(
+                    self._calculate_induced_velocity(
+                        stackGridWrvp_GP1_CgP1,
+                        bound_singularity_counts=bound_singularity_counts,
+                        wake_singularity_counts=wake_singularity_counts,
+                    )
+                )
+
+            stackVIndGridWrvp_GP1__E.append(airplaneStackVIndGridWrvp_GP1__E)
+
+        return stackVIndGridWrvp_GP1__E
+
     def _populate_next_airplanes_wake(self) -> None:
         """Updates the next time step's Airplanes' wakes.
 
@@ -1723,10 +1778,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Populate the locations of the next time step's Airplanes' wake ring vortices.
         self._populate_next_airplanes_wake_vortices()
 
-    def _populate_next_airplanes_wake_vortex_points(self) -> None:
+    def _populate_next_airplanes_wake_vortex_points(
+        self,
+        stackVIndGridWrvp_GP1__E: list[list[np.ndarray]] | None = None,
+    ) -> None:
         """Populates the locations of the next time step's Airplanes' wake ring vortex
         points.
 
+        :param stackVIndGridWrvp_GP1__E: An optional list, indexed
+            [airplane_id][wing_id], of (N, 3) ndarrays of floats holding the induced
+            velocity (in the first Airplane's geometry axes, observed from the Earth
+            frame) at each Wing's aged wake ring vortex point grid, in meters per
+            second. This is the iterate-independent part of the wake transport velocity;
+            a strongly coupled free-flight sub-iteration precomputes it once per step
+            (via _calculate_wake_grid_induced_velocities) and passes it in to reuse it
+            across trials. When None, it is computed here. It is unused on the first
+            time step, whose wake is a single freshly shed row rather than an aged grid,
+            and for a prescribed wake, which convects with the freestream alone. The
+            default is None.
         :return: None
         """
         # Check that this isn't the last time step.
@@ -1745,9 +1814,30 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # interval's end frame) rather than the current step's. For a static
             # OperatingPoint these equal the current step's values, leaving the result
             # bit-for-bit unchanged; they differ only when the OperatingPoint varies in
-            # time, as it does every step in free flight.
-            convectionVInf_GP1__E = next_problem.operating_point.vInf_GP1__E
+            # time, as it does every step in free flight. The OperatingPoint is fetched
+            # through _operating_point_at so the strongly coupled free-flight solver can
+            # supply the trial OperatingPoint for an as-yet-uncommitted next step.
+            convectionVInf_GP1__E = self._operating_point_at(
+                self._current_step + 1
+            ).vInf_GP1__E
             convectionOmegasRad_GP1__E = self._convectionOmegasRad_GP1__E()
+
+            # The induced (Biot-Savart) part of the aged wake grid's transport velocity
+            # reads only the current step's bound geometry, strengths, and wake, so it is
+            # independent of the next step's body state. When a caller has not already
+            # computed it, compute it once here for all Wings; a strongly coupled free-
+            # flight sub-iteration instead precomputes it once per step and passes it in
+            # to reuse it unchanged across trials. It is only needed past the first time
+            # step, where an aged grid exists, and only for a free wake, since a
+            # prescribed wake convects with the freestream alone.
+            if (
+                stackVIndGridWrvp_GP1__E is None
+                and self._current_step > 0
+                and not self._prescribed_wake
+            ):
+                stackVIndGridWrvp_GP1__E = self._calculate_wake_grid_induced_velocities(
+                    bound_singularity_counts, wake_singularity_counts
+                )
 
             # Iterate through this time step's Airplanes' successor objects.
             for airplane_id, next_airplane in enumerate(next_airplanes):
@@ -1881,24 +1971,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
                         # If the wake is prescribed, the velocity at every point is
                         # the freestream velocity (in the first Airplane's geometry
-                        # axes, observed from the Earth frame). Otherwise, batch one
-                        # solution-velocity call across the entire aged grid.
+                        # axes, observed from the Earth frame). Otherwise, add the next
+                        # step's freestream (the interval's end frame, rather than the
+                        # current step's freestream that calculate_solution_velocity
+                        # would add) to the induced velocity at the aged grid, computed
+                        # up front for this call or supplied by a strongly coupled sub-
+                        # iteration that reuses it across trials.
                         if self._prescribed_wake:
                             vGridWrvp_GP1__E = convectionVInf_GP1__E
                         else:
-                            stackGridWrvp_GP1_CgP1 = (
-                                next_wing.gridWrvp_GP1_CgP1.reshape(-1, 3)
-                            )
-                            # Take the induced velocity at the current step and add the
-                            # next step's freestream (the interval's end frame), rather
-                            # than the current step's freestream that
-                            # calculate_solution_velocity would add.
+                            assert stackVIndGridWrvp_GP1__E is not None
                             stackVGridWrvp_GP1__E = (
-                                self._calculate_induced_velocity(
-                                    stackGridWrvp_GP1_CgP1,
-                                    bound_singularity_counts=bound_singularity_counts,
-                                    wake_singularity_counts=wake_singularity_counts,
-                                )
+                                stackVIndGridWrvp_GP1__E[airplane_id][wing_id]
                                 + convectionVInf_GP1__E
                             )
                             vGridWrvp_GP1__E = stackVGridWrvp_GP1__E.reshape(
@@ -2396,6 +2480,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """
         return self.steady_problems[step]
 
+    def _operating_point_at(self, step: int) -> operating_point.OperatingPoint:
+        """Gets the OperatingPoint to use for a given time step's geometry and wake.
+
+        By default this is the OperatingPoint of the SteadyProblem at that step. It is a
+        separate dynamic dispatch point so coupled subclasses can supply an
+        OperatingPoint other than the one bound to a committed SteadyProblem. The
+        strongly coupled free-flight solver overrides it during a sub-iteration to
+        supply the trial OperatingPoint for the next step, whose canonical SteadyProblem
+        has not yet been committed.
+
+        :param step: The time step of the desired OperatingPoint.
+        :return: The OperatingPoint to use at the given time step.
+        """
+        return self._get_steady_problem_at(step).operating_point
+
     def _initialize_panel_vortices_at(self, step: int) -> None:
         """Calculates the bound ring vortex corner positions at a given time step and
         stores them in the per step list arrays.
@@ -2407,8 +2506,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         steady_problem = self._get_steady_problem_at(step)
 
         # Find the freestream velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at this time step.
-        this_operating_point = steady_problem.operating_point
+        # from the Earth frame) at this time step. The OperatingPoint is fetched through
+        # _operating_point_at so the strongly coupled free-flight solver can supply the
+        # trial OperatingPoint for an as-yet-uncommitted next step.
+        this_operating_point = self._operating_point_at(step)
         vInf_GP1__E = this_operating_point.vInf_GP1__E
 
         stackFr = self._listStackFrbrvp_GP1_CgP1[step]

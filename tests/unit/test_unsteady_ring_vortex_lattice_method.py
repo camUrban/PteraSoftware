@@ -67,7 +67,7 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
 class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
     """Tests for the default implementations of the three solver extension hooks
     added to support coupled subclasses: _initialize_step_vortices,
-    _reinitialize_step_arrays_hook, and _pre_shed_hook.
+    _reinitialize_step_arrays_hook, and _update_next_step_hook.
     """
 
     def setUp(self):
@@ -100,17 +100,17 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         """Test that the default _reinitialize_step_arrays_hook is a no-op."""
         self.assertIsNone(self.solver._reinitialize_step_arrays_hook())
 
-    def test_pre_shed_hook_default_is_noop(self):
-        """Test that the default _pre_shed_hook is a no-op for all steps."""
+    def test_update_next_step_hook_default_is_noop(self):
+        """Test that the default _update_next_step_hook is a no-op for all steps."""
         for step in [0, 1, self.solver.num_steps - 1]:
             with self.subTest(step=step):
-                self.assertIsNone(self.solver._pre_shed_hook(step))
+                self.assertIsNone(self.solver._update_next_step_hook(step))
 
     def test_models_body_rates_default_is_false(self):
         """Test that the base solver does not model body rates by default."""
         self.assertFalse(self.solver._models_body_rates)
 
-    def test_current_omegas_rad_default_is_zero(self):
+    def test_current_omegas_default_is_zero(self):
         """Test that the default _currentOmegasRad_GP1__E returns a zero vector, so the
         base solver contributes no body-rotation velocity.
         """
@@ -126,7 +126,3 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         self.assertIs(
             self.solver._apply_body_rate(points, base_velocity), base_velocity
         )
-
-
-if __name__ == "__main__":
-    unittest.main()

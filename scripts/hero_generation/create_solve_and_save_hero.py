@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pterasoftware as ps
 
-_here = Path(__file__).parent
+_hero_graphics_dir = (
+    Path(__file__).resolve().parent.parent.parent / "docs" / "hero_graphics"
+)
 
 ps.set_up_logging()
 
@@ -218,4 +220,4 @@ hero_solver.run(
     show_progress=True,
 )
 
-ps.save(_here / "hero_solver.json.gz", hero_solver)
+ps.save(_hero_graphics_dir / "hero_solver.json.gz", hero_solver)

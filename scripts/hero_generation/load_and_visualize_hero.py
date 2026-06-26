@@ -10,11 +10,13 @@ from pathlib import Path
 
 import pterasoftware as ps
 
-_here = Path(__file__).parent
+_hero_graphics_dir = (
+    Path(__file__).resolve().parent.parent.parent / "docs" / "hero_graphics"
+)
 
 ps.set_up_logging()
 
-loaded_hero_solver = ps.load(_here / "hero_solver.json.gz")
+loaded_hero_solver = ps.load(_hero_graphics_dir / "hero_solver.json.gz")
 
 ps.output.draw(
     solver=loaded_hero_solver,

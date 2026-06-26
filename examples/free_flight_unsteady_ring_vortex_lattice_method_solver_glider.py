@@ -166,7 +166,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
-    name="Simple Glider",
+    name="Example Airplane",
     Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=420.0,
     s_ref=None,

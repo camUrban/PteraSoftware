@@ -173,8 +173,3 @@ ps.convergence.analyze_steady_convergence(
     num_chordwise_panels_bounds=(3, 8),
     convergence_criteria=1.0,
 )
-
-# Check the console that the convergence analysis found the following converged
-# parameters:
-#   Panel aspect ratio: 4
-#   Chordwise Panels: 5

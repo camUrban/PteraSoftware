@@ -7,6 +7,10 @@ wing deforms under its own aerodynamic loads."""
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
+# Configure logging to display info level messages. This is important for seeing the
+# output from the log_results function.
+ps.set_up_logging(level="Info")
+
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
 # educational purposes, but keep in mind that it makes the code much longer than it
@@ -351,11 +355,20 @@ example_solver.run(
     prescribed_wake=False,
 )
 
-# Call the animate function on the solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press "q",
-# after orienting the view, to begin the animation.
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+ps.save("example_solver.json.gz", example_solver)
+
+# Load the saved solver. The loaded object is identical to the original and can be
+# passed to any output function.
+loaded_solver = ps.load("example_solver.json.gz")
+
+# Call the animate function on the loaded solver. This produces a GIF of the wake being
+# shed. The GIF is saved in the same directory as this script. Press "q", after
+# orienting the view, to begin the animation.
 ps.output.animate(
-    unsteady_solver=example_solver,
+    unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,

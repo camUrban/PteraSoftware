@@ -135,7 +135,7 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
     boundsExternalFX_W=(5, 15),
-    objective_cut_off=0.01,
+    objective_cut_off=0.025,
     num_calls=100,
-    show_solver_progress=True,
+    show_solver_progress=False,
 )

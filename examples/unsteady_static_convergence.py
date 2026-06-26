@@ -109,10 +109,3 @@ ps.convergence.analyze_unsteady_convergence(
     num_chordwise_panels_bounds=(3, 6),
     convergence_criteria=1.0,
 )
-
-# Check the console that the convergence analysis found that the solution converged
-# with the following parameters:
-# Wake type: prescribed
-# Wake length: 6 chord lengths
-# Panel aspect ratio: 1
-# Chordwise Panels: 4

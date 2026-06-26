@@ -131,13 +131,6 @@ ps.convergence.analyze_unsteady_convergence(
     num_cycles_bounds=(1, 4),
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 5),
-    convergence_criteria=1.0,
+    convergence_criteria=2.5,
     show_solver_progress=True,
 )
-
-# Check the console that the convergence analysis found that the solution converged
-# with the following parameters:
-# Wake type: free
-# Wake length: 2 cycles
-# Panel aspect ratio: 1
-# Chordwise Panels: 3

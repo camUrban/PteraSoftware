@@ -1,8 +1,10 @@
 """This script is an example of how to run Ptera Software's
-FreeFlightUnsteadyRingVortexLatticeMethodSolver. It releases a statically stable glider
-into an unpowered glide, coupling the unsteady aerodynamics to MuJoCo's rigid body
-dynamics so the airplane flies a free six-degree-of-freedom trajectory through the
-scene."""
+FreeFlightUnsteadyRingVortexLatticeMethodSolver.
+
+It releases a statically stable glider into an unpowered glide, coupling the unsteady
+aerodynamics to MuJoCo's rigid body dynamics so the airplane flies a free six-degree-of-
+freedom trajectory through the scene.
+"""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install

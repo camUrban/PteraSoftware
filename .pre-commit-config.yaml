@@ -32,7 +32,7 @@ repos:
         name: fixer    docformatter
         additional_dependencies: [tomli]
         args: [--in-place, --config, ./pyproject.toml]
-        files: ^pterasoftware/
+        files: ^(pterasoftware|examples)/
   # Validators: read-only, run against the final state.
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0

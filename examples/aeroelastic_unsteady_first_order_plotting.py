@@ -1,6 +1,6 @@
-"""This script runs the coupled aeroelastic UVLM solver sweeping one parameter
-at a time (spring constant k, damping constant b, or wing density) and overlays
-the Curve 16 Net Deformation from each run."""
+"""This script runs the coupled aeroelastic UVLM solver sweeping one parameter at a time
+(spring constant k, damping constant b, or wing density) and overlays the Curve 16 Net
+Deformation from each run."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +36,6 @@ def run_aeroelastic(
     :return: A tuple of the first Wing's net deformation data and the solved
         AeroelasticUnsteadyProblem.
     """
-
     # Wing cross section initialization
     num_spanwise_panels = 2
     Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)

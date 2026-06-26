@@ -1,6 +1,9 @@
 """This script is an example of analyzing the convergence of an UnsteadyProblem with
-static geometry. It should take a few minutes to run. It will display the convergence
-progress and results in the console."""
+static geometry.
+
+It should take a few minutes to run. It will display the convergence progress and
+results in the console.
+"""
 
 import pterasoftware as ps
 

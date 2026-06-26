@@ -6,7 +6,8 @@ The main wing deforms under its own aerodynamic loads using an AeroelasticWingMo
 while its reflected counterpart and the V-tail follow prescribed motion rigidly using
 standard WingMovements. This demonstrates that the solver applies first-order
 deformation per wing, driven by each wing's own loads, rather than to every wing on the
-airplane."""
+airplane.
+"""
 
 import pterasoftware as ps
 

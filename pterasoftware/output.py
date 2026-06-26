@@ -26,6 +26,7 @@ import math
 import time
 
 import matplotlib.colors
+import matplotlib.legend_handler
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -112,12 +113,11 @@ _text_min_position = (0.85, 0.050)
 _text_speed_position = (0.05, 0.075)
 _text_font_size = 11
 
-# Set the number of markers and the marker size for the results plots.
-_num_markers = 6
-_marker_size = 8
-
-# Calculate the normalized spacing between the markers for the results plots.
-_marker_spacing = 1.0 / _num_markers
+# Set the line widths for the results plots. Lines are drawn from thickest to
+# thinnest so that all remain visible even when they overlap.
+_max_line_width = 3.5
+_min_line_width = 1.5
+_legend_line_width = (_max_line_width + _min_line_width) / 2
 
 # Define the camera's view-up direction for free flight visualizations. Earth axes have
 # +z pointing down, so physical up is the -z direction. The free flight visualizations
@@ -1342,114 +1342,104 @@ def plot_results_versus_time(
         moment_coefficients_figure.patch.set_facecolor(_figure_background_color)
         moment_coefficients_axes.set_facecolor(_figure_background_color)
 
-        # Populate the plots.
+        # Populate the plots. Lines are drawn from thickest to thinnest so that
+        # all three remain visible even when the curves overlap.
+        _widths_3 = np.linspace(_max_line_width, _min_line_width, 3)
         force_axes.plot(
             times,
             -forces_W[airplane_id, 0],
             label="Induced Drag",
             color=_linear_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         force_axes.plot(
             times,
             forces_W[airplane_id, 1],
             label="Side Force",
             color=_linear_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         force_axes.plot(
             times,
             -forces_W[airplane_id, 2],
             label="Lift",
             color=_linear_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             -forceCoefficients_W[airplane_id, 0],
             label="Induced Drag Coefficient",
             color=_linear_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             forceCoefficients_W[airplane_id, 1],
             label="Side Force Coefficient",
             color=_linear_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             -forceCoefficients_W[airplane_id, 2],
             label="Lift Coefficient",
             color=_linear_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 0],
             label="Rolling Moment",
             color=_angular_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 1],
             label="Pitching Moment",
             color=_angular_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 2],
             label="Yawing Moment",
             color=_angular_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 0],
             label="Rolling Moment Coefficient",
             color=_angular_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 1],
             label="Pitching Moment Coefficient",
             color=_angular_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 2],
             label="Yawing Moment Coefficient",
             color=_angular_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
 
         # Find and format this Airplane's name for use in the plot titles.
@@ -1482,26 +1472,39 @@ def plot_results_versus_time(
             moment_coefficient_title, color=_text_color_normalized
         )
 
-        # Format the plots' legends.
+        # Format the plots' legends. The handler map normalizes legend line
+        # widths so the thickness staggering does not appear in the legend.
+        _legend_handler_map = {
+            plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
+                update_func=lambda h, orig: (
+                    h.update_from(orig),
+                    h.set_linewidth(_legend_line_width),
+                )
+            )
+        }
         force_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         force_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         moment_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         moment_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
 
         # Save the figures as PNGs if the user wants to do so.
@@ -2096,8 +2099,10 @@ def _plot_state_history(
     figure.patch.set_facecolor(_figure_background_color)
     axes.set_facecolor(_figure_background_color)
 
-    # Populate the plot, staggering the markers across the series.
+    # Populate the plot. Lines are drawn from thickest to thinnest so that all
+    # remain visible even when the curves overlap.
     num_series = len(series)
+    widths = np.linspace(_max_line_width, _min_line_width, num_series)
     for series_id, (this_series, label, color) in enumerate(
         zip(series, labels, colors)
     ):
@@ -2106,9 +2111,8 @@ def _plot_state_history(
             this_series,
             label=label,
             color=color,
-            marker=".",
-            markevery=(_marker_spacing * series_id / num_series, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=widths[series_id],
+            solid_capstyle="butt",
         )
 
     # Name the plot's axis labels and title.
@@ -2121,6 +2125,14 @@ def _plot_state_history(
         facecolor=_figure_background_color,
         edgecolor=_figure_background_color,
         labelcolor=_text_color_normalized,
+        handler_map={
+            plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
+                update_func=lambda h, orig: (
+                    h.update_from(orig),
+                    h.set_linewidth(_legend_line_width),
+                )
+            )
+        },
     )
 
     # Save the figure as a PNG if the user wants to do so.

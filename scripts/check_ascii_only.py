@@ -1,14 +1,12 @@
 """Verify that the given files contain only ASCII-safe characters.
 
-This pre-commit hook flags any character that is not tab (U+0009), line
-feed (U+000A), carriage return (U+000D), or printable ASCII (U+0020
-through U+007E). It exists to enforce the project-wide convention that
-committed text files stay within the 95 printable ASCII characters plus
-the usual whitespace.
+This pre-commit hook flags any character that is not tab (U+0009), line feed (U+000A),
+carriage return (U+000D), or printable ASCII (U+0020 through U+007E). It exists to
+enforce the project-wide convention that committed text files stay within the 95
+printable ASCII characters plus the usual whitespace.
 
-Each violation is reported with its line, column, the offending
-character, its Unicode code point, its Unicode name (when available),
-and its UTF-8 byte sequence.
+Each violation is reported with its line, column, the offending character, its Unicode
+code point, its Unicode name (when available), and its UTF-8 byte sequence.
 """
 
 import sys

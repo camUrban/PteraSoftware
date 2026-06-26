@@ -17,7 +17,12 @@ ALLOWED: frozenset[int] = frozenset({0x09, 0x0A, 0x0D} | set(range(0x20, 0x7F)))
 
 
 def describe(char: str) -> str:
-    """Format a one-line description of a disallowed character."""
+    """Formats a one-line description of a disallowed character.
+
+    :param char: The disallowed character to describe.
+    :return: A string containing the character's code point, repr, Unicode name, and
+        UTF-8 byte sequence.
+    """
     codepoint = ord(char)
     try:
         name = unicodedata.name(char)
@@ -28,7 +33,11 @@ def describe(char: str) -> str:
 
 
 def find_violations(path: Path) -> list[tuple[int, int, str]]:
-    """Return (line, col, description) tuples for each disallowed character."""
+    """Returns (line, col, description) tuples for each disallowed character.
+
+    :param path: The path to the file to check.
+    :return: A list of (line, col, description) tuples, one per disallowed character.
+    """
     raw = path.read_bytes()
     try:
         text = raw.decode("utf-8")
@@ -49,6 +58,12 @@ def find_violations(path: Path) -> list[tuple[int, int, str]]:
 
 
 def main(argv: list[str]) -> int:
+    """Checks each file for disallowed characters and prints violations.
+
+    :param argv: The list of file paths to check.
+    :return: An int representing the exit code, which is 0 if no violations were found
+        and 1 otherwise.
+    """
     exit_code = 0
     for arg in argv:
         path = Path(arg)

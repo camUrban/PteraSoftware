@@ -21,7 +21,7 @@ TEST_DIRS = [
 
 
 def find_fixture_functions() -> dict[tuple[str, str], tuple[int, int]]:
-    """Find all fixture function definitions across all fixture modules.
+    """Finds all fixture function definitions across all fixture modules.
 
     :return: A dictionary mapping (module_path, function_name) to a (lineno, end_lineno)
         tuple.
@@ -40,7 +40,7 @@ def find_fixture_functions() -> dict[tuple[str, str], tuple[int, int]]:
 
 
 def find_all_python_files() -> list[Path]:
-    """Find all Python files in the test directories.
+    """Finds all Python files in the test directories.
 
     :return: A list of Path objects for all .py files.
     """
@@ -53,7 +53,7 @@ def find_all_python_files() -> list[Path]:
 def _resolve_import_to_filepath(
     module_str: str, level: int, caller_filepath: str
 ) -> str | None:
-    """Resolve a Python import to a filesystem path.
+    """Resolves a Python import to a filesystem path.
 
     Handles both absolute and relative imports by converting the dotted module string to
     a path and checking if the corresponding .py file exists.
@@ -84,7 +84,7 @@ def _resolve_import_to_filepath(
 def _parse_fixture_imports(
     tree: ast.Module, caller_filepath: str, fixture_file_set: set[str]
 ) -> dict[str, str]:
-    """Parse a file's imports to map local names to their source fixture files.
+    """Parses a file's imports to map local names to their source fixture files.
 
     Handles qualified calls through imported fixture modules and unqualified calls
     within fixture files that reference functions defined in the same file.
@@ -116,7 +116,7 @@ def _parse_fixture_imports(
 def find_fixture_call_sites(
     all_files: list[Path], fixture_functions: dict[tuple[str, str], tuple[int, int]]
 ) -> dict[tuple[str, str], set[tuple[str, str, str]]]:
-    """Find where each fixture function is called.
+    """Finds where each fixture function is called.
 
     Uses import resolution to attribute calls to specific fixture definitions. When a
     call cannot be resolved to a specific fixture, it is conservatively attributed to
@@ -163,7 +163,7 @@ def find_fixture_call_sites(
                 func_name = None
 
                 if isinstance(func, ast.Attribute) and func.attr.startswith("make_"):
-                    # Qualified call: module.make_foo()
+                    # Qualified call: module.make_foo().
                     func_name = func.attr
                     if isinstance(func.value, ast.Name):
                         resolved_source = module_aliases.get(func.value.id)
@@ -198,7 +198,7 @@ def find_directly_unused(
     fixture_functions: dict[tuple[str, str], tuple[int, int]],
     call_sites: dict[tuple[str, str], set[tuple[str, str, str]]],
 ) -> set[tuple[str, str]]:
-    """Find fixture functions that are never called anywhere.
+    """Finds fixture functions that are never called anywhere.
 
     :param fixture_functions: The dictionary of all fixture function definitions.
     :param call_sites: The dictionary of call sites keyed by (filepath, name).
@@ -211,7 +211,7 @@ def find_transitively_unused(
     fixture_functions: dict[tuple[str, str], tuple[int, int]],
     call_sites: dict[tuple[str, str], set[tuple[str, str, str]]],
 ) -> set[tuple[str, str]]:
-    """Find fixture functions that are only called by other unused fixtures.
+    """Finds fixture functions that are only called by other unused fixtures.
 
     This iteratively marks fixtures as unused if all their callers are themselves
     unused, until no more changes occur. Caller identity is resolved using the caller's
@@ -250,7 +250,7 @@ def find_transitively_unused(
 def find_dead_setup_attributes(
     all_files: list[Path],
 ) -> list[tuple[str, str, str, int, int]]:
-    """Find setUp/setUpClass attributes that are never used in the class.
+    """Finds setUp/setUpClass attributes that are never used in the class.
 
     Parses each test file for classes that have a setUp or setUpClass method. For each
     attribute assigned in setUp/setUpClass (e.g., self.foo = ...), checks whether that
@@ -341,7 +341,7 @@ def find_dead_setup_attributes(
 
 
 def _batch_delete(deletions: list[tuple[str, int, int]]) -> dict[str, str]:
-    """Delete multiple line ranges across multiple files.
+    """Deletes multiple line ranges across multiple files.
 
     Within each file, deletions are applied from bottom to top so that line numbers
     remain valid.
@@ -366,7 +366,7 @@ def _batch_delete(deletions: list[tuple[str, int, int]]) -> dict[str, str]:
 
 
 def _restore_files(originals: dict[str, str]) -> None:
-    """Restore files to their original content.
+    """Restores files to their original content.
 
     :param originals: A dictionary mapping filepath to original content.
     """
@@ -375,7 +375,7 @@ def _restore_files(originals: dict[str, str]) -> None:
 
 
 def _discover_test_ids() -> list[str]:
-    """Discover all test IDs without running them.
+    """Discovers all test IDs without running them.
 
     Uses unittest's test loader to walk the test suite and collect fully qualified test
     IDs (e.g., ``tests.unit.test_foo.TestBar.test_baz``). This is fast, deterministic,
@@ -416,7 +416,7 @@ def _discover_test_ids() -> list[str]:
 
 
 def _run_full_test_suite() -> tuple[bool, str, str, float | None]:
-    """Run the full test suite under coverage in a subprocess.
+    """Runs the full test suite under coverage in a subprocess.
 
     :return: A (success, summary, stderr, coverage_pct) tuple where success is a bool,
         summary is a short string, stderr is the full stderr output, and coverage_pct is
@@ -477,7 +477,7 @@ def _run_full_test_suite() -> tuple[bool, str, str, float | None]:
 def _find_false_positives_from_traceback(
     stderr: str, all_deletions: list[tuple[str, int, int, str]]
 ) -> set[str]:
-    """Analyze test suite stderr to identify which deletions caused failures.
+    """Analyzes test suite stderr to identify which deletions caused failures.
 
     Scans the traceback for references to deleted fixture function names and deleted
     setUp attribute names to determine which candidates are false positives.
@@ -504,10 +504,10 @@ def _find_false_positives_from_traceback(
 
 
 def _format_key(key: tuple[str, str]) -> tuple[Path, str]:
-    """Format a (filepath, name) fixture key for display.
+    """Formats a (filepath, name) fixture key for display.
 
     :param key: A (filepath, function_name) tuple.
-    :return: A string like "relative/path.py  function_name".
+    :return: A (relative_path, function_name) tuple for display.
     """
     filepath, name = key
     rel = Path(filepath).relative_to(PROJECT_ROOT)
@@ -515,7 +515,11 @@ def _format_key(key: tuple[str, str]) -> tuple[Path, str]:
 
 
 def main() -> int:
-    """Run the unused fixture analysis and optionally verify each candidate."""
+    """Runs the unused fixture analysis and optionally verifies each candidate.
+
+    :return: An int representing the exit code, which is 0 if no issues were found and 1
+        otherwise.
+    """
     parser = argparse.ArgumentParser(
         description="Find unused fixture functions in the test suite."
     )

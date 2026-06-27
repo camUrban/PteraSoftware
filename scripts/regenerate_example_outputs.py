@@ -14,11 +14,10 @@ GitHub and ReadTheDocs without manual size management.
 import argparse
 import ast
 import os
-import runpy
 import shutil
+import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import patch
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES_DIR = PROJECT_ROOT / "examples"
@@ -180,53 +179,62 @@ def _discover_examples() -> list[Path]:
     return sorted(p for p in EXAMPLES_DIR.glob("*.py") if p.name != "__init__.py")
 
 
-def _run_example(script_path: Path, output_subdir: Path) -> bool:
-    """Runs a single example script with its outputs directed to a subdirectory.
+_SUBPROCESS_WRAPPER = """\
+import runpy
+import sys
+from unittest.mock import patch
 
-    Wraps ps.output.draw and ps.output.animate to force testing=True so the PyVista
-    windows close automatically. Patches plt.show to prevent blocking. Changes the
-    working directory to the output subdirectory so all saved files land there.
+import matplotlib.pyplot as plt
+import pterasoftware as ps
+
+original_draw = ps.output.draw
+original_animate = ps.output.animate
+
+
+def _draw_testing(*args, **kwargs):
+    kwargs["testing"] = True
+    original_draw(*args, **kwargs)
+
+
+def _animate_testing(*args, **kwargs):
+    kwargs["testing"] = True
+    original_animate(*args, **kwargs)
+
+
+with (
+    patch.object(ps.output, "draw", _draw_testing),
+    patch.object(ps.output, "animate", _animate_testing),
+    patch.object(plt, "show", lambda *_args, **_kwargs: None),
+):
+    runpy.run_path(sys.argv[1], run_name="__main__")
+"""
+
+
+def _run_example(script_path: Path, output_subdir: Path) -> bool:
+    """Runs a single example script in a subprocess with its outputs directed to a
+    subdirectory.
+
+    Each example runs in its own process so memory is fully reclaimed between examples.
+    The subprocess patches ps.output.draw and ps.output.animate to force testing=True so
+    PyVista windows close automatically, and patches plt.show to prevent blocking. The
+    working directory is set to the output subdirectory so all saved files land there.
 
     :param script_path: The path to the example script to run.
     :param output_subdir: The directory in which to collect the script's outputs.
-    :return: True if the script ran successfully, False if it raised an exception.
+    :return: True if the script ran successfully, False otherwise.
     """
-    import matplotlib.pyplot as plt
-
-    import pterasoftware as ps
-
-    original_draw = ps.output.draw
-    original_animate = ps.output.animate
-
-    def _draw_testing(*args: object, **kwargs: object) -> None:
-        kwargs["testing"] = True
-        original_draw(*args, **kwargs)
-
-    def _animate_testing(*args: object, **kwargs: object) -> None:
-        kwargs["testing"] = True
-        original_animate(*args, **kwargs)
-
     output_subdir.mkdir(parents=True, exist_ok=True)
-    original_cwd = os.getcwd()
 
-    try:
-        os.chdir(output_subdir)
+    result = subprocess.run(
+        [sys.executable, "-u", "-c", _SUBPROCESS_WRAPPER, str(script_path)],
+        cwd=output_subdir,
+    )
 
-        with (
-            patch.object(ps.output, "draw", _draw_testing),
-            patch.object(ps.output, "animate", _animate_testing),
-            patch.object(plt, "show", lambda *_args, **_kwargs: None),
-        ):
-            runpy.run_path(str(script_path), run_name="__main__")
-
-        plt.close("all")
-        return True
-    except Exception as exc:
-        print(f"  FAILED: {exc}")
+    if result.returncode != 0:
+        print(f"  FAILED (exit code {result.returncode})")
         return False
-    finally:
-        plt.close("all")
-        os.chdir(original_cwd)
+
+    return True
 
 
 def main() -> int:

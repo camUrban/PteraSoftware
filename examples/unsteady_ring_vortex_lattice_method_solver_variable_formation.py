@@ -1,6 +1,5 @@
-"""This is script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver on three Airplanes, flying in formation,
-each with custom geometry and non static motion."""
+"""Demonstrates running Ptera Software's UnsteadyRingVortexLatticeMethodSolver on three
+airplanes flying in formation, each with custom flapping wings."""
 
 import pterasoftware as ps
 
@@ -221,7 +220,7 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create the trailing left Airplane's AirplaneMovement.
-left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+trailing_left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=trailing_left_airplane,
     wing_movements=[
         ps.movements.wing_movement.WingMovement(
@@ -267,11 +266,13 @@ left_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 # Define an OperatingPoint. This defines the state at which all the Airplanes are
 # operating.
-operating_point = ps.operating_point.OperatingPoint(vCg__E=15.0, alpha=0.0)
+example_operating_point = ps.operating_point.OperatingPoint(vCg__E=15.0, alpha=0.0)
 
 # Define the OperatingPoint's OperatingPointMovement.
-operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-    base_operating_point=operating_point
+example_operating_point_movement = (
+    ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=example_operating_point
+    )
 )
 
 # Delete the extraneous pointers to the Airplanes and the OperatingPoint, as these
@@ -279,17 +280,17 @@ operating_point_movement = ps.movements.operating_point_movement.OperatingPointM
 del lead_airplane
 del trailing_right_airplane
 del trailing_left_airplane
-del operating_point
+del example_operating_point
 
 # Define the Movement. This contains each AirplaneMovement and the
 # OperatingPointMovement.
-movement = ps.movements.movement.Movement(
+example_movement = ps.movements.movement.Movement(
     airplane_movements=[
         lead_airplane_movement,
         trailing_right_airplane_movement,
-        left_airplane_movement,
+        trailing_left_airplane_movement,
     ],
-    operating_point_movement=operating_point_movement,
+    operating_point_movement=example_operating_point_movement,
     num_cycles=3,
 )
 
@@ -297,32 +298,43 @@ movement = ps.movements.movement.Movement(
 # OperatingPointMovement, as these are now accessible within the Movement.
 del lead_airplane_movement
 del trailing_right_airplane_movement
-del left_airplane_movement
-del operating_point_movement
+del trailing_left_airplane_movement
+del example_operating_point_movement
 
 # Using the Movement, create an UnsteadyProblem.
-unsteady_problem = ps.problems.UnsteadyProblem(
-    movement=movement,
+example_problem = ps.problems.UnsteadyProblem(
+    movement=example_movement,
 )
 
 # Define a new UnsteadyRingVortexLatticeMethodSolver.
-solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-    unsteady_problem=unsteady_problem,
+example_solver = (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+        unsteady_problem=example_problem,
+    )
 )
 
 # Delete the extraneous pointer to the UnsteadyProblem.
-del unsteady_problem
+del example_problem
 
-# Run the UnsteadyRingVortexLatticeMethodSolver.
-solver.run(
+# Run the solver.
+example_solver.run(
     prescribed_wake=True,
     show_progress=True,
 )
 
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+ps.save("example_solver.json.gz", example_solver)
+
+# Load the saved solver. The loaded object is identical to the original and can be
+# passed to any output function.
+loaded_solver = ps.load("example_solver.json.gz")
+
 # Now that we have run the solver, we can create an animation of the results.
 ps.output.animate(
-    unsteady_solver=solver,
+    unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
-    save=False,
+    save=True,
 )

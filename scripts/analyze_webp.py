@@ -1,18 +1,17 @@
 """Analyze a static or animated WebP file by rendering its frames to PNG.
 
-This helper backs the analyze-webp slash command, but it can also be run by
-hand. It decodes a WebP file with the webp package's animation decoder (which
-treats a static image as a one-frame animation), reports metadata including
-transparency statistics, and renders frames to PNG files for inspection.
+This helper backs the analyze-webp slash command, but it can also be run by hand. It
+decodes a WebP file with the webp package's animation decoder (which treats a static
+image as a one-frame animation), reports metadata including transparency statistics, and
+renders frames to PNG files for inspection.
 
-Rendered PNGs composite an opaque light red backdrop everywhere outside the
-frames themselves, so light red strictly means "not part of any frame." By
-default, pixels inside each frame keep their original alpha values, which means
-transparent regions inside a frame display as whatever background the PNG
-viewer uses. Check the info subcommand's alpha statistics to determine whether
-a file has transparency. The sheet and frames subcommands also accept a
-background color over which to composite the pixels inside each frame, which
-shows how the frames would look against that background.
+Rendered PNGs composite an opaque light red backdrop everywhere outside the frames
+themselves, so light red strictly means "not part of any frame." By default, pixels
+inside each frame keep their original alpha values, which means transparent regions
+inside a frame display as whatever background the PNG viewer uses. Check the info
+subcommand's alpha statistics to determine whether a file has transparency. The sheet
+and frames subcommands also accept a background color over which to composite the pixels
+inside each frame, which shows how the frames would look against that background.
 """
 
 import argparse
@@ -47,11 +46,10 @@ def _decode_frames(webp_bytes: bytes) -> list[tuple[np.ndarray, float]]:
     """Decodes a WebP file's bytes into a list of RGBA frames with timestamps.
 
     :param webp_bytes: The raw bytes of the WebP file.
-    :return: A list of tuples, one per frame in order. Each tuple holds a
-        (height, width, 4) ndarray of uint8s representing the frame's RGBA pixel
-        values and a float representing the frame's timestamp. The units of the
-        timestamps are seconds. A static WebP file decodes to a single frame
-        with a timestamp of 0.0.
+    :return: A list of tuples, one per frame in order. Each tuple holds a (height,
+        width, 4) ndarray of uint8s representing the frame's RGBA pixel values and a
+        float representing the frame's timestamp. The units of the timestamps are
+        seconds. A static WebP file decodes to a single frame with a timestamp of 0.0.
     """
     decoder = webp.WebPAnimDecoder.new(webp.WebPData.from_buffer(webp_bytes))
     return [(frame, timestamp_ms / 1000.0) for frame, timestamp_ms in decoder.frames()]
@@ -63,12 +61,11 @@ def _sample_indices(first: int, last: int, count: int) -> list[int]:
     The first and last indices of the range are always included.
 
     :param first: The first frame index in the range, inclusive.
-    :param last: The last frame index in the range, inclusive. It must be
-        greater than or equal to first.
-    :param count: The requested number of indices. It is clamped to the size of
-        the range.
-    :return: A sorted list of unique ints representing the sampled frame
-        indices.
+    :param last: The last frame index in the range, inclusive. It must be greater than
+        or equal to first.
+    :param count: The requested number of indices. It is clamped to the size of the
+        range.
+    :return: A sorted list of unique ints representing the sampled frame indices.
     """
     span = last - first
     count = min(count, span + 1)
@@ -88,27 +85,25 @@ def _render_tiles(
 ) -> None:
     """Renders frames as a labeled grid of tiles and saves the grid as a PNG.
 
-    Every pixel outside the frames themselves (margins, labels, and unused grid
-    cells) is composited over an opaque light red backdrop. Pixels inside each
-    frame keep their original alpha values unless a background color is given,
-    in which case they are composited over that color.
+    Every pixel outside the frames themselves (margins, labels, and unused grid cells)
+    is composited over an opaque light red backdrop. Pixels inside each frame keep their
+    original alpha values unless a background color is given, in which case they are
+    composited over that color.
 
-    :param tiles: A list of tuples, one per tile to render, in order. Each tuple
-        holds an int representing the frame's index, a (height, width, 4)
-        ndarray of uint8s representing the frame's RGBA pixel values, and a
-        float representing the frame's timestamp. The units of the timestamps
-        are seconds.
-    :param n_frames: The total number of frames in the source file, used for the
-        tile labels.
+    :param tiles: A list of tuples, one per tile to render, in order. Each tuple holds
+        an int representing the frame's index, a (height, width, 4) ndarray of uint8s
+        representing the frame's RGBA pixel values, and a float representing the frame's
+        timestamp. The units of the timestamps are seconds.
+    :param n_frames: The total number of frames in the source file, used for the tile
+        labels.
     :param columns: The number of tiles per row of the grid.
-    :param tile_width_inches: The rendered width of each tile. The units are
-        inches at this module's DPI constant.
+    :param tile_width_inches: The rendered width of each tile. The units are inches at
+        this module's DPI constant.
     :param out_path: The path at which to save the rendered PNG.
-    :param background_rgb: A (3,) ndarray of floats representing the RGB
-        components of the color over which to composite the pixels inside each
-        frame. The values are normalized from 0.0 to 1.0 and are unitless. If
-        None, which is the default, the pixels inside each frame keep their
-        original alpha values.
+    :param background_rgb: A (3,) ndarray of floats representing the RGB components of
+        the color over which to composite the pixels inside each frame. The values are
+        normalized from 0.0 to 1.0 and are unitless. If None, which is the default, the
+        pixels inside each frame keep their original alpha values.
     :return: None
     """
     columns = min(columns, len(tiles))
@@ -203,8 +198,8 @@ def main(argv: list[str]) -> int:
     """Parses the command-line arguments and runs the requested subcommand.
 
     :param argv: The command-line arguments, excluding the program name.
-    :return: An int representing the exit code, which is 0 on success and 1 on
-        a usage error.
+    :return: An int representing the exit code, which is 0 on success and 1 on a usage
+        error.
     """
     parser = argparse.ArgumentParser(
         description="Analyze a static or animated WebP file."

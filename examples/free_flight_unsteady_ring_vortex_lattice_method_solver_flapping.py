@@ -1,17 +1,24 @@
-"""This script is an example of how to run Ptera Software's
-FreeFlightUnsteadyRingVortexLatticeMethodSolver with a flapping wing. The main wing
-flaps symmetrically while the unsteady aerodynamics are coupled to MuJoCo's rigid body
-dynamics, so the airplane flies a free six-degree-of-freedom trajectory through the
-scene under the loads produced by its own flapping motion."""
+"""Demonstrates running Ptera Software's FreeFlightUnsteadyRingVortexLatticeMethodSolver
+with a flapping-wing configuration.
+
+The main wing flaps symmetrically while the unsteady aerodynamics are coupled to
+MuJoCo's rigid body dynamics, so the airplane flies a free six-degree-of-freedom
+trajectory through the scene under the loads produced by its own flapping motion.
+
+The script will likely take several minutes to run, and will log simulation progress and
+results in a log file.
+"""
+
+import logging
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
@@ -383,11 +390,11 @@ example_solver.run(
 # Save the solved solver to a compressed JSON file. This allows us to load the results
 # later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
-ps.save("example_free_flight_solver_flapping.json.gz", example_solver)
+ps.save("example_solver.json.gz", example_solver)
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
-loaded_solver = ps.load("example_free_flight_solver_flapping.json.gz")
+loaded_solver = ps.load("example_solver.json.gz")
 
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,

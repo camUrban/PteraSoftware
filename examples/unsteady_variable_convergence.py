@@ -1,12 +1,17 @@
-"""This script is an example of analyzing the unsteady convergence of an
-UnsteadyProblem with custom geometry and non static motion. It should take 10-20
-minutes to run. It will display the convergence progress and results in the console."""
+"""Demonstrates analyzing the convergence of an unsteady simulation with non-static
+geometry.
+
+The script will likely take several minutes to run, and will log convergence progress
+and results in a log file.
+"""
+
+import logging
 
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the convergence function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_convergence.log"))
 
 # Create an Airplane and AirplaneMovement
 example_airplane = ps.geometry.airplane.Airplane(
@@ -119,8 +124,7 @@ del example_movement
 # Panels with each iteration. Once it detects that the net load coefficients haven't
 # change by more than the convergence criteria (measured as an absolute percent
 # error), it will return the parameters it found to result in a converged solution.
-# See the analyze_unsteady_convergence function docstring for more details. The
-# progress and results are displayed to the console.
+# See the analyze_unsteady_convergence function docstring for more details.
 ps.convergence.analyze_unsteady_convergence(
     ref_problem=example_problem,
     prescribed_wake=True,
@@ -128,13 +132,6 @@ ps.convergence.analyze_unsteady_convergence(
     num_cycles_bounds=(1, 4),
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 5),
-    convergence_criteria=1.0,
-    show_solver_progress=True,
+    convergence_criteria=2.5,
+    show_solver_progress=False,
 )
-
-# Check the console that the convergence analysis found that the solution converged
-# with the following parameters:
-# Wake type: free
-# Wake length: 2 cycles
-# Panel aspect ratio: 1
-# Chordwise Panels: 3

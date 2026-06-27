@@ -29,4 +29,4 @@ jobs:
           pip install scipy-stubs
       - name: Run mypy type checking
         run: |
-          mypy pterasoftware
+          mypy pterasoftware examples scripts

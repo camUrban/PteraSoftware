@@ -297,8 +297,8 @@ class TestFreeFlightOutput(unittest.TestCase):
             output,
         )
         self.assertIn(
-            "Orientation (from Earth Axes to the First Airplane's Body Axes Using an "
-            "Intrinsic zy'x\" Sequence):",
+            "Orientation (of the First Airplane's Body Axes Relative to Earth Axes "
+            "Using an Intrinsic zy'x\" Sequence):",
             output,
         )
         self.assertIn(
@@ -307,7 +307,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             output,
         )
         self.assertIn(
-            "Angular Velocity (of the First Airplane's Body Axes, Observed from the "
+            "Angular Velocity (in the First Airplane's Body Axes, Observed from the "
             "Earth Frame):",
             output,
         )

@@ -157,8 +157,8 @@ example_solver.run()
 # Call this function from the output module to log the results.
 ps.output.log_results(example_solver)
 
-# Save the solved solver to a compressed JSON file. This allows us to load the results later
-# without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
 ps.save("example_solver.json.gz", example_solver)
 

@@ -1,12 +1,7 @@
-"""This script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver on three Airplanes, flying in formation, each with
-custom geometry and non static motion."""
+"""Demonstrates running Ptera Software's UnsteadyRingVortexLatticeMethodSolver on three
+airplanes flying in formation, each with custom flapping wings."""
 
 import pterasoftware as ps
-
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
 
 x_spacing = 13
 y_spacing = 13

@@ -1,6 +1,5 @@
-"""This script is an example of how to run Ptera Software's
-UnsteadyRingVortexLatticeMethodSolver with a custom Airplane with a non static
-Movement."""
+"""Demonstrates running Ptera Software's UnsteadyRingVortexLatticeMethodSolver with a
+custom flapping-wing airplane."""
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install

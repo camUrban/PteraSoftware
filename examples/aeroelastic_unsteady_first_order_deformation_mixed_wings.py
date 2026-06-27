@@ -1,4 +1,4 @@
-"""This script is an example of how to run Ptera Software's
+"""Demonstrates running Ptera Software's
 AeroelasticUnsteadyRingVortexLatticeMethodSolver with an airplane whose wings mix
 aeroelastic deformation and prescribed rigid motion.
 
@@ -10,10 +10,6 @@ airplane.
 """
 
 import pterasoftware as ps
-
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
 
 # Initialize the WingCrossSection parameters.
 # Define the offsets for the spacing.

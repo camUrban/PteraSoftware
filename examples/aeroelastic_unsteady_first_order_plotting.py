@@ -1,15 +1,13 @@
-"""This script runs the coupled aeroelastic UVLM solver sweeping one parameter at a time
-(spring constant k, damping constant b, or wing density) and overlays the Curve 16 Net
-Deformation from each run."""
+"""Demonstrates running Ptera Software's
+AeroelasticUnsteadyRingVortexLatticeMethodSolver across a sweep of parameters.
+
+The Curve 16 Net Deformation curves from each run are overlaid in a plot.
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import pterasoftware as ps
-
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
 
 # The curve index to extract from each Net Deformation result. Curve 16 corresponds
 # to the wing-tip spanwise station.

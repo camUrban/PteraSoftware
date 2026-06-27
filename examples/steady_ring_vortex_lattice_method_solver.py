@@ -1,14 +1,19 @@
-"""This script is an example of how to run Ptera Software's
-SteadyRingVortexLatticeMethodSolver with a custom Airplane."""
+"""Demonstrates running Ptera Software's SteadyRingVortexLatticeMethodSolver with a
+custom airplane.
+
+The script will log simulation results in a log file.
+"""
+
+import logging
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for

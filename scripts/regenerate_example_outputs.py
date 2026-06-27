@@ -36,8 +36,9 @@ def _extract_output_kwargs(
 ) -> tuple[dict[str, object] | None, dict[str, object] | None]:
     """Extracts the keyword arguments from ps.output.draw and ps.output.animate calls.
 
-    Parses the example script's AST and returns the keyword arguments (excluding solver,
-    save, and testing) for each call. Only literal values are extracted.
+    Parses the example script's AST and returns the keyword arguments (excluding the
+    managed kwargs solver, unsteady_solver, save, and testing) for each call. Only
+    literal values are extracted.
 
     :param script_path: The path to the example script to parse.
     :return: A tuple of (draw_kwargs, animate_kwargs). Either value is None if the

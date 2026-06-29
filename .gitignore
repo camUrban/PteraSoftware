@@ -56,6 +56,7 @@ cover/
 
 # These are the Django files to ignore.
 *.log
+!docs/examples_expected_output/**/*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal

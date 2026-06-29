@@ -545,7 +545,7 @@ Public methods and properties defined on a private parent are inherited by all p
 **Rules:**
 
 1. **No deferral language.** Do not write "see child class for full details" or similar, since the docstring IS the documentation the user sees on the child's page.
-2. **No references to specific sibling types.** A `CoreWingMovement` method docstring must not mention `WingCrossSectionMovement` or `FreeFlightWingCrossSectionMovement`, because the docstring appears on all siblings' RTD pages. Instead, reference the universal geometry class that the movement class manages (e.g., `WingCrossSection`), since geometry classes have no feature subclasses and are always correct.
+2. **No references to specific sibling types.** A `CoreWingMovement` method docstring must not mention `WingCrossSectionMovement` or `AeroelasticWingCrossSectionMovement`, because the docstring appears on all siblings' RTD pages. Instead, reference the universal geometry class that the movement class manages (e.g., `WingCrossSection`), since geometry classes have no feature subclasses and are always correct.
 3. **Use "each X's movement class" framing** when referring to child movement objects. For example, write "each `WingCrossSection`'s movement class" rather than "its `WingCrossSection`s' movement classes". This avoids implying that a movement class owns geometry objects (movement classes own other movement classes; geometry classes own geometry classes).
 
 **Example (correct):**

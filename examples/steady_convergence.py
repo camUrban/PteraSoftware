@@ -1,12 +1,17 @@
-"""This script is an example of analyzing the convergence of a SteadyProblem with
-multiple Airplanes. It should take a few minutes to run. It will display the
-convergence progress and results in the console."""
+"""Demonstrates analyzing the convergence of a steady simulation with multiple
+airplanes.
+
+The script will likely take a few minutes to run, and will log convergence progress and
+results in a log file.
+"""
+
+import logging
 
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the convergence function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_convergence.log"))
 
 # Create two Airplanes. Read through the solver and formation examples for
 # more details on creating these Airplanes.
@@ -161,8 +166,7 @@ del operating_point
 # it detects that the net load coefficients haven't change by more than the
 # convergence criteria (measured as an absolute percent error), it will return the
 # parameters it found to result in a converged solution. See the
-# analyze_steady_convergence function docstring for more details. The progress and
-# results are displayed to the console.
+# analyze_steady_convergence function docstring for more details.
 ps.convergence.analyze_steady_convergence(
     ref_problem=steady_problem,
     solver_type="steady ring vortex lattice method",
@@ -170,8 +174,3 @@ ps.convergence.analyze_steady_convergence(
     num_chordwise_panels_bounds=(3, 8),
     convergence_criteria=1.0,
 )
-
-# Check the console that the convergence analysis found the following converged
-# parameters:
-#   Panel aspect ratio: 4
-#   Chordwise Panels: 5

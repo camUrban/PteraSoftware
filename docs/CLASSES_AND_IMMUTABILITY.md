@@ -40,7 +40,7 @@ Most attribute falls into one of these categories:
 
 A constructor parameter is not always retained as an attribute. Some parameters shape how an object is built but are deliberately discarded once construction finishes: they have no `__slots__` entry, appear in no attribute-category table, and are not serialized or deep copied, because nothing reads them after `__init__`. They are still validated exactly like their stored counterparts.
 
-`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing.explode_wing` to replace the supplied wing cross sections with single-strip cross sections, then plays no further role. Storing it would only create a stale provenance flag, since an exploded Wing is indistinguishable from one defined with single-strip cross sections directly. So the validated value lives in a local variable inside `__init__` and is never assigned to `self`, while still passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`.
+`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections, then plays no further role. Storing it would only create a stale provenance flag, since an exploded Wing is indistinguishable from one defined with single-strip cross sections directly. So the validated value lives in a local variable inside `__init__` and is never assigned to `self`, while still passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`.
 
 ### Key Decisions
 
@@ -219,15 +219,11 @@ The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJ
 
 #### Mutable (populated by solver)
 
-These are allocated in `__init__` (the four load-history lists as empty lists, the validation guard as `False`) and updated by the problem's `initialize_next_problem` as the solver advances. They are plain slots rather than read-only properties because they must change after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
+This is allocated in `__init__` (the validation guard as `False`) and updated by the problem's `initialize_next_problem` on the `external_loads_fn`'s first invocation. It is a plain slot rather than a read-only property because it must change after construction.
 
-| Attribute                   | Type               | Notes                                                                                                      |
-|-----------------------------|--------------------|------------------------------------------------------------------------------------------------------------|
-| `forces_W`                  | `list[np.ndarray]` | Per-step aerodynamic force history, in wind axes                                                           |
-| `forceCoefficients_W`       | `list[np.ndarray]` | Per-step aerodynamic force coefficient history                                                             |
-| `moments_W_Cg`              | `list[np.ndarray]` | Per-step aerodynamic moment history, in wind axes about the CG                                             |
-| `momentCoefficients_W_Cg`   | `list[np.ndarray]` | Per-step aerodynamic moment coefficient history                                                            |
-| `_external_loads_validated` | `bool`             | Once-only guard; flips to `True` after the `external_loads_fn` return is validated on its first invocation |
+| Attribute                   | Type   | Notes                                                                                                      |
+|-----------------------------|--------|------------------------------------------------------------------------------------------------------------|
+| `_external_loads_validated` | `bool` | Once-only guard; flips to `True` after the `external_loads_fn` return is validated on its first invocation |
 
 #### Construction-only parameters
 
@@ -562,7 +558,7 @@ These are allocated in `__init__` (the four load-history lists as empty lists, t
 
 #### Construction-only parameters
 
-`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `explode_wing` during initialization and is then discarded, so it has no slot and no attribute-category entry above. See Construction-Only Parameters under Design Principles.
+`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `_explode_wing` during initialization and is then discarded, so it has no slot and no attribute-category entry above. See Construction-Only Parameters under Design Principles.
 
 ## WingCrossSection Class (`geometry/wing_cross_section.py`)
 

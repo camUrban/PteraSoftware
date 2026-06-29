@@ -56,17 +56,10 @@ from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
 )
 from pterasoftware.movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from pterasoftware.movements.airplane_movement import AirplaneMovement
-from pterasoftware.movements.free_flight_airplane_movement import (
-    FreeFlightAirplaneMovement,
-)
 from pterasoftware.movements.free_flight_movement import FreeFlightMovement
 from pterasoftware.movements.free_flight_operating_point_movement import (
     FreeFlightOperatingPointMovement,
 )
-from pterasoftware.movements.free_flight_wing_cross_section_movement import (
-    FreeFlightWingCrossSectionMovement,
-)
-from pterasoftware.movements.free_flight_wing_movement import FreeFlightWingMovement
 from pterasoftware.movements.movement import Movement
 from pterasoftware.movements.operating_point_movement import OperatingPointMovement
 from pterasoftware.movements.wing_cross_section_movement import (
@@ -2073,41 +2066,6 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, movement.num_steps)
         self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
 
-    def test_free_flight_airplane_movement(self):
-        """Tests that a FreeFlightAirplaneMovement survives a full round trip.
-
-        :return: None
-        """
-        airplane_movement = self.problem.movement.airplane_movements[0]
-        result = _deserialize_value(_serialize_value(airplane_movement))
-        assert isinstance(result, FreeFlightAirplaneMovement)
-        self.assertEqual(
-            result.base_airplane.name, airplane_movement.base_airplane.name
-        )
-
-    def test_free_flight_wing_movement(self):
-        """Tests that a FreeFlightWingMovement survives a full round trip.
-
-        :return: None
-        """
-        wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
-        result = _deserialize_value(_serialize_value(wing_movement))
-        assert isinstance(result, FreeFlightWingMovement)
-        self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
-
-    def test_free_flight_wing_cross_section_movement(self):
-        """Tests that a FreeFlightWingCrossSectionMovement survives a full round trip.
-
-        :return: None
-        """
-        wing_cross_section_movement = (
-            self.problem.movement.airplane_movements[0]
-            .wing_movements[0]
-            .wing_cross_section_movements[0]
-        )
-        result = _deserialize_value(_serialize_value(wing_cross_section_movement))
-        assert isinstance(result, FreeFlightWingCrossSectionMovement)
-
     def test_free_flight_operating_point_movement(self):
         """Tests that a FreeFlightOperatingPointMovement survives a full round trip.
 
@@ -2161,21 +2119,6 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
-
-    def test_load_history_round_trip(self):
-        """Tests that recorded load-history arrays survive a round trip.
-
-        :return: None
-        """
-        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-        problem.forces_W.append(np.array([1.0, 2.0, 3.0], dtype=float))
-        problem.forceCoefficients_W.append(np.array([0.1, 0.2, 0.3], dtype=float))
-        problem.moments_W_Cg.append(np.array([4.0, 5.0, 6.0], dtype=float))
-        problem.momentCoefficients_W_Cg.append(np.array([0.4, 0.5, 0.6], dtype=float))
-        result = _deserialize_value(_serialize_value(problem))
-        assert isinstance(result, FreeFlightUnsteadyProblem)
-        npt.assert_array_equal(result.forces_W[0], problem.forces_W[0])
-        npt.assert_array_equal(result.moments_W_Cg[0], problem.moments_W_Cg[0])
 
     def test_custom_external_loads_fn_is_not_serializable(self):
         """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn raises

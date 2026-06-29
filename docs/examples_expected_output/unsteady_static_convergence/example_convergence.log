@@ -1,0 +1,1254 @@
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - Beginning convergence analysis...
+INFO - pterasoftware.convergence - 	Wake type: prescribed
+INFO - pterasoftware.convergence - 		Chord lengths: 4
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 1/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.146 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 2/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.03 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.39%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 3/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.074 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.51%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 4/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.106 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.72%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 5/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.04 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 3.23%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 6/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.092 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.95%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 7/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.111 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.04%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.99%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 8/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.311 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.74%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.03%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 9/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.044 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.58%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 10/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.056 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.77%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.7%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 11/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.323 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.32%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.44%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 12/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 3.836 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.57%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.78%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 13/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.067 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.99%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 14/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.407 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.87%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.8%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 15/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 4.264 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.7%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 16/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.325 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.28%
+INFO - pterasoftware.convergence - 		Chord lengths: 5
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 17/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.07 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.5%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 18/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.063 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.64%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.39%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 19/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.126 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.79%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.6%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 20/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.262 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.39%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.33%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 21/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.062 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.72%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 3.02%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 22/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.193 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.61%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.59%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.7%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 23/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.265 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.54%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.28%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.92%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 24/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.62 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.38%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.75%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.87%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 25/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.155 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.67%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.63%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 26/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.186 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.58%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.79%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.47%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 27/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 2.18 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.7%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.01%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 28/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.635 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.49%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.47%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.11%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 29/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.129 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.64%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.02%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 30/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 2.041 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.89%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.58%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 31/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.951 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.73%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.06%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.88%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 32/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.05 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.47%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.03%
+INFO - pterasoftware.convergence - 		Chord lengths: 6
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 33/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.412 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.94%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 34/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.108 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.01%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.38%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 35/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.116 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.73%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.33%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 36/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.169 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.87%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.46%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 37/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.167 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.05%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.91%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 38/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.101 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.99%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.61%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.56%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 39/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.13 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.1%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.93%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.02%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 40/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.321 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.86%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.76%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.63%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 41/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.075 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.02%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.66%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 42/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.196 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.97%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.81%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.35%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 43/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.769 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.08%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.72%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.12%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 44/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.202 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.92%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.41%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.95%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 45/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.148 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.0%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.04%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 46/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.882 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.95%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.91%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.46%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 47/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 6.104 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.84%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.28%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.77%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 48/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.98 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.91%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.09%
+INFO - pterasoftware.convergence - 		Chord lengths: 7
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 49/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.076 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.61%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 50/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.204 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.65%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.37%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 51/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.183 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.3%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 52/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.193 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.4%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 53/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.124 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.68%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.85%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 54/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.11 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.64%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.48%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 55/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.195 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.47%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.08%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.86%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 56/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.186 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.76%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.72%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 57/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.105 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.66%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.68%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 58/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.284 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.63%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.83%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.28%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 59/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.761 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.46%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.73%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.96%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 60/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.557 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.59%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.38%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.08%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 61/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.126 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.64%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.05%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 62/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.564 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.61%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.92%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.39%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 63/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 6.995 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.46%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.29%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.61%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 64/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 9.36 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.59%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.22%
+INFO - pterasoftware.convergence - 		Chord lengths: 8
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 65/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.093 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.42%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 66/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.174 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.44%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.37%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 67/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.136 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.42%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.28%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 68/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.471 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.38%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.36%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 69/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.092 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.45%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.82%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 70/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.095 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.43%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.63%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.43%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 71/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.235 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.41%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.08%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.84%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 72/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 2.366 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.38%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.76%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.69%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 73/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.066 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.44%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.7%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 74/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.128 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.42%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.83%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.23%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 75/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 2.856 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.47%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.67%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.01%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 76/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 8.236 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.4%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.36%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.01%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 77/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.08 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.43%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.06%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 78/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.594 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.41%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.93%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.35%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 79/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 8.304 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.4%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.36%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.6%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 80/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 10.521 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.39%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.21%
+INFO - pterasoftware.convergence - 	Wake type: free
+INFO - pterasoftware.convergence - 		Chord lengths: 4
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 81/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.084 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 82/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.095 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.17%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.38%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 83/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.114 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.17%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.51%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 84/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.15 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.17%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.72%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 85/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.049 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 3.23%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 86/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.134 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.94%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 87/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.158 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.17%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.04%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.98%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 88/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.056 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.17%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.74%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.03%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 89/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.066 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.58%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 90/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.105 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.76%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.69%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 91/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.61 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.31%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.44%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 92/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.588 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.77%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 93/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.11 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.99%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 94/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.761 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.86%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.8%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 95/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.37 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.7%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 96/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 6.373 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.12%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.28%
+INFO - pterasoftware.convergence - 		Chord lengths: 5
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 97/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.075 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.51%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 98/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.077 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.65%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.38%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 99/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.108 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.81%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.6%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 100/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.265 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.4%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.32%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 101/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.095 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.73%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 3.02%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 102/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.101 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.59%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.69%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 103/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.153 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.56%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.28%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.91%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 104/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.307 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.15%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.39%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.75%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.87%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 105/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.101 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.68%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.62%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 106/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.106 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.59%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.79%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.47%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 107/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.742 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.16%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.69%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.01%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 108/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.671 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.5%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.46%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.11%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 109/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.101 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.12%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.65%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.01%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 110/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.888 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.12%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.57%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.88%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 2.58%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 111/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 6.178 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.12%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.75%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.04%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.88%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 112/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.941 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.49%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.02%
+INFO - pterasoftware.convergence - 		Chord lengths: 6
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 113/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.076 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.95%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 114/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.108 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.02%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.38%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 115/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.142 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.74%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.33%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 116/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.186 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.14%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.88%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: inf
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.46%
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 117/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.032 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.06%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 2.91%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: inf
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 118/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.084 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.0%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 1.61%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.56%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 119/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.136 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 1.11%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.92%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 1.02%
+INFO - pterasoftware.convergence - 				Chordwise Panels: 6
+INFO - pterasoftware.convergence - 					Iteration number: 120/160
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.281 s
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake type: 0.13%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from wake length: 0.87%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from Panel aspect ratio: 0.75%
+INFO - pterasoftware.convergence - 					Maximum combined coefficient change from chordwise Panels: 0.63%
+INFO - pterasoftware.convergence - The analysis found a converged case:
+INFO - pterasoftware.convergence - 	Wake type: prescribed
+INFO - pterasoftware.convergence - 	Chord lengths: 5
+INFO - pterasoftware.convergence - 	Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 	Chordwise Panels: 5
+INFO - pterasoftware.convergence - 	Simulation completed in 0.126 s
+INFO - pterasoftware.convergence - 	Spanwise Panels:
+INFO - pterasoftware.convergence - 		Example Airplane:
+INFO - pterasoftware.convergence - 			Main Wing:
+INFO - pterasoftware.convergence - 				WingCrossSection 1: 4
+INFO - pterasoftware.convergence - 				WingCrossSection 2: None

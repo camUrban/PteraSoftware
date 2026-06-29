@@ -159,6 +159,14 @@ suppress_warnings = [
 
 autosectionlabel_prefix_document = True
 
+# Render every Python signature with one parameter per line. Any signature
+# longer than this threshold (in characters) wraps so that each parameter sits
+# on its own indented line with a trailing comma and the closing parenthesis on
+# its own line. A threshold of one forces this multi-line layout for every
+# signature that takes at least one parameter, which keeps long class and
+# function parameter lists readable instead of running together on one line.
+python_maximum_signature_line_length = 1
+
 # AutoAPI renders docstrings as reStructuredText, where a vector magnitude written
 # with bars (for example, "|g_E|") parses as a substitution reference. Define those
 # tokens so the reference resolves to the literal barred text instead of emitting an

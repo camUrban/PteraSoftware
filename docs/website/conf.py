@@ -38,7 +38,6 @@ extensions = [
     "autoapi.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.mathjax",
@@ -180,6 +179,10 @@ napoleon_attr_annotations = True
 html_theme = "furo"
 html_title = "PteraSoftware"
 html_favicon = "favicon/favicon.ico"
+# Drop the "View this page" source link (and the _sources/*.txt dump it points
+# to) so no page exposes a link to its underlying source.
+html_show_sourcelink = False
+html_copy_source = False
 html_static_path = ["_static", "../_static", "Black_Text_Logo.png", "Logo.png"]
 # Optionally also copy to site root (may be ignored by some builders)
 html_extra_path = ["favicon"]
@@ -194,11 +197,7 @@ html_js_files = [
     "custom.js",
 ]
 
-# Furo: enable "Edit this page" with GitHub
 html_theme_options = {
-    "source_repository": "https://github.com/camUrban/PteraSoftware/",
-    "source_branch": "main",
-    "source_directory": "docs/website/",
     # Use black text logo in light mode (better contrast), normal logo in dark mode
     "light_logo": "Black_Text_Logo.png",
     "dark_logo": "Logo.png",
@@ -206,41 +205,7 @@ html_theme_options = {
     "sidebar_hide_name": True,
 }
 
-# For AutoAPI-generated pages, the default "Edit this page" points to a
-# generated .rst path that doesn't exist in the repo. Override the URL to
-# point to the corresponding Python source file in GitHub.
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-
-def _repo_rel_for_autoapi_page(pagename: str) -> str | None:
-    """Return a repo-relative path for an AutoAPI page's corresponding source file."""
-    if not pagename.startswith("api/"):
-        return None
-    rel = pagename[len("api/") :]
-    if rel.endswith("/index"):
-        rel = rel[: -len("/index")]
-    py_path = REPO_ROOT / (rel.replace("/", os.sep) + ".py")
-    if py_path.exists():
-        target = py_path
-    else:
-        init_path = REPO_ROOT / rel.replace("/", os.sep) / "__init__.py"
-        if init_path.exists():
-            target = init_path
-        else:
-            return None
-    return target.relative_to(REPO_ROOT).as_posix()
-
-
-# noinspection PyUnusedLocal
-def _html_page_context(app, pagename, templatename, context, doctree):
-    repo_rel = _repo_rel_for_autoapi_page(pagename)
-    if repo_rel:
-        context["theme_source_edit_link"] = (
-            f"https://github.com/camUrban/PteraSoftware/edit/main/{repo_rel}"
-        )
-        context["theme_source_view_link"] = (
-            f"https://github.com/camUrban/PteraSoftware/blob/main/{repo_rel}?plain=true"
-        )
 
 
 def _rewrite_repo_root_links(app, docname, source):
@@ -263,7 +228,6 @@ def _rewrite_repo_root_links(app, docname, source):
 
 def setup(app):
     app.connect("source-read", _rewrite_repo_root_links)
-    app.connect("html-page-context", _html_page_context)
 
     # Copy extra assets to the site root after build
     # noinspection PyShadowingNames

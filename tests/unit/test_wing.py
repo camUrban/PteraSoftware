@@ -1991,6 +1991,54 @@ class TestFromEdgePoints(unittest.TestCase):
         self.assertIsNone(wing.trailingEdgePoints_Wn_Ler)
         self.assertIsNone(wing.tip_trim_fraction)
 
+    def test_non_symmetric_wing_cross_sections_have_no_control_surface_type(self):
+        """Test that a non symmetric from_edge_points Wing leaves every control surface
+        symmetry type None, as symmetry types 1 through 3 require."""
+        wing = self._make_edge_wing()
+        for wing_cross_section in wing.wing_cross_sections:
+            with self.subTest(wing_cross_section=wing_cross_section):
+                self.assertIsNone(wing_cross_section.control_surface_symmetry_type)
+
+    def test_symmetric_wing_cross_sections_have_symmetric_control_surface_type(self):
+        """Test that a symmetric from_edge_points Wing marks every control surface
+        symmetry type symmetric, as symmetry types 4 and 5 require."""
+        leading, trailing = self._straight_edge_points()
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            symmetric=True,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+        )
+        for wing_cross_section in wing.wing_cross_sections:
+            with self.subTest(wing_cross_section=wing_cross_section):
+                self.assertEqual(
+                    wing_cross_section.control_surface_symmetry_type, "symmetric"
+                )
+
+    def test_symmetric_wing_meshes_through_airplane(self):
+        """Test that a symmetric from_edge_points Wing meshes through an Airplane, the
+        path that requires a non None control surface symmetry type on every
+        WingCrossSection."""
+        leading, trailing = self._straight_edge_points()
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            symmetric=True,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+        )
+        airplane = ps.geometry.airplane.Airplane(wings=[wing], name="Edge Airplane")
+        meshed_wing = airplane.wings[0]
+        self.assertEqual(meshed_wing.symmetry_type, 4)
+        self.assertIsNotNone(meshed_wing.panels)
+
     def test_tip_trim_moves_outermost_section_inboard(self):
         """Test that a tip trim resamples over a shortened span, leaving the outermost
         WingCrossSection with a finite chord inboard of the geometric tip."""

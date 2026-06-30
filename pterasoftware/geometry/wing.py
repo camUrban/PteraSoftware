@@ -502,11 +502,11 @@ class Wing:
 
         **Notes:**
 
-        This first version is restricted to a planar, untwisted Wing. Every leading edge
-        and trailing edge point must have a zero z component, every WingCrossSection
-        keeps a zero angle vector, and the chord line stays aligned with the wing axes'
-        x direction. Dihedral, twist, a three dimensional chord line, per-span Airfoil
-        variation, and control surfaces are not supported.
+        This builds a planar, untwisted Wing. Every leading edge and trailing edge point
+        must have a zero z component, every WingCrossSection keeps a zero angle vector,
+        and the chord line stays aligned with the wing axes' x direction. Dihedral,
+        twist, a three dimensional chord line, per-span Airfoil variation, and control
+        surfaces are not supported.
 
         A planform that tapers to a point at the tip cannot be built directly, because
         the outermost WingCrossSection would have a zero chord, which is invalid. Use
@@ -593,8 +593,9 @@ class Wing:
 
         # Stage 2: resample both curves at a common set of points spaced uniformly in
         # the spanwise (y) direction, from the root (y of 0) to the trimmed tip. Without
-        # trimming the trimmed tip is the shared maximum y; tip_trim_fraction pulls it
-        # inboard so a planform that tapers to a point at the tip ends at a finite chord.
+        # trimming the trimmed tip is the shared maximum y. The tip_trim_fraction pulls
+        # it inboard so a planform that tapers to a point at the tip ends at a finite
+        # chord.
         # The z component is zero at every point in this planar version.
         yTip_Wn_Ler = float(leadingEdgePoints_Wn_Ler[-1, 1])
         yTrimmedTip_Wn_Ler = (1.0 - tip_trim_fraction) * yTip_Wn_Ler
@@ -618,9 +619,16 @@ class Wing:
             if chord <= 0.0:
                 raise ValueError(
                     f"The chord at WingCrossSection {wing_cross_section_id} is not "
-                    "positive; the trailing edge x value must exceed the leading edge x "
+                    "positive. The trailing edge x value must exceed the leading edge x "
                     "value at every WingCrossSection."
                 )
+
+        # A symmetric Wing always resolves to symmetry type 4 or 5, both of which require
+        # every WingCrossSection to carry a non None control_surface_symmetry_type, while
+        # a non symmetric Wing (types 1 through 3) requires None. These Wings build no
+        # control surfaces, so "symmetric" with the default zero deflection adds no
+        # geometry. It is just the value that lets a symmetric Wing mesh.
+        control_surface_symmetry_type = "symmetric" if symmetric else None
 
         # Stage 3: build one single-panel WingCrossSection from each resampled point. The
         # parent relative leading point offset is the difference of consecutive resampled
@@ -645,6 +653,7 @@ class Wing:
                     Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
                     angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
                     spanwise_spacing=None if is_tip else "uniform",
+                    control_surface_symmetry_type=control_surface_symmetry_type,
                 )
             )
 
@@ -887,7 +896,7 @@ class Wing:
         panel strips, "exploded" for a Wing built with explode_into_strips=True, or
         "edge_defined" for a Wing built by from_edge_points. An "exploded" or
         "edge_defined" Wing has every non tip WingCrossSection as a single spanwise
-        panel strip; only an "edge_defined" Wing additionally stores its leading edge
+        panel strip. Only an "edge_defined" Wing additionally stores its leading edge
         and trailing edge curves. The standard convergence tools support only
         "trapezoidal" Wings.
 
@@ -1890,8 +1899,8 @@ class Wing:
                 )
             if not np.all(points[:, 2] == 0.0):
                 raise ValueError(
-                    f"Every point in {points_name} must have a zero z component; this "
-                    "first version supports only planar Wings."
+                    f"Every point in {points_name} must have a zero z component, "
+                    "because from_edge_points builds only planar Wings."
                 )
 
         # The leading edge curve starts at the leading edge root point, which is the

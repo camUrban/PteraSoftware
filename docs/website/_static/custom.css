@@ -704,6 +704,18 @@ dl.py dd {
   overflow-wrap: break-word;
 }
 
+/* In a multi-line signature, align the closing parenthesis with the opening
+   keyword (class or def) line instead of with the parameter column. Furo's
+   .sig rule gives the block a 2.5em hanging indent that only pulls the first
+   line left, so the closing paren, which sits on its own line at the content
+   origin, lands one space to the right of the parameter names. Pulling it back
+   by the same 2.5em lines it up under the first character of the signature.
+   The selector matches only the closing paren (the one that follows the
+   parameter list's dl); the opening paren precedes the dl and is unaffected. */
+dl.py dt.sig dl + .sig-paren {
+  margin-left: -2.5em;
+}
+
 
 /* --------------------------------------------------------------------------
    Footer

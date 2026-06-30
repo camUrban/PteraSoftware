@@ -128,36 +128,10 @@ def analyze_steady_convergence(
         )
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    if not (
-        isinstance(panel_aspect_ratio_bounds, tuple)
-        and len(panel_aspect_ratio_bounds) == 2
-    ):
-        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
-        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
-    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
-        raise ValueError(
-            "The first value in panel_aspect_ratio_bounds must be greater than or "
-            "equal to the second value."
-        )
-    if panel_aspect_ratio_bounds[1] <= 0:
-        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    if not (
-        isinstance(num_chordwise_panels_bounds, tuple)
-        and len(num_chordwise_panels_bounds) == 2
-    ):
-        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
-        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
-    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
-        raise ValueError(
-            "The first value in num_chordwise_panels_bounds must be less than or "
-            "equal to the second value."
-        )
-    if num_chordwise_panels_bounds[0] <= 0:
-        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
@@ -169,20 +143,8 @@ def analyze_steady_convergence(
     ref_operating_point = ref_problem.operating_point
     ref_airplanes = ref_problem.airplanes
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
-    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
-    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
-    # is defined as single panel strips (for example one built with
-    # explode_into_strips=True) would be silently subdivided along the same geometry
-    # rather than refined, so its convergence result would be misleading.
-    for ref_airplane in ref_airplanes:
-        for ref_wing in ref_airplane.wings:
-            if ref_wing.spanwise_mesh != "trapezoidal":
-                raise ValueError(
-                    f"analyze_steady_convergence does not support Wings whose spanwise "
-                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
-                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
-                )
+    # Reject any Wing whose spanwise mesh is not trapezoidal.
+    _reject_non_trapezoidal_wings(ref_airplanes, "analyze_steady_convergence")
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
     # Panels to test.
@@ -527,27 +489,16 @@ def analyze_steady_convergence(
                 lastArCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id - 1, chord_id, :
                 ]
-                max_ar_force_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedForceCoefficients
-                            - lastArCombinedForceCoefficients
-                        )
-                        / lastArCombinedForceCoefficients
-                    )
+                max_ar_pc = max(
+                    _max_combined_percent_change(
+                        theseCombinedForceCoefficients,
+                        lastArCombinedForceCoefficients,
+                    ),
+                    _max_combined_percent_change(
+                        theseCombinedMomentCoefficients,
+                        lastArCombinedMomentCoefficients,
+                    ),
                 )
-                max_ar_moment_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedMomentCoefficients
-                            - lastArCombinedMomentCoefficients
-                        )
-                        / lastArCombinedMomentCoefficients
-                    )
-                )
-                max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                 _logger.info(
                     "\t\t\tMaximum combined coefficient change from Panel aspect "
@@ -568,27 +519,16 @@ def analyze_steady_convergence(
                 lastChordCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id, chord_id - 1, :
                 ]
-                max_chord_force_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedForceCoefficients
-                            - lastChordCombinedForceCoefficients
-                        )
-                        / lastChordCombinedForceCoefficients
-                    )
+                max_chord_pc = max(
+                    _max_combined_percent_change(
+                        theseCombinedForceCoefficients,
+                        lastChordCombinedForceCoefficients,
+                    ),
+                    _max_combined_percent_change(
+                        theseCombinedMomentCoefficients,
+                        lastChordCombinedMomentCoefficients,
+                    ),
                 )
-                max_chord_moment_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedMomentCoefficients
-                            - lastChordCombinedMomentCoefficients
-                        )
-                        / lastChordCombinedMomentCoefficients
-                    )
-                )
-                max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 _logger.info(
                     "\t\t\tMaximum combined coefficient change from number of "
@@ -889,36 +829,10 @@ def analyze_unsteady_convergence(
             raise ValueError("Both values in num_cycles_bounds must be positive.")
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    if not (
-        isinstance(panel_aspect_ratio_bounds, tuple)
-        and len(panel_aspect_ratio_bounds) == 2
-    ):
-        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
-        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
-    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
-        raise ValueError(
-            "The first value in panel_aspect_ratio_bounds must be greater than or "
-            "equal to the second value."
-        )
-    if panel_aspect_ratio_bounds[1] <= 0:
-        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    if not (
-        isinstance(num_chordwise_panels_bounds, tuple)
-        and len(num_chordwise_panels_bounds) == 2
-    ):
-        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
-        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
-    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
-        raise ValueError(
-            "The first value in num_chordwise_panels_bounds must be less than or "
-            "equal to the second value."
-        )
-    if num_chordwise_panels_bounds[0] <= 0:
-        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
@@ -935,21 +849,14 @@ def analyze_unsteady_convergence(
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
-    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
-    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
-    # is defined as single panel strips (for example one built with
-    # explode_into_strips=True) would be silently subdivided along the same geometry
-    # rather than refined, so its convergence result would be misleading.
-    for checked_airplane_movement in ref_airplane_movements:
-        for checked_wing in checked_airplane_movement.base_airplane.wings:
-            if checked_wing.spanwise_mesh != "trapezoidal":
-                raise ValueError(
-                    f"analyze_unsteady_convergence does not support Wings whose "
-                    f'spanwise mesh is not "trapezoidal". The Wing named '
-                    f'"{checked_wing.name}" has a spanwise mesh of '
-                    f'"{checked_wing.spanwise_mesh}".'
-                )
+    # Reject any Wing whose spanwise mesh is not trapezoidal.
+    _reject_non_trapezoidal_wings(
+        tuple(
+            ref_airplane_movement.base_airplane
+            for ref_airplane_movement in ref_airplane_movements
+        ),
+        "analyze_unsteady_convergence",
+    )
 
     # Create the list of wake states to iterate over.
     wake_list = []
@@ -1542,15 +1449,9 @@ def analyze_unsteady_convergence(
                                 wake_id - 1, length_id, ar_id, chord_id, :, :
                             ]
                         )
-                        max_wake_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastWakeCombinedFinalLoadCoefficients
-                                )
-                                / lastWakeCombinedFinalLoadCoefficients
-                            )
+                        max_wake_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastWakeCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1571,15 +1472,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id - 1, ar_id, chord_id, :, :
                             ]
                         )
-                        max_length_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastLengthCombinedFinalLoadCoefficients
-                                )
-                                / lastLengthCombinedFinalLoadCoefficients
-                            )
+                        max_length_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastLengthCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1600,15 +1495,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id, ar_id - 1, chord_id, :, :
                             ]
                         )
-                        max_ar_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastArCombinedFinalLoadCoefficients
-                                )
-                                / lastArCombinedFinalLoadCoefficients
-                            )
+                        max_ar_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastArCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1629,15 +1518,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id, ar_id, chord_id - 1, :, :
                             ]
                         )
-                        max_chord_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastChordCombinedFinalLoadCoefficients
-                                )
-                                / lastChordCombinedFinalLoadCoefficients
-                            )
+                        max_chord_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastChordCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -2044,3 +1927,114 @@ def _get_wing_section_average_panel_aspect_ratio(
     assert _average_panel_aspect_ratio is not None
 
     return _average_panel_aspect_ratio
+
+
+def _validate_panel_aspect_ratio_bounds(
+    panel_aspect_ratio_bounds: tuple[int, int],
+) -> None:
+    """Validates the panel_aspect_ratio_bounds parameter shared by the convergence
+    analysis functions.
+
+    :param panel_aspect_ratio_bounds: A tuple of two ints, in descending order, giving
+        the range of Panel aspect ratios to consider, from largest to smallest. The
+        second value must be positive.
+    :return: None
+    """
+    if not (
+        isinstance(panel_aspect_ratio_bounds, tuple)
+        and len(panel_aspect_ratio_bounds) == 2
+    ):
+        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
+    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
+        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
+    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
+        raise ValueError(
+            "The first value in panel_aspect_ratio_bounds must be greater than or "
+            "equal to the second value."
+        )
+    if panel_aspect_ratio_bounds[1] <= 0:
+        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+
+
+def _validate_num_chordwise_panels_bounds(
+    num_chordwise_panels_bounds: tuple[int, int],
+) -> None:
+    """Validates the num_chordwise_panels_bounds parameter shared by the convergence
+    analysis functions.
+
+    :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, giving
+        the range of numbers of chordwise Panels to consider. The first value must be
+        positive.
+    :return: None
+    """
+    if not (
+        isinstance(num_chordwise_panels_bounds, tuple)
+        and len(num_chordwise_panels_bounds) == 2
+    ):
+        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
+    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
+        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
+    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
+        raise ValueError(
+            "The first value in num_chordwise_panels_bounds must be less than or "
+            "equal to the second value."
+        )
+    if num_chordwise_panels_bounds[0] <= 0:
+        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+
+
+def _reject_non_trapezoidal_wings(
+    ref_airplanes: tuple[geometry.airplane.Airplane, ...],
+    analyze_function_name: str,
+) -> None:
+    """Raises if any Wing in the reference Airplanes has a non-trapezoidal spanwise
+    mesh.
+
+    The convergence analysis functions refine a Wing by sweeping the number of spanwise
+    Panels while holding its WingCrossSections fixed, which is only meaningful for a
+    trapezoidal Wing. A Wing whose spanwise mesh is defined as single panel strips (for
+    example one built with explode_into_strips=True) would be silently subdivided along
+    the same geometry rather than refined, so its convergence result would be
+    misleading.
+
+    :param ref_airplanes: A tuple of the reference Airplanes whose Wings are checked.
+    :param analyze_function_name: The name of the calling analysis function, used in the
+        error message.
+    :return: None
+    """
+    for ref_airplane in ref_airplanes:
+        for ref_wing in ref_airplane.wings:
+            if ref_wing.spanwise_mesh != "trapezoidal":
+                raise ValueError(
+                    f"{analyze_function_name} does not support Wings whose spanwise "
+                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
+                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
+                )
+
+
+def _max_combined_percent_change(
+    these_combined_coefficients: np.ndarray,
+    coarser_combined_coefficients: np.ndarray,
+) -> float:
+    """Calculates the maximum absolute percent change between an iteration's combined
+    load coefficients and those of an incrementally coarser iteration.
+
+    The percent change is taken elementwise as the absolute difference divided by the
+    coarser value, scaled to a percentage, and the maximum across all elements is
+    returned.
+
+    :param these_combined_coefficients: An ndarray of this iteration's combined load
+        coefficients.
+    :param coarser_combined_coefficients: An ndarray, of the same shape, of the
+        incrementally coarser iteration's combined load coefficients.
+    :return: The maximum absolute percent change across all elements, as a float.
+    """
+    return float(
+        np.max(
+            100
+            * np.abs(
+                (these_combined_coefficients - coarser_combined_coefficients)
+                / coarser_combined_coefficients
+            )
+        )
+    )

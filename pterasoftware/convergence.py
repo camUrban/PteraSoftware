@@ -17,6 +17,7 @@ solved using the UnsteadyRingVortexLatticeMethodSolver.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 
 import numpy as np
 
@@ -224,138 +225,26 @@ def analyze_steady_convergence(
                         if ref_wing_cross_section_id < (
                             len(ref_wing_cross_sections) - 1
                         ):
-                            # Check if we've already calculated the number of
-                            # spanwise Panels for this case/combination of parameters.
-                            num_spanwise_panels_key = (
+                            this_num_spanwise_panels = _resolve_num_spanwise_panels(
                                 ar_id,
                                 chord_id,
                                 ref_airplane_id,
                                 ref_wing_id,
                                 ref_wing_cross_section_id,
-                            )
-                            if num_spanwise_panels_key in num_spanwise_panels_cache:
-                                _logger.debug(
-                                    f"\t\t\t\tGetting the cached number of spanwise "
-                                    f"Panels calculated for the #"
-                                    f"{ref_wing_cross_section_id + 1} "
-                                    f"WingCrossSection of {ref_airplane.name}'s "
-                                    f"{ref_wing.name}..."
-                                )
-
-                                this_num_spanwise_panels = num_spanwise_panels_cache[
-                                    num_spanwise_panels_key
-                                ]
-                            else:
-                                # The way we calculate the correct number of spanwise
-                                # Panels is to make skeleton Airplanes containing
-                                # only one Wing with only the two WingCrossSections
-                                # that make up the current Wing section. During
-                                # initialization, the Airplane meshes its Wing,
-                                # and we can then access the Wing's
-                                # average_panel_aspect_ratio property. We repeat this
-                                # process with increasing numbers of spanwise Panels,
-                                # until we find the value that results in
-                                # average_panel_aspect_ratio most closely matches the
-                                # desired Panel aspect ratio. Initially, the first
-                                # skeleton Airplane uses num_spanwise_panels=1.
-                                # However, if we've already calculated a number of
-                                # spanwise Panels for this Wing section with a
-                                # coarser mesh (either in Panel aspect ratio,
-                                # number of chordwise Panels, or both), then we know
-                                # the current mesh must use at least this many
-                                # spanwise Panels. Therefore, we can start the
-                                # iterations with a higher number of spanwise Panels.
-                                starting_num_spanwise_panels = 1
-
-                                # Get the keys for the three coarser cases.
-                                last_ar_key = (
-                                    ar_id - 1,
-                                    chord_id,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-                                last_chord_key = (
-                                    ar_id,
-                                    chord_id - 1,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-                                last_ar_and_chord_key = (
-                                    ar_id - 1,
-                                    chord_id - 1,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-
-                                # Initialize the three coarser cases number of
-                                # spanwise to be infinity, and update them if they
-                                # exist in the cache.
-                                last_ar_cache_val = np.inf
-                                if last_ar_key in num_spanwise_panels_cache:
-                                    last_ar_cache_val = num_spanwise_panels_cache[
-                                        last_ar_key
-                                    ]
-                                last_chord_cache_val = np.inf
-                                if last_chord_key in num_spanwise_panels_cache:
-                                    last_chord_cache_val = num_spanwise_panels_cache[
-                                        last_chord_key
-                                    ]
-                                last_ar_and_chord_cache_val = np.inf
-                                if last_ar_and_chord_key in num_spanwise_panels_cache:
-                                    last_ar_and_chord_cache_val = (
-                                        num_spanwise_panels_cache[last_ar_and_chord_key]
-                                    )
-
-                                # To be conservative, take the minimum
-                                # num_spanwise_panels of the three coarser cases. If
-                                # at least one of the three cases has already been
-                                # calculated, use that num_spanwise_panels as the
-                                # starting value instead of 1.
-                                last_cache_val = min(
-                                    last_ar_cache_val,
-                                    last_chord_cache_val,
-                                    last_ar_and_chord_cache_val,
-                                )
-                                if last_cache_val != np.inf:
-                                    starting_num_spanwise_panels = int(last_cache_val)
-
-                                next_ref_wing_cross_section = ref_wing_cross_sections[
-                                    ref_wing_cross_section_id + 1
-                                ]
-
-                                _logger.debug(
-                                    f"\t\t\t\tCalculating the number of spanwise "
-                                    f"Panels for the #{ref_wing_cross_section_id + 1} "
-                                    f"WingCrossSection of {ref_airplane.name}'s "
-                                    f"{ref_wing.name}, with a starting value of "
-                                    f"{starting_num_spanwise_panels}..."
-                                )
-
-                                # Iteratively find the correct number of spanwise
-                                # Panels.
-                                this_num_spanwise_panels = (
-                                    _get_wing_section_num_spanwise_panels(
-                                        panel_aspect_ratio,
-                                        num_chordwise_panels,
-                                        ref_wing.chordwise_spacing,
-                                        ref_wing_cross_section,
-                                        next_ref_wing_cross_section,
-                                        starting_num_spanwise_panels,
-                                    )
-                                )
-
-                                # Cache the calculated number of spanwise Panels for
-                                # future use.
-                                num_spanwise_panels_cache[num_spanwise_panels_key] = (
-                                    this_num_spanwise_panels
-                                )
-
-                            _logger.debug(
-                                f"\t\t\t\tNumber of spanwise Panels: "
-                                f"{this_num_spanwise_panels}"
+                                ref_airplane.name,
+                                ref_wing.name,
+                                "\t\t\t\t",
+                                num_spanwise_panels_cache,
+                                lambda start: _get_wing_section_num_spanwise_panels(
+                                    panel_aspect_ratio,
+                                    num_chordwise_panels,
+                                    ref_wing.chordwise_spacing,
+                                    ref_wing_cross_section,
+                                    ref_wing_cross_sections[
+                                        ref_wing_cross_section_id + 1
+                                    ],
+                                    start,
+                                ),
                             )
                         else:
                             this_num_spanwise_panels = None
@@ -1069,139 +958,17 @@ def analyze_unsteady_convergence(
                                 if ref_wing_cross_section_movement_id < (
                                     len(ref_wing_cross_section_movements) - 1
                                 ):
-                                    # Check if we've already calculated the number of
-                                    # spanwise Panels for this case/combination of
-                                    # parameters.
-                                    num_spanwise_panels_key = (
+                                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
                                         ar_id,
                                         chord_id,
                                         ref_airplane_movement_id,
                                         ref_wing_movement_id,
                                         ref_wing_cross_section_movement_id,
-                                    )
-                                    if (
-                                        num_spanwise_panels_key
-                                        in num_spanwise_panels_cache
-                                    ):
-                                        _logger.debug(
-                                            f"\t\t\t\t\t\tGetting the cached number of "
-                                            f"spanwise Panels calculated for the #"
-                                            f"{ref_wing_cross_section_movement_id + 1} "
-                                            f"WingCrossSection of "
-                                            f"{ref_base_airplane.name}'s "
-                                            f"{ref_base_wing.name}..."
-                                        )
-
-                                        this_num_spanwise_panels = (
-                                            num_spanwise_panels_cache[
-                                                num_spanwise_panels_key
-                                            ]
-                                        )
-                                    else:
-                                        # The way we calculate the correct number of
-                                        # spanwise Panels is to make skeleton
-                                        # Airplanes containing only one Wing with only
-                                        # the two WingCrossSections that make up the
-                                        # current Wing section. During
-                                        # initialization, the Airplane meshes its
-                                        # Wing, and we can then access the Wing's
-                                        # average_panel_aspect_ratio property. We
-                                        # repeat this process with increasing numbers
-                                        # of spanwise Panels, until we find the value
-                                        # that results in average_panel_aspect_ratio
-                                        # most closely matches the desired Panel
-                                        # aspect ratio. Initially, the first skeleton
-                                        # Airplane uses num_spanwise_panels=1.
-                                        # However, if we've already calculated a
-                                        # number of spanwise Panels for this Wing
-                                        # section with a coarser mesh (either in
-                                        # Panel aspect ratio, number of chordwise
-                                        # Panels, or both), then we know the current
-                                        # mesh must use at least this many spanwise
-                                        # Panels. Therefore, we can start the
-                                        # iterations with a higher number of spanwise
-                                        # Panels.
-                                        starting_num_spanwise_panels = 1
-
-                                        # Get the keys for the three coarser cases.
-                                        last_ar_key = (
-                                            ar_id - 1,
-                                            chord_id,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-                                        last_chord_key = (
-                                            ar_id,
-                                            chord_id - 1,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-                                        last_ar_and_chord_key = (
-                                            ar_id - 1,
-                                            chord_id - 1,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-
-                                        # Initialize the three coarser cases number
-                                        # of spanwise to be infinity, and update them
-                                        # if they exist in the cache.
-                                        last_ar_cache_val = np.inf
-                                        if last_ar_key in num_spanwise_panels_cache:
-                                            last_ar_cache_val = (
-                                                num_spanwise_panels_cache[last_ar_key]
-                                            )
-                                        last_chord_cache_val = np.inf
-                                        if last_chord_key in num_spanwise_panels_cache:
-                                            last_chord_cache_val = (
-                                                num_spanwise_panels_cache[
-                                                    last_chord_key
-                                                ]
-                                            )
-                                        last_ar_and_chord_cache_val = np.inf
-                                        if (
-                                            last_ar_and_chord_key
-                                            in num_spanwise_panels_cache
-                                        ):
-                                            last_ar_and_chord_cache_val = (
-                                                num_spanwise_panels_cache[
-                                                    last_ar_and_chord_key
-                                                ]
-                                            )
-
-                                        # To be conservative, take the minimum
-                                        # num_spanwise_panels of the three coarser
-                                        # cases. If at least one of the three cases
-                                        # has already been calculated, use that
-                                        # num_spanwise_panels as the starting value
-                                        # instead of 1.
-                                        last_cache_val = min(
-                                            last_ar_cache_val,
-                                            last_chord_cache_val,
-                                            last_ar_and_chord_cache_val,
-                                        )
-                                        if last_cache_val != np.inf:
-                                            starting_num_spanwise_panels = int(
-                                                last_cache_val
-                                            )
-
-                                        _logger.debug(
-                                            f"\t\t\t\t\t\tCalculating the number of "
-                                            f"spanwise Panels for the #"
-                                            f"{ref_wing_cross_section_movement_id + 1} "
-                                            f"WingCrossSection of "
-                                            f"{ref_base_airplane.name}'s "
-                                            f"{ref_base_wing.name}, with a starting "
-                                            f"value of "
-                                            f"{starting_num_spanwise_panels}..."
-                                        )
-
-                                        # Iteratively find the correct number of
-                                        # spanwise Panels.
-                                        this_num_spanwise_panels = _get_wing_section_movement_num_spanwise_panels(
+                                        ref_base_airplane.name,
+                                        ref_base_wing.name,
+                                        "\t\t\t\t\t\t",
+                                        num_spanwise_panels_cache,
+                                        lambda start: _get_wing_section_movement_num_spanwise_panels(
                                             panel_aspect_ratio,
                                             num_chordwise_panels,
                                             ref_base_wing.chordwise_spacing,
@@ -1211,19 +978,9 @@ def analyze_unsteady_convergence(
                                             ref_wing_movement_id,
                                             ref_wing_cross_section_movement_id,
                                             ref_wing_cross_section_movement_id + 1,
-                                            starting_num_spanwise_panels,
+                                            start,
                                             ref_problem.first_averaging_step,
-                                        )
-
-                                        # Cache the calculated number of spanwise
-                                        # Panels for future use.
-                                        num_spanwise_panels_cache[
-                                            num_spanwise_panels_key
-                                        ] = this_num_spanwise_panels
-
-                                    _logger.debug(
-                                        f"\t\t\t\t\t\tNumber of spanwise Panels: "
-                                        f"{this_num_spanwise_panels}"
+                                        ),
                                     )
                                 else:
                                     this_num_spanwise_panels = None
@@ -2038,3 +1795,114 @@ def _max_combined_percent_change(
             )
         )
     )
+
+
+def _resolve_num_spanwise_panels(
+    panel_aspect_ratio_id: int,
+    num_chordwise_panels_id: int,
+    airplane_id: int,
+    wing_id: int,
+    wing_cross_section_id: int,
+    airplane_name: str,
+    wing_name: str,
+    log_indent: str,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+    compute_num_spanwise_panels: Callable[[int], int],
+) -> int:
+    """Resolves the number of spanwise Panels for one Wing section, using and updating
+    the shared cache.
+
+    The result for a given (Panel aspect ratio, number of chordwise Panels, Airplane,
+    Wing, WingCrossSection) combination is returned from the cache if present.
+    Otherwise, the search starts from a conservative lower bound (the smallest number of
+    spanwise Panels already found for this Wing section at an incrementally coarser
+    mesh, since the current finer mesh must need at least that many),
+    ``compute_num_spanwise_panels`` is called with that starting value to find the
+    count, and the result is cached.
+
+    :param panel_aspect_ratio_id: The index of the current Panel aspect ratio within the
+        list of Panel aspect ratios being tested.
+    :param num_chordwise_panels_id: The index of the current number of chordwise Panels
+        within the list of numbers of chordwise Panels being tested.
+    :param airplane_id: The index of the current Airplane.
+    :param wing_id: The index of the current Wing within the Airplane.
+    :param wing_cross_section_id: The index of the current WingCrossSection within the
+        Wing.
+    :param airplane_name: The name of the current Airplane, used in the log messages.
+    :param wing_name: The name of the current Wing, used in the log messages.
+    :param log_indent: The leading whitespace prepended to the log messages so they nest
+        under the calling function's other log output.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :param compute_num_spanwise_panels: A callable that takes a starting number of
+        spanwise Panels and returns the number of spanwise Panels that achieves the
+        desired Panel aspect ratio. It is called only on a cache miss.
+    :return: The number of spanwise Panels for the Wing section.
+    """
+    num_spanwise_panels_key = (
+        panel_aspect_ratio_id,
+        num_chordwise_panels_id,
+        airplane_id,
+        wing_id,
+        wing_cross_section_id,
+    )
+
+    if num_spanwise_panels_key in num_spanwise_panels_cache:
+        _logger.debug(
+            f"{log_indent}Getting the cached number of spanwise Panels calculated for "
+            f"the #{wing_cross_section_id + 1} WingCrossSection of {airplane_name}'s "
+            f"{wing_name}..."
+        )
+        this_num_spanwise_panels = num_spanwise_panels_cache[num_spanwise_panels_key]
+    else:
+        # Start the search from a conservative lower bound: the smallest number of
+        # spanwise Panels already found for this Wing section at an incrementally
+        # coarser mesh (in Panel aspect ratio, number of chordwise Panels, or both),
+        # since the current finer mesh must use at least that many.
+        starting_num_spanwise_panels = 1
+        last_ar_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_chord_key = (
+            panel_aspect_ratio_id,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_ar_and_chord_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_cache_val = min(
+            num_spanwise_panels_cache.get(last_ar_key, np.inf),
+            num_spanwise_panels_cache.get(last_chord_key, np.inf),
+            num_spanwise_panels_cache.get(last_ar_and_chord_key, np.inf),
+        )
+        if last_cache_val != np.inf:
+            starting_num_spanwise_panels = int(last_cache_val)
+
+        _logger.debug(
+            f"{log_indent}Calculating the number of spanwise Panels for the "
+            f"#{wing_cross_section_id + 1} WingCrossSection of {airplane_name}'s "
+            f"{wing_name}, with a starting value of {starting_num_spanwise_panels}..."
+        )
+
+        this_num_spanwise_panels = compute_num_spanwise_panels(
+            starting_num_spanwise_panels
+        )
+
+        num_spanwise_panels_cache[num_spanwise_panels_key] = this_num_spanwise_panels
+
+    _logger.debug(f"{log_indent}Number of spanwise Panels: {this_num_spanwise_panels}")
+
+    return this_num_spanwise_panels

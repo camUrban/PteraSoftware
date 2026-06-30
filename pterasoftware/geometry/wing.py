@@ -85,6 +85,8 @@ class Wing:
 
     mean_aerodynamic_chord: The Wing's mean aerodynamic chord.
 
+    spanwise_mesh: How this Wing's spanwise mesh was defined.
+
     generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
     the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
     after it's determined its symmetry type.
@@ -95,10 +97,13 @@ class Wing:
     **Notes:**
 
     Immutable attributes (wing_cross_sections, name, Ler_Gs_Cgs, angles_Gs_to_Wn_ixyz,
-    num_chordwise_panels, and chordwise_spacing) are set during initialization and
-    cannot be modified afterward. The numpy arrays Ler_Gs_Cgs and angles_Gs_to_Wn_ixyz
-    are made read only to prevent in place mutation. The wing_cross_sections attribute
-    is stored as a tuple to prevent external mutation.
+    num_chordwise_panels, chordwise_spacing, and spanwise_mesh) are set during
+    initialization and cannot be modified afterward. The numpy arrays Ler_Gs_Cgs and
+    angles_Gs_to_Wn_ixyz are made read only to prevent in place mutation. The
+    wing_cross_sections attribute is stored as a tuple to prevent external mutation. The
+    spanwise_mesh attribute is not a constructor parameter; it is derived during
+    initialization from explode_into_strips and records how the spanwise mesh was
+    defined.
 
     Derived transformation matrices and basis vectors (T_pas_G_Cg_to_Wn_Ler,
     T_pas_Wn_Ler_to_G_Cg, WnX_G, WnY_G, WnZ_G, and the children_T_pas_* properties) are
@@ -148,6 +153,7 @@ class Wing:
         "_angles_Gs_to_Wn_ixyz",
         "_num_chordwise_panels",
         "_chordwise_spacing",
+        "_spanwise_mesh",
         # Mutable (type 5 symmetry)
         "symmetric",
         "mirror_only",
@@ -300,6 +306,18 @@ class Wing:
             wing_cross_section_mod.WingCrossSection, ...
         ] = tuple(wing_cross_sections)
 
+        # Record how this Wing's spanwise mesh was defined (immutable). A Wing built
+        # with explode_into_strips has every non tip WingCrossSection as a single
+        # spanwise panel strip, so it cannot be refined by the standard convergence
+        # tools, which sweep the number of spanwise Panels while holding the
+        # WingCrossSections fixed. The standard convergence tools dispatch on this
+        # marker to reject such a Wing. The marker is set by provenance rather than
+        # detected from the geometry, since an exploded Wing is structurally identical
+        # to one a user defines with single strip WingCrossSections directly, yet the
+        # latter is a valid coarse trapezoidal Wing that the standard tools should
+        # refine.
+        self._spanwise_mesh: str = "exploded" if explode_into_strips else "trapezoidal"
+
         # Validate name and store as immutable.
         self._name = _parameter_validation.str_return_str(name, "name")
 
@@ -451,6 +469,7 @@ class Wing:
         new_wing._name = self._name
         new_wing._num_chordwise_panels = self._num_chordwise_panels
         new_wing._chordwise_spacing = self._chordwise_spacing
+        new_wing._spanwise_mesh = self._spanwise_mesh
 
         # Copy mutable symmetry attributes (these may be modified by
         # process_wing_symmetry for type 5 symmetry).
@@ -602,6 +621,20 @@ class Wing:
     @property
     def chordwise_spacing(self) -> str:
         return self._chordwise_spacing
+
+    @property
+    def spanwise_mesh(self) -> str:
+        """How this Wing's spanwise mesh was defined.
+
+        It is "trapezoidal" for a Wing whose adjacent WingCrossSections form trapezoidal
+        panel strips, or "exploded" for a Wing built with explode_into_strips=True,
+        whose every non tip WingCrossSection is a single spanwise panel strip. The
+        standard convergence tools support only "trapezoidal" Wings.
+
+        :return: A string, either "trapezoidal" or "exploded", recording how this Wing's
+            spanwise mesh was defined.
+        """
+        return self._spanwise_mesh
 
     # --- Immutable derived: manual lazy caching ---
     @property

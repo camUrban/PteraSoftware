@@ -40,7 +40,7 @@ Most attribute falls into one of these categories:
 
 A constructor parameter is not always retained as an attribute. Some parameters shape how an object is built but are deliberately discarded once construction finishes: they have no `__slots__` entry, appear in no attribute-category table, and are not serialized or deep copied, because nothing reads them after `__init__`. They are still validated exactly like their stored counterparts.
 
-`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections, then plays no further role. Storing it would only create a stale provenance flag, since an exploded Wing is indistinguishable from one defined with single-strip cross sections directly. So the validated value lives in a local variable inside `__init__` and is never assigned to `self`, while still passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`.
+`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections. The bool itself is never assigned to `self`: its validated value lives in a local variable inside `__init__`, passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`. Construction does, however, derive the immutable `spanwise_mesh` marker from it (see the Wing Class section), recording whether the spanwise mesh was defined as trapezoidal corners or as single-strip cross sections. That provenance is set explicitly here rather than detected later, precisely because an exploded Wing is structurally indistinguishable from one a user defines with single-strip cross sections directly: the standard convergence tools must refine the latter but reject the former, so the distinction cannot be recovered from the geometry alone.
 
 ### Key Decisions
 
@@ -498,14 +498,15 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type                           | Notes                                         |
-|------------------------|--------------------------------|-----------------------------------------------|
-| `wing_cross_sections`  | `tuple[WingCrossSection, ...]` | Wing cross sections (tuple prevents mutation) |
-| `name`                 | `str`                          | Wing identifier                               |
-| `Ler_Gs_Cgs`           | `np.ndarray`                   | Leading edge root position                    |
-| `angles_Gs_to_Wn_ixyz` | `np.ndarray`                   | Rotation angles                               |
-| `num_chordwise_panels` | `int`                          | Chordwise panel count                         |
-| `chordwise_spacing`    | `str`                          | "cosine" or "uniform"                         |
+| Attribute              | Type                           | Notes                                                                                        |
+|------------------------|--------------------------------|----------------------------------------------------------------------------------------------|
+| `wing_cross_sections`  | `tuple[WingCrossSection, ...]` | Wing cross sections (tuple prevents mutation)                                                |
+| `name`                 | `str`                          | Wing identifier                                                                              |
+| `Ler_Gs_Cgs`           | `np.ndarray`                   | Leading edge root position                                                                   |
+| `angles_Gs_to_Wn_ixyz` | `np.ndarray`                   | Rotation angles                                                                              |
+| `num_chordwise_panels` | `int`                          | Chordwise panel count                                                                        |
+| `chordwise_spacing`    | `str`                          | "cosine" or "uniform"                                                                        |
+| `spanwise_mesh`        | `str`                          | "trapezoidal" or "exploded"; derived from `explode_into_strips`, not a constructor parameter |
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -558,7 +559,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Construction-only parameters
 
-`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `_explode_wing` during initialization and is then discarded, so it has no slot and no attribute-category entry above. See Construction-Only Parameters under Design Principles.
+`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `_explode_wing` during initialization and the bool is then discarded, so it has no slot of its own. It does, however, set the derived immutable `spanwise_mesh` marker listed in the Immutable table above. See Construction-Only Parameters under Design Principles.
 
 ## WingCrossSection Class (`geometry/wing_cross_section.py`)
 

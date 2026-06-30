@@ -481,6 +481,7 @@ class TestWingSlots(unittest.TestCase):
         self.assertEqual(self.wing.angles_Gs_to_Wn_ixyz.shape, (3,))
         self.assertIsInstance(self.wing.num_chordwise_panels, int)
         self.assertIsInstance(self.wing.chordwise_spacing, str)
+        self.assertIsInstance(self.wing.spanwise_mesh, str)
 
     def test_property_access_mutable_symmetry(self):
         """Test that mutable symmetry attributes are accessible."""

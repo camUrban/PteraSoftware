@@ -78,6 +78,48 @@ def make_steady_validation_airplane():
     return steady_validation_airplane
 
 
+def make_exploded_validation_airplane():
+    """This function creates an Airplane with an exploded Wing to be used as a fixture.
+
+    The Wing is built with explode_into_strips=True, so its spanwise mesh marker is
+    "exploded". It is used to test that the convergence functions reject Wings whose
+    spanwise mesh is not trapezoidal.
+
+    :return exploded_validation_airplane: Airplane
+        This is the Airplane fixture.
+    """
+    exploded_validation_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=1,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        spanwise_spacing="uniform",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=None,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="Exploded Wing",
+                explode_into_strips=True,
+                num_chordwise_panels=2,
+                chordwise_spacing="uniform",
+            )
+        ],
+        name="Exploded Validation Airplane",
+    )
+    return exploded_validation_airplane
+
+
 def make_multiple_wing_steady_validation_airplane():
     """This function creates an Airplane with multiple Wings to be used as a fixture
     for testing steady solvers.

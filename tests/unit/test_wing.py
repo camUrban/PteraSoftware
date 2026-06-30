@@ -1796,3 +1796,28 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             wing._explode_wing([cosine_root, self._make_tip_wcs()])
+
+    def test_spanwise_mesh_default_is_trapezoidal(self):
+        """Test that a Wing built without explode_into_strips has a trapezoidal spanwise
+        mesh marker."""
+        wing = self._make_plain_wing(explode_into_strips=False)
+        self.assertEqual(wing.spanwise_mesh, "trapezoidal")
+
+    def test_spanwise_mesh_exploded_is_exploded(self):
+        """Test that a Wing built with explode_into_strips has an exploded spanwise mesh
+        marker."""
+        wing = self._make_plain_wing(explode_into_strips=True)
+        self.assertEqual(wing.spanwise_mesh, "exploded")
+
+    def test_spanwise_mesh_is_read_only(self):
+        """Test that the spanwise_mesh marker cannot be reassigned."""
+        wing = self._make_plain_wing(explode_into_strips=False)
+        with self.assertRaises(AttributeError):
+            # noinspection PyPropertyAccess
+            wing.spanwise_mesh = "exploded"
+
+    def test_spanwise_mesh_preserved_by_deepcopy(self):
+        """Test that deep copying a Wing preserves its spanwise mesh marker."""
+        wing = self._make_plain_wing(explode_into_strips=True)
+        wing_copy = copy.deepcopy(wing)
+        self.assertEqual(wing_copy.spanwise_mesh, "exploded")

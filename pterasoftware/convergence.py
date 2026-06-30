@@ -453,26 +453,12 @@ def analyze_steady_convergence(
             # semi-converged combination of parameters has been found and will be
             # returned.
             if ar_passed and chord_passed:
-                if single_ar:
-                    converged_ar_id = ar_id
-                else:
-                    # More than one Panel aspect ratio was tested.
-                    if ar_converged:
-                        # There is no big difference between this Panel aspect ratio
-                        # and the last (coarser) Panel aspect ratio. Therefore,
-                        # the last (coarser) Panel aspect ratio is converged.
-                        converged_ar_id = ar_id - 1
-                    else:
-                        # There is a big difference between this Panel aspect ratio
-                        # and the last (coarser) Panel aspect ratio. However,
-                        # the Panel aspect ratio is one, so it's saturated.
-                        # Therefore, this Panel aspect ratio is converged.
-                        converged_ar_id = ar_id
-
-                if single_chord:
-                    converged_chord_id = chord_id
-                else:
-                    converged_chord_id = chord_id - 1
+                converged_ar_id = _converged_parameter_id(
+                    ar_id, single_ar, ar_converged
+                )
+                converged_chord_id = _converged_parameter_id(
+                    chord_id, single_chord, chord_converged
+                )
 
                 converged_aspect_ratio = panel_aspect_ratios_list[converged_ar_id]
                 converged_chordwise_panels = num_chordwise_panels_list[
@@ -1323,48 +1309,18 @@ def analyze_unsteady_convergence(
                     # converged or semi-converged combination of parameters has been
                     # found and will be returned.
                     if wake_passed and length_passed and ar_passed and chord_passed:
-                        if single_wake:
-                            converged_wake_id = wake_id
-                        else:
-                            # We've tested both prescribed and free wakes.
-                            if wake_converged:
-                                # There isn't a big difference between the prescribed
-                                # wake and free wake, so the prescribed wake is
-                                # converged.
-                                converged_wake_id = wake_id - 1
-                            else:
-                                # There is a big different difference between the
-                                # prescribed wake and free wake, so the free wake is
-                                # converged.
-                                converged_wake_id = wake_id
-
-                        if single_length:
-                            converged_length_id = length_id
-                        else:
-                            converged_length_id = length_id - 1
-
-                        if single_ar:
-                            converged_ar_id = ar_id
-                        else:
-                            # We've tested more than one Panel aspect ratio.
-                            if ar_converged:
-                                # There is no big difference between this Panel aspect
-                                # ratio and the last (coarser) Panel aspect ratio.
-                                # Therefore, the last (coarser) Panel aspect ratio is
-                                # converged.
-                                converged_ar_id = ar_id - 1
-                            else:
-                                # There is a big difference between this Panel aspect
-                                # ratio and the last (coarser) Panel aspect ratio.
-                                # However, the Panel aspect ratio is one, so it's
-                                # saturated. Therefore, this Panel aspect ratio is
-                                # converged.
-                                converged_ar_id = ar_id
-
-                        if single_chord:
-                            converged_chord_id = chord_id
-                        else:
-                            converged_chord_id = chord_id - 1
+                        converged_wake_id = _converged_parameter_id(
+                            wake_id, single_wake, wake_converged
+                        )
+                        converged_length_id = _converged_parameter_id(
+                            length_id, single_length, length_converged
+                        )
+                        converged_ar_id = _converged_parameter_id(
+                            ar_id, single_ar, ar_converged
+                        )
+                        converged_chord_id = _converged_parameter_id(
+                            chord_id, single_chord, chord_converged
+                        )
 
                         converged_wake = wake_list[converged_wake_id]
                         converged_wake_length = wake_lengths_list[converged_length_id]
@@ -1906,3 +1862,33 @@ def _resolve_num_spanwise_panels(
     _logger.debug(f"{log_indent}Number of spanwise Panels: {this_num_spanwise_panels}")
 
     return this_num_spanwise_panels
+
+
+def _converged_parameter_id(
+    this_id: int,
+    single: bool,
+    converged: bool,
+) -> int:
+    """Selects the index of the converged value for one convergence parameter.
+
+    This is only meaningful once the parameter has passed, that is once it is converged,
+    single, or saturated. When only a single value of the parameter was tested, this
+    iteration's index is returned, since there is no coarser value to compare against.
+    Otherwise, when this iteration is converged against the incrementally coarser one,
+    the coarser index is returned, because refining from the coarser value to this one
+    changed the result by less than the convergence criteria, so the coarser value is
+    the converged one. When this iteration passed without converging (the parameter is
+    saturated at its finest setting), this iteration's own index is returned.
+
+    :param this_id: The index of this iteration's value within the list of values tested
+        for the parameter.
+    :param single: Whether only a single value of the parameter was tested.
+    :param converged: Whether this iteration is converged against the incrementally
+        coarser iteration for the parameter.
+    :return: The index of the converged value within the list of values tested.
+    """
+    if single:
+        return this_id
+    if converged:
+        return this_id - 1
+    return this_id

@@ -141,7 +141,6 @@ def analyze_steady_convergence(
 
     _logger.info("Beginning convergence analysis...")
 
-    ref_operating_point = ref_problem.operating_point
     ref_airplanes = ref_problem.airplanes
 
     # Reject any Wing whose spanwise mesh is not trapezoidal.
@@ -201,111 +200,17 @@ def analyze_steady_convergence(
                 "\t\t\tIteration number: " + str(iteration) + "/" + str(num_iterations)
             )
 
-            # Initialize an empty list to hold this iteration's Airplanes. Then,
-            # fill the list by making new copies of each of the Airplanes with
-            # modified values for Panel aspect ratio and number of chordwise Panels.
-            these_airplanes = []
-            for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
-                ref_wings = ref_airplane.wings
-                these_wings = []
-
-                for ref_wing_id, ref_wing in enumerate(ref_wings):
-                    ref_wing_cross_sections = ref_wing.wing_cross_sections
-                    these_wing_cross_sections = []
-
-                    for (
-                        ref_wing_cross_section_id,
-                        ref_wing_cross_section,
-                    ) in enumerate(ref_wing_cross_sections):
-
-                        # If this is not the last WingCrossSection, find the number
-                        # of spanwise Panels to use for this section of the Wing,
-                        # based on the desired Panel aspect ratio and number of
-                        # chordwise Panels.
-                        if ref_wing_cross_section_id < (
-                            len(ref_wing_cross_sections) - 1
-                        ):
-                            this_num_spanwise_panels = _resolve_num_spanwise_panels(
-                                ar_id,
-                                chord_id,
-                                ref_airplane_id,
-                                ref_wing_id,
-                                ref_wing_cross_section_id,
-                                ref_airplane.name,
-                                ref_wing.name,
-                                "\t\t\t\t",
-                                num_spanwise_panels_cache,
-                                lambda start: _get_wing_section_num_spanwise_panels(
-                                    panel_aspect_ratio,
-                                    num_chordwise_panels,
-                                    ref_wing.chordwise_spacing,
-                                    ref_wing_cross_section,
-                                    ref_wing_cross_sections[
-                                        ref_wing_cross_section_id + 1
-                                    ],
-                                    start,
-                                ),
-                            )
-                        else:
-                            this_num_spanwise_panels = None
-
-                        these_wing_cross_sections.append(
-                            geometry.wing_cross_section.WingCrossSection(
-                                # These values are copied from the reference
-                                # WingCrossSection.
-                                chord=ref_wing_cross_section.chord,
-                                Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
-                                angles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-                                control_surface_symmetry_type=ref_wing_cross_section.control_surface_symmetry_type,
-                                control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
-                                control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
-                                spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
-                                # These values change.
-                                num_spanwise_panels=this_num_spanwise_panels,
-                                airfoil=geometry.airfoil.Airfoil(
-                                    name=ref_wing_cross_section.airfoil.name,
-                                    outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
-                                    resample=ref_wing_cross_section.airfoil.resample,
-                                    n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
-                                ),
-                            )
-                        )
-
-                    these_wings.append(
-                        geometry.wing.Wing(
-                            # These values are copied from the reference Wing.
-                            name=ref_wing.name,
-                            Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
-                            angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
-                            symmetric=ref_wing.symmetric,
-                            mirror_only=ref_wing.mirror_only,
-                            symmetryNormal_G=ref_wing.symmetryNormal_G,
-                            symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
-                            chordwise_spacing=ref_wing.chordwise_spacing,
-                            # These values change.
-                            wing_cross_sections=these_wing_cross_sections,
-                            num_chordwise_panels=num_chordwise_panels,
-                        )
-                    )
-
-                these_airplanes.append(
-                    geometry.airplane.Airplane(
-                        # These values are copied from the reference Airplane.
-                        name=ref_airplane.name,
-                        Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
-                        weight=ref_airplane.weight,
-                        # These values change.
-                        wings=these_wings,
-                        s_ref=None,
-                        c_ref=None,
-                        b_ref=None,
-                    )
-                )
-
-            # Create a new SteadyProblem for this iteration.
-            this_problem = problems.SteadyProblem(
-                airplanes=these_airplanes, operating_point=ref_operating_point
+            # Build this iteration's SteadyProblem with the current Panel aspect ratio
+            # and number of chordwise Panels.
+            this_problem = _build_steady_problem(
+                ar_id,
+                chord_id,
+                panel_aspect_ratio,
+                num_chordwise_panels,
+                ref_problem,
+                num_spanwise_panels_cache,
             )
+            these_airplanes = this_problem.airplanes
 
             # Create this iteration's steady solver based on the type specified.
             this_solver: (
@@ -722,7 +627,6 @@ def analyze_unsteady_convergence(
     _logger.info("Beginning convergence analysis...")
 
     ref_airplane_movements = ref_movement.airplane_movements
-    ref_operating_point_movement = ref_movement.operating_point_movement
 
     # Reject any Wing whose spanwise mesh is not trapezoidal.
     _reject_non_trapezoidal_wings(
@@ -831,288 +735,16 @@ def analyze_unsteady_convergence(
                         + str(num_iterations)
                     )
 
-                    # Initialize an empty list for this iteration's base
-                    # AirplaneMovements.
-                    these_base_airplanes = []
-
-                    # Create an empty list for the AirplaneMovement copies.
-                    these_airplane_movements = []
-
-                    # Now, we will begin iterating through this iteration's reference
-                    # AirplaneMovements, WingMovements,
-                    # and WingCrossSectionMovements, and creating copies of them.
-                    # These copies will have identical parameters to their respective
-                    # reference movements except for the number of spanwise Panels (
-                    # which is based on the Panel aspect ratio), and the number of
-                    # chordwise Panels.
-                    #
-                    # To do this, we iterate over the AirplaneMovements and perform a
-                    # several step procedure:
-                    # 1:    Reference the AirplaneMovement's base Airplane.
-                    # 2:    Reference the AirplaneMovement's list of WingMovements.
-                    # 3:    Create an empty list for the WingMovements' base Wing
-                    #       copies.
-                    # 4:    Create an empty list for the WingMovement copies.
-                    # 5:    Iterate over the WingMovements.
-                    #       5.1:    Reference the WingMovement's base Wing.
-                    #       5.2:    Reference the WingMovement's list of
-                    #               WingCrossSectionMovements.
-                    #       5.3:    Create an empty list for the
-                    #               WingCrossSectionMovements' base WingCrossSection
-                    #               copies.
-                    #       5.4:    Create an empty list for the
-                    #               WingCrossSectionMovement copies.
-                    #       5.5:    Iterate over the WingCrossSectionMovements.
-                    #               5.5.1:  Reference the WingCrossSectionMovement's
-                    #                       base WingCrossSection.
-                    #               5.5.2:  Calculate the number of spanwise Panels
-                    #                       that corresponds to the desired combination
-                    #                       of Panel aspect ratio and number of
-                    #                       chordwise Panels.
-                    #               5.5.3:  Create a copy of the base WingCrossSection.
-                    #               5.5.4:  Create a copy of the
-                    #                       WingCrossSectionMovement.
-                    #               5.5.5:  Append the base WingCrossSection copy to
-                    #                       the list of base WingCrossSection copies.
-                    #               5.5.6:  Append the WingCrossSectionMovement copy to
-                    #                       the list of WingCrossSectionMovement
-                    #                       copies.
-                    #       5.6:    Create a copy of the base Wing.
-                    #       5.7:    Create a copy of the WingMovement.
-                    #       5.8:    Append the base Wing copy to the list  of base Wing
-                    #               copies.
-                    #       5.9:    Append the WingMovement copy to the list of
-                    #               WingMovement copies.
-                    # 6:    Create a copy of the base Airplane.
-                    # 7:    Create a copy of the AirplaneMovement.
-                    # 8:    Append the base Airplane copy to the list of base Airplane
-                    #       copies.
-                    # 9:    Append the AirplaneMovement copy to the list of
-                    #       AirplaneMovement copies.
-                    ref_airplane_movement: movements.airplane_movement.AirplaneMovement
-                    for ref_airplane_movement_id, ref_airplane_movement in enumerate(
-                        ref_airplane_movements
-                    ):
-                        # 1. Reference the AirplaneMovement's base Airplane.
-                        ref_base_airplane = ref_airplane_movement.base_airplane
-
-                        # 2. Reference the AirplaneMovement's list of WingMovements.
-                        ref_wing_movements = ref_airplane_movement.wing_movements
-
-                        # 3. Create an empty list for the WingMovements' base Wing
-                        # copies.
-                        these_base_wings = []
-
-                        # 4: Create an empty list for the WingMovement copies.
-                        these_wing_movements = []
-
-                        # 5: Iterate over the WingMovements.
-                        for ref_wing_movement_id, ref_wing_movement in enumerate(
-                            ref_wing_movements
-                        ):
-                            # 5.1: Reference the WingMovement's base Wing.
-                            ref_base_wing = ref_wing_movement.base_wing
-
-                            # 5.2: Reference the WingMovement's list of
-                            # WingCrossSectionMovements.
-                            ref_wing_cross_section_movements = (
-                                ref_wing_movement.wing_cross_section_movements
-                            )
-
-                            # 5.3: Create an empty list for the
-                            # WingCrossSectionMovements' base WingCrossSection copies.
-                            these_base_wing_cross_sections = []
-
-                            # 5.4: Create an empty list for the
-                            # WingCrossSectionMovement copies.
-                            these_wing_cross_section_movements = []
-
-                            # 5.5: Iterate over the WingCrossSectionMovements.
-                            for (
-                                ref_wing_cross_section_movement_id,
-                                ref_wing_cross_section_movement,
-                            ) in enumerate(ref_wing_cross_section_movements):
-                                # 5.5.1: Reference the WingCrossSectionMovement's
-                                # base WingCrossSection.
-                                ref_base_wing_cross_section = (
-                                    ref_wing_cross_section_movement.base_wing_cross_section
-                                )
-
-                                # 5.5.2: Calculate the number of spanwise Panels that
-                                # corresponds to the desired combination of Panel
-                                # aspect ratio and number of chordwise Panels.
-                                if ref_wing_cross_section_movement_id < (
-                                    len(ref_wing_cross_section_movements) - 1
-                                ):
-                                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
-                                        ar_id,
-                                        chord_id,
-                                        ref_airplane_movement_id,
-                                        ref_wing_movement_id,
-                                        ref_wing_cross_section_movement_id,
-                                        ref_base_airplane.name,
-                                        ref_base_wing.name,
-                                        "\t\t\t\t\t\t",
-                                        num_spanwise_panels_cache,
-                                        lambda start: _get_wing_section_movement_num_spanwise_panels(
-                                            panel_aspect_ratio,
-                                            num_chordwise_panels,
-                                            ref_base_wing.chordwise_spacing,
-                                            ref_movement.airplanes[
-                                                ref_airplane_movement_id
-                                            ],
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                            ref_wing_cross_section_movement_id + 1,
-                                            start,
-                                            ref_problem.first_averaging_step,
-                                        ),
-                                    )
-                                else:
-                                    this_num_spanwise_panels = None
-
-                                # 5.5.3: Create a copy of the base WingCrossSection.
-                                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
-                                    # These values are copied from the reference base
-                                    # WingCrossSection.
-                                    chord=ref_base_wing_cross_section.chord,
-                                    Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
-                                    angles_Wcsp_to_Wcs_ixyz=ref_base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-                                    control_surface_symmetry_type=ref_base_wing_cross_section.control_surface_symmetry_type,
-                                    control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
-                                    control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
-                                    spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
-                                    # These values change.
-                                    num_spanwise_panels=this_num_spanwise_panels,
-                                    airfoil=geometry.airfoil.Airfoil(
-                                        name=ref_base_wing_cross_section.airfoil.name,
-                                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
-                                        resample=ref_base_wing_cross_section.airfoil.resample,
-                                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
-                                    ),
-                                )
-
-                                # 5.5.4: Create a copy of the WingCrossSectionMovement.
-                                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
-                                    # These values are copied from the reference
-                                    # WingCrossSectionMovement.
-                                    ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
-                                    periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
-                                    spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
-                                    phaseLp_Wcsp_Lpp=ref_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
-                                    ampAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
-                                    periodAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
-                                    spacingAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
-                                    phaseAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
-                                    # These values change.
-                                    base_wing_cross_section=this_base_wing_cross_section,
-                                )
-
-                                # 5.5.5: Append the base WingCrossSection copy to the
-                                # list of base WingCrossSection copies.
-                                these_base_wing_cross_sections.append(
-                                    this_base_wing_cross_section
-                                )
-
-                                # 5.5.6: Append the WingCrossSectionMovement copy to
-                                # the list of WingCrossSectionMovement copies.
-                                these_wing_cross_section_movements.append(
-                                    this_wing_cross_section_movement
-                                )
-
-                            # 5.6: Create a copy of base Wing.
-                            this_base_wing = geometry.wing.Wing(
-                                # These values are copied from the reference Wing.
-                                name=ref_base_wing.name,
-                                Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
-                                angles_Gs_to_Wn_ixyz=ref_base_wing.angles_Gs_to_Wn_ixyz,
-                                symmetric=ref_base_wing.symmetric,
-                                mirror_only=ref_base_wing.mirror_only,
-                                symmetryNormal_G=ref_base_wing.symmetryNormal_G,
-                                symmetryPoint_G_Cg=ref_base_wing.symmetryPoint_G_Cg,
-                                chordwise_spacing=ref_base_wing.chordwise_spacing,
-                                # These values change.
-                                wing_cross_sections=these_base_wing_cross_sections,
-                                num_chordwise_panels=num_chordwise_panels,
-                            )
-
-                            # 5.7: Create a copy of the WingMovement.
-                            this_wing_movement = movements.wing_movement.WingMovement(
-                                # These values are copied from the reference
-                                # WingMovement.
-                                ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
-                                periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
-                                spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
-                                phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
-                                ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
-                                periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
-                                spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
-                                phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
-                                # These values change.
-                                base_wing=this_base_wing,
-                                wing_cross_section_movements=these_wing_cross_section_movements,
-                            )
-
-                            # 5.8: Append the base Wing copy to the list of base Wing
-                            # copies.
-                            these_base_wings.append(this_base_wing)
-
-                            # 5.9: Append the WingMovement copy to the list of
-                            # WingMovement copies.
-                            these_wing_movements.append(this_wing_movement)
-
-                        # 6: Create a copy of the base Airplane.
-                        this_base_airplane = geometry.airplane.Airplane(
-                            # These values are copied from the reference Airplane.
-                            name=ref_base_airplane.name,
-                            Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
-                            weight=ref_base_airplane.weight,
-                            # These values change.
-                            wings=these_base_wings,
-                            s_ref=None,
-                            c_ref=None,
-                            b_ref=None,
-                        )
-
-                        # 7. Create a copy of the AirplaneMovement.
-                        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
-                            # These values are copied from the reference
-                            # AirplaneMovement.
-                            ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
-                            periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
-                            spacingCg_GP1_CgP1=ref_airplane_movement.spacingCg_GP1_CgP1,
-                            phaseCg_GP1_CgP1=ref_airplane_movement.phaseCg_GP1_CgP1,
-                            # These values change.
-                            base_airplane=this_base_airplane,
-                            wing_movements=these_wing_movements,
-                        )
-
-                        # 8. Append the base Airplane copy to the list of base
-                        # Airplane copies.
-                        these_base_airplanes.append(this_base_airplane)
-
-                        # 9. Append the AirplaneMovement copy to the list of
-                        # AirplaneMovement copies.
-                        these_airplane_movements.append(this_airplane_movement)
-
-                    # Create a new Movement for this iteration.
-                    if static:
-                        this_movement = movements.movement.Movement(
-                            airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
-                            num_chords=wake_length,
-                        )
-                    else:
-                        this_movement = movements.movement.Movement(
-                            airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
-                            num_cycles=wake_length,
-                        )
-
-                    # Create a new UnsteadyProblem for this iteration.
-                    this_problem = problems.UnsteadyProblem(
-                        movement=this_movement,
-                        only_final_results=True,
+                    # Build this iteration's UnsteadyProblem with the current wake
+                    # length, Panel aspect ratio, and number of chordwise Panels.
+                    this_problem = _build_unsteady_problem(
+                        ar_id,
+                        chord_id,
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
+                        wake_length,
+                        ref_problem,
+                        num_spanwise_panels_cache,
                     )
 
                     # Create and run this iteration's
@@ -1136,10 +768,10 @@ def analyze_unsteady_convergence(
                     # Create and fill ndarrays with each of this iteration's Airplanes'
                     # combined final load coefficients.
                     theseCombinedFinalLoadCoefficients = np.zeros(
-                        (len(these_airplane_movements), 2), dtype=float
+                        (len(ref_airplane_movements), 2), dtype=float
                     )
 
-                    for airplane_id, airplane in enumerate(these_airplane_movements):
+                    for airplane_id in range(len(ref_airplane_movements)):
                         # If this UnsteadyProblem is static, then get it's combined
                         # final load coefficients. If it's variable, get the combined
                         # final RMS load coefficients.
@@ -1437,6 +1069,430 @@ def analyze_unsteady_convergence(
     # found and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
     return None, None, None, None
+
+
+def _build_steady_problem(
+    ar_id: int,
+    chord_id: int,
+    panel_aspect_ratio: int,
+    num_chordwise_panels: int,
+    ref_problem: problems.SteadyProblem,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+) -> problems.SteadyProblem:
+    """Builds the SteadyProblem for one convergence iteration.
+
+    Each of the reference SteadyProblem's Airplanes is copied with the given Panel
+    aspect ratio and number of chordwise Panels. Each non-tip WingCrossSection's number
+    of spanwise Panels is resolved (and cached) to achieve the desired Panel aspect
+    ratio, and the copied Airplanes are wrapped in a new SteadyProblem with the
+    reference OperatingPoint.
+
+    :param ar_id: The index of the current Panel aspect ratio within the list of Panel
+        aspect ratios being tested.
+    :param chord_id: The index of the current number of chordwise Panels within the list
+        of numbers of chordwise Panels being tested.
+    :param panel_aspect_ratio: The Panel aspect ratio to target for this iteration.
+    :param num_chordwise_panels: The number of chordwise Panels to use for this
+        iteration.
+    :param ref_problem: The reference SteadyProblem whose Airplanes and OperatingPoint
+        are copied.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :return: The SteadyProblem for this iteration.
+    """
+    ref_airplanes = ref_problem.airplanes
+    ref_operating_point = ref_problem.operating_point
+
+    # Initialize an empty list to hold this iteration's Airplanes. Then, fill the list by
+    # making new copies of each of the Airplanes with modified values for Panel aspect
+    # ratio and number of chordwise Panels.
+    these_airplanes = []
+    for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
+        ref_wings = ref_airplane.wings
+        these_wings = []
+
+        for ref_wing_id, ref_wing in enumerate(ref_wings):
+            ref_wing_cross_sections = ref_wing.wing_cross_sections
+            these_wing_cross_sections = []
+
+            for ref_wing_cross_section_id, ref_wing_cross_section in enumerate(
+                ref_wing_cross_sections
+            ):
+
+                # If this is not the last WingCrossSection, find the number of spanwise
+                # Panels to use for this section of the Wing, based on the desired Panel
+                # aspect ratio and number of chordwise Panels.
+                if ref_wing_cross_section_id < (len(ref_wing_cross_sections) - 1):
+                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        ar_id,
+                        chord_id,
+                        ref_airplane_id,
+                        ref_wing_id,
+                        ref_wing_cross_section_id,
+                        ref_airplane.name,
+                        ref_wing.name,
+                        "\t\t\t\t",
+                        num_spanwise_panels_cache,
+                        lambda start: _get_wing_section_num_spanwise_panels(
+                            panel_aspect_ratio,
+                            num_chordwise_panels,
+                            ref_wing.chordwise_spacing,
+                            ref_wing_cross_section,
+                            ref_wing_cross_sections[ref_wing_cross_section_id + 1],
+                            start,
+                        ),
+                    )
+                else:
+                    this_num_spanwise_panels = None
+
+                these_wing_cross_sections.append(
+                    geometry.wing_cross_section.WingCrossSection(
+                        # These values are copied from the reference WingCrossSection.
+                        chord=ref_wing_cross_section.chord,
+                        Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
+                        angles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                        control_surface_symmetry_type=ref_wing_cross_section.control_surface_symmetry_type,
+                        control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
+                        control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
+                        spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
+                        # These values change.
+                        num_spanwise_panels=this_num_spanwise_panels,
+                        airfoil=geometry.airfoil.Airfoil(
+                            name=ref_wing_cross_section.airfoil.name,
+                            outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
+                            resample=ref_wing_cross_section.airfoil.resample,
+                            n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
+                        ),
+                    )
+                )
+
+            these_wings.append(
+                geometry.wing.Wing(
+                    # These values are copied from the reference Wing.
+                    name=ref_wing.name,
+                    Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
+                    angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
+                    symmetric=ref_wing.symmetric,
+                    mirror_only=ref_wing.mirror_only,
+                    symmetryNormal_G=ref_wing.symmetryNormal_G,
+                    symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
+                    chordwise_spacing=ref_wing.chordwise_spacing,
+                    # These values change.
+                    wing_cross_sections=these_wing_cross_sections,
+                    num_chordwise_panels=num_chordwise_panels,
+                )
+            )
+
+        these_airplanes.append(
+            geometry.airplane.Airplane(
+                # These values are copied from the reference Airplane.
+                name=ref_airplane.name,
+                Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
+                weight=ref_airplane.weight,
+                # These values change.
+                wings=these_wings,
+                s_ref=None,
+                c_ref=None,
+                b_ref=None,
+            )
+        )
+
+    # Create a new SteadyProblem for this iteration.
+    return problems.SteadyProblem(
+        airplanes=these_airplanes, operating_point=ref_operating_point
+    )
+
+
+def _build_unsteady_problem(
+    ar_id: int,
+    chord_id: int,
+    panel_aspect_ratio: int,
+    num_chordwise_panels: int,
+    wake_length: int,
+    ref_problem: problems.UnsteadyProblem,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+) -> problems.UnsteadyProblem:
+    """Builds the UnsteadyProblem for one convergence iteration.
+
+    Each of the reference Movement's AirplaneMovements (and its nested WingMovements and
+    WingCrossSectionMovements) is copied with the given Panel aspect ratio and number of
+    chordwise Panels, preserving every motion parameter. Each non-tip WingCrossSection's
+    number of spanwise Panels is resolved (and cached) to achieve the desired Panel
+    aspect ratio, and the copied AirplaneMovements are wrapped in a new Movement (with
+    the given wake length) and UnsteadyProblem.
+
+    :param ar_id: The index of the current Panel aspect ratio within the list of Panel
+        aspect ratios being tested.
+    :param chord_id: The index of the current number of chordwise Panels within the list
+        of numbers of chordwise Panels being tested.
+    :param panel_aspect_ratio: The Panel aspect ratio to target for this iteration.
+    :param num_chordwise_panels: The number of chordwise Panels to use for this
+        iteration.
+    :param wake_length: The wake length (number of chords if static, number of cycles if
+        variable) to use for this iteration.
+    :param ref_problem: The reference UnsteadyProblem whose Movement is copied.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :return: The UnsteadyProblem for this iteration.
+    """
+    ref_movement = ref_problem.movement
+    static = ref_movement.static
+    ref_airplane_movements = ref_movement.airplane_movements
+    ref_operating_point_movement = ref_movement.operating_point_movement
+
+    # Initialize an empty list for this iteration's base AirplaneMovements.
+    these_base_airplanes = []
+
+    # Create an empty list for the AirplaneMovement copies.
+    these_airplane_movements = []
+
+    # Now, we will begin iterating through this iteration's reference AirplaneMovements,
+    # WingMovements, and WingCrossSectionMovements, and creating copies of them. These
+    # copies will have identical parameters to their respective reference movements
+    # except for the number of spanwise Panels (which is based on the Panel aspect
+    # ratio), and the number of chordwise Panels.
+    #
+    # To do this, we iterate over the AirplaneMovements and perform a several step
+    # procedure:
+    # 1. Reference the AirplaneMovement's base Airplane.
+    # 2. Reference the AirplaneMovement's list of WingMovements.
+    # 3. Create an empty list for the WingMovements' base Wing copies.
+    # 4. Create an empty list for the WingMovement copies.
+    # 5. Iterate over the WingMovements.
+    #   5.1. Reference the WingMovement's base Wing.
+    #   5.2. Reference the WingMovement's list of WingCrossSectionMovements.
+    #   5.3. Create an empty list for the WingCrossSectionMovements' base WingCrossSection
+    #        copies.
+    #   5.4. Create an empty list for the WingCrossSectionMovement copies.
+    #   5.5. Iterate over the WingCrossSectionMovements.
+    #     5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
+    #     5.5.2. Calculate the number of spanwise Panels that corresponds to the desired
+    #            combination of Panel aspect ratio and number of chordwise Panels.
+    #     5.5.3. Create a copy of the base WingCrossSection.
+    #     5.5.4. Create a copy of the WingCrossSectionMovement.
+    #     5.5.5. Append the base WingCrossSection copy to the list of base WingCrossSection
+    #            copies.
+    #     5.5.6. Append the WingCrossSectionMovement copy to the list of
+    #            WingCrossSectionMovement copies.
+    #   5.6. Create a copy of the base Wing.
+    #   5.7. Create a copy of the WingMovement.
+    #   5.8. Append the base Wing copy to the list  of base Wing copies.
+    #   5.9. Append the WingMovement copy to the list of WingMovement copies.
+    # 6. Create a copy of the base Airplane.
+    # 7. Create a copy of the AirplaneMovement.
+    # 8. Append the base Airplane copy to the list of base Airplane copies.
+    # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
+    ref_airplane_movement: movements.airplane_movement.AirplaneMovement
+    for ref_airplane_movement_id, ref_airplane_movement in enumerate(
+        ref_airplane_movements
+    ):
+        # 1. Reference the AirplaneMovement's base Airplane.
+        ref_base_airplane = ref_airplane_movement.base_airplane
+
+        # 2. Reference the AirplaneMovement's list of WingMovements.
+        ref_wing_movements = ref_airplane_movement.wing_movements
+
+        # 3. Create an empty list for the WingMovements' base Wing copies.
+        these_base_wings = []
+
+        # 4. Create an empty list for the WingMovement copies.
+        these_wing_movements = []
+
+        # 5. Iterate over the WingMovements.
+        for ref_wing_movement_id, ref_wing_movement in enumerate(ref_wing_movements):
+            # 5.1. Reference the WingMovement's base Wing.
+            ref_base_wing = ref_wing_movement.base_wing
+
+            # 5.2. Reference the WingMovement's list of WingCrossSectionMovements.
+            ref_wing_cross_section_movements = (
+                ref_wing_movement.wing_cross_section_movements
+            )
+
+            # 5.3. Create an empty list for the WingCrossSectionMovements' base
+            # WingCrossSection copies.
+            these_base_wing_cross_sections = []
+
+            # 5.4. Create an empty list for the WingCrossSectionMovement copies.
+            these_wing_cross_section_movements = []
+
+            # 5.5. Iterate over the WingCrossSectionMovements.
+            for (
+                ref_wing_cross_section_movement_id,
+                ref_wing_cross_section_movement,
+            ) in enumerate(ref_wing_cross_section_movements):
+                # 5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
+                ref_base_wing_cross_section = (
+                    ref_wing_cross_section_movement.base_wing_cross_section
+                )
+
+                # 5.5.2. Calculate the number of spanwise Panels that corresponds to the
+                # desired combination of Panel aspect ratio and number of chordwise
+                # Panels.
+                if ref_wing_cross_section_movement_id < (
+                    len(ref_wing_cross_section_movements) - 1
+                ):
+                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        ar_id,
+                        chord_id,
+                        ref_airplane_movement_id,
+                        ref_wing_movement_id,
+                        ref_wing_cross_section_movement_id,
+                        ref_base_airplane.name,
+                        ref_base_wing.name,
+                        "\t\t\t\t\t\t",
+                        num_spanwise_panels_cache,
+                        lambda start: _get_wing_section_movement_num_spanwise_panels(
+                            panel_aspect_ratio,
+                            num_chordwise_panels,
+                            ref_base_wing.chordwise_spacing,
+                            ref_movement.airplanes[ref_airplane_movement_id],
+                            ref_wing_movement_id,
+                            ref_wing_cross_section_movement_id,
+                            ref_wing_cross_section_movement_id + 1,
+                            start,
+                            ref_problem.first_averaging_step,
+                        ),
+                    )
+                else:
+                    this_num_spanwise_panels = None
+
+                # 5.5.3. Create a copy of the base WingCrossSection.
+                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
+                    # These values are copied from the reference base WingCrossSection.
+                    chord=ref_base_wing_cross_section.chord,
+                    Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
+                    angles_Wcsp_to_Wcs_ixyz=ref_base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                    control_surface_symmetry_type=ref_base_wing_cross_section.control_surface_symmetry_type,
+                    control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
+                    control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
+                    spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
+                    # These values change.
+                    num_spanwise_panels=this_num_spanwise_panels,
+                    airfoil=geometry.airfoil.Airfoil(
+                        name=ref_base_wing_cross_section.airfoil.name,
+                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
+                        resample=ref_base_wing_cross_section.airfoil.resample,
+                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
+                    ),
+                )
+
+                # 5.5.4. Create a copy of the WingCrossSectionMovement.
+                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
+                    # These values are copied from the reference WingCrossSectionMovement.
+                    ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
+                    periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
+                    spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
+                    phaseLp_Wcsp_Lpp=ref_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
+                    ampAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
+                    periodAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
+                    spacingAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
+                    phaseAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
+                    # These values change.
+                    base_wing_cross_section=this_base_wing_cross_section,
+                )
+
+                # 5.5.5. Append the base WingCrossSection copy to the list of base
+                # WingCrossSection copies.
+                these_base_wing_cross_sections.append(this_base_wing_cross_section)
+
+                # 5.5.6. Append the WingCrossSectionMovement copy to the list of
+                # WingCrossSectionMovement copies.
+                these_wing_cross_section_movements.append(
+                    this_wing_cross_section_movement
+                )
+
+            # 5.6. Create a copy of base Wing.
+            this_base_wing = geometry.wing.Wing(
+                # These values are copied from the reference Wing.
+                name=ref_base_wing.name,
+                Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
+                angles_Gs_to_Wn_ixyz=ref_base_wing.angles_Gs_to_Wn_ixyz,
+                symmetric=ref_base_wing.symmetric,
+                mirror_only=ref_base_wing.mirror_only,
+                symmetryNormal_G=ref_base_wing.symmetryNormal_G,
+                symmetryPoint_G_Cg=ref_base_wing.symmetryPoint_G_Cg,
+                chordwise_spacing=ref_base_wing.chordwise_spacing,
+                # These values change.
+                wing_cross_sections=these_base_wing_cross_sections,
+                num_chordwise_panels=num_chordwise_panels,
+            )
+
+            # 5.7. Create a copy of the WingMovement.
+            this_wing_movement = movements.wing_movement.WingMovement(
+                # These values are copied from the reference WingMovement.
+                ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
+                periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
+                spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
+                phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
+                ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
+                periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
+                spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
+                phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
+                # These values change.
+                base_wing=this_base_wing,
+                wing_cross_section_movements=these_wing_cross_section_movements,
+            )
+
+            # 5.8. Append the base Wing copy to the list of base Wing copies.
+            these_base_wings.append(this_base_wing)
+
+            # 5.9. Append the WingMovement copy to the list of WingMovement copies.
+            these_wing_movements.append(this_wing_movement)
+
+        # 6. Create a copy of the base Airplane.
+        this_base_airplane = geometry.airplane.Airplane(
+            # These values are copied from the reference Airplane.
+            name=ref_base_airplane.name,
+            Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
+            weight=ref_base_airplane.weight,
+            # These values change.
+            wings=these_base_wings,
+            s_ref=None,
+            c_ref=None,
+            b_ref=None,
+        )
+
+        # 7. Create a copy of the AirplaneMovement.
+        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
+            # These values are copied from the reference AirplaneMovement.
+            ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
+            periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
+            spacingCg_GP1_CgP1=ref_airplane_movement.spacingCg_GP1_CgP1,
+            phaseCg_GP1_CgP1=ref_airplane_movement.phaseCg_GP1_CgP1,
+            # These values change.
+            base_airplane=this_base_airplane,
+            wing_movements=these_wing_movements,
+        )
+
+        # 8. Append the base Airplane copy to the list of base Airplane copies.
+        these_base_airplanes.append(this_base_airplane)
+
+        # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
+        these_airplane_movements.append(this_airplane_movement)
+
+    # Create a new Movement for this iteration.
+    if static:
+        this_movement = movements.movement.Movement(
+            airplane_movements=these_airplane_movements,
+            operating_point_movement=ref_operating_point_movement,
+            num_chords=wake_length,
+        )
+    else:
+        this_movement = movements.movement.Movement(
+            airplane_movements=these_airplane_movements,
+            operating_point_movement=ref_operating_point_movement,
+            num_cycles=wake_length,
+        )
+
+    # Create a new UnsteadyProblem for this iteration.
+    return problems.UnsteadyProblem(
+        movement=this_movement,
+        only_final_results=True,
+    )
 
 
 def _get_wing_section_movement_num_spanwise_panels(

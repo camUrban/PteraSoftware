@@ -37,14 +37,23 @@ _logger = _logging.get_logger("convergence")
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_steady_convergence(
     ref_problem: problems.SteadyProblem,
     solver_type: str,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
     convergence_criteria: float | int = 5.0,
-) -> tuple[int, int] | tuple[None, None]:
+    resolve_converged_solver: bool | np.bool_ = False,
+) -> (
+    tuple[
+        int,
+        int,
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | None,
+    ]
+    | tuple[None, None, None]
+):
     """Finds the converged parameters of a SteadyProblem solved using a given steady
     solver.
 
@@ -109,10 +118,17 @@ def analyze_steady_convergence(
         this function's docstring for more details on how it affects the solver. In
         short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
         convergence. Values are converted to floats internally. The default is 5.0.
-    :return: A tuple of two ints or a tuple of two Nones. In order, they are the
-        converged of Panel aspect ratio and the converged number of chordwise Panels. If
-        the function could not find a set of converged parameters, it returns (None,
-        None).
+    :param resolve_converged_solver: A bool for whether to recreate and run the solver
+        at the converged parameters and return it. Because finding convergence is
+        expensive, this defaults to False, in which case the returned solver is None.
+        When True, the solver is rebuilt at the converged parameters (which are
+        frequently coarser than the last iteration run) and run with streamlines
+        calculated, so the returned solver is ready to use. The default is False.
+    :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
+        first two elements are the converged Panel aspect ratio and the converged number
+        of chordwise Panels. The third element is the converged solver if
+        resolve_converged_solver is True, otherwise None. If the function could not find
+        a set of converged parameters, it returns (None, None, None).
     """
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.SteadyProblem):
@@ -137,6 +153,11 @@ def analyze_steady_convergence(
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
         convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
+    )
+
+    # Validate the resolve_converged_solver parameter.
+    resolve_converged_solver = _parameter_validation.boolLike_return_bool(
+        resolve_converged_solver, "resolve_converged_solver"
     )
 
     _logger.info("Beginning convergence analysis...")
@@ -422,21 +443,50 @@ def analyze_steady_convergence(
                                 + str(num_spanwise_panels)
                             )
 
+                # If requested, recreate and run the solver at the converged
+                # parameters so it can be returned. The converged parameters are
+                # frequently coarser than this iteration's, so the converged solver is
+                # rebuilt rather than reusing this iteration's finer solver.
+                converged_solver: (
+                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                    | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+                    | None
+                ) = None
+                if resolve_converged_solver:
+                    _logger.info("Recreating and running the converged solver...")
+                    converged_problem = _build_steady_problem(
+                        converged_ar_id,
+                        converged_chord_id,
+                        converged_aspect_ratio,
+                        converged_chordwise_panels,
+                        ref_problem,
+                        num_spanwise_panels_cache,
+                    )
+                    if solver_type == "steady horseshoe vortex lattice method":
+                        converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                            steady_problem=converged_problem,
+                        )
+                    else:
+                        converged_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                            steady_problem=converged_problem,
+                        )
+                    converged_solver.run(calculate_streamlines=True)
+
                 return (
                     converged_aspect_ratio,
                     converged_chordwise_panels,
+                    converged_solver,
                 )
 
     # If all iterations have been checked and none of them resulted in both
     # convergence parameters passing, then indicate that no converged case was found
     # and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
-    return None, None
+    return None, None, None
 
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
     prescribed_wake: bool | np.bool_ = True,
@@ -447,7 +497,18 @@ def analyze_unsteady_convergence(
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
     convergence_criteria: float | int = 5.0,
     show_solver_progress: bool | np.bool_ = True,
-) -> tuple[bool, int, int, int] | tuple[None, None, None, None]:
+    resolve_converged_solver: bool | np.bool_ = False,
+) -> (
+    tuple[
+        bool,
+        int,
+        int,
+        int,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | None,
+    ]
+    | tuple[None, None, None, None, None]
+):
     """Finds the converged parameters of an UnsteadyProblem solved using the
     UnsteadyRingVortexLatticeMethodSolver.
 
@@ -548,11 +609,19 @@ def analyze_unsteady_convergence(
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
         a numpy bool and will be converted internally to a bool. The default is True.
-    :return: A tuple of one bool and three ints. In order, they are the converged wake
-        state (prescribed=True and free=False), the converged wake length (in number of
-        cycles for non static geometries and number of chords for static geometries),
-        the converged Panel aspect ratio, and the converged number of chordwise Panels.
-        If the function could not find a set of converged parameters, it returns (None,
+    :param resolve_converged_solver: A bool for whether to recreate and run the solver
+        at the converged parameters and return it. Because finding convergence is
+        expensive, this defaults to False, in which case the returned solver is None.
+        When True, the solver is rebuilt at the converged parameters (which are
+        frequently coarser than the last iteration run) and run with streamlines
+        calculated, so the returned solver is ready to use. The default is False.
+    :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
+        order, the first four elements are the converged wake state (prescribed=True and
+        free=False), the converged wake length (in number of cycles for non static
+        geometries and number of chords for static geometries), the converged Panel
+        aspect ratio, and the converged number of chordwise Panels. The fifth element is
+        the converged solver if resolve_converged_solver is True, otherwise None. If the
+        function could not find a set of converged parameters, it returns (None, None,
         None, None, None).
     """
     # Validate the ref_problem parameter.
@@ -622,6 +691,11 @@ def analyze_unsteady_convergence(
     # Validate the show_solver_progress parameter.
     show_solver_progress = _parameter_validation.boolLike_return_bool(
         show_solver_progress, "show_solver_progress"
+    )
+
+    # Validate the resolve_converged_solver parameter.
+    resolve_converged_solver = _parameter_validation.boolLike_return_bool(
+        resolve_converged_solver, "resolve_converged_solver"
     )
 
     _logger.info("Beginning convergence analysis...")
@@ -1057,18 +1131,50 @@ def analyze_unsteady_convergence(
                                         + str(num_spanwise_panels)
                                     )
 
+                        # If requested, recreate and run the solver at the converged
+                        # parameters so it can be returned. The converged parameters are
+                        # frequently coarser than this iteration's, so the converged
+                        # solver is rebuilt rather than reusing this iteration's finer
+                        # solver.
+                        converged_solver: (
+                            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+                            | None
+                        ) = None
+                        if resolve_converged_solver:
+                            _logger.info(
+                                "Recreating and running the converged solver..."
+                            )
+                            converged_problem = _build_unsteady_problem(
+                                converged_ar_id,
+                                converged_chord_id,
+                                converged_aspect_ratio,
+                                converged_chordwise_panels,
+                                converged_wake_length,
+                                ref_problem,
+                                num_spanwise_panels_cache,
+                            )
+                            converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                                unsteady_problem=converged_problem
+                            )
+                            converged_solver.run(
+                                prescribed_wake=converged_wake,
+                                calculate_streamlines=True,
+                                show_progress=show_solver_progress,
+                            )
+
                         return (
                             converged_wake,
                             converged_wake_length,
                             converged_aspect_ratio,
                             converged_chordwise_panels,
+                            converged_solver,
                         )
 
     # If all iterations have been checked and none of them resulted in all
     # convergence parameters passing, then indicate that no converged solution was
     # found and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
-    return None, None, None, None
+    return None, None, None, None, None
 
 
 def _build_steady_problem(

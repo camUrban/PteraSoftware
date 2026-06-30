@@ -1140,6 +1140,65 @@ class TestWingRoundTrip(unittest.TestCase):
         self.assertEqual(result.name, wing.name)
         self.assertEqual(result.num_chordwise_panels, wing.num_chordwise_panels)
         self.assertEqual(result.chordwise_spacing, wing.chordwise_spacing)
+        self.assertEqual(result.spanwise_mesh, wing.spanwise_mesh)
+
+    def test_exploded_wing_spanwise_mesh_round_trip(self):
+        """Tests that an exploded Wing's spanwise mesh marker survives round trip.
+
+        :return: None
+        """
+        root_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=3,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=None,
+            chord=0.5,
+            Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing=None,
+        )
+        wing = Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+            explode_into_strips=True,
+        )
+        self.assertEqual(wing.spanwise_mesh, "exploded")
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertEqual(result.spanwise_mesh, "exploded")
+
+    def test_edge_defined_wing_round_trip(self):
+        """Tests that a from_edge_points Wing's marker, edge curves, and tip trim
+        fraction survive a round trip.
+
+        :return: None
+        """
+        ys = np.linspace(0.0, 1.0, 11)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.5 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        wing = Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=Airfoil(name="naca0012"),
+            tip_trim_fraction=0.1,
+        )
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertEqual(result.spanwise_mesh, "edge_defined")
+        self.assertEqual(result.tip_trim_fraction, 0.1)
+        assert result.leadingEdgePoints_Wn_Ler is not None
+        assert result.trailingEdgePoints_Wn_Ler is not None
+        npt.assert_array_equal(result.leadingEdgePoints_Wn_Ler, leading)
+        npt.assert_array_equal(result.trailingEdgePoints_Wn_Ler, trailing)
+        self.assertFalse(result.leadingEdgePoints_Wn_Ler.flags.writeable)
+        self.assertFalse(result.trailingEdgePoints_Wn_Ler.flags.writeable)
 
     def test_panels_dtype_object_round_trip(self):
         """Tests that the dtype=object _panels array survives round trip with Panel

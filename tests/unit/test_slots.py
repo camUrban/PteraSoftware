@@ -481,11 +481,37 @@ class TestWingSlots(unittest.TestCase):
         self.assertEqual(self.wing.angles_Gs_to_Wn_ixyz.shape, (3,))
         self.assertIsInstance(self.wing.num_chordwise_panels, int)
         self.assertIsInstance(self.wing.chordwise_spacing, str)
+        self.assertIsInstance(self.wing.spanwise_mesh, str)
 
     def test_property_access_mutable_symmetry(self):
         """Test that mutable symmetry attributes are accessible."""
         self.assertIsInstance(self.wing.symmetric, bool)
         self.assertIsInstance(self.wing.mirror_only, bool)
+
+    def test_property_access_edge_attributes_none_for_normal_wing(self):
+        """Test that the edge curve and tip trim slots are None for a normal Wing."""
+        self.assertIsNone(self.wing.leadingEdgePoints_Wn_Ler)
+        self.assertIsNone(self.wing.trailingEdgePoints_Wn_Ler)
+        self.assertIsNone(self.wing.tip_trim_fraction)
+
+    def test_property_access_edge_attributes_for_edge_defined_wing(self):
+        """Test that the edge curve and tip trim slots are populated for a Wing built
+        from edge points."""
+        ys = np.linspace(0.0, 1.0, 11)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.5 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        edge_wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            tip_trim_fraction=0.1,
+        )
+        self.assertFalse(hasattr(edge_wing, "__dict__"))
+        self.assertEqual(edge_wing.leadingEdgePoints_Wn_Ler.shape, (11, 3))
+        self.assertEqual(edge_wing.trailingEdgePoints_Wn_Ler.shape, (11, 3))
+        self.assertIsInstance(edge_wing.tip_trim_fraction, float)
 
     def test_property_access_set_once_unset(self):
         """Test that set once properties return None when not yet meshed."""

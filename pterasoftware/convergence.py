@@ -169,6 +169,21 @@ def analyze_steady_convergence(
     ref_operating_point = ref_problem.operating_point
     ref_airplanes = ref_problem.airplanes
 
+    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
+    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
+    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
+    # is defined as single panel strips (for example one built with
+    # explode_into_strips=True) would be silently subdivided along the same geometry
+    # rather than refined, so its convergence result would be misleading.
+    for ref_airplane in ref_airplanes:
+        for ref_wing in ref_airplane.wings:
+            if ref_wing.spanwise_mesh != "trapezoidal":
+                raise ValueError(
+                    f"analyze_steady_convergence does not support Wings whose spanwise "
+                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
+                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
+                )
+
     # Create lists containing each Panel aspect ratio and each number of chordwise
     # Panels to test.
     panel_aspect_ratios_list = list(
@@ -919,6 +934,22 @@ def analyze_unsteady_convergence(
 
     ref_airplane_movements = ref_movement.airplane_movements
     ref_operating_point_movement = ref_movement.operating_point_movement
+
+    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
+    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
+    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
+    # is defined as single panel strips (for example one built with
+    # explode_into_strips=True) would be silently subdivided along the same geometry
+    # rather than refined, so its convergence result would be misleading.
+    for checked_airplane_movement in ref_airplane_movements:
+        for checked_wing in checked_airplane_movement.base_airplane.wings:
+            if checked_wing.spanwise_mesh != "trapezoidal":
+                raise ValueError(
+                    f"analyze_unsteady_convergence does not support Wings whose "
+                    f'spanwise mesh is not "trapezoidal". The Wing named '
+                    f'"{checked_wing.name}" has a spanwise mesh of '
+                    f'"{checked_wing.spanwise_mesh}".'
+                )
 
     # Create the list of wake states to iterate over.
     wake_list = []

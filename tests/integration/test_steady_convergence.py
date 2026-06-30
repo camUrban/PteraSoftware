@@ -42,8 +42,8 @@ class TestSteadyConvergence(unittest.TestCase):
         panel_ar_ans = 4
         num_chordwise_ans = 2
 
-        self.assertTrue(abs(converged_panel_ar - panel_ar_ans) <= 1)
-        self.assertTrue(abs(converged_num_chordwise - num_chordwise_ans) <= 1)
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)
 
     def test_rejects_exploded_wing(self):
         """This method tests that the function rejects a SteadyProblem whose Airplane has
@@ -85,5 +85,5 @@ class TestSteadyConvergence(unittest.TestCase):
         panel_ar_ans = 4
         num_chordwise_ans = 2
 
-        self.assertTrue(abs(converged_panel_ar - panel_ar_ans) <= 1)
-        self.assertTrue(abs(converged_num_chordwise - num_chordwise_ans) <= 1)
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)

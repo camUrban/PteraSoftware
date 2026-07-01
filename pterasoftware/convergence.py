@@ -97,6 +97,15 @@ def analyze_steady_convergence(
     return 1 for the converged value of Panel aspect ratio. In the code below, this
     state is referred to as a "saturated" Panel aspect ratio case.
 
+    Each Wing is refined according to how its spanwise mesh was defined. A non-edge-
+    defined Wing (one built from WingCrossSections) is refined by sweeping its number of
+    spanwise Panels to hit the target Panel aspect ratio, holding its WingCrossSections
+    fixed. An edge-defined Wing (one built from edge curves with Wing.from_edge_points)
+    is refined by resampling its stored edge curves into the number of WingCrossSections
+    that hits the target Panel aspect ratio, preserving its planform shape. An Airplane
+    may hold both kinds of Wing at once. A Wing that has been exploded into single-panel
+    strips cannot be refined and is rejected.
+
     :param ref_problem: The SteadyProblem whose converged parameters will be found.
     :param solver_type: Determines what type of steady solver will be used to analyze
         the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
@@ -165,8 +174,9 @@ def analyze_steady_convergence(
 
     ref_airplanes = ref_problem.airplanes
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal.
-    _reject_non_trapezoidal_wings(ref_airplanes, "analyze_steady_convergence")
+    # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal
+    # or edge-defined).
+    _reject_unrefinable_wings(ref_airplanes, "analyze_steady_convergence")
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
     # Panels to test.
@@ -209,6 +219,11 @@ def analyze_steady_convergence(
     # ref_wing_cross_section_id,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
 
+    # This is the analogous cache for edge-defined Wings, which are refined by their
+    # number of WingCrossSections rather than by their number of spanwise Panels. The key
+    # is a tuple of 4 ints: ar_id, chord_id, ref_airplane_id, ref_wing_id.
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
+
     # Begin iterating through the outer loop of Panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
         _logger.info("\tPanel aspect ratio: " + str(panel_aspect_ratio))
@@ -231,6 +246,7 @@ def analyze_steady_convergence(
                 num_chordwise_panels,
                 ref_problem,
                 num_spanwise_panels_cache,
+                num_wing_cross_sections_cache,
             )
             these_airplanes = this_problem.airplanes
 
@@ -416,6 +432,27 @@ def analyze_steady_convergence(
                     _logger.info("\t\t" + airplane.name + ":")
                     for wing_id, wing in enumerate(airplane.wings):
                         _logger.info("\t\t\t" + wing.name + ":")
+
+                        # An edge-defined Wing is refined by its number of
+                        # WingCrossSections rather than its number of spanwise Panels, so
+                        # report that instead.
+                        if wing.spanwise_mesh == "edge_defined":
+                            num_wing_cross_sections_key = (
+                                converged_ar_id,
+                                converged_chord_id,
+                                airplane_id,
+                                wing_id,
+                            )
+                            _logger.info(
+                                "\t\t\t\tWingCrossSections: "
+                                + str(
+                                    num_wing_cross_sections_cache[
+                                        num_wing_cross_sections_key
+                                    ]
+                                )
+                            )
+                            continue
+
                         for wing_cross_section_id, wing_cross_section in enumerate(
                             wing.wing_cross_sections
                         ):
@@ -462,6 +499,7 @@ def analyze_steady_convergence(
                         converged_chordwise_panels,
                         ref_problem,
                         num_spanwise_panels_cache,
+                        num_wing_cross_sections_cache,
                     )
                     if solver_type == "steady horseshoe vortex lattice method":
                         converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
@@ -575,6 +613,18 @@ def analyze_unsteady_convergence(
     function will return 1 for the converged value of Panel aspect ratio and a free wake
     for the converged wake state. In the code below, this state is referred to as a
     "saturated" Panel aspect ratio or wake state.
+
+    Each Wing is refined according to how its spanwise mesh was defined. A non-edge-
+    defined Wing (one built from WingCrossSections) is refined by sweeping its number of
+    spanwise Panels to hit the target Panel aspect ratio, holding its WingCrossSections
+    fixed. An edge-defined Wing (one built from edge curves with Wing.from_edge_points)
+    is refined by resampling its stored edge curves into the number of WingCrossSections
+    that hits the target Panel aspect ratio, preserving its planform shape. An Airplane
+    may hold both kinds of Wing at once. A Wing that has been exploded into single-panel
+    strips cannot be refined and is rejected. Because resampling an edge-defined Wing
+    changes its number of WingCrossSections, its WingCrossSectionMovements must all be
+    static (the WingMovement's own flapping and sweeping motion is preserved); a non-
+    static WingCrossSectionMovement on an edge-defined Wing is rejected.
 
     :param ref_problem: The UnsteadyProblem whose converged parameters will be found.
         This must be a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
@@ -715,8 +765,9 @@ def analyze_unsteady_convergence(
 
     ref_airplane_movements = ref_movement.airplane_movements
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal.
-    _reject_non_trapezoidal_wings(
+    # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal or
+    # edge-defined).
+    _reject_unrefinable_wings(
         tuple(
             ref_airplane_movement.base_airplane
             for ref_airplane_movement in ref_airplane_movements
@@ -787,6 +838,11 @@ def analyze_unsteady_convergence(
     # ref_base_wing_cross_section_id,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
 
+    # This is the analogous cache for edge-defined Wings, which are refined by their
+    # number of WingCrossSections rather than by their number of spanwise Panels. The key
+    # is a tuple of 4 ints: ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id.
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
+
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
@@ -832,6 +888,7 @@ def analyze_unsteady_convergence(
                         wake_length,
                         ref_problem,
                         num_spanwise_panels_cache,
+                        num_wing_cross_sections_cache,
                     )
 
                     # Create and run this iteration's
@@ -1109,6 +1166,27 @@ def analyze_unsteady_convergence(
                             ):
                                 base_wing = wing_movement.base_wing
                                 _logger.info("\t\t\t" + base_wing.name + ":")
+
+                                # An edge-defined Wing is refined by its number of
+                                # WingCrossSections rather than its number of spanwise
+                                # Panels, so report that instead.
+                                if base_wing.spanwise_mesh == "edge_defined":
+                                    num_wing_cross_sections_key = (
+                                        converged_ar_id,
+                                        converged_chord_id,
+                                        airplane_movement_id,
+                                        wing_movement_id,
+                                    )
+                                    _logger.info(
+                                        "\t\t\t\tWingCrossSections: "
+                                        + str(
+                                            num_wing_cross_sections_cache[
+                                                num_wing_cross_sections_key
+                                            ]
+                                        )
+                                    )
+                                    continue
+
                                 for (
                                     wing_cross_section_movement_id,
                                     wing_cross_section_movement,
@@ -1165,6 +1243,7 @@ def analyze_unsteady_convergence(
                                 converged_wake_length,
                                 ref_problem,
                                 num_spanwise_panels_cache,
+                                num_wing_cross_sections_cache,
                             )
                             converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                                 unsteady_problem=converged_problem
@@ -1208,14 +1287,17 @@ def _build_steady_problem(
     num_chordwise_panels: int,
     ref_problem: problems.SteadyProblem,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
 ) -> problems.SteadyProblem:
     """Builds the SteadyProblem for one convergence iteration.
 
     Each of the reference SteadyProblem's Airplanes is copied with the given Panel
-    aspect ratio and number of chordwise Panels. Each non-tip WingCrossSection's number
-    of spanwise Panels is resolved (and cached) to achieve the desired Panel aspect
-    ratio, and the copied Airplanes are wrapped in a new SteadyProblem with the
-    reference OperatingPoint.
+    aspect ratio and number of chordwise Panels. Each Wing is refined by its spanwise
+    mesh: a trapezoidal Wing has each non-tip WingCrossSection's number of spanwise
+    Panels resolved (and cached) to achieve the desired Panel aspect ratio, while an
+    edge-defined Wing has its stored edge curves resampled into the number of
+    WingCrossSections (also resolved and cached) that achieves it. The copied Airplanes
+    are wrapped in a new SteadyProblem with the reference OperatingPoint.
 
     :param ar_id: The index of the current Panel aspect ratio within the list of Panel
         aspect ratios being tested.
@@ -1228,8 +1310,12 @@ def _build_steady_problem(
         are copied.
     :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
         number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
-        index) tuple to a previously calculated number of spanwise Panels. It is read
-        and updated in place.
+        index) tuple to a previously calculated number of spanwise Panels, used for
+        trapezoidal Wings. It is read and updated in place.
+    :param num_wing_cross_sections_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index) tuple to a
+        previously calculated number of WingCrossSections, used for edge-defined Wings.
+        It is read and updated in place.
     :return: The SteadyProblem for this iteration.
     """
     ref_airplanes = ref_problem.airplanes
@@ -1244,6 +1330,34 @@ def _build_steady_problem(
         these_wings = []
 
         for ref_wing_id, ref_wing in enumerate(ref_wings):
+
+            # An edge-defined Wing is refined by resampling its stored edge curves into
+            # the number of WingCrossSections that achieves the desired Panel aspect
+            # ratio, rather than by sweeping the number of spanwise Panels.
+            if ref_wing.spanwise_mesh == "edge_defined":
+                this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    ar_id,
+                    chord_id,
+                    ref_airplane_id,
+                    ref_wing_id,
+                    ref_airplane.name,
+                    ref_wing.name,
+                    "\t\t\t\t",
+                    num_wing_cross_sections_cache,
+                    lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
+                        ref_wing,
+                        start,
+                    ),
+                )
+                these_wings.append(
+                    _build_edge_defined_wing(
+                        ref_wing, num_chordwise_panels, this_num_wing_cross_sections
+                    )
+                )
+                continue
+
             ref_wing_cross_sections = ref_wing.wing_cross_sections
             these_wing_cross_sections = []
 
@@ -1343,15 +1457,22 @@ def _build_unsteady_problem(
     wake_length: int,
     ref_problem: problems.UnsteadyProblem,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
 ) -> problems.UnsteadyProblem:
     """Builds the UnsteadyProblem for one convergence iteration.
 
     Each of the reference Movement's AirplaneMovements (and its nested WingMovements and
     WingCrossSectionMovements) is copied with the given Panel aspect ratio and number of
-    chordwise Panels, preserving every motion parameter. Each non-tip WingCrossSection's
-    number of spanwise Panels is resolved (and cached) to achieve the desired Panel
-    aspect ratio, and the copied AirplaneMovements are wrapped in a new Movement (with
-    the given wake length) and UnsteadyProblem.
+    chordwise Panels, preserving every motion parameter. Each Wing is refined by its
+    spanwise mesh: a trapezoidal Wing has each non-tip WingCrossSection's number of
+    spanwise Panels resolved (and cached) to achieve the desired Panel aspect ratio,
+    while an edge-defined Wing has its stored edge curves resampled into the number of
+    WingCrossSections (also resolved and cached) that achieves it. An edge-defined
+    Wing's WingCrossSectionMovements must all be static, because resampling changes the
+    WingCrossSection count and so cannot preserve per-WingCrossSection motion; the
+    refined WingCrossSections are wrapped in motion free WingCrossSectionMovements and
+    the WingMovement's own motion parameters are copied. The copied AirplaneMovements
+    are wrapped in a new Movement (with the given wake length) and UnsteadyProblem.
 
     :param ar_id: The index of the current Panel aspect ratio within the list of Panel
         aspect ratios being tested.
@@ -1365,8 +1486,12 @@ def _build_unsteady_problem(
     :param ref_problem: The reference UnsteadyProblem whose Movement is copied.
     :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
         number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
-        index) tuple to a previously calculated number of spanwise Panels. It is read
-        and updated in place.
+        index) tuple to a previously calculated number of spanwise Panels, used for
+        trapezoidal Wings. It is read and updated in place.
+    :param num_wing_cross_sections_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index) tuple to a
+        previously calculated number of WingCrossSections, used for edge-defined Wings.
+        It is read and updated in place.
     :return: The UnsteadyProblem for this iteration.
     """
     ref_movement = ref_problem.movement
@@ -1436,6 +1561,85 @@ def _build_unsteady_problem(
         for ref_wing_movement_id, ref_wing_movement in enumerate(ref_wing_movements):
             # 5.1. Reference the WingMovement's base Wing.
             ref_base_wing = ref_wing_movement.base_wing
+
+            # An edge-defined Wing is refined by resampling its stored edge curves into
+            # the number of WingCrossSections that achieves the desired Panel aspect
+            # ratio. Resampling changes the WingCrossSection count, so it cannot preserve
+            # per-WingCrossSection motion. Every WingCrossSectionMovement must therefore
+            # be static; the refined WingCrossSections are wrapped in motion free
+            # WingCrossSectionMovements and only the WingMovement's own motion is carried
+            # over.
+            if ref_base_wing.spanwise_mesh == "edge_defined":
+                for (
+                    ref_wing_cross_section_movement_id,
+                    ref_wing_cross_section_movement,
+                ) in enumerate(ref_wing_movement.wing_cross_section_movements):
+                    if np.any(ref_wing_cross_section_movement.ampLp_Wcsp_Lpp) or np.any(
+                        ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz
+                    ):
+                        raise ValueError(
+                            "analyze_unsteady_convergence cannot refine an edge-defined "
+                            "Wing whose WingCrossSectionMovements are not all static, "
+                            "because resampling the Wing changes its number of "
+                            "WingCrossSections. The WingCrossSectionMovement at index "
+                            f"{ref_wing_cross_section_movement_id} of the WingMovement "
+                            f'for the Wing named "{ref_base_wing.name}" is not static.'
+                        )
+
+                this_num_wing_cross_sections = _resolve_num_wing_cross_sections(
+                    ar_id,
+                    chord_id,
+                    ref_airplane_movement_id,
+                    ref_wing_movement_id,
+                    ref_base_airplane.name,
+                    ref_base_wing.name,
+                    "\t\t\t\t\t\t",
+                    num_wing_cross_sections_cache,
+                    lambda start: _get_num_wing_cross_sections_for_panel_ar(
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
+                        ref_base_wing,
+                        start,
+                    ),
+                )
+
+                this_base_wing = _build_edge_defined_wing(
+                    ref_base_wing, num_chordwise_panels, this_num_wing_cross_sections
+                )
+
+                these_wing_cross_section_movements = [
+                    movements.wing_cross_section_movement.WingCrossSectionMovement(
+                        base_wing_cross_section=this_base_wing_cross_section
+                    )
+                    for this_base_wing_cross_section in (
+                        this_base_wing.wing_cross_sections
+                    )
+                ]
+
+                this_wing_movement = movements.wing_movement.WingMovement(
+                    # These values are copied from the reference WingMovement.
+                    ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
+                    periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
+                    spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
+                    phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
+                    ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
+                    periodAngles_Gs_to_Wn_ixyz=(
+                        ref_wing_movement.periodAngles_Gs_to_Wn_ixyz
+                    ),
+                    spacingAngles_Gs_to_Wn_ixyz=(
+                        ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz
+                    ),
+                    phaseAngles_Gs_to_Wn_ixyz=(
+                        ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz
+                    ),
+                    # These values change.
+                    base_wing=this_base_wing,
+                    wing_cross_section_movements=these_wing_cross_section_movements,
+                )
+
+                these_base_wings.append(this_base_wing)
+                these_wing_movements.append(this_wing_movement)
+                continue
 
             # 5.2. Reference the WingMovement's list of WingCrossSectionMovements.
             ref_wing_cross_section_movements = (
@@ -1828,6 +2032,271 @@ def _get_wing_section_average_panel_aspect_ratio(
     return _average_panel_aspect_ratio
 
 
+def _build_edge_defined_wing(
+    ref_wing: geometry.wing.Wing,
+    num_chordwise_panels: int,
+    num_wing_cross_sections: int,
+) -> geometry.wing.Wing:
+    """Rebuilds an edge-defined Wing from its stored edge curves at a new resolution.
+
+    The reference Wing's stored leading edge and trailing edge curves are resampled into
+    the requested number of WingCrossSections with Wing.from_edge_points, reusing every
+    other geometric parameter (position, orientation, symmetry, chordwise spacing, and
+    tip trim) from the reference Wing. The single Airfoil is read from the reference
+    Wing's first WingCrossSection and shared across the rebuilt WingCrossSections, which
+    is safe because Airfoils are immutable.
+
+    :param ref_wing: The reference edge-defined Wing whose stored edge curves and
+        parameters are reused. Its spanwise_mesh must be "edge_defined".
+    :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
+        positive int.
+    :param num_wing_cross_sections: The number of WingCrossSections to resample the edge
+        curves into. It must be an int of at least 2.
+    :return: The rebuilt edge-defined Wing.
+    """
+    # An edge-defined Wing always stores its edge curves and tip trim fraction, so these
+    # are never None here. The assertions narrow the accessors' optional types.
+    leadingEdgePoints_Wn_Ler = ref_wing.leadingEdgePoints_Wn_Ler
+    trailingEdgePoints_Wn_Ler = ref_wing.trailingEdgePoints_Wn_Ler
+    tip_trim_fraction = ref_wing.tip_trim_fraction
+    assert leadingEdgePoints_Wn_Ler is not None
+    assert trailingEdgePoints_Wn_Ler is not None
+    assert tip_trim_fraction is not None
+
+    return geometry.wing.Wing.from_edge_points(
+        leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+        trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+        num_wing_cross_sections=num_wing_cross_sections,
+        airfoil=ref_wing.wing_cross_sections[0].airfoil,
+        name=ref_wing.name,
+        Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
+        angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
+        symmetric=ref_wing.symmetric,
+        mirror_only=ref_wing.mirror_only,
+        symmetryNormal_G=ref_wing.symmetryNormal_G,
+        symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
+        num_chordwise_panels=num_chordwise_panels,
+        chordwise_spacing=ref_wing.chordwise_spacing,
+        tip_trim_fraction=tip_trim_fraction,
+    )
+
+
+def _get_num_wing_cross_sections_for_panel_ar(
+    desired_average_panel_aspect_ratio: int,
+    num_chordwise_panels: int,
+    ref_wing: geometry.wing.Wing,
+    start_val: int,
+) -> int:
+    """Calculates the number of WingCrossSections that gives an edge-defined Wing a
+    target average Panel aspect ratio.
+
+    An edge-defined Wing is refined by resampling its stored edge curves into more
+    WingCrossSections, not by adding spanwise Panels to fixed WingCrossSections, so the
+    number of WingCrossSections is the refinement knob. Increasing it monotonically
+    lowers the meshed average Panel aspect ratio.
+
+    Rather than estimate the count from a closed form, this searches for it by meshing.
+    A closed form built from the mean chord would undershoot the count on a tapered
+    planform, because average_panel_aspect_ratio is the mean of each Panel's individual
+    aspect ratio and is dominated by the small-chord tip Panels. Instead, the reference
+    Wing is rebuilt at trial WingCrossSection counts (with _build_edge_defined_wing),
+    each trial is meshed, and its average Panel aspect ratio is read. The search
+    proportionally jumps to bracket the target, then bisects to the crossing, and
+    returns whichever of the two counts straddling the target gives the closer average
+    Panel aspect ratio. This matches how the trapezoidal
+    _get_wing_section_num_spanwise_panels searches, so a target Panel aspect ratio means
+    the same physical thing for an edge-defined Wing as for a trapezoidal one. Only
+    meshing is performed here, never solving.
+
+    :param desired_average_panel_aspect_ratio: The target average Panel aspect ratio to
+        achieve. The Panel aspect ratio is the Panels' average y component length (in
+        wing cross section parent axes) divided by their average x component width (in
+        wing cross section parent axes). It must be a positive int.
+    :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
+        positive int.
+    :param ref_wing: The reference edge-defined Wing whose stored edge curves are
+        resampled. Its spanwise_mesh must be "edge_defined".
+    :param start_val: The initial number of WingCrossSections to start the search from.
+        It must be a positive int and a lower bound on the result. Using a higher value
+        can speed up the search if a lower bound is already known.
+    :return: The number of WingCrossSections that gives an average Panel aspect ratio
+        closest to the desired value.
+    """
+    meshed_average_panel_aspect_ratios: dict[int, float] = {}
+
+    def average_panel_aspect_ratio_at(num_wing_cross_sections: int) -> float:
+        if num_wing_cross_sections not in meshed_average_panel_aspect_ratios:
+            refined_wing = _build_edge_defined_wing(
+                ref_wing, num_chordwise_panels, num_wing_cross_sections
+            )
+            refined_airplane = geometry.airplane.Airplane(wings=[refined_wing])
+            this_average_panel_aspect_ratio = refined_airplane.wings[
+                0
+            ].average_panel_aspect_ratio
+            assert this_average_panel_aspect_ratio is not None
+            meshed_average_panel_aspect_ratios[num_wing_cross_sections] = (
+                this_average_panel_aspect_ratio
+            )
+        return meshed_average_panel_aspect_ratios[num_wing_cross_sections]
+
+    # from_edge_points requires at least two WingCrossSections.
+    lower_num = max(int(start_val), 2)
+    lower_average_panel_aspect_ratio = average_panel_aspect_ratio_at(lower_num)
+
+    # If the starting count already meets the target, it is the smallest count that does,
+    # so return it.
+    if lower_average_panel_aspect_ratio <= desired_average_panel_aspect_ratio:
+        return lower_num
+
+    # Proportionally jump to bracket the target from above. The average Panel aspect ratio
+    # scales roughly as 1 / (num_wing_cross_sections - 1), so this estimate lands near the
+    # crossing in a few steps. Each jump strictly increases the count, and the aspect
+    # ratio falls toward zero as the count grows, so the loop terminates.
+    upper_num = lower_num
+    upper_average_panel_aspect_ratio = lower_average_panel_aspect_ratio
+    while upper_average_panel_aspect_ratio > desired_average_panel_aspect_ratio:
+        projected_num = 1 + round(
+            upper_average_panel_aspect_ratio
+            * (upper_num - 1)
+            / desired_average_panel_aspect_ratio
+        )
+        upper_num = max(projected_num, upper_num + 1)
+        upper_average_panel_aspect_ratio = average_panel_aspect_ratio_at(upper_num)
+
+    # Bisect between the count above the target (lower_num) and the count at or below it
+    # (upper_num) for the integer crossing.
+    while upper_num - lower_num > 1:
+        middle_num = (lower_num + upper_num) // 2
+        if (
+            average_panel_aspect_ratio_at(middle_num)
+            > desired_average_panel_aspect_ratio
+        ):
+            lower_num = middle_num
+        else:
+            upper_num = middle_num
+
+    # Return whichever of the two straddling counts gives the closer average Panel aspect
+    # ratio. On a tie, prefer the finer mesh (upper_num), matching the trapezoidal search.
+    lower_difference = abs(
+        average_panel_aspect_ratio_at(lower_num) - desired_average_panel_aspect_ratio
+    )
+    upper_difference = abs(
+        average_panel_aspect_ratio_at(upper_num) - desired_average_panel_aspect_ratio
+    )
+    if lower_difference < upper_difference:
+        return lower_num
+    return upper_num
+
+
+def _resolve_num_wing_cross_sections(
+    panel_aspect_ratio_id: int,
+    num_chordwise_panels_id: int,
+    airplane_id: int,
+    wing_id: int,
+    airplane_name: str,
+    wing_name: str,
+    log_indent: str,
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
+    compute_num_wing_cross_sections: Callable[[int], int],
+) -> int:
+    """Resolves the number of WingCrossSections for one edge-defined Wing, using and
+    updating the shared cache.
+
+    The result for a given (Panel aspect ratio, number of chordwise Panels, Airplane,
+    Wing) combination is returned from the cache if present. Otherwise, the search
+    starts from a conservative lower bound (the smallest number of WingCrossSections
+    already found for this Wing at an incrementally coarser mesh, since the current
+    finer mesh must need at least that many), ``compute_num_wing_cross_sections`` is
+    called with that starting value to find the count, and the result is cached.
+
+    :param panel_aspect_ratio_id: The index of the current Panel aspect ratio within the
+        list of Panel aspect ratios being tested.
+    :param num_chordwise_panels_id: The index of the current number of chordwise Panels
+        within the list of numbers of chordwise Panels being tested.
+    :param airplane_id: The index of the current Airplane.
+    :param wing_id: The index of the current Wing within the Airplane.
+    :param airplane_name: The name of the current Airplane, used in the log messages.
+    :param wing_name: The name of the current Wing, used in the log messages.
+    :param log_indent: The leading whitespace prepended to the log messages so they nest
+        under the calling function's other log output.
+    :param num_wing_cross_sections_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index) tuple to a
+        previously calculated number of WingCrossSections. It is read and updated in
+        place.
+    :param compute_num_wing_cross_sections: A callable that takes a starting number of
+        WingCrossSections and returns the number of WingCrossSections that achieves the
+        desired Panel aspect ratio. It is called only on a cache miss.
+    :return: The number of WingCrossSections for the Wing.
+    """
+    num_wing_cross_sections_key = (
+        panel_aspect_ratio_id,
+        num_chordwise_panels_id,
+        airplane_id,
+        wing_id,
+    )
+
+    if num_wing_cross_sections_key in num_wing_cross_sections_cache:
+        _logger.debug(
+            f"{log_indent}Getting the cached number of WingCrossSections calculated for "
+            f"{airplane_name}'s {wing_name}..."
+        )
+        this_num_wing_cross_sections = num_wing_cross_sections_cache[
+            num_wing_cross_sections_key
+        ]
+    else:
+        # Start the search from a conservative lower bound: the smallest number of
+        # WingCrossSections already found for this Wing at an incrementally coarser mesh
+        # (in Panel aspect ratio, number of chordwise Panels, or both), since the current
+        # finer mesh must use at least that many. The floor is two, the fewest
+        # WingCrossSections an edge-defined Wing can have.
+        starting_num_wing_cross_sections = 2
+        last_ar_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id,
+            airplane_id,
+            wing_id,
+        )
+        last_chord_key = (
+            panel_aspect_ratio_id,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+        )
+        last_ar_and_chord_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+        )
+        last_cache_val = min(
+            num_wing_cross_sections_cache.get(last_ar_key, np.inf),
+            num_wing_cross_sections_cache.get(last_chord_key, np.inf),
+            num_wing_cross_sections_cache.get(last_ar_and_chord_key, np.inf),
+        )
+        if last_cache_val != np.inf:
+            starting_num_wing_cross_sections = int(last_cache_val)
+
+        _logger.debug(
+            f"{log_indent}Calculating the number of WingCrossSections for "
+            f"{airplane_name}'s {wing_name}, with a starting value of "
+            f"{starting_num_wing_cross_sections}..."
+        )
+
+        this_num_wing_cross_sections = compute_num_wing_cross_sections(
+            starting_num_wing_cross_sections
+        )
+
+        num_wing_cross_sections_cache[num_wing_cross_sections_key] = (
+            this_num_wing_cross_sections
+        )
+
+    _logger.debug(
+        f"{log_indent}Number of WingCrossSections: {this_num_wing_cross_sections}"
+    )
+
+    return this_num_wing_cross_sections
+
+
 def _validate_panel_aspect_ratio_bounds(
     panel_aspect_ratio_bounds: tuple[int, int],
 ) -> None:
@@ -1882,19 +2351,19 @@ def _validate_num_chordwise_panels_bounds(
         raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
 
 
-def _reject_non_trapezoidal_wings(
+def _reject_unrefinable_wings(
     ref_airplanes: tuple[geometry.airplane.Airplane, ...],
     analyze_function_name: str,
 ) -> None:
-    """Raises if any Wing in the reference Airplanes has a non-trapezoidal spanwise
-    mesh.
+    """Raises if any Wing in the reference Airplanes cannot be refined.
 
-    The convergence analysis functions refine a Wing by sweeping the number of spanwise
-    Panels while holding its WingCrossSections fixed, which is only meaningful for a
-    trapezoidal Wing. A Wing whose spanwise mesh is defined as single panel strips (for
-    example one built with explode_into_strips=True) would be silently subdivided along
-    the same geometry rather than refined, so its convergence result would be
-    misleading.
+    The convergence analysis functions refine a Wing by its spanwise mesh: a trapezoidal
+    Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
+    fixed, and an edge-defined Wing (one built with Wing.from_edge_points) by resampling
+    its stored edge curves into more WingCrossSections. Both are supported. An exploded
+    Wing (one built with explode_into_strips=True) is already in single-panel-strip form
+    but carries no edge curves, so it can be neither resampled nor meaningfully swept
+    for Panel density, and it is rejected.
 
     :param ref_airplanes: A tuple of the reference Airplanes whose Wings are checked.
     :param analyze_function_name: The name of the calling analysis function, used in the
@@ -1903,11 +2372,14 @@ def _reject_non_trapezoidal_wings(
     """
     for ref_airplane in ref_airplanes:
         for ref_wing in ref_airplane.wings:
-            if ref_wing.spanwise_mesh != "trapezoidal":
+            if ref_wing.spanwise_mesh not in ("trapezoidal", "edge_defined"):
                 raise ValueError(
-                    f"{analyze_function_name} does not support Wings whose spanwise "
-                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
-                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
+                    f"{analyze_function_name} cannot refine the Wing named "
+                    f'"{ref_wing.name}", whose spanwise mesh is '
+                    f'"{ref_wing.spanwise_mesh}". Convergence analysis can refine an '
+                    "edge-defined Wing (one built from edge curves) or a non-edge-defined "
+                    "Wing built from WingCrossSections, but not a Wing already exploded "
+                    "into single-panel strips."
                 )
 
 

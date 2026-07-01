@@ -53,6 +53,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chords, num_chords_ans)
         self.assertEqual(converged_panel_ar, panel_ar_ans)
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsNone(converged_parameters[4])
 
     def test_rejects_exploded_wing(self):
         """This method tests that the function rejects an UnsteadyProblem whose Airplane
@@ -102,3 +103,44 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 convergence_criteria=5.0,
                 show_solver_progress=False,
             )
+
+    def test_unsteady_convergence_resolves_solver(self):
+        """This method tests that the function returns the converged, run solver for an
+        UnsteadyRingVortexLatticeMethodSolver when resolve_converged_solver is True.
+
+        :return: None
+        """
+        converged_parameters = ps.convergence.analyze_unsteady_convergence(
+            ref_problem=self.unsteady_validation_problem,
+            prescribed_wake=True,
+            free_wake=True,
+            num_chords_bounds=(1, 4),
+            panel_aspect_ratio_bounds=(4, 2),
+            num_chordwise_panels_bounds=(1, 5),
+            convergence_criteria=5.0,
+            show_solver_progress=False,
+            resolve_converged_solver=True,
+        )
+
+        converged_wake_state = converged_parameters[0]
+        converged_num_chords = converged_parameters[1]
+        converged_panel_ar = converged_parameters[2]
+        converged_num_chordwise = converged_parameters[3]
+        converged_solver = converged_parameters[4]
+
+        wake_state_ans = True
+        num_chords_ans = 2
+        panel_ar_ans = 4
+        num_chordwise_ans = 3
+
+        self.assertEqual(converged_wake_state, wake_state_ans)
+        self.assertEqual(converged_num_chords, num_chords_ans)
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsInstance(
+            converged_solver,
+            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        )
+        self.assertGreater(
+            len(converged_solver.unsteady_problem.finalForceCoefficients_W), 0
+        )

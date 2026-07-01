@@ -44,6 +44,7 @@ class TestSteadyConvergence(unittest.TestCase):
 
         self.assertEqual(converged_panel_ar, panel_ar_ans)
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsNone(converged_parameters[2])
 
     def test_rejects_exploded_wing(self):
         """This method tests that the function rejects a SteadyProblem whose Airplane has
@@ -87,3 +88,64 @@ class TestSteadyConvergence(unittest.TestCase):
 
         self.assertEqual(converged_panel_ar, panel_ar_ans)
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsNone(converged_parameters[2])
+
+    def test_steady_horseshoe_convergence_resolves_solver(self):
+        """This method tests that the function returns the converged, run solver for a
+        SteadyHorseshoeVortexLatticeMethodSolver when resolve_converged_solver is True.
+
+        :return: None
+        """
+        converged_parameters = ps.convergence.analyze_steady_convergence(
+            ref_problem=self.steady_validation_problem,
+            solver_type="steady horseshoe vortex lattice method",
+            panel_aspect_ratio_bounds=(4, 2),
+            num_chordwise_panels_bounds=(1, 4),
+            convergence_criteria=5.0,
+            resolve_converged_solver=True,
+        )
+
+        converged_panel_ar = converged_parameters[0]
+        converged_num_chordwise = converged_parameters[1]
+        converged_solver = converged_parameters[2]
+
+        panel_ar_ans = 4
+        num_chordwise_ans = 2
+
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsInstance(
+            converged_solver,
+            ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
+        )
+        self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
+
+    def test_steady_ring_convergence_resolves_solver(self):
+        """This method tests that the function returns the converged, run solver for a
+        SteadyRingVortexLatticeMethodSolver when resolve_converged_solver is True.
+
+        :return: None
+        """
+        converged_parameters = ps.convergence.analyze_steady_convergence(
+            ref_problem=self.steady_validation_problem,
+            solver_type="steady ring vortex lattice method",
+            panel_aspect_ratio_bounds=(4, 2),
+            num_chordwise_panels_bounds=(1, 4),
+            convergence_criteria=5.0,
+            resolve_converged_solver=True,
+        )
+
+        converged_panel_ar = converged_parameters[0]
+        converged_num_chordwise = converged_parameters[1]
+        converged_solver = converged_parameters[2]
+
+        panel_ar_ans = 4
+        num_chordwise_ans = 2
+
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsInstance(
+            converged_solver,
+            ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+        )
+        self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)

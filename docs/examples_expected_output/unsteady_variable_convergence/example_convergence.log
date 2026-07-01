@@ -62,9 +62,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=61, delta_time=0.016393, mi
 INFO - pterasoftware.movements.movement - 	num_steps=62, delta_time=0.016129, mismatch=0.434538
 INFO - pterasoftware.movements.movement - 	num_steps=63, delta_time=0.015873, mismatch=0.442278
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=30, delta_time=0.033333, mismatch=0.018992
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.179 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.367 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -141,9 +141,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=81, delta_time=0.012346, mi
 INFO - pterasoftware.movements.movement - 	num_steps=82, delta_time=0.012195, mismatch=0.430156
 INFO - pterasoftware.movements.movement - 	num_steps=83, delta_time=0.012048, mismatch=0.436068
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=40, delta_time=0.025, mismatch=0.019565
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.245 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.141 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -235,9 +235,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=101, delta_time=0.009901, m
 INFO - pterasoftware.movements.movement - 	num_steps=102, delta_time=0.009804, mismatch=0.427579
 INFO - pterasoftware.movements.movement - 	num_steps=103, delta_time=0.009709, mismatch=0.432361
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=50, delta_time=0.02, mismatch=0.019911
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.219 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.224 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -300,9 +300,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=61, delta_time=0.016393, mi
 INFO - pterasoftware.movements.movement - 	num_steps=62, delta_time=0.016129, mismatch=0.434206
 INFO - pterasoftware.movements.movement - 	num_steps=63, delta_time=0.015873, mismatch=0.44195
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=30, delta_time=0.033333, mismatch=0.019205
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.082 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.169 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.3% (limiting coefficient: cFZ)
@@ -379,9 +379,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=81, delta_time=0.012346, mi
 INFO - pterasoftware.movements.movement - 	num_steps=82, delta_time=0.012195, mismatch=0.430037
 INFO - pterasoftware.movements.movement - 	num_steps=83, delta_time=0.012048, mismatch=0.435951
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=40, delta_time=0.025, mismatch=0.019721
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.159 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.178 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 66.98% (limiting coefficient: cFX)
@@ -473,9 +473,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=101, delta_time=0.009901, m
 INFO - pterasoftware.movements.movement - 	num_steps=102, delta_time=0.009804, mismatch=0.427523
 INFO - pterasoftware.movements.movement - 	num_steps=103, delta_time=0.009709, mismatch=0.432306
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=50, delta_time=0.02, mismatch=0.020003
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.252 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.303 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 97.27% (limiting coefficient: cFX)
@@ -538,9 +538,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=61, delta_time=0.016393, mi
 INFO - pterasoftware.movements.movement - 	num_steps=62, delta_time=0.016129, mismatch=0.434036
 INFO - pterasoftware.movements.movement - 	num_steps=63, delta_time=0.015873, mismatch=0.441782
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=30, delta_time=0.033333, mismatch=0.019436
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.148 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.119 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.81% (limiting coefficient: cFX)
@@ -617,9 +617,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=81, delta_time=0.012346, mi
 INFO - pterasoftware.movements.movement - 	num_steps=82, delta_time=0.012195, mismatch=0.429952
 INFO - pterasoftware.movements.movement - 	num_steps=83, delta_time=0.012048, mismatch=0.435867
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=40, delta_time=0.025, mismatch=0.01981
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.444 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.894 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 57.92% (limiting coefficient: cFX)
@@ -711,9 +711,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=101, delta_time=0.009901, m
 INFO - pterasoftware.movements.movement - 	num_steps=102, delta_time=0.009804, mismatch=0.427463
 INFO - pterasoftware.movements.movement - 	num_steps=103, delta_time=0.009709, mismatch=0.432246
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=50, delta_time=0.02, mismatch=0.020063
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 3.758 s
+INFO - pterasoftware.convergence - 					Simulation completed in 2.994 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 60.61% (limiting coefficient: cFX)
@@ -776,9 +776,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=61, delta_time=0.016393, mi
 INFO - pterasoftware.movements.movement - 	num_steps=62, delta_time=0.016129, mismatch=0.43397
 INFO - pterasoftware.movements.movement - 	num_steps=63, delta_time=0.015873, mismatch=0.441716
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=30, delta_time=0.033333, mismatch=0.01951
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.26 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.178 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 52.05% (limiting coefficient: cFX)
@@ -855,9 +855,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=81, delta_time=0.012346, mi
 INFO - pterasoftware.movements.movement - 	num_steps=82, delta_time=0.012195, mismatch=0.429902
 INFO - pterasoftware.movements.movement - 	num_steps=83, delta_time=0.012048, mismatch=0.435816
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=40, delta_time=0.025, mismatch=0.019888
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 2.855 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.959 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.97% (limiting coefficient: cFX)
@@ -949,9 +949,9 @@ INFO - pterasoftware.movements.movement - 	num_steps=101, delta_time=0.009901, m
 INFO - pterasoftware.movements.movement - 	num_steps=102, delta_time=0.009804, mismatch=0.427436
 INFO - pterasoftware.movements.movement - 	num_steps=103, delta_time=0.009709, mismatch=0.432219
 INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle=50, delta_time=0.02, mismatch=0.020098
-INFO - pterasoftware.convergence - 					Optimized delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 17.417 s
+INFO - pterasoftware.convergence - 					Simulation completed in 17.07 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 81.38% (limiting coefficient: cFX)
@@ -960,27 +960,27 @@ INFO - pterasoftware.convergence - 		Cycles: 2
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 13/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.117 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.362 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.45% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 14/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.266 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.298 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 63.72% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.91% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 15/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.456 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.427 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 53.85% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -988,27 +988,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 16/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.197 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.15 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.75% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.99% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 17/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.279 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.276 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.09% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.52% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.5% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 18/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.581 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.623 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 53.44% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.0% (limiting coefficient: cFX)
@@ -1016,27 +1016,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 19/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.287 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.305 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.63% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.05% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 20/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.431 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.379 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 66.79% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.65% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 21/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 6.269 s
+INFO - pterasoftware.convergence - 					Simulation completed in 4.649 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 52.92% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.3% (limiting coefficient: cFX)
@@ -1044,27 +1044,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 22/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.952 s
+INFO - pterasoftware.convergence - 					Simulation completed in 2.969 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 44.35% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.04% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 23/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 4.3 s
+INFO - pterasoftware.convergence - 					Simulation completed in 3.478 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 68.45% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.9% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 24/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 24.376 s
+INFO - pterasoftware.convergence - 					Simulation completed in 22.806 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 52.82% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.91% (limiting coefficient: cFX)
@@ -1073,27 +1073,27 @@ INFO - pterasoftware.convergence - 		Cycles: 3
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 25/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.223 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.766 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 26/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.375 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.42 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.8% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 27/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.686 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.106 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -1101,27 +1101,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 28/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.221 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.356 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.89% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 29/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.407 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.014 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.49% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.5% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 30/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.172 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.578 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 94.96% (limiting coefficient: cFX)
@@ -1129,27 +1129,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 31/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.293 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.301 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.04% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 32/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.568 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.945 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.63% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 33/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 5.718 s
+INFO - pterasoftware.convergence - 					Simulation completed in 6.117 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.28% (limiting coefficient: cFX)
@@ -1157,27 +1157,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 34/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 2.081 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.27 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.03% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 35/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 5.613 s
+INFO - pterasoftware.convergence - 					Simulation completed in 4.555 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.88% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 36/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 32.104 s
+INFO - pterasoftware.convergence - 					Simulation completed in 31.599 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.88% (limiting coefficient: cFX)
@@ -1186,27 +1186,27 @@ INFO - pterasoftware.convergence - 		Cycles: 4
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 37/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.218 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.276 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 38/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.48 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.434 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.76% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 39/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.912 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.905 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -1214,27 +1214,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 40/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.298 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.264 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.87% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 41/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.701 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.636 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.48% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.49% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 42/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 3.747 s
+INFO - pterasoftware.convergence - 					Simulation completed in 2.758 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 94.94% (limiting coefficient: cFX)
@@ -1242,27 +1242,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 43/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.521 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.446 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.03% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 44/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.096 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.959 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.62% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 45/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 6.723 s
+INFO - pterasoftware.convergence - 					Simulation completed in 7.691 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.27% (limiting coefficient: cFX)
@@ -1270,27 +1270,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 46/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.335 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.579 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.02% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 47/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 6.412 s
+INFO - pterasoftware.convergence - 					Simulation completed in 7.101 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.88% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 48/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 44.256 s
+INFO - pterasoftware.convergence - 					Simulation completed in 43.193 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.87% (limiting coefficient: cFX)
@@ -1300,27 +1300,27 @@ INFO - pterasoftware.convergence - 		Cycles: 1
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 49/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.12 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.086 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 50/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.169 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.197 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 42.77% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 51/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.306 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.242 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -1328,27 +1328,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 52/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.047 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.109 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.21% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 53/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.187 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.186 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 67.23% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 65.26% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 54/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.389 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.286 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 97.56% (limiting coefficient: cFX)
@@ -1356,27 +1356,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 55/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.178 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.14 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.89% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 56/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.255 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.294 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 58.07% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 57/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 3.022 s
+INFO - pterasoftware.convergence - 					Simulation completed in 3.916 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 60.78% (limiting coefficient: cFX)
@@ -1384,27 +1384,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 58/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.203 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.183 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 52.12% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 59/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 2.009 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.21 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 55.06% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 60/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 13.933 s
+INFO - pterasoftware.convergence - 					Simulation completed in 13.247 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 81.43% (limiting coefficient: cFX)
@@ -1413,27 +1413,27 @@ INFO - pterasoftware.convergence - 		Cycles: 2
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 61/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.2 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.153 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.39% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 62/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.291 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.334 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 63.73% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 57.51% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 63/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.52 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.575 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.71% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -1441,27 +1441,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 64/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.288 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.212 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.62% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 46.25% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 65/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.348 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.336 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 64.97% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.9% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 96.64% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 66/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.621 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.691 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.43% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.51% (limiting coefficient: cFX)
@@ -1469,27 +1469,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 67/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.255 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.258 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.34% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.24% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 68/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.614 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.487 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.54% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.99% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 69/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 4.572 s
+INFO - pterasoftware.convergence - 					Simulation completed in 4.375 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.17% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.75% (limiting coefficient: cFX)
@@ -1497,27 +1497,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 70/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.395 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.412 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.85% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.4% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 71/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 4.358 s
+INFO - pterasoftware.convergence - 					Simulation completed in 3.789 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.44% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.25% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 72/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 27.716 s
+INFO - pterasoftware.convergence - 					Simulation completed in 27.867 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.3% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 80.19% (limiting coefficient: cFX)
@@ -1526,27 +1526,27 @@ INFO - pterasoftware.convergence - 		Cycles: 3
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 73/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.248 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.272 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 74/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.968 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.536 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 57.55% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 75/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.985 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.969 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
@@ -1554,27 +1554,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 76/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.422 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.26 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 46.25% (limiting coefficient: cFZ)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 77/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.64 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.596 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.87% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 96.61% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 78/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 1.234 s
+INFO - pterasoftware.convergence - 					Simulation completed in 1.079 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.48% (limiting coefficient: cFX)
@@ -1582,27 +1582,27 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 79/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 2.095 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.4 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.22% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 80/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.88 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.947 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.95% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 				Chordwise Panels: 5
 INFO - pterasoftware.convergence - 					Iteration number: 81/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.02 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.02 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 7.35 s
+INFO - pterasoftware.convergence - 					Simulation completed in 6.338 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.73% (limiting coefficient: cFX)
@@ -1610,18 +1610,18 @@ INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence m
 INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 				Chordwise Panels: 3
 INFO - pterasoftware.convergence - 					Iteration number: 82/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.033333 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.033333 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 0.661 s
+INFO - pterasoftware.convergence - 					Simulation completed in 0.64 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.38% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 				Chordwise Panels: 4
 INFO - pterasoftware.convergence - 					Iteration number: 83/96
-INFO - pterasoftware.convergence - 					Cached delta_time: 0.025 s
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.025 s
 INFO - pterasoftware.convergence - 					Starting simulation...
-INFO - pterasoftware.convergence - 					Simulation completed in 6.71 s
+INFO - pterasoftware.convergence - 					Simulation completed in 6.184 s
 INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.26% (limiting coefficient: cFX)
@@ -1631,7 +1631,7 @@ INFO - pterasoftware.convergence - 	Wake type: prescribed
 INFO - pterasoftware.convergence - 	Cycles: 2
 INFO - pterasoftware.convergence - 	Panel aspect ratio: 1
 INFO - pterasoftware.convergence - 	Chordwise Panels: 3
-INFO - pterasoftware.convergence - 	Simulation completed in 1.952 s
+INFO - pterasoftware.convergence - 	Simulation completed in 2.969 s
 INFO - pterasoftware.convergence - 	Spanwise Panels:
 INFO - pterasoftware.convergence - 		Example Airplane:
 INFO - pterasoftware.convergence - 			Main Wing:
@@ -1640,4 +1640,4 @@ INFO - pterasoftware.convergence - 				WingCrossSection 2: None
 INFO - pterasoftware.convergence - 			Reflected Main Wing:
 INFO - pterasoftware.convergence - 				WingCrossSection 1: 9
 INFO - pterasoftware.convergence - 				WingCrossSection 2: None
-INFO - pterasoftware.convergence - Convergence analysis completed in 294.129 s
+INFO - pterasoftware.convergence - Convergence analysis completed in 283.067 s

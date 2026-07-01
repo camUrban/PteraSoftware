@@ -9,6 +9,10 @@ from pathlib import Path
 
 import numpy as np
 
+from . import _logging
+
+_logger = _logging.get_logger("_convergence_cache")
+
 # The schema version of the JSON solve cache. It is bumped only when the on-disk
 # structure of the cache file changes, for example how the load coefficients are stored
 # or the addition of the memo section. A cache file whose version does not match is
@@ -40,9 +44,13 @@ def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
 def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
     """Loads a JSON solve cache from disk into a dictionary of load coefficients.
 
-    A missing file, or a file whose schema version does not match the current one,
-    yields an empty cache rather than an error, so a fresh or outdated cache simply
-    starts empty and is rebuilt as the sweep solves each mesh.
+    The cache is a pure optimization, so any file that cannot be read as a current-
+    schema solve cache yields an empty cache rather than an error and the sweep rebuilds
+    it by solving each mesh. This covers a missing file, an unreadable file (for example
+    a directory or a permission error), a file that is not valid JSON, a file whose
+    schema version does not match the current one, and a current-version file whose
+    entries section is missing or malformed. An unreadable or invalid file is logged as
+    a warning so a silently degraded cache is still observable.
 
     :param cache_path: The path to the JSON solve cache file, or None to skip caching
         and return an empty cache.
@@ -52,15 +60,31 @@ def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
     if cache_path is None or not cache_path.exists():
         return {}
 
-    with open(cache_path) as cache_file:
-        data = json.load(cache_file)
+    try:
+        with open(cache_path) as cache_file:
+            data = json.load(cache_file)
+    except (OSError, json.JSONDecodeError) as error:
+        _logger.warning(
+            "Ignoring unreadable solve cache at %s (%s); rebuilding it.",
+            cache_path,
+            error,
+        )
+        return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
         return {}
 
+    entries = data.get("entries", {})
+    if not isinstance(entries, dict):
+        _logger.warning(
+            "Ignoring solve cache at %s with a malformed entries section; rebuilding it.",
+            cache_path,
+        )
+        return {}
+
     return {
         key: np.array(coefficients, dtype=float)
-        for key, coefficients in data["entries"].items()
+        for key, coefficients in entries.items()
     }
 
 
@@ -316,10 +340,13 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     """Loads the memo section of a JSON cache file into a dictionary keyed on absolute
     mesh values.
 
-    A missing file, a None path, a file whose schema version does not match the current
-    one, or a file with no memo section yields an empty dictionary rather than an error,
-    so a fresh, outdated, or solve-only cache simply pre-populates nothing and the sweep
-    resolves each mesh as usual.
+    The memo cache is a pure optimization, so any file that cannot be read as a current-
+    schema cache yields an empty dictionary rather than an error and the sweep resolves
+    each mesh as usual. This covers a None path, a missing file, an unreadable file (for
+    example a directory or a permission error), a file that is not valid JSON, a file
+    whose schema version does not match the current one, and a current-version file
+    whose memo section is missing or malformed. An unreadable or invalid file is logged
+    as a warning so a silently degraded cache is still observable.
 
     :param cache_path: The path to the JSON cache file, or None to skip caching and
         return an empty dictionary.
@@ -329,11 +356,26 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     if cache_path is None or not cache_path.exists():
         return {}
 
-    with open(cache_path) as cache_file:
-        data = json.load(cache_file)
+    try:
+        with open(cache_path) as cache_file:
+            data = json.load(cache_file)
+    except (OSError, json.JSONDecodeError) as error:
+        _logger.warning(
+            "Ignoring unreadable memo cache at %s (%s); resolving each mesh.",
+            cache_path,
+            error,
+        )
+        return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
         return {}
 
     memos: dict[str, float] = data.get("memos", {})
+    if not isinstance(memos, dict):
+        _logger.warning(
+            "Ignoring cache at %s with a malformed memo section; resolving each mesh.",
+            cache_path,
+        )
+        return {}
+
     return memos

@@ -160,6 +160,42 @@ class TestSolveCache(unittest.TestCase):
         for key in cache:
             npt.assert_array_equal(reloaded[key], cache[key])
 
+    def test_load_invalid_json_returns_empty(self) -> None:
+        """Test that a cache file that is not valid JSON is ignored with a warning."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            with open(path, "w") as cache_file:
+                cache_file.write("{not valid json")
+            with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
+                self.assertEqual(_convergence_cache.load_solve_cache(path), {})
+
+    def test_load_missing_entries_section_returns_empty(self) -> None:
+        """Test that a current-version file with no entries section loads as empty."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "memos": {},
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            self.assertEqual(_convergence_cache.load_solve_cache(path), {})
+
+    def test_load_malformed_entries_section_returns_empty(self) -> None:
+        """Test that a file whose entries section is not a dict is ignored with a
+        warning.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "entries": [1, 2, 3],
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
+                self.assertEqual(_convergence_cache.load_solve_cache(path), {})
+
 
 class TestMemoTranslation(unittest.TestCase):
     """This class contains methods for testing _convergence_cache.memos_to_disk and
@@ -413,6 +449,36 @@ class TestMemoCacheDisk(unittest.TestCase):
             with open(path, "w") as cache_file:
                 json.dump(data, cache_file)
             self.assertEqual(_convergence_cache.load_memo_cache(path), {})
+
+    def test_load_invalid_json_returns_empty(self) -> None:
+        """Test that a memo cache file that is not valid JSON is ignored with a warning.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            with open(path, "w") as cache_file:
+                cache_file.write("{not valid json")
+            with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
+                self.assertEqual(_convergence_cache.load_memo_cache(path), {})
+
+    def test_load_malformed_memos_section_returns_empty(self) -> None:
+        """Test that a current-version file whose memo section is not a dict is ignored
+        with a warning.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                "entries": {},
+                "memos": [1, 2, 3],
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
+                self.assertEqual(_convergence_cache.load_memo_cache(path), {})
 
     def test_write_cache_round_trips_both_sections(self) -> None:
         """Test that the unified writer stores both the solve entries and the memos so

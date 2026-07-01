@@ -1,5 +1,7 @@
 """This module creates Airplanes to be used as fixtures."""
 
+import numpy as np
+
 import pterasoftware as ps
 
 
@@ -118,6 +120,113 @@ def make_exploded_validation_airplane():
         name="Exploded Validation Airplane",
     )
     return exploded_validation_airplane
+
+
+def make_edge_defined_validation_airplane():
+    """This function creates an Airplane with an edge-defined Wing to be used as a
+    fixture for testing the convergence functions' edge-defined refinement.
+
+    The Wing is built with Wing.from_edge_points, so its spanwise mesh marker is
+    "edge_defined". Its leading edge sweeps straight back and its trailing edge is
+    unswept, giving a straight tapered planform (a unit root chord tapering to a half
+    chord over a five meter half span) that PCHIP resampling reproduces exactly at any
+    number of WingCrossSections.
+
+    :return edge_defined_validation_airplane: Airplane
+        This is the Airplane fixture.
+    """
+    ys = np.linspace(0.0, 5.0, 30)
+    zeros = np.zeros_like(ys)
+    leadingEdgePoints_Wn_Ler = np.column_stack((0.1 * ys, ys, zeros))
+    trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
+
+    edge_defined_validation_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing.from_edge_points(
+                leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+                trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+                num_wing_cross_sections=10,
+                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                name="Edge Wing",
+                symmetric=True,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=8,
+            )
+        ],
+        name="Edge Defined Validation Airplane",
+    )
+    return edge_defined_validation_airplane
+
+
+def make_mixed_validation_airplane():
+    """This function creates an Airplane holding both a trapezoidal Wing and an
+    edge-defined Wing, to be used as a fixture for testing that the convergence functions
+    refine each Wing by its own spanwise mesh.
+
+    The trapezoidal Wing (spanwise mesh "trapezoidal") is refined by sweeping its number
+    of spanwise Panels, while the edge-defined Wing (spanwise mesh "edge_defined", built
+    with Wing.from_edge_points) is refined by resampling its stored edge curves. The
+    edge-defined Wing is placed behind the trapezoidal Wing so the two do not overlap.
+
+    :return mixed_validation_airplane: Airplane
+        This is the Airplane fixture.
+    """
+    ys = np.linspace(0.0, 5.0, 30)
+    zeros = np.zeros_like(ys)
+    leadingEdgePoints_Wn_Ler = np.column_stack((0.1 * ys, ys, zeros))
+    trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
+
+    mixed_validation_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=8,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing="uniform",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                        num_spanwise_panels=None,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="Trapezoidal Wing",
+                symmetric=True,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=8,
+                chordwise_spacing="uniform",
+            ),
+            ps.geometry.wing.Wing.from_edge_points(
+                leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+                trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+                num_wing_cross_sections=10,
+                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                name="Edge Wing",
+                Ler_Gs_Cgs=(4.0, 0.0, 0.0),
+                symmetric=True,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=8,
+            ),
+        ],
+        name="Mixed Validation Airplane",
+    )
+    return mixed_validation_airplane
 
 
 def make_multiple_wing_steady_validation_airplane():

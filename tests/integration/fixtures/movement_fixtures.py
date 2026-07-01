@@ -63,6 +63,121 @@ def make_static_validation_movement():
     return unsteady_validation_movement
 
 
+def make_edge_defined_static_validation_movement():
+    """This function creates a static Movement over an edge-defined Airplane, to be used
+    as a fixture for testing the convergence functions' edge-defined refinement.
+
+    Every WingCrossSectionMovement is static, which edge-defined convergence requires,
+    since resampling the Wing changes its number of WingCrossSections.
+
+    :return edge_defined_validation_movement: Movement
+        This is the Movement fixture.
+    """
+    edge_defined_validation_airplane = (
+        airplane_fixtures.make_edge_defined_validation_airplane()
+    )
+    edge_defined_validation_operating_point = (
+        operating_point_fixtures.make_validation_operating_point()
+    )
+
+    edge_defined_wing_cross_section_movements = [
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=wing_cross_section
+        )
+        for wing_cross_section in edge_defined_validation_airplane.wings[
+            0
+        ].wing_cross_sections
+    ]
+
+    edge_defined_wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=edge_defined_validation_airplane.wings[0],
+        wing_cross_section_movements=edge_defined_wing_cross_section_movements,
+    )
+
+    edge_defined_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=edge_defined_validation_airplane,
+        wing_movements=[edge_defined_wing_movement],
+    )
+
+    edge_defined_operating_point_movement = (
+        ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=edge_defined_validation_operating_point
+        )
+    )
+
+    edge_defined_validation_movement = ps.movements.movement.Movement(
+        airplane_movements=[edge_defined_airplane_movement],
+        operating_point_movement=edge_defined_operating_point_movement,
+        num_chords=6,
+    )
+
+    return edge_defined_validation_movement
+
+
+def make_edge_defined_non_static_validation_movement():
+    """This function creates a Movement over an edge-defined Airplane whose second
+    WingCrossSectionMovement pitches, to be used as a fixture for testing that
+    edge-defined convergence rejects non-static WingCrossSectionMovements.
+
+    Resampling an edge-defined Wing changes its number of WingCrossSections, so
+    per-WingCrossSection motion cannot be preserved. This Movement gives one interior
+    WingCrossSection a pitching motion so the convergence function must reject it.
+
+    :return edge_defined_non_static_validation_movement: Movement
+        This is the Movement fixture.
+    """
+    edge_defined_validation_airplane = (
+        airplane_fixtures.make_edge_defined_validation_airplane()
+    )
+    edge_defined_validation_operating_point = (
+        operating_point_fixtures.make_validation_operating_point()
+    )
+
+    edge_defined_wing_cross_sections = edge_defined_validation_airplane.wings[
+        0
+    ].wing_cross_sections
+    edge_defined_wing_cross_section_movements = [
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=wing_cross_section
+        )
+        for wing_cross_section in edge_defined_wing_cross_sections
+    ]
+
+    # Replace an interior WingCrossSectionMovement with a pitching one. The root
+    # WingCrossSection cannot pitch, so the second WingCrossSection is used.
+    edge_defined_wing_cross_section_movements[1] = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=edge_defined_wing_cross_sections[1],
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 5.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
+        )
+    )
+
+    edge_defined_wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=edge_defined_validation_airplane.wings[0],
+        wing_cross_section_movements=edge_defined_wing_cross_section_movements,
+    )
+
+    edge_defined_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=edge_defined_validation_airplane,
+        wing_movements=[edge_defined_wing_movement],
+    )
+
+    edge_defined_operating_point_movement = (
+        ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=edge_defined_validation_operating_point
+        )
+    )
+
+    edge_defined_non_static_validation_movement = ps.movements.movement.Movement(
+        airplane_movements=[edge_defined_airplane_movement],
+        operating_point_movement=edge_defined_operating_point_movement,
+        num_cycles=1,
+    )
+
+    return edge_defined_non_static_validation_movement
+
+
 def make_variable_validation_movement():
     """This function creates a Movement with variable geometry to be used as a fixture.
 

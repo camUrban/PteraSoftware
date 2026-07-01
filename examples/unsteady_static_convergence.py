@@ -97,10 +97,11 @@ del example_movement
 
 # Run the unsteady convergence analysis. This will run several simulations, modifying
 # the wake state, wake length, average Panel aspect ratio, and number of chordwise
-# Panels with each iteration. Once it detects that the net load coefficients haven't
-# change by more than the convergence criteria (measured as an absolute percent
-# error), it will return the parameters it found to result in a converged solution.
-# See the analyze_unsteady_convergence function docstring for more details.
+# Panels with each iteration. Once it detects that each load coefficient has stopped
+# changing by more than the relative tolerance (rtol) plus the absolute tolerance (atol)
+# between successive meshes, it will return the parameters it found to result in a
+# converged solution. See the analyze_unsteady_convergence function docstring for more
+# details.
 ps.convergence.analyze_unsteady_convergence(
     ref_problem=example_problem,
     prescribed_wake=True,
@@ -108,6 +109,7 @@ ps.convergence.analyze_unsteady_convergence(
     num_chords_bounds=(4, 8),
     panel_aspect_ratio_bounds=(4, 1),
     num_chordwise_panels_bounds=(3, 6),
-    convergence_criteria=1.0,
+    rtol=0.01,
+    atol=0.001,
     show_solver_progress=False,
 )

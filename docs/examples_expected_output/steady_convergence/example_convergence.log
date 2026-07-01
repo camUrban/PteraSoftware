@@ -3,68 +3,68 @@ INFO - pterasoftware.convergence - 	Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 		Chordwise Panels: 3
 INFO - pterasoftware.convergence - 			Iteration number: 1/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.277 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: inf
+INFO - pterasoftware.convergence - 			Simulation completed in 0.184 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 		Chordwise Panels: 4
 INFO - pterasoftware.convergence - 			Iteration number: 2/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.257 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 1.86%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.216 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 55.0% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 5
 INFO - pterasoftware.convergence - 			Iteration number: 3/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.269 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 1.03%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.317 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 98.77% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 6
 INFO - pterasoftware.convergence - 			Iteration number: 4/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.345 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 0.75%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.302 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 7
 INFO - pterasoftware.convergence - 			Iteration number: 5/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.176 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 0.45%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.221 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 8
 INFO - pterasoftware.convergence - 			Iteration number: 6/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.23 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: inf
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 0.37%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.366 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - 	Panel aspect ratio: 3
 INFO - pterasoftware.convergence - 		Chordwise Panels: 3
 INFO - pterasoftware.convergence - 			Iteration number: 7/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.131 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: 0.71%
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: inf
+INFO - pterasoftware.convergence - 			Simulation completed in 0.282 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: not yet checked
 INFO - pterasoftware.convergence - 		Chordwise Panels: 4
 INFO - pterasoftware.convergence - 			Iteration number: 8/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.239 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: 0.88%
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 1.84%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.348 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 55.72% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 5
 INFO - pterasoftware.convergence - 			Iteration number: 9/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.253 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: 0.74%
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 1.09%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.173 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 93.77% (limiting coefficient: cMY)
 INFO - pterasoftware.convergence - 		Chordwise Panels: 6
 INFO - pterasoftware.convergence - 			Iteration number: 10/24
 INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.291 s
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from Panel aspect ratio: 0.51%
-INFO - pterasoftware.convergence - 			Maximum combined coefficient change from number of chordwise Panels: 0.7%
+INFO - pterasoftware.convergence - 			Simulation completed in 0.444 s
+INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
 INFO - pterasoftware.convergence - The analysis found a converged case:
 INFO - pterasoftware.convergence - 	Panel aspect ratio: 4
 INFO - pterasoftware.convergence - 	Chordwise Panels: 5
-INFO - pterasoftware.convergence - 	Simulation time: 0.269 s
+INFO - pterasoftware.convergence - 	Simulation time: 0.317 s
 INFO - pterasoftware.convergence - 	Spanwise Panels:
 INFO - pterasoftware.convergence - 		Leading Airplane:
 INFO - pterasoftware.convergence - 			Main Wing:
@@ -82,3 +82,4 @@ INFO - pterasoftware.convergence - 				WingCrossSection 3: None
 INFO - pterasoftware.convergence - 			Tail:
 INFO - pterasoftware.convergence - 				WingCrossSection 1: 6
 INFO - pterasoftware.convergence - 				WingCrossSection 2: None
+INFO - pterasoftware.convergence - Convergence analysis completed in 3.537 s

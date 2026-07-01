@@ -9,6 +9,7 @@ Runnable example scripts demonstrating how to use Ptera Software. Each page show
 
 Steady Horseshoe VLM Solver <examples/steady_horseshoe_vortex_lattice_method_solver>
 Steady Ring VLM Solver <examples/steady_ring_vortex_lattice_method_solver>
+Steady Ring VLM Solver with a Non-Trapezoidal Wing <examples/steady_ring_vortex_lattice_method_solver_non_trapezoidal>
 Unsteady Ring VLM Solver with Static Geometry <examples/unsteady_ring_vortex_lattice_method_solver_static>
 Unsteady Ring VLM Solver with Variable Geometry (Flapping Wings) <examples/unsteady_ring_vortex_lattice_method_solver_variable>
 Unsteady Ring VLM Solver with Multiple Airplanes <examples/unsteady_ring_vortex_lattice_method_solver_variable_formation>

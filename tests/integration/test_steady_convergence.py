@@ -1,6 +1,9 @@
 """This module contains testing cases for the steady convergence function."""
 
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import pterasoftware as ps
 from tests.integration.fixtures import (
@@ -184,6 +187,96 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_panel_ar, panel_ar_ans)
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[2])
+
+    def test_steady_cache_reproduces_converged_parameters(self) -> None:
+        """This method tests that a run with a cache path finds the same pre-known
+        convergence parameters as an uncached run and writes a populated cache file.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            converged_parameters = ps.convergence.analyze_steady_convergence(
+                ref_problem=self.steady_validation_problem,
+                solver_type="steady ring vortex lattice method",
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 4),
+                rtol=0.05,
+                atol=0.001,
+                cache_path=cache_path,
+            )
+
+            self.assertTrue(cache_path.exists())
+            self.assertGreater(len(ps.convergence._load_solve_cache(cache_path)), 0)
+
+        converged_panel_ar = converged_parameters[0]
+        converged_num_chordwise = converged_parameters[1]
+
+        panel_ar_ans = 4
+        num_chordwise_ans = 2
+
+        self.assertEqual(converged_panel_ar, panel_ar_ans)
+        self.assertEqual(converged_num_chordwise, num_chordwise_ans)
+        self.assertIsNone(converged_parameters[2])
+
+    def test_cache_path_without_json_suffix_raises(self) -> None:
+        """This method tests that a cache_path not ending in .json raises a ValueError.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.convergence.analyze_steady_convergence(
+                ref_problem=self.steady_validation_problem,
+                solver_type="steady ring vortex lattice method",
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 4),
+                rtol=0.05,
+                atol=0.001,
+                cache_path="cache.txt",
+            )
+
+    def test_steady_cache_warm_run_skips_solves(self) -> None:
+        """This method tests that a second run against a warm cache reuses the stored
+        solves and does not run the solver again.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            cold_parameters = ps.convergence.analyze_steady_convergence(
+                ref_problem=self.steady_validation_problem,
+                solver_type="steady ring vortex lattice method",
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 4),
+                rtol=0.05,
+                atol=0.001,
+                cache_path=cache_path,
+            )
+
+            # On the warm run every mesh should be a cache hit, so the solver must
+            # never run. Patching run to raise turns any solve into a test failure.
+            solver_class = (
+                ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+            )
+            with mock.patch.object(
+                solver_class,
+                "run",
+                side_effect=AssertionError("The solver ran despite a warm cache."),
+            ):
+                warm_parameters = ps.convergence.analyze_steady_convergence(
+                    ref_problem=self.steady_validation_problem,
+                    solver_type="steady ring vortex lattice method",
+                    panel_aspect_ratio_bounds=(4, 2),
+                    num_chordwise_panels_bounds=(1, 4),
+                    rtol=0.05,
+                    atol=0.001,
+                    cache_path=cache_path,
+                )
+
+        self.assertEqual(warm_parameters[0], cold_parameters[0])
+        self.assertEqual(warm_parameters[1], cold_parameters[1])
 
     def test_mixed_airplane_steady_convergence(self):
         """This method tests that the function finds pre-known convergence parameters for

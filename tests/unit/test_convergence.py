@@ -288,17 +288,21 @@ class TestValidateCoefficientMask(unittest.TestCase):
     def test_non_tuple_raises_type_error(self) -> None:
         """Test that a non-tuple, non-None mask raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_coefficient_mask([True] * 6)
+            convergence._validate_coefficient_mask([True] * 6)  # type: ignore[arg-type]
 
     def test_wrong_length_raises_value_error(self) -> None:
         """Test that a mask without exactly six elements raises a ValueError."""
         with self.assertRaises(ValueError):
-            convergence._validate_coefficient_mask((True, True, True))
+            convergence._validate_coefficient_mask(
+                (True, True, True)  # type: ignore[arg-type]
+            )
 
     def test_non_bool_element_raises_type_error(self) -> None:
         """Test that a mask with a non-bool element raises a TypeError."""
         with self.assertRaises(TypeError):
-            convergence._validate_coefficient_mask((True, 1, True, True, True, True))
+            convergence._validate_coefficient_mask(
+                (True, 1, True, True, True, True)  # type: ignore[arg-type]
+            )
 
     def test_all_false_raises_value_error(self) -> None:
         """Test that a mask with no True element raises a ValueError."""

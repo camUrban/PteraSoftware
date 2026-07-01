@@ -16,6 +16,7 @@ solved using the UnsteadyRingVortexLatticeMethodSolver.
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import time
@@ -62,6 +63,7 @@ def analyze_steady_convergence(
     atol: float | int = 0.001,
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
     resolve_converged_solver: bool | np.bool_ = False,
+    cache_path: str | Path | None = None,
 ) -> (
     tuple[
         int,
@@ -154,6 +156,14 @@ def analyze_steady_convergence(
         When True, the solver is rebuilt at the converged parameters (which are
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
+    :param cache_path: An optional path (a str or Path, which must end with ".json") to
+        a JSON file that caches each iteration's solved load coefficients, keyed on the
+        reference problem and the mesh parameters. When given, an iteration whose solve
+        is already in the cache reuses the stored coefficients instead of re-running the
+        solver, and each new solve is written through to the file, so an interrupted or
+        repeated study reuses the iterations it has already solved. The mesh is still
+        built each iteration; only the solve is skipped on a cache hit. When None, no
+        cache is read or written. The default is None.
     :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
         first two elements are the converged Panel aspect ratio and the converged number
         of chordwise Panels. The third element is the converged solver if
@@ -197,6 +207,15 @@ def analyze_steady_convergence(
     resolve_converged_solver = _parameter_validation.boolLike_return_bool(
         resolve_converged_solver, "resolve_converged_solver"
     )
+
+    # Normalize the cache_path parameter to a Path, or leave it as None to disable
+    # caching. Require a ".json" suffix, which also rejects an empty or directory path.
+    if cache_path is not None:
+        cache_path = Path(cache_path)
+        if not cache_path.name.endswith(".json"):
+            raise ValueError(
+                f"cache_path must end with '.json', got '{cache_path.name}'."
+            )
 
     run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
@@ -249,6 +268,14 @@ def analyze_steady_convergence(
     # is a tuple of 4 ints: ar_id, chord_id, ref_airplane_id, ref_wing_id.
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
 
+    # Compute the reference problem's content hash once. It anchors each iteration's
+    # solve-cache key to this specific geometry, operating point, and motion.
+    ref_problem_hash = _serialization.hash_object(ref_problem)
+
+    # Load the JSON solve cache, or start empty when caching is disabled or the file does
+    # not yet exist. Solved coefficients are looked up from and written through to it.
+    solve_cache = _load_solve_cache(cache_path)
+
     # Begin iterating through the outer loop of Panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
         _logger.info("\tPanel aspect ratio: " + str(panel_aspect_ratio))
@@ -263,7 +290,9 @@ def analyze_steady_convergence(
             )
 
             # Build this iteration's SteadyProblem with the current Panel aspect ratio
-            # and number of chordwise Panels.
+            # and number of chordwise Panels. The mesh is always built so its spanwise
+            # Panel and WingCrossSection counts are recorded, even when the solve itself
+            # is served from the cache.
             this_problem = _build_steady_problem(
                 ar_id,
                 chord_id,
@@ -275,51 +304,75 @@ def analyze_steady_convergence(
             )
             these_airplanes = this_problem.airplanes
 
-            # Create this iteration's steady solver based on the type specified.
-            this_solver: (
-                steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
-                | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+            # Build this mesh's solve-cache key from the reference problem, the solver
+            # type, and the mesh parameters that determine the solve.
+            solve_cache_key = _solve_cache_key(
+                ref_problem_hash,
+                solver_type,
+                panel_aspect_ratio,
+                num_chordwise_panels,
             )
-            if solver_type == "steady horseshoe vortex lattice method":
-                this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-                    steady_problem=this_problem,
-                )
-            else:
-                this_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-                    steady_problem=this_problem,
-                )
+            cached = solve_cache_key in solve_cache
 
-            _logger.info("\t\t\tStarting simulation...")
+            def solve_this_mesh() -> np.ndarray:
+                # Create this iteration's steady solver based on the type specified.
+                this_solver: (
+                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                    | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+                )
+                if solver_type == "steady horseshoe vortex lattice method":
+                    this_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                        steady_problem=this_problem,
+                    )
+                else:
+                    this_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                        steady_problem=this_problem,
+                    )
 
-            # Run the steady solver and time how long it takes to execute. Skip the
-            # streamline trace since it does not affect convergence metrics.
+                _logger.info("\t\t\tStarting simulation...")
+
+                # Run the steady solver. Skip the streamline trace since it does not
+                # affect convergence metrics.
+                this_solver.run(calculate_streamlines=False)
+
+                # Create and fill an ndarray with each of this iteration's Airplanes' six
+                # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
+                solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
+
+                for airplane_id, airplane in enumerate(these_airplanes):
+                    _forceCoefficients_W = airplane.forceCoefficients_W
+                    assert _forceCoefficients_W is not None
+
+                    _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+                    assert _momentCoefficients_W_CgP1 is not None
+
+                    solved_coefficients[airplane_id, 0:3] = _forceCoefficients_W
+                    solved_coefficients[airplane_id, 3:6] = _momentCoefficients_W_CgP1
+
+                return solved_coefficients
+
+            # Reuse the cached coefficients on a hit, otherwise solve this mesh and store
+            # them. Time the whole step: it is the solve time on a miss and negligible on
+            # a hit.
             iter_start = time.time()
-            this_solver.run(calculate_streamlines=False)
-            iter_stop = time.time()
-            this_iter_time = iter_stop - iter_start
-
-            # Create and fill an ndarray with each of this iteration's Airplanes' six
-            # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
-            theseCoefficients = np.zeros((len(these_airplanes), 6), dtype=float)
-
-            for airplane_id, airplane in enumerate(these_airplanes):
-                _forceCoefficients_W = airplane.forceCoefficients_W
-                assert _forceCoefficients_W is not None
-
-                _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
-                assert _momentCoefficients_W_CgP1 is not None
-
-                theseCoefficients[airplane_id, 0:3] = _forceCoefficients_W
-                theseCoefficients[airplane_id, 3:6] = _momentCoefficients_W_CgP1
+            theseCoefficients = _cached_solve(
+                solve_cache, cache_path, solve_cache_key, solve_this_mesh
+            )
+            this_iter_time = time.time() - iter_start
 
             # Populate the ndarray that stores information from all the iterations with
             # the data from this iteration.
             coefficients[ar_id, chord_id, :, :] = theseCoefficients
             iter_times[ar_id, chord_id] = this_iter_time
 
-            _logger.info(
-                "\t\t\tSimulation completed in " + str(round(this_iter_time, 3)) + " s"
-            )
+            if cached:
+                _logger.info("\t\t\tLoaded cached solution.")
+            else:
+                _logger.info(
+                    "\t\t\tSimulation completed in "
+                    + str(round(this_iter_time, 3))
+                    + " s"
+                )
 
             # Check per-coefficient convergence in each parameter direction against the
             # incrementally coarser iteration. A direction cannot be checked on its first
@@ -1482,9 +1535,13 @@ def _build_steady_problem(
             )
         )
 
-    # Create a new SteadyProblem for this iteration.
+    # Create a new SteadyProblem for this iteration with its own deep-copied
+    # OperatingPoint. Solving populates the OperatingPoint's lazy caches, so sharing the
+    # reference OperatingPoint would mutate the reference problem and change its content
+    # hash between an uncached run and a later cached one.
     return problems.SteadyProblem(
-        airplanes=these_airplanes, operating_point=ref_operating_point
+        airplanes=these_airplanes,
+        operating_point=copy.deepcopy(ref_operating_point),
     )
 
 

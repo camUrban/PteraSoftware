@@ -1,8 +1,12 @@
 """This module contains classes to test the convergence analysis functions."""
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
+import numpy.testing as npt
 
 import pterasoftware as ps
 
@@ -16,7 +20,7 @@ class TestConvergedParameterId(unittest.TestCase):
     convergence._converged_parameter_id.
     """
 
-    def test_single_returns_this_id(self):
+    def test_single_returns_this_id(self) -> None:
         """Test that a single tested value returns this iteration's own index."""
         self.assertEqual(
             convergence._converged_parameter_id(
@@ -25,7 +29,7 @@ class TestConvergedParameterId(unittest.TestCase):
             0,
         )
 
-    def test_single_takes_precedence_over_converged(self):
+    def test_single_takes_precedence_over_converged(self) -> None:
         """Test that a single tested value returns this iteration's own index even
         when the converged flag is set.
         """
@@ -34,7 +38,7 @@ class TestConvergedParameterId(unittest.TestCase):
             3,
         )
 
-    def test_converged_returns_coarser_id(self):
+    def test_converged_returns_coarser_id(self) -> None:
         """Test that a converged iteration returns the incrementally coarser
         index.
         """
@@ -45,7 +49,7 @@ class TestConvergedParameterId(unittest.TestCase):
             3,
         )
 
-    def test_saturated_returns_this_id(self):
+    def test_saturated_returns_this_id(self) -> None:
         """Test that an iteration that passed without converging returns this
         iteration's own index.
         """
@@ -56,7 +60,7 @@ class TestConvergedParameterId(unittest.TestCase):
             5,
         )
 
-    def test_converged_id_depends_on_this_id(self):
+    def test_converged_id_depends_on_this_id(self) -> None:
         """Test that the coarser index tracks this iteration's index rather than a
         fixed value.
         """
@@ -67,7 +71,7 @@ class TestConvergedParameterId(unittest.TestCase):
             6,
         )
 
-    def test_returns_int(self):
+    def test_returns_int(self) -> None:
         """Test that the converged index is returned as an int."""
         result = convergence._converged_parameter_id(
             this_id=2, single=False, converged=True
@@ -81,7 +85,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     non-edge-defined Wing section's number of spanwise Panels.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a root and tip WingCrossSection defining one wing section.
 
         :return: None
@@ -95,7 +99,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
         self.num_chordwise_panels = 4
         self.chordwise_spacing = "uniform"
 
-    def _average_panel_aspect_ratio(self, num_spanwise_panels):
+    def _average_panel_aspect_ratio(self, num_spanwise_panels) -> float:
         """Meshes the wing section at a number of spanwise Panels and returns its average
         Panel aspect ratio.
         """
@@ -107,7 +111,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             num_spanwise_panels,
         )
 
-    def _num_spanwise_panels_for(self, target):
+    def _num_spanwise_panels_for(self, target) -> int:
         """Searches for the number of spanwise Panels that hits a target average Panel
         aspect ratio, starting from the smallest valid count.
         """
@@ -120,11 +124,11 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             start_val=1,
         )
 
-    def test_returns_int(self):
+    def test_returns_int(self) -> None:
         """Test that the number of spanwise Panels is returned as an int."""
         self.assertIsInstance(self._num_spanwise_panels_for(4), int)
 
-    def test_result_is_closest_to_target(self):
+    def test_result_is_closest_to_target(self) -> None:
         """Test that the chosen number of spanwise Panels gives an average Panel aspect
         ratio at least as close to the target as either neighboring count.
         """
@@ -143,7 +147,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             )
             self.assertLessEqual(chosen_difference, lower_difference)
 
-    def test_smaller_target_needs_at_least_as_many_panels(self):
+    def test_smaller_target_needs_at_least_as_many_panels(self) -> None:
         """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least as
         many spanwise Panels as a larger one.
         """
@@ -159,7 +163,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
     """
 
     @staticmethod
-    def _tapered_edge_points():
+    def _tapered_edge_points() -> tuple[np.ndarray, np.ndarray]:
         """Builds straight, tapered leading and trailing edge curves.
 
         The leading edge sweeps back from the origin to (0.5, 2.0, 0.0) and the trailing
@@ -172,7 +176,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
         return leading, trailing
 
-    def _make_edge_wing(self, symmetric=False):
+    def _make_edge_wing(self, symmetric=False) -> ps.geometry.wing.Wing:
         """Builds an edge-defined Wing from the tapered edge curves."""
         leading, trailing = self._tapered_edge_points()
         return ps.geometry.wing.Wing.from_edge_points(
@@ -187,7 +191,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             num_chordwise_panels=4,
         )
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a reference edge-defined Wing.
 
         :return: None
@@ -195,7 +199,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         self.ref_wing = self._make_edge_wing()
         self.num_chordwise_panels = 4
 
-    def _average_panel_aspect_ratio(self, num_wing_cross_sections):
+    def _average_panel_aspect_ratio(self, num_wing_cross_sections) -> float:
         """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections and
         returns its average Panel aspect ratio.
         """
@@ -207,7 +211,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         assert average_panel_aspect_ratio is not None
         return average_panel_aspect_ratio
 
-    def _num_wing_cross_sections_for(self, target, ref_wing=None):
+    def _num_wing_cross_sections_for(self, target, ref_wing=None) -> int:
         """Searches for the number of WingCrossSections that hits a target average Panel
         aspect ratio, starting from the smallest valid count.
         """
@@ -218,11 +222,11 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             start_val=2,
         )
 
-    def test_returns_int(self):
+    def test_returns_int(self) -> None:
         """Test that the number of WingCrossSections is returned as an int."""
         self.assertIsInstance(self._num_wing_cross_sections_for(4), int)
 
-    def test_result_is_closest_to_target(self):
+    def test_result_is_closest_to_target(self) -> None:
         """Test that the chosen number of WingCrossSections gives an average Panel aspect
         ratio at least as close to the target as either neighboring count.
         """
@@ -241,7 +245,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             )
             self.assertLessEqual(chosen_difference, lower_difference)
 
-    def test_smaller_target_needs_at_least_as_many_wing_cross_sections(self):
+    def test_smaller_target_needs_at_least_as_many_wing_cross_sections(self) -> None:
         """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least as
         many WingCrossSections as a larger one.
         """
@@ -249,7 +253,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             self._num_wing_cross_sections_for(2), self._num_wing_cross_sections_for(4)
         )
 
-    def test_symmetric_matches_asymmetric(self):
+    def test_symmetric_matches_asymmetric(self) -> None:
         """Test that the count is measured on the half span, so a symmetric Wing and an
         asymmetric Wing built from the same half-span curves need the same count.
         """
@@ -267,12 +271,12 @@ class TestValidateCoefficientMask(unittest.TestCase):
     convergence._validate_coefficient_mask.
     """
 
-    def test_none_returns_all_true(self):
+    def test_none_returns_all_true(self) -> None:
         """Test that None returns a (6,) mask of all True."""
         result = convergence._validate_coefficient_mask(None)
         self.assertTrue(np.array_equal(result, np.ones(6, dtype=bool)))
 
-    def test_tuple_is_returned_as_bool_array(self):
+    def test_tuple_is_returned_as_bool_array(self) -> None:
         """Test that a valid tuple is returned as an equivalent (6,) bool ndarray."""
         result = convergence._validate_coefficient_mask(
             (True, False, True, False, True, False)
@@ -281,22 +285,22 @@ class TestValidateCoefficientMask(unittest.TestCase):
             np.array_equal(result, np.array([1, 0, 1, 0, 1, 0], dtype=bool))
         )
 
-    def test_non_tuple_raises_type_error(self):
+    def test_non_tuple_raises_type_error(self) -> None:
         """Test that a non-tuple, non-None mask raises a TypeError."""
         with self.assertRaises(TypeError):
             convergence._validate_coefficient_mask([True] * 6)
 
-    def test_wrong_length_raises_value_error(self):
+    def test_wrong_length_raises_value_error(self) -> None:
         """Test that a mask without exactly six elements raises a ValueError."""
         with self.assertRaises(ValueError):
             convergence._validate_coefficient_mask((True, True, True))
 
-    def test_non_bool_element_raises_type_error(self):
+    def test_non_bool_element_raises_type_error(self) -> None:
         """Test that a mask with a non-bool element raises a TypeError."""
         with self.assertRaises(TypeError):
             convergence._validate_coefficient_mask((True, 1, True, True, True, True))
 
-    def test_all_false_raises_value_error(self):
+    def test_all_false_raises_value_error(self) -> None:
         """Test that a mask with no True element raises a ValueError."""
         with self.assertRaises(ValueError):
             convergence._validate_coefficient_mask((False,) * 6)
@@ -307,7 +311,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
     convergence._check_coefficient_convergence.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a full mask and the tolerances used across the tests.
 
         :return: None
@@ -316,7 +320,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.rtol = 0.05
         self.atol = 0.001
 
-    def test_identical_coefficients_converge(self):
+    def test_identical_coefficients_converge(self) -> None:
         """Test that identical coefficients converge with a perfect metric."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         converged, metric, _ = convergence._check_coefficient_convergence(
@@ -325,7 +329,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.assertTrue(converged)
         self.assertEqual(metric, 100.0)
 
-    def test_large_relative_change_does_not_converge(self):
+    def test_large_relative_change_does_not_converge(self) -> None:
         """Test that a coefficient changing by more than the relative tolerance does not
         converge and is reported as the limiting coefficient.
         """
@@ -338,7 +342,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.assertFalse(converged)
         self.assertEqual(limiting_id, 2)
 
-    def test_masked_out_coefficient_is_ignored(self):
+    def test_masked_out_coefficient_is_ignored(self) -> None:
         """Test that masking out the only offending coefficient makes the check
         converge.
         """
@@ -351,7 +355,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         )
         self.assertTrue(converged)
 
-    def test_absolute_tolerance_floors_near_zero(self):
+    def test_absolute_tolerance_floors_near_zero(self) -> None:
         """Test that a coefficient near zero converges via the absolute tolerance floor
         even though its relative change is large.
         """
@@ -363,7 +367,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         )
         self.assertTrue(converged)
 
-    def test_all_airplanes_must_converge(self):
+    def test_all_airplanes_must_converge(self) -> None:
         """Test that the check fails when any one Airplane has an unconverged
         coefficient.
         """
@@ -381,7 +385,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.assertFalse(converged)
         self.assertEqual(limiting_id, 0)
 
-    def test_returns_bool_float_int(self):
+    def test_returns_bool_float_int(self) -> None:
         """Test that the result is a bool, a float, and an int."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         converged, metric, limiting_id = convergence._check_coefficient_convergence(
@@ -390,3 +394,132 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.assertIsInstance(converged, bool)
         self.assertIsInstance(metric, float)
         self.assertIsInstance(limiting_id, int)
+
+
+class TestSolveCacheKey(unittest.TestCase):
+    """This class contains methods for testing convergence._solve_cache_key."""
+
+    def test_returns_str(self) -> None:
+        """Test that the key is returned as a string."""
+        key = convergence._solve_cache_key("abc123", "steady ring", 4, 3)
+        self.assertIsInstance(key, str)
+
+    def test_deterministic(self) -> None:
+        """Test that identical inputs produce identical keys."""
+        first = convergence._solve_cache_key("abc123", "steady ring", 4, 3)
+        second = convergence._solve_cache_key("abc123", "steady ring", 4, 3)
+        self.assertEqual(first, second)
+
+    def test_different_component_differs(self) -> None:
+        """Test that changing one component changes the key."""
+        first = convergence._solve_cache_key("abc123", "steady ring", 4, 3)
+        second = convergence._solve_cache_key("abc123", "steady ring", 4, 4)
+        self.assertNotEqual(first, second)
+
+    def test_different_hash_differs(self) -> None:
+        """Test that changing the reference problem hash changes the key."""
+        first = convergence._solve_cache_key("abc123", "steady ring", 4, 3)
+        second = convergence._solve_cache_key("def456", "steady ring", 4, 3)
+        self.assertNotEqual(first, second)
+
+    def test_component_order_matters(self) -> None:
+        """Test that two components in a different order produce different keys."""
+        first = convergence._solve_cache_key("abc123", 4, 3)
+        second = convergence._solve_cache_key("abc123", 3, 4)
+        self.assertNotEqual(first, second)
+
+
+class TestSolveCache(unittest.TestCase):
+    """This class contains methods for testing convergence._cached_solve,
+    convergence._load_solve_cache, and convergence._write_solve_cache.
+    """
+
+    def test_miss_calls_solve_and_returns_result(self) -> None:
+        """Test that a cache miss calls solve and returns its coefficients."""
+        cache: dict[str, np.ndarray] = {}
+        coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        result = convergence._cached_solve(cache, None, "key", lambda: coefficients)
+        npt.assert_array_equal(result, coefficients)
+
+    def test_miss_stores_result_in_cache(self) -> None:
+        """Test that a cache miss adds the coefficients to the in-memory cache."""
+        cache: dict[str, np.ndarray] = {}
+        coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        convergence._cached_solve(cache, None, "key", lambda: coefficients)
+        self.assertIn("key", cache)
+        npt.assert_array_equal(cache["key"], coefficients)
+
+    def test_hit_returns_cached_without_solving(self) -> None:
+        """Test that a cache hit returns the stored coefficients and skips solve."""
+        cached = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        cache: dict[str, np.ndarray] = {"key": cached}
+        solve_calls = 0
+
+        def solve() -> np.ndarray:
+            nonlocal solve_calls
+            solve_calls += 1
+            return np.zeros((1, 6), dtype=float)
+
+        result = convergence._cached_solve(cache, None, "key", solve)
+        npt.assert_array_equal(result, cached)
+        self.assertEqual(solve_calls, 0)
+
+    def test_none_path_does_not_write(self) -> None:
+        """Test that a miss with no cache path writes nothing to disk."""
+        cache: dict[str, np.ndarray] = {}
+        coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            convergence._cached_solve(cache, None, "key", lambda: coefficients)
+            self.assertFalse(path.exists())
+
+    def test_write_through_persists_to_disk(self) -> None:
+        """Test that a miss with a cache path writes the entry so it reloads."""
+        cache: dict[str, np.ndarray] = {}
+        coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            convergence._cached_solve(cache, path, "key", lambda: coefficients)
+            reloaded = convergence._load_solve_cache(path)
+        self.assertIn("key", reloaded)
+        npt.assert_array_equal(reloaded["key"], coefficients)
+
+    def test_load_missing_file_returns_empty(self) -> None:
+        """Test that loading a missing cache file returns an empty cache."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "missing.json"
+            self.assertEqual(convergence._load_solve_cache(path), {})
+
+    def test_load_none_path_returns_empty(self) -> None:
+        """Test that loading a None cache path returns an empty cache."""
+        self.assertEqual(convergence._load_solve_cache(None), {})
+
+    def test_load_version_mismatch_returns_empty(self) -> None:
+        """Test that a cache file with a mismatched schema version is ignored."""
+        cache = {"key": np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            convergence._write_solve_cache(path, cache)
+            with open(path) as cache_file:
+                data = json.load(cache_file)
+            data["_cache_version"] = convergence._SOLVE_CACHE_VERSION + 1
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            self.assertEqual(convergence._load_solve_cache(path), {})
+
+    def test_round_trip_preserves_coefficients(self) -> None:
+        """Test that writing then loading a cache preserves its coefficients."""
+        cache = {
+            "first": np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float),
+            "second": np.array(
+                [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6], [1.1, 1.2, 1.3, 1.4, 1.5, 1.6]],
+                dtype=float,
+            ),
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            convergence._write_solve_cache(path, cache)
+            reloaded = convergence._load_solve_cache(path)
+        self.assertEqual(set(reloaded), set(cache))
+        for key in cache:
+            npt.assert_array_equal(reloaded[key], cache[key])

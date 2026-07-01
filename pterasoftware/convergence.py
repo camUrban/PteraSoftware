@@ -16,14 +16,18 @@ solved using the UnsteadyRingVortexLatticeMethodSolver.
 
 from __future__ import annotations
 
+import json
+import os
 import time
 from collections.abc import Callable
+from pathlib import Path
 
 import numpy as np
 
 from . import (
     _logging,
     _parameter_validation,
+    _serialization,
     geometry,
     movements,
     problems,
@@ -38,6 +42,13 @@ _logger = _logging.get_logger("convergence")
 # order they are stored: the three force coefficients followed by the three moment
 # coefficients.
 _COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
+
+# The schema version of the JSON solve cache. It is bumped only when the on-disk
+# structure of the cache file changes, for example how the load coefficients are stored.
+# A cache file whose version does not match is ignored and rebuilt from scratch. This is
+# independent of the serialization format version that hash_object folds into each key,
+# which guards against changes to the reference problem's serialized structure.
+_SOLVE_CACHE_VERSION = 1
 
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
@@ -2674,3 +2685,111 @@ def _converged_parameter_id(
     if converged:
         return this_id - 1
     return this_id
+
+
+def _solve_cache_key(ref_problem_hash: str, *components: object) -> str:
+    """Builds a stable solve-cache key from a reference problem's content hash and the
+    parameters that determine a single solve.
+
+    The content hash identifies the geometry, operating point, and motion being
+    converged, and the remaining components identify one mesh in the sweep, for example
+    the solver type, the Panel aspect ratio, and the number of chordwise Panels. The
+    components are joined into one string, so their order is significant and every
+    parameter that changes the solve must be included.
+
+    :param ref_problem_hash: The content hash of the reference problem, as returned by
+        the serialization module's hash_object.
+    :param components: The remaining parameters that determine the solve, in a fixed
+        order. Each is converted to a string.
+    :return: A string that uniquely identifies the solve within the cache.
+    """
+    return "|".join([ref_problem_hash, *(str(component) for component in components)])
+
+
+def _load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
+    """Loads a JSON solve cache from disk into a dictionary of load coefficients.
+
+    A missing file, or a file whose schema version does not match the current one,
+    yields an empty cache rather than an error, so a fresh or outdated cache simply
+    starts empty and is rebuilt as the sweep solves each mesh.
+
+    :param cache_path: The path to the JSON solve cache file, or None to skip caching
+        and return an empty cache.
+    :return: A dict mapping each cache key to a (num_airplanes, 6) ndarray of floats
+        holding that mesh's per-Airplane load coefficients.
+    """
+    if cache_path is None or not cache_path.exists():
+        return {}
+
+    with open(cache_path) as cache_file:
+        data = json.load(cache_file)
+
+    if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
+        return {}
+
+    return {
+        key: np.array(coefficients, dtype=float)
+        for key, coefficients in data["entries"].items()
+    }
+
+
+def _write_solve_cache(cache_path: Path, cache: dict[str, np.ndarray]) -> None:
+    """Writes a solve cache to disk as JSON, replacing any existing file atomically.
+
+    The cache is written to a temporary file in the same directory and then moved into
+    place with os.replace, so a run interrupted mid-write leaves the existing cache
+    intact rather than a half-written file. There is no file locking, so concurrent
+    convergence runs sharing one cache file are not supported.
+
+    :param cache_path: The path to the JSON solve cache file.
+    :param cache: A dict mapping each cache key to a (num_airplanes, 6) ndarray of
+        floats holding that mesh's per-Airplane load coefficients.
+    :return: None
+    """
+    data = {
+        "_cache_version": _SOLVE_CACHE_VERSION,
+        "entries": {key: coefficients.tolist() for key, coefficients in cache.items()},
+    }
+
+    temp_path = cache_path.parent / (cache_path.name + ".tmp")
+    with open(temp_path, "w") as cache_file:
+        json.dump(data, cache_file)
+    os.replace(temp_path, cache_path)
+
+
+def _cached_solve(
+    cache: dict[str, np.ndarray],
+    cache_path: Path | None,
+    key: str,
+    solve: Callable[[], np.ndarray],
+) -> np.ndarray:
+    """Returns a mesh's load coefficients from the cache, solving and storing them on a
+    miss.
+
+    On a hit, the stored coefficients are returned and the expensive solve is skipped.
+    On a miss, solve is called, its result is added to the in-memory cache, and, when a
+    cache path is given, the whole cache is written through to disk so an interrupted
+    study keeps every iteration solved so far. The returned array is the one held in the
+    cache and must be treated as read-only by the caller.
+
+    :param cache: The in-memory cache mapping each key to a (num_airplanes, 6) ndarray
+        of floats, as returned by _load_solve_cache. It is updated in place on a miss.
+    :param cache_path: The path to the JSON solve cache file, or None to keep the cache
+        in memory only without writing through to disk.
+    :param key: The cache key identifying this solve, as returned by _solve_cache_key.
+    :param solve: A callable that builds and solves the mesh and returns its
+        (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients. It is
+        called only on a cache miss.
+    :return: A (num_airplanes, 6) ndarray of floats holding the mesh's per-Airplane load
+        coefficients.
+    """
+    if key in cache:
+        return cache[key]
+
+    coefficients = solve()
+    cache[key] = coefficients
+
+    if cache_path is not None:
+        _write_solve_cache(cache_path, cache)
+
+    return coefficients

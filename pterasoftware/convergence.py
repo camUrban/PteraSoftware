@@ -605,6 +605,7 @@ def analyze_unsteady_convergence(
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
     show_solver_progress: bool | np.bool_ = True,
     resolve_converged_solver: bool | np.bool_ = False,
+    cache_path: str | Path | None = None,
 ) -> (
     tuple[
         bool,
@@ -742,6 +743,15 @@ def analyze_unsteady_convergence(
         When True, the solver is rebuilt at the converged parameters (which are
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
+    :param cache_path: An optional path (a str or Path, which must end with ".json") to
+        a JSON file that caches each iteration's solved load coefficients, keyed on the
+        reference problem and the wake state, wake length, and mesh parameters. When
+        given, an iteration whose solve is already in the cache reuses the stored
+        coefficients instead of re-running the solver, and each new solve is written
+        through to the file, so an interrupted or repeated study reuses the iterations
+        it has already solved. The mesh is still built each iteration; only the solve is
+        skipped on a cache hit. When None, no cache is read or written. The default is
+        None.
     :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
         order, the first four elements are the converged wake state (prescribed=True and
         free=False), the converged wake length (in number of cycles for non static
@@ -832,6 +842,15 @@ def analyze_unsteady_convergence(
     resolve_converged_solver = _parameter_validation.boolLike_return_bool(
         resolve_converged_solver, "resolve_converged_solver"
     )
+
+    # Normalize the cache_path parameter to a Path, or leave it as None to disable
+    # caching. Require a ".json" suffix, which also rejects an empty or directory path.
+    if cache_path is not None:
+        cache_path = Path(cache_path)
+        if not cache_path.name.endswith(".json"):
+            raise ValueError(
+                f"cache_path must end with '.json', got '{cache_path.name}'."
+            )
 
     run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
@@ -924,6 +943,14 @@ def analyze_unsteady_convergence(
     # wake-length combination at that mesh.
     delta_time_cache: dict[tuple[int, int], float] = {}
 
+    # Compute the reference problem's content hash once. It anchors each iteration's
+    # solve-cache key to this specific geometry, operating point, and motion.
+    ref_problem_hash = _serialization.hash_object(ref_problem)
+
+    # Load the JSON solve cache, or start empty when caching is disabled or the file does
+    # not yet exist. Solved coefficients are looked up from and written through to it.
+    solve_cache = _load_solve_cache(cache_path)
+
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
@@ -960,7 +987,10 @@ def analyze_unsteady_convergence(
                     )
 
                     # Build this iteration's UnsteadyProblem with the current wake
-                    # length, Panel aspect ratio, and number of chordwise Panels.
+                    # length, Panel aspect ratio, and number of chordwise Panels. The
+                    # mesh is always built so its spanwise Panel and WingCrossSection
+                    # counts and its optimized delta_time are recorded, even when the
+                    # solve itself is served from the cache.
                     this_problem = _build_unsteady_problem(
                         ar_id,
                         chord_id,
@@ -973,50 +1003,75 @@ def analyze_unsteady_convergence(
                         delta_time_cache,
                     )
 
-                    # Create and run this iteration's
-                    # UnsteadyRingVortexLatticeMethodSolver and time how long it
-                    # takes to execute.
-                    this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                        unsteady_problem=this_problem
+                    # Build this mesh's solve-cache key from the reference problem and
+                    # the wake state, wake length, and mesh parameters that determine the
+                    # solve.
+                    solve_cache_key = _solve_cache_key(
+                        ref_problem_hash,
+                        wake,
+                        wake_length,
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
                     )
+                    cached = solve_cache_key in solve_cache
 
-                    _logger.info("\t\t\t\t\tStarting simulation...")
+                    def solve_this_mesh() -> np.ndarray:
+                        # Create and run this iteration's
+                        # UnsteadyRingVortexLatticeMethodSolver.
+                        this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                            unsteady_problem=this_problem
+                        )
 
+                        _logger.info("\t\t\t\t\tStarting simulation...")
+
+                        this_solver.run(
+                            prescribed_wake=wake,
+                            calculate_streamlines=False,
+                            show_progress=show_solver_progress,
+                        )
+
+                        # Create and fill an ndarray with each of this iteration's
+                        # Airplanes' six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
+                        # cMZ).
+                        solved_coefficients = np.zeros(
+                            (len(ref_airplane_movements), 6), dtype=float
+                        )
+
+                        for airplane_id in range(len(ref_airplane_movements)):
+                            # For static geometry, the final load coefficients are the
+                            # final time step's. For variable geometry, they are the mean
+                            # over the final cycle (the signed time-average).
+                            if static:
+                                solved_coefficients[airplane_id, 0:3] = (
+                                    this_problem.finalForceCoefficients_W[airplane_id]
+                                )
+                                solved_coefficients[airplane_id, 3:6] = (
+                                    this_problem.finalMomentCoefficients_W_CgP1[
+                                        airplane_id
+                                    ]
+                                )
+                            else:
+                                solved_coefficients[airplane_id, 0:3] = (
+                                    this_problem.finalMeanForceCoefficients_W[
+                                        airplane_id
+                                    ]
+                                )
+                                solved_coefficients[airplane_id, 3:6] = (
+                                    this_problem.finalMeanMomentCoefficients_W_CgP1[
+                                        airplane_id
+                                    ]
+                                )
+
+                        return solved_coefficients
+
+                    # Reuse the cached coefficients on a hit, otherwise solve this mesh
+                    # and store them. Time the whole step: it is the solve time on a miss
+                    # and negligible on a hit.
                     iter_start = time.time()
-                    this_solver.run(
-                        prescribed_wake=wake,
-                        calculate_streamlines=False,
-                        show_progress=show_solver_progress,
+                    theseFinalCoefficients = _cached_solve(
+                        solve_cache, cache_path, solve_cache_key, solve_this_mesh
                     )
-                    iter_stop = time.time()
-                    this_iter_time = iter_stop - iter_start
-
-                    # Create and fill an ndarray with each of this iteration's Airplanes'
-                    # six final load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
-                    theseFinalCoefficients = np.zeros(
-                        (len(ref_airplane_movements), 6), dtype=float
-                    )
-
-                    for airplane_id in range(len(ref_airplane_movements)):
-                        # For static geometry, the final load coefficients are the final
-                        # time step's. For variable geometry, they are the mean over the
-                        # final cycle (the signed time-average).
-                        if static:
-                            theseFinalCoefficients[airplane_id, 0:3] = (
-                                this_problem.finalForceCoefficients_W[airplane_id]
-                            )
-                            theseFinalCoefficients[airplane_id, 3:6] = (
-                                this_problem.finalMomentCoefficients_W_CgP1[airplane_id]
-                            )
-                        else:
-                            theseFinalCoefficients[airplane_id, 0:3] = (
-                                this_problem.finalMeanForceCoefficients_W[airplane_id]
-                            )
-                            theseFinalCoefficients[airplane_id, 3:6] = (
-                                this_problem.finalMeanMomentCoefficients_W_CgP1[
-                                    airplane_id
-                                ]
-                            )
+                    this_iter_time = time.time() - iter_start
 
                     # Populate the ndarray that stores information from all the
                     # iterations with the data from this iteration.
@@ -1025,11 +1080,14 @@ def analyze_unsteady_convergence(
                     )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
-                    _logger.info(
-                        "\t\t\t\t\tSimulation completed in "
-                        + str(round(this_iter_time, 3))
-                        + " s"
-                    )
+                    if cached:
+                        _logger.info("\t\t\t\t\tLoaded cached solution.")
+                    else:
+                        _logger.info(
+                            "\t\t\t\t\tSimulation completed in "
+                            + str(round(this_iter_time, 3))
+                            + " s"
+                        )
 
                     # Check per-coefficient convergence in each parameter direction
                     # against the incrementally coarser iteration. A direction cannot be

@@ -1,6 +1,9 @@
 """This module contains a testing case for the unsteady convergence function."""
 
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import pterasoftware as ps
 from tests.integration.fixtures import (
@@ -55,6 +58,106 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_panel_ar, panel_ar_ans)
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[4])
+
+    def test_unsteady_cache_reproduces_converged_parameters(self) -> None:
+        """This method tests that a run with a cache path finds the same pre-known
+        convergence parameters as an uncached run and writes a populated cache file.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            converged_parameters = ps.convergence.analyze_unsteady_convergence(
+                ref_problem=self.unsteady_validation_problem,
+                prescribed_wake=True,
+                free_wake=True,
+                num_chords_bounds=(1, 4),
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 5),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+                cache_path=cache_path,
+            )
+
+            self.assertTrue(cache_path.exists())
+            self.assertGreater(len(ps.convergence._load_solve_cache(cache_path)), 0)
+
+        self.assertEqual(converged_parameters[0], True)
+        self.assertEqual(converged_parameters[1], 2)
+        self.assertEqual(converged_parameters[2], 4)
+        self.assertEqual(converged_parameters[3], 3)
+        self.assertIsNone(converged_parameters[4])
+
+    def test_unsteady_cache_warm_run_skips_solves(self) -> None:
+        """This method tests that a second run against a warm cache reuses the stored
+        solves and does not run the solver again.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            cold_parameters = ps.convergence.analyze_unsteady_convergence(
+                ref_problem=self.unsteady_validation_problem,
+                prescribed_wake=True,
+                free_wake=False,
+                num_chords_bounds=(1, 2),
+                panel_aspect_ratio_bounds=(4, 3),
+                num_chordwise_panels_bounds=(1, 2),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+                cache_path=cache_path,
+            )
+
+            # On the warm run every mesh should be a cache hit, so the solver must
+            # never run. Patching run to raise turns any solve into a test failure.
+            solver_class = (
+                ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+            )
+            with mock.patch.object(
+                solver_class,
+                "run",
+                side_effect=AssertionError("The solver ran despite a warm cache."),
+            ):
+                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                    ref_problem=self.unsteady_validation_problem,
+                    prescribed_wake=True,
+                    free_wake=False,
+                    num_chords_bounds=(1, 2),
+                    panel_aspect_ratio_bounds=(4, 3),
+                    num_chordwise_panels_bounds=(1, 2),
+                    rtol=0.05,
+                    atol=0.001,
+                    show_solver_progress=False,
+                    cache_path=cache_path,
+                )
+
+        self.assertEqual(warm_parameters[0], cold_parameters[0])
+        self.assertEqual(warm_parameters[1], cold_parameters[1])
+        self.assertEqual(warm_parameters[2], cold_parameters[2])
+        self.assertEqual(warm_parameters[3], cold_parameters[3])
+
+    def test_unsteady_cache_path_without_json_suffix_raises(self) -> None:
+        """This method tests that a cache_path not ending in .json raises a ValueError.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.convergence.analyze_unsteady_convergence(
+                ref_problem=self.unsteady_validation_problem,
+                prescribed_wake=True,
+                free_wake=False,
+                num_chords_bounds=(1, 2),
+                panel_aspect_ratio_bounds=(4, 3),
+                num_chordwise_panels_bounds=(1, 2),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+                cache_path="cache.txt",
+            )
 
     def test_rejects_exploded_wing(self):
         """This method tests that the function rejects an UnsteadyProblem whose Airplane

@@ -613,6 +613,12 @@ def analyze_unsteady_convergence(
     static (the WingMovement's own flapping and sweeping motion is preserved); a non-
     static WingCrossSectionMovement on an edge-defined Wing is rejected.
 
+    The time step is not a convergence parameter. Each iteration instead optimizes its
+    own delta_time for its mesh with Movement's iterative optimizer, so every solve uses
+    the time step that is correct for its geometry and motion. The optimum depends only
+    on the mesh, so it is computed once per Panel aspect ratio and number of chordwise
+    Panels and reused across every wake state and wake length at that mesh.
+
     :param ref_problem: The UnsteadyProblem whose converged parameters will be found.
         This must be a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
         AeroelasticUnsteadyProblem, neither of which is supported.
@@ -848,6 +854,12 @@ def analyze_unsteady_convergence(
     # is a tuple of 4 ints: ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id.
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
 
+    # This caches the optimized delta_time for each mesh, keyed on a tuple of 2 ints:
+    # ar_id, chord_id. The optimum depends only on the mesh (the geometry and motion),
+    # not on the wake state or wake length, so it is reused across every wake-state and
+    # wake-length combination at that mesh.
+    delta_time_cache: dict[tuple[int, int], float] = {}
+
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
@@ -894,6 +906,7 @@ def analyze_unsteady_convergence(
                         ref_problem,
                         num_spanwise_panels_cache,
                         num_wing_cross_sections_cache,
+                        delta_time_cache,
                     )
 
                     # Create and run this iteration's
@@ -1258,6 +1271,7 @@ def analyze_unsteady_convergence(
                                 ref_problem,
                                 num_spanwise_panels_cache,
                                 num_wing_cross_sections_cache,
+                                delta_time_cache,
                             )
                             converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                                 unsteady_problem=converged_problem
@@ -1472,6 +1486,7 @@ def _build_unsteady_problem(
     ref_problem: problems.UnsteadyProblem,
     num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
     num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
+    delta_time_cache: dict[tuple[int, int], float],
 ) -> problems.UnsteadyProblem:
     """Builds the UnsteadyProblem for one convergence iteration.
 
@@ -1487,6 +1502,12 @@ def _build_unsteady_problem(
     refined WingCrossSections are wrapped in motion free WingCrossSectionMovements and
     the WingMovement's own motion parameters are copied. The copied AirplaneMovements
     are wrapped in a new Movement (with the given wake length) and UnsteadyProblem.
+
+    The Movement's time step is optimized for this iteration's mesh with Movement's
+    iterative delta_time optimizer. The optimum depends only on the mesh, so it is
+    resolved once per (Panel aspect ratio index, number of chordwise Panels index) and
+    cached, then reused across every wake-state and wake-length combination at that
+    mesh.
 
     :param ar_id: The index of the current Panel aspect ratio within the list of Panel
         aspect ratios being tested.
@@ -1506,6 +1527,9 @@ def _build_unsteady_problem(
         number of chordwise Panels index, Airplane index, Wing index) tuple to a
         previously calculated number of WingCrossSections, used for edge-defined Wings.
         It is read and updated in place.
+    :param delta_time_cache: The cache mapping a (Panel aspect ratio index, number of
+        chordwise Panels index) tuple to a previously optimized delta_time for that
+        mesh. It is read and updated in place.
     :return: The UnsteadyProblem for this iteration.
     """
     ref_movement = ref_problem.movement
@@ -1822,18 +1846,43 @@ def _build_unsteady_problem(
         # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
         these_airplane_movements.append(this_airplane_movement)
 
+    # Resolve the time step for this mesh. The optimum depends only on the mesh, so on a
+    # cache miss the iterative optimizer finds it (delta_time="optimize"), and on a hit
+    # the cached value is reused. The Movement resolves the string to a float, which is
+    # read back and cached below.
+    delta_time_key = (ar_id, chord_id)
+    this_delta_time: str | float = delta_time_cache.get(delta_time_key, "optimize")
+
     # Create a new Movement for this iteration.
     if static:
         this_movement = movements.movement.Movement(
             airplane_movements=these_airplane_movements,
             operating_point_movement=ref_operating_point_movement,
             num_chords=wake_length,
+            delta_time=this_delta_time,
         )
     else:
         this_movement = movements.movement.Movement(
             airplane_movements=these_airplane_movements,
             operating_point_movement=ref_operating_point_movement,
             num_cycles=wake_length,
+            delta_time=this_delta_time,
+        )
+
+    # Cache the optimized delta_time on a miss so it is reused across the other
+    # wake-state and wake-length combinations at this mesh.
+    if delta_time_key not in delta_time_cache:
+        delta_time_cache[delta_time_key] = this_movement.delta_time
+        _logger.info(
+            "\t\t\t\t\tOptimized delta_time: "
+            + str(round(this_movement.delta_time, 6))
+            + " s"
+        )
+    else:
+        _logger.info(
+            "\t\t\t\t\tCached delta_time: "
+            + str(round(this_movement.delta_time, 6))
+            + " s"
         )
 
     # Create a new UnsteadyProblem for this iteration.

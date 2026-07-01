@@ -160,6 +160,7 @@ def analyze_steady_convergence(
         resolve_converged_solver, "resolve_converged_solver"
     )
 
+    run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
 
     ref_airplanes = ref_problem.airplanes
@@ -472,6 +473,12 @@ def analyze_steady_convergence(
                         )
                     converged_solver.run(calculate_streamlines=True)
 
+                _logger.info(
+                    "Convergence analysis completed in "
+                    + str(round(time.time() - run_start_time, 3))
+                    + " s"
+                )
+
                 return (
                     converged_aspect_ratio,
                     converged_chordwise_panels,
@@ -482,6 +489,11 @@ def analyze_steady_convergence(
     # convergence parameters passing, then indicate that no converged case was found
     # and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
+    _logger.info(
+        "Convergence analysis completed in "
+        + str(round(time.time() - run_start_time, 3))
+        + " s"
+    )
     return None, None, None
 
 
@@ -698,6 +710,7 @@ def analyze_unsteady_convergence(
         resolve_converged_solver, "resolve_converged_solver"
     )
 
+    run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
 
     ref_airplane_movements = ref_movement.airplane_movements
@@ -1162,6 +1175,12 @@ def analyze_unsteady_convergence(
                                 show_progress=show_solver_progress,
                             )
 
+                        _logger.info(
+                            "Convergence analysis completed in "
+                            + str(round(time.time() - run_start_time, 3))
+                            + " s"
+                        )
+
                         return (
                             converged_wake,
                             converged_wake_length,
@@ -1174,6 +1193,11 @@ def analyze_unsteady_convergence(
     # convergence parameters passing, then indicate that no converged solution was
     # found and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
+    _logger.info(
+        "Convergence analysis completed in "
+        + str(round(time.time() - run_start_time, 3))
+        + " s"
+    )
     return None, None, None, None, None
 
 

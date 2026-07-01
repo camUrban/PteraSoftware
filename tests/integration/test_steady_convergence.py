@@ -278,6 +278,48 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(warm_parameters[0], cold_parameters[0])
         self.assertEqual(warm_parameters[1], cold_parameters[1])
 
+    def test_steady_cache_warm_run_skips_panel_resolution(self) -> None:
+        """This method tests that a second run against a warm cache reuses each mesh's
+        stored spanwise Panel counts and does not re-resolve them.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            cold_parameters = ps.convergence.analyze_steady_convergence(
+                ref_problem=self.steady_validation_problem,
+                solver_type="steady ring vortex lattice method",
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 4),
+                rtol=0.05,
+                atol=0.001,
+                cache_path=cache_path,
+            )
+
+            # On the warm run every mesh's spanwise Panel counts should be cache hits,
+            # so the resolver must never recompute one. Patching the computation to raise
+            # turns any recomputation into a test failure.
+            with mock.patch.object(
+                ps.convergence,
+                "_get_wing_section_num_spanwise_panels",
+                side_effect=AssertionError(
+                    "The spanwise Panel resolver ran despite a warm cache."
+                ),
+            ):
+                warm_parameters = ps.convergence.analyze_steady_convergence(
+                    ref_problem=self.steady_validation_problem,
+                    solver_type="steady ring vortex lattice method",
+                    panel_aspect_ratio_bounds=(4, 2),
+                    num_chordwise_panels_bounds=(1, 4),
+                    rtol=0.05,
+                    atol=0.001,
+                    cache_path=cache_path,
+                )
+
+        self.assertEqual(warm_parameters[0], cold_parameters[0])
+        self.assertEqual(warm_parameters[1], cold_parameters[1])
+
     def test_mixed_airplane_steady_convergence(self):
         """This method tests that the function finds pre-known convergence parameters for
         a SteadyProblem whose Airplane holds both a trapezoidal Wing and an edge-defined

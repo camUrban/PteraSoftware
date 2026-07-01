@@ -435,21 +435,21 @@ class TestSolveCacheKey(unittest.TestCase):
 
 class TestSolveCache(unittest.TestCase):
     """This class contains methods for testing convergence._cached_solve,
-    convergence._load_solve_cache, and convergence._write_solve_cache.
+    convergence._load_solve_cache, and convergence._write_cache.
     """
 
     def test_miss_calls_solve_and_returns_result(self) -> None:
         """Test that a cache miss calls solve and returns its coefficients."""
         cache: dict[str, np.ndarray] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
-        result = convergence._cached_solve(cache, None, "key", lambda: coefficients)
+        result = convergence._cached_solve(cache, "key", lambda: coefficients)
         npt.assert_array_equal(result, coefficients)
 
     def test_miss_stores_result_in_cache(self) -> None:
         """Test that a cache miss adds the coefficients to the in-memory cache."""
         cache: dict[str, np.ndarray] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
-        convergence._cached_solve(cache, None, "key", lambda: coefficients)
+        convergence._cached_solve(cache, "key", lambda: coefficients)
         self.assertIn("key", cache)
         npt.assert_array_equal(cache["key"], coefficients)
 
@@ -464,26 +464,46 @@ class TestSolveCache(unittest.TestCase):
             solve_calls += 1
             return np.zeros((1, 6), dtype=float)
 
-        result = convergence._cached_solve(cache, None, "key", solve)
+        result = convergence._cached_solve(cache, "key", solve)
         npt.assert_array_equal(result, cached)
         self.assertEqual(solve_calls, 0)
 
-    def test_none_path_does_not_write(self) -> None:
-        """Test that a miss with no cache path writes nothing to disk."""
+    def test_no_persist_callback_does_not_write(self) -> None:
+        """Test that a miss with no persist callback writes nothing to disk."""
         cache: dict[str, np.ndarray] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
-            convergence._cached_solve(cache, None, "key", lambda: coefficients)
+            convergence._cached_solve(cache, "key", lambda: coefficients)
             self.assertFalse(path.exists())
 
+    def test_hit_does_not_persist(self) -> None:
+        """Test that a cache hit does not invoke the persist callback."""
+        cached = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
+        cache: dict[str, np.ndarray] = {"key": cached}
+        persist_calls = 0
+
+        def persist() -> None:
+            nonlocal persist_calls
+            persist_calls += 1
+
+        convergence._cached_solve(
+            cache, "key", lambda: np.zeros((1, 6), dtype=float), persist
+        )
+        self.assertEqual(persist_calls, 0)
+
     def test_write_through_persists_to_disk(self) -> None:
-        """Test that a miss with a cache path writes the entry so it reloads."""
+        """Test that a miss invokes the persist callback so the entry reloads."""
         cache: dict[str, np.ndarray] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
-            convergence._cached_solve(cache, path, "key", lambda: coefficients)
+            convergence._cached_solve(
+                cache,
+                "key",
+                lambda: coefficients,
+                lambda: convergence._write_cache(path, cache, {}),
+            )
             reloaded = convergence._load_solve_cache(path)
         self.assertIn("key", reloaded)
         npt.assert_array_equal(reloaded["key"], coefficients)
@@ -503,7 +523,7 @@ class TestSolveCache(unittest.TestCase):
         cache = {"key": np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
-            convergence._write_solve_cache(path, cache)
+            convergence._write_cache(path, cache, {})
             with open(path) as cache_file:
                 data = json.load(cache_file)
             data["_cache_version"] = convergence._SOLVE_CACHE_VERSION + 1
@@ -522,7 +542,7 @@ class TestSolveCache(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
-            convergence._write_solve_cache(path, cache)
+            convergence._write_cache(path, cache, {})
             reloaded = convergence._load_solve_cache(path)
         self.assertEqual(set(reloaded), set(cache))
         for key in cache:
@@ -771,3 +791,23 @@ class TestMemoCacheDisk(unittest.TestCase):
             with open(path, "w") as cache_file:
                 json.dump(data, cache_file)
             self.assertEqual(convergence._load_memo_cache(path), {})
+
+    def test_write_cache_round_trips_both_sections(self) -> None:
+        """Test that the unified writer stores both the solve entries and the memos so
+        each section reloads independently without clobbering the other.
+
+        :return: None
+        """
+        solve_cache = {"solve": np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)}
+        memo_key = convergence._solve_cache_key("abc123", "delta_time", 3, 3)
+        memo_cache = {memo_key: 0.0125}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            convergence._write_cache(path, solve_cache, memo_cache)
+            reloaded_solve = convergence._load_solve_cache(path)
+            reloaded_memos = convergence._load_memo_cache(path)
+
+        self.assertEqual(set(reloaded_solve), {"solve"})
+        npt.assert_array_equal(reloaded_solve["solve"], solve_cache["solve"])
+        self.assertEqual(reloaded_memos, memo_cache)

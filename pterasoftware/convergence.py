@@ -45,11 +45,12 @@ _logger = _logging.get_logger("convergence")
 _COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
 
 # The schema version of the JSON solve cache. It is bumped only when the on-disk
-# structure of the cache file changes, for example how the load coefficients are stored.
-# A cache file whose version does not match is ignored and rebuilt from scratch. This is
-# independent of the serialization format version that hash_object folds into each key,
-# which guards against changes to the reference problem's serialized structure.
-_SOLVE_CACHE_VERSION = 1
+# structure of the cache file changes, for example how the load coefficients are stored
+# or the addition of the memo section. A cache file whose version does not match is
+# ignored and rebuilt from scratch. This is independent of the serialization format
+# version that hash_object folds into each key, which guards against changes to the
+# reference problem's serialized structure.
+_SOLVE_CACHE_VERSION = 2
 
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
@@ -257,24 +258,50 @@ def analyze_steady_convergence(
     iteration = 0
     num_iterations = len(panel_aspect_ratios_list) * len(num_chordwise_panels_list)
 
-    # This is a cache to store previously calculated numbers of spanwise Panels for
-    # specific combinations of parameters to avoid redundant calculations. The key is
-    # a tuple of 5 ints: ar_id, chord_id, ref_airplane_id, ref_wing_id,
-    # ref_wing_cross_section_id,
-    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
-
-    # This is the analogous cache for edge-defined Wings, which are refined by their
-    # number of WingCrossSections rather than by their number of spanwise Panels. The key
-    # is a tuple of 4 ints: ar_id, chord_id, ref_airplane_id, ref_wing_id.
-    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
-
     # Compute the reference problem's content hash once. It anchors each iteration's
-    # solve-cache key to this specific geometry, operating point, and motion.
+    # solve-cache and memo keys to this specific geometry, operating point, and motion.
     ref_problem_hash = _serialization.hash_object(ref_problem)
 
     # Load the JSON solve cache, or start empty when caching is disabled or the file does
     # not yet exist. Solved coefficients are looked up from and written through to it.
     solve_cache = _load_solve_cache(cache_path)
+
+    # Pre-populate the in-loop memo caches from the cache file's memo section, translating
+    # each stored memo from its absolute mesh back onto this run's sweep indices. Memos
+    # outside this run's bounds or written for another reference problem are dropped. A
+    # cache with a populated memo section lets a warm run reuse these counts instead of
+    # re-resolving them. The number of spanwise Panels cache is keyed on a tuple of 5
+    # ints (ar_id, chord_id, ref_airplane_id, ref_wing_id, ref_wing_cross_section_id) for
+    # trapezoidal Wings, and the analogous number of WingCrossSections cache is keyed on a
+    # tuple of 4 ints (ar_id, chord_id, ref_airplane_id, ref_wing_id) for edge-defined
+    # Wings. A steady analysis has no delta_time, so that cache is discarded.
+    num_spanwise_panels_cache, num_wing_cross_sections_cache, _ = _memos_from_disk(
+        _load_memo_cache(cache_path),
+        ref_problem_hash,
+        panel_aspect_ratios_list,
+        num_chordwise_panels_list,
+    )
+
+    # Persist the whole cache (solved coefficients and memos) to disk on each solve miss.
+    # The memo caches are translated back to their absolute mesh keys at write time. This
+    # is None when caching is disabled, in which case nothing is written.
+    persist_cache: Callable[[], None] | None = None
+    if cache_path is not None:
+
+        def persist_cache() -> None:
+            assert cache_path is not None
+            _write_cache(
+                cache_path,
+                solve_cache,
+                _memos_to_disk(
+                    ref_problem_hash,
+                    panel_aspect_ratios_list,
+                    num_chordwise_panels_list,
+                    num_spanwise_panels_cache,
+                    num_wing_cross_sections_cache,
+                    {},
+                ),
+            )
 
     # Begin iterating through the outer loop of Panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
@@ -339,15 +366,17 @@ def analyze_steady_convergence(
                 # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
                 solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
-                for airplane_id, airplane in enumerate(these_airplanes):
-                    _forceCoefficients_W = airplane.forceCoefficients_W
+                for this_airplane_id, this_airplane in enumerate(these_airplanes):
+                    _forceCoefficients_W = this_airplane.forceCoefficients_W
                     assert _forceCoefficients_W is not None
 
-                    _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
+                    _momentCoefficients_W_CgP1 = this_airplane.momentCoefficients_W_CgP1
                     assert _momentCoefficients_W_CgP1 is not None
 
-                    solved_coefficients[airplane_id, 0:3] = _forceCoefficients_W
-                    solved_coefficients[airplane_id, 3:6] = _momentCoefficients_W_CgP1
+                    solved_coefficients[this_airplane_id, 0:3] = _forceCoefficients_W
+                    solved_coefficients[this_airplane_id, 3:6] = (
+                        _momentCoefficients_W_CgP1
+                    )
 
                 return solved_coefficients
 
@@ -356,7 +385,7 @@ def analyze_steady_convergence(
             # a hit.
             iter_start = time.time()
             theseCoefficients = _cached_solve(
-                solve_cache, cache_path, solve_cache_key, solve_this_mesh
+                solve_cache, solve_cache_key, solve_this_mesh, persist_cache
             )
             this_iter_time = time.time() - iter_start
 
@@ -926,30 +955,57 @@ def analyze_unsteady_convergence(
         * len(num_chordwise_panels_list)
     )
 
-    # This is a cache to store previously calculated numbers of spanwise Panels for
-    # specific combinations of parameters to avoid redundant calculations. The key is
-    # a tuple of 5 ints: ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id,
-    # ref_base_wing_cross_section_id,
-    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
-
-    # This is the analogous cache for edge-defined Wings, which are refined by their
-    # number of WingCrossSections rather than by their number of spanwise Panels. The key
-    # is a tuple of 4 ints: ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id.
-    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
-
-    # This caches the optimized delta_time for each mesh, keyed on a tuple of 2 ints:
-    # ar_id, chord_id. The optimum depends only on the mesh (the geometry and motion),
-    # not on the wake state or wake length, so it is reused across every wake-state and
-    # wake-length combination at that mesh.
-    delta_time_cache: dict[tuple[int, int], float] = {}
-
     # Compute the reference problem's content hash once. It anchors each iteration's
-    # solve-cache key to this specific geometry, operating point, and motion.
+    # solve-cache and memo keys to this specific geometry, operating point, and motion.
     ref_problem_hash = _serialization.hash_object(ref_problem)
 
     # Load the JSON solve cache, or start empty when caching is disabled or the file does
     # not yet exist. Solved coefficients are looked up from and written through to it.
     solve_cache = _load_solve_cache(cache_path)
+
+    # Pre-populate the in-loop memo caches from the cache file's memo section, translating
+    # each stored memo from its absolute mesh back onto this run's sweep indices. Memos
+    # outside this run's bounds or written for another reference problem are dropped. A
+    # cache with a populated memo section lets a warm run reuse these values instead of
+    # re-resolving them, which for the delta_time cache skips the iterative optimizer. The
+    # number of spanwise Panels cache is keyed on a tuple of 5 ints (ar_id, chord_id,
+    # ref_base_airplane_id, ref_base_wing_id, ref_base_wing_cross_section_id) for
+    # trapezoidal Wings, the number of WingCrossSections cache is keyed on a tuple of 4
+    # ints (ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id) for edge-defined
+    # Wings, and the delta_time cache is keyed on a tuple of 2 ints (ar_id, chord_id),
+    # since the optimum depends only on the mesh and is reused across every wake state and
+    # wake length at that mesh.
+    (
+        num_spanwise_panels_cache,
+        num_wing_cross_sections_cache,
+        delta_time_cache,
+    ) = _memos_from_disk(
+        _load_memo_cache(cache_path),
+        ref_problem_hash,
+        panel_aspect_ratios_list,
+        num_chordwise_panels_list,
+    )
+
+    # Persist the whole cache (solved coefficients and memos) to disk on each solve miss.
+    # The memo caches are translated back to their absolute mesh keys at write time. This
+    # is None when caching is disabled, in which case nothing is written.
+    persist_cache: Callable[[], None] | None = None
+    if cache_path is not None:
+
+        def persist_cache() -> None:
+            assert cache_path is not None
+            _write_cache(
+                cache_path,
+                solve_cache,
+                _memos_to_disk(
+                    ref_problem_hash,
+                    panel_aspect_ratios_list,
+                    num_chordwise_panels_list,
+                    num_spanwise_panels_cache,
+                    num_wing_cross_sections_cache,
+                    delta_time_cache,
+                ),
+            )
 
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
@@ -1069,7 +1125,7 @@ def analyze_unsteady_convergence(
                     # and negligible on a hit.
                     iter_start = time.time()
                     theseFinalCoefficients = _cached_solve(
-                        solve_cache, cache_path, solve_cache_key, solve_this_mesh
+                        solve_cache, solve_cache_key, solve_this_mesh, persist_cache
                     )
                     this_iter_time = time.time() - iter_start
 
@@ -2848,22 +2904,34 @@ def _load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
     }
 
 
-def _write_solve_cache(cache_path: Path, cache: dict[str, np.ndarray]) -> None:
-    """Writes a solve cache to disk as JSON, replacing any existing file atomically.
+def _write_cache(
+    cache_path: Path,
+    solve_cache: dict[str, np.ndarray],
+    memo_cache: dict[str, float],
+) -> None:
+    """Writes the whole cache (solved coefficients and memos) to disk as JSON, replacing
+    any existing file atomically.
 
-    The cache is written to a temporary file in the same directory and then moved into
-    place with os.replace, so a run interrupted mid-write leaves the existing cache
-    intact rather than a half-written file. There is no file locking, so concurrent
-    convergence runs sharing one cache file are not supported.
+    Both sections are written together as one file image, so neither the solved
+    coefficients nor the memos can clobber the other. The file is written to a temporary
+    file in the same directory and then moved into place with os.replace, so a run
+    interrupted mid-write leaves the existing cache intact rather than a half-written
+    file. There is no file locking, so concurrent convergence runs sharing one cache
+    file are not supported.
 
-    :param cache_path: The path to the JSON solve cache file.
-    :param cache: A dict mapping each cache key to a (num_airplanes, 6) ndarray of
-        floats holding that mesh's per-Airplane load coefficients.
+    :param cache_path: The path to the JSON cache file.
+    :param solve_cache: A dict mapping each solve-cache key to a (num_airplanes, 6)
+        ndarray of floats holding that mesh's per-Airplane load coefficients.
+    :param memo_cache: A dict mapping each absolute-valued memo key to its value, as
+        returned by _memos_to_disk.
     :return: None
     """
     data = {
         "_cache_version": _SOLVE_CACHE_VERSION,
-        "entries": {key: coefficients.tolist() for key, coefficients in cache.items()},
+        "entries": {
+            key: coefficients.tolist() for key, coefficients in solve_cache.items()
+        },
+        "memos": memo_cache,
     }
 
     temp_path = cache_path.parent / (cache_path.name + ".tmp")
@@ -2874,27 +2942,28 @@ def _write_solve_cache(cache_path: Path, cache: dict[str, np.ndarray]) -> None:
 
 def _cached_solve(
     cache: dict[str, np.ndarray],
-    cache_path: Path | None,
     key: str,
     solve: Callable[[], np.ndarray],
+    persist: Callable[[], None] | None = None,
 ) -> np.ndarray:
     """Returns a mesh's load coefficients from the cache, solving and storing them on a
     miss.
 
     On a hit, the stored coefficients are returned and the expensive solve is skipped.
     On a miss, solve is called, its result is added to the in-memory cache, and, when a
-    cache path is given, the whole cache is written through to disk so an interrupted
-    study keeps every iteration solved so far. The returned array is the one held in the
-    cache and must be treated as read-only by the caller.
+    persist callback is given, it is invoked to write the whole cache through to disk so
+    an interrupted study keeps every iteration solved so far. The returned array is the
+    one held in the cache and must be treated as read-only by the caller.
 
     :param cache: The in-memory cache mapping each key to a (num_airplanes, 6) ndarray
         of floats, as returned by _load_solve_cache. It is updated in place on a miss.
-    :param cache_path: The path to the JSON solve cache file, or None to keep the cache
-        in memory only without writing through to disk.
     :param key: The cache key identifying this solve, as returned by _solve_cache_key.
     :param solve: A callable that builds and solves the mesh and returns its
         (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients. It is
         called only on a cache miss.
+    :param persist: An optional callback that writes the whole cache through to disk. It
+        is called only on a cache miss, and only when caching to a file. When None, the
+        cache is kept in memory only. The default is None.
     :return: A (num_airplanes, 6) ndarray of floats holding the mesh's per-Airplane load
         coefficients.
     """
@@ -2904,8 +2973,8 @@ def _cached_solve(
     coefficients = solve()
     cache[key] = coefficients
 
-    if cache_path is not None:
-        _write_solve_cache(cache_path, cache)
+    if persist is not None:
+        persist()
 
     return coefficients
 

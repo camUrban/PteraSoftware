@@ -140,6 +140,125 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(warm_parameters[2], cold_parameters[2])
         self.assertEqual(warm_parameters[3], cold_parameters[3])
 
+    def test_unsteady_cache_warm_run_skips_delta_time_optimization(self) -> None:
+        """This method tests that a second run against a warm cache reuses each mesh's
+        stored delta_time and does not re-run the iterative delta_time optimizer.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            cold_parameters = ps.convergence.analyze_unsteady_convergence(
+                ref_problem=self.unsteady_validation_problem,
+                prescribed_wake=True,
+                free_wake=False,
+                num_chords_bounds=(1, 2),
+                panel_aspect_ratio_bounds=(4, 3),
+                num_chordwise_panels_bounds=(1, 2),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+                cache_path=cache_path,
+            )
+
+            # On the warm run every mesh's delta_time should be a cache hit, so the
+            # iterative optimizer must never run. Patching it to raise turns any
+            # optimization into a test failure.
+            with mock.patch.object(
+                ps.movements.movement,
+                "_optimize_delta_time",
+                side_effect=AssertionError(
+                    "The delta_time optimizer ran despite a warm cache."
+                ),
+            ):
+                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                    ref_problem=self.unsteady_validation_problem,
+                    prescribed_wake=True,
+                    free_wake=False,
+                    num_chords_bounds=(1, 2),
+                    panel_aspect_ratio_bounds=(4, 3),
+                    num_chordwise_panels_bounds=(1, 2),
+                    rtol=0.05,
+                    atol=0.001,
+                    show_solver_progress=False,
+                    cache_path=cache_path,
+                )
+
+        self.assertEqual(warm_parameters[0], cold_parameters[0])
+        self.assertEqual(warm_parameters[1], cold_parameters[1])
+        self.assertEqual(warm_parameters[2], cold_parameters[2])
+        self.assertEqual(warm_parameters[3], cold_parameters[3])
+
+    def test_unsteady_cache_reuses_memos_across_different_bounds(self) -> None:
+        """This method tests that memos written by one run are reused by a later run
+        whose bounds differ, reproducing the uncached result while never re-running the
+        delta_time optimizer for the meshes the earlier run already resolved.
+
+        :return: None
+        """
+        # An uncached run over the narrower bounds gives the reference result.
+        uncached_parameters = ps.convergence.analyze_unsteady_convergence(
+            ref_problem=self.unsteady_validation_problem,
+            prescribed_wake=True,
+            free_wake=False,
+            num_chords_bounds=(1, 2),
+            panel_aspect_ratio_bounds=(3, 2),
+            num_chordwise_panels_bounds=(1, 2),
+            rtol=0.05,
+            atol=0.001,
+            show_solver_progress=False,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+
+            # A cold run over wider Panel aspect ratio bounds populates the cache with
+            # every mesh the narrower run below will need. The memos are keyed on absolute
+            # mesh values, so they carry over even though the two runs index their sweeps
+            # differently.
+            ps.convergence.analyze_unsteady_convergence(
+                ref_problem=self.unsteady_validation_problem,
+                prescribed_wake=True,
+                free_wake=False,
+                num_chords_bounds=(1, 2),
+                panel_aspect_ratio_bounds=(4, 2),
+                num_chordwise_panels_bounds=(1, 2),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+                cache_path=cache_path,
+            )
+
+            # The narrower run reuses those cached memos, so its delta_time optimizer must
+            # never run despite the different bounds. Patching it to raise turns any
+            # optimization into a test failure.
+            with mock.patch.object(
+                ps.movements.movement,
+                "_optimize_delta_time",
+                side_effect=AssertionError(
+                    "The delta_time optimizer ran despite a warm cache."
+                ),
+            ):
+                warm_parameters = ps.convergence.analyze_unsteady_convergence(
+                    ref_problem=self.unsteady_validation_problem,
+                    prescribed_wake=True,
+                    free_wake=False,
+                    num_chords_bounds=(1, 2),
+                    panel_aspect_ratio_bounds=(3, 2),
+                    num_chordwise_panels_bounds=(1, 2),
+                    rtol=0.05,
+                    atol=0.001,
+                    show_solver_progress=False,
+                    cache_path=cache_path,
+                )
+
+        # Reusing the cross-bounds memos must reproduce the uncached result exactly.
+        self.assertEqual(warm_parameters[0], uncached_parameters[0])
+        self.assertEqual(warm_parameters[1], uncached_parameters[1])
+        self.assertEqual(warm_parameters[2], uncached_parameters[2])
+        self.assertEqual(warm_parameters[3], uncached_parameters[3])
+
     def test_unsteady_cache_path_without_json_suffix_raises(self) -> None:
         """This method tests that a cache_path not ending in .json raises a ValueError.
 

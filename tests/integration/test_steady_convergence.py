@@ -33,7 +33,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
         )
 
         converged_panel_ar = converged_parameters[0]
@@ -63,7 +64,8 @@ class TestSteadyConvergence(unittest.TestCase):
                 solver_type="steady ring vortex lattice method",
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
-                convergence_criteria=5.0,
+                rtol=0.05,
+                atol=0.001,
             )
 
     def test_steady_ring_convergence(self):
@@ -77,7 +79,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
         )
 
         converged_panel_ar = converged_parameters[0]
@@ -101,7 +104,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady horseshoe vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
             resolve_converged_solver=True,
         )
 
@@ -131,7 +135,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
             resolve_converged_solver=True,
         )
 
@@ -166,7 +171,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
         )
 
         converged_panel_ar = converged_parameters[0]
@@ -193,7 +199,8 @@ class TestSteadyConvergence(unittest.TestCase):
             solver_type="steady ring vortex lattice method",
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 4),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
         )
 
         converged_panel_ar = converged_parameters[0]

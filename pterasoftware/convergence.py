@@ -34,6 +34,11 @@ from . import (
 
 _logger = _logging.get_logger("convergence")
 
+# The labels of the six load coefficients that convergence is checked against, in the
+# order they are stored: the three force coefficients followed by the three moment
+# coefficients.
+_COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
+
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
@@ -42,7 +47,9 @@ def analyze_steady_convergence(
     solver_type: str,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
-    convergence_criteria: float | int = 5.0,
+    rtol: float | int = 0.05,
+    atol: float | int = 0.001,
+    coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
     resolve_converged_solver: bool | np.bool_ = False,
 ) -> (
     tuple[
@@ -63,26 +70,21 @@ def analyze_steady_convergence(
     their Wings' numbers of chordwise Panels. These values are iterated over via two
     nested for loops (with the number of chordwise Panels as the inner loop).
 
-    With each new combination of these values, the SteadyProblem is solved, and its
-    resultant load coefficients are stored. Each Airplanes' three force coefficients are
-    combined by taking their root-sum-square to find the resultant force coefficient.
-    Then, the absolute percent change (APE) of each Airplanes' resultant force
-    coefficient is found between this iteration, and the iterations with incrementally
-    coarser meshes in the two parameter directions (panel aspect ratio and number of
-    chordwise panels). These two steps are repeated for the three moment coefficients.
+    With each new combination of these values, the SteadyProblem is solved, and each
+    Airplane's six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. Then,
+    convergence is checked per coefficient between this iteration and the iterations
+    with incrementally coarser meshes in the two parameter directions (Panel aspect
+    ratio and number of chordwise Panels). A coefficient is converged in a parameter
+    direction when its absolute change from the coarser iteration is at most atol + rtol
+    * max(abs(this), abs(coarser)). A parameter direction is converged when every
+    unmasked coefficient of every Airplane is converged in that direction, so a multi-
+    Airplane study converges only once all its Airplanes have.
 
-    The maximums of the resultant force coefficient APEs and resultant moment
-    coefficient APEs are found. This leaves us with two maximum APEs, one for each
-    parameter direction, per Airplane. Next, we take the maximum of each parameter
-    directions' APEs across all Airplanes, leaving us with two maximum APEs total. If
-    either of the parameter direction APEs is below the convergence criteria, then this
-    iteration has found a converged solution for that parameter direction.
-
-    If an iteration's two APEs are both below the converged criteria, then we exit the
-    nested for loops and return the converged parameters. However, the converged
-    parameters are actually the values incrementally coarser than the final values
-    (because the incrementally coarser values were found to be within the convergence
-    criteria percent difference from the final values).
+    If an iteration is converged in both parameter directions, then we exit the nested
+    for loops and return the converged parameters. However, the converged parameters are
+    actually the values incrementally coarser than the final values, because refining
+    from the coarser values to the final ones changed every unmasked coefficient by
+    within the tolerance.
 
     **Notes:**
 
@@ -120,13 +122,21 @@ def analyze_steady_convergence(
     :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, that
         determines the range of values to use for the Wings' numbers of chordwise
         panels. The default is (3, 12).
-    :param convergence_criteria: A positive number (int or float) that determines the
-        point at which the function considers the simulation to have converged.
-        Specifically, it is the maximum absolute percent change in the combined load
-        coefficients. Therefore, it is in units of percent. Refer to the description in
-        this function's docstring for more details on how it affects the solver. In
-        short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
-        convergence. Values are converted to floats internally. The default is 5.0.
+    :param rtol: A positive number (int or float) giving the relative tolerance for the
+        per-coefficient convergence check. A coefficient is converged in a parameter
+        direction when its absolute change from the incrementally coarser iteration is
+        at most atol + rtol * max(abs(this), abs(coarser)). Set this smaller for a
+        stricter convergence. Values are converted to floats internally. The default is
+        0.05.
+    :param atol: A positive number (int or float) giving the absolute tolerance floor
+        for the per-coefficient convergence check. It keeps coefficients that sit near
+        zero from being held to an unreachable relative tolerance. Values are converted
+        to floats internally. The default is 0.001.
+    :param coefficient_mask: A tuple of six bools that determines which of the six load
+        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
+        None to require all six. At least one element must be True. Use this to ignore
+        coefficients that are physically irrelevant to the analysis. The default is
+        None.
     :param resolve_converged_solver: A bool for whether to recreate and run the solver
         at the converged parameters and return it. Because finding convergence is
         expensive, this defaults to False, in which case the returned solver is None.
@@ -159,10 +169,18 @@ def analyze_steady_convergence(
     # Validate the num_chordwise_panels_bounds parameter.
     _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
-    # Validate the convergence_criteria parameter.
-    convergence_criteria = _parameter_validation.number_in_range_return_float(
-        convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
+    # Validate the rtol parameter.
+    rtol = _parameter_validation.number_in_range_return_float(
+        rtol, "rtol", min_val=0.0, min_inclusive=False
     )
+
+    # Validate the atol parameter.
+    atol = _parameter_validation.number_in_range_return_float(
+        atol, "atol", min_val=0.0, min_inclusive=False
+    )
+
+    # Validate the coefficient_mask parameter.
+    coefficient_mask_array = _validate_coefficient_mask(coefficient_mask)
 
     # Validate the resolve_converged_solver parameter.
     resolve_converged_solver = _parameter_validation.boolLike_return_bool(
@@ -193,19 +211,15 @@ def analyze_steady_convergence(
     iter_times = np.zeros(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
-    combinedForceCoefficients = np.zeros(
+
+    # Each iteration stores the six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) of
+    # each Airplane, in that order, along the last axis.
+    coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplanes),
-        ),
-        dtype=float,
-    )
-    combinedMomentCoefficients = np.zeros(
-        (
-            len(panel_aspect_ratios_list),
-            len(num_chordwise_panels_list),
-            len(ref_airplanes),
+            6,
         ),
         dtype=float,
     )
@@ -273,103 +287,85 @@ def analyze_steady_convergence(
             iter_stop = time.time()
             this_iter_time = iter_stop - iter_start
 
-            # Create and fill ndarrays with each of this iteration's Airplanes'
-            # combined load coefficients.
-            theseCombinedForceCoefficients = np.zeros(len(these_airplanes), dtype=float)
-            theseCombinedMomentCoefficients = np.zeros(
-                len(these_airplanes), dtype=float
-            )
+            # Create and fill an ndarray with each of this iteration's Airplanes' six
+            # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
+            theseCoefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
             for airplane_id, airplane in enumerate(these_airplanes):
                 _forceCoefficients_W = airplane.forceCoefficients_W
                 assert _forceCoefficients_W is not None
 
-                theseCombinedForceCoefficients[airplane_id] = np.linalg.norm(
-                    _forceCoefficients_W
-                )
-
                 _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
                 assert _momentCoefficients_W_CgP1 is not None
 
-                theseCombinedMomentCoefficients[airplane_id] = np.linalg.norm(
-                    _momentCoefficients_W_CgP1
-                )
+                theseCoefficients[airplane_id, 0:3] = _forceCoefficients_W
+                theseCoefficients[airplane_id, 3:6] = _momentCoefficients_W_CgP1
 
-            # Populate the ndarrays that store information from all the iterations with
+            # Populate the ndarray that stores information from all the iterations with
             # the data from this iteration.
-            combinedForceCoefficients[ar_id, chord_id, :] = (
-                theseCombinedForceCoefficients
-            )
-            combinedMomentCoefficients[ar_id, chord_id, :] = (
-                theseCombinedMomentCoefficients
-            )
+            coefficients[ar_id, chord_id, :, :] = theseCoefficients
             iter_times[ar_id, chord_id] = this_iter_time
 
             _logger.info(
                 "\t\t\tSimulation completed in " + str(round(this_iter_time, 3)) + " s"
             )
 
-            max_ar_pc = np.inf
-            max_chord_pc = np.inf
+            # Check per-coefficient convergence in each parameter direction against the
+            # incrementally coarser iteration. A direction cannot be checked on its first
+            # value, where there is no coarser iteration to compare against, so it starts
+            # as not converged.
+            ar_converged = False
+            chord_converged = False
 
-            # If this isn't the first Panel aspect ratio, calculate the Panel aspect
-            # ratio APE.
+            # If this isn't the first Panel aspect ratio, check convergence in the Panel
+            # aspect ratio direction.
             if ar_id > 0:
-                lastArCombinedForceCoefficients = combinedForceCoefficients[
-                    ar_id - 1, chord_id, :
-                ]
-                lastArCombinedMomentCoefficients = combinedMomentCoefficients[
-                    ar_id - 1, chord_id, :
-                ]
-                max_ar_pc = max(
-                    _max_combined_percent_change(
-                        theseCombinedForceCoefficients,
-                        lastArCombinedForceCoefficients,
-                    ),
-                    _max_combined_percent_change(
-                        theseCombinedMomentCoefficients,
-                        lastArCombinedMomentCoefficients,
-                    ),
+                ar_converged, ar_metric, ar_limiting_id = (
+                    _check_coefficient_convergence(
+                        theseCoefficients,
+                        coefficients[ar_id - 1, chord_id, :, :],
+                        rtol,
+                        atol,
+                        coefficient_mask_array,
+                    )
                 )
 
                 _logger.info(
-                    "\t\t\tMaximum combined coefficient change from Panel aspect "
-                    "ratio: " + str(round(max_ar_pc, 2)) + "%"
+                    "\t\t\tPanel aspect ratio convergence metric: "
+                    + str(round(ar_metric, 2))
+                    + "% (limiting coefficient: "
+                    + _COEFFICIENT_LABELS[ar_limiting_id]
+                    + ")"
                 )
             else:
                 _logger.info(
-                    "\t\t\tMaximum combined coefficient change from Panel aspect "
-                    "ratio: " + str(max_ar_pc)
+                    "\t\t\tPanel aspect ratio convergence metric: not yet checked"
                 )
 
-            # If this isn't the first number of chordwise Panels, calculate the
-            # number of chordwise Panels APE.
+            # If this isn't the first number of chordwise Panels, check convergence in
+            # the number of chordwise Panels direction.
             if chord_id > 0:
-                lastChordCombinedForceCoefficients = combinedForceCoefficients[
-                    ar_id, chord_id - 1, :
-                ]
-                lastChordCombinedMomentCoefficients = combinedMomentCoefficients[
-                    ar_id, chord_id - 1, :
-                ]
-                max_chord_pc = max(
-                    _max_combined_percent_change(
-                        theseCombinedForceCoefficients,
-                        lastChordCombinedForceCoefficients,
-                    ),
-                    _max_combined_percent_change(
-                        theseCombinedMomentCoefficients,
-                        lastChordCombinedMomentCoefficients,
-                    ),
+                chord_converged, chord_metric, chord_limiting_id = (
+                    _check_coefficient_convergence(
+                        theseCoefficients,
+                        coefficients[ar_id, chord_id - 1, :, :],
+                        rtol,
+                        atol,
+                        coefficient_mask_array,
+                    )
                 )
 
                 _logger.info(
-                    "\t\t\tMaximum combined coefficient change from number of "
-                    "chordwise Panels: " + str(round(max_chord_pc, 2)) + "%"
+                    "\t\t\tNumber of chordwise Panels convergence metric: "
+                    + str(round(chord_metric, 2))
+                    + "% (limiting coefficient: "
+                    + _COEFFICIENT_LABELS[chord_limiting_id]
+                    + ")"
                 )
             else:
                 _logger.info(
-                    "\t\t\tMaximum combined coefficient change from number of "
-                    "chordwise Panels: " + str(max_chord_pc)
+                    "\t\t\tNumber of chordwise Panels convergence metric: not yet "
+                    "checked"
                 )
 
             # Consider the Panel aspect ratio value to be saturated if it is equal to
@@ -381,11 +377,6 @@ def analyze_steady_convergence(
             # of chordwise Panels were specified.
             single_ar = len(panel_aspect_ratios_list) == 1
             single_chord = len(num_chordwise_panels_list) == 1
-
-            # Check if this iteration is converged with respect to the Panel aspect
-            # ratio and/or the number of chordwise Panels.
-            ar_converged = max_ar_pc < convergence_criteria
-            chord_converged = max_chord_pc < convergence_criteria
 
             # Consider each convergence parameter to have "passed" if it is
             # converged, single, or saturated.
@@ -545,7 +536,9 @@ def analyze_unsteady_convergence(
     num_chords_bounds: tuple[int, int] | None = None,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
-    convergence_criteria: float | int = 5.0,
+    rtol: float | int = 0.05,
+    atol: float | int = 0.001,
+    coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
     show_solver_progress: bool | np.bool_ = True,
     resolve_converged_solver: bool | np.bool_ = False,
 ) -> (
@@ -574,30 +567,24 @@ def analyze_unsteady_convergence(
     the number of chordwise Panels.
 
     With each new combination of these values, the UnsteadyProblem is solved, and each
-    Airplanes' final load coefficients are stored. As this function deals with
-    UnsteadyProblems, it considers the final load coefficients to be the final-cycle's
-    RMS load coefficients for UnsteadyProblems with variable geometry, and the final
-    time step's load coefficients for static geometry cases. For each Airplane, the
-    three final force coefficients are combined by taking their root-sum-square to find
-    the resultant final force coefficient for that Airplane. Then, the absolute percent
-    change (APE) of this Airplane's resultant final force coefficient is found between
-    this iteration and the iterations with incrementally coarser meshes in all four
-    parameter directions (wake state, wake length, Panel aspect ratio, and number of
-    chordwise Panels). These steps are repeated for the three final moment coefficients.
+    Airplane's six final load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. As
+    this function deals with UnsteadyProblems, it considers the final load coefficients
+    to be the final cycle's mean load coefficients (the signed time-average over the
+    final cycle) for UnsteadyProblems with variable geometry, and the final time step's
+    load coefficients for static geometry cases. Then, convergence is checked per
+    coefficient between this iteration and the iterations with incrementally coarser
+    meshes in all four parameter directions (wake state, wake length, Panel aspect
+    ratio, and number of chordwise Panels). A coefficient is converged in a parameter
+    direction when its absolute change from the coarser iteration is at most atol + rtol
+    * max(abs(this), abs(coarser)). A parameter direction is converged when every
+    unmasked coefficient of every Airplane is converged in that direction, so a multi-
+    Airplane study converges only once all its Airplanes have.
 
-    For each Airplane, the maximums of the resultant final force coefficient APEs and
-    resultant final moment coefficient APEs are found. This leaves us with four maximum
-    APEs per Airplane, one for each parameter direction. Next, we find the maximum
-    across all the Airplanes for each parameter directions' maximum APE. Now, we are
-    left with four maximum APEs total. If any of the four parameter direction APEs is
-    below the convergence criteria, then this iteration has found a converged solution
-    for that parameter direction.
-
-    If an iteration's four APEs are all below the converged criteria, then we exit the
+    If an iteration is converged in all four parameter directions, then we exit the
     nested for loops and return the converged parameters. However, the converged
-    parameters are actually the values incrementally coarser than the final values (
-    because the incrementally coarser values were found to be within the convergence
-    criteria percent difference from the final values).
+    parameters are actually the values incrementally coarser than the final values,
+    because refining from the coarser values to the final ones changed every unmasked
+    coefficient by within the tolerance.
 
     **Notes:**
 
@@ -660,13 +647,21 @@ def analyze_unsteady_convergence(
     :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, that
         determines the range of values to use for the Wings' numbers of chordwise
         panels. The default is (3, 12).
-    :param convergence_criteria: A positive number (int or float) that determines the
-        point at which the function considers the simulation to have converged.
-        Specifically, it is the maximum absolute percent change in the combined load
-        coefficients. Therefore, it is in units of percent. Refer to the description in
-        this function's docstring for more details on how it affects the solver. In
-        short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
-        convergence. Values are converted to floats internally. The default is 5.0.
+    :param rtol: A positive number (int or float) giving the relative tolerance for the
+        per-coefficient convergence check. A coefficient is converged in a parameter
+        direction when its absolute change from the incrementally coarser iteration is
+        at most atol + rtol * max(abs(this), abs(coarser)). Set this smaller for a
+        stricter convergence. Values are converted to floats internally. The default is
+        0.05.
+    :param atol: A positive number (int or float) giving the absolute tolerance floor
+        for the per-coefficient convergence check. It keeps coefficients that sit near
+        zero from being held to an unreachable relative tolerance. Values are converted
+        to floats internally. The default is 0.001.
+    :param coefficient_mask: A tuple of six bools that determines which of the six load
+        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
+        None to require all six. At least one element must be True. Use this to ignore
+        coefficients that are physically irrelevant to the analysis. The default is
+        None.
     :param show_solver_progress: Set this to True to show the TQDM progress bar during
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
@@ -745,10 +740,18 @@ def analyze_unsteady_convergence(
     # Validate the num_chordwise_panels_bounds parameter.
     _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
-    # Validate the convergence_criteria parameter.
-    convergence_criteria = _parameter_validation.number_in_range_return_float(
-        convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
+    # Validate the rtol parameter.
+    rtol = _parameter_validation.number_in_range_return_float(
+        rtol, "rtol", min_val=0.0, min_inclusive=False
     )
+
+    # Validate the atol parameter.
+    atol = _parameter_validation.number_in_range_return_float(
+        atol, "atol", min_val=0.0, min_inclusive=False
+    )
+
+    # Validate the coefficient_mask parameter.
+    coefficient_mask_array = _validate_coefficient_mask(coefficient_mask)
 
     # Validate the show_solver_progress parameter.
     show_solver_progress = _parameter_validation.boolLike_return_bool(
@@ -812,14 +815,16 @@ def analyze_unsteady_convergence(
         ),
         dtype=float,
     )
-    combinedFinalLoadCoefficients = np.zeros(
+    # Each iteration stores the six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
+    # cMZ) of each Airplane, in that order, along the last axis.
+    finalCoefficients = np.zeros(
         (
             len(wake_list),
             len(wake_lengths_list),
             len(panel_aspect_ratios_list),
             len(num_chordwise_panels_list),
             len(ref_airplane_movements),
-            2,
+            6,
         ),
         dtype=float,
     )
@@ -909,45 +914,38 @@ def analyze_unsteady_convergence(
                     iter_stop = time.time()
                     this_iter_time = iter_stop - iter_start
 
-                    # Create and fill ndarrays with each of this iteration's Airplanes'
-                    # combined final load coefficients.
-                    theseCombinedFinalLoadCoefficients = np.zeros(
-                        (len(ref_airplane_movements), 2), dtype=float
+                    # Create and fill an ndarray with each of this iteration's Airplanes'
+                    # six final load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
+                    theseFinalCoefficients = np.zeros(
+                        (len(ref_airplane_movements), 6), dtype=float
                     )
 
                     for airplane_id in range(len(ref_airplane_movements)):
-                        # If this UnsteadyProblem is static, then get it's combined
-                        # final load coefficients. If it's variable, get the combined
-                        # final RMS load coefficients.
+                        # For static geometry, the final load coefficients are the final
+                        # time step's. For variable geometry, they are the mean over the
+                        # final cycle (the signed time-average).
                         if static:
-                            combinedFinalForceCoefficient = np.linalg.norm(
+                            theseFinalCoefficients[airplane_id, 0:3] = (
                                 this_problem.finalForceCoefficients_W[airplane_id]
                             )
-                            combinedFinalMomentCoefficient = np.linalg.norm(
+                            theseFinalCoefficients[airplane_id, 3:6] = (
                                 this_problem.finalMomentCoefficients_W_CgP1[airplane_id]
                             )
                         else:
-                            combinedFinalForceCoefficient = np.linalg.norm(
-                                this_problem.finalRmsForceCoefficients_W[airplane_id]
+                            theseFinalCoefficients[airplane_id, 0:3] = (
+                                this_problem.finalMeanForceCoefficients_W[airplane_id]
                             )
-                            combinedFinalMomentCoefficient = np.linalg.norm(
-                                this_problem.finalRmsMomentCoefficients_W_CgP1[
+                            theseFinalCoefficients[airplane_id, 3:6] = (
+                                this_problem.finalMeanMomentCoefficients_W_CgP1[
                                     airplane_id
                                 ]
                             )
 
-                        theseCombinedFinalLoadCoefficients[airplane_id, 0] = (
-                            combinedFinalForceCoefficient
-                        )
-                        theseCombinedFinalLoadCoefficients[airplane_id, 1] = (
-                            combinedFinalMomentCoefficient
-                        )
-
-                    # Populate the ndarrays that store information from all the
+                    # Populate the ndarray that stores information from all the
                     # iterations with the data from this iteration.
-                    combinedFinalLoadCoefficients[
-                        wake_id, length_id, ar_id, chord_id, :, :
-                    ] = theseCombinedFinalLoadCoefficients
+                    finalCoefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
+                        theseFinalCoefficients
+                    )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     _logger.info(
@@ -956,100 +954,123 @@ def analyze_unsteady_convergence(
                         + " s"
                     )
 
-                    max_wake_pc = np.inf
-                    max_length_pc = np.inf
-                    max_ar_pc = np.inf
-                    max_chord_pc = np.inf
+                    # Check per-coefficient convergence in each parameter direction
+                    # against the incrementally coarser iteration. A direction cannot be
+                    # checked on its first value, where there is no coarser iteration to
+                    # compare against, so it starts as not converged.
+                    wake_converged = False
+                    length_converged = False
+                    ar_converged = False
+                    chord_converged = False
 
-                    # If this isn't the first wake state, calculate the wake state APE.
+                    # If this isn't the first wake state, check convergence in the wake
+                    # state direction.
                     if wake_id > 0:
-                        lastWakeCombinedFinalLoadCoefficients = (
-                            combinedFinalLoadCoefficients[
-                                wake_id - 1, length_id, ar_id, chord_id, :, :
-                            ]
-                        )
-                        max_wake_pc = _max_combined_percent_change(
-                            theseCombinedFinalLoadCoefficients,
-                            lastWakeCombinedFinalLoadCoefficients,
+                        wake_converged, wake_metric, wake_limiting_id = (
+                            _check_coefficient_convergence(
+                                theseFinalCoefficients,
+                                finalCoefficients[
+                                    wake_id - 1, length_id, ar_id, chord_id, :, :
+                                ],
+                                rtol,
+                                atol,
+                                coefficient_mask_array,
+                            )
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from wake "
-                            "type: " + str(round(max_wake_pc, 2)) + "%"
+                            "\t\t\t\t\tWake type convergence metric: "
+                            + str(round(wake_metric, 2))
+                            + "% (limiting coefficient: "
+                            + _COEFFICIENT_LABELS[wake_limiting_id]
+                            + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from wake "
-                            "type: " + str(max_wake_pc)
+                            "\t\t\t\t\tWake type convergence metric: not yet checked"
                         )
 
-                    # If this isn't the first wake length, calculate the wake length
-                    # APE.
+                    # If this isn't the first wake length, check convergence in the wake
+                    # length direction.
                     if length_id > 0:
-                        lastLengthCombinedFinalLoadCoefficients = (
-                            combinedFinalLoadCoefficients[
-                                wake_id, length_id - 1, ar_id, chord_id, :, :
-                            ]
-                        )
-                        max_length_pc = _max_combined_percent_change(
-                            theseCombinedFinalLoadCoefficients,
-                            lastLengthCombinedFinalLoadCoefficients,
+                        length_converged, length_metric, length_limiting_id = (
+                            _check_coefficient_convergence(
+                                theseFinalCoefficients,
+                                finalCoefficients[
+                                    wake_id, length_id - 1, ar_id, chord_id, :, :
+                                ],
+                                rtol,
+                                atol,
+                                coefficient_mask_array,
+                            )
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from wake "
-                            "length: " + str(round(max_length_pc, 2)) + "%"
+                            "\t\t\t\t\tWake length convergence metric: "
+                            + str(round(length_metric, 2))
+                            + "% (limiting coefficient: "
+                            + _COEFFICIENT_LABELS[length_limiting_id]
+                            + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from wake "
-                            "length: " + str(max_length_pc)
+                            "\t\t\t\t\tWake length convergence metric: not yet checked"
                         )
 
-                    # If this isn't the first Panel aspect ratio, calculate the Panel
-                    # aspect ratio APE.
+                    # If this isn't the first Panel aspect ratio, check convergence in
+                    # the Panel aspect ratio direction.
                     if ar_id > 0:
-                        lastArCombinedFinalLoadCoefficients = (
-                            combinedFinalLoadCoefficients[
-                                wake_id, length_id, ar_id - 1, chord_id, :, :
-                            ]
-                        )
-                        max_ar_pc = _max_combined_percent_change(
-                            theseCombinedFinalLoadCoefficients,
-                            lastArCombinedFinalLoadCoefficients,
+                        ar_converged, ar_metric, ar_limiting_id = (
+                            _check_coefficient_convergence(
+                                theseFinalCoefficients,
+                                finalCoefficients[
+                                    wake_id, length_id, ar_id - 1, chord_id, :, :
+                                ],
+                                rtol,
+                                atol,
+                                coefficient_mask_array,
+                            )
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from Panel "
-                            "aspect ratio: " + str(round(max_ar_pc, 2)) + "%"
+                            "\t\t\t\t\tPanel aspect ratio convergence metric: "
+                            + str(round(ar_metric, 2))
+                            + "% (limiting coefficient: "
+                            + _COEFFICIENT_LABELS[ar_limiting_id]
+                            + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from Panel "
-                            "aspect ratio: " + str(max_ar_pc)
+                            "\t\t\t\t\tPanel aspect ratio convergence metric: not yet "
+                            "checked"
                         )
 
-                    # If this isn't the first number of chordwise Panels, calculate
-                    # the number of chordwise Panels APE.
+                    # If this isn't the first number of chordwise Panels, check
+                    # convergence in the number of chordwise Panels direction.
                     if chord_id > 0:
-                        lastChordCombinedFinalLoadCoefficients = (
-                            combinedFinalLoadCoefficients[
-                                wake_id, length_id, ar_id, chord_id - 1, :, :
-                            ]
-                        )
-                        max_chord_pc = _max_combined_percent_change(
-                            theseCombinedFinalLoadCoefficients,
-                            lastChordCombinedFinalLoadCoefficients,
+                        chord_converged, chord_metric, chord_limiting_id = (
+                            _check_coefficient_convergence(
+                                theseFinalCoefficients,
+                                finalCoefficients[
+                                    wake_id, length_id, ar_id, chord_id - 1, :, :
+                                ],
+                                rtol,
+                                atol,
+                                coefficient_mask_array,
+                            )
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from "
-                            "chordwise Panels: " + str(round(max_chord_pc, 2)) + "%"
+                            "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
+                            + str(round(chord_metric, 2))
+                            + "% (limiting coefficient: "
+                            + _COEFFICIENT_LABELS[chord_limiting_id]
+                            + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tMaximum combined coefficient change from "
-                            "chordwise Panels: " + str(max_chord_pc)
+                            "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
+                            "not yet checked"
                         )
 
                     # Consider the Panel aspect ratio value to be saturated if it is
@@ -1066,13 +1087,6 @@ def analyze_unsteady_convergence(
                     single_length = len(wake_lengths_list) == 1
                     single_ar = len(panel_aspect_ratios_list) == 1
                     single_chord = len(num_chordwise_panels_list) == 1
-
-                    # Check if the iteration is converged with respect to any of the
-                    # four convergence parameters.
-                    wake_converged = max_wake_pc < convergence_criteria
-                    length_converged = max_length_pc < convergence_criteria
-                    ar_converged = max_ar_pc < convergence_criteria
-                    chord_converged = max_chord_pc < convergence_criteria
 
                     # Consider each convergence parameter to have "passed" if it is
                     # converged, single, or saturated.
@@ -2383,32 +2397,93 @@ def _reject_unrefinable_wings(
                 )
 
 
-def _max_combined_percent_change(
-    these_combined_coefficients: np.ndarray,
-    coarser_combined_coefficients: np.ndarray,
-) -> float:
-    """Calculates the maximum absolute percent change between an iteration's combined
-    load coefficients and those of an incrementally coarser iteration.
+def _validate_coefficient_mask(
+    coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None,
+) -> np.ndarray:
+    """Validates the coefficient_mask parameter shared by the convergence analysis
+    functions and returns it as an ndarray.
 
-    The percent change is taken elementwise as the absolute difference divided by the
-    coarser value, scaled to a percentage, and the maximum across all elements is
-    returned.
-
-    :param these_combined_coefficients: An ndarray of this iteration's combined load
-        coefficients.
-    :param coarser_combined_coefficients: An ndarray, of the same shape, of the
-        incrementally coarser iteration's combined load coefficients.
-    :return: The maximum absolute percent change across all elements, as a float.
+    :param coefficient_mask: A tuple of six bools that determines which of the six load
+        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) must converge, or None to require
+        all six. At least one element must be True.
+    :return: A (6,) ndarray of bools representing the validated mask.
     """
-    return float(
-        np.max(
-            100
-            * np.abs(
-                (these_combined_coefficients - coarser_combined_coefficients)
-                / coarser_combined_coefficients
-            )
-        )
+    if coefficient_mask is None:
+        return np.ones(6, dtype=bool)
+    if not isinstance(coefficient_mask, tuple):
+        raise TypeError("coefficient_mask must be a tuple or None.")
+    if len(coefficient_mask) != 6:
+        raise ValueError("coefficient_mask must have exactly six elements.")
+    if not all(isinstance(element, bool) for element in coefficient_mask):
+        raise TypeError("Every element in coefficient_mask must be a bool.")
+    if not any(coefficient_mask):
+        raise ValueError("At least one element in coefficient_mask must be True.")
+    return np.array(coefficient_mask, dtype=bool)
+
+
+def _check_coefficient_convergence(
+    these_coefficients: np.ndarray,
+    coarser_coefficients: np.ndarray,
+    rtol: float,
+    atol: float,
+    coefficient_mask: np.ndarray,
+) -> tuple[bool, float, int]:
+    """Checks per-coefficient convergence between an iteration's load coefficients and
+    those of an incrementally coarser iteration.
+
+    For each of the six load coefficients of each Airplane, the error is the absolute
+    difference between this iteration's coefficient and the coarser iteration's, and the
+    tolerance is atol + rtol * max(abs(this), abs(coarser)). A coefficient is converged
+    when its error is less than or equal to its tolerance. The iteration is converged
+    only when every unmasked coefficient of every Airplane has converged, so a multi-
+    Airplane study converges only once all its Airplanes have.
+
+    A convergence metric accompanies the result for logging. It is a percentage that is
+    100.0 when a coefficient has converged and falls toward 0.0 as its error grows past
+    its tolerance, so a lower metric means a coefficient is further from converging. The
+    minimum metric across the unmasked coefficients of all Airplanes and the index of
+    the coefficient that attains it are returned to identify the limiting coefficient.
+
+    :param these_coefficients: A (M,6) ndarray of floats, where M is the number of
+        Airplanes, of this iteration's six load coefficients (cFX, cFY, cFZ, cMX, cMY,
+        cMZ) for each Airplane.
+    :param coarser_coefficients: A (M,6) ndarray of floats, of the same shape, of the
+        incrementally coarser iteration's six load coefficients for each Airplane.
+    :param rtol: The relative tolerance. It must be a positive float.
+    :param atol: The absolute tolerance floor for coefficients near zero. It must be a
+        positive float.
+    :param coefficient_mask: A (6,) ndarray of bools that determines which of the six
+        load coefficients must converge. At least one element is True.
+    :return: A tuple of a bool, a float, and an int. In order, whether every unmasked
+        coefficient of every Airplane has converged, the minimum convergence metric
+        (percentage) across the unmasked coefficients of all Airplanes, and the index
+        within the six coefficients of the limiting coefficient (the one attaining that
+        minimum metric).
+    """
+    errors = np.abs(these_coefficients - coarser_coefficients)
+    tolerances = atol + rtol * np.maximum(
+        np.abs(these_coefficients), np.abs(coarser_coefficients)
     )
+    converged = errors <= tolerances
+
+    all_converged = bool(np.all(converged[:, coefficient_mask]))
+
+    # The metric is 100.0 for a converged coefficient (including one with zero error) and
+    # falls toward 0.0 as the error grows past its tolerance.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        metrics = np.where(
+            errors == 0.0,
+            100.0,
+            100.0 * np.minimum(1.0, tolerances / errors),
+        )
+
+    # Exclude the masked-out coefficients from the limiting-coefficient search by setting
+    # their metrics to infinity. The mask has shape (6,) and broadcasts across Airplanes.
+    masked_metrics = np.where(coefficient_mask, metrics, np.inf)
+    min_metric = float(np.min(masked_metrics))
+    limiting_coefficient_id = int(np.argmin(masked_metrics) % 6)
+
+    return all_converged, min_metric, limiting_coefficient_id
 
 
 def _resolve_num_spanwise_panels(

@@ -35,7 +35,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
             num_chords_bounds=(1, 4),
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 5),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
             show_solver_progress=False,
         )
 
@@ -100,7 +101,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 num_chords_bounds=(1, 2),
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
-                convergence_criteria=5.0,
+                rtol=0.05,
+                atol=0.001,
                 show_solver_progress=False,
             )
 
@@ -127,7 +129,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
             num_chords_bounds=(1, 4),
             panel_aspect_ratio_bounds=(4, 3),
             num_chordwise_panels_bounds=(1, 3),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
             show_solver_progress=False,
         )
 
@@ -169,7 +172,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 num_cycles_bounds=(1, 2),
                 panel_aspect_ratio_bounds=(4, 2),
                 num_chordwise_panels_bounds=(1, 4),
-                convergence_criteria=5.0,
+                rtol=0.05,
+                atol=0.001,
                 show_solver_progress=False,
             )
 
@@ -186,7 +190,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
             num_chords_bounds=(1, 4),
             panel_aspect_ratio_bounds=(4, 2),
             num_chordwise_panels_bounds=(1, 5),
-            convergence_criteria=5.0,
+            rtol=0.05,
+            atol=0.001,
             show_solver_progress=False,
             resolve_converged_solver=True,
         )

@@ -202,12 +202,16 @@ def analyze_steady_convergence(
     )
 
     # Normalize the cache_path parameter to a Path, or leave it as None to disable
-    # caching. Require a ".json" suffix, which also rejects an empty or directory path.
+    # caching. Require a ".json" suffix.
     if cache_path is not None:
         cache_path = Path(cache_path)
-        if not cache_path.name.endswith(".json"):
+        if cache_path.suffix != ".json":
             raise ValueError(
                 f"cache_path must end with '.json', got '{cache_path.name}'."
+            )
+        if cache_path.is_dir():
+            raise ValueError(
+                f"cache_path must be a file path, got directory '{cache_path}'."
             )
 
     run_start_time = time.time()
@@ -865,12 +869,16 @@ def analyze_unsteady_convergence(
     )
 
     # Normalize the cache_path parameter to a Path, or leave it as None to disable
-    # caching. Require a ".json" suffix, which also rejects an empty or directory path.
+    # caching. Require a ".json" suffix.
     if cache_path is not None:
         cache_path = Path(cache_path)
-        if not cache_path.name.endswith(".json"):
+        if cache_path.suffix != ".json":
             raise ValueError(
                 f"cache_path must end with '.json', got '{cache_path.name}'."
+            )
+        if cache_path.is_dir():
+            raise ValueError(
+                f"cache_path must be a file path, got directory '{cache_path}'."
             )
 
     run_start_time = time.time()

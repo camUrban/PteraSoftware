@@ -311,6 +311,30 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 cache_path="cache.txt",
             )
 
+    def test_unsteady_cache_path_directory_raises(self) -> None:
+        """This method tests that a cache_path pointing at an existing directory raises
+        a ValueError.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+            cache_path.mkdir()
+
+            with self.assertRaises(ValueError):
+                ps.convergence.analyze_unsteady_convergence(
+                    ref_problem=self.unsteady_validation_problem,
+                    prescribed_wake=True,
+                    free_wake=False,
+                    num_chords_bounds=(1, 2),
+                    panel_aspect_ratio_bounds=(4, 3),
+                    num_chordwise_panels_bounds=(1, 2),
+                    rtol=0.05,
+                    atol=0.001,
+                    show_solver_progress=False,
+                    cache_path=cache_path,
+                )
+
     def test_rejects_exploded_wing(self):
         """This method tests that the function rejects an UnsteadyProblem whose Airplane
         has an exploded Wing, which carries no edge curves and so cannot be refined.

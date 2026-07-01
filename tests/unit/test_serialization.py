@@ -965,6 +965,29 @@ class TestSaveLoad(unittest.TestCase):
         with self.assertRaises(ValueError):
             load("test.dat")
 
+    def test_save_directory_raises(self):
+        """Tests that save raises a ValueError when the path is an existing directory.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.json"
+            path.mkdir()
+            with self.assertRaises(ValueError):
+                save(path, operating_point)
+
+    def test_load_directory_raises(self):
+        """Tests that load raises a ValueError when the path is an existing directory.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.json"
+            path.mkdir()
+            with self.assertRaises(ValueError):
+                load(path)
+
     def test_gzip_bomb_protection(self):
         """Tests that the max_size parameter on load controls the size limit.
 

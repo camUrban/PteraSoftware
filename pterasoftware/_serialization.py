@@ -225,6 +225,8 @@ def save(path: str | Path, obj: object) -> None:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:
@@ -280,6 +282,8 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
     _logger.info("Loading from %s.", path)
 
     if max_size is None:

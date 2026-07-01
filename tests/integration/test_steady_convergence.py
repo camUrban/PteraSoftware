@@ -239,6 +239,27 @@ class TestSteadyConvergence(unittest.TestCase):
                 cache_path="cache.txt",
             )
 
+    def test_cache_path_directory_raises(self) -> None:
+        """This method tests that a cache_path pointing at an existing directory raises
+        a ValueError.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_path = Path(tmp) / "cache.json"
+            cache_path.mkdir()
+
+            with self.assertRaises(ValueError):
+                ps.convergence.analyze_steady_convergence(
+                    ref_problem=self.steady_validation_problem,
+                    solver_type="steady ring vortex lattice method",
+                    panel_aspect_ratio_bounds=(4, 2),
+                    num_chordwise_panels_bounds=(1, 4),
+                    rtol=0.05,
+                    atol=0.001,
+                    cache_path=cache_path,
+                )
+
     def test_steady_cache_warm_run_skips_solves(self) -> None:
         """This method tests that a second run against a warm cache reuses the stored
         solves and does not run the solver again.

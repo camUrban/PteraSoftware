@@ -1,5 +1,6 @@
 """This module contains a testing case for the unsteady convergence function."""
 
+import logging
 import tempfile
 import unittest
 from pathlib import Path
@@ -78,17 +79,26 @@ class TestUnsteadyConvergence(unittest.TestCase):
             problem_fixtures.make_unsteady_validation_problem_with_variable_geometry()
         )
 
-        converged_parameters = ps.convergence.analyze_unsteady_convergence(
-            ref_problem=variable_geometry_problem,
-            prescribed_wake=True,
-            free_wake=False,
-            num_cycles_bounds=(1, 2),
-            panel_aspect_ratio_bounds=(4, 3),
-            num_chordwise_panels_bounds=(1, 2),
-            rtol=0.05,
-            atol=0.001,
-            show_solver_progress=False,
-        )
+        # The coarse bounds that keep this smoke test cheap also make the delta_time
+        # optimizer warn about poor temporal resolution. That warning is correct in
+        # production but is expected noise here, so quiet this one logger for the run.
+        movement_logger = logging.getLogger("pterasoftware.movements.movement")
+        previous_level = movement_logger.level
+        movement_logger.setLevel(logging.ERROR)
+        try:
+            converged_parameters = ps.convergence.analyze_unsteady_convergence(
+                ref_problem=variable_geometry_problem,
+                prescribed_wake=True,
+                free_wake=False,
+                num_cycles_bounds=(1, 2),
+                panel_aspect_ratio_bounds=(4, 3),
+                num_chordwise_panels_bounds=(1, 2),
+                rtol=0.05,
+                atol=0.001,
+                show_solver_progress=False,
+            )
+        finally:
+            movement_logger.setLevel(previous_level)
 
         self.assertEqual(converged_parameters, (None, None, None, None, None))
 

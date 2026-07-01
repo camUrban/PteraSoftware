@@ -44,8 +44,6 @@ _logger = _logging.get_logger("convergence")
 _COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
 
 
-# TEST: Assess how comprehensive this function's integration tests are and update or
-#  extend them if needed.
 def analyze_steady_convergence(
     ref_problem: problems.SteadyProblem,
     solver_type: str,
@@ -150,12 +148,15 @@ def analyze_steady_convergence(
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
         a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the mesh parameters. When given, an iteration whose solve
-        is already in the cache reuses the stored coefficients instead of re-running the
-        solver, and each new solve is written through to the file, so an interrupted or
-        repeated study reuses the iterations it has already solved. The mesh is still
-        built each iteration; only the solve is skipped on a cache hit. When None, no
-        cache is read or written. The default is None.
+        reference problem and the mesh parameters, together with the mesh counts it
+        resolved (the spanwise Panel and WingCrossSection counts). When given, an
+        iteration already in the cache reuses those stored coefficients and counts
+        instead of re-running the solver and re-resolving the mesh, and each new
+        iteration is written through to the file, so an interrupted or repeated study
+        reuses the work it has already done. The mesh counts are keyed on the absolute
+        mesh rather than a sweep index, so a later run over different bounds still
+        reuses any iteration it shares. When None, no cache is read or written. The
+        default is None.
     :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
         first two elements are the converged Panel aspect ratio and the converged number
         of chordwise Panels. The third element is the converged solver if
@@ -609,8 +610,6 @@ def analyze_steady_convergence(
     return None, None, None
 
 
-# TEST: Assess how comprehensive this function's integration tests are and update or
-#  extend them if needed.
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
     prescribed_wake: bool | np.bool_ = True,
@@ -764,13 +763,16 @@ def analyze_unsteady_convergence(
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
         a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the wake state, wake length, and mesh parameters. When
-        given, an iteration whose solve is already in the cache reuses the stored
-        coefficients instead of re-running the solver, and each new solve is written
-        through to the file, so an interrupted or repeated study reuses the iterations
-        it has already solved. The mesh is still built each iteration; only the solve is
-        skipped on a cache hit. When None, no cache is read or written. The default is
-        None.
+        reference problem and the wake state, wake length, and mesh parameters, together
+        with the mesh values it resolved (the spanwise Panel and WingCrossSection counts
+        and the optimized delta_time). When given, an iteration already in the cache
+        reuses those stored coefficients and values instead of re-running the solver and
+        re-resolving the mesh, so a warm run also skips the delta_time optimizer, and
+        each new iteration is written through to the file, so an interrupted or repeated
+        study reuses the work it has already done. The mesh values are keyed on the
+        absolute mesh rather than a sweep index, so a later run over different bounds
+        still reuses any iteration it shares. When None, no cache is read or written.
+        The default is None.
     :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
         order, the first four elements are the converged wake state (prescribed=True and
         free=False), the converged wake length (in number of cycles for non static

@@ -62,6 +62,36 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[4])
 
+    def test_variable_geometry_unsteady_convergence(self) -> None:
+        """This method tests that a variable-geometry UnsteadyProblem runs through
+        convergence to completion, exercising the signed cycle-mean final-coefficient
+        path that static-geometry cases never reach.
+
+        The bounds are kept minimal because driving a variable-geometry case to true
+        convergence would take too long for the test suite, so this run is not expected
+        to converge. Its purpose is to exercise that coefficient gathering end to end
+        without error.
+
+        :return: None
+        """
+        variable_geometry_problem = (
+            problem_fixtures.make_unsteady_validation_problem_with_variable_geometry()
+        )
+
+        converged_parameters = ps.convergence.analyze_unsteady_convergence(
+            ref_problem=variable_geometry_problem,
+            prescribed_wake=True,
+            free_wake=False,
+            num_cycles_bounds=(1, 2),
+            panel_aspect_ratio_bounds=(4, 3),
+            num_chordwise_panels_bounds=(1, 2),
+            rtol=0.05,
+            atol=0.001,
+            show_solver_progress=False,
+        )
+
+        self.assertEqual(converged_parameters, (None, None, None, None, None))
+
     def test_unsteady_cache_reproduces_converged_parameters(self) -> None:
         """This method tests that a run with a cache path finds the same pre-known
         convergence parameters as an uncached run and writes a populated cache file.

@@ -4,7 +4,13 @@ import unittest
 
 import numpy as np
 
+import pterasoftware as ps
 from pterasoftware import convergence
+from tests.unit.fixtures import (
+    geometry_fixtures,
+    movement_fixtures,
+    problem_fixtures,
+)
 
 
 class TestConvergedParameterId(unittest.TestCase):
@@ -203,3 +209,369 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.assertIsInstance(converged, bool)
         self.assertIsInstance(metric, float)
         self.assertIsInstance(limiting_id, int)
+
+
+class TestValidatePanelAspectRatioBounds(unittest.TestCase):
+    """This class contains methods for testing
+    convergence._validate_panel_aspect_ratio_bounds.
+    """
+
+    def test_valid_descending_bounds_pass(self) -> None:
+        """Test that a valid descending tuple of ints is accepted without raising."""
+        # A valid descending tuple of ints does not raise.
+        convergence._validate_panel_aspect_ratio_bounds((4, 1))
+
+    def test_equal_bounds_pass(self) -> None:
+        """Test that equal bounds, a single Panel aspect ratio, are accepted without
+        raising.
+        """
+        # Equal bounds, a single Panel aspect ratio, do not raise.
+        convergence._validate_panel_aspect_ratio_bounds((2, 2))
+
+    def test_non_tuple_raises_type_error(self) -> None:
+        """Test that a non-tuple of bounds raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_panel_aspect_ratio_bounds([4, 1])  # type: ignore[arg-type]
+
+    def test_wrong_length_raises_type_error(self) -> None:
+        """Test that a tuple without exactly two elements raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_panel_aspect_ratio_bounds((4, 2, 1))  # type: ignore[arg-type]
+
+    def test_non_int_element_raises_type_error(self) -> None:
+        """Test that a tuple with a non-int element raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_panel_aspect_ratio_bounds((4.0, 1.0))  # type: ignore[arg-type]
+
+    def test_ascending_bounds_raise_value_error(self) -> None:
+        """Test that a tuple whose first value is less than its second raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence._validate_panel_aspect_ratio_bounds((1, 4))
+
+    def test_non_positive_second_value_raises_value_error(self) -> None:
+        """Test that a second value at or below zero raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence._validate_panel_aspect_ratio_bounds((4, 0))
+
+
+class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
+    """This class contains methods for testing
+    convergence._validate_num_chordwise_panels_bounds.
+    """
+
+    def test_valid_ascending_bounds_pass(self) -> None:
+        """Test that a valid ascending tuple of ints is accepted without raising."""
+        # A valid ascending tuple of ints does not raise.
+        convergence._validate_num_chordwise_panels_bounds((3, 12))
+
+    def test_equal_bounds_pass(self) -> None:
+        """Test that equal bounds, a single number of chordwise Panels, are accepted
+        without raising.
+        """
+        # Equal bounds, a single number of chordwise Panels, do not raise.
+        convergence._validate_num_chordwise_panels_bounds((5, 5))
+
+    def test_non_tuple_raises_type_error(self) -> None:
+        """Test that a non-tuple of bounds raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_num_chordwise_panels_bounds([3, 12])  # type: ignore[arg-type]
+
+    def test_wrong_length_raises_type_error(self) -> None:
+        """Test that a tuple without exactly two elements raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_num_chordwise_panels_bounds((3, 6, 12))  # type: ignore[arg-type]
+
+    def test_non_int_element_raises_type_error(self) -> None:
+        """Test that a tuple with a non-int element raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence._validate_num_chordwise_panels_bounds((3.0, 12.0))  # type: ignore[arg-type]
+
+    def test_descending_bounds_raise_value_error(self) -> None:
+        """Test that a tuple whose second value is less than its first raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence._validate_num_chordwise_panels_bounds((12, 3))
+
+    def test_non_positive_first_value_raises_value_error(self) -> None:
+        """Test that a first value at or below zero raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence._validate_num_chordwise_panels_bounds((0, 12))
+
+
+class TestRejectUnrefinableWings(unittest.TestCase):
+    """This class contains methods for testing
+    convergence._reject_unrefinable_wings.
+    """
+
+    @staticmethod
+    def _make_edge_defined_airplane() -> ps.geometry.airplane.Airplane:
+        """Builds an Airplane holding a single edge-defined Wing.
+
+        The Wing is built with Wing.from_edge_points, so its spanwise mesh marker is
+        "edge_defined", which the convergence functions can refine.
+        """
+        ys = np.linspace(0.0, 2.0, 20)
+        zeros = np.zeros_like(ys)
+        leadingEdgePoints_Wn_Ler = np.column_stack((0.25 * ys, ys, zeros))
+        trailingEdgePoints_Wn_Ler = np.column_stack((np.ones_like(ys), ys, zeros))
+        return ps.geometry.airplane.Airplane(
+            wings=[
+                ps.geometry.wing.Wing.from_edge_points(
+                    leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+                    trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+                    num_wing_cross_sections=5,
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    name="Edge Wing",
+                    symmetric=False,
+                    num_chordwise_panels=4,
+                )
+            ],
+            name="Edge Defined Airplane",
+        )
+
+    @staticmethod
+    def _make_exploded_airplane() -> ps.geometry.airplane.Airplane:
+        """Builds an Airplane holding a single exploded Wing named "Exploded Wing".
+
+        The Wing is built with explode_into_strips=True, so its spanwise mesh marker is
+        "exploded", which the convergence functions cannot refine.
+        """
+        return ps.geometry.airplane.Airplane(
+            wings=[
+                ps.geometry.wing.Wing(
+                    wing_cross_sections=[
+                        ps.geometry.wing_cross_section.WingCrossSection(
+                            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                            num_spanwise_panels=1,
+                            chord=1.0,
+                            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                            spanwise_spacing="uniform",
+                        ),
+                        ps.geometry.wing_cross_section.WingCrossSection(
+                            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                            num_spanwise_panels=None,
+                            chord=1.0,
+                            Lp_Wcsp_Lpp=(0.0, 1.0, 0.0),
+                            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                            spanwise_spacing=None,
+                        ),
+                    ],
+                    name="Exploded Wing",
+                    explode_into_strips=True,
+                    num_chordwise_panels=2,
+                    chordwise_spacing="uniform",
+                )
+            ],
+            name="Exploded Airplane",
+        )
+
+    def test_trapezoidal_wing_is_accepted(self) -> None:
+        """Test that a trapezoidal Wing, built from WingCrossSections, is accepted."""
+        trapezoidal_airplane = geometry_fixtures.make_first_airplane_fixture()
+        # A trapezoidal Wing does not raise.
+        convergence._reject_unrefinable_wings(
+            (trapezoidal_airplane,), "analyze_steady_convergence"
+        )
+
+    def test_edge_defined_wing_is_accepted(self) -> None:
+        """Test that an edge-defined Wing, built from edge curves, is accepted."""
+        # An edge-defined Wing does not raise.
+        convergence._reject_unrefinable_wings(
+            (self._make_edge_defined_airplane(),), "analyze_steady_convergence"
+        )
+
+    def test_exploded_wing_raises_value_error(self) -> None:
+        """Test that an exploded Wing, which carries no edge curves, raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence._reject_unrefinable_wings(
+                (self._make_exploded_airplane(),), "analyze_steady_convergence"
+            )
+
+    def test_error_message_names_wing_and_function(self) -> None:
+        """Test that the error message names the offending Wing and the calling
+        function.
+        """
+        with self.assertRaisesRegex(ValueError, "Exploded Wing"):
+            convergence._reject_unrefinable_wings(
+                (self._make_exploded_airplane(),), "analyze_steady_convergence"
+            )
+        with self.assertRaisesRegex(ValueError, "analyze_steady_convergence"):
+            convergence._reject_unrefinable_wings(
+                (self._make_exploded_airplane(),), "analyze_steady_convergence"
+            )
+
+    def test_rejects_when_any_airplane_has_unrefinable_wing(self) -> None:
+        """Test that a refinable Airplane paired with an unrefinable one still raises."""
+        trapezoidal_airplane = geometry_fixtures.make_first_airplane_fixture()
+        with self.assertRaises(ValueError):
+            convergence._reject_unrefinable_wings(
+                (trapezoidal_airplane, self._make_exploded_airplane()),
+                "analyze_unsteady_convergence",
+            )
+
+    def test_empty_airplanes_is_accepted(self) -> None:
+        """Test that an empty tuple of Airplanes is vacuously accepted."""
+        # An empty tuple of Airplanes does not raise.
+        convergence._reject_unrefinable_wings((), "analyze_steady_convergence")
+
+
+class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
+    """This class contains methods for testing the input validation of
+    convergence.analyze_steady_convergence that raises before any solving.
+    """
+
+    def setUp(self) -> None:
+        """Set up a valid SteadyProblem shared by the tests.
+
+        :return: None
+        """
+        self.steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
+
+    def test_non_steady_problem_raises_type_error(self) -> None:
+        """Test that a ref_problem that is not a SteadyProblem raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence.analyze_steady_convergence(
+                ref_problem=problem_fixtures.make_basic_unsteady_problem_fixture(),
+                solver_type="steady ring vortex lattice method",
+            )
+
+    def test_invalid_solver_type_raises_value_error(self) -> None:
+        """Test that an unrecognized solver_type raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_steady_convergence(
+                ref_problem=self.steady_problem,
+                solver_type="unsteady ring vortex lattice method",
+            )
+
+
+class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
+    """This class contains methods for testing the input validation of
+    convergence.analyze_unsteady_convergence that raises before any solving.
+    """
+
+    def setUp(self) -> None:
+        """Set up a static and a variable UnsteadyProblem shared by the tests.
+
+        :return: None
+        """
+        self.variable_problem = problem_fixtures.make_basic_unsteady_problem_fixture()
+        self.static_problem = ps.problems.UnsteadyProblem(
+            movement=movement_fixtures.make_static_movement_fixture()
+        )
+
+    def test_non_unsteady_problem_raises_type_error(self) -> None:
+        """Test that a ref_problem that is not an UnsteadyProblem raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=problem_fixtures.make_basic_steady_problem_fixture(),
+                num_cycles_bounds=(1, 2),
+            )
+
+    def test_no_wake_state_raises_value_error(self) -> None:
+        """Test that setting both prescribed_wake and free_wake to False raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                prescribed_wake=False,
+                free_wake=False,
+            )
+
+    def test_static_geometry_rejects_num_cycles_bounds(self) -> None:
+        """Test that supplying num_cycles_bounds for a static-geometry problem raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.static_problem,
+                num_cycles_bounds=(1, 2),
+            )
+
+    def test_static_geometry_requires_num_chords_bounds(self) -> None:
+        """Test that omitting num_chords_bounds for a static-geometry problem raises a
+        TypeError.
+        """
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(ref_problem=self.static_problem)
+
+    def test_num_chords_bounds_wrong_length_raises_type_error(self) -> None:
+        """Test that a num_chords_bounds without exactly two elements raises a
+        TypeError.
+        """
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.static_problem,
+                num_chords_bounds=(1, 2, 3),  # type: ignore[arg-type]
+            )
+
+    def test_num_chords_bounds_non_int_raises_type_error(self) -> None:
+        """Test that a num_chords_bounds with a non-int element raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.static_problem,
+                num_chords_bounds=(1.0, 4.0),  # type: ignore[arg-type]
+            )
+
+    def test_descending_num_chords_bounds_raises_value_error(self) -> None:
+        """Test that a num_chords_bounds in descending order raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.static_problem,
+                num_chords_bounds=(4, 1),
+            )
+
+    def test_non_positive_num_chords_bounds_raises_value_error(self) -> None:
+        """Test that a num_chords_bounds at or below zero raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.static_problem,
+                num_chords_bounds=(0, 0),
+            )
+
+    def test_variable_geometry_rejects_num_chords_bounds(self) -> None:
+        """Test that supplying num_chords_bounds for a variable-geometry problem raises a
+        ValueError.
+        """
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_chords_bounds=(1, 4),
+            )
+
+    def test_variable_geometry_requires_num_cycles_bounds(self) -> None:
+        """Test that omitting num_cycles_bounds for a variable-geometry problem raises a
+        TypeError.
+        """
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(ref_problem=self.variable_problem)
+
+    def test_num_cycles_bounds_non_int_raises_type_error(self) -> None:
+        """Test that a num_cycles_bounds with a non-int element raises a TypeError."""
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_cycles_bounds=(1.0, 2.0),  # type: ignore[arg-type]
+            )
+
+    def test_descending_num_cycles_bounds_raises_value_error(self) -> None:
+        """Test that a num_cycles_bounds in descending order raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_cycles_bounds=(2, 1),
+            )
+
+    def test_non_positive_num_cycles_bounds_raises_value_error(self) -> None:
+        """Test that a num_cycles_bounds at or below zero raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_cycles_bounds=(0, 0),
+            )

@@ -17,6 +17,7 @@ solved using the UnsteadyRingVortexLatticeMethodSolver.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 
 import numpy as np
 
@@ -36,14 +37,23 @@ _logger = _logging.get_logger("convergence")
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_steady_convergence(
     ref_problem: problems.SteadyProblem,
     solver_type: str,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
     convergence_criteria: float | int = 5.0,
-) -> tuple[int, int] | tuple[None, None]:
+    resolve_converged_solver: bool | np.bool_ = False,
+) -> (
+    tuple[
+        int,
+        int,
+        steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+        | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+        | None,
+    ]
+    | tuple[None, None, None]
+):
     """Finds the converged parameters of a SteadyProblem solved using a given steady
     solver.
 
@@ -108,10 +118,17 @@ def analyze_steady_convergence(
         this function's docstring for more details on how it affects the solver. In
         short, set this value to 5.0 for a lenient convergence, and 1.0 for a strict
         convergence. Values are converted to floats internally. The default is 5.0.
-    :return: A tuple of two ints or a tuple of two Nones. In order, they are the
-        converged of Panel aspect ratio and the converged number of chordwise Panels. If
-        the function could not find a set of converged parameters, it returns (None,
-        None).
+    :param resolve_converged_solver: A bool for whether to recreate and run the solver
+        at the converged parameters and return it. Because finding convergence is
+        expensive, this defaults to False, in which case the returned solver is None.
+        When True, the solver is rebuilt at the converged parameters (which are
+        frequently coarser than the last iteration run) and run with streamlines
+        calculated, so the returned solver is ready to use. The default is False.
+    :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
+        first two elements are the converged Panel aspect ratio and the converged number
+        of chordwise Panels. The third element is the converged solver if
+        resolve_converged_solver is True, otherwise None. If the function could not find
+        a set of converged parameters, it returns (None, None, None).
     """
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.SteadyProblem):
@@ -128,61 +145,28 @@ def analyze_steady_convergence(
         )
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    if not (
-        isinstance(panel_aspect_ratio_bounds, tuple)
-        and len(panel_aspect_ratio_bounds) == 2
-    ):
-        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
-        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
-    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
-        raise ValueError(
-            "The first value in panel_aspect_ratio_bounds must be greater than or "
-            "equal to the second value."
-        )
-    if panel_aspect_ratio_bounds[1] <= 0:
-        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    if not (
-        isinstance(num_chordwise_panels_bounds, tuple)
-        and len(num_chordwise_panels_bounds) == 2
-    ):
-        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
-        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
-    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
-        raise ValueError(
-            "The first value in num_chordwise_panels_bounds must be less than or "
-            "equal to the second value."
-        )
-    if num_chordwise_panels_bounds[0] <= 0:
-        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
         convergence_criteria, "convergence_criteria", min_val=0.0, min_inclusive=False
     )
 
+    # Validate the resolve_converged_solver parameter.
+    resolve_converged_solver = _parameter_validation.boolLike_return_bool(
+        resolve_converged_solver, "resolve_converged_solver"
+    )
+
+    run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
 
-    ref_operating_point = ref_problem.operating_point
     ref_airplanes = ref_problem.airplanes
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
-    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
-    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
-    # is defined as single panel strips (for example one built with
-    # explode_into_strips=True) would be silently subdivided along the same geometry
-    # rather than refined, so its convergence result would be misleading.
-    for ref_airplane in ref_airplanes:
-        for ref_wing in ref_airplane.wings:
-            if ref_wing.spanwise_mesh != "trapezoidal":
-                raise ValueError(
-                    f"analyze_steady_convergence does not support Wings whose spanwise "
-                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
-                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
-                )
+    # Reject any Wing whose spanwise mesh is not trapezoidal.
+    _reject_non_trapezoidal_wings(ref_airplanes, "analyze_steady_convergence")
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
     # Panels to test.
@@ -238,223 +222,17 @@ def analyze_steady_convergence(
                 "\t\t\tIteration number: " + str(iteration) + "/" + str(num_iterations)
             )
 
-            # Initialize an empty list to hold this iteration's Airplanes. Then,
-            # fill the list by making new copies of each of the Airplanes with
-            # modified values for Panel aspect ratio and number of chordwise Panels.
-            these_airplanes = []
-            for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
-                ref_wings = ref_airplane.wings
-                these_wings = []
-
-                for ref_wing_id, ref_wing in enumerate(ref_wings):
-                    ref_wing_cross_sections = ref_wing.wing_cross_sections
-                    these_wing_cross_sections = []
-
-                    for (
-                        ref_wing_cross_section_id,
-                        ref_wing_cross_section,
-                    ) in enumerate(ref_wing_cross_sections):
-
-                        # If this is not the last WingCrossSection, find the number
-                        # of spanwise Panels to use for this section of the Wing,
-                        # based on the desired Panel aspect ratio and number of
-                        # chordwise Panels.
-                        if ref_wing_cross_section_id < (
-                            len(ref_wing_cross_sections) - 1
-                        ):
-                            # Check if we've already calculated the number of
-                            # spanwise Panels for this case/combination of parameters.
-                            num_spanwise_panels_key = (
-                                ar_id,
-                                chord_id,
-                                ref_airplane_id,
-                                ref_wing_id,
-                                ref_wing_cross_section_id,
-                            )
-                            if num_spanwise_panels_key in num_spanwise_panels_cache:
-                                _logger.debug(
-                                    f"\t\t\t\tGetting the cached number of spanwise "
-                                    f"Panels calculated for the #"
-                                    f"{ref_wing_cross_section_id + 1} "
-                                    f"WingCrossSection of {ref_airplane.name}'s "
-                                    f"{ref_wing.name}..."
-                                )
-
-                                this_num_spanwise_panels = num_spanwise_panels_cache[
-                                    num_spanwise_panels_key
-                                ]
-                            else:
-                                # The way we calculate the correct number of spanwise
-                                # Panels is to make skeleton Airplanes containing
-                                # only one Wing with only the two WingCrossSections
-                                # that make up the current Wing section. During
-                                # initialization, the Airplane meshes its Wing,
-                                # and we can then access the Wing's
-                                # average_panel_aspect_ratio property. We repeat this
-                                # process with increasing numbers of spanwise Panels,
-                                # until we find the value that results in
-                                # average_panel_aspect_ratio most closely matches the
-                                # desired Panel aspect ratio. Initially, the first
-                                # skeleton Airplane uses num_spanwise_panels=1.
-                                # However, if we've already calculated a number of
-                                # spanwise Panels for this Wing section with a
-                                # coarser mesh (either in Panel aspect ratio,
-                                # number of chordwise Panels, or both), then we know
-                                # the current mesh must use at least this many
-                                # spanwise Panels. Therefore, we can start the
-                                # iterations with a higher number of spanwise Panels.
-                                starting_num_spanwise_panels = 1
-
-                                # Get the keys for the three coarser cases.
-                                last_ar_key = (
-                                    ar_id - 1,
-                                    chord_id,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-                                last_chord_key = (
-                                    ar_id,
-                                    chord_id - 1,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-                                last_ar_and_chord_key = (
-                                    ar_id - 1,
-                                    chord_id - 1,
-                                    ref_airplane_id,
-                                    ref_wing_id,
-                                    ref_wing_cross_section_id,
-                                )
-
-                                # Initialize the three coarser cases number of
-                                # spanwise to be infinity, and update them if they
-                                # exist in the cache.
-                                last_ar_cache_val = np.inf
-                                if last_ar_key in num_spanwise_panels_cache:
-                                    last_ar_cache_val = num_spanwise_panels_cache[
-                                        last_ar_key
-                                    ]
-                                last_chord_cache_val = np.inf
-                                if last_chord_key in num_spanwise_panels_cache:
-                                    last_chord_cache_val = num_spanwise_panels_cache[
-                                        last_chord_key
-                                    ]
-                                last_ar_and_chord_cache_val = np.inf
-                                if last_ar_and_chord_key in num_spanwise_panels_cache:
-                                    last_ar_and_chord_cache_val = (
-                                        num_spanwise_panels_cache[last_ar_and_chord_key]
-                                    )
-
-                                # To be conservative, take the minimum
-                                # num_spanwise_panels of the three coarser cases. If
-                                # at least one of the three cases has already been
-                                # calculated, use that num_spanwise_panels as the
-                                # starting value instead of 1.
-                                last_cache_val = min(
-                                    last_ar_cache_val,
-                                    last_chord_cache_val,
-                                    last_ar_and_chord_cache_val,
-                                )
-                                if last_cache_val != np.inf:
-                                    starting_num_spanwise_panels = int(last_cache_val)
-
-                                next_ref_wing_cross_section = ref_wing_cross_sections[
-                                    ref_wing_cross_section_id + 1
-                                ]
-
-                                _logger.debug(
-                                    f"\t\t\t\tCalculating the number of spanwise "
-                                    f"Panels for the #{ref_wing_cross_section_id + 1} "
-                                    f"WingCrossSection of {ref_airplane.name}'s "
-                                    f"{ref_wing.name}, with a starting value of "
-                                    f"{starting_num_spanwise_panels}..."
-                                )
-
-                                # Iteratively find the correct number of spanwise
-                                # Panels.
-                                this_num_spanwise_panels = (
-                                    _get_wing_section_num_spanwise_panels(
-                                        panel_aspect_ratio,
-                                        num_chordwise_panels,
-                                        ref_wing.chordwise_spacing,
-                                        ref_wing_cross_section,
-                                        next_ref_wing_cross_section,
-                                        starting_num_spanwise_panels,
-                                    )
-                                )
-
-                                # Cache the calculated number of spanwise Panels for
-                                # future use.
-                                num_spanwise_panels_cache[num_spanwise_panels_key] = (
-                                    this_num_spanwise_panels
-                                )
-
-                            _logger.debug(
-                                f"\t\t\t\tNumber of spanwise Panels: "
-                                f"{this_num_spanwise_panels}"
-                            )
-                        else:
-                            this_num_spanwise_panels = None
-
-                        these_wing_cross_sections.append(
-                            geometry.wing_cross_section.WingCrossSection(
-                                # These values are copied from the reference
-                                # WingCrossSection.
-                                chord=ref_wing_cross_section.chord,
-                                Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
-                                angles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-                                control_surface_symmetry_type=ref_wing_cross_section.control_surface_symmetry_type,
-                                control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
-                                control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
-                                spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
-                                # These values change.
-                                num_spanwise_panels=this_num_spanwise_panels,
-                                airfoil=geometry.airfoil.Airfoil(
-                                    name=ref_wing_cross_section.airfoil.name,
-                                    outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
-                                    resample=ref_wing_cross_section.airfoil.resample,
-                                    n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
-                                ),
-                            )
-                        )
-
-                    these_wings.append(
-                        geometry.wing.Wing(
-                            # These values are copied from the reference Wing.
-                            name=ref_wing.name,
-                            Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
-                            angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
-                            symmetric=ref_wing.symmetric,
-                            mirror_only=ref_wing.mirror_only,
-                            symmetryNormal_G=ref_wing.symmetryNormal_G,
-                            symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
-                            chordwise_spacing=ref_wing.chordwise_spacing,
-                            # These values change.
-                            wing_cross_sections=these_wing_cross_sections,
-                            num_chordwise_panels=num_chordwise_panels,
-                        )
-                    )
-
-                these_airplanes.append(
-                    geometry.airplane.Airplane(
-                        # These values are copied from the reference Airplane.
-                        name=ref_airplane.name,
-                        Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
-                        weight=ref_airplane.weight,
-                        # These values change.
-                        wings=these_wings,
-                        s_ref=None,
-                        c_ref=None,
-                        b_ref=None,
-                    )
-                )
-
-            # Create a new SteadyProblem for this iteration.
-            this_problem = problems.SteadyProblem(
-                airplanes=these_airplanes, operating_point=ref_operating_point
+            # Build this iteration's SteadyProblem with the current Panel aspect ratio
+            # and number of chordwise Panels.
+            this_problem = _build_steady_problem(
+                ar_id,
+                chord_id,
+                panel_aspect_ratio,
+                num_chordwise_panels,
+                ref_problem,
+                num_spanwise_panels_cache,
             )
+            these_airplanes = this_problem.airplanes
 
             # Create this iteration's steady solver based on the type specified.
             this_solver: (
@@ -527,27 +305,16 @@ def analyze_steady_convergence(
                 lastArCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id - 1, chord_id, :
                 ]
-                max_ar_force_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedForceCoefficients
-                            - lastArCombinedForceCoefficients
-                        )
-                        / lastArCombinedForceCoefficients
-                    )
+                max_ar_pc = max(
+                    _max_combined_percent_change(
+                        theseCombinedForceCoefficients,
+                        lastArCombinedForceCoefficients,
+                    ),
+                    _max_combined_percent_change(
+                        theseCombinedMomentCoefficients,
+                        lastArCombinedMomentCoefficients,
+                    ),
                 )
-                max_ar_moment_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedMomentCoefficients
-                            - lastArCombinedMomentCoefficients
-                        )
-                        / lastArCombinedMomentCoefficients
-                    )
-                )
-                max_ar_pc = max(max_ar_force_pc, max_ar_moment_pc)
 
                 _logger.info(
                     "\t\t\tMaximum combined coefficient change from Panel aspect "
@@ -568,27 +335,16 @@ def analyze_steady_convergence(
                 lastChordCombinedMomentCoefficients = combinedMomentCoefficients[
                     ar_id, chord_id - 1, :
                 ]
-                max_chord_force_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedForceCoefficients
-                            - lastChordCombinedForceCoefficients
-                        )
-                        / lastChordCombinedForceCoefficients
-                    )
+                max_chord_pc = max(
+                    _max_combined_percent_change(
+                        theseCombinedForceCoefficients,
+                        lastChordCombinedForceCoefficients,
+                    ),
+                    _max_combined_percent_change(
+                        theseCombinedMomentCoefficients,
+                        lastChordCombinedMomentCoefficients,
+                    ),
                 )
-                max_chord_moment_pc = max(
-                    100
-                    * np.abs(
-                        (
-                            theseCombinedMomentCoefficients
-                            - lastChordCombinedMomentCoefficients
-                        )
-                        / lastChordCombinedMomentCoefficients
-                    )
-                )
-                max_chord_pc = max(max_chord_force_pc, max_chord_moment_pc)
 
                 _logger.info(
                     "\t\t\tMaximum combined coefficient change from number of "
@@ -624,26 +380,12 @@ def analyze_steady_convergence(
             # semi-converged combination of parameters has been found and will be
             # returned.
             if ar_passed and chord_passed:
-                if single_ar:
-                    converged_ar_id = ar_id
-                else:
-                    # More than one Panel aspect ratio was tested.
-                    if ar_converged:
-                        # There is no big difference between this Panel aspect ratio
-                        # and the last (coarser) Panel aspect ratio. Therefore,
-                        # the last (coarser) Panel aspect ratio is converged.
-                        converged_ar_id = ar_id - 1
-                    else:
-                        # There is a big difference between this Panel aspect ratio
-                        # and the last (coarser) Panel aspect ratio. However,
-                        # the Panel aspect ratio is one, so it's saturated.
-                        # Therefore, this Panel aspect ratio is converged.
-                        converged_ar_id = ar_id
-
-                if single_chord:
-                    converged_chord_id = chord_id
-                else:
-                    converged_chord_id = chord_id - 1
+                converged_ar_id = _converged_parameter_id(
+                    ar_id, single_ar, ar_converged
+                )
+                converged_chord_id = _converged_parameter_id(
+                    chord_id, single_chord, chord_converged
+                )
 
                 converged_aspect_ratio = panel_aspect_ratios_list[converged_ar_id]
                 converged_chordwise_panels = num_chordwise_panels_list[
@@ -702,21 +444,61 @@ def analyze_steady_convergence(
                                 + str(num_spanwise_panels)
                             )
 
+                # If requested, recreate and run the solver at the converged
+                # parameters so it can be returned. The converged parameters are
+                # frequently coarser than this iteration's, so the converged solver is
+                # rebuilt rather than reusing this iteration's finer solver.
+                converged_solver: (
+                    steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+                    | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+                    | None
+                ) = None
+                if resolve_converged_solver:
+                    _logger.info("Recreating and running the converged solver...")
+                    converged_problem = _build_steady_problem(
+                        converged_ar_id,
+                        converged_chord_id,
+                        converged_aspect_ratio,
+                        converged_chordwise_panels,
+                        ref_problem,
+                        num_spanwise_panels_cache,
+                    )
+                    if solver_type == "steady horseshoe vortex lattice method":
+                        converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                            steady_problem=converged_problem,
+                        )
+                    else:
+                        converged_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                            steady_problem=converged_problem,
+                        )
+                    converged_solver.run(calculate_streamlines=True)
+
+                _logger.info(
+                    "Convergence analysis completed in "
+                    + str(round(time.time() - run_start_time, 3))
+                    + " s"
+                )
+
                 return (
                     converged_aspect_ratio,
                     converged_chordwise_panels,
+                    converged_solver,
                 )
 
     # If all iterations have been checked and none of them resulted in both
     # convergence parameters passing, then indicate that no converged case was found
     # and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
-    return None, None
+    _logger.info(
+        "Convergence analysis completed in "
+        + str(round(time.time() - run_start_time, 3))
+        + " s"
+    )
+    return None, None, None
 
 
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: If a converged mesh was found, consider also returning the converged solver.
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
     prescribed_wake: bool | np.bool_ = True,
@@ -727,7 +509,18 @@ def analyze_unsteady_convergence(
     num_chordwise_panels_bounds: tuple[int, int] = (3, 12),
     convergence_criteria: float | int = 5.0,
     show_solver_progress: bool | np.bool_ = True,
-) -> tuple[bool, int, int, int] | tuple[None, None, None, None]:
+    resolve_converged_solver: bool | np.bool_ = False,
+) -> (
+    tuple[
+        bool,
+        int,
+        int,
+        int,
+        unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+        | None,
+    ]
+    | tuple[None, None, None, None, None]
+):
     """Finds the converged parameters of an UnsteadyProblem solved using the
     UnsteadyRingVortexLatticeMethodSolver.
 
@@ -828,11 +621,19 @@ def analyze_unsteady_convergence(
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
         a numpy bool and will be converted internally to a bool. The default is True.
-    :return: A tuple of one bool and three ints. In order, they are the converged wake
-        state (prescribed=True and free=False), the converged wake length (in number of
-        cycles for non static geometries and number of chords for static geometries),
-        the converged Panel aspect ratio, and the converged number of chordwise Panels.
-        If the function could not find a set of converged parameters, it returns (None,
+    :param resolve_converged_solver: A bool for whether to recreate and run the solver
+        at the converged parameters and return it. Because finding convergence is
+        expensive, this defaults to False, in which case the returned solver is None.
+        When True, the solver is rebuilt at the converged parameters (which are
+        frequently coarser than the last iteration run) and run with streamlines
+        calculated, so the returned solver is ready to use. The default is False.
+    :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
+        order, the first four elements are the converged wake state (prescribed=True and
+        free=False), the converged wake length (in number of cycles for non static
+        geometries and number of chords for static geometries), the converged Panel
+        aspect ratio, and the converged number of chordwise Panels. The fifth element is
+        the converged solver if resolve_converged_solver is True, otherwise None. If the
+        function could not find a set of converged parameters, it returns (None, None,
         None, None, None).
     """
     # Validate the ref_problem parameter.
@@ -889,36 +690,10 @@ def analyze_unsteady_convergence(
             raise ValueError("Both values in num_cycles_bounds must be positive.")
 
     # Validate the panel_aspect_ratio_bounds parameter.
-    if not (
-        isinstance(panel_aspect_ratio_bounds, tuple)
-        and len(panel_aspect_ratio_bounds) == 2
-    ):
-        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
-        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
-    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
-        raise ValueError(
-            "The first value in panel_aspect_ratio_bounds must be greater than or "
-            "equal to the second value."
-        )
-    if panel_aspect_ratio_bounds[1] <= 0:
-        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+    _validate_panel_aspect_ratio_bounds(panel_aspect_ratio_bounds)
 
     # Validate the num_chordwise_panels_bounds parameter.
-    if not (
-        isinstance(num_chordwise_panels_bounds, tuple)
-        and len(num_chordwise_panels_bounds) == 2
-    ):
-        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
-    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
-        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
-    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
-        raise ValueError(
-            "The first value in num_chordwise_panels_bounds must be less than or "
-            "equal to the second value."
-        )
-    if num_chordwise_panels_bounds[0] <= 0:
-        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+    _validate_num_chordwise_panels_bounds(num_chordwise_panels_bounds)
 
     # Validate the convergence_criteria parameter.
     convergence_criteria = _parameter_validation.number_in_range_return_float(
@@ -930,26 +705,24 @@ def analyze_unsteady_convergence(
         show_solver_progress, "show_solver_progress"
     )
 
+    # Validate the resolve_converged_solver parameter.
+    resolve_converged_solver = _parameter_validation.boolLike_return_bool(
+        resolve_converged_solver, "resolve_converged_solver"
+    )
+
+    run_start_time = time.time()
     _logger.info("Beginning convergence analysis...")
 
     ref_airplane_movements = ref_movement.airplane_movements
-    ref_operating_point_movement = ref_movement.operating_point_movement
 
-    # Reject any Wing whose spanwise mesh is not trapezoidal. This function refines a
-    # Wing by sweeping the number of spanwise Panels while holding its WingCrossSections
-    # fixed, which is only meaningful for a trapezoidal Wing. A Wing whose spanwise mesh
-    # is defined as single panel strips (for example one built with
-    # explode_into_strips=True) would be silently subdivided along the same geometry
-    # rather than refined, so its convergence result would be misleading.
-    for checked_airplane_movement in ref_airplane_movements:
-        for checked_wing in checked_airplane_movement.base_airplane.wings:
-            if checked_wing.spanwise_mesh != "trapezoidal":
-                raise ValueError(
-                    f"analyze_unsteady_convergence does not support Wings whose "
-                    f'spanwise mesh is not "trapezoidal". The Wing named '
-                    f'"{checked_wing.name}" has a spanwise mesh of '
-                    f'"{checked_wing.spanwise_mesh}".'
-                )
+    # Reject any Wing whose spanwise mesh is not trapezoidal.
+    _reject_non_trapezoidal_wings(
+        tuple(
+            ref_airplane_movement.base_airplane
+            for ref_airplane_movement in ref_airplane_movements
+        ),
+        "analyze_unsteady_convergence",
+    )
 
     # Create the list of wake states to iterate over.
     wake_list = []
@@ -1049,420 +822,16 @@ def analyze_unsteady_convergence(
                         + str(num_iterations)
                     )
 
-                    # Initialize an empty list for this iteration's base
-                    # AirplaneMovements.
-                    these_base_airplanes = []
-
-                    # Create an empty list for the AirplaneMovement copies.
-                    these_airplane_movements = []
-
-                    # Now, we will begin iterating through this iteration's reference
-                    # AirplaneMovements, WingMovements,
-                    # and WingCrossSectionMovements, and creating copies of them.
-                    # These copies will have identical parameters to their respective
-                    # reference movements except for the number of spanwise Panels (
-                    # which is based on the Panel aspect ratio), and the number of
-                    # chordwise Panels.
-                    #
-                    # To do this, we iterate over the AirplaneMovements and perform a
-                    # several step procedure:
-                    # 1:    Reference the AirplaneMovement's base Airplane.
-                    # 2:    Reference the AirplaneMovement's list of WingMovements.
-                    # 3:    Create an empty list for the WingMovements' base Wing
-                    #       copies.
-                    # 4:    Create an empty list for the WingMovement copies.
-                    # 5:    Iterate over the WingMovements.
-                    #       5.1:    Reference the WingMovement's base Wing.
-                    #       5.2:    Reference the WingMovement's list of
-                    #               WingCrossSectionMovements.
-                    #       5.3:    Create an empty list for the
-                    #               WingCrossSectionMovements' base WingCrossSection
-                    #               copies.
-                    #       5.4:    Create an empty list for the
-                    #               WingCrossSectionMovement copies.
-                    #       5.5:    Iterate over the WingCrossSectionMovements.
-                    #               5.5.1:  Reference the WingCrossSectionMovement's
-                    #                       base WingCrossSection.
-                    #               5.5.2:  Calculate the number of spanwise Panels
-                    #                       that corresponds to the desired combination
-                    #                       of Panel aspect ratio and number of
-                    #                       chordwise Panels.
-                    #               5.5.3:  Create a copy of the base WingCrossSection.
-                    #               5.5.4:  Create a copy of the
-                    #                       WingCrossSectionMovement.
-                    #               5.5.5:  Append the base WingCrossSection copy to
-                    #                       the list of base WingCrossSection copies.
-                    #               5.5.6:  Append the WingCrossSectionMovement copy to
-                    #                       the list of WingCrossSectionMovement
-                    #                       copies.
-                    #       5.6:    Create a copy of the base Wing.
-                    #       5.7:    Create a copy of the WingMovement.
-                    #       5.8:    Append the base Wing copy to the list  of base Wing
-                    #               copies.
-                    #       5.9:    Append the WingMovement copy to the list of
-                    #               WingMovement copies.
-                    # 6:    Create a copy of the base Airplane.
-                    # 7:    Create a copy of the AirplaneMovement.
-                    # 8:    Append the base Airplane copy to the list of base Airplane
-                    #       copies.
-                    # 9:    Append the AirplaneMovement copy to the list of
-                    #       AirplaneMovement copies.
-                    ref_airplane_movement: movements.airplane_movement.AirplaneMovement
-                    for ref_airplane_movement_id, ref_airplane_movement in enumerate(
-                        ref_airplane_movements
-                    ):
-                        # 1. Reference the AirplaneMovement's base Airplane.
-                        ref_base_airplane = ref_airplane_movement.base_airplane
-
-                        # 2. Reference the AirplaneMovement's list of WingMovements.
-                        ref_wing_movements = ref_airplane_movement.wing_movements
-
-                        # 3. Create an empty list for the WingMovements' base Wing
-                        # copies.
-                        these_base_wings = []
-
-                        # 4: Create an empty list for the WingMovement copies.
-                        these_wing_movements = []
-
-                        # 5: Iterate over the WingMovements.
-                        for ref_wing_movement_id, ref_wing_movement in enumerate(
-                            ref_wing_movements
-                        ):
-                            # 5.1: Reference the WingMovement's base Wing.
-                            ref_base_wing = ref_wing_movement.base_wing
-
-                            # 5.2: Reference the WingMovement's list of
-                            # WingCrossSectionMovements.
-                            ref_wing_cross_section_movements = (
-                                ref_wing_movement.wing_cross_section_movements
-                            )
-
-                            # 5.3: Create an empty list for the
-                            # WingCrossSectionMovements' base WingCrossSection copies.
-                            these_base_wing_cross_sections = []
-
-                            # 5.4: Create an empty list for the
-                            # WingCrossSectionMovement copies.
-                            these_wing_cross_section_movements = []
-
-                            # 5.5: Iterate over the WingCrossSectionMovements.
-                            for (
-                                ref_wing_cross_section_movement_id,
-                                ref_wing_cross_section_movement,
-                            ) in enumerate(ref_wing_cross_section_movements):
-                                # 5.5.1: Reference the WingCrossSectionMovement's
-                                # base WingCrossSection.
-                                ref_base_wing_cross_section = (
-                                    ref_wing_cross_section_movement.base_wing_cross_section
-                                )
-
-                                # 5.5.2: Calculate the number of spanwise Panels that
-                                # corresponds to the desired combination of Panel
-                                # aspect ratio and number of chordwise Panels.
-                                if ref_wing_cross_section_movement_id < (
-                                    len(ref_wing_cross_section_movements) - 1
-                                ):
-                                    # Check if we've already calculated the number of
-                                    # spanwise Panels for this case/combination of
-                                    # parameters.
-                                    num_spanwise_panels_key = (
-                                        ar_id,
-                                        chord_id,
-                                        ref_airplane_movement_id,
-                                        ref_wing_movement_id,
-                                        ref_wing_cross_section_movement_id,
-                                    )
-                                    if (
-                                        num_spanwise_panels_key
-                                        in num_spanwise_panels_cache
-                                    ):
-                                        _logger.debug(
-                                            f"\t\t\t\t\t\tGetting the cached number of "
-                                            f"spanwise Panels calculated for the #"
-                                            f"{ref_wing_cross_section_movement_id + 1} "
-                                            f"WingCrossSection of "
-                                            f"{ref_base_airplane.name}'s "
-                                            f"{ref_base_wing.name}..."
-                                        )
-
-                                        this_num_spanwise_panels = (
-                                            num_spanwise_panels_cache[
-                                                num_spanwise_panels_key
-                                            ]
-                                        )
-                                    else:
-                                        # The way we calculate the correct number of
-                                        # spanwise Panels is to make skeleton
-                                        # Airplanes containing only one Wing with only
-                                        # the two WingCrossSections that make up the
-                                        # current Wing section. During
-                                        # initialization, the Airplane meshes its
-                                        # Wing, and we can then access the Wing's
-                                        # average_panel_aspect_ratio property. We
-                                        # repeat this process with increasing numbers
-                                        # of spanwise Panels, until we find the value
-                                        # that results in average_panel_aspect_ratio
-                                        # most closely matches the desired Panel
-                                        # aspect ratio. Initially, the first skeleton
-                                        # Airplane uses num_spanwise_panels=1.
-                                        # However, if we've already calculated a
-                                        # number of spanwise Panels for this Wing
-                                        # section with a coarser mesh (either in
-                                        # Panel aspect ratio, number of chordwise
-                                        # Panels, or both), then we know the current
-                                        # mesh must use at least this many spanwise
-                                        # Panels. Therefore, we can start the
-                                        # iterations with a higher number of spanwise
-                                        # Panels.
-                                        starting_num_spanwise_panels = 1
-
-                                        # Get the keys for the three coarser cases.
-                                        last_ar_key = (
-                                            ar_id - 1,
-                                            chord_id,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-                                        last_chord_key = (
-                                            ar_id,
-                                            chord_id - 1,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-                                        last_ar_and_chord_key = (
-                                            ar_id - 1,
-                                            chord_id - 1,
-                                            ref_airplane_movement_id,
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                        )
-
-                                        # Initialize the three coarser cases number
-                                        # of spanwise to be infinity, and update them
-                                        # if they exist in the cache.
-                                        last_ar_cache_val = np.inf
-                                        if last_ar_key in num_spanwise_panels_cache:
-                                            last_ar_cache_val = (
-                                                num_spanwise_panels_cache[last_ar_key]
-                                            )
-                                        last_chord_cache_val = np.inf
-                                        if last_chord_key in num_spanwise_panels_cache:
-                                            last_chord_cache_val = (
-                                                num_spanwise_panels_cache[
-                                                    last_chord_key
-                                                ]
-                                            )
-                                        last_ar_and_chord_cache_val = np.inf
-                                        if (
-                                            last_ar_and_chord_key
-                                            in num_spanwise_panels_cache
-                                        ):
-                                            last_ar_and_chord_cache_val = (
-                                                num_spanwise_panels_cache[
-                                                    last_ar_and_chord_key
-                                                ]
-                                            )
-
-                                        # To be conservative, take the minimum
-                                        # num_spanwise_panels of the three coarser
-                                        # cases. If at least one of the three cases
-                                        # has already been calculated, use that
-                                        # num_spanwise_panels as the starting value
-                                        # instead of 1.
-                                        last_cache_val = min(
-                                            last_ar_cache_val,
-                                            last_chord_cache_val,
-                                            last_ar_and_chord_cache_val,
-                                        )
-                                        if last_cache_val != np.inf:
-                                            starting_num_spanwise_panels = int(
-                                                last_cache_val
-                                            )
-
-                                        _logger.debug(
-                                            f"\t\t\t\t\t\tCalculating the number of "
-                                            f"spanwise Panels for the #"
-                                            f"{ref_wing_cross_section_movement_id + 1} "
-                                            f"WingCrossSection of "
-                                            f"{ref_base_airplane.name}'s "
-                                            f"{ref_base_wing.name}, with a starting "
-                                            f"value of "
-                                            f"{starting_num_spanwise_panels}..."
-                                        )
-
-                                        # Iteratively find the correct number of
-                                        # spanwise Panels.
-                                        this_num_spanwise_panels = _get_wing_section_movement_num_spanwise_panels(
-                                            panel_aspect_ratio,
-                                            num_chordwise_panels,
-                                            ref_base_wing.chordwise_spacing,
-                                            ref_movement.airplanes[
-                                                ref_airplane_movement_id
-                                            ],
-                                            ref_wing_movement_id,
-                                            ref_wing_cross_section_movement_id,
-                                            ref_wing_cross_section_movement_id + 1,
-                                            starting_num_spanwise_panels,
-                                            ref_problem.first_averaging_step,
-                                        )
-
-                                        # Cache the calculated number of spanwise
-                                        # Panels for future use.
-                                        num_spanwise_panels_cache[
-                                            num_spanwise_panels_key
-                                        ] = this_num_spanwise_panels
-
-                                    _logger.debug(
-                                        f"\t\t\t\t\t\tNumber of spanwise Panels: "
-                                        f"{this_num_spanwise_panels}"
-                                    )
-                                else:
-                                    this_num_spanwise_panels = None
-
-                                # 5.5.3: Create a copy of the base WingCrossSection.
-                                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
-                                    # These values are copied from the reference base
-                                    # WingCrossSection.
-                                    chord=ref_base_wing_cross_section.chord,
-                                    Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
-                                    angles_Wcsp_to_Wcs_ixyz=ref_base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-                                    control_surface_symmetry_type=ref_base_wing_cross_section.control_surface_symmetry_type,
-                                    control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
-                                    control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
-                                    spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
-                                    # These values change.
-                                    num_spanwise_panels=this_num_spanwise_panels,
-                                    airfoil=geometry.airfoil.Airfoil(
-                                        name=ref_base_wing_cross_section.airfoil.name,
-                                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
-                                        resample=ref_base_wing_cross_section.airfoil.resample,
-                                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
-                                    ),
-                                )
-
-                                # 5.5.4: Create a copy of the WingCrossSectionMovement.
-                                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
-                                    # These values are copied from the reference
-                                    # WingCrossSectionMovement.
-                                    ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
-                                    periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
-                                    spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
-                                    phaseLp_Wcsp_Lpp=ref_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
-                                    ampAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
-                                    periodAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
-                                    spacingAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
-                                    phaseAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
-                                    # These values change.
-                                    base_wing_cross_section=this_base_wing_cross_section,
-                                )
-
-                                # 5.5.5: Append the base WingCrossSection copy to the
-                                # list of base WingCrossSection copies.
-                                these_base_wing_cross_sections.append(
-                                    this_base_wing_cross_section
-                                )
-
-                                # 5.5.6: Append the WingCrossSectionMovement copy to
-                                # the list of WingCrossSectionMovement copies.
-                                these_wing_cross_section_movements.append(
-                                    this_wing_cross_section_movement
-                                )
-
-                            # 5.6: Create a copy of base Wing.
-                            this_base_wing = geometry.wing.Wing(
-                                # These values are copied from the reference Wing.
-                                name=ref_base_wing.name,
-                                Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
-                                angles_Gs_to_Wn_ixyz=ref_base_wing.angles_Gs_to_Wn_ixyz,
-                                symmetric=ref_base_wing.symmetric,
-                                mirror_only=ref_base_wing.mirror_only,
-                                symmetryNormal_G=ref_base_wing.symmetryNormal_G,
-                                symmetryPoint_G_Cg=ref_base_wing.symmetryPoint_G_Cg,
-                                chordwise_spacing=ref_base_wing.chordwise_spacing,
-                                # These values change.
-                                wing_cross_sections=these_base_wing_cross_sections,
-                                num_chordwise_panels=num_chordwise_panels,
-                            )
-
-                            # 5.7: Create a copy of the WingMovement.
-                            this_wing_movement = movements.wing_movement.WingMovement(
-                                # These values are copied from the reference
-                                # WingMovement.
-                                ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
-                                periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
-                                spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
-                                phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
-                                ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
-                                periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
-                                spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
-                                phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
-                                # These values change.
-                                base_wing=this_base_wing,
-                                wing_cross_section_movements=these_wing_cross_section_movements,
-                            )
-
-                            # 5.8: Append the base Wing copy to the list of base Wing
-                            # copies.
-                            these_base_wings.append(this_base_wing)
-
-                            # 5.9: Append the WingMovement copy to the list of
-                            # WingMovement copies.
-                            these_wing_movements.append(this_wing_movement)
-
-                        # 6: Create a copy of the base Airplane.
-                        this_base_airplane = geometry.airplane.Airplane(
-                            # These values are copied from the reference Airplane.
-                            name=ref_base_airplane.name,
-                            Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
-                            weight=ref_base_airplane.weight,
-                            # These values change.
-                            wings=these_base_wings,
-                            s_ref=None,
-                            c_ref=None,
-                            b_ref=None,
-                        )
-
-                        # 7. Create a copy of the AirplaneMovement.
-                        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
-                            # These values are copied from the reference
-                            # AirplaneMovement.
-                            ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
-                            periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
-                            spacingCg_GP1_CgP1=ref_airplane_movement.spacingCg_GP1_CgP1,
-                            phaseCg_GP1_CgP1=ref_airplane_movement.phaseCg_GP1_CgP1,
-                            # These values change.
-                            base_airplane=this_base_airplane,
-                            wing_movements=these_wing_movements,
-                        )
-
-                        # 8. Append the base Airplane copy to the list of base
-                        # Airplane copies.
-                        these_base_airplanes.append(this_base_airplane)
-
-                        # 9. Append the AirplaneMovement copy to the list of
-                        # AirplaneMovement copies.
-                        these_airplane_movements.append(this_airplane_movement)
-
-                    # Create a new Movement for this iteration.
-                    if static:
-                        this_movement = movements.movement.Movement(
-                            airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
-                            num_chords=wake_length,
-                        )
-                    else:
-                        this_movement = movements.movement.Movement(
-                            airplane_movements=these_airplane_movements,
-                            operating_point_movement=ref_operating_point_movement,
-                            num_cycles=wake_length,
-                        )
-
-                    # Create a new UnsteadyProblem for this iteration.
-                    this_problem = problems.UnsteadyProblem(
-                        movement=this_movement,
-                        only_final_results=True,
+                    # Build this iteration's UnsteadyProblem with the current wake
+                    # length, Panel aspect ratio, and number of chordwise Panels.
+                    this_problem = _build_unsteady_problem(
+                        ar_id,
+                        chord_id,
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
+                        wake_length,
+                        ref_problem,
+                        num_spanwise_panels_cache,
                     )
 
                     # Create and run this iteration's
@@ -1486,10 +855,10 @@ def analyze_unsteady_convergence(
                     # Create and fill ndarrays with each of this iteration's Airplanes'
                     # combined final load coefficients.
                     theseCombinedFinalLoadCoefficients = np.zeros(
-                        (len(these_airplane_movements), 2), dtype=float
+                        (len(ref_airplane_movements), 2), dtype=float
                     )
 
-                    for airplane_id, airplane in enumerate(these_airplane_movements):
+                    for airplane_id in range(len(ref_airplane_movements)):
                         # If this UnsteadyProblem is static, then get it's combined
                         # final load coefficients. If it's variable, get the combined
                         # final RMS load coefficients.
@@ -1542,15 +911,9 @@ def analyze_unsteady_convergence(
                                 wake_id - 1, length_id, ar_id, chord_id, :, :
                             ]
                         )
-                        max_wake_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastWakeCombinedFinalLoadCoefficients
-                                )
-                                / lastWakeCombinedFinalLoadCoefficients
-                            )
+                        max_wake_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastWakeCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1571,15 +934,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id - 1, ar_id, chord_id, :, :
                             ]
                         )
-                        max_length_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastLengthCombinedFinalLoadCoefficients
-                                )
-                                / lastLengthCombinedFinalLoadCoefficients
-                            )
+                        max_length_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastLengthCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1600,15 +957,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id, ar_id - 1, chord_id, :, :
                             ]
                         )
-                        max_ar_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastArCombinedFinalLoadCoefficients
-                                )
-                                / lastArCombinedFinalLoadCoefficients
-                            )
+                        max_ar_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastArCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1629,15 +980,9 @@ def analyze_unsteady_convergence(
                                 wake_id, length_id, ar_id, chord_id - 1, :, :
                             ]
                         )
-                        max_chord_pc = np.max(
-                            100
-                            * np.abs(
-                                (
-                                    theseCombinedFinalLoadCoefficients
-                                    - lastChordCombinedFinalLoadCoefficients
-                                )
-                                / lastChordCombinedFinalLoadCoefficients
-                            )
+                        max_chord_pc = _max_combined_percent_change(
+                            theseCombinedFinalLoadCoefficients,
+                            lastChordCombinedFinalLoadCoefficients,
                         )
 
                         _logger.info(
@@ -1683,48 +1028,18 @@ def analyze_unsteady_convergence(
                     # converged or semi-converged combination of parameters has been
                     # found and will be returned.
                     if wake_passed and length_passed and ar_passed and chord_passed:
-                        if single_wake:
-                            converged_wake_id = wake_id
-                        else:
-                            # We've tested both prescribed and free wakes.
-                            if wake_converged:
-                                # There isn't a big difference between the prescribed
-                                # wake and free wake, so the prescribed wake is
-                                # converged.
-                                converged_wake_id = wake_id - 1
-                            else:
-                                # There is a big different difference between the
-                                # prescribed wake and free wake, so the free wake is
-                                # converged.
-                                converged_wake_id = wake_id
-
-                        if single_length:
-                            converged_length_id = length_id
-                        else:
-                            converged_length_id = length_id - 1
-
-                        if single_ar:
-                            converged_ar_id = ar_id
-                        else:
-                            # We've tested more than one Panel aspect ratio.
-                            if ar_converged:
-                                # There is no big difference between this Panel aspect
-                                # ratio and the last (coarser) Panel aspect ratio.
-                                # Therefore, the last (coarser) Panel aspect ratio is
-                                # converged.
-                                converged_ar_id = ar_id - 1
-                            else:
-                                # There is a big difference between this Panel aspect
-                                # ratio and the last (coarser) Panel aspect ratio.
-                                # However, the Panel aspect ratio is one, so it's
-                                # saturated. Therefore, this Panel aspect ratio is
-                                # converged.
-                                converged_ar_id = ar_id
-
-                        if single_chord:
-                            converged_chord_id = chord_id
-                        else:
-                            converged_chord_id = chord_id - 1
+                        converged_wake_id = _converged_parameter_id(
+                            wake_id, single_wake, wake_converged
+                        )
+                        converged_length_id = _converged_parameter_id(
+                            length_id, single_length, length_converged
+                        )
+                        converged_ar_id = _converged_parameter_id(
+                            ar_id, single_ar, ar_converged
+                        )
+                        converged_chord_id = _converged_parameter_id(
+                            chord_id, single_chord, chord_converged
+                        )
 
                         converged_wake = wake_list[converged_wake_id]
                         converged_wake_length = wake_lengths_list[converged_length_id]
@@ -1829,18 +1144,485 @@ def analyze_unsteady_convergence(
                                         + str(num_spanwise_panels)
                                     )
 
+                        # If requested, recreate and run the solver at the converged
+                        # parameters so it can be returned. The converged parameters are
+                        # frequently coarser than this iteration's, so the converged
+                        # solver is rebuilt rather than reusing this iteration's finer
+                        # solver.
+                        converged_solver: (
+                            unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+                            | None
+                        ) = None
+                        if resolve_converged_solver:
+                            _logger.info(
+                                "Recreating and running the converged solver..."
+                            )
+                            converged_problem = _build_unsteady_problem(
+                                converged_ar_id,
+                                converged_chord_id,
+                                converged_aspect_ratio,
+                                converged_chordwise_panels,
+                                converged_wake_length,
+                                ref_problem,
+                                num_spanwise_panels_cache,
+                            )
+                            converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                                unsteady_problem=converged_problem
+                            )
+                            converged_solver.run(
+                                prescribed_wake=converged_wake,
+                                calculate_streamlines=True,
+                                show_progress=show_solver_progress,
+                            )
+
+                        _logger.info(
+                            "Convergence analysis completed in "
+                            + str(round(time.time() - run_start_time, 3))
+                            + " s"
+                        )
+
                         return (
                             converged_wake,
                             converged_wake_length,
                             converged_aspect_ratio,
                             converged_chordwise_panels,
+                            converged_solver,
                         )
 
     # If all iterations have been checked and none of them resulted in all
     # convergence parameters passing, then indicate that no converged solution was
     # found and return values of None for the converged parameters.
     _logger.info("The analysis did not find a converged case within the given bounds")
-    return None, None, None, None
+    _logger.info(
+        "Convergence analysis completed in "
+        + str(round(time.time() - run_start_time, 3))
+        + " s"
+    )
+    return None, None, None, None, None
+
+
+def _build_steady_problem(
+    ar_id: int,
+    chord_id: int,
+    panel_aspect_ratio: int,
+    num_chordwise_panels: int,
+    ref_problem: problems.SteadyProblem,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+) -> problems.SteadyProblem:
+    """Builds the SteadyProblem for one convergence iteration.
+
+    Each of the reference SteadyProblem's Airplanes is copied with the given Panel
+    aspect ratio and number of chordwise Panels. Each non-tip WingCrossSection's number
+    of spanwise Panels is resolved (and cached) to achieve the desired Panel aspect
+    ratio, and the copied Airplanes are wrapped in a new SteadyProblem with the
+    reference OperatingPoint.
+
+    :param ar_id: The index of the current Panel aspect ratio within the list of Panel
+        aspect ratios being tested.
+    :param chord_id: The index of the current number of chordwise Panels within the list
+        of numbers of chordwise Panels being tested.
+    :param panel_aspect_ratio: The Panel aspect ratio to target for this iteration.
+    :param num_chordwise_panels: The number of chordwise Panels to use for this
+        iteration.
+    :param ref_problem: The reference SteadyProblem whose Airplanes and OperatingPoint
+        are copied.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :return: The SteadyProblem for this iteration.
+    """
+    ref_airplanes = ref_problem.airplanes
+    ref_operating_point = ref_problem.operating_point
+
+    # Initialize an empty list to hold this iteration's Airplanes. Then, fill the list by
+    # making new copies of each of the Airplanes with modified values for Panel aspect
+    # ratio and number of chordwise Panels.
+    these_airplanes = []
+    for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
+        ref_wings = ref_airplane.wings
+        these_wings = []
+
+        for ref_wing_id, ref_wing in enumerate(ref_wings):
+            ref_wing_cross_sections = ref_wing.wing_cross_sections
+            these_wing_cross_sections = []
+
+            for ref_wing_cross_section_id, ref_wing_cross_section in enumerate(
+                ref_wing_cross_sections
+            ):
+
+                # If this is not the last WingCrossSection, find the number of spanwise
+                # Panels to use for this section of the Wing, based on the desired Panel
+                # aspect ratio and number of chordwise Panels.
+                if ref_wing_cross_section_id < (len(ref_wing_cross_sections) - 1):
+                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        ar_id,
+                        chord_id,
+                        ref_airplane_id,
+                        ref_wing_id,
+                        ref_wing_cross_section_id,
+                        ref_airplane.name,
+                        ref_wing.name,
+                        "\t\t\t\t",
+                        num_spanwise_panels_cache,
+                        lambda start: _get_wing_section_num_spanwise_panels(
+                            panel_aspect_ratio,
+                            num_chordwise_panels,
+                            ref_wing.chordwise_spacing,
+                            ref_wing_cross_section,
+                            ref_wing_cross_sections[ref_wing_cross_section_id + 1],
+                            start,
+                        ),
+                    )
+                else:
+                    this_num_spanwise_panels = None
+
+                these_wing_cross_sections.append(
+                    geometry.wing_cross_section.WingCrossSection(
+                        # These values are copied from the reference WingCrossSection.
+                        chord=ref_wing_cross_section.chord,
+                        Lp_Wcsp_Lpp=ref_wing_cross_section.Lp_Wcsp_Lpp,
+                        angles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                        control_surface_symmetry_type=ref_wing_cross_section.control_surface_symmetry_type,
+                        control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
+                        control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
+                        spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
+                        # These values change.
+                        num_spanwise_panels=this_num_spanwise_panels,
+                        airfoil=geometry.airfoil.Airfoil(
+                            name=ref_wing_cross_section.airfoil.name,
+                            outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
+                            resample=ref_wing_cross_section.airfoil.resample,
+                            n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
+                        ),
+                    )
+                )
+
+            these_wings.append(
+                geometry.wing.Wing(
+                    # These values are copied from the reference Wing.
+                    name=ref_wing.name,
+                    Ler_Gs_Cgs=ref_wing.Ler_Gs_Cgs,
+                    angles_Gs_to_Wn_ixyz=ref_wing.angles_Gs_to_Wn_ixyz,
+                    symmetric=ref_wing.symmetric,
+                    mirror_only=ref_wing.mirror_only,
+                    symmetryNormal_G=ref_wing.symmetryNormal_G,
+                    symmetryPoint_G_Cg=ref_wing.symmetryPoint_G_Cg,
+                    chordwise_spacing=ref_wing.chordwise_spacing,
+                    # These values change.
+                    wing_cross_sections=these_wing_cross_sections,
+                    num_chordwise_panels=num_chordwise_panels,
+                )
+            )
+
+        these_airplanes.append(
+            geometry.airplane.Airplane(
+                # These values are copied from the reference Airplane.
+                name=ref_airplane.name,
+                Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
+                weight=ref_airplane.weight,
+                # These values change.
+                wings=these_wings,
+                s_ref=None,
+                c_ref=None,
+                b_ref=None,
+            )
+        )
+
+    # Create a new SteadyProblem for this iteration.
+    return problems.SteadyProblem(
+        airplanes=these_airplanes, operating_point=ref_operating_point
+    )
+
+
+def _build_unsteady_problem(
+    ar_id: int,
+    chord_id: int,
+    panel_aspect_ratio: int,
+    num_chordwise_panels: int,
+    wake_length: int,
+    ref_problem: problems.UnsteadyProblem,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+) -> problems.UnsteadyProblem:
+    """Builds the UnsteadyProblem for one convergence iteration.
+
+    Each of the reference Movement's AirplaneMovements (and its nested WingMovements and
+    WingCrossSectionMovements) is copied with the given Panel aspect ratio and number of
+    chordwise Panels, preserving every motion parameter. Each non-tip WingCrossSection's
+    number of spanwise Panels is resolved (and cached) to achieve the desired Panel
+    aspect ratio, and the copied AirplaneMovements are wrapped in a new Movement (with
+    the given wake length) and UnsteadyProblem.
+
+    :param ar_id: The index of the current Panel aspect ratio within the list of Panel
+        aspect ratios being tested.
+    :param chord_id: The index of the current number of chordwise Panels within the list
+        of numbers of chordwise Panels being tested.
+    :param panel_aspect_ratio: The Panel aspect ratio to target for this iteration.
+    :param num_chordwise_panels: The number of chordwise Panels to use for this
+        iteration.
+    :param wake_length: The wake length (number of chords if static, number of cycles if
+        variable) to use for this iteration.
+    :param ref_problem: The reference UnsteadyProblem whose Movement is copied.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :return: The UnsteadyProblem for this iteration.
+    """
+    ref_movement = ref_problem.movement
+    static = ref_movement.static
+    ref_airplane_movements = ref_movement.airplane_movements
+    ref_operating_point_movement = ref_movement.operating_point_movement
+
+    # Initialize an empty list for this iteration's base AirplaneMovements.
+    these_base_airplanes = []
+
+    # Create an empty list for the AirplaneMovement copies.
+    these_airplane_movements = []
+
+    # Now, we will begin iterating through this iteration's reference AirplaneMovements,
+    # WingMovements, and WingCrossSectionMovements, and creating copies of them. These
+    # copies will have identical parameters to their respective reference movements
+    # except for the number of spanwise Panels (which is based on the Panel aspect
+    # ratio), and the number of chordwise Panels.
+    #
+    # To do this, we iterate over the AirplaneMovements and perform a several step
+    # procedure:
+    # 1. Reference the AirplaneMovement's base Airplane.
+    # 2. Reference the AirplaneMovement's list of WingMovements.
+    # 3. Create an empty list for the WingMovements' base Wing copies.
+    # 4. Create an empty list for the WingMovement copies.
+    # 5. Iterate over the WingMovements.
+    #   5.1. Reference the WingMovement's base Wing.
+    #   5.2. Reference the WingMovement's list of WingCrossSectionMovements.
+    #   5.3. Create an empty list for the WingCrossSectionMovements' base WingCrossSection
+    #        copies.
+    #   5.4. Create an empty list for the WingCrossSectionMovement copies.
+    #   5.5. Iterate over the WingCrossSectionMovements.
+    #     5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
+    #     5.5.2. Calculate the number of spanwise Panels that corresponds to the desired
+    #            combination of Panel aspect ratio and number of chordwise Panels.
+    #     5.5.3. Create a copy of the base WingCrossSection.
+    #     5.5.4. Create a copy of the WingCrossSectionMovement.
+    #     5.5.5. Append the base WingCrossSection copy to the list of base WingCrossSection
+    #            copies.
+    #     5.5.6. Append the WingCrossSectionMovement copy to the list of
+    #            WingCrossSectionMovement copies.
+    #   5.6. Create a copy of the base Wing.
+    #   5.7. Create a copy of the WingMovement.
+    #   5.8. Append the base Wing copy to the list  of base Wing copies.
+    #   5.9. Append the WingMovement copy to the list of WingMovement copies.
+    # 6. Create a copy of the base Airplane.
+    # 7. Create a copy of the AirplaneMovement.
+    # 8. Append the base Airplane copy to the list of base Airplane copies.
+    # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
+    ref_airplane_movement: movements.airplane_movement.AirplaneMovement
+    for ref_airplane_movement_id, ref_airplane_movement in enumerate(
+        ref_airplane_movements
+    ):
+        # 1. Reference the AirplaneMovement's base Airplane.
+        ref_base_airplane = ref_airplane_movement.base_airplane
+
+        # 2. Reference the AirplaneMovement's list of WingMovements.
+        ref_wing_movements = ref_airplane_movement.wing_movements
+
+        # 3. Create an empty list for the WingMovements' base Wing copies.
+        these_base_wings = []
+
+        # 4. Create an empty list for the WingMovement copies.
+        these_wing_movements = []
+
+        # 5. Iterate over the WingMovements.
+        for ref_wing_movement_id, ref_wing_movement in enumerate(ref_wing_movements):
+            # 5.1. Reference the WingMovement's base Wing.
+            ref_base_wing = ref_wing_movement.base_wing
+
+            # 5.2. Reference the WingMovement's list of WingCrossSectionMovements.
+            ref_wing_cross_section_movements = (
+                ref_wing_movement.wing_cross_section_movements
+            )
+
+            # 5.3. Create an empty list for the WingCrossSectionMovements' base
+            # WingCrossSection copies.
+            these_base_wing_cross_sections = []
+
+            # 5.4. Create an empty list for the WingCrossSectionMovement copies.
+            these_wing_cross_section_movements = []
+
+            # 5.5. Iterate over the WingCrossSectionMovements.
+            for (
+                ref_wing_cross_section_movement_id,
+                ref_wing_cross_section_movement,
+            ) in enumerate(ref_wing_cross_section_movements):
+                # 5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
+                ref_base_wing_cross_section = (
+                    ref_wing_cross_section_movement.base_wing_cross_section
+                )
+
+                # 5.5.2. Calculate the number of spanwise Panels that corresponds to the
+                # desired combination of Panel aspect ratio and number of chordwise
+                # Panels.
+                if ref_wing_cross_section_movement_id < (
+                    len(ref_wing_cross_section_movements) - 1
+                ):
+                    this_num_spanwise_panels = _resolve_num_spanwise_panels(
+                        ar_id,
+                        chord_id,
+                        ref_airplane_movement_id,
+                        ref_wing_movement_id,
+                        ref_wing_cross_section_movement_id,
+                        ref_base_airplane.name,
+                        ref_base_wing.name,
+                        "\t\t\t\t\t\t",
+                        num_spanwise_panels_cache,
+                        lambda start: _get_wing_section_movement_num_spanwise_panels(
+                            panel_aspect_ratio,
+                            num_chordwise_panels,
+                            ref_base_wing.chordwise_spacing,
+                            ref_movement.airplanes[ref_airplane_movement_id],
+                            ref_wing_movement_id,
+                            ref_wing_cross_section_movement_id,
+                            ref_wing_cross_section_movement_id + 1,
+                            start,
+                            ref_problem.first_averaging_step,
+                        ),
+                    )
+                else:
+                    this_num_spanwise_panels = None
+
+                # 5.5.3. Create a copy of the base WingCrossSection.
+                this_base_wing_cross_section = geometry.wing_cross_section.WingCrossSection(
+                    # These values are copied from the reference base WingCrossSection.
+                    chord=ref_base_wing_cross_section.chord,
+                    Lp_Wcsp_Lpp=ref_base_wing_cross_section.Lp_Wcsp_Lpp,
+                    angles_Wcsp_to_Wcs_ixyz=ref_base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                    control_surface_symmetry_type=ref_base_wing_cross_section.control_surface_symmetry_type,
+                    control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
+                    control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
+                    spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
+                    # These values change.
+                    num_spanwise_panels=this_num_spanwise_panels,
+                    airfoil=geometry.airfoil.Airfoil(
+                        name=ref_base_wing_cross_section.airfoil.name,
+                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
+                        resample=ref_base_wing_cross_section.airfoil.resample,
+                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
+                    ),
+                )
+
+                # 5.5.4. Create a copy of the WingCrossSectionMovement.
+                this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
+                    # These values are copied from the reference WingCrossSectionMovement.
+                    ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
+                    periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
+                    spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
+                    phaseLp_Wcsp_Lpp=ref_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
+                    ampAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
+                    periodAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
+                    spacingAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
+                    phaseAngles_Wcsp_to_Wcs_ixyz=ref_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
+                    # These values change.
+                    base_wing_cross_section=this_base_wing_cross_section,
+                )
+
+                # 5.5.5. Append the base WingCrossSection copy to the list of base
+                # WingCrossSection copies.
+                these_base_wing_cross_sections.append(this_base_wing_cross_section)
+
+                # 5.5.6. Append the WingCrossSectionMovement copy to the list of
+                # WingCrossSectionMovement copies.
+                these_wing_cross_section_movements.append(
+                    this_wing_cross_section_movement
+                )
+
+            # 5.6. Create a copy of base Wing.
+            this_base_wing = geometry.wing.Wing(
+                # These values are copied from the reference Wing.
+                name=ref_base_wing.name,
+                Ler_Gs_Cgs=ref_base_wing.Ler_Gs_Cgs,
+                angles_Gs_to_Wn_ixyz=ref_base_wing.angles_Gs_to_Wn_ixyz,
+                symmetric=ref_base_wing.symmetric,
+                mirror_only=ref_base_wing.mirror_only,
+                symmetryNormal_G=ref_base_wing.symmetryNormal_G,
+                symmetryPoint_G_Cg=ref_base_wing.symmetryPoint_G_Cg,
+                chordwise_spacing=ref_base_wing.chordwise_spacing,
+                # These values change.
+                wing_cross_sections=these_base_wing_cross_sections,
+                num_chordwise_panels=num_chordwise_panels,
+            )
+
+            # 5.7. Create a copy of the WingMovement.
+            this_wing_movement = movements.wing_movement.WingMovement(
+                # These values are copied from the reference WingMovement.
+                ampLer_Gs_Cgs=ref_wing_movement.ampLer_Gs_Cgs,
+                periodLer_Gs_Cgs=ref_wing_movement.periodLer_Gs_Cgs,
+                spacingLer_Gs_Cgs=ref_wing_movement.spacingLer_Gs_Cgs,
+                phaseLer_Gs_Cgs=ref_wing_movement.phaseLer_Gs_Cgs,
+                ampAngles_Gs_to_Wn_ixyz=ref_wing_movement.ampAngles_Gs_to_Wn_ixyz,
+                periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
+                spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
+                phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
+                # These values change.
+                base_wing=this_base_wing,
+                wing_cross_section_movements=these_wing_cross_section_movements,
+            )
+
+            # 5.8. Append the base Wing copy to the list of base Wing copies.
+            these_base_wings.append(this_base_wing)
+
+            # 5.9. Append the WingMovement copy to the list of WingMovement copies.
+            these_wing_movements.append(this_wing_movement)
+
+        # 6. Create a copy of the base Airplane.
+        this_base_airplane = geometry.airplane.Airplane(
+            # These values are copied from the reference Airplane.
+            name=ref_base_airplane.name,
+            Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
+            weight=ref_base_airplane.weight,
+            # These values change.
+            wings=these_base_wings,
+            s_ref=None,
+            c_ref=None,
+            b_ref=None,
+        )
+
+        # 7. Create a copy of the AirplaneMovement.
+        this_airplane_movement = movements.airplane_movement.AirplaneMovement(
+            # These values are copied from the reference AirplaneMovement.
+            ampCg_GP1_CgP1=ref_airplane_movement.ampCg_GP1_CgP1,
+            periodCg_GP1_CgP1=ref_airplane_movement.periodCg_GP1_CgP1,
+            spacingCg_GP1_CgP1=ref_airplane_movement.spacingCg_GP1_CgP1,
+            phaseCg_GP1_CgP1=ref_airplane_movement.phaseCg_GP1_CgP1,
+            # These values change.
+            base_airplane=this_base_airplane,
+            wing_movements=these_wing_movements,
+        )
+
+        # 8. Append the base Airplane copy to the list of base Airplane copies.
+        these_base_airplanes.append(this_base_airplane)
+
+        # 9. Append the AirplaneMovement copy to the list of AirplaneMovement copies.
+        these_airplane_movements.append(this_airplane_movement)
+
+    # Create a new Movement for this iteration.
+    if static:
+        this_movement = movements.movement.Movement(
+            airplane_movements=these_airplane_movements,
+            operating_point_movement=ref_operating_point_movement,
+            num_chords=wake_length,
+        )
+    else:
+        this_movement = movements.movement.Movement(
+            airplane_movements=these_airplane_movements,
+            operating_point_movement=ref_operating_point_movement,
+            num_cycles=wake_length,
+        )
+
+    # Create a new UnsteadyProblem for this iteration.
+    return problems.UnsteadyProblem(
+        movement=this_movement,
+        only_final_results=True,
+    )
 
 
 def _get_wing_section_movement_num_spanwise_panels(
@@ -2044,3 +1826,255 @@ def _get_wing_section_average_panel_aspect_ratio(
     assert _average_panel_aspect_ratio is not None
 
     return _average_panel_aspect_ratio
+
+
+def _validate_panel_aspect_ratio_bounds(
+    panel_aspect_ratio_bounds: tuple[int, int],
+) -> None:
+    """Validates the panel_aspect_ratio_bounds parameter shared by the convergence
+    analysis functions.
+
+    :param panel_aspect_ratio_bounds: A tuple of two ints, in descending order, giving
+        the range of Panel aspect ratios to consider, from largest to smallest. The
+        second value must be positive.
+    :return: None
+    """
+    if not (
+        isinstance(panel_aspect_ratio_bounds, tuple)
+        and len(panel_aspect_ratio_bounds) == 2
+    ):
+        raise TypeError("panel_aspect_ratio_bounds must be a tuple with length 2.")
+    if not all(isinstance(bound, int) for bound in panel_aspect_ratio_bounds):
+        raise TypeError("Both values in panel_aspect_ratio_bounds must be ints.")
+    if panel_aspect_ratio_bounds[0] < panel_aspect_ratio_bounds[1]:
+        raise ValueError(
+            "The first value in panel_aspect_ratio_bounds must be greater than or "
+            "equal to the second value."
+        )
+    if panel_aspect_ratio_bounds[1] <= 0:
+        raise ValueError("Both values in panel_aspect_ratio_bounds must be positive.")
+
+
+def _validate_num_chordwise_panels_bounds(
+    num_chordwise_panels_bounds: tuple[int, int],
+) -> None:
+    """Validates the num_chordwise_panels_bounds parameter shared by the convergence
+    analysis functions.
+
+    :param num_chordwise_panels_bounds: A tuple of two ints, in ascending order, giving
+        the range of numbers of chordwise Panels to consider. The first value must be
+        positive.
+    :return: None
+    """
+    if not (
+        isinstance(num_chordwise_panels_bounds, tuple)
+        and len(num_chordwise_panels_bounds) == 2
+    ):
+        raise TypeError("num_chordwise_panels_bounds must be a tuple with length 2.")
+    if not all(isinstance(bound, int) for bound in num_chordwise_panels_bounds):
+        raise TypeError("Both values in num_chordwise_panels_bounds must be ints.")
+    if num_chordwise_panels_bounds[1] < num_chordwise_panels_bounds[0]:
+        raise ValueError(
+            "The first value in num_chordwise_panels_bounds must be less than or "
+            "equal to the second value."
+        )
+    if num_chordwise_panels_bounds[0] <= 0:
+        raise ValueError("Both values in num_chordwise_panels_bounds must be positive.")
+
+
+def _reject_non_trapezoidal_wings(
+    ref_airplanes: tuple[geometry.airplane.Airplane, ...],
+    analyze_function_name: str,
+) -> None:
+    """Raises if any Wing in the reference Airplanes has a non-trapezoidal spanwise
+    mesh.
+
+    The convergence analysis functions refine a Wing by sweeping the number of spanwise
+    Panels while holding its WingCrossSections fixed, which is only meaningful for a
+    trapezoidal Wing. A Wing whose spanwise mesh is defined as single panel strips (for
+    example one built with explode_into_strips=True) would be silently subdivided along
+    the same geometry rather than refined, so its convergence result would be
+    misleading.
+
+    :param ref_airplanes: A tuple of the reference Airplanes whose Wings are checked.
+    :param analyze_function_name: The name of the calling analysis function, used in the
+        error message.
+    :return: None
+    """
+    for ref_airplane in ref_airplanes:
+        for ref_wing in ref_airplane.wings:
+            if ref_wing.spanwise_mesh != "trapezoidal":
+                raise ValueError(
+                    f"{analyze_function_name} does not support Wings whose spanwise "
+                    f'mesh is not "trapezoidal". The Wing named "{ref_wing.name}" has a '
+                    f'spanwise mesh of "{ref_wing.spanwise_mesh}".'
+                )
+
+
+def _max_combined_percent_change(
+    these_combined_coefficients: np.ndarray,
+    coarser_combined_coefficients: np.ndarray,
+) -> float:
+    """Calculates the maximum absolute percent change between an iteration's combined
+    load coefficients and those of an incrementally coarser iteration.
+
+    The percent change is taken elementwise as the absolute difference divided by the
+    coarser value, scaled to a percentage, and the maximum across all elements is
+    returned.
+
+    :param these_combined_coefficients: An ndarray of this iteration's combined load
+        coefficients.
+    :param coarser_combined_coefficients: An ndarray, of the same shape, of the
+        incrementally coarser iteration's combined load coefficients.
+    :return: The maximum absolute percent change across all elements, as a float.
+    """
+    return float(
+        np.max(
+            100
+            * np.abs(
+                (these_combined_coefficients - coarser_combined_coefficients)
+                / coarser_combined_coefficients
+            )
+        )
+    )
+
+
+def _resolve_num_spanwise_panels(
+    panel_aspect_ratio_id: int,
+    num_chordwise_panels_id: int,
+    airplane_id: int,
+    wing_id: int,
+    wing_cross_section_id: int,
+    airplane_name: str,
+    wing_name: str,
+    log_indent: str,
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+    compute_num_spanwise_panels: Callable[[int], int],
+) -> int:
+    """Resolves the number of spanwise Panels for one Wing section, using and updating
+    the shared cache.
+
+    The result for a given (Panel aspect ratio, number of chordwise Panels, Airplane,
+    Wing, WingCrossSection) combination is returned from the cache if present.
+    Otherwise, the search starts from a conservative lower bound (the smallest number of
+    spanwise Panels already found for this Wing section at an incrementally coarser
+    mesh, since the current finer mesh must need at least that many),
+    ``compute_num_spanwise_panels`` is called with that starting value to find the
+    count, and the result is cached.
+
+    :param panel_aspect_ratio_id: The index of the current Panel aspect ratio within the
+        list of Panel aspect ratios being tested.
+    :param num_chordwise_panels_id: The index of the current number of chordwise Panels
+        within the list of numbers of chordwise Panels being tested.
+    :param airplane_id: The index of the current Airplane.
+    :param wing_id: The index of the current Wing within the Airplane.
+    :param wing_cross_section_id: The index of the current WingCrossSection within the
+        Wing.
+    :param airplane_name: The name of the current Airplane, used in the log messages.
+    :param wing_name: The name of the current Wing, used in the log messages.
+    :param log_indent: The leading whitespace prepended to the log messages so they nest
+        under the calling function's other log output.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels. It is read
+        and updated in place.
+    :param compute_num_spanwise_panels: A callable that takes a starting number of
+        spanwise Panels and returns the number of spanwise Panels that achieves the
+        desired Panel aspect ratio. It is called only on a cache miss.
+    :return: The number of spanwise Panels for the Wing section.
+    """
+    num_spanwise_panels_key = (
+        panel_aspect_ratio_id,
+        num_chordwise_panels_id,
+        airplane_id,
+        wing_id,
+        wing_cross_section_id,
+    )
+
+    if num_spanwise_panels_key in num_spanwise_panels_cache:
+        _logger.debug(
+            f"{log_indent}Getting the cached number of spanwise Panels calculated for "
+            f"the #{wing_cross_section_id + 1} WingCrossSection of {airplane_name}'s "
+            f"{wing_name}..."
+        )
+        this_num_spanwise_panels = num_spanwise_panels_cache[num_spanwise_panels_key]
+    else:
+        # Start the search from a conservative lower bound: the smallest number of
+        # spanwise Panels already found for this Wing section at an incrementally
+        # coarser mesh (in Panel aspect ratio, number of chordwise Panels, or both),
+        # since the current finer mesh must use at least that many.
+        starting_num_spanwise_panels = 1
+        last_ar_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_chord_key = (
+            panel_aspect_ratio_id,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_ar_and_chord_key = (
+            panel_aspect_ratio_id - 1,
+            num_chordwise_panels_id - 1,
+            airplane_id,
+            wing_id,
+            wing_cross_section_id,
+        )
+        last_cache_val = min(
+            num_spanwise_panels_cache.get(last_ar_key, np.inf),
+            num_spanwise_panels_cache.get(last_chord_key, np.inf),
+            num_spanwise_panels_cache.get(last_ar_and_chord_key, np.inf),
+        )
+        if last_cache_val != np.inf:
+            starting_num_spanwise_panels = int(last_cache_val)
+
+        _logger.debug(
+            f"{log_indent}Calculating the number of spanwise Panels for the "
+            f"#{wing_cross_section_id + 1} WingCrossSection of {airplane_name}'s "
+            f"{wing_name}, with a starting value of {starting_num_spanwise_panels}..."
+        )
+
+        this_num_spanwise_panels = compute_num_spanwise_panels(
+            starting_num_spanwise_panels
+        )
+
+        num_spanwise_panels_cache[num_spanwise_panels_key] = this_num_spanwise_panels
+
+    _logger.debug(f"{log_indent}Number of spanwise Panels: {this_num_spanwise_panels}")
+
+    return this_num_spanwise_panels
+
+
+def _converged_parameter_id(
+    this_id: int,
+    single: bool,
+    converged: bool,
+) -> int:
+    """Selects the index of the converged value for one convergence parameter.
+
+    This is only meaningful once the parameter has passed, that is once it is converged,
+    single, or saturated. When only a single value of the parameter was tested, this
+    iteration's index is returned, since there is no coarser value to compare against.
+    Otherwise, when this iteration is converged against the incrementally coarser one,
+    the coarser index is returned, because refining from the coarser value to this one
+    changed the result by less than the convergence criteria, so the coarser value is
+    the converged one. When this iteration passed without converging (the parameter is
+    saturated at its finest setting), this iteration's own index is returned.
+
+    :param this_id: The index of this iteration's value within the list of values tested
+        for the parameter.
+    :param single: Whether only a single value of the parameter was tested.
+    :param converged: Whether this iteration is converged against the incrementally
+        coarser iteration for the parameter.
+    :return: The index of the converged value within the list of values tested.
+    """
+    if single:
+        return this_id
+    if converged:
+        return this_id - 1
+    return this_id

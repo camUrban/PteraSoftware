@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import numpy.testing as npt
@@ -29,6 +30,7 @@ from pterasoftware._serialization import (
     _object_from_dict,
     _object_to_dict,
     _serialize_value,
+    hash_object,
     load,
     save,
 )
@@ -791,6 +793,92 @@ class TestObjectFromDict(unittest.TestCase):
         """
         with self.assertRaises(TypeError):
             _object_from_dict({"_type": "UnknownClass"})
+
+
+class TestHashObject(unittest.TestCase):
+    """This class contains methods for testing hash_object."""
+
+    def test_returns_hex_string(self):
+        """Tests that hash_object returns a 64 character lowercase hex string.
+
+        :return: None
+        """
+        result = hash_object(OperatingPoint())
+        self.assertIsInstance(result, str)
+        self.assertEqual(len(result), 64)
+        self.assertTrue(all(character in "0123456789abcdef" for character in result))
+
+    def test_deterministic_for_same_object(self):
+        """Tests that hashing the same object twice returns the same digest.
+
+        :return: None
+        """
+        operating_point = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        self.assertEqual(hash_object(operating_point), hash_object(operating_point))
+
+    def test_equal_for_distinct_but_equal_objects(self):
+        """Tests that two distinct objects with equal content hash identically.
+
+        :return: None
+        """
+        first = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        second = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        self.assertIsNot(first, second)
+        self.assertEqual(hash_object(first), hash_object(second))
+
+    def test_differs_for_different_content(self):
+        """Tests that objects differing in one attribute hash differently.
+
+        :return: None
+        """
+        first = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        second = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=6.0)
+        self.assertNotEqual(hash_object(first), hash_object(second))
+
+    def test_differs_across_classes(self):
+        """Tests that objects of different classes hash differently.
+
+        :return: None
+        """
+        self.assertNotEqual(
+            hash_object(OperatingPoint()),
+            hash_object(Airfoil(name="NACA0012")),
+        )
+
+    def test_stable_across_save_load_round_trip(self):
+        """Tests that a save and load round trip preserves an object's digest.
+
+        :return: None
+        """
+        problem = serialization_fixtures.make_steady_problem_fixture()
+        original_hash = hash_object(problem)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "problem.json"
+            save(path, problem)
+            loaded = load(path)
+        assert isinstance(loaded, SteadyProblem)
+        self.assertEqual(hash_object(loaded), original_hash)
+
+    def test_folds_in_format_version(self):
+        """Tests that changing the format version changes the digest.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        base_hash = hash_object(operating_point)
+        with mock.patch(
+            "pterasoftware._serialization._FORMAT_VERSION", _FORMAT_VERSION + 1
+        ):
+            bumped_hash = hash_object(operating_point)
+        self.assertNotEqual(base_hash, bumped_hash)
+
+    def test_unregistered_object_raises(self):
+        """Tests that hashing an unregistered object raises a TypeError.
+
+        :return: None
+        """
+        with self.assertRaises(TypeError):
+            hash_object("not a Ptera Software object")
 
 
 class TestSaveLoad(unittest.TestCase):

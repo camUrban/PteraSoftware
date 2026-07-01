@@ -527,3 +527,247 @@ class TestSolveCache(unittest.TestCase):
         self.assertEqual(set(reloaded), set(cache))
         for key in cache:
             npt.assert_array_equal(reloaded[key], cache[key])
+
+
+class TestMemoTranslation(unittest.TestCase):
+    """This class contains methods for testing convergence._memos_to_disk and
+    convergence._memos_from_disk, which translate the in-loop memo caches between their
+    in-memory bounds-relative index keys and the absolute-valued keys stored on disk.
+    """
+
+    def test_to_disk_keys_on_absolute_values(self) -> None:
+        """Test that translating to disk keys each memo on its absolute Panel aspect
+        ratio and number of chordwise Panels rather than its sweep index.
+
+        :return: None
+        """
+        ar_list = [4, 3, 2, 1]
+        chord_list = [3, 4]
+
+        # The sweep index (1, 0) resolves to Panel aspect ratio 3 and 3 chordwise Panels.
+        num_spanwise_panels_cache = {(1, 0, 0, 0, 0): 5}
+        num_wing_cross_sections_cache = {(1, 0, 0, 0): 7}
+        delta_time_cache = {(1, 0): 0.0125}
+
+        memos = convergence._memos_to_disk(
+            "abc123",
+            ar_list,
+            chord_list,
+            num_spanwise_panels_cache,
+            num_wing_cross_sections_cache,
+            delta_time_cache,
+        )
+
+        self.assertEqual(
+            memos[convergence._solve_cache_key("abc123", "spanwise", 3, 3, 0, 0, 0)], 5
+        )
+        self.assertEqual(
+            memos[convergence._solve_cache_key("abc123", "cross_sections", 3, 3, 0, 0)],
+            7,
+        )
+        self.assertEqual(
+            memos[convergence._solve_cache_key("abc123", "delta_time", 3, 3)], 0.0125
+        )
+
+    def test_from_disk_maps_absolute_to_new_indices(self) -> None:
+        """Test that translating from disk maps each in-bounds memo onto the sweep
+        indices of a run whose bounds differ from the run that wrote it.
+
+        :return: None
+        """
+        memos = {
+            convergence._solve_cache_key("abc123", "spanwise", 3, 3, 0, 0, 0): 5,
+            convergence._solve_cache_key("abc123", "cross_sections", 3, 3, 0, 0): 7,
+            convergence._solve_cache_key("abc123", "delta_time", 3, 3): 0.0125,
+        }
+
+        # A later run over Panel aspect ratios (3, 2) and a single chordwise value of 3.
+        ar_list = [3, 2]
+        chord_list = [3]
+
+        spanwise, cross_sections, delta_time = convergence._memos_from_disk(
+            memos, "abc123", ar_list, chord_list
+        )
+
+        # Panel aspect ratio 3 is index 0 and 3 chordwise Panels is index 0 in this run.
+        self.assertEqual(spanwise, {(0, 0, 0, 0, 0): 5})
+        self.assertEqual(cross_sections, {(0, 0, 0, 0): 7})
+        self.assertEqual(delta_time, {(0, 0): 0.0125})
+
+    def test_from_disk_drops_out_of_bounds(self) -> None:
+        """Test that translating from disk drops any memo whose absolute Panel aspect
+        ratio or number of chordwise Panels lies outside the new run's bounds.
+
+        :return: None
+        """
+        memos = {
+            convergence._solve_cache_key("abc123", "delta_time", 4, 3): 0.02,
+            convergence._solve_cache_key("abc123", "delta_time", 3, 3): 0.0125,
+        }
+
+        ar_list = [3, 2]
+        chord_list = [3]
+
+        _, _, delta_time = convergence._memos_from_disk(
+            memos, "abc123", ar_list, chord_list
+        )
+
+        # Panel aspect ratio 4 is outside the (3, 2) bounds, so only 3 survives.
+        self.assertEqual(delta_time, {(0, 0): 0.0125})
+
+    def test_from_disk_drops_other_reference_problems(self) -> None:
+        """Test that translating from disk ignores memos written for a different
+        reference problem sharing the same cache file.
+
+        :return: None
+        """
+        memos = {
+            convergence._solve_cache_key("abc123", "delta_time", 3, 3): 0.0125,
+            convergence._solve_cache_key("def456", "delta_time", 3, 3): 0.5,
+        }
+
+        ar_list = [3]
+        chord_list = [3]
+
+        _, _, delta_time = convergence._memos_from_disk(
+            memos, "abc123", ar_list, chord_list
+        )
+
+        self.assertEqual(delta_time, {(0, 0): 0.0125})
+
+    def test_from_disk_preserves_value_types(self) -> None:
+        """Test that spanwise and cross-section counts come back as ints and delta_time
+        as a float, even when JSON loading widened an integral delta_time.
+
+        :return: None
+        """
+        memos: dict[str, float] = {
+            convergence._solve_cache_key("abc123", "spanwise", 3, 3, 0, 0, 0): 5,
+            convergence._solve_cache_key("abc123", "delta_time", 3, 3): 1,
+        }
+
+        ar_list = [3]
+        chord_list = [3]
+
+        spanwise, _, delta_time = convergence._memos_from_disk(
+            memos, "abc123", ar_list, chord_list
+        )
+
+        self.assertIsInstance(spanwise[(0, 0, 0, 0, 0)], int)
+        self.assertIsInstance(delta_time[(0, 0)], float)
+
+    def test_round_trip_across_different_bounds(self) -> None:
+        """Test that memos written by one run are recovered at the correct indices by a
+        later run whose bounds overlap only partly.
+
+        :return: None
+        """
+        write_ar_list = [4, 3, 2, 1]
+        write_chord_list = [3, 4]
+
+        # Index (0, 0) is Panel aspect ratio 4 with 3 chordwise Panels, and index (1, 1)
+        # is Panel aspect ratio 3 with 4 chordwise Panels.
+        num_spanwise_panels_cache = {
+            (0, 0, 0, 0, 0): 4,
+            (1, 1, 0, 0, 0): 6,
+        }
+        # Index (1, 0) is Panel aspect ratio 3 with 3 chordwise Panels.
+        num_wing_cross_sections_cache = {(1, 0, 0, 0): 7}
+        # Index (1, 1) is Panel aspect ratio 3 with 4 chordwise Panels.
+        delta_time_cache = {(1, 1): 0.0125}
+
+        memos = convergence._memos_to_disk(
+            "abc123",
+            write_ar_list,
+            write_chord_list,
+            num_spanwise_panels_cache,
+            num_wing_cross_sections_cache,
+            delta_time_cache,
+        )
+
+        # A later run over Panel aspect ratios (3, 2) and a single chordwise value of 4.
+        read_ar_list = [3, 2]
+        read_chord_list = [4]
+
+        spanwise, cross_sections, delta_time = convergence._memos_from_disk(
+            memos, "abc123", read_ar_list, read_chord_list
+        )
+
+        # Only the Panel aspect ratio 3, 4-chordwise entries fall inside the new bounds,
+        # where Panel aspect ratio 3 is index 0 and 4 chordwise Panels is index 0.
+        self.assertEqual(spanwise, {(0, 0, 0, 0, 0): 6})
+        # The cross-section memo sat at 3 chordwise Panels, which is out of bounds now.
+        self.assertEqual(cross_sections, {})
+        self.assertEqual(delta_time, {(0, 0): 0.0125})
+
+
+class TestMemoCacheDisk(unittest.TestCase):
+    """This class contains methods for testing convergence._load_memo_cache, which reads
+    the memo section of a JSON cache file.
+    """
+
+    def test_load_missing_file_returns_empty(self) -> None:
+        """Test that loading memos from a missing cache file returns an empty dict.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "missing.json"
+            self.assertEqual(convergence._load_memo_cache(path), {})
+
+    def test_load_none_path_returns_empty(self) -> None:
+        """Test that loading memos from a None cache path returns an empty dict.
+
+        :return: None
+        """
+        self.assertEqual(convergence._load_memo_cache(None), {})
+
+    def test_load_version_mismatch_returns_empty(self) -> None:
+        """Test that memos in a cache file with a mismatched schema version are ignored.
+
+        :return: None
+        """
+        key = convergence._solve_cache_key("abc123", "delta_time", 3, 3)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": convergence._SOLVE_CACHE_VERSION + 1,
+                "entries": {},
+                "memos": {key: 0.0125},
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            self.assertEqual(convergence._load_memo_cache(path), {})
+
+    def test_load_reads_memos_section(self) -> None:
+        """Test that loading returns the stored memo section keyed by absolute value.
+
+        :return: None
+        """
+        key = convergence._solve_cache_key("abc123", "delta_time", 3, 3)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": convergence._SOLVE_CACHE_VERSION,
+                "entries": {},
+                "memos": {key: 0.0125},
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            self.assertEqual(convergence._load_memo_cache(path), {key: 0.0125})
+
+    def test_load_missing_memos_section_returns_empty(self) -> None:
+        """Test that a current-version cache file with no memo section loads as an empty
+        memo dict rather than raising.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            data = {
+                "_cache_version": convergence._SOLVE_CACHE_VERSION,
+                "entries": {},
+            }
+            with open(path, "w") as cache_file:
+                json.dump(data, cache_file)
+            self.assertEqual(convergence._load_memo_cache(path), {})

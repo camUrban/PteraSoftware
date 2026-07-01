@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import gzip
+import hashlib
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -224,6 +225,8 @@ def save(path: str | Path, obj: object) -> None:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:
@@ -279,6 +282,8 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
     _logger.info("Loading from %s.", path)
 
     if max_size is None:
@@ -326,6 +331,27 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     obj = _object_from_dict(data)
     _logger.info("Loaded %s from %s.", type(obj).__name__, path)
     return obj
+
+
+def hash_object(obj: object) -> str:
+    """Returns a hex digest identifying a Ptera Software object's content.
+
+    The digest is the SHA-256 hash of the object's JSON serialization, computed over
+    every serialized slot (including cache slots) and folded together with the current
+    serialization format version. Two objects with identical serialized content produce
+    the same digest regardless of instance identity, and any difference in serialized
+    content produces a different digest. The digest survives a save and load round trip,
+    but it is only stable within a single serialization format version, because a format
+    version change is folded into the hash and shifts every digest.
+
+    :param obj: The Ptera Software object to hash. Must be an instance of a class
+        registered for serialization; an unregistered type raises a TypeError.
+    :return: A 64 character lowercase hexadecimal string holding the SHA-256 digest of
+        the object's content.
+    """
+    payload = {"_format_version": _FORMAT_VERSION, "data": _object_to_dict(obj)}
+    encoded = json.dumps(payload, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _get_provenance() -> dict[str, str | bool | None]:

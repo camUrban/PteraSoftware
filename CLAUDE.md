@@ -98,6 +98,8 @@ Requires Python 3.11, but active development is done in 3.13
         - `wing_cross_section_movement.py`: WingCrossSectionMovement class
         - `wing_movement.py`: WingMovement class
     - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_convergence_cache.py`: JSON solve and memo cache for convergence analysis
+    - `_convergence_meshing.py`: Mesh building and refinement for convergence iterations
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
@@ -192,6 +194,9 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_airfoil.py`
         - `test_airplane.py`
         - `test_airplane_movement.py`
+        - `test_convergence.py`
+        - `test_convergence_cache.py`
+        - `test_convergence_meshing.py`
         - `test_core.py`
         - `test_core_airplane_movement.py`
         - `test_core_movement.py`

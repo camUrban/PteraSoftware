@@ -6,6 +6,9 @@ from pathlib import Path
 from unittest import mock
 
 import pterasoftware as ps
+
+# noinspection PyProtectedMember
+from pterasoftware import _convergence_cache, _convergence_meshing
 from tests.integration.fixtures import (
     airplane_fixtures,
     operating_point_fixtures,
@@ -208,7 +211,7 @@ class TestSteadyConvergence(unittest.TestCase):
             )
 
             self.assertTrue(cache_path.exists())
-            self.assertGreater(len(ps.convergence._load_solve_cache(cache_path)), 0)
+            self.assertGreater(len(_convergence_cache.load_solve_cache(cache_path)), 0)
 
         converged_panel_ar = converged_parameters[0]
         converged_num_chordwise = converged_parameters[1]
@@ -301,7 +304,7 @@ class TestSteadyConvergence(unittest.TestCase):
             # so the resolver must never recompute one. Patching the computation to raise
             # turns any recomputation into a test failure.
             with mock.patch.object(
-                ps.convergence,
+                _convergence_meshing,
                 "_get_wing_section_num_spanwise_panels",
                 side_effect=AssertionError(
                     "The spanwise Panel resolver ran despite a warm cache."

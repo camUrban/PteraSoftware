@@ -6,6 +6,9 @@ from pathlib import Path
 from unittest import mock
 
 import pterasoftware as ps
+
+# noinspection PyProtectedMember
+from pterasoftware import _convergence_cache
 from tests.integration.fixtures import (
     airplane_fixtures,
     operating_point_fixtures,
@@ -82,7 +85,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             )
 
             self.assertTrue(cache_path.exists())
-            self.assertGreater(len(ps.convergence._load_solve_cache(cache_path)), 0)
+            self.assertGreater(len(_convergence_cache.load_solve_cache(cache_path)), 0)
 
         self.assertEqual(converged_parameters[0], True)
         self.assertEqual(converged_parameters[1], 2)

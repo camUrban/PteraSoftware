@@ -9,16 +9,6 @@ def make_steady_validation_airplane():
     """This function creates an Airplane to be used as a fixture for testing steady
     solvers.
 
-    The parameters of this Airplane were found to be converged based on the following
-    call to analyze_steady_convergence:
-    converged_parameters = ps.convergence.analyze_steady_convergence(
-        ref_problem=steady_validation_problem,
-        solver_type="steady horseshoe vortex lattice method",
-        panel_aspect_ratio_bounds=(4, 1),
-        num_chordwise_panels_bounds=(3, 20),
-        convergence_criteria=0.1,
-    ).
-
     :return steady_validation_airplane: Airplane
         This is the Airplane fixture.
     """
@@ -233,16 +223,6 @@ def make_multiple_wing_steady_validation_airplane():
     """This function creates an Airplane with multiple Wings to be used as a fixture
     for testing steady solvers.
 
-    The parameters of this Airplane were found to be converged based on the following
-    call to analyze_steady_convergence:
-    converged_parameters = ps.convergence.analyze_steady_convergence(
-        ref_problem=steady_validation_problem,
-        solver_type="steady horseshoe vortex lattice method",
-        panel_aspect_ratio_bounds=(4, 1),
-        num_chordwise_panels_bounds=(3, 20),
-        convergence_criteria=0.1,
-    ).
-
     :return multiple_wing_steady_validation_airplane: Airplane
         This is the Airplane fixture.
     """
@@ -352,19 +332,6 @@ def make_multiple_wing_steady_validation_airplane():
 def make_symmetric_unsteady_validation_airplane():
     """This function creates a symmetric Airplane to be used as a fixture for testing
     unsteady solvers.
-
-    The parameters of this Airplane were found to be converged based on the following
-    call to analyze_unsteady_convergence:
-    converged_parameters = ps.convergence.analyze_unsteady_convergence(
-        ref_problem=unsteady_validation_problem,
-        prescribed_wake=True,
-        free_wake=True,
-        num_chords_bounds=(3, 9),
-        panel_aspect_ratio_bounds=(4, 1),
-        num_chordwise_panels_bounds=(4, 11),
-        coefficient_mask=[True, False, True, False, True, False],
-        convergence_criteria=1.0,
-    ).
 
     :return symmetric_unsteady_validation_airplane: Airplane
         This is the Airplane fixture.

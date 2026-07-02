@@ -583,14 +583,12 @@ def build_unsteady_problem(
         delta_time_cache[delta_time_key] = this_movement.delta_time
         _logger.info(
             "\t\t\t\t\tOptimized delta_time: "
-            + str(round(this_movement.delta_time, 6))
+            + f"{this_movement.delta_time:#.3G}"
             + " s"
         )
     else:
         _logger.info(
-            "\t\t\t\t\tCached delta_time: "
-            + str(round(this_movement.delta_time, 6))
-            + " s"
+            "\t\t\t\t\tCached delta_time: " + f"{this_movement.delta_time:#.3G}" + " s"
         )
 
     # Create a new UnsteadyProblem for this iteration.

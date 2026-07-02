@@ -1148,10 +1148,10 @@ def _optimize_delta_time_static(
         initial_delta_time, airplane_movements, operating_point_movement
     )
 
-    dt_str = str(round(initial_delta_time, 6))
-    mismatch_str = str(round(initial_mismatch, 6))
+    dt_str = f"{initial_delta_time:#.3G}"
+    mismatch_str = f"{initial_mismatch:#.3G}"
 
-    state_msg = "\tState: delta_time=" + dt_str
+    state_msg = "\tState: delta_time = " + dt_str + " s"
     obj_msg = "\t\tMismatch: " + mismatch_str
 
     _logger.info(state_msg)
@@ -1171,10 +1171,10 @@ def _optimize_delta_time_static(
             dt, airplane_movements, operating_point_movement
         )
 
-        this_dt_str = str(round(dt, 6))
-        this_mismatch_str = str(round(mismatch, 6))
+        this_dt_str = f"{dt:#.3G}"
+        this_mismatch_str = f"{mismatch:#.3G}"
 
-        this_state_msg = "\tState: delta_time=" + this_dt_str
+        this_state_msg = "\tState: delta_time = " + this_dt_str + " s"
         this_obj_msg = "\t\tMismatch: " + this_mismatch_str
 
         _logger.info(this_state_msg)
@@ -1275,12 +1275,12 @@ def _optimize_delta_time_non_static(
         mismatch = cached_mismatches[num_steps]
         delta_time = lcm_period / num_steps
         _logger.info(
-            "\tnum_steps="
+            "\tnum_steps = "
             + str(num_steps)
-            + ", delta_time="
-            + str(round(delta_time, 6))
-            + ", mismatch="
-            + str(round(mismatch, 6))
+            + ", delta_time = "
+            + f"{delta_time:#.3G}"
+            + " s, mismatch = "
+            + f"{mismatch:#.3G}"
         )
         if mismatch < best_mismatch:
             best_mismatch = mismatch
@@ -1289,12 +1289,12 @@ def _optimize_delta_time_non_static(
     optimized_delta_time = lcm_period / best_num_steps
 
     _logger.info(
-        "Optimization complete. Best: num_steps_per_lcm_cycle="
+        "Optimization complete. Best: num_steps_per_lcm_cycle = "
         + str(best_num_steps)
-        + ", delta_time="
-        + str(round(optimized_delta_time, 6))
-        + ", mismatch="
-        + str(round(best_mismatch, 6))
+        + ", delta_time = "
+        + f"{optimized_delta_time:#.3G}"
+        + " s, mismatch = "
+        + f"{best_mismatch:#.3G}"
     )
 
     # Warn if the optimized value is at one of the bounds.
@@ -1539,11 +1539,11 @@ def _analytically_optimize_delta_time(
         final_num_steps = 1
     optimized_delta_time = lcm_period / final_num_steps
 
-    dt_str = str(round(optimized_delta_time, 6))
+    dt_str = f"{optimized_delta_time:#.3G}"
     _logger.info(
-        "\tResult: delta_time="
+        "\tResult: delta_time = "
         + dt_str
-        + " ("
+        + " s ("
         + str(final_num_steps)
         + " steps per LCM period)"
     )
@@ -1560,7 +1560,7 @@ def _analytically_optimize_delta_time(
     if steps_per_min_period < 20:
         _logger.warning(
             "Analytical optimization result implies only "
-            + str(round(steps_per_min_period, 1))
+            + f"{steps_per_min_period:#.3G}"
             + " time steps per minimum period of motion. This may cause poor temporal "
             + "resolution. Consider increasing the number of chordwise Panels or "
             + "switching to cosine chordwise spacing to reduce the trailing edge "

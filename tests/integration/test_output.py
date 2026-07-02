@@ -105,8 +105,9 @@ class TestLogResults(unittest.TestCase):
 
         # Verify Reynolds number is in the output.
         self.assertIn("Reynolds Number:", output)
-        # Verify scientific notation format (e.g., "1.23e+05" or "1.23e+06").
-        self.assertRegex(output, r"Reynolds Number:\s+\d+\.\d{2}e[+-]\d{2}")
+        # Verify scientific notation format with three significant figures (e.g.,
+        # "1.23E+05" or "1.20E+06"; the alternate form keeps trailing zeros).
+        self.assertRegex(output, r"Reynolds Number:\s+\d\.\d{2}E[+-]\d{2}")
 
     def test_log_results_steady_solver_runs_without_error(self):
         """Test that log_results() runs without error for steady solver.

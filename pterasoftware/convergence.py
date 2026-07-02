@@ -420,7 +420,7 @@ def analyze_steady_convergence(
 
                 _logger.info(
                     "\t\t\tPanel aspect ratio convergence metric: "
-                    + str(round(ar_metric, 2))
+                    + f"{ar_metric:#.4G}"
                     + "% (limiting coefficient: "
                     + _COEFFICIENT_LABELS[ar_limiting_id]
                     + ")"
@@ -445,7 +445,7 @@ def analyze_steady_convergence(
 
                 _logger.info(
                     "\t\t\tNumber of chordwise Panels convergence metric: "
-                    + str(round(chord_metric, 2))
+                    + f"{chord_metric:#.4G}"
                     + "% (limiting coefficient: "
                     + _COEFFICIENT_LABELS[chord_limiting_id]
                     + ")"
@@ -1171,7 +1171,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tWake type convergence metric: "
-                            + str(round(wake_metric, 2))
+                            + f"{wake_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[wake_limiting_id]
                             + ")"
@@ -1198,7 +1198,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tWake length convergence metric: "
-                            + str(round(length_metric, 2))
+                            + f"{length_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[length_limiting_id]
                             + ")"
@@ -1225,7 +1225,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tPanel aspect ratio convergence metric: "
-                            + str(round(ar_metric, 2))
+                            + f"{ar_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[ar_limiting_id]
                             + ")"
@@ -1253,7 +1253,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
-                            + str(round(chord_metric, 2))
+                            + f"{chord_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[chord_limiting_id]
                             + ")"

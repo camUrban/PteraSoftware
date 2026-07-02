@@ -914,7 +914,10 @@ class TestMovement(unittest.TestCase):
         )
 
         # Mock _analytically_optimize_delta_time to return a known value instantly.
-        fake_optimized_delta_time = 0.0987654321
+        # The value is below this fixture's clamp threshold (an LCM period of 2.0
+        # seconds divided by the minimum of 30 time steps per LCM period), so it
+        # passes through the clamp unchanged.
+        fake_optimized_delta_time = 0.0123456789
 
         with patch(
             "pterasoftware.movements.movement._analytically_optimize_delta_time"
@@ -934,6 +937,80 @@ class TestMovement(unittest.TestCase):
             mock_optimize.assert_called_once()
 
             # Verify the Movement used the optimizer's return value.
+            self.assertEqual(movement.delta_time, fake_optimized_delta_time)
+
+    def test_delta_time_estimate_clamped_for_non_static_movement(self):
+        """Test that a non static Movement clamps the default delta_time estimate to
+        provide at least 30 time steps per LCM period.
+
+        This test uses mocking to make the analytical optimizer return a value far
+        above the clamp threshold instantly.
+        """
+        airplane_movements = [
+            airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Mock _analytically_optimize_delta_time to return a value far above the
+        # clamp threshold (an LCM period of 2.0 seconds divided by the minimum of
+        # 30 time steps per LCM period).
+        fake_optimized_delta_time = 10.0
+
+        with patch(
+            "pterasoftware.movements.movement._analytically_optimize_delta_time"
+        ) as mock_optimize:
+            mock_optimize.return_value = fake_optimized_delta_time
+
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
+            # only time spent is generating Airplanes after getting the delta_time.
+            movement = ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                delta_time=None,
+                num_steps=1,
+            )
+
+            # Verify the Movement clamped the optimizer's return value to the LCM
+            # period divided by the minimum number of time steps per LCM period.
+            self.assertEqual(movement.delta_time, movement.lcm_period / 30)
+
+    def test_delta_time_estimate_not_clamped_for_static_movement(self):
+        """Test that a static Movement does not clamp the default delta_time estimate.
+
+        A static Movement has no LCM period to resolve, so the estimate passes
+        through unchanged no matter how large it is. This test uses mocking to make
+        the analytical optimizer return a large value instantly.
+        """
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        # Mock _analytically_optimize_delta_time to return a large value instantly.
+        # For a static Movement, the real optimizer would return its initial
+        # estimate unchanged.
+        fake_optimized_delta_time = 10.0
+
+        with patch(
+            "pterasoftware.movements.movement._analytically_optimize_delta_time"
+        ) as mock_optimize:
+            mock_optimize.return_value = fake_optimized_delta_time
+
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
+            # only time spent is generating Airplanes after getting the delta_time.
+            movement = ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                delta_time=None,
+                num_steps=1,
+            )
+
+            # Verify the Movement used the optimizer's return value without
+            # clamping it.
             self.assertEqual(movement.delta_time, fake_optimized_delta_time)
 
     def test_max_wake_rows_default_none(self):

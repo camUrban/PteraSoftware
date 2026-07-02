@@ -26,6 +26,14 @@ from . import operating_point_movement as operating_point_movement_mod
 
 _logger = _logging.get_logger("movements.movement")
 
+# The minimum number of time steps per LCM period that the default delta_time
+# estimate must provide. The analytical estimate matches the wake ring vortex
+# and bound ring vortex chord lengths, which does not by itself guarantee that
+# the motion is resolved in time: a coarse chordwise discretization or a slow
+# motion can produce a delta_time too large to sample the motion adequately.
+# The estimate is clamped to this temporal resolution to guard against that.
+_MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
+
 
 class Movement(_core.CoreMovement):
     """A class used to contain an UnsteadyProblem's movement.
@@ -83,13 +91,15 @@ class Movement(_core.CoreMovement):
             (default): Movement analytically estimates the delta_time that produces wake
             ring vortices with roughly the same chord length as the bound trailing edge
             ring vortices, accounting for both freestream and geometry motion
-            velocities. This provides good results across all Strouhal numbers.
-            "optimize": Movement first runs the analytical estimation, then uses that
-            result as an initial guess for an iterative optimization that minimizes the
-            area mismatch between wake ring vortices and their parent bound trailing
-            edge ring vortices. This is slower but may produce slightly more accurate
-            results. Positive number (int or float): Use the specified value directly.
-            All values are converted internally to floats. The units are in seconds.
+            velocities. For non static Movements, the estimate is then clamped so that
+            there are at least 30 time steps per LCM period of the motion. This provides
+            good results across all Strouhal numbers. "optimize": Movement first runs
+            the analytical estimation (including the clamp), then uses that result as an
+            initial guess for an iterative optimization that minimizes the area mismatch
+            between wake ring vortices and their parent bound trailing edge ring
+            vortices. This is slower but may produce slightly more accurate results.
+            Positive number (int or float): Use the specified value directly. All values
+            are converted internally to floats. The units are in seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if Movement isn't
             static. If num_steps is not None or if Movement is static, this must be
@@ -148,6 +158,28 @@ class Movement(_core.CoreMovement):
                 "operating_point_movement must be an OperatingPointMovement."
             )
 
+        # --- Compute period properties locally ---
+        # These are needed for the delta_time estimate clamp and for the
+        # num_steps and max_wake calculations before super().__init__() is
+        # called. The same values will be lazily cached by CoreMovement when
+        # accessed via properties.
+        _airplane_movement_max_periods = []
+        for airplane_movement in airplane_movements:
+            _airplane_movement_max_periods.append(airplane_movement.max_period)
+        _max_period = max(
+            max(_airplane_movement_max_periods),
+            operating_point_movement.max_period,
+        )
+        _static = _max_period == 0
+
+        _lcm_period: float = 0.0
+        if not _static:
+            _all_periods: list[float] = []
+            for airplane_movement in airplane_movements:
+                _all_periods.extend(airplane_movement.all_periods)
+            _all_periods.append(operating_point_movement.max_period)
+            _lcm_period = _core.lcm_multiple(_all_periods)
+
         # --- Resolve delta_time ---
 
         # Track whether iterative optimization should run after analytical.
@@ -189,6 +221,14 @@ class Movement(_core.CoreMovement):
                 initial_delta_time=fast_estimate,
             )
 
+            # Clamp the estimate so that there are at least
+            # _MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which
+            # the wake sizing criterion alone does not guarantee.
+            if _lcm_period > 0.0:
+                delta_time = min(
+                    delta_time, _lcm_period / _MIN_TIME_STEPS_PER_LCM_PERIOD
+                )
+
         # Run iterative optimization if requested, using the analytical result
         # as the initial guess.
         if _should_iteratively_optimize_delta_time:
@@ -197,27 +237,6 @@ class Movement(_core.CoreMovement):
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=delta_time,
             )
-
-        # --- Compute period properties locally ---
-        # These are needed for num_steps and max_wake calculations before
-        # super().__init__() is called. The same values will be lazily cached
-        # by CoreMovement when accessed via properties.
-        _airplane_movement_max_periods = []
-        for airplane_movement in airplane_movements:
-            _airplane_movement_max_periods.append(airplane_movement.max_period)
-        _max_period = max(
-            max(_airplane_movement_max_periods),
-            operating_point_movement.max_period,
-        )
-        _static = _max_period == 0
-
-        _lcm_period: float = 0.0
-        if not _static:
-            _all_periods: list[float] = []
-            for airplane_movement in airplane_movements:
-                _all_periods.extend(airplane_movement.all_periods)
-            _all_periods.append(operating_point_movement.max_period)
-            _lcm_period = _core.lcm_multiple(_all_periods)
 
         # --- Resolve num_steps ---
         if num_steps is None:

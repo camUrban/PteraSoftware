@@ -302,8 +302,8 @@ def draw(
     # Plot the Panels either with scalar coloring or with a uniform color.
     if scalar_type in ("induced drag", "side force", "lift"):
         these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
-        min_scalar = round(min(these_scalars), 2)
-        max_scalar = round(max(these_scalars), 2)
+        min_scalar = float(min(these_scalars))
+        max_scalar = float(max(these_scalars))
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
@@ -721,8 +721,8 @@ def animate(
             c_min = -_color_map_num_sig * float(np.std(all_scalars))
             c_max = _color_map_num_sig * float(np.std(all_scalars))
 
-        min_scalar = round(min(all_scalars), 2)
-        max_scalar = round(max(all_scalars), 2)
+        min_scalar = float(min(all_scalars))
+        max_scalar = float(max(all_scalars))
 
     # Pre-compute the image surface mesh and reflection matrix from the last time
     # step's geometry so that the plane is large enough to encompass the fully
@@ -1875,7 +1875,7 @@ def log_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col2 = [str(np.round(val, 3)) for val in col2]
+        col2 = [f"{val:#10.3G}" for val in col2]
         col2 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col2)
@@ -1896,7 +1896,7 @@ def log_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col4 = [str(np.round(val, 3)) for val in col4]
+        col4 = [f"{val:#10.3G}" for val in col4]
         col4 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col4)
@@ -1914,7 +1914,7 @@ def log_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            _logger.info(f"{pad}Reynolds Number: {re:.2e}")
+            _logger.info(f"{pad}Reynolds Number: {re:#.3G}")
 
         for i in range(len(col1)):
             if i == 0:
@@ -2019,11 +2019,11 @@ def log_results(
                 omegas_BP1__E[2],
             ]
             state_component_values = [
-                f"{np.round(value, 3)} {unit}"
+                f"{value:#10.3G} {unit}"
                 for value, unit in zip(state_component_values, state_component_units)
             ]
 
-            _logger.info(f"{pad}{state_label} (at t = {state_time:.3f} s):")
+            _logger.info(f"{pad}{state_label} (at t = {state_time:#.3G} s):")
 
             for i in range(len(state_component_labels)):
                 if i == 0:
@@ -2050,11 +2050,11 @@ def log_results(
             )
             _logger.info(
                 f"{2 * pad}{alpha_label:<{aerodynamic_angle_space}}"
-                f"{np.round(this_operating_point.alpha, 3)} deg"
+                f"{this_operating_point.alpha:#10.3G} deg"
             )
             _logger.info(
                 f"{2 * pad}{beta_label:<{aerodynamic_angle_space}}"
-                f"{np.round(this_operating_point.beta, 3)} deg"
+                f"{this_operating_point.beta:#10.3G} deg"
             )
 
 
@@ -2628,7 +2628,7 @@ def _plot_scalars(
         position_x=_bar_position_x,
         position_y=_bar_position_y,
         n_labels=_bar_n_labels,
-        fmt="%.2f",
+        fmt="%#.3G",
         color=text_color,
     )
     plotter.add_mesh(
@@ -2642,14 +2642,14 @@ def _plot_scalars(
     )
 
     plotter.add_text(
-        text="Max: " + str(max_scalar),
+        text=f"Max: {max_scalar:#.3G}",
         position=_text_max_position,
         font_size=_text_font_size,
         viewport=True,
         color=text_color,
     )
     plotter.add_text(
-        text="Min: " + str(min_scalar),
+        text=f"Min: {min_scalar:#.3G}",
         position=_text_min_position,
         font_size=_text_font_size,
         viewport=True,

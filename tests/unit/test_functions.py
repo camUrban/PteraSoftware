@@ -345,3 +345,74 @@ class TestInterpBetweenPoints(unittest.TestCase):
         expected = end_points[:, np.newaxis, :]
 
         npt.assert_allclose(interpolated_points, expected, atol=1e-14)
+
+
+class TestFormatDuration(unittest.TestCase):
+    """Tests for the format_duration function."""
+
+    def test_sub_minute_duration_shows_seconds_only(self):
+        """A duration under one minute should format as unpadded seconds alone."""
+        self.assertEqual(_functions.format_duration(2.345), "2.35 s")
+
+    def test_zero_duration(self):
+        """A zero duration should format as zero seconds."""
+        self.assertEqual(_functions.format_duration(0.0), "0.00 s")
+
+    def test_sub_hour_duration_drops_hours_and_comma(self):
+        """A duration under one hour should drop the hours and the comma."""
+        self.assertEqual(_functions.format_duration(1234.5), "20 min and 34.5 s")
+
+    def test_exactly_one_minute(self):
+        """A duration of exactly one minute should roll over to the minutes form."""
+        self.assertEqual(_functions.format_duration(60.0), "1 min and 0.00 s")
+
+    def test_multi_hour_duration_shows_all_portions(self):
+        """A duration over one hour should show hours, minutes, and seconds."""
+        self.assertEqual(
+            _functions.format_duration(45296.789), "12 hr, 34 min, and 56.8 s"
+        )
+
+    def test_exactly_one_hour(self):
+        """A duration of exactly one hour should roll over to the hours form."""
+        self.assertEqual(_functions.format_duration(3600.0), "1 hr, 0 min, and 0.00 s")
+
+    def test_one_thousand_hours_shows_hours_only(self):
+        """A duration of at least 1000 hours should format as hours alone."""
+        self.assertEqual(_functions.format_duration(3.6e6), "1.00E+03 hr")
+
+    def test_negative_sub_minute_duration(self):
+        """A negative duration should carry its sign on the seconds form."""
+        self.assertEqual(_functions.format_duration(-2.345), "-2.35 s")
+
+    def test_negative_compound_duration_signs_largest_unit(self):
+        """A negative duration should carry its sign on the largest unit."""
+        self.assertEqual(
+            _functions.format_duration(-45296.789), "-12 hr, 34 min, and 56.8 s"
+        )
+
+    def test_seconds_rounding_carries_into_minutes(self):
+        """A seconds remainder that rounds to 60 should carry into the minutes."""
+        self.assertEqual(_functions.format_duration(59.999), "1 min and 0.00 s")
+
+    def test_seconds_rounding_carries_into_hours(self):
+        """A carried seconds remainder should cascade into the hours."""
+        self.assertEqual(
+            _functions.format_duration(3599.999), "1 hr, 0 min, and 0.00 s"
+        )
+
+    def test_seconds_rounding_carries_into_hours_only_form(self):
+        """A carried seconds remainder should cascade into the hours-only form."""
+        self.assertEqual(_functions.format_duration(3.6e6 - 0.001), "1.00E+03 hr")
+
+    def test_tiny_seconds_remainder_uses_scientific_notation(self):
+        """A tiny seconds remainder should keep three significant figures."""
+        self.assertEqual(_functions.format_duration(60.0000001), "1 min and 1.00E-07 s")
+
+    def test_left_pad_gives_every_form_a_constant_width(self):
+        """Left-padded results should share a constant width across all forms."""
+        durations = [0.0, 2.345, 1234.5, 45296.789, 3.6e6, -45296.789]
+        for duration in durations:
+            unpadded = _functions.format_duration(duration)
+            padded = _functions.format_duration(duration, left_pad=True)
+            self.assertEqual(padded, unpadded.rjust(_functions._DURATION_PAD_WIDTH))
+            self.assertEqual(len(padded), _functions._DURATION_PAD_WIDTH)

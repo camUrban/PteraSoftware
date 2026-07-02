@@ -867,8 +867,8 @@ class Airfoil:
             if iteration == 0 and np.abs(chord_angle) > np.deg2rad(max_rotation):
                 raise ValueError(
                     f"The Airfoil's outline has excessive rotation "
-                    f"({np.rad2deg(chord_angle):.1f} degrees). The chord line must be "
-                    f"within 15 degrees of the x axis. Minor rotation offsets (such as "
+                    f"({np.rad2deg(chord_angle):#.3G} deg). The chord line must be "
+                    f"within 15 deg of the x axis. Minor rotation offsets (such as "
                     f"implicit angle of attack) are corrected automatically, but the "
                     f"outline data appears to be in an unexpected orientation."
                 )

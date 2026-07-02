@@ -25,6 +25,7 @@ import numpy as np
 from . import (
     _convergence_cache,
     _convergence_meshing,
+    _functions,
     _logging,
     _parameter_validation,
     _serialization,
@@ -394,8 +395,7 @@ def analyze_steady_convergence(
             else:
                 _logger.info(
                     "\t\t\tSimulation completed in "
-                    + str(round(this_iter_time, 3))
-                    + " s"
+                    + _functions.format_duration(this_iter_time)
                 )
 
             # Check per-coefficient convergence in each parameter direction against the
@@ -420,7 +420,7 @@ def analyze_steady_convergence(
 
                 _logger.info(
                     "\t\t\tPanel aspect ratio convergence metric: "
-                    + str(round(ar_metric, 2))
+                    + f"{ar_metric:#.4G}"
                     + "% (limiting coefficient: "
                     + _COEFFICIENT_LABELS[ar_limiting_id]
                     + ")"
@@ -445,7 +445,7 @@ def analyze_steady_convergence(
 
                 _logger.info(
                     "\t\t\tNumber of chordwise Panels convergence metric: "
-                    + str(round(chord_metric, 2))
+                    + f"{chord_metric:#.4G}"
                     + "% (limiting coefficient: "
                     + _COEFFICIENT_LABELS[chord_limiting_id]
                     + ")"
@@ -504,7 +504,8 @@ def analyze_steady_convergence(
                 _logger.info("\tPanel aspect ratio: " + str(converged_aspect_ratio))
                 _logger.info("\tChordwise Panels: " + str(converged_chordwise_panels))
                 _logger.info(
-                    "\tSimulation time: " + str(round(converged_iter_time, 3)) + " s"
+                    "\tSimulation time: "
+                    + _functions.format_duration(converged_iter_time)
                 )
                 _logger.info("\tSpanwise Panels:")
                 for airplane_id, airplane in enumerate(ref_airplanes):
@@ -592,8 +593,7 @@ def analyze_steady_convergence(
 
                 _logger.info(
                     "Convergence analysis completed in "
-                    + str(round(time.time() - run_start_time, 3))
-                    + " s"
+                    + _functions.format_duration(time.time() - run_start_time)
                 )
 
                 return (
@@ -608,8 +608,7 @@ def analyze_steady_convergence(
     _logger.info("The analysis did not find a converged case within the given bounds")
     _logger.info(
         "Convergence analysis completed in "
-        + str(round(time.time() - run_start_time, 3))
-        + " s"
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None
 
@@ -1141,8 +1140,7 @@ def analyze_unsteady_convergence(
                     else:
                         _logger.info(
                             "\t\t\t\t\tSimulation completed in "
-                            + str(round(this_iter_time, 3))
-                            + " s"
+                            + _functions.format_duration(this_iter_time)
                         )
 
                     # Check per-coefficient convergence in each parameter direction
@@ -1171,7 +1169,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tWake type convergence metric: "
-                            + str(round(wake_metric, 2))
+                            + f"{wake_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[wake_limiting_id]
                             + ")"
@@ -1198,7 +1196,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tWake length convergence metric: "
-                            + str(round(length_metric, 2))
+                            + f"{length_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[length_limiting_id]
                             + ")"
@@ -1225,7 +1223,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tPanel aspect ratio convergence metric: "
-                            + str(round(ar_metric, 2))
+                            + f"{ar_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[ar_limiting_id]
                             + ")"
@@ -1253,7 +1251,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
-                            + str(round(chord_metric, 2))
+                            + f"{chord_metric:#.4G}"
                             + "% (limiting coefficient: "
                             + _COEFFICIENT_LABELS[chord_limiting_id]
                             + ")"
@@ -1357,8 +1355,7 @@ def analyze_unsteady_convergence(
                         )
                         _logger.info(
                             "\tSimulation completed in "
-                            + str(round(converged_iter_time, 3))
-                            + " s"
+                            + _functions.format_duration(converged_iter_time)
                         )
                         _logger.info("\tSpanwise Panels:")
                         for airplane_movement_id, airplane_movement in enumerate(
@@ -1464,8 +1461,7 @@ def analyze_unsteady_convergence(
 
                         _logger.info(
                             "Convergence analysis completed in "
-                            + str(round(time.time() - run_start_time, 3))
-                            + " s"
+                            + _functions.format_duration(time.time() - run_start_time)
                         )
 
                         return (
@@ -1482,8 +1478,7 @@ def analyze_unsteady_convergence(
     _logger.info("The analysis did not find a converged case within the given bounds")
     _logger.info(
         "Convergence analysis completed in "
-        + str(round(time.time() - run_start_time, 3))
-        + " s"
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None, None
 

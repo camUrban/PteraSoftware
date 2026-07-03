@@ -285,12 +285,12 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             # original wing's attributes.
             #
             # A reflection is an IMPROPER transformation (determinant -1) that flips
-            # handedness/chirality. A rotation or translation is a PROPER transformation 
-            # (determinant +1) that preserves handedness. If we derived the mirrored wing's 
-            # points using only a passive transformation, we would get a right-handed copy 
-            # of the original wing just relocated -- meaning sweep, dihedral, twist, or 
-            # camber would all carry the wrong geometric sign on the opposite side. 
-            # Reflection is the only linear operation that genuinely inverts handedness 
+            # handedness/chirality. A rotation or translation is a PROPER transformation
+            # (determinant +1) that preserves handedness. If we derived the mirrored wing's
+            # points using only a passive transformation, we would get a right-handed copy
+            # of the original wing just relocated -- meaning sweep, dihedral, twist, or
+            # camber would all carry the wrong geometric sign on the opposite side.
+            # Reflection is the only linear operation that genuinely inverts handedness
             # to turn a right wing into a left wing.
             # --------------------------------------------------------------------------
             assert symmetryPoint_G_Cg is not None

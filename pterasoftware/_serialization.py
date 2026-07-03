@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import gzip
+import hashlib
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -48,15 +49,10 @@ from .movements.aeroelastic_wing_cross_section_movement import (
 )
 from .movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from .movements.airplane_movement import AirplaneMovement
-from .movements.free_flight_airplane_movement import FreeFlightAirplaneMovement
 from .movements.free_flight_movement import FreeFlightMovement
 from .movements.free_flight_operating_point_movement import (
     FreeFlightOperatingPointMovement,
 )
-from .movements.free_flight_wing_cross_section_movement import (
-    FreeFlightWingCrossSectionMovement,
-)
-from .movements.free_flight_wing_movement import FreeFlightWingMovement
 from .movements.movement import Movement
 from .movements.operating_point_movement import OperatingPointMovement
 from .movements.wing_cross_section_movement import WingCrossSectionMovement
@@ -87,7 +83,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 10
+_FORMAT_VERSION = 14
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -138,9 +134,6 @@ _CLASS_REGISTRY: dict[str, type] = {
     "AeroelasticUnsteadyProblem": AeroelasticUnsteadyProblem,
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver": AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     "FreeFlightMovement": FreeFlightMovement,
-    "FreeFlightAirplaneMovement": FreeFlightAirplaneMovement,
-    "FreeFlightWingMovement": FreeFlightWingMovement,
-    "FreeFlightWingCrossSectionMovement": FreeFlightWingCrossSectionMovement,
     "FreeFlightOperatingPointMovement": FreeFlightOperatingPointMovement,
     "FreeFlightUnsteadyProblem": FreeFlightUnsteadyProblem,
     "FreeFlightUnsteadyRingVortexLatticeMethodSolver": FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -176,9 +169,6 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
         "AeroelasticUnsteadyProblem",
         "AeroelasticUnsteadyRingVortexLatticeMethodSolver",
         "FreeFlightMovement",
-        "FreeFlightAirplaneMovement",
-        "FreeFlightWingMovement",
-        "FreeFlightWingCrossSectionMovement",
         "FreeFlightOperatingPointMovement",
         "FreeFlightUnsteadyProblem",
         "FreeFlightUnsteadyRingVortexLatticeMethodSolver",
@@ -217,6 +207,13 @@ def save(path: str | Path, obj: object) -> None:
     Gzip compression typically reduces file sizes by 10x or more, and plain ".json"
     files use indented formatting that further increases their size.
 
+    The file records an internal serialization format version. load() accepts a file
+    only when that format version matches the running code's exactly, and there is no
+    migration of files written under a different format version. The format version is
+    independent of the package version and bumps whenever the serialized structure
+    changes. To read a saved file later, run a build of Ptera Software whose format
+    version matches the file's.
+
     :param path: The file path to save to. Should end with ".json" or ".json.gz".
     :param obj: The Ptera Software object to save. Must be a public Ptera Software class
         (e.g., Airplane, SteadyProblem, or a solver). Internal classes such as Panel
@@ -228,6 +225,8 @@ def save(path: str | Path, obj: object) -> None:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:
@@ -266,6 +265,12 @@ def load(path: str | Path, max_size: int | None = None) -> object:
 
     If the path ends with ".json.gz", the input is gzip decompressed automatically.
 
+    The file records an internal serialization format version. A file is accepted only
+    when that format version matches the running code's exactly, and there is no
+    migration of files written under a different format version. A mismatch raises a
+    ValueError reporting the file's format version and the running code's. To read the
+    file, run a build of Ptera Software whose format version matches the file's.
+
     :param path: The file path to load from.
     :param max_size: The maximum decompressed size in bytes for gzip files. If None, the
         default of 4 GB is used. Set this to a larger value if loading very large
@@ -277,6 +282,8 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
+    if path.is_dir():
+        raise ValueError(f"Path must be a file path, got directory '{path}'.")
     _logger.info("Loading from %s.", path)
 
     if max_size is None:
@@ -296,12 +303,18 @@ def load(path: str | Path, max_size: int | None = None) -> object:
 
     data = json.loads(raw)
 
-    # Check format version compatibility.
+    # Check format version compatibility. A file loads only when its stored format
+    # version matches the running code's, and there is no migration path, so a mismatch
+    # is unrecoverable under the running code. The error reports both format versions
+    # only. It names no package version to install: the gate keys on the format integer,
+    # not the package version, and the stored _pterasoftware_version is provenance that
+    # does not reliably identify a build at the file's format version.
     file_version = data.get("_format_version")
     if file_version != _FORMAT_VERSION:
         raise ValueError(
-            f"Format version mismatch: file has version {file_version}, but the "
-            f"current code expects version {_FORMAT_VERSION}."
+            f"Format version mismatch: file has format version {file_version}, but the "
+            f"current code uses format version {_FORMAT_VERSION}. A file loads only "
+            f"under a build of Ptera Software whose format version matches the file's."
         )
 
     # Validate that the top level type is a public saveable class.
@@ -318,6 +331,27 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     obj = _object_from_dict(data)
     _logger.info("Loaded %s from %s.", type(obj).__name__, path)
     return obj
+
+
+def hash_object(obj: object) -> str:
+    """Returns a hex digest identifying a Ptera Software object's content.
+
+    The digest is the SHA-256 hash of the object's JSON serialization, computed over
+    every serialized slot (including cache slots) and folded together with the current
+    serialization format version. Two objects with identical serialized content produce
+    the same digest regardless of instance identity, and any difference in serialized
+    content produces a different digest. The digest survives a save and load round trip,
+    but it is only stable within a single serialization format version, because a format
+    version change is folded into the hash and shifts every digest.
+
+    :param obj: The Ptera Software object to hash. Must be an instance of a class
+        registered for serialization; an unregistered type raises a TypeError.
+    :return: A 64 character lowercase hexadecimal string holding the SHA-256 digest of
+        the object's content.
+    """
+    payload = {"_format_version": _FORMAT_VERSION, "data": _object_to_dict(obj)}
+    encoded = json.dumps(payload, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _get_provenance() -> dict[str, str | bool | None]:

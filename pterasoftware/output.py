@@ -26,6 +26,7 @@ import math
 import time
 
 import matplotlib.colors
+import matplotlib.legend_handler
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -112,12 +113,11 @@ _text_min_position = (0.85, 0.050)
 _text_speed_position = (0.05, 0.075)
 _text_font_size = 11
 
-# Set the number of markers and the marker size for the results plots.
-_num_markers = 6
-_marker_size = 8
-
-# Calculate the normalized spacing between the markers for the results plots.
-_marker_spacing = 1.0 / _num_markers
+# Set the line widths for the results plots. Lines are drawn from thickest to
+# thinnest so that all remain visible even when they overlap.
+_max_line_width = 3.5
+_min_line_width = 1.5
+_legend_line_width = (_max_line_width + _min_line_width) / 2
 
 # Define the camera's view-up direction for free flight visualizations. Earth axes have
 # +z pointing down, so physical up is the -z direction. The free flight visualizations
@@ -302,8 +302,8 @@ def draw(
     # Plot the Panels either with scalar coloring or with a uniform color.
     if scalar_type in ("induced drag", "side force", "lift"):
         these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
-        min_scalar = round(min(these_scalars), 2)
-        max_scalar = round(max(these_scalars), 2)
+        min_scalar = float(min(these_scalars))
+        max_scalar = float(max(these_scalars))
 
         # Choose the color map and set its limits based on if the min and max scalars
         # have the same sign (sequential color map) or if they have different signs
@@ -569,7 +569,7 @@ def draw(
         )
 
         webp.save_image(
-            img=image, file_path="Draw.webp", lossless=False, quality=_quality
+            img=image, file_path="draw.webp", lossless=False, quality=_quality
         )
 
     # Close all Plotters.
@@ -721,8 +721,8 @@ def animate(
             c_min = -_color_map_num_sig * float(np.std(all_scalars))
             c_max = _color_map_num_sig * float(np.std(all_scalars))
 
-        min_scalar = round(min(all_scalars), 2)
-        max_scalar = round(max(all_scalars), 2)
+        min_scalar = float(min(all_scalars))
+        max_scalar = float(max(all_scalars))
 
     # Pre-compute the image surface mesh and reflection matrix from the last time
     # step's geometry so that the plane is large enough to encompass the fully
@@ -1183,7 +1183,7 @@ def animate(
     if save:
         # Convert the list of WebP Images to an WebP animation.
         webp.save_images(
-            images, "Animate.webp", fps=actual_fps, lossless=False, quality=_quality
+            images, "animate.webp", fps=actual_fps, lossless=False, quality=_quality
         )
 
     # Close all the Plotters.
@@ -1342,183 +1342,211 @@ def plot_results_versus_time(
         moment_coefficients_figure.patch.set_facecolor(_figure_background_color)
         moment_coefficients_axes.set_facecolor(_figure_background_color)
 
-        # Populate the plots.
+        # Populate the plots. Lines are drawn from thickest to thinnest so that
+        # all three remain visible even when the curves overlap.
+        _widths_3 = np.linspace(_max_line_width, _min_line_width, 3)
         force_axes.plot(
             times,
             -forces_W[airplane_id, 0],
             label="Induced Drag",
             color=_linear_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         force_axes.plot(
             times,
             forces_W[airplane_id, 1],
             label="Side Force",
             color=_linear_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         force_axes.plot(
             times,
             -forces_W[airplane_id, 2],
             label="Lift",
             color=_linear_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             -forceCoefficients_W[airplane_id, 0],
             label="Induced Drag Coefficient",
             color=_linear_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             forceCoefficients_W[airplane_id, 1],
             label="Side Force Coefficient",
             color=_linear_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         force_coefficients_axes.plot(
             times,
             -forceCoefficients_W[airplane_id, 2],
             label="Lift Coefficient",
             color=_linear_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 0],
             label="Rolling Moment",
             color=_angular_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 1],
             label="Pitching Moment",
             color=_angular_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         moment_axes.plot(
             times,
             moments_W_CgP1[airplane_id, 2],
             label="Yawing Moment",
             color=_angular_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 0],
             label="Rolling Moment Coefficient",
             color=_angular_x_color,
-            marker=".",
-            markevery=(_marker_spacing * 0 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[0],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 1],
             label="Pitching Moment Coefficient",
             color=_angular_y_color,
-            marker=".",
-            markevery=(_marker_spacing * 1 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[1],
+            solid_capstyle="butt",
         )
         moment_coefficients_axes.plot(
             times,
             momentCoefficients_W_CgP1[airplane_id, 2],
             label="Yawing Moment Coefficient",
             color=_angular_z_color,
-            marker=".",
-            markevery=(_marker_spacing * 2 / 3, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=_widths_3[2],
+            solid_capstyle="butt",
         )
 
         # Find and format this Airplane's name for use in the plot titles.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
-        force_title = airplane_name + " Forces vs. Time"
-        force_coefficient_title = airplane_name + " Force Coefficients vs. Time"
-        moment_title = airplane_name + " Moments vs. Time"
-        moment_coefficient_title = airplane_name + " Moment Coefficients vs. Time"
+        airplane_name_snake = airplane_name.lower().replace(" ", "_")
+        force_title = airplane_name + " Forces"
+        force_coefficient_title = airplane_name + " Force Coefficients"
+        moment_title = airplane_name + " Moments"
+        moment_coefficient_title = airplane_name + " Moment Coefficients"
+        force_subtitle = "(in Wind Axes)"
+        force_coefficient_subtitle = "(in Wind Axes)"
+        moment_subtitle = "(in Wind Axes, Relative to the First Airplane's CG)"
+        moment_coefficient_subtitle = (
+            "(in Wind Axes, Relative to the First Airplane's CG)"
+        )
 
-        # Name the plots' axis labels and titles.
+        # Name the plots' axis labels, titles, and subtitles. The main title
+        # uses suptitle at the default size, and the subtitle uses set_title at
+        # a smaller size so the two render at different scales.
         force_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         force_axes.set_ylabel("Force (N)", color=_text_color_normalized)
-        force_axes.set_title(force_title, color=_text_color_normalized)
+        force_figure.suptitle(force_title, color=_text_color_normalized)
+        force_axes.set_title(
+            force_subtitle, color=_text_color_normalized, fontsize="small"
+        )
         force_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         force_coefficients_axes.set_ylabel(
             "Force Coefficient", color=_text_color_normalized
         )
-        force_coefficients_axes.set_title(
+        force_coefficients_figure.suptitle(
             force_coefficient_title, color=_text_color_normalized
+        )
+        force_coefficients_axes.set_title(
+            force_coefficient_subtitle,
+            color=_text_color_normalized,
+            fontsize="small",
         )
         moment_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         moment_axes.set_ylabel("Moment (N m)", color=_text_color_normalized)
-        moment_axes.set_title(moment_title, color=_text_color_normalized)
+        moment_figure.suptitle(moment_title, color=_text_color_normalized)
+        moment_axes.set_title(
+            moment_subtitle, color=_text_color_normalized, fontsize="small"
+        )
         moment_coefficients_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         moment_coefficients_axes.set_ylabel(
             "Moment Coefficient", color=_text_color_normalized
         )
-        moment_coefficients_axes.set_title(
+        moment_coefficients_figure.suptitle(
             moment_coefficient_title, color=_text_color_normalized
         )
+        moment_coefficients_axes.set_title(
+            moment_coefficient_subtitle,
+            color=_text_color_normalized,
+            fontsize="small",
+        )
 
-        # Format the plots' legends.
+        # Format the plots' legends. The handler map normalizes legend line
+        # widths so the thickness staggering does not appear in the legend.
+        _legend_handler_map = {
+            plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
+                update_func=lambda h, orig: (
+                    h.update_from(orig),
+                    h.set_linewidth(_legend_line_width),
+                )
+            )
+        }
         force_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         force_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         moment_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
         moment_coefficients_axes.legend(
             facecolor=_figure_background_color,
             edgecolor=_figure_background_color,
             labelcolor=_text_color_normalized,
+            handler_map=_legend_handler_map,
         )
 
         # Save the figures as PNGs if the user wants to do so.
         if save:
             force_figure.savefig(
-                airplane_name + " Forces.png",
+                airplane_name_snake + "_forces.png",
                 dpi=300,
             )
             force_coefficients_figure.savefig(
-                airplane_name + " Force Coefficients.png",
+                airplane_name_snake + "_force_coefficients.png",
                 dpi=300,
             )
             moment_figure.savefig(
-                airplane_name + " Moments.png",
+                airplane_name_snake + "_moments.png",
                 dpi=300,
             )
             moment_coefficients_figure.savefig(
-                airplane_name + " Moment Coefficients.png",
+                airplane_name_snake + "_moment_coefficients.png",
                 dpi=300,
             )
 
@@ -1567,28 +1595,31 @@ def plot_results_versus_time(
         # The state describes the first Airplane (the rigid body MuJoCo integrates), so
         # the plot titles and file names use the first Airplane's name.
         airplane_name = unsteady_solver.steady_problems[0].airplanes[0].name
+        airplane_name_snake = airplane_name.lower().replace(" ", "_")
 
         _plot_state_history(
             state_times,
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
             ["X Component", "Y Component", "Z Component"],
             [_linear_x_color, _linear_y_color, _linear_z_color],
-            airplane_name
-            + " Position (in Earth Axes, Relative to the Earth Origin) vs. Time",
+            airplane_name + " Position",
+            "(of the First Airplane's CG, in Earth Axes, Relative to the "
+            "Earth Origin)",
             "Position (m)",
             save,
-            airplane_name + " Position.png",
+            airplane_name_snake + "_position.png",
         )
         _plot_state_history(
             state_times,
             [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
             ["X Component", "Y Component", "Z Component"],
             [_linear_x_color, _linear_y_color, _linear_z_color],
-            airplane_name
-            + " Velocity (in Earth Axes, Observed from the Earth Frame) vs. Time",
+            airplane_name + " Velocity",
+            "(of the First Airplane's CG, in Earth Axes, Observed from the "
+            "Earth Frame)",
             "Velocity (m/s)",
             save,
-            airplane_name + " Velocity.png",
+            airplane_name_snake + "_velocity.png",
         )
         _plot_state_history(
             state_times,
@@ -1599,34 +1630,34 @@ def plot_results_versus_time(
             ],
             ["Roll Angle", "Pitch Angle", "Yaw Angle"],
             [_angular_x_color, _angular_y_color, _angular_z_color],
-            airplane_name
-            + " Orientation (from Earth Axes to the First Airplane's Body Axes Using "
-            + "an Intrinsic zy'x\" Sequence) vs. Time",
+            airplane_name + " Orientation",
+            "(of the First Airplane's Body Axes Relative to Earth Axes "
+            "Using an Intrinsic zy'x\" Sequence)",
             "Orientation (deg)",
             save,
-            airplane_name + " Orientation.png",
+            airplane_name_snake + "_orientation.png",
         )
         _plot_state_history(
             state_times,
             [omegasDeg_BP1__E[0], omegasDeg_BP1__E[1], omegasDeg_BP1__E[2]],
             ["Roll Rate", "Pitch Rate", "Yaw Rate"],
             [_angular_x_color, _angular_y_color, _angular_z_color],
-            airplane_name
-            + " Angular Velocity (of the First Airplane's Body Axes, Observed from the "
-            + "Earth Frame) vs. Time",
+            airplane_name + " Angular Velocity",
+            "(in the First Airplane's Body Axes, Observed from the " "Earth Frame)",
             "Angular Velocity (deg/s)",
             save,
-            airplane_name + " Angular Velocity.png",
+            airplane_name_snake + "_angular_velocity.png",
         )
         _plot_state_history(
             state_times,
             [alphas, betas],
             ["Angle of Attack", "Sideslip Angle"],
             [_alpha_color, _beta_color],
-            airplane_name + " Aerodynamic Angles vs. Time",
+            airplane_name + " Aerodynamic Angles",
+            "",
             "Angle (deg)",
             save,
-            airplane_name + " Aerodynamic Angles.png",
+            airplane_name_snake + "_aerodynamic_angles.png",
         )
 
     # If the user wants to show the plots, do so. This is done outside the loop so
@@ -1844,7 +1875,7 @@ def log_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col2 = [str(np.round(val, 3)) for val in col2]
+        col2 = [f"{val:#10.3G}" for val in col2]
         col2 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col2)
@@ -1865,7 +1896,7 @@ def log_results(
             these_momentCoefficients_W_CgP1[1],
             these_momentCoefficients_W_CgP1[2],
         ]
-        col4 = [str(np.round(val, 3)) for val in col4]
+        col4 = [f"{val:#10.3G}" for val in col4]
         col4 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col4)
@@ -1883,7 +1914,7 @@ def log_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            _logger.info(f"{pad}Reynolds Number: {re:.2e}")
+            _logger.info(f"{pad}Reynolds Number: {re:#.3G}")
 
         for i in range(len(col1)):
             if i == 0:
@@ -1951,15 +1982,15 @@ def log_results(
             f"to the Earth Origin):"
         )
         state_group_header_orientation = (
-            f"{2 * pad}Orientation (from Earth Axes to the First Airplane's Body Axes "
-            f"Using an Intrinsic zy'x\" Sequence):"
+            f"{2 * pad}Orientation (of the First Airplane's Body Axes Relative to "
+            f"Earth Axes Using an Intrinsic zy'x\" Sequence):"
         )
         state_group_header_velocity = (
             f"{2 * pad}Velocity (of the First Airplane's CG, in Earth Axes, Observed "
             f"from the Earth Frame):"
         )
         state_group_header_angular_velocity = (
-            f"{2 * pad}Angular Velocity (of the First Airplane's Body Axes, Observed "
+            f"{2 * pad}Angular Velocity (in the First Airplane's Body Axes, Observed "
             f"from the Earth Frame):"
         )
 
@@ -1988,11 +2019,11 @@ def log_results(
                 omegas_BP1__E[2],
             ]
             state_component_values = [
-                f"{np.round(value, 3)} {unit}"
+                f"{value:#10.3G} {unit}"
                 for value, unit in zip(state_component_values, state_component_units)
             ]
 
-            _logger.info(f"{pad}{state_label} (at t = {state_time:.3f} s):")
+            _logger.info(f"{pad}{state_label} (at t = {state_time:#.3G} s):")
 
             for i in range(len(state_component_labels)):
                 if i == 0:
@@ -2019,11 +2050,11 @@ def log_results(
             )
             _logger.info(
                 f"{2 * pad}{alpha_label:<{aerodynamic_angle_space}}"
-                f"{np.round(this_operating_point.alpha, 3)} deg"
+                f"{this_operating_point.alpha:#10.3G} deg"
             )
             _logger.info(
                 f"{2 * pad}{beta_label:<{aerodynamic_angle_space}}"
-                f"{np.round(this_operating_point.beta, 3)} deg"
+                f"{this_operating_point.beta:#10.3G} deg"
             )
 
 
@@ -2056,6 +2087,7 @@ def _plot_state_history(
     labels: list[str],
     colors: list[str],
     title: str,
+    subtitle: str,
     y_label: str,
     save: bool,
     save_name: str,
@@ -2069,6 +2101,8 @@ def _plot_state_history(
     :param labels: A list of the legend labels, one per series.
     :param colors: A list of the line colors, one per series.
     :param title: The figure's title.
+    :param subtitle: A smaller line below the title describing the axes, points, and
+        frames of the plotted quantity. Pass an empty string to omit.
     :param y_label: The figure's y-axis label.
     :param save: Set this to True to save the figure as a PNG.
     :param save_name: The file name to save the figure under if save is True.
@@ -2094,8 +2128,10 @@ def _plot_state_history(
     figure.patch.set_facecolor(_figure_background_color)
     axes.set_facecolor(_figure_background_color)
 
-    # Populate the plot, staggering the markers across the series.
+    # Populate the plot. Lines are drawn from thickest to thinnest so that all
+    # remain visible even when the curves overlap.
     num_series = len(series)
+    widths = np.linspace(_max_line_width, _min_line_width, num_series)
     for series_id, (this_series, label, color) in enumerate(
         zip(series, labels, colors)
     ):
@@ -2104,21 +2140,30 @@ def _plot_state_history(
             this_series,
             label=label,
             color=color,
-            marker=".",
-            markevery=(_marker_spacing * series_id / num_series, _marker_spacing),
-            markersize=_marker_size,
+            linewidth=widths[series_id],
+            solid_capstyle="butt",
         )
 
-    # Name the plot's axis labels and title.
+    # Name the plot's axis labels, title, and subtitle.
     axes.set_xlabel("Time (s)", color=_text_color_normalized)
     axes.set_ylabel(y_label, color=_text_color_normalized)
-    axes.set_title(title, color=_text_color_normalized)
+    figure.suptitle(title, color=_text_color_normalized)
+    if subtitle:
+        axes.set_title(subtitle, color=_text_color_normalized, fontsize="small")
 
     # Format the plot's legend.
     axes.legend(
         facecolor=_figure_background_color,
         edgecolor=_figure_background_color,
         labelcolor=_text_color_normalized,
+        handler_map={
+            plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
+                update_func=lambda h, orig: (
+                    h.update_from(orig),
+                    h.set_linewidth(_legend_line_width),
+                )
+            )
+        },
     )
 
     # Save the figure as a PNG if the user wants to do so.
@@ -2583,7 +2628,7 @@ def _plot_scalars(
         position_x=_bar_position_x,
         position_y=_bar_position_y,
         n_labels=_bar_n_labels,
-        fmt="%.2f",
+        fmt="%#.3G",
         color=text_color,
     )
     plotter.add_mesh(
@@ -2597,14 +2642,14 @@ def _plot_scalars(
     )
 
     plotter.add_text(
-        text="Max: " + str(max_scalar),
+        text=f"Max: {max_scalar:#.3G}",
         position=_text_max_position,
         font_size=_text_font_size,
         viewport=True,
         color=text_color,
     )
     plotter.add_text(
-        text="Min: " + str(min_scalar),
+        text=f"Min: {min_scalar:#.3G}",
         position=_text_min_position,
         font_size=_text_font_size,
         viewport=True,

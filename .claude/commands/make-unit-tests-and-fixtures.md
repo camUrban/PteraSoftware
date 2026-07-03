@@ -19,7 +19,6 @@ Follow these steps carefully and track your progress:
 - [ ] Understand how `movements/wing_cross_section_movement.py` informs design of example tests and fixtures
 - [ ] Create comprehensive tests and fixtures for each public class/function in `$ARGUMENTS`
 - [ ] Review the tests and fixtures against `docs/CODE_STYLE.md`, `docs/TYPE_HINT_AND_DOCSTRING_STYLE.md`, and `docs/WRITING_STYLE.md`
-- [ ] Update `tests/unit/__init__.py` and `tests/unit/fixtures/__init__.py` with any new files or edited docstrings
 
 ## Omissions
 
@@ -57,13 +56,13 @@ These steps are both handled by other slash commands.
       - Include both valid and invalid test cases
       - Document fixture purpose and usage
    d. **Create the tests** (but don't run them - we will check redundancy and debug later):
+      - Do not add an `if __name__ == "__main__": unittest.main()` block. The suite runs only through `python -m unittest`, which never executes that block, and the test modules' absolute `tests.` imports make direct script execution fail anyway, so it is dead code.
    e. **Review for style compliance**:
       - Re-read the fixtures and tests you just wrote
       - Check them against `docs/CODE_STYLE.md`, `docs/TYPE_HINT_AND_DOCSTRING_STYLE.md`, and `docs/WRITING_STYLE.md`
       - Verify they match the existing unit testing patterns
       - Polish any style issues found
    f. **Repeat these sub-steps** for all remaining classes and functions within `$ARGUMENTS`
-8. **Read through `tests/unit/__init__.py` and `tests/unit/fixtures/__init__.py`** and update them with any new files or any changes to the docstrings of existing modules. Also add to or update the import list. Make sure both the import lists and the docstrings list modules in alphabetical order!
 
 ## Error Handling
 
@@ -83,4 +82,3 @@ Before finalizing:
 - [ ] Tests are independent
 - [ ] Naming is consistent with project patterns
 - [ ] Style guidelines are followed
-- [ ] `__init__.py` files are updated

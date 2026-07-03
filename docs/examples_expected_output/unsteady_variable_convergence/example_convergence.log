@@ -1,0 +1,1643 @@
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0123 s (81 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.convergence - Beginning convergence analysis...
+INFO - pterasoftware.convergence - 	Wake type: prescribed
+INFO - pterasoftware.convergence - 		Cycles: 1
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 1/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0323 s (31 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 15 to 63
+INFO - pterasoftware.movements.movement - 	num_steps = 15, delta_time = 0.0667 s, mismatch = 0.624
+INFO - pterasoftware.movements.movement - 	num_steps = 16, delta_time = 0.0625 s, mismatch = 0.562
+INFO - pterasoftware.movements.movement - 	num_steps = 17, delta_time = 0.0588 s, mismatch = 0.504
+INFO - pterasoftware.movements.movement - 	num_steps = 18, delta_time = 0.0556 s, mismatch = 0.451
+INFO - pterasoftware.movements.movement - 	num_steps = 19, delta_time = 0.0526 s, mismatch = 0.401
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.355
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.311
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.271
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.232
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.196
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.162
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.130
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.0995
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.0707
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.0433
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.0190
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.0228
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.0382
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.0554
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.0750
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.0955
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.115
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.134
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.152
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.169
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.186
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.202
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.217
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.232
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.246
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.260
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.273
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.286
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.298
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.310
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.321
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.333
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.343
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.354
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.364
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.374
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.383
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.401
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.410
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.427
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.435
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.442
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 30, delta_time = 0.0333 s, mismatch = 0.0190
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.162 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 2/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0244 s (41 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 20 to 83
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.626
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.579
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.534
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.492
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.453
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.415
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.379
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.313
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.252
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.224
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.197
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.172
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.123
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.0788
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.0578
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.0376
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.0196
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.0211
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.0297
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.0422
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.0559
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.0700
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0846
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0998
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.129
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.142
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.156
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.169
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.181
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.193
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.205
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.217
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.228
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.238
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.249
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.269
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.279
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.288
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.298
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.306
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.315
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.324
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.348
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.371
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.378
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.385
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.399
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.405
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.412
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.424
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.430
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.436
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 40, delta_time = 0.0250 s, mismatch = 0.0196
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.226 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 43.94% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 3/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0196 s (51 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 25 to 103
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.627
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.589
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.553
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.518
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.485
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.454
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.394
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.366
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.339
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.313
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.289
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.265
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.219
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.177
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.157
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.138
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.119
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0835
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0665
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.0501
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.0341
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.0199
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.0200
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.0258
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.0345
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.0447
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.0556
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.0671
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.0787
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.0904
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.102
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.125
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.137
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.158
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.178
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.188
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.207
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.234
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.251
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.267
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.275
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.290
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.304
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.312
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.318
+INFO - pterasoftware.movements.movement - 	num_steps = 84, delta_time = 0.0119 s, mismatch = 0.325
+INFO - pterasoftware.movements.movement - 	num_steps = 85, delta_time = 0.0118 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 86, delta_time = 0.0116 s, mismatch = 0.338
+INFO - pterasoftware.movements.movement - 	num_steps = 87, delta_time = 0.0115 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 88, delta_time = 0.0114 s, mismatch = 0.351
+INFO - pterasoftware.movements.movement - 	num_steps = 89, delta_time = 0.0112 s, mismatch = 0.357
+INFO - pterasoftware.movements.movement - 	num_steps = 90, delta_time = 0.0111 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 91, delta_time = 0.0110 s, mismatch = 0.369
+INFO - pterasoftware.movements.movement - 	num_steps = 92, delta_time = 0.0109 s, mismatch = 0.375
+INFO - pterasoftware.movements.movement - 	num_steps = 93, delta_time = 0.0108 s, mismatch = 0.381
+INFO - pterasoftware.movements.movement - 	num_steps = 94, delta_time = 0.0106 s, mismatch = 0.386
+INFO - pterasoftware.movements.movement - 	num_steps = 95, delta_time = 0.0105 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 96, delta_time = 0.0104 s, mismatch = 0.397
+INFO - pterasoftware.movements.movement - 	num_steps = 97, delta_time = 0.0103 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 98, delta_time = 0.0102 s, mismatch = 0.408
+INFO - pterasoftware.movements.movement - 	num_steps = 99, delta_time = 0.0101 s, mismatch = 0.413
+INFO - pterasoftware.movements.movement - 	num_steps = 100, delta_time = 0.0100 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 101, delta_time = 0.00990 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 102, delta_time = 0.00980 s, mismatch = 0.428
+INFO - pterasoftware.movements.movement - 	num_steps = 103, delta_time = 0.00971 s, mismatch = 0.432
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 50, delta_time = 0.0200 s, mismatch = 0.0199
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.334 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 69.26% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 4/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0323 s (31 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 15 to 63
+INFO - pterasoftware.movements.movement - 	num_steps = 15, delta_time = 0.0667 s, mismatch = 0.624
+INFO - pterasoftware.movements.movement - 	num_steps = 16, delta_time = 0.0625 s, mismatch = 0.562
+INFO - pterasoftware.movements.movement - 	num_steps = 17, delta_time = 0.0588 s, mismatch = 0.505
+INFO - pterasoftware.movements.movement - 	num_steps = 18, delta_time = 0.0556 s, mismatch = 0.452
+INFO - pterasoftware.movements.movement - 	num_steps = 19, delta_time = 0.0526 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.312
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.271
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.233
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.197
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.163
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.131
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.100
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.0712
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.0438
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.0192
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.0236
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.0378
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.0562
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.0750
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.0951
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.115
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.134
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.152
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.169
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.185
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.201
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.217
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.231
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.246
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.273
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.285
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.298
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.310
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.321
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.343
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.353
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.373
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.383
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.401
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.410
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.426
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.434
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.442
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 30, delta_time = 0.0333 s, mismatch = 0.0192
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.0770 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.30% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 5/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0244 s (41 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 20 to 83
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.626
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.579
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.535
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.493
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.453
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.415
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.379
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.313
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.253
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.172
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.123
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.0790
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.0580
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.0378
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.0197
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.0212
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.0300
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.0422
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.0558
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.0702
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0847
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0996
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.128
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.142
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.156
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.181
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.193
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.205
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.227
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.238
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.249
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.269
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.279
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.288
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.306
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.315
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.324
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.348
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.371
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.378
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.385
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.398
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.405
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.412
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.424
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.430
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.436
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 40, delta_time = 0.0250 s, mismatch = 0.0197
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.160 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 66.98% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 66.74% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 6/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0196 s (51 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 25 to 103
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.627
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.589
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.553
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.518
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.485
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.454
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.394
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.366
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.339
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.314
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.289
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.265
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.220
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.177
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.157
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.138
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.119
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0836
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0666
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.0502
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.0342
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.0200
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.0201
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.0261
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.0345
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.0448
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.0556
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.0671
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.0787
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.0904
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.102
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.125
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.137
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.158
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.178
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.188
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.207
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.234
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.251
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.267
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.275
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.290
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.304
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.311
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.318
+INFO - pterasoftware.movements.movement - 	num_steps = 84, delta_time = 0.0119 s, mismatch = 0.325
+INFO - pterasoftware.movements.movement - 	num_steps = 85, delta_time = 0.0118 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 86, delta_time = 0.0116 s, mismatch = 0.338
+INFO - pterasoftware.movements.movement - 	num_steps = 87, delta_time = 0.0115 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 88, delta_time = 0.0114 s, mismatch = 0.351
+INFO - pterasoftware.movements.movement - 	num_steps = 89, delta_time = 0.0112 s, mismatch = 0.357
+INFO - pterasoftware.movements.movement - 	num_steps = 90, delta_time = 0.0111 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 91, delta_time = 0.0110 s, mismatch = 0.369
+INFO - pterasoftware.movements.movement - 	num_steps = 92, delta_time = 0.0109 s, mismatch = 0.375
+INFO - pterasoftware.movements.movement - 	num_steps = 93, delta_time = 0.0108 s, mismatch = 0.381
+INFO - pterasoftware.movements.movement - 	num_steps = 94, delta_time = 0.0106 s, mismatch = 0.386
+INFO - pterasoftware.movements.movement - 	num_steps = 95, delta_time = 0.0105 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 96, delta_time = 0.0104 s, mismatch = 0.397
+INFO - pterasoftware.movements.movement - 	num_steps = 97, delta_time = 0.0103 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 98, delta_time = 0.0102 s, mismatch = 0.408
+INFO - pterasoftware.movements.movement - 	num_steps = 99, delta_time = 0.0101 s, mismatch = 0.413
+INFO - pterasoftware.movements.movement - 	num_steps = 100, delta_time = 0.0100 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 101, delta_time = 0.00990 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 102, delta_time = 0.00980 s, mismatch = 0.428
+INFO - pterasoftware.movements.movement - 	num_steps = 103, delta_time = 0.00971 s, mismatch = 0.432
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 50, delta_time = 0.0200 s, mismatch = 0.0200
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.270 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 97.27% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 7/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0323 s (31 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 15 to 63
+INFO - pterasoftware.movements.movement - 	num_steps = 15, delta_time = 0.0667 s, mismatch = 0.625
+INFO - pterasoftware.movements.movement - 	num_steps = 16, delta_time = 0.0625 s, mismatch = 0.563
+INFO - pterasoftware.movements.movement - 	num_steps = 17, delta_time = 0.0588 s, mismatch = 0.505
+INFO - pterasoftware.movements.movement - 	num_steps = 18, delta_time = 0.0556 s, mismatch = 0.452
+INFO - pterasoftware.movements.movement - 	num_steps = 19, delta_time = 0.0526 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.312
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.272
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.233
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.197
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.163
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.131
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.100
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.0715
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.0441
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.0194
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.0237
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.0381
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.0560
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.0753
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.0948
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.133
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.151
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.169
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.185
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.201
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.231
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.245
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.272
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.285
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.309
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.321
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.343
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.353
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.373
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.383
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.401
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.409
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.426
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.434
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.442
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 30, delta_time = 0.0333 s, mismatch = 0.0194
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.101 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.81% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 8/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0244 s (41 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 20 to 83
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.626
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.579
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.535
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.493
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.453
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.415
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.380
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.346
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.313
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.253
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.172
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.124
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.0791
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.0581
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.0380
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.0198
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.0212
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.0301
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.0422
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.0558
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.0701
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0848
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0995
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.128
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.142
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.155
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.181
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.193
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.205
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.227
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.238
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.249
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.269
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.279
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.288
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.306
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.315
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.324
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.348
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.371
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.378
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.385
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.398
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.405
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.411
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.424
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.430
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.436
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 40, delta_time = 0.0250 s, mismatch = 0.0198
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.217 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 57.92% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 9/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0196 s (51 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 25 to 103
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.627
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.589
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.553
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.518
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.485
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.454
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.394
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.366
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.314
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.289
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.265
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.220
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.177
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.157
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.138
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.119
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0837
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0667
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.0503
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.0343
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.0201
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.0202
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.0261
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.0346
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.0447
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.0557
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.0671
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.0787
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.0905
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.102
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.125
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.136
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.158
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.178
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.188
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.207
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.234
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.251
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.267
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.275
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.290
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.304
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.311
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.318
+INFO - pterasoftware.movements.movement - 	num_steps = 84, delta_time = 0.0119 s, mismatch = 0.325
+INFO - pterasoftware.movements.movement - 	num_steps = 85, delta_time = 0.0118 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 86, delta_time = 0.0116 s, mismatch = 0.338
+INFO - pterasoftware.movements.movement - 	num_steps = 87, delta_time = 0.0115 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 88, delta_time = 0.0114 s, mismatch = 0.351
+INFO - pterasoftware.movements.movement - 	num_steps = 89, delta_time = 0.0112 s, mismatch = 0.357
+INFO - pterasoftware.movements.movement - 	num_steps = 90, delta_time = 0.0111 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 91, delta_time = 0.0110 s, mismatch = 0.369
+INFO - pterasoftware.movements.movement - 	num_steps = 92, delta_time = 0.0109 s, mismatch = 0.375
+INFO - pterasoftware.movements.movement - 	num_steps = 93, delta_time = 0.0108 s, mismatch = 0.380
+INFO - pterasoftware.movements.movement - 	num_steps = 94, delta_time = 0.0106 s, mismatch = 0.386
+INFO - pterasoftware.movements.movement - 	num_steps = 95, delta_time = 0.0105 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 96, delta_time = 0.0104 s, mismatch = 0.397
+INFO - pterasoftware.movements.movement - 	num_steps = 97, delta_time = 0.0103 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 98, delta_time = 0.0102 s, mismatch = 0.407
+INFO - pterasoftware.movements.movement - 	num_steps = 99, delta_time = 0.0101 s, mismatch = 0.413
+INFO - pterasoftware.movements.movement - 	num_steps = 100, delta_time = 0.0100 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 101, delta_time = 0.00990 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 102, delta_time = 0.00980 s, mismatch = 0.427
+INFO - pterasoftware.movements.movement - 	num_steps = 103, delta_time = 0.00971 s, mismatch = 0.432
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 50, delta_time = 0.0200 s, mismatch = 0.0201
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 2.09 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 60.61% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 10/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0323 s (31 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 15 to 63
+INFO - pterasoftware.movements.movement - 	num_steps = 15, delta_time = 0.0667 s, mismatch = 0.625
+INFO - pterasoftware.movements.movement - 	num_steps = 16, delta_time = 0.0625 s, mismatch = 0.563
+INFO - pterasoftware.movements.movement - 	num_steps = 17, delta_time = 0.0588 s, mismatch = 0.505
+INFO - pterasoftware.movements.movement - 	num_steps = 18, delta_time = 0.0556 s, mismatch = 0.452
+INFO - pterasoftware.movements.movement - 	num_steps = 19, delta_time = 0.0526 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.312
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.272
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.233
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.197
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.163
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.131
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.100
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.0716
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.0442
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.0195
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.0238
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.0382
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.0561
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.0752
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.0948
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.133
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.151
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.185
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.201
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.231
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.245
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.272
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.285
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.309
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.321
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.343
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.353
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.373
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.383
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.401
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.409
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.426
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.434
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.442
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 30, delta_time = 0.0333 s, mismatch = 0.0195
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.182 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 52.05% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 11/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0244 s (41 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 20 to 83
+INFO - pterasoftware.movements.movement - 	num_steps = 20, delta_time = 0.0500 s, mismatch = 0.626
+INFO - pterasoftware.movements.movement - 	num_steps = 21, delta_time = 0.0476 s, mismatch = 0.579
+INFO - pterasoftware.movements.movement - 	num_steps = 22, delta_time = 0.0455 s, mismatch = 0.535
+INFO - pterasoftware.movements.movement - 	num_steps = 23, delta_time = 0.0435 s, mismatch = 0.493
+INFO - pterasoftware.movements.movement - 	num_steps = 24, delta_time = 0.0417 s, mismatch = 0.453
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.416
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.380
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.346
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.313
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.253
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.172
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.124
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.0792
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.0582
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.0380
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.0199
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.0213
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.0302
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.0422
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.0558
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.0701
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0847
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0995
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.128
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.142
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.155
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.181
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.193
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.205
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.227
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.238
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.249
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.269
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.279
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.288
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.306
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.315
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.323
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.348
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.356
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.370
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.378
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.385
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.398
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.405
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.411
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.424
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.430
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.436
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 40, delta_time = 0.0250 s, mismatch = 0.0199
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.56 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.97% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 12/96
+INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Result: delta_time = 0.0196 s (51 steps per LCM period)
+INFO - pterasoftware.movements.movement - Analytical optimization complete.
+INFO - pterasoftware.movements.movement - Starting delta_time optimization.
+INFO - pterasoftware.movements.movement - 	Searching num_steps_per_lcm_cycle from 25 to 103
+INFO - pterasoftware.movements.movement - 	num_steps = 25, delta_time = 0.0400 s, mismatch = 0.627
+INFO - pterasoftware.movements.movement - 	num_steps = 26, delta_time = 0.0385 s, mismatch = 0.589
+INFO - pterasoftware.movements.movement - 	num_steps = 27, delta_time = 0.0370 s, mismatch = 0.553
+INFO - pterasoftware.movements.movement - 	num_steps = 28, delta_time = 0.0357 s, mismatch = 0.519
+INFO - pterasoftware.movements.movement - 	num_steps = 29, delta_time = 0.0345 s, mismatch = 0.485
+INFO - pterasoftware.movements.movement - 	num_steps = 30, delta_time = 0.0333 s, mismatch = 0.454
+INFO - pterasoftware.movements.movement - 	num_steps = 31, delta_time = 0.0323 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 32, delta_time = 0.0312 s, mismatch = 0.394
+INFO - pterasoftware.movements.movement - 	num_steps = 33, delta_time = 0.0303 s, mismatch = 0.366
+INFO - pterasoftware.movements.movement - 	num_steps = 34, delta_time = 0.0294 s, mismatch = 0.340
+INFO - pterasoftware.movements.movement - 	num_steps = 35, delta_time = 0.0286 s, mismatch = 0.314
+INFO - pterasoftware.movements.movement - 	num_steps = 36, delta_time = 0.0278 s, mismatch = 0.289
+INFO - pterasoftware.movements.movement - 	num_steps = 37, delta_time = 0.0270 s, mismatch = 0.265
+INFO - pterasoftware.movements.movement - 	num_steps = 38, delta_time = 0.0263 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 39, delta_time = 0.0256 s, mismatch = 0.220
+INFO - pterasoftware.movements.movement - 	num_steps = 40, delta_time = 0.0250 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 41, delta_time = 0.0244 s, mismatch = 0.177
+INFO - pterasoftware.movements.movement - 	num_steps = 42, delta_time = 0.0238 s, mismatch = 0.157
+INFO - pterasoftware.movements.movement - 	num_steps = 43, delta_time = 0.0233 s, mismatch = 0.138
+INFO - pterasoftware.movements.movement - 	num_steps = 44, delta_time = 0.0227 s, mismatch = 0.119
+INFO - pterasoftware.movements.movement - 	num_steps = 45, delta_time = 0.0222 s, mismatch = 0.101
+INFO - pterasoftware.movements.movement - 	num_steps = 46, delta_time = 0.0217 s, mismatch = 0.0838
+INFO - pterasoftware.movements.movement - 	num_steps = 47, delta_time = 0.0213 s, mismatch = 0.0668
+INFO - pterasoftware.movements.movement - 	num_steps = 48, delta_time = 0.0208 s, mismatch = 0.0503
+INFO - pterasoftware.movements.movement - 	num_steps = 49, delta_time = 0.0204 s, mismatch = 0.0343
+INFO - pterasoftware.movements.movement - 	num_steps = 50, delta_time = 0.0200 s, mismatch = 0.0201
+INFO - pterasoftware.movements.movement - 	num_steps = 51, delta_time = 0.0196 s, mismatch = 0.0202
+INFO - pterasoftware.movements.movement - 	num_steps = 52, delta_time = 0.0192 s, mismatch = 0.0261
+INFO - pterasoftware.movements.movement - 	num_steps = 53, delta_time = 0.0189 s, mismatch = 0.0347
+INFO - pterasoftware.movements.movement - 	num_steps = 54, delta_time = 0.0185 s, mismatch = 0.0447
+INFO - pterasoftware.movements.movement - 	num_steps = 55, delta_time = 0.0182 s, mismatch = 0.0557
+INFO - pterasoftware.movements.movement - 	num_steps = 56, delta_time = 0.0179 s, mismatch = 0.0671
+INFO - pterasoftware.movements.movement - 	num_steps = 57, delta_time = 0.0175 s, mismatch = 0.0787
+INFO - pterasoftware.movements.movement - 	num_steps = 58, delta_time = 0.0172 s, mismatch = 0.0905
+INFO - pterasoftware.movements.movement - 	num_steps = 59, delta_time = 0.0169 s, mismatch = 0.102
+INFO - pterasoftware.movements.movement - 	num_steps = 60, delta_time = 0.0167 s, mismatch = 0.114
+INFO - pterasoftware.movements.movement - 	num_steps = 61, delta_time = 0.0164 s, mismatch = 0.125
+INFO - pterasoftware.movements.movement - 	num_steps = 62, delta_time = 0.0161 s, mismatch = 0.136
+INFO - pterasoftware.movements.movement - 	num_steps = 63, delta_time = 0.0159 s, mismatch = 0.147
+INFO - pterasoftware.movements.movement - 	num_steps = 64, delta_time = 0.0156 s, mismatch = 0.158
+INFO - pterasoftware.movements.movement - 	num_steps = 65, delta_time = 0.0154 s, mismatch = 0.168
+INFO - pterasoftware.movements.movement - 	num_steps = 66, delta_time = 0.0152 s, mismatch = 0.178
+INFO - pterasoftware.movements.movement - 	num_steps = 67, delta_time = 0.0149 s, mismatch = 0.188
+INFO - pterasoftware.movements.movement - 	num_steps = 68, delta_time = 0.0147 s, mismatch = 0.198
+INFO - pterasoftware.movements.movement - 	num_steps = 69, delta_time = 0.0145 s, mismatch = 0.207
+INFO - pterasoftware.movements.movement - 	num_steps = 70, delta_time = 0.0143 s, mismatch = 0.216
+INFO - pterasoftware.movements.movement - 	num_steps = 71, delta_time = 0.0141 s, mismatch = 0.225
+INFO - pterasoftware.movements.movement - 	num_steps = 72, delta_time = 0.0139 s, mismatch = 0.234
+INFO - pterasoftware.movements.movement - 	num_steps = 73, delta_time = 0.0137 s, mismatch = 0.242
+INFO - pterasoftware.movements.movement - 	num_steps = 74, delta_time = 0.0135 s, mismatch = 0.251
+INFO - pterasoftware.movements.movement - 	num_steps = 75, delta_time = 0.0133 s, mismatch = 0.259
+INFO - pterasoftware.movements.movement - 	num_steps = 76, delta_time = 0.0132 s, mismatch = 0.267
+INFO - pterasoftware.movements.movement - 	num_steps = 77, delta_time = 0.0130 s, mismatch = 0.275
+INFO - pterasoftware.movements.movement - 	num_steps = 78, delta_time = 0.0128 s, mismatch = 0.282
+INFO - pterasoftware.movements.movement - 	num_steps = 79, delta_time = 0.0127 s, mismatch = 0.290
+INFO - pterasoftware.movements.movement - 	num_steps = 80, delta_time = 0.0125 s, mismatch = 0.297
+INFO - pterasoftware.movements.movement - 	num_steps = 81, delta_time = 0.0123 s, mismatch = 0.304
+INFO - pterasoftware.movements.movement - 	num_steps = 82, delta_time = 0.0122 s, mismatch = 0.311
+INFO - pterasoftware.movements.movement - 	num_steps = 83, delta_time = 0.0120 s, mismatch = 0.318
+INFO - pterasoftware.movements.movement - 	num_steps = 84, delta_time = 0.0119 s, mismatch = 0.325
+INFO - pterasoftware.movements.movement - 	num_steps = 85, delta_time = 0.0118 s, mismatch = 0.332
+INFO - pterasoftware.movements.movement - 	num_steps = 86, delta_time = 0.0116 s, mismatch = 0.338
+INFO - pterasoftware.movements.movement - 	num_steps = 87, delta_time = 0.0115 s, mismatch = 0.345
+INFO - pterasoftware.movements.movement - 	num_steps = 88, delta_time = 0.0114 s, mismatch = 0.351
+INFO - pterasoftware.movements.movement - 	num_steps = 89, delta_time = 0.0112 s, mismatch = 0.357
+INFO - pterasoftware.movements.movement - 	num_steps = 90, delta_time = 0.0111 s, mismatch = 0.363
+INFO - pterasoftware.movements.movement - 	num_steps = 91, delta_time = 0.0110 s, mismatch = 0.369
+INFO - pterasoftware.movements.movement - 	num_steps = 92, delta_time = 0.0109 s, mismatch = 0.375
+INFO - pterasoftware.movements.movement - 	num_steps = 93, delta_time = 0.0108 s, mismatch = 0.380
+INFO - pterasoftware.movements.movement - 	num_steps = 94, delta_time = 0.0106 s, mismatch = 0.386
+INFO - pterasoftware.movements.movement - 	num_steps = 95, delta_time = 0.0105 s, mismatch = 0.392
+INFO - pterasoftware.movements.movement - 	num_steps = 96, delta_time = 0.0104 s, mismatch = 0.397
+INFO - pterasoftware.movements.movement - 	num_steps = 97, delta_time = 0.0103 s, mismatch = 0.402
+INFO - pterasoftware.movements.movement - 	num_steps = 98, delta_time = 0.0102 s, mismatch = 0.407
+INFO - pterasoftware.movements.movement - 	num_steps = 99, delta_time = 0.0101 s, mismatch = 0.413
+INFO - pterasoftware.movements.movement - 	num_steps = 100, delta_time = 0.0100 s, mismatch = 0.418
+INFO - pterasoftware.movements.movement - 	num_steps = 101, delta_time = 0.00990 s, mismatch = 0.423
+INFO - pterasoftware.movements.movement - 	num_steps = 102, delta_time = 0.00980 s, mismatch = 0.427
+INFO - pterasoftware.movements.movement - 	num_steps = 103, delta_time = 0.00971 s, mismatch = 0.432
+INFO - pterasoftware.movements.movement - Optimization complete. Best: num_steps_per_lcm_cycle = 50, delta_time = 0.0200 s, mismatch = 0.0201
+INFO - pterasoftware._convergence_meshing - 					Optimized delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 12.8 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 81.38% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 		Cycles: 2
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 13/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.153 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.45% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 14/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.244 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 63.72% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.91% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 15/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.380 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 53.85% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 78.61% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 16/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.139 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.75% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.99% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 17/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.253 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.09% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.52% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.50% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 18/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.480 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 53.44% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.00% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 19/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.206 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.63% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.05% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 20/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.402 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 66.79% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.65% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 21/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 3.21 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 52.92% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.30% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 22/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.297 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 44.35% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.04% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 23/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.93 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 68.45% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.90% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 24/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 23.1 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 52.82% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.91% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 		Cycles: 3
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 25/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.148 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 26/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.304 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.80% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 27/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.655 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 78.59% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 28/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.188 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.89% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 29/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.374 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.49% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.50% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 30/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.695 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 94.96% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 31/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.267 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.04% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 32/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.524 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.63% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 33/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.27 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.28% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 34/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.439 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.03% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 35/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 4.39 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.88% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 36/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 32.2 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.88% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 		Cycles: 4
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 37/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.202 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 38/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.433 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 58.76% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 39/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.776 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 78.58% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 40/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.317 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.87% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 41/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.604 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.48% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 95.49% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 42/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.28 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 94.94% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 43/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.424 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.03% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 44/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.721 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.62% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 45/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 8.74 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.27% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 46/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.51 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.02% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 47/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.41 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 53.88% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 48/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 41.1 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 79.87% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 	Wake type: free
+INFO - pterasoftware.convergence - 		Cycles: 1
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 49/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.0793 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 50/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.140 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 42.77% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 51/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.234 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 68.83% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 52/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.0937 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 45.21% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 53/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.201 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 67.23% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 65.26% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 54/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.277 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 97.56% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 99.96% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 55/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.191 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.89% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 56/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.226 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 58.07% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 57/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.25 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 60.78% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 58/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.189 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 52.12% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 59/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.34 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 55.06% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 60/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 13.0 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 81.43% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 		Cycles: 2
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 61/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.189 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.39% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 62/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.262 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 63.73% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 57.51% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 63/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.481 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.71% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 79.47% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 64/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.215 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 42.62% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 46.25% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 65/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.324 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 64.97% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.90% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 96.64% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 66/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.669 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.43% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.51% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 67/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.228 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.34% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.24% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 68/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.441 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.54% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.99% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 69/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 4.75 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.17% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.75% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 70/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.365 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 43.85% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.40% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 71/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 3.44 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 65.44% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.25% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 72/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 25.1 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 50.30% (limiting coefficient: cMY)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 80.19% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 		Cycles: 3
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 4
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 73/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.202 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 74/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.405 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 57.55% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 75/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.805 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: not yet checked
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 79.44% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 3
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 76/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.251 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 46.25% (limiting coefficient: cFZ)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 77/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.572 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 65.87% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 96.61% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 78/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 1.04 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 95.48% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 2
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 79/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.359 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 40.22% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 80/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.744 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 56.95% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 				Chordwise Panels: 5
+INFO - pterasoftware.convergence - 					Iteration number: 81/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0200 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 7.09 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 59.73% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 			Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 				Chordwise Panels: 3
+INFO - pterasoftware.convergence - 					Iteration number: 82/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0333 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 0.819 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 51.38% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: not yet checked
+INFO - pterasoftware.convergence - 				Chordwise Panels: 4
+INFO - pterasoftware.convergence - 					Iteration number: 83/96
+INFO - pterasoftware._convergence_meshing - 					Cached delta_time: 0.0250 s
+INFO - pterasoftware.convergence - 					Starting simulation...
+INFO - pterasoftware.convergence - 					Simulation completed in 5.79 s
+INFO - pterasoftware.convergence - 					Wake type convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Wake length convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Panel aspect ratio convergence metric: 54.26% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - 					Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
+INFO - pterasoftware.convergence - The analysis found a converged case:
+INFO - pterasoftware.convergence - 	Wake type: prescribed
+INFO - pterasoftware.convergence - 	Cycles: 2
+INFO - pterasoftware.convergence - 	Panel aspect ratio: 1
+INFO - pterasoftware.convergence - 	Chordwise Panels: 3
+INFO - pterasoftware.convergence - 	Simulation completed in 0.297 s
+INFO - pterasoftware.convergence - 	Spanwise Panels:
+INFO - pterasoftware.convergence - 		Example Airplane:
+INFO - pterasoftware.convergence - 			Main Wing:
+INFO - pterasoftware.convergence - 				WingCrossSection 1: 9
+INFO - pterasoftware.convergence - 				WingCrossSection 2: None
+INFO - pterasoftware.convergence - 			Reflected Main Wing:
+INFO - pterasoftware.convergence - 				WingCrossSection 1: 9
+INFO - pterasoftware.convergence - 				WingCrossSection 2: None
+INFO - pterasoftware.convergence - Convergence analysis completed in 4 min and 16.1 s

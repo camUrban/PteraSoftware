@@ -244,7 +244,3 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
             weights, residual, previous_residual, 0.5, 0.5, 1e-20
         )
         self.assertIsInstance(factor, float)
-
-
-if __name__ == "__main__":
-    unittest.main()

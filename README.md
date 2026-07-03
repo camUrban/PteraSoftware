@@ -115,8 +115,6 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * This feature couples Ptera Software's UVLM with six-degree-of-freedom rigid body dynamics, using the MuJoCo physics engine, so an aircraft flies a free trajectory under its own aerodynamic loads, weight, and inertia.
     * The body's motion updates the aerodynamics at every time step, capturing the two-way coupling between flight dynamics and unsteady aerodynamics.
     * Currently this feature supports single-airplane free flight.
-11. A Basic GUI
-    * This is still in its alpha stage, but we will be adding more functionality soon.
 
 ## Installation
 
@@ -142,21 +140,21 @@ This package currently supports five different solvers, a steady horseshoe VLM, 
 
 ### Steady Horseshoe VLM
 
-![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/steady_horseshoe_vortex_lattice_method_solver/Draw.webp)
+![Example Steady Horseshoe VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/steady_horseshoe_vortex_lattice_method_solver/draw.webp)
 
 ### Steady Ring VLM
 
-![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/steady_ring_vortex_lattice_method_solver/Draw.webp)
+![Example Steady Ring VLM Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/steady_ring_vortex_lattice_method_solver/draw.webp)
 
 ### Unsteady Ring VLM
 
-![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/Animate.webp)
+![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/animate.webp)
 
 ### Aeroelastic Unsteady Ring VLM
-![Example Aeroelastic Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/aeroelastic_unsteady_first_order_deformation/Animate.webp)
+![Example Aeroelastic Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/aeroelastic_unsteady_first_order_deformation/animate.webp)
 
 ### Free Flight Unsteady Ring VLM
-![Example Free Flight Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/free_flight_unsteady_ring_vortex_lattice_method_solver_flapping/Animate.webp)
+![Example Free Flight Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/free_flight_unsteady_ring_vortex_lattice_method_solver_flapping/animate.webp)
 
 ## Validation
 

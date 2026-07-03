@@ -60,7 +60,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             )
 
     def test_single_airplane_movement_validation(self):
-        """Test that the FreeFlightMovement has exactly one FreeFlightAirplaneMovement."""
+        """Test that the FreeFlightMovement has exactly one AirplaneMovement."""
         movement, mass = _movement_and_mass()
         two_airplane_movement = ps.movements.free_flight_movement.FreeFlightMovement(
             airplane_movements=[
@@ -284,20 +284,6 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             ps.problems.SteadyProblem,
         )
 
-    def test_initialization_of_load_lists(self):
-        """Test that load lists are initialized as empty."""
-        self.assertIsInstance(self.problem.forces_W, list)
-        self.assertEqual(len(self.problem.forces_W), 0)
-
-        self.assertIsInstance(self.problem.forceCoefficients_W, list)
-        self.assertEqual(len(self.problem.forceCoefficients_W), 0)
-
-        self.assertIsInstance(self.problem.moments_W_Cg, list)
-        self.assertEqual(len(self.problem.moments_W_Cg), 0)
-
-        self.assertIsInstance(self.problem.momentCoefficients_W_Cg, list)
-        self.assertEqual(len(self.problem.momentCoefficients_W_Cg), 0)
-
     def test_I_BP1_CgP1_attribute(self):
         """Test that I_BP1_CgP1 is stored correctly."""
         self.assertIsInstance(self.problem.I_BP1_CgP1, np.ndarray)
@@ -503,28 +489,6 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_called_once()
 
-    def test_records_loads_on_non_final_step(self):
-        """Test that the current Airplane's loads are recorded on a non final step."""
-        self._mock_mujoco_model()
-
-        self.problem.initialize_next_problem(self.solver, step=0)
-
-        self.assertEqual(len(self.problem.forces_W), 1)
-        np.testing.assert_array_equal(
-            self.problem.forces_W[0], self.current_airplane.forces_W
-        )
-        np.testing.assert_array_equal(
-            self.problem.forceCoefficients_W[0],
-            self.current_airplane.forceCoefficients_W,
-        )
-        np.testing.assert_array_equal(
-            self.problem.moments_W_Cg[0], self.current_airplane.moments_W_CgP1
-        )
-        np.testing.assert_array_equal(
-            self.problem.momentCoefficients_W_Cg[0],
-            self.current_airplane.momentCoefficients_W_CgP1,
-        )
-
     def test_no_steady_problem_appended_on_final_step(self):
         """Test that no SteadyProblem is appended on the final step."""
         before = len(self.problem.steady_problems)
@@ -532,17 +496,6 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.problem.initialize_next_problem(self.solver, step=self.final_step)
 
         self.assertEqual(len(self.problem.steady_problems), before)
-
-    def test_records_loads_on_final_step(self):
-        """Test that the current Airplane's loads are still recorded on the final
-        step.
-        """
-        self.problem.initialize_next_problem(self.solver, step=self.final_step)
-
-        self.assertEqual(len(self.problem.forces_W), 1)
-        np.testing.assert_array_equal(
-            self.problem.forces_W[0], self.current_airplane.forces_W
-        )
 
     def test_does_not_step_dynamics_on_final_step(self):
         """Test that the MuJoCo model is not stepped on the final step."""
@@ -552,17 +505,6 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_not_called()
-
-    def test_recorded_loads_are_copies(self):
-        """Test that the recorded loads are copies, so later mutation of the Airplane's
-        loads does not change the recorded history.
-        """
-        # Use the final step so no rigid body dynamics integration is required.
-        self.problem.initialize_next_problem(self.solver, step=self.final_step)
-
-        self.current_airplane.forces_W[0] = 999.0
-
-        self.assertNotEqual(self.problem.forces_W[0][0], 999.0)
 
     def test_external_loads_fn_invoked_on_non_final_step(self):
         """Test that a set external_loads_fn is invoked with the current OperatingPoint
@@ -686,11 +628,6 @@ class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):
         """Test that the delta_time property is read only."""
         with self.assertRaises(AttributeError):
             self.problem.delta_time = 0.5
-
-    def test_mutable_load_lists(self):
-        """Test that load lists remain mutable for solver population."""
-        self.problem.forces_W.append(np.array([1.0, 2.0, 3.0]))
-        self.assertEqual(len(self.problem.forces_W), 1)
 
 
 class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
@@ -839,7 +776,3 @@ class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
         # The rate blocks are the configuration blocks scaled by the time step.
         np.testing.assert_allclose(weights[6:9], delta_time * weights[0:3])
         np.testing.assert_allclose(weights[9:12], delta_time * weights[3:6])
-
-
-if __name__ == "__main__":
-    unittest.main()

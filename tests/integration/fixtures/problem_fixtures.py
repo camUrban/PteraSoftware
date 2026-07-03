@@ -51,6 +51,48 @@ def make_steady_multiple_wing_validation_problem():
     return steady_validation_problem
 
 
+def make_edge_defined_steady_validation_problem():
+    """This function creates a SteadyProblem with an edge-defined Airplane to be used as
+    a fixture.
+
+    :return edge_defined_steady_validation_problem: SteadyProblem
+        This is the SteadyProblem fixture.
+    """
+    edge_defined_validation_airplane = (
+        airplane_fixtures.make_edge_defined_validation_airplane()
+    )
+    steady_validation_operating_point = (
+        operating_point_fixtures.make_validation_operating_point()
+    )
+
+    edge_defined_steady_validation_problem = ps.problems.SteadyProblem(
+        airplanes=[edge_defined_validation_airplane],
+        operating_point=steady_validation_operating_point,
+    )
+
+    return edge_defined_steady_validation_problem
+
+
+def make_mixed_steady_validation_problem():
+    """This function creates a SteadyProblem with an Airplane holding both a trapezoidal
+    Wing and an edge-defined Wing, to be used as a fixture.
+
+    :return mixed_steady_validation_problem: SteadyProblem
+        This is the SteadyProblem fixture.
+    """
+    mixed_validation_airplane = airplane_fixtures.make_mixed_validation_airplane()
+    steady_validation_operating_point = (
+        operating_point_fixtures.make_validation_operating_point()
+    )
+
+    mixed_steady_validation_problem = ps.problems.SteadyProblem(
+        airplanes=[mixed_validation_airplane],
+        operating_point=steady_validation_operating_point,
+    )
+
+    return mixed_steady_validation_problem
+
+
 def make_unsteady_validation_problem_with_static_geometry():
     """This function creates an UnsteadyProblem with static geometry to be used as a
     fixture.
@@ -65,6 +107,43 @@ def make_unsteady_validation_problem_with_static_geometry():
     )
 
     return unsteady_validation_problem
+
+
+def make_edge_defined_unsteady_validation_problem():
+    """This function creates an UnsteadyProblem with an edge-defined Airplane and static
+    WingCrossSectionMovements, to be used as a fixture.
+
+    :return edge_defined_unsteady_validation_problem: UnsteadyProblem
+        This is the UnsteadyProblem fixture.
+    """
+    edge_defined_validation_movement = (
+        movement_fixtures.make_edge_defined_static_validation_movement()
+    )
+
+    edge_defined_unsteady_validation_problem = ps.problems.UnsteadyProblem(
+        movement=edge_defined_validation_movement
+    )
+
+    return edge_defined_unsteady_validation_problem
+
+
+def make_edge_defined_non_static_unsteady_validation_problem():
+    """This function creates an UnsteadyProblem with an edge-defined Airplane whose
+    WingCrossSectionMovements are not all static, to be used as a fixture for testing
+    that edge-defined convergence rejects it.
+
+    :return edge_defined_non_static_unsteady_validation_problem: UnsteadyProblem
+        This is the UnsteadyProblem fixture.
+    """
+    edge_defined_non_static_validation_movement = (
+        movement_fixtures.make_edge_defined_non_static_validation_movement()
+    )
+
+    edge_defined_non_static_unsteady_validation_problem = ps.problems.UnsteadyProblem(
+        movement=edge_defined_non_static_validation_movement
+    )
+
+    return edge_defined_non_static_unsteady_validation_problem
 
 
 def make_unsteady_validation_problem_with_variable_geometry():

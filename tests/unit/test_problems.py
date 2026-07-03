@@ -425,7 +425,3 @@ class TestUnsteadyProblemImmutability(unittest.TestCase):
             self.basic_unsteady_problem.steady_problems.append(
                 problem_fixtures.make_basic_steady_problem_fixture()
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,17 +1,24 @@
-"""This script is an example of how to run Ptera Software's
-FreeFlightUnsteadyRingVortexLatticeMethodSolver. It releases a statically stable glider
-into an unpowered glide, coupling the unsteady aerodynamics to MuJoCo's rigid body
-dynamics so the airplane flies a free six-degree-of-freedom trajectory through the
-scene."""
+"""Demonstrates running Ptera Software's FreeFlightUnsteadyRingVortexLatticeMethodSolver
+on a static-geometry configuration.
+
+The simulation releases a statically stable glider into an unpowered glide, coupling the
+unsteady aerodynamics to MuJoCo's rigid body dynamics so the airplane flies a free six-
+degree-of-freedom trajectory through the scene.
+
+The script will likely take several minutes to run, and will log simulation progress and
+results in a log file.
+"""
+
+import logging
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
@@ -164,7 +171,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             chordwise_spacing="uniform",
         ),
     ],
-    name="Simple Glider",
+    name="Example Airplane",
     Cg_GP1_CgP1=(0.0, 0.0, 0.0),
     weight=420.0,
     s_ref=None,
@@ -172,12 +179,12 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# Now define each Wing's FreeFlightWingMovements (and the FreeFlightWingCrossSection-
-# Movements they contain). The main Wing was defined with symmetric=True,
-# mirror_only=False, and a symmetry plane coincident with its axes' xz-plane, giving it
-# type 4 symmetry (see the Wing class documentation for more details on symmetry types),
-# so it stays a single Wing and is not split into a separate reflected Wing. The Airplane
-# therefore has exactly three Wings, and we need one FreeFlightWingMovement per Wing.
+# Now define each Wing's WingMovements (and the WingCrossSectionMovements they contain).
+# The main Wing was defined with symmetric=True, mirror_only=False, and a symmetry plane
+# coincident with its axes' xz-plane, giving it type 4 symmetry (see the Wing class
+# documentation for more details on symmetry types), so it stays a single Wing and is not
+# split into a separate reflected Wing. The Airplane therefore has exactly three Wings,
+# and we need one WingMovement per Wing.
 #
 # This is a free flight of a rigid glider, so there is no prescribed flapping or
 # deformation: every prescribed-motion amplitude is left at its zero default. The only
@@ -187,25 +194,23 @@ example_airplane = ps.geometry.airplane.Airplane(
 wing_movements = []
 for wing in example_airplane.wings:
     wing_cross_section_movements = [
-        ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in wing.wing_cross_sections
     ]
     wing_movements.append(
-        ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+        ps.movements.wing_movement.WingMovement(
             base_wing=wing,
             wing_cross_section_movements=wing_cross_section_movements,
         )
     )
 
-# Now define the example airplane's FreeFlightAirplaneMovement. As with the Wings, the
+# Now define the example airplane's AirplaneMovement. As with the Wings, the
 # airplane-level prescribed motion is left at its zero defaults.
-airplane_movement = (
-    ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-        base_airplane=example_airplane,
-        wing_movements=wing_movements,
-    )
+airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+    base_airplane=example_airplane,
+    wing_movements=wing_movements,
 )
 
 # Delete the extraneous pointer to the WingMovements, as these are now contained within
@@ -244,7 +249,7 @@ operating_point_movement = (
 # Delete the extraneous pointer.
 del example_operating_point
 
-# Define the FreeFlightMovement. This contains the FreeFlightAirplaneMovement and the
+# Define the FreeFlightMovement. This contains the AirplaneMovement and the
 # FreeFlightOperatingPointMovement. The glider first holds its trimmed condition for
 # prescribed_num_steps time steps so the wake can develop, then the solver releases the
 # rigid body dynamics for the remaining free_num_steps time steps.
@@ -301,11 +306,11 @@ example_solver.run(
 # Save the solved solver to a compressed JSON file. This allows us to load the results
 # later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
-ps.save("example_free_flight_solver.json.gz", example_solver)
+ps.save("example_solver.json.gz", example_solver)
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
-loaded_solver = ps.load("example_free_flight_solver.json.gz")
+loaded_solver = ps.load("example_solver.json.gz")
 
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,

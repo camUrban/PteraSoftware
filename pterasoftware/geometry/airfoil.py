@@ -280,10 +280,16 @@ class Airfoil:
             -lowerOutlineHingePoint_Wcs_lp, passive=False
         )
 
-        # Make the active rotational homogeneous transformation matrix for the given
-        # angle.
-        rot_T = _transformations.generate_rot_T(
-            np.array([0.0, 0.0, -deflection]),
+        # Make the active rotational homogeneous transformation matrix that deflects the
+        # aft portion about the spanwise hinge axis. The hinge points are in wing cross
+        # section axes, where +x is chordwise, +y is spanwise (normal to the cross
+        # section's plane), and +z is toward the wing's top surface. The hinge line
+        # therefore runs along +y, so the deflection is a rotation about +y. A positive
+        # deflection swings the trailing edge toward -z (downward, toward the lower
+        # surface), matching the convention that downward deflection is positive.
+        deflectionAngles_act_ezyx = np.array([0.0, deflection, 0.0])
+        deflect_T_act = _transformations.generate_rot_T(
+            deflectionAngles_act_ezyx,
             passive=False,
             intrinsic=False,
             order="zyx",
@@ -297,10 +303,12 @@ class Airfoil:
         )
 
         postHingeFlippedUpperOutline_T_act = _transformations.compose_T_act(
-            flippedUpperOutlineToOrigin_T_act, rot_T, flippedUpperOutlineBack_T_act
+            flippedUpperOutlineToOrigin_T_act,
+            deflect_T_act,
+            flippedUpperOutlineBack_T_act,
         )
         postHingeLowerOutline_T_act = _transformations.compose_T_act(
-            lowerOutlineToOrigin_T_act, rot_T, lowerOutlineBack_T_act
+            lowerOutlineToOrigin_T_act, deflect_T_act, lowerOutlineBack_T_act
         )
 
         postHingeFlippedUpperOutline_Wcs_lp = np.column_stack(
@@ -855,12 +863,12 @@ class Airfoil:
             # Check for excessive rotation on the first iteration. Minor rotation
             # offsets (implicit angle of attack) are acceptable, but large rotations
             # indicate the outline data is not in the expected orientation.
-            max_rotation_rad = np.deg2rad(15.0)
-            if iteration == 0 and np.abs(chord_angle) > max_rotation_rad:
+            max_rotation = 15.0
+            if iteration == 0 and np.abs(chord_angle) > np.deg2rad(max_rotation):
                 raise ValueError(
                     f"The Airfoil's outline has excessive rotation "
-                    f"({np.rad2deg(chord_angle):.1f} degrees). The chord line must be "
-                    f"within 15 degrees of the x axis. Minor rotation offsets (such as "
+                    f"({np.rad2deg(chord_angle):#.3G} deg). The chord line must be "
+                    f"within 15 deg of the x axis. Minor rotation offsets (such as "
                     f"implicit angle of attack) are corrected automatically, but the "
                     f"outline data appears to be in an unexpected orientation."
                 )

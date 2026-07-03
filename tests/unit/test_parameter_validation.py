@@ -1077,7 +1077,3 @@ class TestMByNNumberArrayLikeReturnFloat(unittest.TestCase):
         """Test m_by_n_number_arrayLike_return_float raises TypeError with string."""
         with self.assertRaises(TypeError):
             pv.m_by_n_number_arrayLike_return_float("invalid", "test_param", 3, 3)
-
-
-if __name__ == "__main__":
-    unittest.main()

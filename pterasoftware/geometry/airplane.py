@@ -531,7 +531,7 @@ class Airplane:
             )
             webp.save_image(
                 img=image,
-                file_path=f"{self._name}_geometry.webp",
+                file_path=f"{self._name.lower().replace(' ', '_')}_geometry.webp",
                 lossless=False,
                 quality=quality,
             )
@@ -922,6 +922,28 @@ class Airplane:
                         f"control_surface_symmetry_type must be specified for symmetry "
                         f"type {symmetry_type}"
                     )
+
+        # For a type 4 Wing, the root WingCrossSection lies on the coincident symmetry
+        # plane and is shared between the original and mirrored halves, which are meshed
+        # into a single Panel grid joined at that centerline seam. An asymmetric control
+        # surface there would deflect the two halves in opposite directions, so their
+        # Panels would meet at the seam with non-coincident edges. The solvers assume
+        # every internal edge within a Wing is shared by two coincident Panels (the
+        # Kutta-Joukowski effective-strength subtraction and the wake shedding both
+        # identify neighbors by grid index, not geometry), so such a torn seam would
+        # silently corrupt the loads and the wake. A zero deflection is harmless because
+        # it produces no geometric offset.
+        if symmetry_type == 4:
+            root_wing_cross_section = wing.wing_cross_sections[0]
+            if (
+                root_wing_cross_section.control_surface_symmetry_type == "asymmetric"
+                and root_wing_cross_section.control_surface_deflection != 0.0
+            ):
+                raise ValueError(
+                    "control_surface_symmetry_type cannot be 'asymmetric' with a "
+                    "nonzero control_surface_deflection on the root WingCrossSection "
+                    "of a Wing with a coincident symmetry plane"
+                )
 
         # Based on symmetry type, generate the mesh and return the wing(s).
         if symmetry_type in [1, 2, 3, 4]:

@@ -741,7 +741,3 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         self.assertGreater(velocity_E__E[0], 0.0)
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[1]))
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[2]))
-
-
-if __name__ == "__main__":
-    unittest.main()

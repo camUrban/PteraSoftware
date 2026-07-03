@@ -16,7 +16,7 @@ The script parses the suite with the `ast` module instead of grepping for names,
 
 ## Why deletion is safe for `__init__.py`
 
-Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.py` import fixture *modules* (`import tests.unit.fixtures.foo_fixtures`), not individual fixture functions. Deleting a fixture function from a module therefore never breaks an `__init__.py` import, and you do not edit any `__init__.py` after deleting fixtures. The only reason to touch an `__init__.py` would be to drop an entire fixture module that has become empty, which this command does not do.
+Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.py` are bare package markers: a single docstring with no imports. Deleting a fixture function, or even an entire fixture module, therefore cannot break an `__init__.py`, and you do not edit any `__init__.py` in this command.
 
 ## Environment constraints
 
@@ -49,7 +49,7 @@ Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.
 ## Important Reminders
 
 - This command operates on the whole suite and takes no argument; do not try to scope it to a single module.
-- Never edit an `__init__.py` after deleting fixtures: the fixture packages import modules, not individual functions, so a deleted fixture cannot break an import.
+- Never edit an `__init__.py` after deleting fixtures: the fixture packages are bare markers with no imports, so a deleted fixture or module cannot break one.
 - Always show the user the report, and the verification result if you ran one, before any deletion. The script only mutates files under `--delete-verified`.
 - Run the script with `python -u` and never pipe it through a filter; the verification suite can run for minutes and its output must stay visible.
 - Reformat modified files with `pre-commit run --files`, never a bare formatter.

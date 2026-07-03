@@ -31,11 +31,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
-# PyInstaller: Usually these files are written by a python script from a template before PyInstaller builds the exe, so
-# as to inject date/other infos into it.
-*.manifest
-*.spec
-
 # These are the installer logs to ignore.
 pip-log.txt
 pip-delete-this-directory.txt
@@ -61,6 +56,7 @@ cover/
 
 # These are the Django files to ignore.
 *.log
+!docs/examples_expected_output/**/*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -139,8 +135,6 @@ cython_debug/
 # These are folders and files created by releasing.
 /build
 /dist
-/Output
-.spec
 
 # These are files and folders created by usage to ignore
 Animate.webp
@@ -172,6 +166,11 @@ Draw.webp
 # These are serialization output files to ignore.
 *.json
 *.json.gz
+
+# The benchmark archive publishes a redacted host snapshot here. It is a real
+# tracked artifact, not serialization output, so re-include it past the *.json
+# rule above.
+!/docs/_static/benchmarks/host.json
 
 # These are the Claude's documentation files to ignore.
 /docs/CLAUDE_*.md

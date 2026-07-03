@@ -91,7 +91,3 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
                 operating_point,
                 ps.operating_point.OperatingPoint,
             )
-
-
-if __name__ == "__main__":
-    unittest.main()

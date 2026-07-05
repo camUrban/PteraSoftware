@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -19,7 +20,7 @@ _logger = _logging.get_logger("_convergence_cache")
 # ignored and rebuilt from scratch. This is independent of the serialization format
 # version that hash_object folds into each key, which guards against changes to the
 # reference problem's serialized structure.
-_SOLVE_CACHE_VERSION = 2
+_SOLVE_CACHE_VERSION = 3
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
@@ -41,8 +42,11 @@ def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
     return "|".join([ref_problem_hash, *(str(component) for component in components)])
 
 
-def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
-    """Loads a JSON solve cache from disk into a dictionary of load coefficients.
+def load_solve_cache(
+    cache_path: Path | None,
+) -> dict[str, tuple[np.ndarray, float]]:
+    """Loads a JSON solve cache from disk into a dictionary of load coefficients and
+    solve times.
 
     The cache is a pure optimization, so any file that cannot be read as a current-
     schema solve cache yields an empty cache rather than an error and the sweep rebuilds
@@ -54,8 +58,9 @@ def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
 
     :param cache_path: The path to the JSON solve cache file, or None to skip caching
         and return an empty cache.
-    :return: A dict mapping each cache key to a (num_airplanes, 6) ndarray of floats
-        holding that mesh's per-Airplane load coefficients.
+    :return: A dict mapping each cache key to a tuple of a (num_airplanes, 6) ndarray of
+        floats holding that mesh's per-Airplane load coefficients and a float holding
+        the time, in seconds, its solve took when it ran.
     """
     if cache_path is None or not cache_path.exists():
         return {}
@@ -83,18 +88,21 @@ def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
         return {}
 
     return {
-        key: np.array(coefficients, dtype=float)
-        for key, coefficients in entries.items()
+        key: (
+            np.array(entry["coefficients"], dtype=float),
+            float(entry["solve_time"]),
+        )
+        for key, entry in entries.items()
     }
 
 
 def write_cache(
     cache_path: Path,
-    solve_cache: dict[str, np.ndarray],
+    solve_cache: dict[str, tuple[np.ndarray, float]],
     memo_cache: dict[str, float],
 ) -> None:
-    """Writes the whole cache (solved coefficients and memos) to disk as JSON, replacing
-    any existing file atomically.
+    """Writes the whole cache (solved coefficients, solve times, and memos) to disk as
+    JSON, replacing any existing file atomically.
 
     Both sections are written together as one file image, so neither the solved
     coefficients nor the memos can clobber the other. The file is written to a temporary
@@ -104,8 +112,10 @@ def write_cache(
     file are not supported.
 
     :param cache_path: The path to the JSON cache file.
-    :param solve_cache: A dict mapping each solve-cache key to a (num_airplanes, 6)
-        ndarray of floats holding that mesh's per-Airplane load coefficients.
+    :param solve_cache: A dict mapping each solve-cache key to a tuple of a
+        (num_airplanes, 6) ndarray of floats holding that mesh's per-Airplane load
+        coefficients and a float holding the time, in seconds, its solve took when it
+        ran.
     :param memo_cache: A dict mapping each absolute-valued memo key to its value, as
         returned by memos_to_disk.
     :return: None
@@ -113,7 +123,11 @@ def write_cache(
     data = {
         "_cache_version": _SOLVE_CACHE_VERSION,
         "entries": {
-            key: coefficients.tolist() for key, coefficients in solve_cache.items()
+            key: {
+                "coefficients": coefficients.tolist(),
+                "solve_time": solve_time,
+            }
+            for key, (coefficients, solve_time) in solve_cache.items()
         },
         "memos": memo_cache,
     }
@@ -125,22 +139,25 @@ def write_cache(
 
 
 def cached_solve(
-    cache: dict[str, np.ndarray],
+    cache: dict[str, tuple[np.ndarray, float]],
     key: str,
     solve: Callable[[], np.ndarray],
     persist: Callable[[], None] | None = None,
-) -> np.ndarray:
-    """Returns a mesh's load coefficients from the cache, solving and storing them on a
-    miss.
+) -> tuple[np.ndarray, float]:
+    """Returns a mesh's load coefficients and solve time from the cache, solving,
+    timing, and storing them on a miss.
 
-    On a hit, the stored coefficients are returned and the expensive solve is skipped.
-    On a miss, solve is called, its result is added to the in-memory cache, and, when a
-    persist callback is given, it is invoked to write the whole cache through to disk so
-    an interrupted study keeps every iteration solved so far. The returned array is the
-    one held in the cache and must be treated as read-only by the caller.
+    On a hit, the stored coefficients and solve time are returned and the expensive
+    solve is skipped. On a miss, solve is called and timed, its result is added to the
+    in-memory cache, and, when a persist callback is given, it is invoked to write the
+    whole cache through to disk so an interrupted study keeps every iteration solved so
+    far. The returned solve time is the time the solve took when it actually ran, which
+    on a hit may have been during an earlier run or on another machine. The returned
+    array is the one held in the cache and must be treated as read-only by the caller.
 
-    :param cache: The in-memory cache mapping each key to a (num_airplanes, 6) ndarray
-        of floats, as returned by load_solve_cache. It is updated in place on a miss.
+    :param cache: The in-memory cache mapping each key to a tuple of a (num_airplanes,
+        6) ndarray of floats and a float solve time in seconds, as returned by
+        load_solve_cache. It is updated in place on a miss.
     :param key: The cache key identifying this solve, as returned by solve_cache_key.
     :param solve: A callable that builds and solves the mesh and returns its
         (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients. It is
@@ -148,19 +165,22 @@ def cached_solve(
     :param persist: An optional callback that writes the whole cache through to disk. It
         is called only on a cache miss, and only when caching to a file. When None, the
         cache is kept in memory only. The default is None.
-    :return: A (num_airplanes, 6) ndarray of floats holding the mesh's per-Airplane load
-        coefficients.
+    :return: A tuple of a (num_airplanes, 6) ndarray of floats holding the mesh's per-
+        Airplane load coefficients and a float holding the time, in seconds, its solve
+        took when it ran.
     """
     if key in cache:
         return cache[key]
 
+    solve_start = time.time()
     coefficients = solve()
-    cache[key] = coefficients
+    solve_time = time.time() - solve_start
+    cache[key] = (coefficients, solve_time)
 
     if persist is not None:
         persist()
 
-    return coefficients
+    return cache[key]
 
 
 def memos_to_disk(

@@ -148,17 +148,19 @@ def analyze_steady_convergence(
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
-        a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the mesh parameters, together with the mesh counts it
-        resolved (the spanwise Panel and WingCrossSection counts). When given, an
-        iteration already in the cache reuses those stored coefficients and counts
-        instead of re-running the solver and re-resolving the mesh, and each new
+        a JSON file that caches each iteration's solved load coefficients and solve
+        time, keyed on the reference problem and the mesh parameters, together with the
+        mesh counts it resolved (the spanwise Panel and WingCrossSection counts). When
+        given, an iteration already in the cache reuses those stored coefficients and
+        counts instead of re-running the solver and re-resolving the mesh, and each new
         iteration is written through to the file, so an interrupted or repeated study
-        reuses the work it has already done. An iteration whose coefficients and counts
-        are all cached also skips building its meshed problem. The mesh counts are keyed
-        on the absolute mesh rather than a sweep index, so a later run over different
-        bounds still reuses any iteration it shares. When None, no cache is read or
-        written. The default is None.
+        reuses the work it has already done. A cached iteration reports its stored solve
+        time, so a warm run's convergence report still shows how long the converged mesh
+        took to solve. An iteration whose coefficients and counts are all cached also
+        skips building its meshed problem. The mesh counts are keyed on the absolute
+        mesh rather than a sweep index, so a later run over different bounds still
+        reuses any iteration it shares. When None, no cache is read or written. The
+        default is None.
     :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
         first two elements are the converged Panel aspect ratio and the converged number
         of chordwise Panels. The third element is the converged solver if
@@ -395,14 +397,13 @@ def analyze_steady_convergence(
 
                 return solved_coefficients
 
-            # Reuse the cached coefficients on a hit, otherwise solve this mesh and store
-            # them. Time the whole step: it is the solve time on a miss and negligible on
-            # a hit.
-            iter_start = time.time()
-            theseCoefficients = _convergence_cache.cached_solve(
+            # Reuse the cached coefficients and solve time on a hit, otherwise solve
+            # this mesh, time the solve, and store both. Either way, this_iter_time
+            # holds the time the solve took when it actually ran, so a warm run reports
+            # the converged mesh's true solve time.
+            theseCoefficients, this_iter_time = _convergence_cache.cached_solve(
                 solve_cache, solve_cache_key, solve_this_mesh, persist_cache
             )
-            this_iter_time = time.time() - iter_start
 
             # Populate the ndarray that stores information from all the iterations with
             # the data from this iteration.
@@ -784,19 +785,21 @@ def analyze_unsteady_convergence(
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
-        a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the wake state, wake length, and mesh parameters, together
-        with the mesh values it resolved (the spanwise Panel and WingCrossSection counts
-        and the optimized delta_time). When given, an iteration already in the cache
-        reuses those stored coefficients and values instead of re-running the solver and
-        re-resolving the mesh, so a warm run also skips the delta_time optimizer, and
-        each new iteration is written through to the file, so an interrupted or repeated
-        study reuses the work it has already done. An iteration whose coefficients and
-        values are all cached also skips building its meshed problem, which avoids
-        regenerating the geometry at every time step. The mesh values are keyed on the
-        absolute mesh rather than a sweep index, so a later run over different bounds
-        still reuses any iteration it shares. When None, no cache is read or written.
-        The default is None.
+        a JSON file that caches each iteration's solved load coefficients and solve
+        time, keyed on the reference problem and the wake state, wake length, and mesh
+        parameters, together with the mesh values it resolved (the spanwise Panel and
+        WingCrossSection counts and the optimized delta_time). When given, an iteration
+        already in the cache reuses those stored coefficients and values instead of re-
+        running the solver and re-resolving the mesh, so a warm run also skips the
+        delta_time optimizer, and each new iteration is written through to the file, so
+        an interrupted or repeated study reuses the work it has already done. A cached
+        iteration reports its stored solve time, so a warm run's convergence report
+        still shows how long the converged mesh took to solve. An iteration whose
+        coefficients and values are all cached also skips building its meshed problem,
+        which avoids regenerating the geometry at every time step. The mesh values are
+        keyed on the absolute mesh rather than a sweep index, so a later run over
+        different bounds still reuses any iteration it shares. When None, no cache is
+        read or written. The default is None.
     :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
         order, the first four elements are the converged wake state (prescribed=True and
         free=False), the converged wake length (in number of cycles for non static
@@ -1159,14 +1162,15 @@ def analyze_unsteady_convergence(
 
                         return solved_coefficients
 
-                    # Reuse the cached coefficients on a hit, otherwise solve this mesh
-                    # and store them. Time the whole step: it is the solve time on a miss
-                    # and negligible on a hit.
-                    iter_start = time.time()
-                    theseFinalCoefficients = _convergence_cache.cached_solve(
-                        solve_cache, solve_cache_key, solve_this_mesh, persist_cache
+                    # Reuse the cached coefficients and solve time on a hit, otherwise
+                    # solve this mesh, time the solve, and store both. Either way,
+                    # this_iter_time holds the time the solve took when it actually ran,
+                    # so a warm run reports the converged mesh's true solve time.
+                    theseFinalCoefficients, this_iter_time = (
+                        _convergence_cache.cached_solve(
+                            solve_cache, solve_cache_key, solve_this_mesh, persist_cache
+                        )
                     )
-                    this_iter_time = time.time() - iter_start
 
                     # Populate the ndarray that stores information from all the
                     # iterations with the data from this iteration.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import copy
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import numpy as np
 
@@ -596,6 +596,77 @@ def build_unsteady_problem(
         movement=this_movement,
         only_final_results=True,
     )
+
+
+def memos_complete(
+    ar_id: int,
+    chord_id: int,
+    ref_airplanes: Sequence[geometry.airplane.Airplane],
+    num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int],
+    num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int],
+    delta_time_cache: dict[tuple[int, int], float] | None = None,
+) -> bool:
+    """Reports whether every memo that building one convergence iteration's problem
+    would record is already cached.
+
+    Building an iteration's problem is what resolves and records its mesh memos: the
+    number of spanwise Panels for each trapezoidal Wing's non-tip WingCrossSections, the
+    number of WingCrossSections for each edge-defined Wing, and, for an unsteady
+    analysis, the mesh's optimized delta_time. When an iteration's solve is served from
+    the solve cache and this function returns True, nothing needs the iteration's
+    problem, so the caller can skip building it. Only the reference geometry's structure
+    is walked, so this check never meshes anything.
+
+    :param ar_id: The index of the current Panel aspect ratio within the list of Panel
+        aspect ratios being tested.
+    :param chord_id: The index of the current number of chordwise Panels within the list
+        of numbers of chordwise Panels being tested.
+    :param ref_airplanes: The reference Airplanes whose structure determines which memo
+        keys the build would record. For an unsteady analysis, these are the reference
+        AirplaneMovements' base Airplanes.
+    :param num_spanwise_panels_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index, WingCrossSection
+        index) tuple to a previously calculated number of spanwise Panels, used for
+        trapezoidal Wings.
+    :param num_wing_cross_sections_cache: The cache mapping a (Panel aspect ratio index,
+        number of chordwise Panels index, Airplane index, Wing index) tuple to a
+        previously calculated number of WingCrossSections, used for edge-defined Wings.
+    :param delta_time_cache: The cache mapping a (Panel aspect ratio index, number of
+        chordwise Panels index) tuple to a previously optimized delta_time, or None for
+        a steady analysis, which has no delta_time. The default is None.
+    :return: True if every memo the build would record is already cached, otherwise
+        False.
+    """
+    if delta_time_cache is not None and (ar_id, chord_id) not in delta_time_cache:
+        return False
+
+    for airplane_id, ref_airplane in enumerate(ref_airplanes):
+        for wing_id, ref_wing in enumerate(ref_airplane.wings):
+
+            # An edge-defined Wing records one memo: its number of WingCrossSections.
+            if ref_wing.spanwise_mesh == "edge_defined":
+                if (
+                    ar_id,
+                    chord_id,
+                    airplane_id,
+                    wing_id,
+                ) not in num_wing_cross_sections_cache:
+                    return False
+                continue
+
+            # A trapezoidal Wing records one memo per non-tip WingCrossSection: its
+            # number of spanwise Panels.
+            for wing_cross_section_id in range(len(ref_wing.wing_cross_sections) - 1):
+                if (
+                    ar_id,
+                    chord_id,
+                    airplane_id,
+                    wing_id,
+                    wing_cross_section_id,
+                ) not in num_spanwise_panels_cache:
+                    return False
+
+    return True
 
 
 def _get_wing_section_movement_num_spanwise_panels(

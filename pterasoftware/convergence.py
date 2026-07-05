@@ -154,10 +154,11 @@ def analyze_steady_convergence(
         iteration already in the cache reuses those stored coefficients and counts
         instead of re-running the solver and re-resolving the mesh, and each new
         iteration is written through to the file, so an interrupted or repeated study
-        reuses the work it has already done. The mesh counts are keyed on the absolute
-        mesh rather than a sweep index, so a later run over different bounds still
-        reuses any iteration it shares. When None, no cache is read or written. The
-        default is None.
+        reuses the work it has already done. An iteration whose coefficients and counts
+        are all cached also skips building its meshed problem. The mesh counts are keyed
+        on the absolute mesh rather than a sweep index, so a later run over different
+        bounds still reuses any iteration it shares. When None, no cache is read or
+        written. The default is None.
     :return: A tuple of two ints and a solver, or a tuple of three Nones. In order, the
         first two elements are the converged Panel aspect ratio and the converged number
         of chordwise Panels. The third element is the converged solver if
@@ -315,21 +316,6 @@ def analyze_steady_convergence(
                 "\t\t\tIteration number: " + str(iteration) + "/" + str(num_iterations)
             )
 
-            # Build this iteration's SteadyProblem with the current Panel aspect ratio
-            # and number of chordwise Panels. The mesh is always built so its spanwise
-            # Panel and WingCrossSection counts are recorded, even when the solve itself
-            # is served from the cache.
-            this_problem = _convergence_meshing.build_steady_problem(
-                ar_id,
-                chord_id,
-                panel_aspect_ratio,
-                num_chordwise_panels,
-                ref_problem,
-                num_spanwise_panels_cache,
-                num_wing_cross_sections_cache,
-            )
-            these_airplanes = this_problem.airplanes
-
             # Build this mesh's solve-cache key from the reference problem, the solver
             # type, and the mesh parameters that determine the solve.
             solve_cache_key = _convergence_cache.solve_cache_key(
@@ -337,7 +323,40 @@ def analyze_steady_convergence(
             )
             cached = solve_cache_key in solve_cache
 
+            # Build this iteration's SteadyProblem with the current Panel aspect ratio
+            # and number of chordwise Panels. The build is skipped when the solve is
+            # served from the cache and every memo it would record (the mesh's spanwise
+            # Panel and WingCrossSection counts) is already cached, since nothing then
+            # needs the meshed problem. When any memo is missing, the build runs even on
+            # a solve hit so the counts are recorded for the convergence report and for
+            # seeding finer meshes' searches.
+            this_problem: problems.SteadyProblem | None = None
+            if not (
+                cached
+                and _convergence_meshing.memos_complete(
+                    ar_id,
+                    chord_id,
+                    ref_airplanes,
+                    num_spanwise_panels_cache,
+                    num_wing_cross_sections_cache,
+                )
+            ):
+                this_problem = _convergence_meshing.build_steady_problem(
+                    ar_id,
+                    chord_id,
+                    panel_aspect_ratio,
+                    num_chordwise_panels,
+                    ref_problem,
+                    num_spanwise_panels_cache,
+                    num_wing_cross_sections_cache,
+                )
+
             def solve_this_mesh() -> np.ndarray:
+                # A solve happens only on a solve-cache miss, and on a miss this
+                # iteration's problem is always built above.
+                assert this_problem is not None
+                these_airplanes = this_problem.airplanes
+
                 # Create this iteration's steady solver based on the type specified.
                 this_solver: (
                     steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -772,7 +791,9 @@ def analyze_unsteady_convergence(
         reuses those stored coefficients and values instead of re-running the solver and
         re-resolving the mesh, so a warm run also skips the delta_time optimizer, and
         each new iteration is written through to the file, so an interrupted or repeated
-        study reuses the work it has already done. The mesh values are keyed on the
+        study reuses the work it has already done. An iteration whose coefficients and
+        values are all cached also skips building its meshed problem, which avoids
+        regenerating the geometry at every time step. The mesh values are keyed on the
         absolute mesh rather than a sweep index, so a later run over different bounds
         still reuses any iteration it shares. When None, no cache is read or written.
         The default is None.
@@ -884,16 +905,14 @@ def analyze_unsteady_convergence(
     _logger.info("Beginning convergence analysis...")
 
     ref_airplane_movements = ref_movement.airplane_movements
+    ref_base_airplanes = tuple(
+        ref_airplane_movement.base_airplane
+        for ref_airplane_movement in ref_airplane_movements
+    )
 
     # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal or
     # edge-defined).
-    _reject_unrefinable_wings(
-        tuple(
-            ref_airplane_movement.base_airplane
-            for ref_airplane_movement in ref_airplane_movements
-        ),
-        "analyze_unsteady_convergence",
-    )
+    _reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
 
     # Create the list of wake states to iterate over.
     wake_list = []
@@ -1041,23 +1060,6 @@ def analyze_unsteady_convergence(
                         + str(num_iterations)
                     )
 
-                    # Build this iteration's UnsteadyProblem with the current wake
-                    # length, Panel aspect ratio, and number of chordwise Panels. The
-                    # mesh is always built so its spanwise Panel and WingCrossSection
-                    # counts and its optimized delta_time are recorded, even when the
-                    # solve itself is served from the cache.
-                    this_problem = _convergence_meshing.build_unsteady_problem(
-                        ar_id,
-                        chord_id,
-                        panel_aspect_ratio,
-                        num_chordwise_panels,
-                        wake_length,
-                        ref_problem,
-                        num_spanwise_panels_cache,
-                        num_wing_cross_sections_cache,
-                        delta_time_cache,
-                    )
-
                     # Build this mesh's solve-cache key from the reference problem and
                     # the wake state, wake length, and mesh parameters that determine the
                     # solve.
@@ -1070,7 +1072,45 @@ def analyze_unsteady_convergence(
                     )
                     cached = solve_cache_key in solve_cache
 
+                    # Build this iteration's UnsteadyProblem with the current wake
+                    # length, Panel aspect ratio, and number of chordwise Panels. The
+                    # build is skipped when the solve is served from the cache and every
+                    # memo it would record (the mesh's spanwise Panel and
+                    # WingCrossSection counts and its optimized delta_time) is already
+                    # cached, since nothing then needs the meshed problem, and building
+                    # it would regenerate the geometry at every time step. When any memo
+                    # is missing, the build runs even on a solve hit so the values are
+                    # recorded for the convergence report and for seeding finer meshes'
+                    # searches.
+                    this_problem: problems.UnsteadyProblem | None = None
+                    if not (
+                        cached
+                        and _convergence_meshing.memos_complete(
+                            ar_id,
+                            chord_id,
+                            ref_base_airplanes,
+                            num_spanwise_panels_cache,
+                            num_wing_cross_sections_cache,
+                            delta_time_cache,
+                        )
+                    ):
+                        this_problem = _convergence_meshing.build_unsteady_problem(
+                            ar_id,
+                            chord_id,
+                            panel_aspect_ratio,
+                            num_chordwise_panels,
+                            wake_length,
+                            ref_problem,
+                            num_spanwise_panels_cache,
+                            num_wing_cross_sections_cache,
+                            delta_time_cache,
+                        )
+
                     def solve_this_mesh() -> np.ndarray:
+                        # A solve happens only on a solve-cache miss, and on a miss this
+                        # iteration's problem is always built above.
+                        assert this_problem is not None
+
                         # Create and run this iteration's
                         # UnsteadyRingVortexLatticeMethodSolver.
                         this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(

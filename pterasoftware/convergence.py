@@ -40,9 +40,16 @@ from . import (
 _logger = _logging.get_logger("convergence")
 
 # The labels of the six load coefficients that convergence is checked against, in the
-# order they are stored: the three force coefficients followed by the three moment
-# coefficients.
-_COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
+# order they are stored: the three force coefficients (in wind axes) followed by the
+# three moment coefficients (in wind axes, relative to the first Airplane's CG).
+_COEFFICIENT_LABELS = (
+    "cFX_W",
+    "cFY_W",
+    "cFZ_W",
+    "cMX_W_CgP1",
+    "cMY_W_CgP1",
+    "cMZ_W_CgP1",
+)
 
 
 def analyze_steady_convergence(
@@ -75,7 +82,9 @@ def analyze_steady_convergence(
     nested for loops (with the number of chordwise Panels as the inner loop).
 
     With each new combination of these values, the SteadyProblem is solved, and each
-    Airplane's six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. Then,
+    Airplane's six load coefficients are stored: the three force coefficients (in wind
+    axes) and the three moment coefficients (in wind axes, relative to the first
+    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). Then,
     convergence is checked per coefficient between this iteration and the iterations
     with incrementally coarser meshes in the two parameter directions (Panel aspect
     ratio and number of chordwise Panels). A coefficient is converged in a parameter
@@ -137,10 +146,10 @@ def analyze_steady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
-        None to require all six. At least one element must be True. Use this to ignore
-        coefficients that are physically irrelevant to the analysis. The default is
-        None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
+        order) must converge, or None to require all six. At least one element must be
+        True. Use this to ignore coefficients that are physically irrelevant to the
+        analysis. The default is None.
     :param resolve_converged_solver: A bool for whether to recreate and run the solver
         at the converged parameters and return it. Because finding convergence is
         expensive, this defaults to False, in which case the returned solver is None.
@@ -243,8 +252,8 @@ def analyze_steady_convergence(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
 
-    # Each iteration stores the six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) of
-    # each Airplane, in that order, along the last axis.
+    # Each iteration stores the six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1,
+    # cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the last axis.
     coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
@@ -380,7 +389,8 @@ def analyze_steady_convergence(
                 this_solver.run(calculate_streamlines=False)
 
                 # Create and fill an ndarray with each of this iteration's Airplanes' six
-                # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
+                # load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1,
+                # cMZ_W_CgP1).
                 solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
                 for this_airplane_id, this_airplane in enumerate(these_airplanes):
@@ -401,13 +411,13 @@ def analyze_steady_convergence(
             # this mesh, time the solve, and store both. Either way, this_iter_time
             # holds the time the solve took when it actually ran, so a warm run reports
             # the converged mesh's true solve time.
-            theseCoefficients, this_iter_time = _convergence_cache.cached_solve(
+            these_coefficients, this_iter_time = _convergence_cache.cached_solve(
                 solve_cache, solve_cache_key, solve_this_mesh, persist_cache
             )
 
             # Populate the ndarray that stores information from all the iterations with
             # the data from this iteration.
-            coefficients[ar_id, chord_id, :, :] = theseCoefficients
+            coefficients[ar_id, chord_id, :, :] = these_coefficients
             iter_times[ar_id, chord_id] = this_iter_time
 
             if cached:
@@ -430,7 +440,7 @@ def analyze_steady_convergence(
             if ar_id > 0:
                 ar_converged, ar_metric, ar_limiting_id = (
                     _check_coefficient_convergence(
-                        theseCoefficients,
+                        these_coefficients,
                         coefficients[ar_id - 1, chord_id, :, :],
                         rtol,
                         atol,
@@ -455,7 +465,7 @@ def analyze_steady_convergence(
             if chord_id > 0:
                 chord_converged, chord_metric, chord_limiting_id = (
                     _check_coefficient_convergence(
-                        theseCoefficients,
+                        these_coefficients,
                         coefficients[ar_id, chord_id - 1, :, :],
                         rtol,
                         atol,
@@ -673,7 +683,9 @@ def analyze_unsteady_convergence(
     the number of chordwise Panels.
 
     With each new combination of these values, the UnsteadyProblem is solved, and each
-    Airplane's six final load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. As
+    Airplane's six final load coefficients are stored: the three force coefficients (in
+    wind axes) and the three moment coefficients (in wind axes, relative to the first
+    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). As
     this function deals with UnsteadyProblems, it considers the final load coefficients
     to be the final cycle's mean load coefficients (the signed time-average over the
     final cycle) for UnsteadyProblems with variable geometry, and the final time step's
@@ -770,10 +782,10 @@ def analyze_unsteady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
-        None to require all six. At least one element must be True. Use this to ignore
-        coefficients that are physically irrelevant to the analysis. The default is
-        None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
+        order) must converge, or None to require all six. At least one element must be
+        True. Use this to ignore coefficients that are physically irrelevant to the
+        analysis. The default is None.
     :param show_solver_progress: Set this to True to show the TQDM progress bar during
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
@@ -954,9 +966,10 @@ def analyze_unsteady_convergence(
         ),
         dtype=float,
     )
-    # Each iteration stores the six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
-    # cMZ) of each Airplane, in that order, along the last axis.
-    finalCoefficients = np.zeros(
+    # Each iteration stores the six final load coefficients (cFX_W, cFY_W, cFZ_W,
+    # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the
+    # last axis.
+    final_coefficients = np.zeros(
         (
             len(wake_list),
             len(wake_lengths_list),
@@ -1129,8 +1142,8 @@ def analyze_unsteady_convergence(
                         )
 
                         # Create and fill an ndarray with each of this iteration's
-                        # Airplanes' six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
-                        # cMZ).
+                        # Airplanes' six final load coefficients (cFX_W, cFY_W, cFZ_W,
+                        # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
                         solved_coefficients = np.zeros(
                             (len(ref_airplane_movements), 6), dtype=float
                         )
@@ -1166,7 +1179,7 @@ def analyze_unsteady_convergence(
                     # solve this mesh, time the solve, and store both. Either way,
                     # this_iter_time holds the time the solve took when it actually ran,
                     # so a warm run reports the converged mesh's true solve time.
-                    theseFinalCoefficients, this_iter_time = (
+                    these_final_coefficients, this_iter_time = (
                         _convergence_cache.cached_solve(
                             solve_cache, solve_cache_key, solve_this_mesh, persist_cache
                         )
@@ -1174,8 +1187,8 @@ def analyze_unsteady_convergence(
 
                     # Populate the ndarray that stores information from all the
                     # iterations with the data from this iteration.
-                    finalCoefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
-                        theseFinalCoefficients
+                    final_coefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
+                        these_final_coefficients
                     )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
@@ -1201,8 +1214,8 @@ def analyze_unsteady_convergence(
                     if wake_id > 0:
                         wake_converged, wake_metric, wake_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id - 1, length_id, ar_id, chord_id, :, :
                                 ],
                                 rtol,
@@ -1228,8 +1241,8 @@ def analyze_unsteady_convergence(
                     if length_id > 0:
                         length_converged, length_metric, length_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id - 1, ar_id, chord_id, :, :
                                 ],
                                 rtol,
@@ -1255,8 +1268,8 @@ def analyze_unsteady_convergence(
                     if ar_id > 0:
                         ar_converged, ar_metric, ar_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id, ar_id - 1, chord_id, :, :
                                 ],
                                 rtol,
@@ -1283,8 +1296,8 @@ def analyze_unsteady_convergence(
                     if chord_id > 0:
                         chord_converged, chord_metric, chord_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id, ar_id, chord_id - 1, :, :
                                 ],
                                 rtol,
@@ -1620,8 +1633,8 @@ def _validate_coefficient_mask(
     functions and returns it as an ndarray.
 
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) must converge, or None to require
-        all six. At least one element must be True.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) must
+        converge, or None to require all six. At least one element must be True.
     :return: A (6,) ndarray of bools representing the validated mask.
     """
     if coefficient_mask is None:
@@ -1661,8 +1674,10 @@ def _check_coefficient_convergence(
     the coefficient that attains it are returned to identify the limiting coefficient.
 
     :param these_coefficients: A (M,6) ndarray of floats, where M is the number of
-        Airplanes, of this iteration's six load coefficients (cFX, cFY, cFZ, cMX, cMY,
-        cMZ) for each Airplane.
+        Airplanes, of this iteration's six load coefficients for each Airplane: the
+        three force coefficients (in wind axes) and the three moment coefficients (in
+        wind axes, relative to the first Airplane's CG), or (cFX_W, cFY_W, cFZ_W,
+        cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
     :param coarser_coefficients: A (M,6) ndarray of floats, of the same shape, of the
         incrementally coarser iteration's six load coefficients for each Airplane.
     :param rtol: The relative tolerance. It must be a positive float.

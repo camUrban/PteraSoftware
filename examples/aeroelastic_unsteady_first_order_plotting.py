@@ -30,7 +30,7 @@ def run_aeroelastic(
     damping_constant: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
     animate: bool = False,
-) -> tuple[list, object]:
+) -> tuple[list, ps.problems.AeroelasticUnsteadyProblem]:
     """Run the aeroelastic solver and return the net deformation data.
 
     :param spring_constant: The torsional spring stiffness value.

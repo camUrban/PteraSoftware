@@ -217,6 +217,34 @@ class TestSolveCache(unittest.TestCase):
             with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
                 self.assertEqual(_convergence_cache.load_solve_cache(path), {})
 
+    def test_load_malformed_entry_returns_empty(self) -> None:
+        """Test that a current-version file whose entries section holds a malformed
+        entry is ignored with a warning.
+        """
+        # The variants cover an entry that is not a dict, an entry missing its
+        # coefficients, an entry missing its solve time, and an entry with non-numeric
+        # coefficients.
+        malformed_entries: tuple[dict[str, object], ...] = (
+            {"key": [1.0, 2.0, 3.0]},
+            {"key": {"solve_time": 42.5}},
+            {"key": {"coefficients": [[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]]}},
+            {"key": {"coefficients": [["junk"] * 6], "solve_time": 42.5}},
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            for entries in malformed_entries:
+                with self.subTest(entries=entries):
+                    data = {
+                        "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                        "entries": entries,
+                    }
+                    with open(path, "w") as cache_file:
+                        json.dump(data, cache_file)
+                    with self.assertLogs(
+                        "pterasoftware._convergence_cache", level="WARNING"
+                    ):
+                        self.assertEqual(_convergence_cache.load_solve_cache(path), {})
+
 
 class TestMemoTranslation(unittest.TestCase):
     """This class contains methods for testing _convergence_cache.memos_to_disk and
@@ -500,6 +528,29 @@ class TestMemoCacheDisk(unittest.TestCase):
                 json.dump(data, cache_file)
             with self.assertLogs("pterasoftware._convergence_cache", level="WARNING"):
                 self.assertEqual(_convergence_cache.load_memo_cache(path), {})
+
+    def test_load_non_numeric_memo_value_returns_empty(self) -> None:
+        """Test that a current-version file whose memo section holds a non-numeric
+        value is ignored with a warning.
+
+        :return: None
+        """
+        key = _convergence_cache.solve_cache_key("abc123", "delta_time", 3, 3)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            for value in ("junk", None, [0.0125]):
+                with self.subTest(value=value):
+                    data = {
+                        "_cache_version": _convergence_cache._SOLVE_CACHE_VERSION,
+                        "entries": {},
+                        "memos": {key: value},
+                    }
+                    with open(path, "w") as cache_file:
+                        json.dump(data, cache_file)
+                    with self.assertLogs(
+                        "pterasoftware._convergence_cache", level="WARNING"
+                    ):
+                        self.assertEqual(_convergence_cache.load_memo_cache(path), {})
 
     def test_write_cache_round_trips_both_sections(self) -> None:
         """Test that the unified writer stores both the solve entries and the memos so

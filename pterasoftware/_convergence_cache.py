@@ -53,8 +53,9 @@ def load_solve_cache(
     it by solving each mesh. This covers a missing file, an unreadable file (for example
     a directory or a permission error), a file that is not valid JSON, a file whose
     schema version does not match the current one, and a current-version file whose
-    entries section is missing or malformed. An unreadable or invalid file is logged as
-    a warning so a silently degraded cache is still observable.
+    entries section is missing, malformed, or holds a malformed entry. An unreadable or
+    invalid file is logged as a warning so a silently degraded cache is still
+    observable.
 
     :param cache_path: The path to the JSON solve cache file, or None to skip caching
         and return an empty cache.
@@ -92,13 +93,22 @@ def load_solve_cache(
         )
         return {}
 
-    return {
-        key: (
-            np.array(entry["coefficients"], dtype=float),
-            float(entry["solve_time"]),
+    try:
+        return {
+            key: (
+                np.array(entry["coefficients"], dtype=float),
+                float(entry["solve_time"]),
+            )
+            for key, entry in entries.items()
+        }
+    except (KeyError, TypeError, ValueError):
+        _logger.warning(
+            _logging.indent()
+            + "Ignoring solve cache at %s with a malformed entries section, so "
+            "rebuilding it",
+            cache_path,
         )
-        for key, entry in entries.items()
-    }
+        return {}
 
 
 def write_cache(
@@ -374,8 +384,9 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     each mesh as usual. This covers a None path, a missing file, an unreadable file (for
     example a directory or a permission error), a file that is not valid JSON, a file
     whose schema version does not match the current one, and a current-version file
-    whose memo section is missing or malformed. An unreadable or invalid file is logged
-    as a warning so a silently degraded cache is still observable.
+    whose memo section is missing, malformed, or holds a non-numeric value. An
+    unreadable or invalid file is logged as a warning so a silently degraded cache is
+    still observable.
 
     :param cache_path: The path to the JSON cache file, or None to skip caching and
         return an empty dictionary.
@@ -400,7 +411,7 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
         return {}
 
-    memos: dict[str, float] = data.get("memos", {})
+    memos = data.get("memos", {})
     if not isinstance(memos, dict):
         _logger.warning(
             _logging.indent()
@@ -410,4 +421,13 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
         )
         return {}
 
-    return memos
+    try:
+        return {key: float(value) for key, value in memos.items()}
+    except (TypeError, ValueError):
+        _logger.warning(
+            _logging.indent()
+            + "Ignoring cache at %s with a malformed memo section, so resolving "
+            "each mesh",
+            cache_path,
+        )
+        return {}

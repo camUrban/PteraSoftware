@@ -468,11 +468,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.current_operating_point = current_problem.operating_point
                 self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
                 _logger.debug(
-                    "Beginning time step "
+                    _logging.indent()
+                    + "Beginning time step "
                     + str(self._current_step)
                     + " out of "
                     + str(self.num_steps - 1)
-                    + "."
                 )
 
                 # Reinitialize the per step working arrays, collapse the geometry,
@@ -486,7 +486,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self._update_next_step_hook(step)
 
                 # Shed ring vortices into the wake.
-                _logger.debug("Shedding ring vortices into the wake.")
+                _logger.debug(
+                    _logging.indent() + "Shedding ring vortices into the wake"
+                )
                 self._populate_next_airplanes_wake()
 
                 # Snapshot this step's solved bound ring vortex strengths so the
@@ -502,13 +504,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # approximate, relative computing time.
                 bar.update(n=float(approx_times[step + 1]))
 
-            _logger.debug("Calculating averaged or final forces and moments.")
+            _logger.debug(
+                _logging.indent() + "Calculating averaged or final forces and moments"
+            )
             self._finalize_loads()
 
         # Solve for the location of the streamlines coming off the Wings' trailing
         # edges, if requested.
         if calculate_streamlines:
-            _logger.debug("Calculating streamlines.")
+            _logger.debug(_logging.indent() + "Calculating streamlines")
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.
@@ -608,35 +612,35 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
         # Collapse the geometry matrices into 1D ndarrays of attributes.
-        _logger.debug("Collapsing the geometry.")
+        _logger.debug(_logging.indent() + "Collapsing the geometry")
         self._collapse_geometry()
 
         # Find the matrix of Wing Wing influence coefficients associated with
         # the Airplanes' geometries at this time step.
-        _logger.debug("Calculating the Wing Wing influences.")
+        _logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
         self._calculate_wing_wing_influences()
 
         # Find the normal velocity (in the first Airplane's geometry axes,
         # observed from the Earth frame) at every collocation point due
         # solely to the freestream.
-        _logger.debug("Calculating the freestream Wing influences.")
+        _logger.debug(_logging.indent() + "Calculating the freestream Wing influences")
         self._calculate_freestream_wing_influences()
 
         # Find the normal velocity (in the first Airplane's geometry axes,
         # observed from the Earth frame) at every collocation point due
         # solely to the wake ring vortices.
-        _logger.debug("Calculating the wake Wing influences.")
+        _logger.debug(_logging.indent() + "Calculating the wake Wing influences")
         self._calculate_wake_wing_influences()
 
         # Solve for each bound ring vortex's strength.
-        _logger.debug("Calculating bound ring vortex strengths.")
+        _logger.debug(_logging.indent() + "Calculating bound ring vortex strengths")
         self._calculate_vortex_strengths()
 
         # Solve for the forces (in the first Airplane's geometry axes) and
         # moments (in the first Airplane's geometry axes, relative to the
         # first Airplane's CG) on each Panel.
         if self._current_step >= self.first_results_step:
-            _logger.debug("Calculating forces and moments.")
+            _logger.debug(_logging.indent() + "Calculating forces and moments")
             self._calculate_loads()
 
     def initialize_step_geometry(self, step: int) -> None:
@@ -686,7 +690,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: None
         """
         if step == 0:
-            _logger.debug("Initializing all Airplanes' bound ring vortices.")
+            _logger.debug(
+                _logging.indent() + "Initializing all Airplanes' bound ring vortices"
+            )
             self._initialize_panel_vortices()
 
     def _reinitialize_step_arrays_hook(self) -> None:

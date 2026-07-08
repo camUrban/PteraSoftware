@@ -40,9 +40,16 @@ from . import (
 _logger = _logging.get_logger("convergence")
 
 # The labels of the six load coefficients that convergence is checked against, in the
-# order they are stored: the three force coefficients followed by the three moment
-# coefficients.
-_COEFFICIENT_LABELS = ("cFX", "cFY", "cFZ", "cMX", "cMY", "cMZ")
+# order they are stored: the three force coefficients (in wind axes) followed by the
+# three moment coefficients (in wind axes, relative to the first Airplane's CG).
+_COEFFICIENT_LABELS = (
+    "cFX_W",
+    "cFY_W",
+    "cFZ_W",
+    "cMX_W_CgP1",
+    "cMY_W_CgP1",
+    "cMZ_W_CgP1",
+)
 
 
 def analyze_steady_convergence(
@@ -75,7 +82,9 @@ def analyze_steady_convergence(
     nested for loops (with the number of chordwise Panels as the inner loop).
 
     With each new combination of these values, the SteadyProblem is solved, and each
-    Airplane's six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. Then,
+    Airplane's six load coefficients are stored: the three force coefficients (in wind
+    axes) and the three moment coefficients (in wind axes, relative to the first
+    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). Then,
     convergence is checked per coefficient between this iteration and the iterations
     with incrementally coarser meshes in the two parameter directions (Panel aspect
     ratio and number of chordwise Panels). A coefficient is converged in a parameter
@@ -137,10 +146,10 @@ def analyze_steady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
-        None to require all six. At least one element must be True. Use this to ignore
-        coefficients that are physically irrelevant to the analysis. The default is
-        None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
+        order) must converge, or None to require all six. At least one element must be
+        True. Use this to ignore coefficients that are physically irrelevant to the
+        analysis. The default is None.
     :param resolve_converged_solver: A bool for whether to recreate and run the solver
         at the converged parameters and return it. Because finding convergence is
         expensive, this defaults to False, in which case the returned solver is None.
@@ -148,13 +157,16 @@ def analyze_steady_convergence(
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
-        a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the mesh parameters, together with the mesh counts it
-        resolved (the spanwise Panel and WingCrossSection counts). When given, an
-        iteration already in the cache reuses those stored coefficients and counts
-        instead of re-running the solver and re-resolving the mesh, and each new
+        a JSON file that caches each iteration's solved load coefficients and solve
+        time, keyed on the reference problem and the mesh parameters, together with the
+        mesh counts it resolved (the spanwise Panel and WingCrossSection counts). When
+        given, an iteration already in the cache reuses those stored coefficients and
+        counts instead of re-running the solver and re-resolving the mesh, and each new
         iteration is written through to the file, so an interrupted or repeated study
-        reuses the work it has already done. The mesh counts are keyed on the absolute
+        reuses the work it has already done. A cached iteration reports its stored solve
+        time, so a warm run's convergence report still shows how long the converged mesh
+        took to solve. An iteration whose coefficients and counts are all cached also
+        skips building its meshed problem. The mesh counts are keyed on the absolute
         mesh rather than a sweep index, so a later run over different bounds still
         reuses any iteration it shares. When None, no cache is read or written. The
         default is None.
@@ -216,7 +228,7 @@ def analyze_steady_convergence(
             )
 
     run_start_time = time.time()
-    _logger.info("Beginning convergence analysis...")
+    _logger.info(_logging.indent() + "Beginning convergence analysis")
 
     ref_airplanes = ref_problem.airplanes
 
@@ -240,8 +252,8 @@ def analyze_steady_convergence(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
 
-    # Each iteration stores the six load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) of
-    # each Airplane, in that order, along the last axis.
+    # Each iteration stores the six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1,
+    # cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the last axis.
     coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
@@ -304,31 +316,24 @@ def analyze_steady_convergence(
 
     # Begin iterating through the outer loop of Panel aspect ratios.
     for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-        _logger.info("\tPanel aspect ratio: " + str(panel_aspect_ratio))
+        _logger.info(
+            _logging.indent(1) + "Panel aspect ratio: " + str(panel_aspect_ratio)
+        )
 
         # Begin iterating through the inner loop of number of chordwise Panels.
         for chord_id, num_chordwise_panels in enumerate(num_chordwise_panels_list):
-            _logger.info("\t\tChordwise Panels: " + str(num_chordwise_panels))
+            _logger.info(
+                _logging.indent(2) + "Chordwise Panels: " + str(num_chordwise_panels)
+            )
 
             iteration += 1
             _logger.info(
-                "\t\t\tIteration number: " + str(iteration) + "/" + str(num_iterations)
+                _logging.indent(3)
+                + "Iteration number: "
+                + str(iteration)
+                + "/"
+                + str(num_iterations)
             )
-
-            # Build this iteration's SteadyProblem with the current Panel aspect ratio
-            # and number of chordwise Panels. The mesh is always built so its spanwise
-            # Panel and WingCrossSection counts are recorded, even when the solve itself
-            # is served from the cache.
-            this_problem = _convergence_meshing.build_steady_problem(
-                ar_id,
-                chord_id,
-                panel_aspect_ratio,
-                num_chordwise_panels,
-                ref_problem,
-                num_spanwise_panels_cache,
-                num_wing_cross_sections_cache,
-            )
-            these_airplanes = this_problem.airplanes
 
             # Build this mesh's solve-cache key from the reference problem, the solver
             # type, and the mesh parameters that determine the solve.
@@ -337,7 +342,43 @@ def analyze_steady_convergence(
             )
             cached = solve_cache_key in solve_cache
 
+            # Build this iteration's SteadyProblem with the current Panel aspect ratio
+            # and number of chordwise Panels. The build is skipped when the solve is
+            # served from the cache and every memo it would record (the mesh's spanwise
+            # Panel and WingCrossSection counts) is already cached, since nothing then
+            # needs the meshed problem. When any memo is missing, the build runs even on
+            # a solve hit so the counts are recorded for the convergence report and for
+            # seeding finer meshes' searches.
+            this_problem: problems.SteadyProblem | None = None
+            if not (
+                cached
+                and _convergence_meshing.memos_complete(
+                    ar_id,
+                    chord_id,
+                    ref_airplanes,
+                    num_spanwise_panels_cache,
+                    num_wing_cross_sections_cache,
+                )
+            ):
+                # The build's log messages nest at and one level under this
+                # iteration's messages.
+                with _logging.nested(3):
+                    this_problem = _convergence_meshing.build_steady_problem(
+                        ar_id,
+                        chord_id,
+                        panel_aspect_ratio,
+                        num_chordwise_panels,
+                        ref_problem,
+                        num_spanwise_panels_cache,
+                        num_wing_cross_sections_cache,
+                    )
+
             def solve_this_mesh() -> np.ndarray:
+                # A solve happens only on a solve-cache miss, and on a miss this
+                # iteration's problem is always built above.
+                assert this_problem is not None
+                these_airplanes = this_problem.airplanes
+
                 # Create this iteration's steady solver based on the type specified.
                 this_solver: (
                     steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -352,14 +393,17 @@ def analyze_steady_convergence(
                         steady_problem=this_problem,
                     )
 
-                _logger.info("\t\t\tStarting simulation...")
+                _logger.info(_logging.indent(3) + "Starting simulation")
 
                 # Run the steady solver. Skip the streamline trace since it does not
-                # affect convergence metrics.
-                this_solver.run(calculate_streamlines=False)
+                # affect convergence metrics. The solver's log messages nest one level
+                # under this iteration's messages.
+                with _logging.nested(4):
+                    this_solver.run(calculate_streamlines=False)
 
                 # Create and fill an ndarray with each of this iteration's Airplanes' six
-                # load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ).
+                # load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1,
+                # cMZ_W_CgP1).
                 solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
                 for this_airplane_id, this_airplane in enumerate(these_airplanes):
@@ -376,25 +420,25 @@ def analyze_steady_convergence(
 
                 return solved_coefficients
 
-            # Reuse the cached coefficients on a hit, otherwise solve this mesh and store
-            # them. Time the whole step: it is the solve time on a miss and negligible on
-            # a hit.
-            iter_start = time.time()
-            theseCoefficients = _convergence_cache.cached_solve(
+            # Reuse the cached coefficients and solve time on a hit, otherwise solve
+            # this mesh, time the solve, and store both. Either way, this_iter_time
+            # holds the time the solve took when it actually ran, so a warm run reports
+            # the converged mesh's true solve time.
+            these_coefficients, this_iter_time = _convergence_cache.cached_solve(
                 solve_cache, solve_cache_key, solve_this_mesh, persist_cache
             )
-            this_iter_time = time.time() - iter_start
 
             # Populate the ndarray that stores information from all the iterations with
             # the data from this iteration.
-            coefficients[ar_id, chord_id, :, :] = theseCoefficients
+            coefficients[ar_id, chord_id, :, :] = these_coefficients
             iter_times[ar_id, chord_id] = this_iter_time
 
             if cached:
-                _logger.info("\t\t\tLoaded cached solution.")
+                _logger.info(_logging.indent(3) + "Loaded cached solution")
             else:
                 _logger.info(
-                    "\t\t\tSimulation completed in "
+                    _logging.indent(3)
+                    + "Simulation completed in "
                     + _functions.format_duration(this_iter_time)
                 )
 
@@ -410,7 +454,7 @@ def analyze_steady_convergence(
             if ar_id > 0:
                 ar_converged, ar_metric, ar_limiting_id = (
                     _check_coefficient_convergence(
-                        theseCoefficients,
+                        these_coefficients,
                         coefficients[ar_id - 1, chord_id, :, :],
                         rtol,
                         atol,
@@ -419,15 +463,17 @@ def analyze_steady_convergence(
                 )
 
                 _logger.info(
-                    "\t\t\tPanel aspect ratio convergence metric: "
+                    _logging.indent(3)
+                    + "Panel aspect ratio convergence: "
                     + f"{ar_metric:#.4G}"
-                    + "% (limiting coefficient: "
+                    + "% (limiting: "
                     + _COEFFICIENT_LABELS[ar_limiting_id]
                     + ")"
                 )
             else:
                 _logger.info(
-                    "\t\t\tPanel aspect ratio convergence metric: not yet checked"
+                    _logging.indent(3)
+                    + "Panel aspect ratio convergence: not yet checked"
                 )
 
             # If this isn't the first number of chordwise Panels, check convergence in
@@ -435,7 +481,7 @@ def analyze_steady_convergence(
             if chord_id > 0:
                 chord_converged, chord_metric, chord_limiting_id = (
                     _check_coefficient_convergence(
-                        theseCoefficients,
+                        these_coefficients,
                         coefficients[ar_id, chord_id - 1, :, :],
                         rtol,
                         atol,
@@ -444,16 +490,17 @@ def analyze_steady_convergence(
                 )
 
                 _logger.info(
-                    "\t\t\tNumber of chordwise Panels convergence metric: "
+                    _logging.indent(3)
+                    + "Number of chordwise Panels convergence: "
                     + f"{chord_metric:#.4G}"
-                    + "% (limiting coefficient: "
+                    + "% (limiting: "
                     + _COEFFICIENT_LABELS[chord_limiting_id]
                     + ")"
                 )
             else:
                 _logger.info(
-                    "\t\t\tNumber of chordwise Panels convergence metric: not yet "
-                    "checked"
+                    _logging.indent(3)
+                    + "Number of chordwise Panels convergence: not yet checked"
                 )
 
             # Consider the Panel aspect ratio value to be saturated if it is equal to
@@ -491,27 +538,44 @@ def analyze_steady_convergence(
                 )
 
                 if single_ar or single_chord:
-                    _logger.info("The analysis found a semi-converged case:")
+                    _logger.info(
+                        _logging.indent() + "The analysis found a semi-converged case:"
+                    )
                     if single_ar:
                         _logger.warning(
-                            "Panel aspect ratio convergence was not checked"
+                            _logging.indent()
+                            + "Panel aspect ratio convergence was not checked"
                         )
                     if single_chord:
-                        _logger.warning("Chordwise panels convergence was not checked")
+                        _logger.warning(
+                            _logging.indent()
+                            + "Chordwise panels convergence was not checked"
+                        )
                 else:
-                    _logger.info("The analysis found a converged case:")
+                    _logger.info(
+                        _logging.indent() + "The analysis found a converged case:"
+                    )
 
-                _logger.info("\tPanel aspect ratio: " + str(converged_aspect_ratio))
-                _logger.info("\tChordwise Panels: " + str(converged_chordwise_panels))
                 _logger.info(
-                    "\tSimulation time: "
+                    _logging.indent(1)
+                    + "Panel aspect ratio: "
+                    + str(converged_aspect_ratio)
+                )
+                _logger.info(
+                    _logging.indent(1)
+                    + "Chordwise Panels: "
+                    + str(converged_chordwise_panels)
+                )
+                _logger.info(
+                    _logging.indent(1)
+                    + "Simulation time: "
                     + _functions.format_duration(converged_iter_time)
                 )
-                _logger.info("\tSpanwise Panels:")
+                _logger.info(_logging.indent(1) + "Spanwise Panels:")
                 for airplane_id, airplane in enumerate(ref_airplanes):
-                    _logger.info("\t\t" + airplane.name + ":")
+                    _logger.info(_logging.indent(2) + airplane.name + ":")
                     for wing_id, wing in enumerate(airplane.wings):
-                        _logger.info("\t\t\t" + wing.name + ":")
+                        _logger.info(_logging.indent(3) + wing.name + ":")
 
                         # An edge-defined Wing is refined by its number of
                         # WingCrossSections rather than its number of spanwise Panels, so
@@ -524,7 +588,8 @@ def analyze_steady_convergence(
                                 wing_id,
                             )
                             _logger.info(
-                                "\t\t\t\tWingCrossSections: "
+                                _logging.indent(4)
+                                + "WingCrossSections: "
                                 + str(
                                     num_wing_cross_sections_cache[
                                         num_wing_cross_sections_key
@@ -555,7 +620,8 @@ def analyze_steady_convergence(
                                 # Last WingCrossSection.
                                 num_spanwise_panels = None
                             _logger.info(
-                                "\t\t\t\tWingCrossSection "
+                                _logging.indent(4)
+                                + "WingCrossSection "
                                 + str(wing_cross_section_id + 1)
                                 + ": "
                                 + str(num_spanwise_panels)
@@ -571,28 +637,36 @@ def analyze_steady_convergence(
                     | None
                 ) = None
                 if resolve_converged_solver:
-                    _logger.info("Recreating and running the converged solver...")
-                    converged_problem = _convergence_meshing.build_steady_problem(
-                        converged_ar_id,
-                        converged_chord_id,
-                        converged_aspect_ratio,
-                        converged_chordwise_panels,
-                        ref_problem,
-                        num_spanwise_panels_cache,
-                        num_wing_cross_sections_cache,
+                    _logger.info(
+                        _logging.indent()
+                        + "Recreating and running the converged solver"
                     )
-                    if solver_type == "steady horseshoe vortex lattice method":
-                        converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
-                            steady_problem=converged_problem,
+
+                    # The rebuild's and the solver's log messages nest under the
+                    # message above.
+                    with _logging.nested():
+                        converged_problem = _convergence_meshing.build_steady_problem(
+                            converged_ar_id,
+                            converged_chord_id,
+                            converged_aspect_ratio,
+                            converged_chordwise_panels,
+                            ref_problem,
+                            num_spanwise_panels_cache,
+                            num_wing_cross_sections_cache,
                         )
-                    else:
-                        converged_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
-                            steady_problem=converged_problem,
-                        )
-                    converged_solver.run(calculate_streamlines=True)
+                        if solver_type == "steady horseshoe vortex lattice method":
+                            converged_solver = steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                                steady_problem=converged_problem,
+                            )
+                        else:
+                            converged_solver = steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+                                steady_problem=converged_problem,
+                            )
+                        converged_solver.run(calculate_streamlines=True)
 
                 _logger.info(
-                    "Convergence analysis completed in "
+                    _logging.indent()
+                    + "Convergence analysis completed in "
                     + _functions.format_duration(time.time() - run_start_time)
                 )
 
@@ -605,9 +679,13 @@ def analyze_steady_convergence(
     # If all iterations have been checked and none of them resulted in both
     # convergence parameters passing, then indicate that no converged case was found
     # and return values of None for the converged parameters.
-    _logger.info("The analysis did not find a converged case within the given bounds")
     _logger.info(
-        "Convergence analysis completed in "
+        _logging.indent()
+        + "The analysis did not find a converged case within the given bounds"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Convergence analysis completed in "
         + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None
@@ -653,7 +731,9 @@ def analyze_unsteady_convergence(
     the number of chordwise Panels.
 
     With each new combination of these values, the UnsteadyProblem is solved, and each
-    Airplane's six final load coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) are stored. As
+    Airplane's six final load coefficients are stored: the three force coefficients (in
+    wind axes) and the three moment coefficients (in wind axes, relative to the first
+    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). As
     this function deals with UnsteadyProblems, it considers the final load coefficients
     to be the final cycle's mean load coefficients (the signed time-average over the
     final cycle) for UnsteadyProblems with variable geometry, and the final time step's
@@ -750,10 +830,10 @@ def analyze_unsteady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ, in that order) must converge, or
-        None to require all six. At least one element must be True. Use this to ignore
-        coefficients that are physically irrelevant to the analysis. The default is
-        None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
+        order) must converge, or None to require all six. At least one element must be
+        True. Use this to ignore coefficients that are physically irrelevant to the
+        analysis. The default is None.
     :param show_solver_progress: Set this to True to show the TQDM progress bar during
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
@@ -765,17 +845,21 @@ def analyze_unsteady_convergence(
         frequently coarser than the last iteration run) and run with streamlines
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
-        a JSON file that caches each iteration's solved load coefficients, keyed on the
-        reference problem and the wake state, wake length, and mesh parameters, together
-        with the mesh values it resolved (the spanwise Panel and WingCrossSection counts
-        and the optimized delta_time). When given, an iteration already in the cache
-        reuses those stored coefficients and values instead of re-running the solver and
-        re-resolving the mesh, so a warm run also skips the delta_time optimizer, and
-        each new iteration is written through to the file, so an interrupted or repeated
-        study reuses the work it has already done. The mesh values are keyed on the
-        absolute mesh rather than a sweep index, so a later run over different bounds
-        still reuses any iteration it shares. When None, no cache is read or written.
-        The default is None.
+        a JSON file that caches each iteration's solved load coefficients and solve
+        time, keyed on the reference problem and the wake state, wake length, and mesh
+        parameters, together with the mesh values it resolved (the spanwise Panel and
+        WingCrossSection counts and the optimized delta_time). When given, an iteration
+        already in the cache reuses those stored coefficients and values instead of re-
+        running the solver and re-resolving the mesh, so a warm run also skips the
+        delta_time optimizer, and each new iteration is written through to the file, so
+        an interrupted or repeated study reuses the work it has already done. A cached
+        iteration reports its stored solve time, so a warm run's convergence report
+        still shows how long the converged mesh took to solve. An iteration whose
+        coefficients and values are all cached also skips building its meshed problem,
+        which avoids regenerating the geometry at every time step. The mesh values are
+        keyed on the absolute mesh rather than a sweep index, so a later run over
+        different bounds still reuses any iteration it shares. When None, no cache is
+        read or written. The default is None.
     :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
         order, the first four elements are the converged wake state (prescribed=True and
         free=False), the converged wake length (in number of cycles for non static
@@ -881,19 +965,17 @@ def analyze_unsteady_convergence(
             )
 
     run_start_time = time.time()
-    _logger.info("Beginning convergence analysis...")
+    _logger.info(_logging.indent() + "Beginning convergence analysis")
 
     ref_airplane_movements = ref_movement.airplane_movements
+    ref_base_airplanes = tuple(
+        ref_airplane_movement.base_airplane
+        for ref_airplane_movement in ref_airplane_movements
+    )
 
     # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal or
     # edge-defined).
-    _reject_unrefinable_wings(
-        tuple(
-            ref_airplane_movement.base_airplane
-            for ref_airplane_movement in ref_airplane_movements
-        ),
-        "analyze_unsteady_convergence",
-    )
+    _reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
 
     # Create the list of wake states to iterate over.
     wake_list = []
@@ -932,9 +1014,10 @@ def analyze_unsteady_convergence(
         ),
         dtype=float,
     )
-    # Each iteration stores the six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
-    # cMZ) of each Airplane, in that order, along the last axis.
-    finalCoefficients = np.zeros(
+    # Each iteration stores the six final load coefficients (cFX_W, cFY_W, cFZ_W,
+    # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the
+    # last axis.
+    final_coefficients = np.zeros(
         (
             len(wake_list),
             len(wake_lengths_list),
@@ -1009,20 +1092,24 @@ def analyze_unsteady_convergence(
     # Begin iterating through the outermost loop of wake states.
     for wake_id, wake in enumerate(wake_list):
         if wake:
-            _logger.info("\tWake type: prescribed")
+            _logger.info(_logging.indent(1) + "Wake type: prescribed")
         else:
-            _logger.info("\tWake type: free")
+            _logger.info(_logging.indent(1) + "Wake type: free")
 
         # Begin iterating through the second loop of wake lengths.
         for length_id, wake_length in enumerate(wake_lengths_list):
             if static:
-                _logger.info("\t\tChord lengths: " + str(wake_length))
+                _logger.info(_logging.indent(2) + "Chord lengths: " + str(wake_length))
             else:
-                _logger.info("\t\tCycles: " + str(wake_length))
+                _logger.info(_logging.indent(2) + "Cycles: " + str(wake_length))
 
             # Begin iterating through the third loop of Panel aspect ratios.
             for ar_id, panel_aspect_ratio in enumerate(panel_aspect_ratios_list):
-                _logger.info("\t\t\tPanel aspect ratio: " + str(panel_aspect_ratio))
+                _logger.info(
+                    _logging.indent(3)
+                    + "Panel aspect ratio: "
+                    + str(panel_aspect_ratio)
+                )
 
                 # Begin iterating through the innermost loop of number of chordwise
                 # Panels.
@@ -1030,32 +1117,18 @@ def analyze_unsteady_convergence(
                     num_chordwise_panels_list
                 ):
                     _logger.info(
-                        "\t\t\t\tChordwise Panels: " + str(num_chordwise_panels)
+                        _logging.indent(4)
+                        + "Chordwise Panels: "
+                        + str(num_chordwise_panels)
                     )
 
                     iteration += 1
                     _logger.info(
-                        "\t\t\t\t\tIteration number: "
+                        _logging.indent(5)
+                        + "Iteration number: "
                         + str(iteration)
                         + "/"
                         + str(num_iterations)
-                    )
-
-                    # Build this iteration's UnsteadyProblem with the current wake
-                    # length, Panel aspect ratio, and number of chordwise Panels. The
-                    # mesh is always built so its spanwise Panel and WingCrossSection
-                    # counts and its optimized delta_time are recorded, even when the
-                    # solve itself is served from the cache.
-                    this_problem = _convergence_meshing.build_unsteady_problem(
-                        ar_id,
-                        chord_id,
-                        panel_aspect_ratio,
-                        num_chordwise_panels,
-                        wake_length,
-                        ref_problem,
-                        num_spanwise_panels_cache,
-                        num_wing_cross_sections_cache,
-                        delta_time_cache,
                     )
 
                     # Build this mesh's solve-cache key from the reference problem and
@@ -1070,24 +1143,68 @@ def analyze_unsteady_convergence(
                     )
                     cached = solve_cache_key in solve_cache
 
+                    # Build this iteration's UnsteadyProblem with the current wake
+                    # length, Panel aspect ratio, and number of chordwise Panels. The
+                    # build is skipped when the solve is served from the cache and every
+                    # memo it would record (the mesh's spanwise Panel and
+                    # WingCrossSection counts and its optimized delta_time) is already
+                    # cached, since nothing then needs the meshed problem, and building
+                    # it would regenerate the geometry at every time step. When any memo
+                    # is missing, the build runs even on a solve hit so the values are
+                    # recorded for the convergence report and for seeding finer meshes'
+                    # searches.
+                    this_problem: problems.UnsteadyProblem | None = None
+                    if not (
+                        cached
+                        and _convergence_meshing.memos_complete(
+                            ar_id,
+                            chord_id,
+                            ref_base_airplanes,
+                            num_spanwise_panels_cache,
+                            num_wing_cross_sections_cache,
+                            delta_time_cache,
+                        )
+                    ):
+                        # The build's log messages nest at and one level under this
+                        # iteration's messages.
+                        with _logging.nested(5):
+                            this_problem = _convergence_meshing.build_unsteady_problem(
+                                ar_id,
+                                chord_id,
+                                panel_aspect_ratio,
+                                num_chordwise_panels,
+                                wake_length,
+                                ref_problem,
+                                num_spanwise_panels_cache,
+                                num_wing_cross_sections_cache,
+                                delta_time_cache,
+                            )
+
                     def solve_this_mesh() -> np.ndarray:
+                        # A solve happens only on a solve-cache miss, and on a miss this
+                        # iteration's problem is always built above.
+                        assert this_problem is not None
+
                         # Create and run this iteration's
                         # UnsteadyRingVortexLatticeMethodSolver.
                         this_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
                             unsteady_problem=this_problem
                         )
 
-                        _logger.info("\t\t\t\t\tStarting simulation...")
+                        _logger.info(_logging.indent(5) + "Starting simulation")
 
-                        this_solver.run(
-                            prescribed_wake=wake,
-                            calculate_streamlines=False,
-                            show_progress=show_solver_progress,
-                        )
+                        # The solver's log messages nest one level under this
+                        # iteration's messages.
+                        with _logging.nested(6):
+                            this_solver.run(
+                                prescribed_wake=wake,
+                                calculate_streamlines=False,
+                                show_progress=show_solver_progress,
+                            )
 
                         # Create and fill an ndarray with each of this iteration's
-                        # Airplanes' six final load coefficients (cFX, cFY, cFZ, cMX, cMY,
-                        # cMZ).
+                        # Airplanes' six final load coefficients (cFX_W, cFY_W, cFZ_W,
+                        # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
                         solved_coefficients = np.zeros(
                             (len(ref_airplane_movements), 6), dtype=float
                         )
@@ -1119,27 +1236,29 @@ def analyze_unsteady_convergence(
 
                         return solved_coefficients
 
-                    # Reuse the cached coefficients on a hit, otherwise solve this mesh
-                    # and store them. Time the whole step: it is the solve time on a miss
-                    # and negligible on a hit.
-                    iter_start = time.time()
-                    theseFinalCoefficients = _convergence_cache.cached_solve(
-                        solve_cache, solve_cache_key, solve_this_mesh, persist_cache
+                    # Reuse the cached coefficients and solve time on a hit, otherwise
+                    # solve this mesh, time the solve, and store both. Either way,
+                    # this_iter_time holds the time the solve took when it actually ran,
+                    # so a warm run reports the converged mesh's true solve time.
+                    these_final_coefficients, this_iter_time = (
+                        _convergence_cache.cached_solve(
+                            solve_cache, solve_cache_key, solve_this_mesh, persist_cache
+                        )
                     )
-                    this_iter_time = time.time() - iter_start
 
                     # Populate the ndarray that stores information from all the
                     # iterations with the data from this iteration.
-                    finalCoefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
-                        theseFinalCoefficients
+                    final_coefficients[wake_id, length_id, ar_id, chord_id, :, :] = (
+                        these_final_coefficients
                     )
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     if cached:
-                        _logger.info("\t\t\t\t\tLoaded cached solution.")
+                        _logger.info(_logging.indent(5) + "Loaded cached solution")
                     else:
                         _logger.info(
-                            "\t\t\t\t\tSimulation completed in "
+                            _logging.indent(5)
+                            + "Simulation completed in "
                             + _functions.format_duration(this_iter_time)
                         )
 
@@ -1157,8 +1276,8 @@ def analyze_unsteady_convergence(
                     if wake_id > 0:
                         wake_converged, wake_metric, wake_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id - 1, length_id, ar_id, chord_id, :, :
                                 ],
                                 rtol,
@@ -1168,15 +1287,17 @@ def analyze_unsteady_convergence(
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tWake type convergence metric: "
+                            _logging.indent(5)
+                            + "Wake type convergence: "
                             + f"{wake_metric:#.4G}"
-                            + "% (limiting coefficient: "
+                            + "% (limiting: "
                             + _COEFFICIENT_LABELS[wake_limiting_id]
                             + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tWake type convergence metric: not yet checked"
+                            _logging.indent(5)
+                            + "Wake type convergence: not yet checked"
                         )
 
                     # If this isn't the first wake length, check convergence in the wake
@@ -1184,8 +1305,8 @@ def analyze_unsteady_convergence(
                     if length_id > 0:
                         length_converged, length_metric, length_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id - 1, ar_id, chord_id, :, :
                                 ],
                                 rtol,
@@ -1195,15 +1316,17 @@ def analyze_unsteady_convergence(
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tWake length convergence metric: "
+                            _logging.indent(5)
+                            + "Wake length convergence: "
                             + f"{length_metric:#.4G}"
-                            + "% (limiting coefficient: "
+                            + "% (limiting: "
                             + _COEFFICIENT_LABELS[length_limiting_id]
                             + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tWake length convergence metric: not yet checked"
+                            _logging.indent(5)
+                            + "Wake length convergence: not yet checked"
                         )
 
                     # If this isn't the first Panel aspect ratio, check convergence in
@@ -1211,8 +1334,8 @@ def analyze_unsteady_convergence(
                     if ar_id > 0:
                         ar_converged, ar_metric, ar_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id, ar_id - 1, chord_id, :, :
                                 ],
                                 rtol,
@@ -1222,16 +1345,17 @@ def analyze_unsteady_convergence(
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tPanel aspect ratio convergence metric: "
+                            _logging.indent(5)
+                            + "Panel aspect ratio convergence: "
                             + f"{ar_metric:#.4G}"
-                            + "% (limiting coefficient: "
+                            + "% (limiting: "
                             + _COEFFICIENT_LABELS[ar_limiting_id]
                             + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tPanel aspect ratio convergence metric: not yet "
-                            "checked"
+                            _logging.indent(5)
+                            + "Panel aspect ratio convergence: not yet checked"
                         )
 
                     # If this isn't the first number of chordwise Panels, check
@@ -1239,8 +1363,8 @@ def analyze_unsteady_convergence(
                     if chord_id > 0:
                         chord_converged, chord_metric, chord_limiting_id = (
                             _check_coefficient_convergence(
-                                theseFinalCoefficients,
-                                finalCoefficients[
+                                these_final_coefficients,
+                                final_coefficients[
                                     wake_id, length_id, ar_id, chord_id - 1, :, :
                                 ],
                                 rtol,
@@ -1250,16 +1374,18 @@ def analyze_unsteady_convergence(
                         )
 
                         _logger.info(
-                            "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
+                            _logging.indent(5)
+                            + "Number of chordwise Panels convergence: "
                             + f"{chord_metric:#.4G}"
-                            + "% (limiting coefficient: "
+                            + "% (limiting: "
                             + _COEFFICIENT_LABELS[chord_limiting_id]
                             + ")"
                         )
                     else:
                         _logger.info(
-                            "\t\t\t\t\tNumber of chordwise Panels convergence metric: "
-                            "not yet checked"
+                            _logging.indent(5)
+                            + "Number of chordwise Panels convergence: not yet "
+                            "checked"
                         )
 
                     # Consider the Panel aspect ratio value to be saturated if it is
@@ -1319,55 +1445,80 @@ def analyze_unsteady_convergence(
                         )
 
                         if single_wake or single_length or single_ar or single_chord:
-                            _logger.info("The analysis found a semi-converged case:")
+                            _logger.info(
+                                _logging.indent()
+                                + "The analysis found a semi-converged case:"
+                            )
                             if single_wake:
-                                _logger.warning("Wake type convergence not checked")
+                                _logger.warning(
+                                    _logging.indent()
+                                    + "Wake type convergence not checked"
+                                )
                             if single_length:
-                                _logger.warning("Wake length convergence not checked")
+                                _logger.warning(
+                                    _logging.indent()
+                                    + "Wake length convergence not checked"
+                                )
                             if single_ar:
                                 _logger.warning(
-                                    "Panel aspect ratio convergence not checked"
+                                    _logging.indent()
+                                    + "Panel aspect ratio convergence not checked"
                                 )
                             if single_chord:
                                 _logger.warning(
-                                    "Chordwise Panels convergence not checked"
+                                    _logging.indent()
+                                    + "Chordwise Panels convergence not checked"
                                 )
                         else:
-                            _logger.info("The analysis found a converged case:")
+                            _logger.info(
+                                _logging.indent()
+                                + "The analysis found a converged case:"
+                            )
 
                         if converged_wake:
-                            _logger.info("\tWake type: prescribed")
+                            _logger.info(_logging.indent(1) + "Wake type: prescribed")
                         else:
-                            _logger.info("\tWake type: free")
+                            _logger.info(_logging.indent(1) + "Wake type: free")
 
                         if static:
                             _logger.info(
-                                "\tChord lengths: " + str(converged_wake_length)
+                                _logging.indent(1)
+                                + "Chord lengths: "
+                                + str(converged_wake_length)
                             )
                         else:
-                            _logger.info("\tCycles: " + str(converged_wake_length))
+                            _logger.info(
+                                _logging.indent(1)
+                                + "Cycles: "
+                                + str(converged_wake_length)
+                            )
 
                         _logger.info(
-                            "\tPanel aspect ratio: " + str(converged_aspect_ratio)
+                            _logging.indent(1)
+                            + "Panel aspect ratio: "
+                            + str(converged_aspect_ratio)
                         )
                         _logger.info(
-                            "\tChordwise Panels: " + str(converged_chordwise_panels)
+                            _logging.indent(1)
+                            + "Chordwise Panels: "
+                            + str(converged_chordwise_panels)
                         )
                         _logger.info(
-                            "\tSimulation completed in "
+                            _logging.indent(1)
+                            + "Simulation completed in "
                             + _functions.format_duration(converged_iter_time)
                         )
-                        _logger.info("\tSpanwise Panels:")
+                        _logger.info(_logging.indent(1) + "Spanwise Panels:")
                         for airplane_movement_id, airplane_movement in enumerate(
                             ref_airplane_movements
                         ):
                             base_airplane = airplane_movement.base_airplane
-                            _logger.info("\t\t" + base_airplane.name + ":")
+                            _logger.info(_logging.indent(2) + base_airplane.name + ":")
                             for wing_movement_id, wing_movement in enumerate(
                                 airplane_movement.wing_movements
                             ):
                                 base_wing = wing_movement.base_wing
-                                _logger.info("\t\t\t" + base_wing.name + ":")
+                                _logger.info(_logging.indent(3) + base_wing.name + ":")
 
                                 # An edge-defined Wing is refined by its number of
                                 # WingCrossSections rather than its number of spanwise
@@ -1380,7 +1531,8 @@ def analyze_unsteady_convergence(
                                         wing_movement_id,
                                     )
                                     _logger.info(
-                                        "\t\t\t\tWingCrossSections: "
+                                        _logging.indent(4)
+                                        + "WingCrossSections: "
                                         + str(
                                             num_wing_cross_sections_cache[
                                                 num_wing_cross_sections_key
@@ -1418,7 +1570,8 @@ def analyze_unsteady_convergence(
                                         # Last WingCrossSection.
                                         num_spanwise_panels = None
                                     _logger.info(
-                                        "\t\t\t\tWingCrossSection "
+                                        _logging.indent(4)
+                                        + "WingCrossSection "
                                         + str(wing_cross_section_movement_id + 1)
                                         + ": "
                                         + str(num_spanwise_panels)
@@ -1435,32 +1588,38 @@ def analyze_unsteady_convergence(
                         ) = None
                         if resolve_converged_solver:
                             _logger.info(
-                                "Recreating and running the converged solver..."
-                            )
-                            converged_problem = (
-                                _convergence_meshing.build_unsteady_problem(
-                                    converged_ar_id,
-                                    converged_chord_id,
-                                    converged_aspect_ratio,
-                                    converged_chordwise_panels,
-                                    converged_wake_length,
-                                    ref_problem,
-                                    num_spanwise_panels_cache,
-                                    num_wing_cross_sections_cache,
-                                    delta_time_cache,
-                                )
-                            )
-                            converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-                                unsteady_problem=converged_problem
-                            )
-                            converged_solver.run(
-                                prescribed_wake=converged_wake,
-                                calculate_streamlines=True,
-                                show_progress=show_solver_progress,
+                                _logging.indent()
+                                + "Recreating and running the converged solver"
                             )
 
+                            # The rebuild's and the solver's log messages nest under
+                            # the message above.
+                            with _logging.nested():
+                                converged_problem = (
+                                    _convergence_meshing.build_unsteady_problem(
+                                        converged_ar_id,
+                                        converged_chord_id,
+                                        converged_aspect_ratio,
+                                        converged_chordwise_panels,
+                                        converged_wake_length,
+                                        ref_problem,
+                                        num_spanwise_panels_cache,
+                                        num_wing_cross_sections_cache,
+                                        delta_time_cache,
+                                    )
+                                )
+                                converged_solver = unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+                                    unsteady_problem=converged_problem
+                                )
+                                converged_solver.run(
+                                    prescribed_wake=converged_wake,
+                                    calculate_streamlines=True,
+                                    show_progress=show_solver_progress,
+                                )
+
                         _logger.info(
-                            "Convergence analysis completed in "
+                            _logging.indent()
+                            + "Convergence analysis completed in "
                             + _functions.format_duration(time.time() - run_start_time)
                         )
 
@@ -1475,9 +1634,13 @@ def analyze_unsteady_convergence(
     # If all iterations have been checked and none of them resulted in all
     # convergence parameters passing, then indicate that no converged solution was
     # found and return values of None for the converged parameters.
-    _logger.info("The analysis did not find a converged case within the given bounds")
     _logger.info(
-        "Convergence analysis completed in "
+        _logging.indent()
+        + "The analysis did not find a converged case within the given bounds"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Convergence analysis completed in "
         + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None, None
@@ -1576,8 +1739,8 @@ def _validate_coefficient_mask(
     functions and returns it as an ndarray.
 
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX, cFY, cFZ, cMX, cMY, cMZ) must converge, or None to require
-        all six. At least one element must be True.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) must
+        converge, or None to require all six. At least one element must be True.
     :return: A (6,) ndarray of bools representing the validated mask.
     """
     if coefficient_mask is None:
@@ -1617,8 +1780,10 @@ def _check_coefficient_convergence(
     the coefficient that attains it are returned to identify the limiting coefficient.
 
     :param these_coefficients: A (M,6) ndarray of floats, where M is the number of
-        Airplanes, of this iteration's six load coefficients (cFX, cFY, cFZ, cMX, cMY,
-        cMZ) for each Airplane.
+        Airplanes, of this iteration's six load coefficients for each Airplane: the
+        three force coefficients (in wind axes) and the three moment coefficients (in
+        wind axes, relative to the first Airplane's CG), or (cFX_W, cFY_W, cFZ_W,
+        cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
     :param coarser_coefficients: A (M,6) ndarray of floats, of the same shape, of the
         incrementally coarser iteration's six load coefficients for each Airplane.
     :param rtol: The relative tolerance. It must be a positive float.

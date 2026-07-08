@@ -1,85 +1,85 @@
-INFO - pterasoftware.convergence - Beginning convergence analysis...
-INFO - pterasoftware.convergence - 	Panel aspect ratio: 4
-INFO - pterasoftware.convergence - 		Chordwise Panels: 3
-INFO - pterasoftware.convergence - 			Iteration number: 1/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.249 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: not yet checked
-INFO - pterasoftware.convergence - 		Chordwise Panels: 4
-INFO - pterasoftware.convergence - 			Iteration number: 2/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.196 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 55.00% (limiting coefficient: cMY)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 5
-INFO - pterasoftware.convergence - 			Iteration number: 3/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.232 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 98.77% (limiting coefficient: cMY)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 6
-INFO - pterasoftware.convergence - 			Iteration number: 4/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.268 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 7
-INFO - pterasoftware.convergence - 			Iteration number: 5/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.251 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 8
-INFO - pterasoftware.convergence - 			Iteration number: 6/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.321 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: not yet checked
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 	Panel aspect ratio: 3
-INFO - pterasoftware.convergence - 		Chordwise Panels: 3
-INFO - pterasoftware.convergence - 			Iteration number: 7/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.298 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: not yet checked
-INFO - pterasoftware.convergence - 		Chordwise Panels: 4
-INFO - pterasoftware.convergence - 			Iteration number: 8/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.123 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 55.72% (limiting coefficient: cMY)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 5
-INFO - pterasoftware.convergence - 			Iteration number: 9/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.237 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 93.77% (limiting coefficient: cMY)
-INFO - pterasoftware.convergence - 		Chordwise Panels: 6
-INFO - pterasoftware.convergence - 			Iteration number: 10/24
-INFO - pterasoftware.convergence - 			Starting simulation...
-INFO - pterasoftware.convergence - 			Simulation completed in 0.151 s
-INFO - pterasoftware.convergence - 			Panel aspect ratio convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - 			Number of chordwise Panels convergence metric: 100.0% (limiting coefficient: cFX)
-INFO - pterasoftware.convergence - The analysis found a converged case:
-INFO - pterasoftware.convergence - 	Panel aspect ratio: 4
-INFO - pterasoftware.convergence - 	Chordwise Panels: 5
-INFO - pterasoftware.convergence - 	Simulation time: 0.232 s
-INFO - pterasoftware.convergence - 	Spanwise Panels:
-INFO - pterasoftware.convergence - 		Leading Airplane:
-INFO - pterasoftware.convergence - 			Main Wing:
-INFO - pterasoftware.convergence - 				WingCrossSection 1: 6
-INFO - pterasoftware.convergence - 				WingCrossSection 2: 13
-INFO - pterasoftware.convergence - 				WingCrossSection 3: None
-INFO - pterasoftware.convergence - 			Tail:
-INFO - pterasoftware.convergence - 				WingCrossSection 1: 6
-INFO - pterasoftware.convergence - 				WingCrossSection 2: None
-INFO - pterasoftware.convergence - 		Trailing Airplane:
-INFO - pterasoftware.convergence - 			Main Wing:
-INFO - pterasoftware.convergence - 				WingCrossSection 1: 6
-INFO - pterasoftware.convergence - 				WingCrossSection 2: 13
-INFO - pterasoftware.convergence - 				WingCrossSection 3: None
-INFO - pterasoftware.convergence - 			Tail:
-INFO - pterasoftware.convergence - 				WingCrossSection 1: 6
-INFO - pterasoftware.convergence - 				WingCrossSection 2: None
-INFO - pterasoftware.convergence - Convergence analysis completed in 2.98 s
+INFO    |convergence                                 |Beginning convergence analysis
+INFO    |convergence                                 |  Panel aspect ratio: 4
+INFO    |convergence                                 |    Chordwise Panels: 3
+INFO    |convergence                                 |      Iteration number: 1/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.211 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: not yet checked
+INFO    |convergence                                 |    Chordwise Panels: 4
+INFO    |convergence                                 |      Iteration number: 2/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.186 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 55.00% (limiting: cMY_W_CgP1)
+INFO    |convergence                                 |    Chordwise Panels: 5
+INFO    |convergence                                 |      Iteration number: 3/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.172 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 98.77% (limiting: cMY_W_CgP1)
+INFO    |convergence                                 |    Chordwise Panels: 6
+INFO    |convergence                                 |      Iteration number: 4/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.239 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |    Chordwise Panels: 7
+INFO    |convergence                                 |      Iteration number: 5/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.321 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |    Chordwise Panels: 8
+INFO    |convergence                                 |      Iteration number: 6/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.511 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: not yet checked
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |  Panel aspect ratio: 3
+INFO    |convergence                                 |    Chordwise Panels: 3
+INFO    |convergence                                 |      Iteration number: 7/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.264 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |      Number of chordwise Panels convergence: not yet checked
+INFO    |convergence                                 |    Chordwise Panels: 4
+INFO    |convergence                                 |      Iteration number: 8/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.282 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 55.72% (limiting: cMY_W_CgP1)
+INFO    |convergence                                 |    Chordwise Panels: 5
+INFO    |convergence                                 |      Iteration number: 9/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.303 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 93.77% (limiting: cMY_W_CgP1)
+INFO    |convergence                                 |    Chordwise Panels: 6
+INFO    |convergence                                 |      Iteration number: 10/24
+INFO    |convergence                                 |      Starting simulation
+INFO    |convergence                                 |      Simulation completed in 0.240 s
+INFO    |convergence                                 |      Panel aspect ratio convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |      Number of chordwise Panels convergence: 100.0% (limiting: cFX_W)
+INFO    |convergence                                 |The analysis found a converged case:
+INFO    |convergence                                 |  Panel aspect ratio: 4
+INFO    |convergence                                 |  Chordwise Panels: 5
+INFO    |convergence                                 |  Simulation time: 0.172 s
+INFO    |convergence                                 |  Spanwise Panels:
+INFO    |convergence                                 |    Leading Airplane:
+INFO    |convergence                                 |      Main Wing:
+INFO    |convergence                                 |        WingCrossSection 1: 6
+INFO    |convergence                                 |        WingCrossSection 2: 13
+INFO    |convergence                                 |        WingCrossSection 3: None
+INFO    |convergence                                 |      Tail:
+INFO    |convergence                                 |        WingCrossSection 1: 6
+INFO    |convergence                                 |        WingCrossSection 2: None
+INFO    |convergence                                 |    Trailing Airplane:
+INFO    |convergence                                 |      Main Wing:
+INFO    |convergence                                 |        WingCrossSection 1: 6
+INFO    |convergence                                 |        WingCrossSection 2: 13
+INFO    |convergence                                 |        WingCrossSection 3: None
+INFO    |convergence                                 |      Tail:
+INFO    |convergence                                 |        WingCrossSection 1: 6
+INFO    |convergence                                 |        WingCrossSection 2: None
+INFO    |convergence                                 |Convergence analysis completed in 3.39 s

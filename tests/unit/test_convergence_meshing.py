@@ -196,3 +196,89 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             4, ref_wing=self._make_edge_wing(symmetric=True)
         )
         self.assertEqual(asymmetric_result, symmetric_result)
+
+
+class TestMemosComplete(unittest.TestCase):
+    """This class contains methods for testing _convergence_meshing.memos_complete, the
+    check that reports whether one mesh's build would only re-record already cached
+    memos.
+    """
+
+    def setUp(self) -> None:
+        """Set up reference Airplanes (one with a trapezoidal Wing and one with an
+        edge-defined Wing) and memo caches holding every memo their build would record
+        at the first mesh.
+
+        :return: None
+        """
+        trapezoidal_wing = geometry_fixtures.make_three_section_wing_fixture()
+
+        ys = np.linspace(0.0, 2.0, 20)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.25 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            name="Edge Wing",
+            num_chordwise_panels=4,
+        )
+
+        self.ref_airplanes = [
+            ps.geometry.airplane.Airplane(wings=[trapezoidal_wing]),
+            ps.geometry.airplane.Airplane(wings=[edge_defined_wing]),
+        ]
+
+        # The trapezoidal Wing has three WingCrossSections, so its build records one
+        # number of spanwise Panels memo per non-tip WingCrossSection. The edge-defined
+        # Wing's build records one number of WingCrossSections memo.
+        self.num_spanwise_panels_cache = {
+            (0, 0, 0, 0, 0): 8,
+            (0, 0, 0, 0, 1): 8,
+        }
+        self.num_wing_cross_sections_cache = {(0, 0, 1, 0): 5}
+
+    def _memos_complete(self, ar_id=0, chord_id=0, delta_time_cache=None) -> bool:
+        """Calls memos_complete against the reference Airplanes and memo caches."""
+        return _convergence_meshing.memos_complete(
+            ar_id,
+            chord_id,
+            self.ref_airplanes,
+            self.num_spanwise_panels_cache,
+            self.num_wing_cross_sections_cache,
+            delta_time_cache,
+        )
+
+    def test_true_when_all_memos_cached(self) -> None:
+        """Test that the check passes when every memo the build would record is
+        cached.
+        """
+        self.assertTrue(self._memos_complete())
+
+    def test_false_when_spanwise_panels_memo_missing(self) -> None:
+        """Test that the check fails when a trapezoidal Wing's number of spanwise
+        Panels memo is missing.
+        """
+        del self.num_spanwise_panels_cache[(0, 0, 0, 0, 1)]
+        self.assertFalse(self._memos_complete())
+
+    def test_false_when_wing_cross_sections_memo_missing(self) -> None:
+        """Test that the check fails when an edge-defined Wing's number of
+        WingCrossSections memo is missing.
+        """
+        del self.num_wing_cross_sections_cache[(0, 0, 1, 0)]
+        self.assertFalse(self._memos_complete())
+
+    def test_false_when_memos_are_for_another_mesh(self) -> None:
+        """Test that memos cached for one mesh do not count toward a different mesh."""
+        self.assertFalse(self._memos_complete(chord_id=1))
+
+    def test_delta_time_checked_only_when_cache_given(self) -> None:
+        """Test that the delta_time memo is required when a delta_time cache is given
+        and ignored when it is None.
+        """
+        self.assertTrue(self._memos_complete(delta_time_cache=None))
+        self.assertFalse(self._memos_complete(delta_time_cache={}))
+        self.assertTrue(self._memos_complete(delta_time_cache={(0, 0): 0.01}))

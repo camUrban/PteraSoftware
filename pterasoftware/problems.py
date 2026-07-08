@@ -1210,8 +1210,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 )
 
             _logger.debug(
-                "Free flight sub-iteration: step %d, iteration %d, weighted residual "
-                "norm %#.3G, relaxation factor %#.3G.",
+                _logging.indent()
+                + "Free flight step %d, sub-iteration %d: weighted residual norm "
+                "%#.3G, relaxation factor %#.3G",
                 step,
                 iteration,
                 residual_norm,
@@ -1236,11 +1237,15 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         if not converged:
             _logger.warning(
-                "Free flight sub-iteration at step %d reached the %d-iteration cap "
-                "without converging; accepting the capped iterate with weighted residual "
-                "norm %#.3G.",
+                _logging.indent()
+                + "Free flight sub-iteration at step %d reached the %d-iteration "
+                "cap without converging",
                 step,
                 self.k_max,
+            )
+            _logger.warning(
+                _logging.indent()
+                + "Accepting the capped iterate with weighted residual norm %#.3G",
                 residual_norm,
             )
 

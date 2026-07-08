@@ -1,63 +1,62 @@
-INFO - pterasoftware._serialization - Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz.
-INFO - pterasoftware._serialization - Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125727180 bytes).
-INFO - pterasoftware._serialization - Loading from example_solver.json.gz.
-WARNING - pterasoftware._serialization - The file was saved with uncommitted changes (_dirty=true). The _commit hash may not fully represent the code state at save time.
-WARNING - pterasoftware._serialization - The current working tree has uncommitted changes.
-INFO - pterasoftware._serialization - Loaded FreeFlightUnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz.
-INFO - pterasoftware.output - Airplane "Example Airplane":
-INFO - pterasoftware.output -   Final Forces (in Wind Axes):
-INFO - pterasoftware.output -     fX_W:             -6.05 N     Drag:                   6.05 N
-INFO - pterasoftware.output -     fY_W:          6.68E-13 N     Side Force:         6.68E-13 N
-INFO - pterasoftware.output -     fZ_W:             -418. N     Lift:                   418. N
-INFO - pterasoftware.output -   Final Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     mX_W_CgP1:    -2.26E-11 Nm    Rolling Moment:    -2.26E-11 Nm
-INFO - pterasoftware.output -     mY_W_CgP1:         2.73 Nm    Pitching Moment:        2.73 Nm
-INFO - pterasoftware.output -     mZ_W_CgP1:    -1.85E-12 Nm    Yawing Moment:     -1.85E-12 Nm
-INFO - pterasoftware.output -   Final Force Coefficients (in Wind Axes):
-INFO - pterasoftware.output -     cFX_W:         -0.00564       CDi:                 0.00564
-INFO - pterasoftware.output -     cFY_W:         6.22E-16       CY:                 6.22E-16
-INFO - pterasoftware.output -     cFZ_W:           -0.389       CL:                    0.389
-INFO - pterasoftware.output -   Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     cMX_W_CgP1:   -2.10E-15       Cl:                -2.10E-15
-INFO - pterasoftware.output -     cMY_W_CgP1:     0.00254       Cm:                  0.00254
-INFO - pterasoftware.output -     cMZ_W_CgP1:   -1.72E-16       Cn:                -1.72E-16
-INFO - pterasoftware.output -
-INFO - pterasoftware.output - The First Airplane's Free Flight State History:
-INFO - pterasoftware.output -   Initial State (at t = 0.00 s):
-INFO - pterasoftware.output -     Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
-INFO - pterasoftware.output -       cgP1X_E_Eo:                    0.00 m
-INFO - pterasoftware.output -       cgP1Y_E_Eo:                    0.00 m
-INFO - pterasoftware.output -       cgP1Z_E_Eo:                    0.00 m
-INFO - pterasoftware.output -     Orientation (of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic zy'x" Sequence):
-INFO - pterasoftware.output -       angleX_E_to_BP1_izyx:          0.00 deg
-INFO - pterasoftware.output -       angleY_E_to_BP1_izyx:          3.30 deg
-INFO - pterasoftware.output -       angleZ_E_to_BP1_izyx:          0.00 deg
-INFO - pterasoftware.output -     Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
-INFO - pterasoftware.output -       vCgP1X_E__E:                   12.9 m/s
-INFO - pterasoftware.output -       vCgP1Y_E__E:                  -0.00 m/s
-INFO - pterasoftware.output -       vCgP1Z_E__E:                  -0.00 m/s
-INFO - pterasoftware.output -     Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
-INFO - pterasoftware.output -       omegaX_BP1__E:                 0.00 deg/s
-INFO - pterasoftware.output -       omegaY_BP1__E:                 0.00 deg/s
-INFO - pterasoftware.output -       omegaZ_BP1__E:                 0.00 deg/s
-INFO - pterasoftware.output -     Angle of Attack (alpha):        3.30 deg
-INFO - pterasoftware.output -     Sideslip Angle (beta):          0.00 deg
-INFO - pterasoftware.output -   Final State (at t = 2.57 s):
-INFO - pterasoftware.output -     Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
-INFO - pterasoftware.output -       cgP1X_E_Eo:                    33.4 m
-INFO - pterasoftware.output -       cgP1Y_E_Eo:                1.31E-15 m
-INFO - pterasoftware.output -       cgP1Z_E_Eo:                   0.972 m
-INFO - pterasoftware.output -     Orientation (of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic zy'x" Sequence):
-INFO - pterasoftware.output -       angleX_E_to_BP1_izyx:     -6.61E-14 deg
-INFO - pterasoftware.output -       angleY_E_to_BP1_izyx:         0.809 deg
-INFO - pterasoftware.output -       angleZ_E_to_BP1_izyx:     -3.54E-16 deg
-INFO - pterasoftware.output -     Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
-INFO - pterasoftware.output -       vCgP1X_E__E:                   13.2 m/s
-INFO - pterasoftware.output -       vCgP1Y_E__E:               3.12E-16 m/s
-INFO - pterasoftware.output -       vCgP1Z_E__E:                  0.547 m/s
-INFO - pterasoftware.output -     Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
-INFO - pterasoftware.output -       omegaX_BP1__E:             2.64E-13 deg/s
-INFO - pterasoftware.output -       omegaY_BP1__E:               -0.324 deg/s
-INFO - pterasoftware.output -       omegaZ_BP1__E:            -1.82E-14 deg/s
-INFO - pterasoftware.output -     Angle of Attack (alpha):        3.18 deg
-INFO - pterasoftware.output -     Sideslip Angle (beta):     -1.97E-15 deg
+INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125727171 bytes)
+INFO    |_serialization                              |Loading from example_solver.json.gz
+WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
+WARNING |_serialization                              |The current working tree has uncommitted changes
+INFO    |_serialization                              |Loaded FreeFlightUnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |output                                      |Airplane "Example Airplane":
+INFO    |output                                      |  Final Forces (in Wind Axes):
+INFO    |output                                      |    fX_W:             -6.05 N     Drag:                   6.05 N
+INFO    |output                                      |    fY_W:          6.68E-13 N     Side Force:         6.68E-13 N
+INFO    |output                                      |    fZ_W:             -418. N     Lift:                   418. N
+INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    mX_W_CgP1:    -2.26E-11 Nm    Rolling Moment:    -2.26E-11 Nm
+INFO    |output                                      |    mY_W_CgP1:         2.73 Nm    Pitching Moment:        2.73 Nm
+INFO    |output                                      |    mZ_W_CgP1:    -1.85E-12 Nm    Yawing Moment:     -1.85E-12 Nm
+INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
+INFO    |output                                      |    cFX_W:         -0.00564       CDi:                 0.00564
+INFO    |output                                      |    cFY_W:         6.22E-16       CY:                 6.22E-16
+INFO    |output                                      |    cFZ_W:           -0.389       CL:                    0.389
+INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    cMX_W_CgP1:   -2.10E-15       Cl:                -2.10E-15
+INFO    |output                                      |    cMY_W_CgP1:     0.00254       Cm:                  0.00254
+INFO    |output                                      |    cMZ_W_CgP1:   -1.72E-16       Cn:                -1.72E-16
+INFO    |output                                      |The First Airplane's Free Flight State History:
+INFO    |output                                      |  Initial State (at t = 0.00 s):
+INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
+INFO    |output                                      |      cgP1X_E_Eo:                    0.00 m
+INFO    |output                                      |      cgP1Y_E_Eo:                    0.00 m
+INFO    |output                                      |      cgP1Z_E_Eo:                    0.00 m
+INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes, Intrinsic zy'x" Sequence):
+INFO    |output                                      |      angleX_E_to_BP1_izyx:          0.00 deg
+INFO    |output                                      |      angleY_E_to_BP1_izyx:          3.30 deg
+INFO    |output                                      |      angleZ_E_to_BP1_izyx:          0.00 deg
+INFO    |output                                      |    Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
+INFO    |output                                      |      vCgP1X_E__E:                   12.9 m/s
+INFO    |output                                      |      vCgP1Y_E__E:                  -0.00 m/s
+INFO    |output                                      |      vCgP1Z_E__E:                  -0.00 m/s
+INFO    |output                                      |    Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
+INFO    |output                                      |      omegaX_BP1__E:                 0.00 deg/s
+INFO    |output                                      |      omegaY_BP1__E:                 0.00 deg/s
+INFO    |output                                      |      omegaZ_BP1__E:                 0.00 deg/s
+INFO    |output                                      |    Angle of Attack (alpha):        3.30 deg
+INFO    |output                                      |    Sideslip Angle (beta):          0.00 deg
+INFO    |output                                      |  Final State (at t = 2.57 s):
+INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
+INFO    |output                                      |      cgP1X_E_Eo:                    33.4 m
+INFO    |output                                      |      cgP1Y_E_Eo:                1.31E-15 m
+INFO    |output                                      |      cgP1Z_E_Eo:                   0.972 m
+INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes, Intrinsic zy'x" Sequence):
+INFO    |output                                      |      angleX_E_to_BP1_izyx:     -6.61E-14 deg
+INFO    |output                                      |      angleY_E_to_BP1_izyx:         0.809 deg
+INFO    |output                                      |      angleZ_E_to_BP1_izyx:     -3.54E-16 deg
+INFO    |output                                      |    Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
+INFO    |output                                      |      vCgP1X_E__E:                   13.2 m/s
+INFO    |output                                      |      vCgP1Y_E__E:               3.12E-16 m/s
+INFO    |output                                      |      vCgP1Z_E__E:                  0.547 m/s
+INFO    |output                                      |    Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
+INFO    |output                                      |      omegaX_BP1__E:             2.64E-13 deg/s
+INFO    |output                                      |      omegaY_BP1__E:               -0.324 deg/s
+INFO    |output                                      |      omegaZ_BP1__E:            -1.82E-14 deg/s
+INFO    |output                                      |    Angle of Attack (alpha):        3.18 deg
+INFO    |output                                      |    Sideslip Angle (beta):     -1.97E-15 deg

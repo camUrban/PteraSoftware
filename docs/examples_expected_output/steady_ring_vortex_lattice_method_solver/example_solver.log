@@ -1,24 +1,24 @@
-INFO - pterasoftware._serialization - Saving SteadyRingVortexLatticeMethodSolver to example_solver.json.gz.
-INFO - pterasoftware._serialization - Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (723499 bytes).
-INFO - pterasoftware._serialization - Loading from example_solver.json.gz.
-WARNING - pterasoftware._serialization - The file was saved with uncommitted changes (_dirty=true). The _commit hash may not fully represent the code state at save time.
-WARNING - pterasoftware._serialization - The current working tree has uncommitted changes.
-INFO - pterasoftware._serialization - Loaded SteadyRingVortexLatticeMethodSolver from example_solver.json.gz.
-INFO - pterasoftware.output - Airplane "Example Airplane":
-INFO - pterasoftware.output -   Reynolds Number: 7.76E+05
-INFO - pterasoftware.output -   Forces (in Wind Axes):
-INFO - pterasoftware.output -     fX_W:             -24.7 N     Drag:                   24.7 N
-INFO - pterasoftware.output -     fY_W:          6.76E-15 N     Side Force:         6.76E-15 N
-INFO - pterasoftware.output -     fZ_W:             -831. N     Lift:                   831. N
-INFO - pterasoftware.output -   Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     mX_W_CgP1:     3.08E-13 Nm    Rolling Moment:     3.08E-13 Nm
-INFO - pterasoftware.output -     mY_W_CgP1:    -1.00E+03 Nm    Pitching Moment:   -1.00E+03 Nm
-INFO - pterasoftware.output -     mZ_W_CgP1:    -2.05E-14 Nm    Yawing Moment:     -2.05E-14 Nm
-INFO - pterasoftware.output -   Force Coefficients (in Wind Axes):
-INFO - pterasoftware.output -     cFX_W:          -0.0299       CDi:                  0.0299
-INFO - pterasoftware.output -     cFY_W:         8.19E-18       CY:                 8.19E-18
-INFO - pterasoftware.output -     cFZ_W:            -1.01       CL:                     1.01
-INFO - pterasoftware.output -   Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     cMX_W_CgP1:    3.11E-17       Cl:                 3.11E-17
-INFO - pterasoftware.output -     cMY_W_CgP1:       -1.04       Cm:                    -1.04
-INFO - pterasoftware.output -     cMZ_W_CgP1:   -2.07E-18       Cn:                -2.07E-18
+INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.json.gz
+INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (723501 bytes)
+INFO    |_serialization                              |Loading from example_solver.json.gz
+WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
+WARNING |_serialization                              |The current working tree has uncommitted changes
+INFO    |_serialization                              |Loaded SteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |output                                      |Airplane "Example Airplane":
+INFO    |output                                      |  Reynolds Number: 7.76E+05
+INFO    |output                                      |  Forces (in Wind Axes):
+INFO    |output                                      |    fX_W:             -24.7 N     Drag:                   24.7 N
+INFO    |output                                      |    fY_W:          6.76E-15 N     Side Force:         6.76E-15 N
+INFO    |output                                      |    fZ_W:             -831. N     Lift:                   831. N
+INFO    |output                                      |  Moments (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    mX_W_CgP1:     3.08E-13 Nm    Rolling Moment:     3.08E-13 Nm
+INFO    |output                                      |    mY_W_CgP1:    -1.00E+03 Nm    Pitching Moment:   -1.00E+03 Nm
+INFO    |output                                      |    mZ_W_CgP1:    -2.05E-14 Nm    Yawing Moment:     -2.05E-14 Nm
+INFO    |output                                      |  Force Coefficients (in Wind Axes):
+INFO    |output                                      |    cFX_W:          -0.0299       CDi:                  0.0299
+INFO    |output                                      |    cFY_W:         8.19E-18       CY:                 8.19E-18
+INFO    |output                                      |    cFZ_W:            -1.01       CL:                     1.01
+INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    cMX_W_CgP1:    3.11E-17       Cl:                 3.11E-17
+INFO    |output                                      |    cMY_W_CgP1:       -1.04       Cm:                    -1.04
+INFO    |output                                      |    cMZ_W_CgP1:   -2.07E-18       Cn:                -2.07E-18

@@ -1760,8 +1760,6 @@ def log_results(
     col3 = [label + ":" for label in col3]
     col3_space = max(len(elem) for elem in col3) + padding_spaces
 
-    pad = " " * padding_spaces
-
     for airplane_num, airplane in enumerate(these_airplanes):
         title1: str = ""
         title2: str = ""
@@ -1774,14 +1772,16 @@ def log_results(
 
         match solver_type:
             case "steady":
-                title1 = f"{pad}Forces (in Wind Axes):"
+                title1 = _logging.indent(1) + "Forces (in Wind Axes):"
                 title2 = (
-                    f"{pad}Moments (in Wind Axes, Relative to the First Airplane's CG):"
+                    _logging.indent(1)
+                    + "Moments (in Wind Axes, Relative to the First Airplane's CG):"
                 )
-                title3 = f"{pad}Force Coefficients (in Wind Axes):"
+                title3 = _logging.indent(1) + "Force Coefficients (in Wind Axes):"
                 title4 = (
-                    f"{pad}Moment Coefficients (in Wind Axes, Relative to the First "
-                    f"Airplane's CG):"
+                    _logging.indent(1)
+                    + "Moment Coefficients (in Wind Axes, Relative to the First "
+                    "Airplane's CG):"
                 )
 
                 _forces_W = airplane.forces_W
@@ -1810,15 +1810,17 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = f"{pad}Final Forces (in Wind Axes):"
+                title1 = _logging.indent(1) + "Final Forces (in Wind Axes):"
                 title2 = (
-                    f"{pad}Final Moments (in Wind Axes, Relative to the First "
-                    f"Airplane's CG):"
+                    _logging.indent(1)
+                    + "Final Moments (in Wind Axes, Relative to the First "
+                    "Airplane's CG):"
                 )
-                title3 = f"{pad}Final Force Coefficients (in Wind Axes):"
+                title3 = _logging.indent(1) + "Final Force Coefficients (in Wind Axes):"
                 title4 = (
-                    f"{pad}Final Moment Coefficients (in Wind Axes, Relative to "
-                    f"the First Airplane's CG):"
+                    _logging.indent(1)
+                    + "Final Moment Coefficients (in Wind Axes, Relative to "
+                    "the First Airplane's CG):"
                 )
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
@@ -1836,15 +1838,22 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = f"{pad}Final Cycle-Averaged Forces (in Wind Axes):"
-                title2 = (
-                    f"{pad}Final Cycle-Averaged Moments (in Wind Axes, Relative to the "
-                    f"First Airplane's CG):"
+                title1 = (
+                    _logging.indent(1) + "Final Cycle-Averaged Forces (in Wind Axes):"
                 )
-                title3 = f"{pad}Final Cycle-Averaged Force Coefficients (in Wind Axes):"
+                title2 = (
+                    _logging.indent(1)
+                    + "Final Cycle-Averaged Moments (in Wind Axes, Relative to the "
+                    "First Airplane's CG):"
+                )
+                title3 = (
+                    _logging.indent(1)
+                    + "Final Cycle-Averaged Force Coefficients (in Wind Axes):"
+                )
                 title4 = (
-                    f"{pad}Final Cycle-Averaged Moment Coefficients (in Wind Axes, "
-                    f"Relative to the First Airplane's CG):"
+                    _logging.indent(1)
+                    + "Final Cycle-Averaged Moment Coefficients (in Wind Axes, "
+                    "Relative to the First Airplane's CG):"
                 )
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
                 these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
@@ -1902,7 +1911,7 @@ def log_results(
             for i, val in enumerate(col4)
         ]
 
-        _logger.info(f'Airplane "{airplane.name}":')
+        _logger.info(_logging.indent() + f'Airplane "{airplane.name}":')
 
         # Display the Reynolds number for steady solvers.
         if solver_type == "steady":
@@ -1914,7 +1923,7 @@ def log_results(
                 ),
             )
             re = solver.reynolds_numbers[airplane_num]
-            _logger.info(f"{pad}Reynolds Number: {re:#.3G}")
+            _logger.info(_logging.indent(1) + f"Reynolds Number: {re:#.3G}")
 
         for i in range(len(col1)):
             if i == 0:
@@ -1926,13 +1935,11 @@ def log_results(
             elif i == 9:
                 _logger.info(title4)
 
-            s = f"{2 * pad}{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
+            s = (
+                _logging.indent(2)
+                + f"{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
+            )
             _logger.info(s)
-
-        # If the results from more Airplanes are going to be logged, log a blank
-        # line to separate them.
-        if (airplane_num + 1) < solver.num_airplanes:
-            _logger.info("")
 
     # For a free flight solver, also log the first Airplane's initial and final
     # six-degree-of-freedom state. This is logged once, since the state describes the
@@ -1949,8 +1956,9 @@ def log_results(
 
         final_time = solver.delta_time * (len(operating_points) - 1)
 
-        _logger.info("")
-        _logger.info("The First Airplane's Free Flight State History:")
+        _logger.info(
+            _logging.indent() + "The First Airplane's Free Flight State History:"
+        )
 
         # Each vector state quantity is broken into one row per component, mirroring
         # the per-component force and moment rows above, and each component row is
@@ -1978,20 +1986,24 @@ def log_results(
         )
 
         state_group_header_position = (
-            f"{2 * pad}Position (of the First Airplane's CG, in Earth Axes, Relative "
-            f"to the Earth Origin):"
+            _logging.indent(2)
+            + "Position (of the First Airplane's CG, in Earth Axes, Relative "
+            "to the Earth Origin):"
         )
         state_group_header_orientation = (
-            f"{2 * pad}Orientation (of the First Airplane's Body Axes Relative to "
-            f"Earth Axes Using an Intrinsic zy'x\" Sequence):"
+            _logging.indent(2)
+            + "Orientation (of the First Airplane's Body Axes Relative to "
+            "Earth Axes, Intrinsic zy'x\" Sequence):"
         )
         state_group_header_velocity = (
-            f"{2 * pad}Velocity (of the First Airplane's CG, in Earth Axes, Observed "
-            f"from the Earth Frame):"
+            _logging.indent(2)
+            + "Velocity (of the First Airplane's CG, in Earth Axes, Observed "
+            "from the Earth Frame):"
         )
         state_group_header_angular_velocity = (
-            f"{2 * pad}Angular Velocity (in the First Airplane's Body Axes, Observed "
-            f"from the Earth Frame):"
+            _logging.indent(2)
+            + "Angular Velocity (in the First Airplane's Body Axes, Observed "
+            "from the Earth Frame):"
         )
 
         # Log the initial state (at time step 0) and the final state.
@@ -2023,7 +2035,9 @@ def log_results(
                 for value, unit in zip(state_component_values, state_component_units)
             ]
 
-            _logger.info(f"{pad}{state_label} (at t = {state_time:#.3G} s):")
+            _logger.info(
+                _logging.indent(1) + f"{state_label} (at t = {state_time:#.3G} s):"
+            )
 
             for i in range(len(state_component_labels)):
                 if i == 0:
@@ -2036,7 +2050,8 @@ def log_results(
                     _logger.info(state_group_header_angular_velocity)
 
                 _logger.info(
-                    f"{3 * pad}{state_component_labels[i]:<{state_component_space}}"
+                    _logging.indent(3)
+                    + f"{state_component_labels[i]:<{state_component_space}}"
                     f"{state_component_values[i]}"
                 )
 
@@ -2049,11 +2064,11 @@ def log_results(
                 max(len(alpha_label), len(beta_label)) + padding_spaces
             )
             _logger.info(
-                f"{2 * pad}{alpha_label:<{aerodynamic_angle_space}}"
+                _logging.indent(2) + f"{alpha_label:<{aerodynamic_angle_space}}"
                 f"{this_operating_point.alpha:#10.3G} deg"
             )
             _logger.info(
-                f"{2 * pad}{beta_label:<{aerodynamic_angle_space}}"
+                _logging.indent(2) + f"{beta_label:<{aerodynamic_angle_space}}"
                 f"{this_operating_point.beta:#10.3G} deg"
             )
 

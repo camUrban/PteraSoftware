@@ -2,14 +2,54 @@
 
 from __future__ import annotations
 
+import contextvars
 import logging
 import sys
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
 from typing import TextIO
 
 from tqdm import tqdm
 
 # Package level logger. All module loggers should be children of this logger.
 PACKAGE_LOGGER_NAME = "pterasoftware"
+
+# The current log-message nesting level. Each level indents messages formatted with
+# indent() by two spaces.
+_indent_level: contextvars.ContextVar[int] = contextvars.ContextVar(
+    "indent_level", default=0
+)
+
+
+def indent(levels: int = 0) -> str:
+    """Returns the leading whitespace for a log message at the current nesting level.
+
+    :param levels: The number of levels to indent the message beyond the current nesting
+        level. It must be a non negative int. The default is 0.
+    :return: The leading whitespace, two spaces per level.
+    """
+    return "  " * (_indent_level.get() + levels)
+
+
+@contextmanager
+def nested(levels: int = 1) -> Iterator[None]:
+    """Deepens the log-message nesting level for the duration of a with block.
+
+    Log messages formatted with indent() inside the with block are indented by the given
+    number of additional levels. The nesting level is tracked with a context variable,
+    so a function's log messages nest under its caller's without the function knowing
+    its caller's nesting level.
+
+    :param levels: The number of levels to deepen the nesting level by. It must be a
+        positive int. The default is 1.
+    :return: None
+    """
+    token = _indent_level.set(_indent_level.get() + levels)
+    try:
+        yield
+    finally:
+        _indent_level.reset(token)
 
 
 class _TqdmLoggingHandler(logging.Handler):
@@ -60,6 +100,59 @@ class _TqdmLoggingHandler(logging.Handler):
             self.stream.flush()
 
 
+def _max_module_logger_display_name_length() -> int:
+    """Returns the length of the longest possible module logger display name in the
+    package.
+
+    A logger's display name is its name with the package prefix stripped (see
+    _PackageLogFormatter). Loggers are named after their modules via get_logger, so the
+    package's module file names determine every display name it can create. The modules
+    are found by walking the package's source tree rather than by importing them, which
+    keeps this compatible with the package's lazy imports and free of import side
+    effects. Only modules that create a logger contribute to the width, and a module is
+    detected as creating one by its source containing the "_logging.get_logger(" call
+    form, which every module logger definition uses.
+
+    :return: The length of the longest possible module logger display name.
+    """
+    package_dir = Path(__file__).parent
+    name_lengths = [len(PACKAGE_LOGGER_NAME)]
+    for module_path in package_dir.rglob("*.py"):
+        relative_path = module_path.relative_to(package_dir)
+        if relative_path.name == "__init__.py":
+            continue
+        if "_logging.get_logger(" not in module_path.read_text():
+            continue
+        display_name = ".".join((*relative_path.parts[:-1], relative_path.stem))
+        name_lengths.append(len(display_name))
+    return max(name_lengths)
+
+
+class _PackageLogFormatter(logging.Formatter):
+    """A logging formatter that adds each record's display name.
+
+    **Contains the following methods:**
+
+    format: Formats a log record after adding its display name.
+
+    **Notes:**
+
+    The display name is the logger's name with the leading "pterasoftware." stripped.
+    Every line of a Ptera Software log would otherwise carry that constant prefix, so
+    stripping it from the displayed name keeps the fixed part of each line compact. The
+    display name is available to format strings as %(display_name)s.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Formats a log record after adding its display name.
+
+        :param record: The log record to format.
+        :return: The formatted log message.
+        """
+        record.display_name = record.name.removeprefix(f"{PACKAGE_LOGGER_NAME}.")
+        return super().format(record)
+
+
 def get_logger(name: str) -> logging.Logger:
     """Gets a logger with proper hierarchical naming.
 
@@ -103,7 +196,12 @@ def set_up_logging(
         created that prints to the console without interfering with progress bars. Pass
         a handler (such as ``logging.FileHandler``) to route log messages elsewhere.
     :param format_string: Custom format string for log messages. If None, uses the
-        format "%(levelname)s - %(name)s - %(message)s".
+        format "%(levelname)-8s|%(display_name)-<width>s|%(message)s", where
+        display_name is the logger's name with the leading "pterasoftware." stripped.
+        The level name is right padded to the width of the longest standard level name
+        (CRITICAL) and the display name to the width of the package's longest possible
+        module logger display name, so the messages align across levels and modules.
+        Custom format strings may also reference %(display_name)s.
     :return: The configured package level logger.
     """
     # Validate level.
@@ -133,11 +231,16 @@ def set_up_logging(
     if handler is None:
         handler = _TqdmLoggingHandler()
 
-    # Set up formatting.
+    # Set up formatting. The level name is right padded to the width of the longest
+    # standard level name (CRITICAL) and the display name to the width of the package's
+    # longest possible module logger display name, so the messages align across levels
+    # and modules. Aligned messages let the indentation of nested messages read as one
+    # continuous tree.
     if format_string is None:
-        format_string = "%(levelname)s - %(name)s - %(message)s"
+        name_width = _max_module_logger_display_name_length()
+        format_string = f"%(levelname)-8s|%(display_name)-{name_width}s|%(message)s"
 
-    formatter = logging.Formatter(format_string)
+    formatter = _PackageLogFormatter(format_string)
     handler.setFormatter(formatter)
     handler.setLevel(level)
 

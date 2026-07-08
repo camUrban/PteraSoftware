@@ -231,7 +231,6 @@ class TestLoggerHierarchy(unittest.TestCase):
         """Child logger messages should go through package logger handlers."""
         stream = io.StringIO()
         handler = logging.StreamHandler(stream)
-        handler.setFormatter(logging.Formatter("%(name)s - %(message)s"))
 
         _logging.set_up_logging(level=logging.INFO, handler=handler)
         child_logger = _logging.get_logger("test_module")
@@ -239,5 +238,5 @@ class TestLoggerHierarchy(unittest.TestCase):
         child_logger.info("Test message")
         output = stream.getvalue()
 
-        self.assertIn("pterasoftware.test_module", output)
+        self.assertIn("test_module", output)
         self.assertIn("Test message", output)

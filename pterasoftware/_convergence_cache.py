@@ -72,10 +72,11 @@ def load_solve_cache(
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
         _logger.warning(
-            "Ignoring unreadable solve cache at %s (%s); rebuilding it.",
+            _logging.indent()
+            + "Ignoring unreadable solve cache at %s, so rebuilding it",
             cache_path,
-            error,
         )
+        _logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
@@ -84,7 +85,9 @@ def load_solve_cache(
     entries = data.get("entries", {})
     if not isinstance(entries, dict):
         _logger.warning(
-            "Ignoring solve cache at %s with a malformed entries section; rebuilding it.",
+            _logging.indent()
+            + "Ignoring solve cache at %s with a malformed entries section, so "
+            "rebuilding it",
             cache_path,
         )
         return {}
@@ -387,10 +390,11 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
         _logger.warning(
-            "Ignoring unreadable memo cache at %s (%s); resolving each mesh.",
+            _logging.indent()
+            + "Ignoring unreadable memo cache at %s, so resolving each mesh",
             cache_path,
-            error,
         )
+        _logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
@@ -399,7 +403,9 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     memos: dict[str, float] = data.get("memos", {})
     if not isinstance(memos, dict):
         _logger.warning(
-            "Ignoring cache at %s with a malformed memo section; resolving each mesh.",
+            _logging.indent()
+            + "Ignoring cache at %s with a malformed memo section, so resolving "
+            "each mesh",
             cache_path,
         )
         return {}

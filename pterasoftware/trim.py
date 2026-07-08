@@ -338,7 +338,8 @@ def analyze_steady_trim(
         o_str = f"{objective:#.3G}"
 
         state_msg = (
-            "\tState: vCg__E = "
+            _logging.indent(1)
+            + "State: vCg__E = "
             + v_str
             + " m/s, alpha = "
             + a_str
@@ -348,7 +349,7 @@ def analyze_steady_trim(
             + f_str
             + " N"
         )
-        obj_msg = "\t\tObjective: " + o_str
+        obj_msg = _logging.indent(2) + "Objective: " + o_str
 
         _logger.info(state_msg)
         _logger.info(obj_msg)
@@ -371,7 +372,7 @@ def analyze_steady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
-    _logger.info("Starting local search.")
+    _logger.info(_logging.indent() + "Starting local search")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
         sp_opt.minimize(
@@ -382,7 +383,7 @@ def analyze_steady_trim(
             options=local_options,
         )
     except StopIteration:
-        _logger.info("Acceptable value reached with local search.")
+        _logger.info(_logging.indent() + "Acceptable value reached with local search")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -391,7 +392,8 @@ def analyze_steady_trim(
         )
 
     _logger.warning(
-        "No acceptable value reached with local search. Starting global search."
+        _logging.indent()
+        + "No acceptable value reached with local search, so starting global search"
     )
     try:
         global_options: Any = {"maxfun": num_calls, "eps": 0.01}
@@ -408,7 +410,7 @@ def analyze_steady_trim(
             seed=_seed,
         )
     except StopIteration:
-        _logger.info("Acceptable global minima found.")
+        _logger.info(_logging.indent() + "Acceptable global minima found")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -417,8 +419,9 @@ def analyze_steady_trim(
         )
 
     _logger.critical(
-        "No trim condition found. Try increasing the bounds and the maximum number of "
-        "iterations."
+        _logging.indent()
+        + "No trim condition found, so try increasing the bounds and the maximum "
+        "number of iterations"
     )
     return None, None, None, None
 
@@ -727,7 +730,8 @@ def analyze_unsteady_trim(
         o_str = f"{objective:#.3G}"
 
         state_msg = (
-            "\tState: vCg__E = "
+            _logging.indent(1)
+            + "State: vCg__E = "
             + v_str
             + " m/s, alpha = "
             + a_str
@@ -737,7 +741,7 @@ def analyze_unsteady_trim(
             + f_str
             + " N"
         )
-        obj_msg = "\t\tObjective: " + o_str
+        obj_msg = _logging.indent(2) + "Objective: " + o_str
 
         _logger.info(state_msg)
         _logger.info(obj_msg)
@@ -760,7 +764,7 @@ def analyze_unsteady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
-    _logger.info("Starting local search.")
+    _logger.info(_logging.indent() + "Starting local search")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
         sp_opt.minimize(
@@ -771,7 +775,7 @@ def analyze_unsteady_trim(
             options=local_options,
         )
     except StopIteration:
-        _logger.info("Acceptable value reached with local search.")
+        _logger.info(_logging.indent() + "Acceptable value reached with local search")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -780,7 +784,8 @@ def analyze_unsteady_trim(
         )
 
     _logger.warning(
-        "No acceptable value reached with local search. Starting global search."
+        _logging.indent()
+        + "No acceptable value reached with local search, so starting global search"
     )
     try:
         global_options: Any = {"maxfun": num_calls, "eps": 0.01}
@@ -797,7 +802,7 @@ def analyze_unsteady_trim(
             seed=_seed,
         )
     except StopIteration:
-        _logger.info("Acceptable global minima found.")
+        _logger.info(_logging.indent() + "Acceptable global minima found")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -806,7 +811,8 @@ def analyze_unsteady_trim(
         )
 
     _logger.critical(
-        "No trim condition found. Try increasing the bounds and the maximum number of "
-        "iterations."
+        _logging.indent()
+        + "No trim condition found, so try increasing the bounds and the maximum "
+        "number of iterations"
     )
     return None, None, None, None

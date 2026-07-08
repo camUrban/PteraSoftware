@@ -32,6 +32,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     symmetryPoint_G_Cg = wing.symmetryPoint_G_Cg
     num_chordwise_panels = wing.num_chordwise_panels
     chordwise_spacing = wing.chordwise_spacing
+    T_pas_G_Cg_to_Wn_Ler = wing.T_pas_G_Cg_to_Wn_Ler
     T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
     children_T_pas_Wcs_Lp_to_Wn_Ler = wing.children_T_pas_Wcs_Lp_to_Wn_Ler
 
@@ -51,6 +52,27 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     # Initialize an empty array that will hold the Panels of this Wing. It currently
     # has 0 columns and M rows, where M is the number of the Wing's chordwise Panels.
     wing_panels: np.ndarray = np.empty((num_chordwise_panels, 0), dtype=object)
+
+    # The type 4 mirrored half is reflected about the wing's symmetry plane. Re-express
+    # that plane in wing axes (its point relative to the leading edge root point) once,
+    # so each section's reflection is built in the same axes as the vectors it is
+    # applied to.
+    reflect_T_act = None
+    if symmetry_type == 4:
+        assert symmetryNormal_G is not None
+        assert symmetryPoint_G_Cg is not None
+        assert T_pas_G_Cg_to_Wn_Ler is not None
+        symmetryNormal_Wn = _transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_Wn_Ler, symmetryNormal_G, is_position=False
+        )
+        symmetryPoint_Wn_Ler = _transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_Wn_Ler, symmetryPoint_G_Cg, is_position=True
+        )
+        reflect_T_act = _transformations.generate_reflect_T(
+            plane_point_A_a=symmetryPoint_Wn_Ler,
+            plane_normal_A=symmetryNormal_Wn,
+            passive=False,
+        )
 
     # Make the Panels for each wing section.
     for wing_section_num in range(num_wing_sections):
@@ -279,10 +301,10 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             # only needs to be defined once with a `symmetric` flag.
             #
             # But the two wings do not exist in isolation; they must be placed together
-            # into one shared geometry frame relative to the airplane's CG so the solver
-            # can treat them as a single airframe. The mirrored wing's leading-edge root
-            # point and orientation (sweep, dihedral, incidence) are derived from the
-            # original wing's attributes.
+            # into one shared geometry axis system relative to the airplane's CG so the
+            # solver can treat them as a single airframe. The mirrored wing's
+            # leading-edge root point and orientation (sweep, dihedral, incidence) are
+            # derived from the original wing's attributes.
             #
             # A reflection is an IMPROPER transformation (determinant -1) that flips
             # handedness/chirality. A rotation or translation is a PROPER transformation
@@ -293,19 +315,11 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             # Reflection is the only linear operation that genuinely inverts handedness
             # to turn a right wing into a left wing.
             # --------------------------------------------------------------------------
-            assert symmetryPoint_G_Cg is not None
-            assert symmetryNormal_G is not None
+            assert reflect_T_act is not None
 
-            # Step 1: Generate the active transformation reflection matrix based on the
-            # airplane's symmetry plane (defined in global geometry axes relative to CG).
-            reflect_T_act = _transformations.generate_reflect_T(
-                plane_point_A_a=symmetryPoint_G_Cg,
-                plane_normal_A=symmetryNormal_G,
-                passive=False,
-            )
-
-            # Step 2 (ACTIVE transformation): Mirror each local MCS point across the symmetry plane.
-            # This householder-like reflection explicitly flips the geometric handedness.
+            # Step 1 (ACTIVE transformation): Mirror each local MCS point across the
+            # symmetry plane. This householder-like reflection explicitly flips the
+            # geometric handedness.
             reflected_Fipp_Wn_Ler = _transformations.apply_T_to_vectors(
                 reflect_T_act, Fipp_Wn_Ler, is_position=True
             )
@@ -319,8 +333,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 reflect_T_act, Bopp_Wn_Ler, is_position=True
             )
 
-            # Step 3 (PASSIVE transformation): Re-express the now-reflected points from local
-            # wing axes into the global geometry axes frame relative to the CG.
+            # Step 2 (PASSIVE transformation): Re-express the now-reflected points
+            # from local wing axes into geometry axes relative to the CG.
             reflected_Fipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, is_position=True
             )

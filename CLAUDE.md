@@ -59,7 +59,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
 - `docs/`: Directory with documentation files
     - `examples_expected_output/`: Example output files for verification
-    - `hero_graphics/`: Scripts and assets for the README hero graphic
+    - `hero_graphics/`: Assets for the README hero graphic
     - `private/`: Directory with documentation not included in this repository's version control (may be missing if the private repo hasn't been cloned and linked to this local repo)
         - `katz_plotkin_12_2/`: A recreation of Chapter 12.2, which describes efficiently including the effects of symmetry and ground effect for vortex lattice methods, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
         - `katz_plotkin_13_12/`: A recreation of Chapter 13.12, which describes the UVLM, from the textbook "Low-Speed Aerodynamics" by Katz and Plotkin
@@ -91,16 +91,15 @@ Requires Python 3.11, but active development is done in 3.13
         - `aeroelastic_wing_cross_section_movement.py`: AeroelasticWingCrossSectionMovement class
         - `aeroelastic_wing_movement.py`: AeroelasticWingMovement class
         - `airplane_movement.py`: AirplaneMovement class
-        - `free_flight_airplane_movement.py`: FreeFlightAirplaneMovement class
         - `free_flight_movement.py`: FreeFlightMovement class
         - `free_flight_operating_point_movement.py`: FreeFlightOperatingPointMovement class
-        - `free_flight_wing_cross_section_movement.py`: FreeFlightWingCrossSectionMovement class
-        - `free_flight_wing_movement.py`: FreeFlightWingMovement class
         - `movement.py`: Movement class
         - `operating_point_movement.py`: OperatingPointMovement class
         - `wing_cross_section_movement.py`: WingCrossSectionMovement class
         - `wing_movement.py`: WingMovement class
     - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_convergence_cache.py`: JSON solve and memo cache for convergence analysis
+    - `_convergence_meshing.py`: Mesh building and refinement for convergence iterations
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
@@ -123,9 +122,14 @@ Requires Python 3.11, but active development is done in 3.13
     - `trim.py`: Trim analysis functionality
     - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 - `scripts/`: Directory with maintenance and tooling scripts
+    - `hero_generation/`: Scripts for creating and finalizing the README hero graphic
+        - `create_solve_and_save_hero.py`: Creates, solves, and saves the hero simulation
+        - `finalize_and_save_hero.py`: Renames preview hero graphics to their permanent names
+        - `load_and_visualize_hero.py`: Loads the saved hero simulation and generates preview graphics
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
+    - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests
     - `integration/`: Integration tests for combined functionality
         - `fixtures/`: Fixtures for integration tests
@@ -164,11 +168,8 @@ Requires Python 3.11, but active development is done in 3.13
             - `core_operating_point_movement_fixtures.py`
             - `core_wing_cross_section_movement_fixtures.py`
             - `core_wing_movement_fixtures.py`
-            - `free_flight_airplane_movement_fixtures.py`
             - `free_flight_movement_fixtures.py`
             - `free_flight_operating_point_movement_fixtures.py`
-            - `free_flight_wing_cross_section_movement_fixtures.py`
-            - `free_flight_wing_movement_fixtures.py`
             - `geometry_fixtures.py`
             - `movement_fixtures.py`
             - `mujoco_model_fixtures.py`
@@ -193,6 +194,9 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_airfoil.py`
         - `test_airplane.py`
         - `test_airplane_movement.py`
+        - `test_convergence.py`
+        - `test_convergence_cache.py`
+        - `test_convergence_meshing.py`
         - `test_core.py`
         - `test_core_airplane_movement.py`
         - `test_core_movement.py`
@@ -202,13 +206,10 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_core_wing_movement.py`
         - `test_coupled_unsteady_problem.py`
         - `test_coupled_unsteady_ring_vortex_lattice_method.py`
-        - `test_free_flight_airplane_movement.py`
         - `test_free_flight_movement.py`
         - `test_free_flight_operating_point_movement.py`
         - `test_free_flight_unsteady_problem.py`
         - `test_free_flight_unsteady_ring_vortex_lattice_method.py`
-        - `test_free_flight_wing_cross_section_movement.py`
-        - `test_free_flight_wing_movement.py`
         - `test_functions.py`
         - `test_logging.py`
         - `test_movement.py`

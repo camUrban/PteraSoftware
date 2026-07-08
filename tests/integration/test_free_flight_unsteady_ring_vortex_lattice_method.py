@@ -45,7 +45,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         operating_points = problem.movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
-        # OperatingPoints and the problem's recorded aerodynamic load history.
+        # OperatingPoints and each time step's solved Airplane.
         cls.speeds = np.array(
             [operating_point.vCg__E for operating_point in operating_points]
         )
@@ -64,7 +64,12 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
 
         # In Ptera Software's wind axes, lift is the negative z-component of the wind-axes
         # force.
-        forces_W = np.array(problem.forces_W)
+        forces_W = np.array(
+            [
+                steady_problem.airplanes[0].forces_W
+                for steady_problem in problem.steady_problems
+            ]
+        )
         cls.lifts = -forces_W[:, 2]
         cls.side_forces = forces_W[:, 1]
 
@@ -219,7 +224,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         operating_points = problem.movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
-        # OperatingPoints and the problem's recorded aerodynamic load history.
+        # OperatingPoints and each time step's solved Airplane.
         cls.betas = np.array(
             [operating_point.beta for operating_point in operating_points]
         )
@@ -229,7 +234,12 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
 
         # In Ptera Software's wind axes, lift is the negative z-component of the wind-axes
         # force and the lateral side force is the y-component.
-        forces_W = np.array(problem.forces_W)
+        forces_W = np.array(
+            [
+                steady_problem.airplanes[0].forces_W
+                for steady_problem in problem.steady_problems
+            ]
+        )
         cls.forces_W = forces_W
         cls.lifts = -forces_W[:, 2]
         cls.side_forces = forces_W[:, 1]

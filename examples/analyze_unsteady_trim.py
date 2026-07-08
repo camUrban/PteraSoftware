@@ -1,11 +1,16 @@
-"""This script is an example of how to automatically find the trim condition for an
-unsteady simulation."""
+"""Demonstrates finding the trim condition for an unsteady simulation.
+
+The script will likely take several minutes to run, and will log trim progress and
+results in a log file.
+"""
+
+import logging
 
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the trim function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_trim.log"))
 
 # Create an Airplane. We must specify a weight (in Newtons) for the Airplane. We will
 # later find a trim condition where the weight is exactly balanced by lift.
@@ -135,7 +140,7 @@ trim_conditions = ps.trim.analyze_unsteady_trim(
     alpha_bounds=(-10, 10),
     beta_bounds=(-0.1, 0.1),
     boundsExternalFX_W=(5, 15),
-    objective_cut_off=0.01,
+    objective_cut_off=0.025,
     num_calls=100,
-    show_solver_progress=True,
+    show_solver_progress=False,
 )

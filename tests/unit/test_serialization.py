@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import numpy.testing as npt
@@ -29,6 +30,7 @@ from pterasoftware._serialization import (
     _object_from_dict,
     _object_to_dict,
     _serialize_value,
+    hash_object,
     load,
     save,
 )
@@ -56,17 +58,10 @@ from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
 )
 from pterasoftware.movements.aeroelastic_wing_movement import AeroelasticWingMovement
 from pterasoftware.movements.airplane_movement import AirplaneMovement
-from pterasoftware.movements.free_flight_airplane_movement import (
-    FreeFlightAirplaneMovement,
-)
 from pterasoftware.movements.free_flight_movement import FreeFlightMovement
 from pterasoftware.movements.free_flight_operating_point_movement import (
     FreeFlightOperatingPointMovement,
 )
-from pterasoftware.movements.free_flight_wing_cross_section_movement import (
-    FreeFlightWingCrossSectionMovement,
-)
-from pterasoftware.movements.free_flight_wing_movement import FreeFlightWingMovement
 from pterasoftware.movements.movement import Movement
 from pterasoftware.movements.operating_point_movement import OperatingPointMovement
 from pterasoftware.movements.wing_cross_section_movement import (
@@ -800,6 +795,92 @@ class TestObjectFromDict(unittest.TestCase):
             _object_from_dict({"_type": "UnknownClass"})
 
 
+class TestHashObject(unittest.TestCase):
+    """This class contains methods for testing hash_object."""
+
+    def test_returns_hex_string(self):
+        """Tests that hash_object returns a 64 character lowercase hex string.
+
+        :return: None
+        """
+        result = hash_object(OperatingPoint())
+        self.assertIsInstance(result, str)
+        self.assertEqual(len(result), 64)
+        self.assertTrue(all(character in "0123456789abcdef" for character in result))
+
+    def test_deterministic_for_same_object(self):
+        """Tests that hashing the same object twice returns the same digest.
+
+        :return: None
+        """
+        operating_point = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        self.assertEqual(hash_object(operating_point), hash_object(operating_point))
+
+    def test_equal_for_distinct_but_equal_objects(self):
+        """Tests that two distinct objects with equal content hash identically.
+
+        :return: None
+        """
+        first = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        second = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        self.assertIsNot(first, second)
+        self.assertEqual(hash_object(first), hash_object(second))
+
+    def test_differs_for_different_content(self):
+        """Tests that objects differing in one attribute hash differently.
+
+        :return: None
+        """
+        first = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
+        second = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=6.0)
+        self.assertNotEqual(hash_object(first), hash_object(second))
+
+    def test_differs_across_classes(self):
+        """Tests that objects of different classes hash differently.
+
+        :return: None
+        """
+        self.assertNotEqual(
+            hash_object(OperatingPoint()),
+            hash_object(Airfoil(name="NACA0012")),
+        )
+
+    def test_stable_across_save_load_round_trip(self):
+        """Tests that a save and load round trip preserves an object's digest.
+
+        :return: None
+        """
+        problem = serialization_fixtures.make_steady_problem_fixture()
+        original_hash = hash_object(problem)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "problem.json"
+            save(path, problem)
+            loaded = load(path)
+        assert isinstance(loaded, SteadyProblem)
+        self.assertEqual(hash_object(loaded), original_hash)
+
+    def test_folds_in_format_version(self):
+        """Tests that changing the format version changes the digest.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        base_hash = hash_object(operating_point)
+        with mock.patch(
+            "pterasoftware._serialization._FORMAT_VERSION", _FORMAT_VERSION + 1
+        ):
+            bumped_hash = hash_object(operating_point)
+        self.assertNotEqual(base_hash, bumped_hash)
+
+    def test_unregistered_object_raises(self):
+        """Tests that hashing an unregistered object raises a TypeError.
+
+        :return: None
+        """
+        with self.assertRaises(TypeError):
+            hash_object("not a Ptera Software object")
+
+
 class TestSaveLoad(unittest.TestCase):
     """This class contains methods for testing save and load."""
 
@@ -883,6 +964,29 @@ class TestSaveLoad(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             load("test.dat")
+
+    def test_save_directory_raises(self):
+        """Tests that save raises a ValueError when the path is an existing directory.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.json"
+            path.mkdir()
+            with self.assertRaises(ValueError):
+                save(path, operating_point)
+
+    def test_load_directory_raises(self):
+        """Tests that load raises a ValueError when the path is an existing directory.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.json"
+            path.mkdir()
+            with self.assertRaises(ValueError):
+                load(path)
 
     def test_gzip_bomb_protection(self):
         """Tests that the max_size parameter on load controls the size limit.
@@ -1147,6 +1251,65 @@ class TestWingRoundTrip(unittest.TestCase):
         self.assertEqual(result.name, wing.name)
         self.assertEqual(result.num_chordwise_panels, wing.num_chordwise_panels)
         self.assertEqual(result.chordwise_spacing, wing.chordwise_spacing)
+        self.assertEqual(result.spanwise_mesh, wing.spanwise_mesh)
+
+    def test_exploded_wing_spanwise_mesh_round_trip(self):
+        """Tests that an exploded Wing's spanwise mesh marker survives round trip.
+
+        :return: None
+        """
+        root_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=3,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=None,
+            chord=0.5,
+            Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+            spanwise_spacing=None,
+        )
+        wing = Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+            explode_into_strips=True,
+        )
+        self.assertEqual(wing.spanwise_mesh, "exploded")
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertEqual(result.spanwise_mesh, "exploded")
+
+    def test_edge_defined_wing_round_trip(self):
+        """Tests that a from_edge_points Wing's marker, edge curves, and tip trim
+        fraction survive a round trip.
+
+        :return: None
+        """
+        ys = np.linspace(0.0, 1.0, 11)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.5 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        wing = Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=Airfoil(name="naca0012"),
+            tip_trim_fraction=0.1,
+        )
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertEqual(result.spanwise_mesh, "edge_defined")
+        self.assertEqual(result.tip_trim_fraction, 0.1)
+        assert result.leadingEdgePoints_Wn_Ler is not None
+        assert result.trailingEdgePoints_Wn_Ler is not None
+        npt.assert_array_equal(result.leadingEdgePoints_Wn_Ler, leading)
+        npt.assert_array_equal(result.trailingEdgePoints_Wn_Ler, trailing)
+        self.assertFalse(result.leadingEdgePoints_Wn_Ler.flags.writeable)
+        self.assertFalse(result.trailingEdgePoints_Wn_Ler.flags.writeable)
 
     def test_panels_dtype_object_round_trip(self):
         """Tests that the dtype=object _panels array survives round trip with Panel
@@ -2073,41 +2236,6 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, movement.num_steps)
         self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
 
-    def test_free_flight_airplane_movement(self):
-        """Tests that a FreeFlightAirplaneMovement survives a full round trip.
-
-        :return: None
-        """
-        airplane_movement = self.problem.movement.airplane_movements[0]
-        result = _deserialize_value(_serialize_value(airplane_movement))
-        assert isinstance(result, FreeFlightAirplaneMovement)
-        self.assertEqual(
-            result.base_airplane.name, airplane_movement.base_airplane.name
-        )
-
-    def test_free_flight_wing_movement(self):
-        """Tests that a FreeFlightWingMovement survives a full round trip.
-
-        :return: None
-        """
-        wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
-        result = _deserialize_value(_serialize_value(wing_movement))
-        assert isinstance(result, FreeFlightWingMovement)
-        self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
-
-    def test_free_flight_wing_cross_section_movement(self):
-        """Tests that a FreeFlightWingCrossSectionMovement survives a full round trip.
-
-        :return: None
-        """
-        wing_cross_section_movement = (
-            self.problem.movement.airplane_movements[0]
-            .wing_movements[0]
-            .wing_cross_section_movements[0]
-        )
-        result = _deserialize_value(_serialize_value(wing_cross_section_movement))
-        assert isinstance(result, FreeFlightWingCrossSectionMovement)
-
     def test_free_flight_operating_point_movement(self):
         """Tests that a FreeFlightOperatingPointMovement survives a full round trip.
 
@@ -2161,21 +2289,6 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(problem))
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
-
-    def test_load_history_round_trip(self):
-        """Tests that recorded load-history arrays survive a round trip.
-
-        :return: None
-        """
-        problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
-        problem.forces_W.append(np.array([1.0, 2.0, 3.0], dtype=float))
-        problem.forceCoefficients_W.append(np.array([0.1, 0.2, 0.3], dtype=float))
-        problem.moments_W_Cg.append(np.array([4.0, 5.0, 6.0], dtype=float))
-        problem.momentCoefficients_W_Cg.append(np.array([0.4, 0.5, 0.6], dtype=float))
-        result = _deserialize_value(_serialize_value(problem))
-        assert isinstance(result, FreeFlightUnsteadyProblem)
-        npt.assert_array_equal(result.forces_W[0], problem.forces_W[0])
-        npt.assert_array_equal(result.moments_W_Cg[0], problem.moments_W_Cg[0])
 
     def test_custom_external_loads_fn_is_not_serializable(self):
         """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn raises

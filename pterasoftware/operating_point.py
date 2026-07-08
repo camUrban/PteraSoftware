@@ -13,6 +13,7 @@ None
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -23,6 +24,8 @@ class OperatingPoint:
     """A class used to contain the operating conditions of an aerodynamic problem.
 
     **Contains the following methods:**
+
+    __deepcopy__: Creates a deep copy of this OperatingPoint.
 
     qInf__E: The freestream dynamic pressure experienced by the Airplane (observed in
     the Earth frame).
@@ -323,6 +326,184 @@ class OperatingPoint:
         self._surfaceReflect_T_act_GP1_CgP1: np.ndarray | None = None
         self._vInfHat_GP1__E: np.ndarray | None = None
         self._vInf_GP1__E: np.ndarray | None = None
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> OperatingPoint:
+        """Creates a deep copy of this OperatingPoint.
+
+        Every attribute is preserved, since all of this OperatingPoint's attributes are
+        either immutable or derived from immutable attributes and so remain valid in the
+        copy. Each numpy array is copied into an independent read only array, and each
+        cached derived property is copied when it has been computed or left as None when
+        it has not. Each slot is handled explicitly rather than in a loop so that adding
+        a slot of a different category (for example one the solver mutates, which would
+        need resetting instead of copying) forces a deliberate choice here.
+
+        :param memo: A dict used by the copy module to track already copied objects and
+            avoid infinite recursion.
+        :return: A new OperatingPoint with copied data.
+        """
+        # Create a new OperatingPoint instance without calling __init__ to avoid
+        # redundant validation.
+        new_operating_point = object.__new__(OperatingPoint)
+
+        # Store this OperatingPoint in memo to handle potential circular references.
+        memo[id(self)] = new_operating_point
+
+        # Copy the immutable scalar attributes.
+        new_operating_point._rho = self._rho
+        new_operating_point._vCg__E = self._vCg__E
+        new_operating_point._alpha = self._alpha
+        new_operating_point._beta = self._beta
+        new_operating_point._externalFX_W = self._externalFX_W
+        new_operating_point._nu = self._nu
+
+        # Copy the immutable array attributes into new read only arrays.
+        new_operating_point._angles_E_to_BP1_izyx = self._angles_E_to_BP1_izyx.copy()
+        new_operating_point._angles_E_to_BP1_izyx.flags.writeable = False
+        new_operating_point._CgP1_E_Eo = self._CgP1_E_Eo.copy()
+        new_operating_point._CgP1_E_Eo.flags.writeable = False
+        new_operating_point._g_E = self._g_E.copy()
+        new_operating_point._g_E.flags.writeable = False
+        new_operating_point._omegas_BP1__E = self._omegas_BP1__E.copy()
+        new_operating_point._omegas_BP1__E.flags.writeable = False
+
+        # Copy the immutable nullable surface arrays into new read only arrays, or keep
+        # them None.
+        if self._surfaceNormal_E is not None:
+            new_operating_point._surfaceNormal_E = self._surfaceNormal_E.copy()
+            new_operating_point._surfaceNormal_E.flags.writeable = False
+        else:
+            new_operating_point._surfaceNormal_E = None
+        if self._surfacePoint_E_Eo is not None:
+            new_operating_point._surfacePoint_E_Eo = self._surfacePoint_E_Eo.copy()
+            new_operating_point._surfacePoint_E_Eo.flags.writeable = False
+        else:
+            new_operating_point._surfacePoint_E_Eo = None
+
+        # Copy the scalar dynamic pressure cache directly, preserving None when it has not
+        # been computed.
+        new_operating_point._qInf__E = self._qInf__E
+
+        # Copy each cached transformation matrix into a new read only array, or keep it
+        # None. These are all derived from immutable attributes, so the copies stay valid.
+        if self._T_pas_GP1_CgP1_to_BP1_CgP1 is not None:
+            new_operating_point._T_pas_GP1_CgP1_to_BP1_CgP1 = (
+                self._T_pas_GP1_CgP1_to_BP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_GP1_CgP1_to_BP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_GP1_CgP1_to_BP1_CgP1 = None
+        if self._T_pas_BP1_CgP1_to_GP1_CgP1 is not None:
+            new_operating_point._T_pas_BP1_CgP1_to_GP1_CgP1 = (
+                self._T_pas_BP1_CgP1_to_GP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_BP1_CgP1_to_GP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_BP1_CgP1_to_GP1_CgP1 = None
+        if self._T_pas_BP1_CgP1_to_W_CgP1 is not None:
+            new_operating_point._T_pas_BP1_CgP1_to_W_CgP1 = (
+                self._T_pas_BP1_CgP1_to_W_CgP1.copy()
+            )
+            new_operating_point._T_pas_BP1_CgP1_to_W_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_BP1_CgP1_to_W_CgP1 = None
+        if self._T_pas_W_CgP1_to_BP1_CgP1 is not None:
+            new_operating_point._T_pas_W_CgP1_to_BP1_CgP1 = (
+                self._T_pas_W_CgP1_to_BP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_W_CgP1_to_BP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_W_CgP1_to_BP1_CgP1 = None
+        if self._T_pas_GP1_CgP1_to_W_CgP1 is not None:
+            new_operating_point._T_pas_GP1_CgP1_to_W_CgP1 = (
+                self._T_pas_GP1_CgP1_to_W_CgP1.copy()
+            )
+            new_operating_point._T_pas_GP1_CgP1_to_W_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_GP1_CgP1_to_W_CgP1 = None
+        if self._T_pas_W_CgP1_to_GP1_CgP1 is not None:
+            new_operating_point._T_pas_W_CgP1_to_GP1_CgP1 = (
+                self._T_pas_W_CgP1_to_GP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_W_CgP1_to_GP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_W_CgP1_to_GP1_CgP1 = None
+        if self._T_pas_E_CgP1_to_BP1_CgP1 is not None:
+            new_operating_point._T_pas_E_CgP1_to_BP1_CgP1 = (
+                self._T_pas_E_CgP1_to_BP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_E_CgP1_to_BP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_E_CgP1_to_BP1_CgP1 = None
+        if self._T_pas_BP1_CgP1_to_E_CgP1 is not None:
+            new_operating_point._T_pas_BP1_CgP1_to_E_CgP1 = (
+                self._T_pas_BP1_CgP1_to_E_CgP1.copy()
+            )
+            new_operating_point._T_pas_BP1_CgP1_to_E_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_BP1_CgP1_to_E_CgP1 = None
+        if self._T_pas_E_CgP1_to_GP1_CgP1 is not None:
+            new_operating_point._T_pas_E_CgP1_to_GP1_CgP1 = (
+                self._T_pas_E_CgP1_to_GP1_CgP1.copy()
+            )
+            new_operating_point._T_pas_E_CgP1_to_GP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_E_CgP1_to_GP1_CgP1 = None
+        if self._T_pas_GP1_CgP1_to_E_CgP1 is not None:
+            new_operating_point._T_pas_GP1_CgP1_to_E_CgP1 = (
+                self._T_pas_GP1_CgP1_to_E_CgP1.copy()
+            )
+            new_operating_point._T_pas_GP1_CgP1_to_E_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_GP1_CgP1_to_E_CgP1 = None
+        if self._T_pas_W_CgP1_to_E_CgP1 is not None:
+            new_operating_point._T_pas_W_CgP1_to_E_CgP1 = (
+                self._T_pas_W_CgP1_to_E_CgP1.copy()
+            )
+            new_operating_point._T_pas_W_CgP1_to_E_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_W_CgP1_to_E_CgP1 = None
+        if self._T_pas_E_CgP1_to_W_CgP1 is not None:
+            new_operating_point._T_pas_E_CgP1_to_W_CgP1 = (
+                self._T_pas_E_CgP1_to_W_CgP1.copy()
+            )
+            new_operating_point._T_pas_E_CgP1_to_W_CgP1.flags.writeable = False
+        else:
+            new_operating_point._T_pas_E_CgP1_to_W_CgP1 = None
+
+        # Copy each remaining cached derived array into a new read only array, or keep it
+        # None. These are also derived from immutable attributes.
+        if self._surfaceNormal_GP1 is not None:
+            new_operating_point._surfaceNormal_GP1 = self._surfaceNormal_GP1.copy()
+            new_operating_point._surfaceNormal_GP1.flags.writeable = False
+        else:
+            new_operating_point._surfaceNormal_GP1 = None
+        if self._surfacePoint_GP1_CgP1 is not None:
+            new_operating_point._surfacePoint_GP1_CgP1 = (
+                self._surfacePoint_GP1_CgP1.copy()
+            )
+            new_operating_point._surfacePoint_GP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._surfacePoint_GP1_CgP1 = None
+        if self._surfaceReflect_T_act_GP1_CgP1 is not None:
+            new_operating_point._surfaceReflect_T_act_GP1_CgP1 = (
+                self._surfaceReflect_T_act_GP1_CgP1.copy()
+            )
+            new_operating_point._surfaceReflect_T_act_GP1_CgP1.flags.writeable = False
+        else:
+            new_operating_point._surfaceReflect_T_act_GP1_CgP1 = None
+        if self._vInfHat_GP1__E is not None:
+            new_operating_point._vInfHat_GP1__E = self._vInfHat_GP1__E.copy()
+            new_operating_point._vInfHat_GP1__E.flags.writeable = False
+        else:
+            new_operating_point._vInfHat_GP1__E = None
+        if self._vInf_GP1__E is not None:
+            new_operating_point._vInf_GP1__E = self._vInf_GP1__E.copy()
+            new_operating_point._vInf_GP1__E.flags.writeable = False
+        else:
+            new_operating_point._vInf_GP1__E = None
+
+        return new_operating_point
 
     # --- Immutable: read only properties ---
     @property

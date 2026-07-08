@@ -3,7 +3,7 @@
 import pterasoftware as ps
 
 from . import (
-    free_flight_airplane_movement_fixtures,
+    airplane_movement_fixtures,
     free_flight_operating_point_movement_fixtures,
     geometry_fixtures,
 )
@@ -15,11 +15,11 @@ def make_basic_free_flight_movement_fixture():
 
     :return basic_free_flight_movement_fixture: FreeFlightMovement
         This is the FreeFlightMovement with general-purpose values. Its single
-        FreeFlightAirplaneMovement oscillates, so the FreeFlightMovement is non static.
+        AirplaneMovement oscillates, so the FreeFlightMovement is non static.
     """
     # Initialize the constructing fixtures.
     airplane_movements = [
-        free_flight_airplane_movement_fixtures.make_basic_free_flight_airplane_movement_fixture()
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
     ]
     operating_point_movement = (
         free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
@@ -47,8 +47,8 @@ def make_static_free_flight_movement_fixture():
     :return static_free_flight_movement_fixture: FreeFlightMovement
         This is the FreeFlightMovement with no prescribed motion. Because the
         FreeFlightOperatingPointMovement never oscillates, the only possible motion comes
-        from the FreeFlightAirplaneMovement, which is static here, so the
-        FreeFlightMovement is static.
+        from the AirplaneMovement, which is static here, so the FreeFlightMovement is
+        static.
     """
     # Initialize the constructing fixtures. The base Airplane is the first Airplane in a
     # simulation, so its Cg_GP1_CgP1 parameter is all zeros. The base Wing is a type 1
@@ -57,28 +57,26 @@ def make_static_free_flight_movement_fixture():
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     root_wing_cross_section, tip_wing_cross_section = base_wing.wing_cross_sections
 
-    # Create static FreeFlightWingCrossSectionMovements (default zero oscillation).
+    # Create static WingCrossSectionMovements (default zero oscillation).
     wing_cross_section_movements = [
-        ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=root_wing_cross_section,
         ),
-        ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=tip_wing_cross_section,
         ),
     ]
 
-    # Create a static FreeFlightWingMovement (default zero oscillation).
-    wing_movement = ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+    # Create a static WingMovement (default zero oscillation).
+    wing_movement = ps.movements.wing_movement.WingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wing_cross_section_movements,
     )
 
-    # Create a static FreeFlightAirplaneMovement (default zero oscillation).
-    airplane_movement = (
-        ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=[wing_movement],
-        )
+    # Create a static AirplaneMovement (default zero oscillation).
+    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=[wing_movement],
     )
 
     operating_point_movement = (
@@ -102,22 +100,21 @@ def make_static_free_flight_movement_fixture():
 
 def make_free_flight_movement_with_multiple_airplanes_fixture():
     """This method makes a fixture that is a FreeFlightMovement with multiple
-    FreeFlightAirplaneMovements.
+    AirplaneMovements.
 
     :return free_flight_movement_with_multiple_airplanes_fixture: FreeFlightMovement
-        This is the FreeFlightMovement with two FreeFlightAirplaneMovements.
+        This is the FreeFlightMovement with two AirplaneMovements.
     """
-    # Initialize the constructing fixtures with two oscillating
-    # FreeFlightAirplaneMovements.
+    # Initialize the constructing fixtures with two oscillating AirplaneMovements.
     airplane_movements = [
-        free_flight_airplane_movement_fixtures.make_basic_free_flight_airplane_movement_fixture(),
-        free_flight_airplane_movement_fixtures.make_basic_free_flight_airplane_movement_fixture(),
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture(),
     ]
     operating_point_movement = (
         free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
     )
 
-    # Create the FreeFlightMovement with multiple FreeFlightAirplaneMovements.
+    # Create the FreeFlightMovement with multiple AirplaneMovements.
     free_flight_movement_with_multiple_airplanes_fixture = (
         ps.movements.free_flight_movement.FreeFlightMovement(
             airplane_movements=airplane_movements,

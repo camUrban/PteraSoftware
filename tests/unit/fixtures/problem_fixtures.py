@@ -226,27 +226,25 @@ def make_basic_free_flight_unsteady_problem_fixture(
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     base_wing = base_airplane.wings[0]
 
-    # Create FreeFlightWingCrossSectionMovements (one per WCS in the Wing).
+    # Create WingCrossSectionMovements (one per WCS in the Wing).
     wcs_movements = []
     for wcs in base_wing.wing_cross_sections:
         wcs_movements.append(
-            ps.movements.free_flight_wing_cross_section_movement.FreeFlightWingCrossSectionMovement(
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=wcs,
             )
         )
 
-    # Create the FreeFlightWingMovement.
-    wing_movement = ps.movements.free_flight_wing_movement.FreeFlightWingMovement(
+    # Create the WingMovement.
+    wing_movement = ps.movements.wing_movement.WingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wcs_movements,
     )
 
-    # Create the FreeFlightAirplaneMovement.
-    airplane_movement = (
-        ps.movements.free_flight_airplane_movement.FreeFlightAirplaneMovement(
-            base_airplane=base_airplane,
-            wing_movements=[wing_movement],
-        )
+    # Create the AirplaneMovement.
+    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=base_airplane,
+        wing_movements=[wing_movement],
     )
 
     # Create the FreeFlightOperatingPointMovement. Free flight requires the Airplane's

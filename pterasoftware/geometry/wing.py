@@ -16,9 +16,11 @@ from collections.abc import Sequence
 
 import numpy as np
 import pyvista as pv
+import scipy.interpolate as sp_interp
 
 from .. import _panel, _parameter_validation, _transformations
 from . import _meshing
+from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
 
 
@@ -26,6 +28,10 @@ class Wing:
     """A class used to contain the wings of an Airplane.
 
     **Contains the following methods:**
+
+    from_edge_points: Builds a planar, untwisted Wing directly from leading edge and
+    trailing edge curves, approximating an arbitrary planform with a sequence of
+    WingCrossSections joined by single-panel strips.
 
     __deepcopy__: Creates a deep copy of this Wing, preserving mesh geometry but
     resetting wake state.
@@ -85,6 +91,17 @@ class Wing:
 
     mean_aerodynamic_chord: The Wing's mean aerodynamic chord.
 
+    spanwise_mesh: How this Wing's spanwise mesh was defined.
+
+    leadingEdgePoints_Wn_Ler: The original leading edge curve this Wing was built from,
+    or None.
+
+    trailingEdgePoints_Wn_Ler: The original trailing edge curve this Wing was built
+    from, or None.
+
+    tip_trim_fraction: The fraction of the span dropped off the tip when this Wing was
+    built, or None.
+
     generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
     the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
     after it's determined its symmetry type.
@@ -95,10 +112,16 @@ class Wing:
     **Notes:**
 
     Immutable attributes (wing_cross_sections, name, Ler_Gs_Cgs, angles_Gs_to_Wn_ixyz,
-    num_chordwise_panels, and chordwise_spacing) are set during initialization and
-    cannot be modified afterward. The numpy arrays Ler_Gs_Cgs and angles_Gs_to_Wn_ixyz
-    are made read only to prevent in place mutation. The wing_cross_sections attribute
-    is stored as a tuple to prevent external mutation.
+    num_chordwise_panels, chordwise_spacing, spanwise_mesh, leadingEdgePoints_Wn_Ler,
+    and trailingEdgePoints_Wn_Ler) are set during initialization and cannot be modified
+    afterward. The numpy arrays Ler_Gs_Cgs and angles_Gs_to_Wn_ixyz are made read only
+    to prevent in place mutation. The wing_cross_sections attribute is stored as a tuple
+    to prevent external mutation. The spanwise_mesh attribute is not a constructor
+    parameter; the standard constructor derives it from explode_into_strips, and
+    from_edge_points sets it to "edge_defined". The leadingEdgePoints_Wn_Ler,
+    trailingEdgePoints_Wn_Ler, and tip_trim_fraction attributes are None unless the Wing
+    was built by from_edge_points, in which case they hold its original edge curves (as
+    read only arrays) and the tip trim fraction applied while resampling them.
 
     Derived transformation matrices and basis vectors (T_pas_G_Cg_to_Wn_Ler,
     T_pas_Wn_Ler_to_G_Cg, WnX_G, WnY_G, WnZ_G, and the children_T_pas_* properties) are
@@ -148,6 +171,10 @@ class Wing:
         "_angles_Gs_to_Wn_ixyz",
         "_num_chordwise_panels",
         "_chordwise_spacing",
+        "_spanwise_mesh",
+        "_leadingEdgePoints_Wn_Ler",
+        "_trailingEdgePoints_Wn_Ler",
+        "_tip_trim_fraction",
         # Mutable (type 5 symmetry)
         "symmetric",
         "mirror_only",
@@ -250,14 +277,14 @@ class Wing:
             either are True. For more details on how this parameter interacts with
             symmetryNormal_G, symmetric, and mirror_only, see the class docstring. The
             units are meters. The default is None.
-        :param explode_into_strips: Set this to True to have the explode_wing method
-            called on this Wing during initialization, replacing wing_cross_sections
-            with a new list in which every panel is broken into single spanwise strips
-            for deformation. When True, every non tip WingCrossSection in
-            wing_cross_sections must have spanwise_spacing="uniform"; the explosion
-            assumes uniformly spaced intermediates and rejects other spacings rather
-            than silently overriding them. This parameter is consumed during
-            initialization and is not stored as an attribute.
+        :param explode_into_strips: Set this to True to replace wing_cross_sections
+            during initialization with a new list in which every panel is broken into
+            single spanwise strips for deformation. When True, every non tip
+            WingCrossSection in wing_cross_sections must have
+            spanwise_spacing="uniform"; the explosion assumes uniformly spaced
+            intermediates and rejects other spacings rather than silently overriding
+            them. This parameter is consumed during initialization and is not stored as
+            an attribute.
         :param num_chordwise_panels: The number of chordwise panels to be used on this
             Wing, which must be set to a positive integer. The default is 8.
         :param chordwise_spacing: The type of spacing between the Wing's chordwise
@@ -274,7 +301,7 @@ class Wing:
             explode_into_strips, "explode_into_strips"
         )
         if explode_into_strips:
-            wing_cross_sections = self.explode_wing(wing_cross_sections)
+            wing_cross_sections = self._explode_wing(wing_cross_sections)
         num_wing_cross_sections = len(wing_cross_sections)
         if num_wing_cross_sections < 2:
             raise ValueError("wing_cross_sections must contain at least two elements.")
@@ -299,6 +326,29 @@ class Wing:
         self._wing_cross_sections: tuple[
             wing_cross_section_mod.WingCrossSection, ...
         ] = tuple(wing_cross_sections)
+
+        # Record how this Wing's spanwise mesh was defined (immutable). A Wing built
+        # with explode_into_strips has every non tip WingCrossSection as a single
+        # spanwise panel strip, so it cannot be refined by the standard convergence
+        # tools, which sweep the number of spanwise Panels while holding the
+        # WingCrossSections fixed. The standard convergence tools dispatch on this
+        # marker to reject such a Wing. The marker is set by provenance rather than
+        # detected from the geometry, since an exploded Wing is structurally identical
+        # to one a user defines with single strip WingCrossSections directly, yet the
+        # latter is a valid coarse trapezoidal Wing that the standard tools should
+        # refine.
+        self._spanwise_mesh: str = "exploded" if explode_into_strips else "trapezoidal"
+
+        # The original, full resolution leading edge and trailing edge curves a Wing
+        # was built from. These are populated only by from_edge_points, which sets the
+        # spanwise mesh marker to "edge_defined" and stores the curves (together with
+        # the tip trim fraction applied while resampling them) so a future non
+        # trapezoidal convergence tool can resample them to a different number of
+        # WingCrossSections. A Wing built any other way carries no such curves and a None
+        # tip trim fraction.
+        self._leadingEdgePoints_Wn_Ler: np.ndarray | None = None
+        self._trailingEdgePoints_Wn_Ler: np.ndarray | None = None
+        self._tip_trim_fraction: float | None = None
 
         # Validate name and store as immutable.
         self._name = _parameter_validation.str_return_str(name, "name")
@@ -414,6 +464,224 @@ class Wing:
         self._standard_mean_chord: float | None = None
         self._mean_aerodynamic_chord: float | None = None
 
+    # --- Alternate constructor ---
+    @classmethod
+    def from_edge_points(
+        cls,
+        leadingEdgePoints_Wn_Ler: np.ndarray | Sequence[Sequence[float | int]],
+        trailingEdgePoints_Wn_Ler: np.ndarray | Sequence[Sequence[float | int]],
+        num_wing_cross_sections: int,
+        airfoil: airfoil_mod.Airfoil,
+        name: str = "Untitled Wing",
+        Ler_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        angles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        symmetric: bool | np.bool_ = False,
+        mirror_only: bool | np.bool_ = False,
+        symmetryNormal_G: None | np.ndarray | Sequence[float | int] = None,
+        symmetryPoint_G_Cg: None | np.ndarray | Sequence[float | int] = None,
+        num_chordwise_panels: int = 8,
+        chordwise_spacing: str = "cosine",
+        tip_trim_fraction: float | int = 0.0,
+    ) -> Wing:
+        """Builds a planar, untwisted Wing directly from leading edge and trailing edge
+        curves, approximating an arbitrary planform with a sequence of WingCrossSections
+        joined by single-panel strips.
+
+        The user supplies samples of the leading edge and trailing edge curves (in wing
+        axes, relative to the leading edge root point) at whatever resolution they have.
+        This method resamples both curves at num_wing_cross_sections points spaced
+        uniformly in the spanwise direction, then builds one WingCrossSection from each
+        pair of leading and trailing edge points. The standard Wing parameters are
+        forwarded to the normal constructor unchanged.
+
+        The resulting Wing records that its spanwise mesh was defined from edge curves
+        (its spanwise_mesh is "edge_defined") and stores the original curves so they can
+        be resampled to a different number of WingCrossSections later. There is
+        intentionally no explode_into_strips parameter: a Wing built from edge points is
+        already in single-panel-strip form.
+
+        **Notes:**
+
+        This builds a planar, untwisted Wing. Every leading edge and trailing edge point
+        must have a zero z component, every WingCrossSection keeps a zero angle vector,
+        and the chord line stays aligned with the wing axes' x direction. Dihedral,
+        twist, a three dimensional chord line, per-span Airfoil variation, and control
+        surfaces are not supported.
+
+        A planform that tapers to a point at the tip cannot be built directly, because
+        the outermost WingCrossSection would have a zero chord, which is invalid. Use
+        tip_trim_fraction to drop a fraction of the span off the tip so the outermost
+        WingCrossSection has a finite chord. Root trimming is not supported, so the
+        leading edge root point must already have a finite root chord.
+
+        :param leadingEdgePoints_Wn_Ler: An array-like of leading edge points (in wing
+            axes, relative to the leading edge root point) with shape (M, 3), where M is
+            at least 2. These are samples of the leading edge curve and need not match
+            num_wing_cross_sections. The first point must be the origin (the leading
+            edge root point), the y components must strictly increase from root to tip,
+            and every z component must be zero. The units are meters.
+        :param trailingEdgePoints_Wn_Ler: An array-like of trailing edge points (in wing
+            axes, relative to the leading edge root point) with shape (M, 3), where M is
+            at least 2. The leading edge and trailing edge curves are independent and
+            may have different point counts. The first point must have a zero y
+            component, a zero z component, and a positive x component (the root chord),
+            the y components must strictly increase from root to tip, and every z
+            component must be zero. The curve must span the same maximum y as the
+            leading edge curve. The units are meters.
+        :param num_wing_cross_sections: The number of WingCrossSections to generate by
+            resampling the curves. It must be an integer of at least 2.
+        :param airfoil: The single Airfoil used at every WingCrossSection.
+        :param name: A sensible name for the Wing. The default is "Untitled Wing".
+        :param Ler_Gs_Cgs: An array-like object of 3 numbers (int or float) representing
+            the position of the origin of this Wing's axes (in geometry axes after
+            accounting for symmetry, relative to the CG after accounting for symmetry).
+            The units are meters. The default is (0.0, 0.0, 0.0).
+        :param angles_Gs_to_Wn_ixyz: An array-like object of 3 numbers (int or float)
+            representing the angle vector that defines the orientation of this Wing's
+            axes relative to the geometry axes (after accounting for symmetry). All
+            angles must be in the range [-90, 90] degrees. The units are degrees. The
+            default is (0.0, 0.0, 0.0).
+        :param symmetric: Set this to True if the Wing's geometry should be mirrored
+            across the symmetry plane while retaining the non mirrored side. See the
+            class docstring for details. The default is False.
+        :param mirror_only: Set this to True if the Wing's geometry should be reflected
+            about the symmetry plane without retaining the non reflected geometry. See
+            the class docstring for details. The default is False.
+        :param symmetryNormal_G: None, or an array-like of 3 numbers (int or float)
+            representing the unit normal vector (in geometry axes) of the symmetry
+            plane. See the class docstring for details. The default is None.
+        :param symmetryPoint_G_Cg: None, or an array-like of 3 numbers (int or float)
+            representing a point (in geometry axes, relative to the CG) on the symmetry
+            plane. See the class docstring for details. The units are meters. The
+            default is None.
+        :param num_chordwise_panels: The number of chordwise panels to be used on this
+            Wing, which must be a positive integer. The default is 8.
+        :param chordwise_spacing: The type of spacing between the Wing's chordwise
+            panels. Can be "cosine" or "uniform". The default is "cosine".
+        :param tip_trim_fraction: The fraction of the span to drop off the tip before
+            resampling, which lets a planform that tapers to a point at the tip be built
+            with a finite tip chord. The curves are resampled over the spanwise range
+            from the root to (1 - tip_trim_fraction) of the maximum y, so the outermost
+            WingCrossSection sits inboard of the geometric tip. It must be a number in
+            the range [0, 1). The original, untrimmed curves are still stored. The
+            default is 0.0 (no trimming).
+        :return: A fully built, validated Wing whose spanwise_mesh is "edge_defined".
+        """
+        # Stage 1: validate the edge-point inputs structurally and against the planar,
+        # untwisted conventions. The remaining invariants (positive chord, the correct
+        # single-panel-strip pattern) are enforced downstream by the WingCrossSection
+        # and Wing constructors.
+        leadingEdgePoints_Wn_Ler, trailingEdgePoints_Wn_Ler = cls._validate_edge_points(
+            leadingEdgePoints_Wn_Ler, trailingEdgePoints_Wn_Ler
+        )
+        num_wing_cross_sections = _parameter_validation.int_in_range_return_int(
+            num_wing_cross_sections,
+            "num_wing_cross_sections",
+            min_val=2,
+            min_inclusive=True,
+        )
+        if not isinstance(airfoil, airfoil_mod.Airfoil):
+            raise TypeError("airfoil must be an Airfoil.")
+        tip_trim_fraction = _parameter_validation.number_in_range_return_float(
+            tip_trim_fraction,
+            "tip_trim_fraction",
+            min_val=0.0,
+            min_inclusive=True,
+            max_val=1.0,
+            max_inclusive=False,
+        )
+
+        # Stage 2: resample both curves at a common set of points spaced uniformly in
+        # the spanwise (y) direction, from the root (y of 0) to the trimmed tip. Without
+        # trimming the trimmed tip is the shared maximum y. The tip_trim_fraction pulls
+        # it inboard so a planform that tapers to a point at the tip ends at a finite
+        # chord.
+        # The z component is zero at every point in this planar version.
+        yTip_Wn_Ler = float(leadingEdgePoints_Wn_Ler[-1, 1])
+        yTrimmedTip_Wn_Ler = (1.0 - tip_trim_fraction) * yTip_Wn_Ler
+        ys_Wn_Ler = np.linspace(0.0, yTrimmedTip_Wn_Ler, num_wing_cross_sections)
+        resampledLeadingEdgePoints_Wn_Ler = cls._resample_edge_points(
+            leadingEdgePoints_Wn_Ler, ys_Wn_Ler
+        )
+        resampledTrailingEdgePoints_Wn_Ler = cls._resample_edge_points(
+            trailingEdgePoints_Wn_Ler, ys_Wn_Ler
+        )
+
+        # The chord at each WingCrossSection is the trailing edge x value minus the
+        # leading edge x value. Reject a non positive chord here with a
+        # WingCrossSection-specific message that the downstream WingCrossSection
+        # constructor could not phrase as clearly.
+        chords = (
+            resampledTrailingEdgePoints_Wn_Ler[:, 0]
+            - resampledLeadingEdgePoints_Wn_Ler[:, 0]
+        )
+        for wing_cross_section_id, chord in enumerate(chords):
+            if chord <= 0.0:
+                raise ValueError(
+                    f"The chord at WingCrossSection {wing_cross_section_id} is not "
+                    "positive. The trailing edge x value must exceed the leading edge x "
+                    "value at every WingCrossSection."
+                )
+
+        # A symmetric Wing always resolves to symmetry type 4 or 5, both of which require
+        # every WingCrossSection to carry a non None control_surface_symmetry_type, while
+        # a non symmetric Wing (types 1 through 3) requires None. These Wings build no
+        # control surfaces, so "symmetric" with the default zero deflection adds no
+        # geometry. It is just the value that lets a symmetric Wing mesh.
+        control_surface_symmetry_type = "symmetric" if symmetric else None
+
+        # Stage 3: build one single-panel WingCrossSection from each resampled point. The
+        # parent relative leading point offset is the difference of consecutive resampled
+        # leading edge points taken directly in wing axes, which is valid only because
+        # every angle vector is zero, so the wing cross section parent axes coincide with
+        # the wing axes. The root offset is the zero vector.
+        wing_cross_sections = []
+        for wing_cross_section_id in range(num_wing_cross_sections):
+            is_tip = wing_cross_section_id == num_wing_cross_sections - 1
+            if wing_cross_section_id == 0:
+                Lp_Wcsp_Lpp = np.array([0.0, 0.0, 0.0])
+            else:
+                Lp_Wcsp_Lpp = (
+                    resampledLeadingEdgePoints_Wn_Ler[wing_cross_section_id]
+                    - resampledLeadingEdgePoints_Wn_Ler[wing_cross_section_id - 1]
+                )
+            wing_cross_sections.append(
+                wing_cross_section_mod.WingCrossSection(
+                    airfoil=airfoil,
+                    num_spanwise_panels=None if is_tip else 1,
+                    chord=float(chords[wing_cross_section_id]),
+                    Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    spanwise_spacing=None if is_tip else "uniform",
+                    control_surface_symmetry_type=control_surface_symmetry_type,
+                )
+            )
+
+        # Construct a normal Wing, which marks it "trapezoidal", then record its
+        # edge-defined provenance and store the original full resolution curves. These
+        # private slots are assigned in-class, the same way __deepcopy__ and
+        # deserialization set slots outside __init__. The Wing is never exposed to the
+        # user in the intermediate "trapezoidal" state.
+        wing = cls(
+            wing_cross_sections=wing_cross_sections,
+            name=name,
+            Ler_Gs_Cgs=Ler_Gs_Cgs,
+            angles_Gs_to_Wn_ixyz=angles_Gs_to_Wn_ixyz,
+            symmetric=symmetric,
+            mirror_only=mirror_only,
+            symmetryNormal_G=symmetryNormal_G,
+            symmetryPoint_G_Cg=symmetryPoint_G_Cg,
+            num_chordwise_panels=num_chordwise_panels,
+            chordwise_spacing=chordwise_spacing,
+        )
+        wing._spanwise_mesh = "edge_defined"
+        leadingEdgePoints_Wn_Ler.flags.writeable = False
+        trailingEdgePoints_Wn_Ler.flags.writeable = False
+        wing._leadingEdgePoints_Wn_Ler = leadingEdgePoints_Wn_Ler
+        wing._trailingEdgePoints_Wn_Ler = trailingEdgePoints_Wn_Ler
+        wing._tip_trim_fraction = tip_trim_fraction
+        return wing
+
     # --- Deep copy method ---
     def __deepcopy__(self, memo: dict) -> Wing:
         """Creates a deep copy of this Wing, preserving mesh geometry but resetting wake
@@ -451,6 +719,23 @@ class Wing:
         new_wing._name = self._name
         new_wing._num_chordwise_panels = self._num_chordwise_panels
         new_wing._chordwise_spacing = self._chordwise_spacing
+        new_wing._spanwise_mesh = self._spanwise_mesh
+
+        # Copy the stored edge curves (present only for a from_edge_points Wing) and
+        # keep the copies read-only, or carry the None.
+        if self._leadingEdgePoints_Wn_Ler is not None:
+            new_wing._leadingEdgePoints_Wn_Ler = np.copy(self._leadingEdgePoints_Wn_Ler)
+            new_wing._leadingEdgePoints_Wn_Ler.flags.writeable = False
+        else:
+            new_wing._leadingEdgePoints_Wn_Ler = None
+        if self._trailingEdgePoints_Wn_Ler is not None:
+            new_wing._trailingEdgePoints_Wn_Ler = np.copy(
+                self._trailingEdgePoints_Wn_Ler
+            )
+            new_wing._trailingEdgePoints_Wn_Ler.flags.writeable = False
+        else:
+            new_wing._trailingEdgePoints_Wn_Ler = None
+        new_wing._tip_trim_fraction = self._tip_trim_fraction
 
         # Copy mutable symmetry attributes (these may be modified by
         # process_wing_symmetry for type 5 symmetry).
@@ -602,6 +887,64 @@ class Wing:
     @property
     def chordwise_spacing(self) -> str:
         return self._chordwise_spacing
+
+    @property
+    def spanwise_mesh(self) -> str:
+        """How this Wing's spanwise mesh was defined.
+
+        It is "trapezoidal" for a Wing whose adjacent WingCrossSections form trapezoidal
+        panel strips, "exploded" for a Wing built with explode_into_strips=True, or
+        "edge_defined" for a Wing built by from_edge_points. An "exploded" or
+        "edge_defined" Wing has every non tip WingCrossSection as a single spanwise
+        panel strip. Only an "edge_defined" Wing additionally stores its leading edge
+        and trailing edge curves. The standard convergence tools support only
+        "trapezoidal" Wings.
+
+        :return: A string, one of "trapezoidal", "exploded", or "edge_defined",
+            recording how this Wing's spanwise mesh was defined.
+        """
+        return self._spanwise_mesh
+
+    @property
+    def leadingEdgePoints_Wn_Ler(self) -> np.ndarray | None:
+        """The original leading edge curve this Wing was built from, or None.
+
+        It is the full resolution leading edge curve (in wing axes, relative to the
+        leading edge root point) passed to from_edge_points, held as a read-only (M, 3)
+        ndarray. It is None for any Wing not built by from_edge_points.
+
+        :return: A read-only (M, 3) ndarray of floats representing the leading edge
+            points (in wing axes, relative to the leading edge root point), or None. The
+            units are meters.
+        """
+        return self._leadingEdgePoints_Wn_Ler
+
+    @property
+    def trailingEdgePoints_Wn_Ler(self) -> np.ndarray | None:
+        """The original trailing edge curve this Wing was built from, or None.
+
+        It is the full resolution trailing edge curve (in wing axes, relative to the
+        leading edge root point) passed to from_edge_points, held as a read-only (M, 3)
+        ndarray. It is None for any Wing not built by from_edge_points.
+
+        :return: A read-only (M, 3) ndarray of floats representing the trailing edge
+            points (in wing axes, relative to the leading edge root point), or None. The
+            units are meters.
+        """
+        return self._trailingEdgePoints_Wn_Ler
+
+    @property
+    def tip_trim_fraction(self) -> float | None:
+        """The fraction of the span dropped off the tip when this Wing was built, or
+        None.
+
+        It is the tip_trim_fraction passed to from_edge_points, in the range [0, 1). It
+        is None for any Wing not built by from_edge_points.
+
+        :return: A float in the range [0, 1) representing the fraction of the span
+            dropped off the tip during resampling, or None.
+        """
+        return self._tip_trim_fraction
 
     # --- Immutable derived: manual lazy caching ---
     @property
@@ -1506,43 +1849,132 @@ class Wing:
 
         return None
 
-    def interpolate_between_wing_cross_sections(
-        self,
+    @staticmethod
+    def _validate_edge_points(
+        leadingEdgePoints_Wn_Ler: np.ndarray | Sequence[Sequence[float | int]],
+        trailingEdgePoints_Wn_Ler: np.ndarray | Sequence[Sequence[float | int]],
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Validates the leading edge and trailing edge curves passed to
+        from_edge_points, returning them as (M, 3) float arrays.
+
+        This is the preliminary, structural layer of validation plus the planar,
+        untwisted convention checks that the downstream WingCrossSection and Wing
+        constructors cannot phrase in terms the user would recognize.
+
+        :param leadingEdgePoints_Wn_Ler: The leading edge curve, an array-like of points
+            (in wing axes, relative to the leading edge root point) of shape (M, 3).
+        :param trailingEdgePoints_Wn_Ler: The trailing edge curve, an array-like of
+            points (in wing axes, relative to the leading edge root point) of shape (M,
+            3).
+        :return: A tuple of the validated leading edge and trailing edge curves, each a
+            writeable (M, 3) ndarray of floats.
+        :raises ValueError: If either curve is not a valid (M, 3) array with M at least
+            two, has non strictly increasing y components, is not anchored at the root,
+            has a non zero z component anywhere, or the two curves do not span the same
+            maximum y.
+        """
+        leadingEdgePoints_Wn_Ler = (
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+                leadingEdgePoints_Wn_Ler, "leadingEdgePoints_Wn_Ler"
+            )
+        )
+        trailingEdgePoints_Wn_Ler = (
+            _parameter_validation.arrayLike_of_threeD_number_vectorLikes_return_float(
+                trailingEdgePoints_Wn_Ler, "trailingEdgePoints_Wn_Ler"
+            )
+        )
+
+        for points, points_name in (
+            (leadingEdgePoints_Wn_Ler, "leadingEdgePoints_Wn_Ler"),
+            (trailingEdgePoints_Wn_Ler, "trailingEdgePoints_Wn_Ler"),
+        ):
+            if points.ndim != 2:
+                raise ValueError(f"{points_name} must have shape (M, 3).")
+            if points.shape[0] < 2:
+                raise ValueError(f"{points_name} must contain at least two points.")
+            if not np.all(np.diff(points[:, 1]) > 0.0):
+                raise ValueError(
+                    f"{points_name}'s y components must strictly increase from root to "
+                    "tip."
+                )
+            if not np.all(points[:, 2] == 0.0):
+                raise ValueError(
+                    f"Every point in {points_name} must have a zero z component, "
+                    "because from_edge_points builds only planar Wings."
+                )
+
+        # The leading edge curve starts at the leading edge root point, which is the
+        # origin by definition.
+        if not np.all(leadingEdgePoints_Wn_Ler[0] == 0.0):
+            raise ValueError(
+                "leadingEdgePoints_Wn_Ler's first point must be the origin (the leading "
+                "edge root point)."
+            )
+
+        # The trailing edge curve starts at the root chord: a zero y component, a zero z
+        # component, and a positive x component.
+        rootTp_Wn_Ler = trailingEdgePoints_Wn_Ler[0]
+        if not (
+            rootTp_Wn_Ler[1] == 0.0
+            and rootTp_Wn_Ler[2] == 0.0
+            and rootTp_Wn_Ler[0] > 0.0
+        ):
+            raise ValueError(
+                "trailingEdgePoints_Wn_Ler's first point must have a zero y component, a "
+                "zero z component, and a positive x component (the root chord)."
+            )
+
+        # Both curves must reach the same tip so they can be sampled at a common set of
+        # points.
+        if leadingEdgePoints_Wn_Ler[-1, 1] != trailingEdgePoints_Wn_Ler[-1, 1]:
+            raise ValueError(
+                "leadingEdgePoints_Wn_Ler and trailingEdgePoints_Wn_Ler must span the "
+                "same maximum y."
+            )
+
+        return leadingEdgePoints_Wn_Ler, trailingEdgePoints_Wn_Ler
+
+    @staticmethod
+    def _resample_edge_points(
+        edgePoints_Wn_Ler: np.ndarray, ys_Wn_Ler: np.ndarray
+    ) -> np.ndarray:
+        """Resamples an edge curve at the requested spanwise y values using monotone
+        PCHIP interpolation of the x component as a function of the y component.
+
+        :param edgePoints_Wn_Ler: A validated (M, 3) ndarray of edge points (in wing
+            axes, relative to the leading edge root point), with strictly increasing y
+            components and zero z components.
+        :param ys_Wn_Ler: A (N,) ndarray of the spanwise (wing axes y) values to sample
+            at, relative to the leading edge root point.
+        :return: A (N, 3) ndarray of resampled edge points (in wing axes, relative to
+            the leading edge root point). The z component is zero at every point.
+        """
+        x_interpolator = sp_interp.PchipInterpolator(
+            edgePoints_Wn_Ler[:, 1], edgePoints_Wn_Ler[:, 0]
+        )
+        xs_Wn_Ler = x_interpolator(ys_Wn_Ler)
+        zs_Wn_Ler = np.zeros_like(ys_Wn_Ler)
+        return np.column_stack((xs_Wn_Ler, ys_Wn_Ler, zs_Wn_Ler))
+
+    @staticmethod
+    def _interpolate_between_wing_cross_sections(
         wcs1: wing_cross_section_mod.WingCrossSection,
         wcs2: wing_cross_section_mod.WingCrossSection,
-        first_wcs: bool,
     ) -> list[wing_cross_section_mod.WingCrossSection]:
-        """Wing cross section panels are between the line of wcs1 and wcs2.
+        """Build the single-panel WingCrossSections spanning from just past wcs1 through
+        wcs2.
 
         When exploding a wing to 1 spanwise panel per cross section, we need to
-        interpolate the intermediate cross sections.
+        interpolate the intermediate cross sections. This returns the N sections
+        downstream of wcs1, where N is wcs1's spanwise panel count. The section at wcs1
+        itself is seeded once by _explode_wing, so it is not repeated here.
 
         :param wcs1: The first WingCrossSection.
         :param wcs2: The second WingCrossSection.
-        :param first_wcs: Whether wcs1 is the first WingCrossSection of the wing. If
-            True, the method will include a WingCrossSection with the same parameters as
-            wcs1 in the output list. If False, it will not, since it will have already
-            been included as the last interpolated WingCrossSection between the previous
-            pair of WingCrossSections.
         :return: A list of WingCrossSections representing the interpolated cross
             sections
         """
         interpolated = []
-
-        if first_wcs:
-            interpolated.append(
-                wing_cross_section_mod.WingCrossSection(
-                    num_spanwise_panels=1,
-                    chord=wcs1.chord,
-                    Lp_Wcsp_Lpp=wcs1.Lp_Wcsp_Lpp,
-                    angles_Wcsp_to_Wcs_ixyz=wcs1.angles_Wcsp_to_Wcs_ixyz,
-                    control_surface_symmetry_type=wcs1.control_surface_symmetry_type,
-                    control_surface_hinge_point=wcs1.control_surface_hinge_point,
-                    control_surface_deflection=wcs1.control_surface_deflection,
-                    spanwise_spacing="uniform",
-                    airfoil=wcs1.airfoil,
-                )
-            )
 
         N = wcs1.num_spanwise_panels
         assert N is not None, "wcs1.num_spanwise_panels must not be None"
@@ -1555,7 +1987,7 @@ class Wing:
             # WingCrossSection's constructor docstring), so each of the N intermediates
             # carries 1/N of wcs2's delta and the chain composes back to wcs2's offset
             # and twist. This is exact only when the intermediates are uniformly
-            # spaced, which explode_wing enforces by validating the input.
+            # spaced, which _explode_wing enforces by validating the input.
             Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
             angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
             is_final_section = wcs2.num_spanwise_panels is None and i == N - 1
@@ -1575,7 +2007,7 @@ class Wing:
             )
         return interpolated
 
-    def explode_wing(
+    def _explode_wing(
         self, wing_cross_sections: list[wing_cross_section_mod.WingCrossSection]
     ) -> list[wing_cross_section_mod.WingCrossSection]:
         """Takes a list of WingCrossSections and returns a new list where all cross
@@ -1602,12 +2034,29 @@ class Wing:
                     f"WingCrossSection."
                 )
 
-        new_cross_sections = []
+        # Seed the result with the root strip, then fill in the single-panel sections
+        # spanning each adjacent pair. Seeding the root here, rather than inside the
+        # per-pair interpolation, keeps that helper independent of its position in the
+        # wing.
+        root = wing_cross_sections[0]
+        new_cross_sections = [
+            wing_cross_section_mod.WingCrossSection(
+                num_spanwise_panels=1,
+                chord=root.chord,
+                Lp_Wcsp_Lpp=root.Lp_Wcsp_Lpp,
+                angles_Wcsp_to_Wcs_ixyz=root.angles_Wcsp_to_Wcs_ixyz,
+                control_surface_symmetry_type=root.control_surface_symmetry_type,
+                control_surface_hinge_point=root.control_surface_hinge_point,
+                control_surface_deflection=root.control_surface_deflection,
+                spanwise_spacing="uniform",
+                airfoil=root.airfoil,
+            )
+        ]
 
         for i in range(len(wing_cross_sections) - 1):
             new_cross_sections.extend(
-                self.interpolate_between_wing_cross_sections(
-                    wing_cross_sections[i], wing_cross_sections[i + 1], i == 0
+                self._interpolate_between_wing_cross_sections(
+                    wing_cross_sections[i], wing_cross_sections[i + 1]
                 )
             )
 

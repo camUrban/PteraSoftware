@@ -36,7 +36,7 @@ from . import (
     unsteady_ring_vortex_lattice_method,
 )
 
-trim_logger = _logging.get_logger("trim")
+_logger = _logging.get_logger("trim")
 
 # Set a seed for reproducibility in the dual annealing optimizer.
 _seed = 42
@@ -349,8 +349,8 @@ def analyze_steady_trim(
         )
         obj_msg = "\t\tObjective: " + o_str
 
-        trim_logger.info(state_msg)
-        trim_logger.info(obj_msg)
+        _logger.info(state_msg)
+        _logger.info(obj_msg)
 
         if objective < objective_cut_off:
             raise StopIteration
@@ -370,7 +370,7 @@ def analyze_steady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
-    trim_logger.info("Starting local search.")
+    _logger.info("Starting local search.")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
         sp_opt.minimize(
@@ -381,7 +381,7 @@ def analyze_steady_trim(
             options=local_options,
         )
     except StopIteration:
-        trim_logger.info("Acceptable value reached with local search.")
+        _logger.info("Acceptable value reached with local search.")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -389,7 +389,7 @@ def analyze_steady_trim(
             current_arguments[3],
         )
 
-    trim_logger.warning(
+    _logger.warning(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
@@ -407,7 +407,7 @@ def analyze_steady_trim(
             seed=_seed,
         )
     except StopIteration:
-        trim_logger.info("Acceptable global minima found.")
+        _logger.info("Acceptable global minima found.")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -415,7 +415,7 @@ def analyze_steady_trim(
             current_arguments[3],
         )
 
-    trim_logger.critical(
+    _logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
         "iterations."
     )
@@ -737,8 +737,8 @@ def analyze_unsteady_trim(
         )
         obj_msg = "\t\tObjective: " + o_str
 
-        trim_logger.info(state_msg)
-        trim_logger.info(obj_msg)
+        _logger.info(state_msg)
+        _logger.info(obj_msg)
 
         if objective < objective_cut_off:
             raise StopIteration
@@ -758,7 +758,7 @@ def analyze_unsteady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
-    trim_logger.info("Starting local search.")
+    _logger.info("Starting local search.")
     try:
         local_options: Any = {"maxfun": num_calls, "eps": 0.01}
         sp_opt.minimize(
@@ -769,7 +769,7 @@ def analyze_unsteady_trim(
             options=local_options,
         )
     except StopIteration:
-        trim_logger.info("Acceptable value reached with local search.")
+        _logger.info("Acceptable value reached with local search.")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -777,7 +777,7 @@ def analyze_unsteady_trim(
             current_arguments[3],
         )
 
-    trim_logger.warning(
+    _logger.warning(
         "No acceptable value reached with local search. Starting global search."
     )
     try:
@@ -795,7 +795,7 @@ def analyze_unsteady_trim(
             seed=_seed,
         )
     except StopIteration:
-        trim_logger.info("Acceptable global minima found.")
+        _logger.info("Acceptable global minima found.")
         return (
             current_arguments[0],
             current_arguments[1],
@@ -803,7 +803,7 @@ def analyze_unsteady_trim(
             current_arguments[3],
         )
 
-    trim_logger.critical(
+    _logger.critical(
         "No trim condition found. Try increasing the bounds and the maximum number of "
         "iterations."
     )

@@ -56,6 +56,7 @@ cover/
 
 # These are the Django files to ignore.
 *.log
+!docs/examples_expected_output/**/*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -165,6 +166,11 @@ Draw.webp
 # These are serialization output files to ignore.
 *.json
 *.json.gz
+
+# The benchmark archive publishes a redacted host snapshot here. It is a real
+# tracked artifact, not serialization output, so re-include it past the *.json
+# rule above.
+!/docs/_static/benchmarks/host.json
 
 # These are the Claude's documentation files to ignore.
 /docs/CLAUDE_*.md

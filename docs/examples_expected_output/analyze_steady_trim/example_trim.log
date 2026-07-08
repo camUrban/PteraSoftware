@@ -1,0 +1,584 @@
+INFO - pterasoftware.trim - Starting local search.
+INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.162
+INFO - pterasoftware.trim - 	State: vCg__E=10.01, alpha=5.0, beta=0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.162
+INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.01, beta=0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.162
+INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.162
+INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.162
+INFO - pterasoftware.trim - 	State: vCg__E=9.96, alpha=4.93, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.155
+INFO - pterasoftware.trim - 	State: vCg__E=9.97, alpha=4.93, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.155
+INFO - pterasoftware.trim - 	State: vCg__E=9.96, alpha=4.94, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.156
+INFO - pterasoftware.trim - 	State: vCg__E=9.96, alpha=4.93, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.155
+INFO - pterasoftware.trim - 	State: vCg__E=9.96, alpha=4.93, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.155
+INFO - pterasoftware.trim - 	State: vCg__E=9.92, alpha=4.86, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.148
+INFO - pterasoftware.trim - 	State: vCg__E=9.93, alpha=4.86, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.149
+INFO - pterasoftware.trim - 	State: vCg__E=9.92, alpha=4.87, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.149
+INFO - pterasoftware.trim - 	State: vCg__E=9.92, alpha=4.86, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.148
+INFO - pterasoftware.trim - 	State: vCg__E=9.92, alpha=4.86, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.148
+INFO - pterasoftware.trim - 	State: vCg__E=9.75, alpha=4.58, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.121
+INFO - pterasoftware.trim - 	State: vCg__E=9.76, alpha=4.58, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.122
+INFO - pterasoftware.trim - 	State: vCg__E=9.75, alpha=4.59, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.122
+INFO - pterasoftware.trim - 	State: vCg__E=9.75, alpha=4.58, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.121
+INFO - pterasoftware.trim - 	State: vCg__E=9.75, alpha=4.58, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.121
+INFO - pterasoftware.trim - 	State: vCg__E=9.09, alpha=3.45, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.062
+INFO - pterasoftware.trim - 	State: vCg__E=9.1, alpha=3.45, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.062
+INFO - pterasoftware.trim - 	State: vCg__E=9.09, alpha=3.46, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.062
+INFO - pterasoftware.trim - 	State: vCg__E=9.09, alpha=3.45, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.062
+INFO - pterasoftware.trim - 	State: vCg__E=9.09, alpha=3.45, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.062
+INFO - pterasoftware.trim - 	State: vCg__E=9.61, alpha=3.78, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.058
+INFO - pterasoftware.trim - 	State: vCg__E=9.62, alpha=3.78, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.059
+INFO - pterasoftware.trim - 	State: vCg__E=9.61, alpha=3.79, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.059
+INFO - pterasoftware.trim - 	State: vCg__E=9.61, alpha=3.78, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.058
+INFO - pterasoftware.trim - 	State: vCg__E=9.61, alpha=3.78, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.058
+INFO - pterasoftware.trim - 	State: vCg__E=9.32, alpha=3.59, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=9.33, alpha=3.59, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=9.32, alpha=3.6, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=9.32, alpha=3.59, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=9.32, alpha=3.59, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=9.44, alpha=3.67, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.45, alpha=3.67, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.44, alpha=3.68, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.44, alpha=3.67, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.44, alpha=3.67, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.37, alpha=3.62, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.044
+INFO - pterasoftware.trim - 	State: vCg__E=9.38, alpha=3.62, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.043
+INFO - pterasoftware.trim - 	State: vCg__E=9.37, alpha=3.63, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.044
+INFO - pterasoftware.trim - 	State: vCg__E=9.37, alpha=3.62, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.044
+INFO - pterasoftware.trim - 	State: vCg__E=9.37, alpha=3.62, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.044
+INFO - pterasoftware.trim - 	State: vCg__E=11.39, alpha=5.38, beta=-0.0, externalFX_W=4.91
+INFO - pterasoftware.trim - 		Objective: 0.235
+INFO - pterasoftware.trim - 	State: vCg__E=11.4, alpha=5.38, beta=-0.0, externalFX_W=4.91
+INFO - pterasoftware.trim - 		Objective: 0.235
+INFO - pterasoftware.trim - 	State: vCg__E=11.39, alpha=5.39, beta=-0.0, externalFX_W=4.91
+INFO - pterasoftware.trim - 		Objective: 0.236
+INFO - pterasoftware.trim - 	State: vCg__E=11.39, alpha=5.38, beta=0.01, externalFX_W=4.91
+INFO - pterasoftware.trim - 		Objective: 0.235
+INFO - pterasoftware.trim - 	State: vCg__E=11.39, alpha=5.38, beta=-0.0, externalFX_W=4.92
+INFO - pterasoftware.trim - 		Objective: 0.235
+INFO - pterasoftware.trim - 	State: vCg__E=9.59, alpha=3.81, beta=-0.0, externalFX_W=4.99
+INFO - pterasoftware.trim - 		Objective: 0.06
+INFO - pterasoftware.trim - 	State: vCg__E=9.6, alpha=3.81, beta=-0.0, externalFX_W=4.99
+INFO - pterasoftware.trim - 		Objective: 0.061
+INFO - pterasoftware.trim - 	State: vCg__E=9.59, alpha=3.82, beta=-0.0, externalFX_W=4.99
+INFO - pterasoftware.trim - 		Objective: 0.061
+INFO - pterasoftware.trim - 	State: vCg__E=9.59, alpha=3.81, beta=0.01, externalFX_W=4.99
+INFO - pterasoftware.trim - 		Objective: 0.06
+INFO - pterasoftware.trim - 	State: vCg__E=9.59, alpha=3.81, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.06
+INFO - pterasoftware.trim - 	State: vCg__E=9.4, alpha=3.65, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.41, alpha=3.65, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.4, alpha=3.66, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.4, alpha=3.65, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.4, alpha=3.65, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.48, alpha=3.61, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.041
+INFO - pterasoftware.trim - 	State: vCg__E=9.49, alpha=3.61, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.48, alpha=3.62, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.042
+INFO - pterasoftware.trim - 	State: vCg__E=9.48, alpha=3.61, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.041
+INFO - pterasoftware.trim - 	State: vCg__E=9.48, alpha=3.61, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.041
+INFO - pterasoftware.trim - 	State: vCg__E=9.65, alpha=3.43, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.036
+INFO - pterasoftware.trim - 	State: vCg__E=9.66, alpha=3.43, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.037
+INFO - pterasoftware.trim - 	State: vCg__E=9.65, alpha=3.44, beta=-0.0, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.037
+INFO - pterasoftware.trim - 	State: vCg__E=9.65, alpha=3.43, beta=0.01, externalFX_W=5.0
+INFO - pterasoftware.trim - 		Objective: 0.036
+INFO - pterasoftware.trim - 	State: vCg__E=9.65, alpha=3.43, beta=-0.0, externalFX_W=5.01
+INFO - pterasoftware.trim - 		Objective: 0.036
+INFO - pterasoftware.trim - 	State: vCg__E=10.32, alpha=2.69, beta=-0.0, externalFX_W=5.02
+INFO - pterasoftware.trim - 		Objective: 0.024
+INFO - pterasoftware.trim - 	State: vCg__E=10.33, alpha=2.69, beta=-0.0, externalFX_W=5.02
+INFO - pterasoftware.trim - 		Objective: 0.023
+INFO - pterasoftware.trim - 	State: vCg__E=10.32, alpha=2.7, beta=-0.0, externalFX_W=5.02
+INFO - pterasoftware.trim - 		Objective: 0.024
+INFO - pterasoftware.trim - 	State: vCg__E=10.32, alpha=2.69, beta=0.01, externalFX_W=5.02
+INFO - pterasoftware.trim - 		Objective: 0.024
+INFO - pterasoftware.trim - 	State: vCg__E=10.32, alpha=2.69, beta=-0.0, externalFX_W=5.03
+INFO - pterasoftware.trim - 		Objective: 0.024
+INFO - pterasoftware.trim - 	State: vCg__E=11.45, alpha=1.55, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.034
+INFO - pterasoftware.trim - 	State: vCg__E=11.46, alpha=1.55, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.034
+INFO - pterasoftware.trim - 	State: vCg__E=11.45, alpha=1.56, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.033
+INFO - pterasoftware.trim - 	State: vCg__E=11.45, alpha=1.55, beta=0.01, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.034
+INFO - pterasoftware.trim - 	State: vCg__E=11.45, alpha=1.55, beta=-0.0, externalFX_W=5.06
+INFO - pterasoftware.trim - 		Objective: 0.034
+INFO - pterasoftware.trim - 	State: vCg__E=10.71, alpha=2.29, beta=-0.0, externalFX_W=5.03
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=10.72, alpha=2.29, beta=-0.0, externalFX_W=5.03
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=10.71, alpha=2.3, beta=-0.0, externalFX_W=5.03
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=10.71, alpha=2.29, beta=0.01, externalFX_W=5.03
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=10.71, alpha=2.29, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=11.75, alpha=1.25, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=11.76, alpha=1.25, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.046
+INFO - pterasoftware.trim - 	State: vCg__E=11.75, alpha=1.26, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.046
+INFO - pterasoftware.trim - 	State: vCg__E=11.75, alpha=1.25, beta=0.01, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=11.75, alpha=1.25, beta=-0.0, externalFX_W=5.08
+INFO - pterasoftware.trim - 		Objective: 0.047
+INFO - pterasoftware.trim - 	State: vCg__E=10.82, alpha=2.19, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=10.83, alpha=2.19, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=10.82, alpha=2.2, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=10.82, alpha=2.19, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=10.82, alpha=2.19, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=11.3, alpha=1.71, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.027
+INFO - pterasoftware.trim - 	State: vCg__E=11.31, alpha=1.71, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.026
+INFO - pterasoftware.trim - 	State: vCg__E=11.3, alpha=1.72, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.026
+INFO - pterasoftware.trim - 	State: vCg__E=11.3, alpha=1.71, beta=0.01, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.027
+INFO - pterasoftware.trim - 	State: vCg__E=11.3, alpha=1.71, beta=-0.0, externalFX_W=5.06
+INFO - pterasoftware.trim - 		Objective: 0.027
+INFO - pterasoftware.trim - 	State: vCg__E=10.89, alpha=2.11, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=10.9, alpha=2.11, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=10.89, alpha=2.12, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=10.89, alpha=2.11, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=10.89, alpha=2.11, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.93, alpha=1.09, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.054
+INFO - pterasoftware.trim - 	State: vCg__E=11.94, alpha=1.09, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.053
+INFO - pterasoftware.trim - 	State: vCg__E=11.93, alpha=1.1, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.053
+INFO - pterasoftware.trim - 	State: vCg__E=11.93, alpha=1.09, beta=0.01, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.054
+INFO - pterasoftware.trim - 	State: vCg__E=11.93, alpha=1.09, beta=-0.0, externalFX_W=5.08
+INFO - pterasoftware.trim - 		Objective: 0.054
+INFO - pterasoftware.trim - 	State: vCg__E=10.96, alpha=2.05, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.97, alpha=2.05, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.96, alpha=2.06, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.96, alpha=2.05, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.96, alpha=2.05, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.27, alpha=1.74, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.025
+INFO - pterasoftware.trim - 	State: vCg__E=11.28, alpha=1.74, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.025
+INFO - pterasoftware.trim - 	State: vCg__E=11.27, alpha=1.75, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.024
+INFO - pterasoftware.trim - 	State: vCg__E=11.27, alpha=1.74, beta=0.01, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.025
+INFO - pterasoftware.trim - 	State: vCg__E=11.27, alpha=1.74, beta=-0.0, externalFX_W=5.06
+INFO - pterasoftware.trim - 		Objective: 0.025
+INFO - pterasoftware.trim - 	State: vCg__E=10.98, alpha=2.03, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.99, alpha=2.03, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.98, alpha=2.04, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.98, alpha=2.03, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=10.98, alpha=2.03, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.11, alpha=1.9, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=11.12, alpha=1.9, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=11.11, alpha=1.91, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.018
+INFO - pterasoftware.trim - 	State: vCg__E=11.11, alpha=1.9, beta=0.01, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=11.11, alpha=1.9, beta=-0.0, externalFX_W=5.06
+INFO - pterasoftware.trim - 		Objective: 0.019
+INFO - pterasoftware.trim - 	State: vCg__E=11.0, alpha=2.01, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.01, alpha=2.01, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.0, alpha=2.02, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.0, alpha=2.01, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.0, alpha=2.01, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=1.93, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.08, alpha=1.93, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=1.94, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=1.93, beta=0.01, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=1.93, beta=-0.0, externalFX_W=5.06
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.01, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.02, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.01, alpha=2.0, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.01, alpha=1.99, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.01, alpha=1.99, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=12.03, alpha=1.01, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.057
+INFO - pterasoftware.trim - 	State: vCg__E=12.04, alpha=1.01, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.057
+INFO - pterasoftware.trim - 	State: vCg__E=12.03, alpha=1.02, beta=-0.0, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.057
+INFO - pterasoftware.trim - 	State: vCg__E=12.03, alpha=1.01, beta=0.01, externalFX_W=5.07
+INFO - pterasoftware.trim - 		Objective: 0.057
+INFO - pterasoftware.trim - 	State: vCg__E=12.03, alpha=1.01, beta=-0.0, externalFX_W=5.08
+INFO - pterasoftware.trim - 		Objective: 0.057
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.95, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=1.95, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.95, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.95, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.017
+INFO - pterasoftware.trim - 	State: vCg__E=11.02, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.02, alpha=2.0, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.02, alpha=1.99, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.02, alpha=1.99, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.99, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.03, alpha=1.98, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.09, alpha=1.95, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.1, alpha=1.95, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.09, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.015
+INFO - pterasoftware.trim - 	State: vCg__E=11.09, alpha=1.95, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.09, alpha=1.95, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.06, alpha=1.96, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.015
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.96, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.05, alpha=1.97, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.98, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.04, alpha=1.97, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.016
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=2.0, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.014
+INFO - pterasoftware.trim - 	State: vCg__E=11.08, alpha=2.0, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.014
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=2.01, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.014
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=2.0, beta=0.01, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.014
+INFO - pterasoftware.trim - 	State: vCg__E=11.07, alpha=2.0, beta=-0.0, externalFX_W=5.05
+INFO - pterasoftware.trim - 		Objective: 0.014
+INFO - pterasoftware.trim - 	State: vCg__E=11.19, alpha=2.1, beta=-0.0, externalFX_W=5.04
+INFO - pterasoftware.trim - 		Objective: 0.008
+INFO - pterasoftware.trim - Acceptable value reached with local search.

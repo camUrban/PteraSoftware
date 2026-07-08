@@ -82,19 +82,28 @@ def set_up_logging(
     handler: logging.Handler | None = None,
     format_string: str | None = None,
 ) -> logging.Logger:
-    """Configures logging for the pterasoftware package that is compatible with TQDM
-    progress bars.
+    """Configures logging for the pterasoftware package.
 
-    This function sets up the package level logger with consistent formatting and uses a
-    TQDM compatible handler to prevent progress bar interference.
+    Call this function when you want to see log messages from pterasoftware. Without it,
+    log messages are silently discarded (the default Python behavior for libraries).
+
+    If you want log messages printed to the console, call this function without passing
+    a handler (e.g., ``ps.set_up_logging(level="Info")``). This installs a handler that
+    is compatible with TQDM progress bars, so log messages and progress bars can coexist
+    on the console without garbling each other.
+
+    If you want log messages written to a file (while any progress bars continue to
+    display on the console), pass a ``logging.FileHandler`` (e.g.,
+    ``ps.set_up_logging(level="Info", handler=logging.FileHandler("simulation.log"))``).
 
     :param level: The logging level. Can be an int (e.g., logging.DEBUG) or a string
         (either "debug", "info", "warning", "error", or "critical", case insensitive).
         The default is logging.WARNING.
-    :param handler: A custom logging handler. If None, a _TqdmLoggingHandler will be
-        created.
-    :param format_string: Custom format string for log messages. If None, uses a
-        sensible default.
+    :param handler: A custom logging handler. If None, a TQDM compatible handler is
+        created that prints to the console without interfering with progress bars. Pass
+        a handler (such as ``logging.FileHandler``) to route log messages elsewhere.
+    :param format_string: Custom format string for log messages. If None, uses the
+        format "%(levelname)s - %(name)s - %(message)s".
     :return: The configured package level logger.
     """
     # Validate level.

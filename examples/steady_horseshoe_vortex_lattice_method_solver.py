@@ -1,14 +1,19 @@
-"""This is script is an example of how to run Ptera Software's
-SteadyHorseshoeVortexLatticeMethodSolver with a custom Airplane."""
+"""Demonstrates running Ptera Software's SteadyHorseshoeVortexLatticeMethodSolver with a
+custom airplane.
+
+The script will log simulation results in a log file.
+"""
+
+import logging
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Configure logging to display info level messages. This is important for seeing the
-# output from the log_results function.
-ps.set_up_logging(level="Info")
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument.
+ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
 # Create an Airplane with our custom geometry. I am going to declare every parameter
 # for Airplane, even though most of them have usable default values. This is for
@@ -152,14 +157,14 @@ example_solver.run()
 # Call this function from the output module to log the results.
 ps.output.log_results(example_solver)
 
-# Save the solved solver to a JSON file. This allows us to load the results later
-# without re-running the simulation. Use ".json.gz" for gzip compression, which is
+# Save the solved solver to a compressed JSON file. This allows us to load the results
+# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
-ps.save("example_steady_horseshoe_solver.json.gz", example_solver)
+ps.save("example_solver.json.gz", example_solver)
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
-loaded_solver = ps.load("example_steady_horseshoe_solver.json.gz")
+loaded_solver = ps.load("example_solver.json.gz")
 
 # Call the output module's draw function on the loaded solver.
 ps.output.draw(
@@ -167,6 +172,6 @@ ps.output.draw(
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
-    save=False,
+    save=True,
     testing=False,
 )

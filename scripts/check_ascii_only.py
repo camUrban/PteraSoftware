@@ -1,14 +1,12 @@
 """Verify that the given files contain only ASCII-safe characters.
 
-This pre-commit hook flags any character that is not tab (U+0009), line
-feed (U+000A), carriage return (U+000D), or printable ASCII (U+0020
-through U+007E). It exists to enforce the project-wide convention that
-committed text files stay within the 95 printable ASCII characters plus
-the usual whitespace.
+This pre-commit hook flags any character that is not tab (U+0009), line feed (U+000A),
+carriage return (U+000D), or printable ASCII (U+0020 through U+007E). It exists to
+enforce the project-wide convention that committed text files stay within the 95
+printable ASCII characters plus the usual whitespace.
 
-Each violation is reported with its line, column, the offending
-character, its Unicode code point, its Unicode name (when available),
-and its UTF-8 byte sequence.
+Each violation is reported with its line, column, the offending character, its Unicode
+code point, its Unicode name (when available), and its UTF-8 byte sequence.
 """
 
 import sys
@@ -19,7 +17,12 @@ ALLOWED: frozenset[int] = frozenset({0x09, 0x0A, 0x0D} | set(range(0x20, 0x7F)))
 
 
 def describe(char: str) -> str:
-    """Format a one-line description of a disallowed character."""
+    """Formats a one-line description of a disallowed character.
+
+    :param char: The disallowed character to describe.
+    :return: A string containing the character's code point, repr, Unicode name, and
+        UTF-8 byte sequence.
+    """
     codepoint = ord(char)
     try:
         name = unicodedata.name(char)
@@ -30,7 +33,11 @@ def describe(char: str) -> str:
 
 
 def find_violations(path: Path) -> list[tuple[int, int, str]]:
-    """Return (line, col, description) tuples for each disallowed character."""
+    """Returns (line, col, description) tuples for each disallowed character.
+
+    :param path: The path to the file to check.
+    :return: A list of (line, col, description) tuples, one per disallowed character.
+    """
     raw = path.read_bytes()
     try:
         text = raw.decode("utf-8")
@@ -51,6 +58,12 @@ def find_violations(path: Path) -> list[tuple[int, int, str]]:
 
 
 def main(argv: list[str]) -> int:
+    """Checks each file for disallowed characters and prints violations.
+
+    :param argv: The list of file paths to check.
+    :return: An int representing the exit code, which is 0 if no violations were found
+        and 1 otherwise.
+    """
     exit_code = 0
     for arg in argv:
         path = Path(arg)

@@ -1,0 +1,24 @@
+{
+  "os": {
+    "name": "Ubuntu",
+    "version": "24.04.4 LTS (Noble Numbat)"
+  },
+  "cpu": {
+    "model": "AMD Ryzen 9 9950X 16-Core Processor",
+    "logical_cores": 32,
+    "governor": "performance"
+  },
+  "memory": {
+    "total_mb": 63842,
+    "swappiness": 0,
+    "transparent_hugepages": "madvise"
+  },
+  "gpu": {
+    "model": "NVIDIA GeForce RTX 5080",
+    "driver_version": "580.167.08",
+    "cuda_version": "13.0"
+  },
+  "storage": {
+    "model": "WD_BLACK SN850X 1000GB"
+  }
+}

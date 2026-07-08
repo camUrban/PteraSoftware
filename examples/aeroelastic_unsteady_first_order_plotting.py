@@ -1,6 +1,8 @@
-"""This script runs the coupled aeroelastic UVLM solver sweeping one parameter
-at a time (spring constant k, damping constant b, or wing density) and overlays
-the Curve 16 Net Deformation from each run."""
+"""Demonstrates running Ptera Software's
+AeroelasticUnsteadyRingVortexLatticeMethodSolver across a sweep of parameters.
+
+The Curve 16 Net Deformation curves from each run are overlaid in a plot.
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,10 +36,10 @@ def run_aeroelastic(
     :param spring_constant: The torsional spring stiffness value.
     :param damping_constant: The damping constant value.
     :param wing_density: The wing density per unit height (kg/m^2).
-    :return: A tuple of (net_data list, solved problem object).
+    :return: A tuple of the first Wing's net deformation data and the solved
+        AeroelasticUnsteadyProblem.
     """
-
-    # Wing cross section initialization
+    # Initialize the WingCrossSection parameters.
     num_spanwise_panels = 2
     Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
     cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
@@ -138,7 +140,7 @@ def run_aeroelastic(
         b_ref=None,
     )
 
-    # Wing cross section movement parameters
+    # Define the WingCrossSectionMovement parameters.
     dephase_x = 0.0
     period_x = 0.0
     amplitude_x = 0.0
@@ -310,6 +312,7 @@ def run_aeroelastic(
     )
 
     problem = example_solver.unsteady_problem
+    assert isinstance(problem, ps.problems.AeroelasticUnsteadyProblem)
 
     if animate:
         ps.output.animate(
@@ -321,7 +324,7 @@ def run_aeroelastic(
     return problem.net_data_per_wing[0], problem
 
 
-# Determine which parameter is being swept
+# Determine which parameter is being swept.
 active_sweeps = sum(1 for v in (K_VALUES, B_VALUES, DENSITY_VALUES) if v)
 if active_sweeps > 1:
     raise ValueError(
@@ -348,7 +351,7 @@ else:
     sweep_symbol = "rho"
     sweep_kwarg = "wing_density"
 
-# Run for each swept value and collect Curve 16 of the Net Deformation
+# Run for each swept value and collect Curve 16 of the Net Deformation.
 results = {}
 flap_angle = None
 for val in sweep_values:
@@ -361,7 +364,7 @@ for val in sweep_values:
     results[val] = curve_16
     print(f"  Completed {sweep_symbol}={val}, {len(curve_16)} steps")
 
-    # Compute the prescribed flap angle once (it is the same for all runs)
+    # Compute the prescribed flap angle once (it is the same for all runs).
     if flap_angle is None:
         wm = problem.wing_movement
         amp = wm.ampAngles_Gs_to_Wn_ixyz[0]
@@ -372,7 +375,8 @@ for val in sweep_values:
         t = np.arange(num_steps) * dt
         flap_angle = (amp * np.sin((2 * np.pi / period) * t + phase)).tolist()
 
-# Overlay plot of Curve 16 Net Deformation for all swept values
+# Create an overlay plot of Curve 16 Net Deformation for all swept values.
+assert flap_angle is not None
 plt.figure(figsize=(12, 6), dpi=200)
 for val, curve in results.items():
     plt.plot(range(len(curve)), curve, label=f"{sweep_symbol}={val}")
@@ -388,6 +392,8 @@ plt.ylabel("Angle (degrees)")
 plt.title(f"Net Deformation (Curve {CURVE_INDEX}) - Varying {sweep_name}")
 plt.legend()
 plt.grid(True)
-filename = f"Net_Deformation_Curve_{CURVE_INDEX}_{sweep_name.replace(' ', '_')}.png"
+filename = (
+    f"net_deformation_curve_{CURVE_INDEX}_{sweep_name.lower().replace(' ', '_')}.png"
+)
 plt.savefig(filename)
 plt.show()

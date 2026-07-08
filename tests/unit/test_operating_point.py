@@ -1,5 +1,6 @@
 """This module contains a class to test OperatingPoints."""
 
+import copy
 import unittest
 
 import numpy as np
@@ -1785,3 +1786,97 @@ class TestOperatingPoint(unittest.TestCase):
         """Test that integer inputs for omegas_BP1__E are converted to floats."""
         op = ps.operating_point.OperatingPoint(omegas_BP1__E=(1, -2, 3))
         self.assertEqual(op.omegas_BP1__E.dtype, float)
+
+
+class TestOperatingPointDeepCopy(unittest.TestCase):
+    """Tests for OperatingPoint.__deepcopy__ method."""
+
+    def setUp(self):
+        """Set up an OperatingPoint for deepcopy tests."""
+        self.operating_point = (
+            operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+    def test_deepcopy_creates_new_instance(self):
+        """Test that deepcopy creates a new, distinct OperatingPoint."""
+        copied = copy.deepcopy(self.operating_point)
+        self.assertIsInstance(copied, ps.operating_point.OperatingPoint)
+        self.assertIsNot(copied, self.operating_point)
+
+    def test_deepcopy_preserves_scalar_attributes(self):
+        """Test that deepcopy preserves the scalar attribute values."""
+        copied = copy.deepcopy(self.operating_point)
+        self.assertEqual(copied.rho, self.operating_point.rho)
+        self.assertEqual(copied.vCg__E, self.operating_point.vCg__E)
+        self.assertEqual(copied.alpha, self.operating_point.alpha)
+        self.assertEqual(copied.beta, self.operating_point.beta)
+        self.assertEqual(copied.externalFX_W, self.operating_point.externalFX_W)
+        self.assertEqual(copied.nu, self.operating_point.nu)
+
+    def test_deepcopy_creates_independent_arrays(self):
+        """Test that deepcopy copies the immutable arrays into new arrays."""
+        copied = copy.deepcopy(self.operating_point)
+        for name in ("angles_E_to_BP1_izyx", "CgP1_E_Eo", "g_E", "omegas_BP1__E"):
+            original_array = getattr(self.operating_point, name)
+            copied_array = getattr(copied, name)
+            self.assertIsNot(copied_array, original_array)
+            npt.assert_array_equal(copied_array, original_array)
+
+    def test_deepcopy_immutable_arrays_remain_read_only(self):
+        """Test that the deepcopied immutable arrays are still read only."""
+        copied = copy.deepcopy(self.operating_point)
+        for name in ("angles_E_to_BP1_izyx", "CgP1_E_Eo", "g_E", "omegas_BP1__E"):
+            with self.assertRaises(ValueError):
+                getattr(copied, name)[0] = 999.0
+
+    def test_deepcopy_preserves_populated_caches(self):
+        """Test that caches populated on the original survive the copy, read only."""
+        # Populate one scalar cache and two array caches on the original.
+        _ = self.operating_point.qInf__E
+        _ = self.operating_point.vInf_GP1__E
+        _ = self.operating_point.T_pas_GP1_CgP1_to_W_CgP1
+
+        copied = copy.deepcopy(self.operating_point)
+
+        self.assertEqual(
+            object.__getattribute__(copied, "_qInf__E"),
+            object.__getattribute__(self.operating_point, "_qInf__E"),
+        )
+        for slot in ("_vInf_GP1__E", "_T_pas_GP1_CgP1_to_W_CgP1"):
+            copied_cache = object.__getattribute__(copied, slot)
+            original_cache = object.__getattribute__(self.operating_point, slot)
+            self.assertIsNotNone(copied_cache)
+            npt.assert_array_equal(copied_cache, original_cache)
+            self.assertFalse(copied_cache.flags.writeable)
+
+    def test_deepcopy_leaves_uncomputed_caches_none(self):
+        """Test that caches left uncomputed on the original stay None on the copy."""
+        copied = copy.deepcopy(self.operating_point)
+        for slot in ("_qInf__E", "_vInf_GP1__E", "_T_pas_GP1_CgP1_to_W_CgP1"):
+            self.assertIsNone(object.__getattribute__(copied, slot))
+
+    def test_deepcopy_none_surface_params_stay_none(self):
+        """Test that None surface parameters remain None after deepcopy."""
+        copied = copy.deepcopy(self.operating_point)
+        self.assertIsNone(copied.surfaceNormal_E)
+        self.assertIsNone(copied.surfacePoint_E_Eo)
+
+    def test_deepcopy_surface_arrays_remain_read_only(self):
+        """Test that populated surface arrays are copied read only."""
+        operating_point = ps.operating_point.OperatingPoint(
+            surfaceNormal_E=(0.0, 0.0, 1.0),
+            surfacePoint_E_Eo=(0.0, 0.0, -1.0),
+        )
+        copied = copy.deepcopy(operating_point)
+        self.assertIsNot(copied.surfaceNormal_E, operating_point.surfaceNormal_E)
+        with self.assertRaises(ValueError):
+            copied.surfaceNormal_E[0] = 999.0
+        with self.assertRaises(ValueError):
+            copied.surfacePoint_E_Eo[0] = 999.0
+
+    def test_deepcopy_handles_memo_correctly(self):
+        """Test that deepcopy uses the memo dict to return the same object twice."""
+        memo = {}
+        first = copy.deepcopy(self.operating_point, memo)
+        second = copy.deepcopy(self.operating_point, memo)
+        self.assertIs(first, second)

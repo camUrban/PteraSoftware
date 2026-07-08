@@ -50,8 +50,8 @@ import pterasoftware as ps
 # structural ODE's rotational inertia I toward zero, which makes its natural
 # frequency omega_n = sqrt(k / I) blow up and the per-step solve_ivp call in
 # problems.py numerically intractable (see the module docstring).
-DEFAULT_B = 10.0
-DEFAULT_DENSITY = 0.05
+DEFAULT_B = 0.2
+DEFAULT_DENSITY = 0.1
 
 # The freestream density, wing chord, and freestream velocity used to nondimensionalize
 # K and sigma below. These must match the chord used inside run_aeroelastic and the
@@ -64,44 +64,60 @@ FREESTREAM_VELOCITY = 10.0
 # matching Moore (2014) Fig. 4(a): K = 0, 0.5, 1 (very flexible), K = 4, 6, 8 (stiff),
 # and K = infinity (rigid). Every combination of K_VALUES_NONDIM and
 # REDUCED_FREQUENCY_VALUES is run.
-K_VALUES_NONDIM: list[float] = [200.0, 300.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0]
+K_VALUES_NONDIM: list[float] = [10.0, 100.0, 200.0, 500.0, 1000.0, 2000.0]
 REDUCED_FREQUENCY_VALUES: list[float] = [
     0.5,
     1.0,
     2.0,
     3.0,
     4.0,
-    5.0,
     6.0,
     8.0,
     10.0,
     12,
     14,
     16,
+    20,
 ]
 
 # A nondimensional spring stiffness representing the rigid-wing (K -> infinity)
 # limit. Its trailing-edge motion is nearly purely kinematic (negligible elastic
 # deformation relative to the runs in K_VALUES_NONDIM), so dividing every other
-# run's trailing-edge amplitude by this reference's, at the same sigma, turns the
-# y-axis into a gain that is approximately 1.0 for a rigid wing, matching the
-# validation figure's flat black K = infinity curve. This value was checked
-# directly at the highest sigma in REDUCED_FREQUENCY_VALUES (the worst case, since
-# higher sigma means larger aerodynamic torque to resist): K = 500 still diverges
-# past the geometric +/-90 degree limit there, while K = 2000 and K = 8000 give
-# nearly identical trailing-edge amplitudes (within about 1%), confirming 2000 is
-# stiff enough to be a good rigid-wing proxy. Pushing it much higher than that
-# would make the structural ODE numerically intractable (see the module
-# docstring's explanation of omega_n = sqrt(k / I)).
+# run's trailing-edge amplitude by this reference turns the y-axis into a gain that
+# is approximately 1.0 for a rigid wing, matching the validation figure's flat black
+# K = infinity curve. For a perfectly rigid wing the trailing-edge amplitude is set
+# by the prescribed flap angle and geometry alone, so it is frequency-independent;
+# the reference is therefore run only once (see below) rather than at every sigma.
+# This value was checked directly at the highest sigma in REDUCED_FREQUENCY_VALUES
+# (the worst case, since higher sigma means larger aerodynamic torque to resist):
+# K = 500 still diverges past the geometric +/-90 degree limit there, while K = 2000
+# and K = 8000 give nearly identical trailing-edge amplitudes (within about 1%),
+# confirming 2000 is stiff enough to be a good rigid-wing proxy. Pushing it much
+# higher than that would make the structural ODE numerically intractable (see the
+# module docstring's explanation of omega_n = sqrt(k / I)).
 K_RIGID_NONDIM = 600000.0
 
-# Time steps per flapping cycle, held fixed across the sigma sweep. DELTA_TIME is
-# derived per frequency (period / STEPS_PER_CYCLE) below instead of being fixed,
-# because a fixed DELTA_TIME under-resolves the structural dynamics at high
-# frequencies. That under-resolution causes the torsional deflection to diverge past
-# the +/-90 degree geometric limit before the wing ever reaches the high-frequency,
-# phase-lagged regime.
+# How the per-frequency time step is chosen. See time_stepping_for_frequency below.
+#
+# "steps_per_cycle": hold a fixed number of time steps per flapping cycle
+#     (STEPS_PER_CYCLE), so delta_time = period / STEPS_PER_CYCLE varies with
+#     frequency. This is the default because a fixed delta_time under-resolves the
+#     structural dynamics at high frequencies, which lets the torsional deflection
+#     diverge past the +/-90 degree geometric limit before the wing ever reaches the
+#     high-frequency, phase-lagged regime.
+#
+# "delta_time": hold delta_time approximately fixed at FIXED_DELTA_TIME. The steps
+#     per cycle then varies with frequency; it is rounded to the nearest whole step
+#     so each run still spans an integer number of cycles, which nudges the effective
+#     delta_time slightly off FIXED_DELTA_TIME (most noticeably at high frequency,
+#     where a cycle spans only a few steps).
+TIME_RESOLUTION_MODE = "steps_per_cycle"
+
+# Time steps per flapping cycle, used when TIME_RESOLUTION_MODE == "steps_per_cycle".
 STEPS_PER_CYCLE = 32
+
+# The fixed time step in seconds, used when TIME_RESOLUTION_MODE == "delta_time".
+FIXED_DELTA_TIME = 0.005
 
 # Each run simulates this many flapping cycles, discarding the first
 # TRANSIENT_CYCLES_DISCARDED of them as transient before measuring the amplitude
@@ -109,8 +125,12 @@ STEPS_PER_CYCLE = 32
 CYCLES_PER_RUN = 4
 TRANSIENT_CYCLES_DISCARDED = 3
 
-NUM_STEPS = CYCLES_PER_RUN * STEPS_PER_CYCLE
-DISCARD_STEPS = TRANSIENT_CYCLES_DISCARDED * STEPS_PER_CYCLE
+# The spanwise deformation "curve" indices (stations along net_data's spanwise axis)
+# to plot the deformation angle amplitude for, one figure per index. Index 0 is the
+# wing root and the largest valid index is the wingtip; the defaults run from the tip
+# inboard. Any index beyond the geometry's spanwise station count is skipped rather
+# than aborting the run.
+ANGLE_CURVE_INDICES: list[int] = [14, 10, 6, 3]
 
 
 def spring_constant_from_k(k_nondim: float) -> float:
@@ -137,6 +157,41 @@ def frequency_hz_from_sigma(sigma: float) -> float:
     return sigma * FREESTREAM_VELOCITY / (np.pi * CHORD)
 
 
+def time_stepping_for_frequency(frequency_hz: float) -> tuple[int, float, int]:
+    """Choose the time stepping for a run at a given flapping frequency.
+
+    Honors TIME_RESOLUTION_MODE. In "steps_per_cycle" mode the steps per cycle is
+    fixed at STEPS_PER_CYCLE and delta_time follows from the period. In "delta_time"
+    mode delta_time is held near FIXED_DELTA_TIME, with the steps per cycle rounded to
+    the nearest whole step so the run still spans an integer number of cycles; the
+    returned delta_time is period / steps_per_cycle, which is FIXED_DELTA_TIME nudged
+    onto that whole-cycle grid. In both modes the run spans CYCLES_PER_RUN cycles and
+    discards the first TRANSIENT_CYCLES_DISCARDED of them.
+
+    :param frequency_hz: The flapping frequency in Hz.
+    :return: A tuple of (num_steps, delta_time, discard_steps), where num_steps is the
+        total number of time steps in the run, delta_time is the time step size in
+        seconds, and discard_steps is the number of leading transient steps to
+        discard before measuring an amplitude.
+    """
+    period = 1.0 / frequency_hz
+
+    if TIME_RESOLUTION_MODE == "steps_per_cycle":
+        steps_per_cycle = STEPS_PER_CYCLE
+    elif TIME_RESOLUTION_MODE == "delta_time":
+        steps_per_cycle = max(1, round(period / FIXED_DELTA_TIME))
+    else:
+        raise ValueError(
+            f"Unknown TIME_RESOLUTION_MODE {TIME_RESOLUTION_MODE!r}; expected "
+            f'"steps_per_cycle" or "delta_time".'
+        )
+
+    delta_time = period / steps_per_cycle
+    num_steps = CYCLES_PER_RUN * steps_per_cycle
+    discard_steps = TRANSIENT_CYCLES_DISCARDED * steps_per_cycle
+    return num_steps, delta_time, discard_steps
+
+
 def run_aeroelastic(
     spring_constant: float,
     flap_frequency_hz: float,
@@ -156,7 +211,6 @@ def run_aeroelastic(
     :param wing_density: The wing density per unit height (kg/m^2).
     :return: A tuple of (net_data list, solved problem object).
     """
-
     # Wing cross section initialization
     num_spanwise_panels = 2
     Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
@@ -404,61 +458,57 @@ def steady_state_half_range(values: np.ndarray, discard_steps: int) -> float:
     return (np.max(steady_state) - np.min(steady_state)) / 2.0
 
 
-# For each sigma, first run a rigid-wing (K -> infinity) reference case to get the
-# trailing-edge amplitude with no elastic deformation. If the prescribed motion ever
-# drives a WingCrossSection's deformation angle past the geometric +/-90 degree
-# limit, the run raises a ValueError; that sigma is skipped entirely (for every K)
-# since there is no reference to normalize against.
-reference_te_amplitude_by_sigma = {}
-for sigma in REDUCED_FREQUENCY_VALUES:
-    frequency_hz = frequency_hz_from_sigma(sigma)
-    delta_time = (1.0 / frequency_hz) / STEPS_PER_CYCLE
+# Run a single rigid-wing (K -> infinity) reference case to get the trailing-edge
+# amplitude with no elastic deformation. For a perfectly rigid wing this amplitude is
+# purely kinematic (set by the prescribed flap angle and geometry), so it is
+# frequency-independent and one run serves as the normalization denominator for every
+# (K, sigma) combination. The run is done at the lowest sigma, where the aerodynamic
+# torque, and thus the residual elastic deformation that would otherwise contaminate
+# this "rigid" baseline, is smallest.
+reference_sigma = min(REDUCED_FREQUENCY_VALUES)
+reference_frequency_hz = frequency_hz_from_sigma(reference_sigma)
+reference_num_steps, reference_delta_time, reference_discard_steps = (
+    time_stepping_for_frequency(reference_frequency_hz)
+)
 
-    print(f"Running rigid reference at sigma={sigma}...")
-    try:
-        _, reference_problem = run_aeroelastic(
-            spring_constant=spring_constant_from_k(K_RIGID_NONDIM),
-            flap_frequency_hz=frequency_hz,
-            num_steps=NUM_STEPS,
-            delta_time=delta_time,
-            animate=False,
-        )
-    except ValueError as error:
-        print(f"  Skipping sigma={sigma}: {error}")
-        continue
-    reference_te_amplitude_by_sigma[sigma] = steady_state_half_range(
-        trailing_edge_z_history(reference_problem), DISCARD_STEPS
-    )
-    print(f"  Rigid TE amplitude={reference_te_amplitude_by_sigma[sigma]:.4f} m")
+print(f"Running rigid reference at sigma={reference_sigma}...")
+_, reference_problem = run_aeroelastic(
+    spring_constant=spring_constant_from_k(K_RIGID_NONDIM),
+    flap_frequency_hz=reference_frequency_hz,
+    num_steps=reference_num_steps,
+    delta_time=reference_delta_time,
+    animate=False,
+)
+reference_te_amplitude = steady_state_half_range(
+    trailing_edge_z_history(reference_problem), reference_discard_steps
+)
+print(f"  Rigid TE amplitude={reference_te_amplitude:.4f} m")
 
 # Run every (K, sigma) combination and collect the trailing-edge amplitude gain
-# (relative to the rigid-wing reference at the same sigma) and the wingtip
-# deformation angle amplitude for each. The wingtip curve index is the last index
-# along net_data's spanwise axis, so it stays correct regardless of how many wing
-# cross sections (and therefore spanwise stations) the geometry has. As with the
-# rigid reference above, a deformation angle that exceeds the geometric +/-90 degree
-# limit raises a ValueError; that single (K, sigma) data point is skipped rather than
-# aborting the whole sweep. Each K's results and the sigmas they correspond to are
-# tracked together so the plots only connect points that actually ran.
+# (relative to the single rigid-wing reference above) and the deformation angle
+# amplitude at each requested spanwise curve index in ANGLE_CURVE_INDICES. A
+# deformation angle that exceeds the geometric +/-90 degree limit raises a
+# ValueError; that single (K, sigma) data point is skipped rather than aborting the
+# whole sweep. Each K's results and the sigmas they correspond to are tracked together
+# so the plots only connect points that actually ran. angle_amplitudes_deg is keyed
+# first by curve index then by K, so each curve index gets its own figure below.
 sigmas_used = {k: [] for k in K_VALUES_NONDIM}
 te_amplitude_gain = {k: [] for k in K_VALUES_NONDIM}
-angle_amplitudes_deg = {k: [] for k in K_VALUES_NONDIM}
-wingtip_curve_index = None
+angle_amplitudes_deg = {
+    curve_index: {k: [] for k in K_VALUES_NONDIM} for curve_index in ANGLE_CURVE_INDICES
+}
 for k in K_VALUES_NONDIM:
     spring_constant = spring_constant_from_k(k)
     for sigma in REDUCED_FREQUENCY_VALUES:
-        if sigma not in reference_te_amplitude_by_sigma:
-            print(f"Skipping K={k}, sigma={sigma}: no rigid reference available.")
-            continue
         frequency_hz = frequency_hz_from_sigma(sigma)
-        delta_time = (1.0 / frequency_hz) / STEPS_PER_CYCLE
+        num_steps, delta_time, discard_steps = time_stepping_for_frequency(frequency_hz)
 
         print(f"Running K={k}, sigma={sigma} (frequency={frequency_hz:.3f} Hz)...")
         try:
             net_data, problem = run_aeroelastic(
                 spring_constant=spring_constant,
                 flap_frequency_hz=frequency_hz,
-                num_steps=NUM_STEPS,
+                num_steps=num_steps,
                 delta_time=delta_time,
                 animate=False,
             )
@@ -467,22 +517,37 @@ for k in K_VALUES_NONDIM:
             continue
 
         net_data_array = np.array(net_data)
-        wingtip_curve_index = net_data_array.shape[1] - 1
+        num_curves = net_data_array.shape[1]
 
         te_amplitude = steady_state_half_range(
-            trailing_edge_z_history(problem), DISCARD_STEPS
+            trailing_edge_z_history(problem), discard_steps
         )
-        gain = te_amplitude / reference_te_amplitude_by_sigma[sigma]
-        angle_history_deg = net_data_array[:, wingtip_curve_index, 1] * 180.0 / np.pi
-        angle_amplitude_deg = steady_state_half_range(angle_history_deg, DISCARD_STEPS)
+        gain = te_amplitude / reference_te_amplitude
 
         sigmas_used[k].append(sigma)
         te_amplitude_gain[k].append(gain)
-        angle_amplitudes_deg[k].append(angle_amplitude_deg)
-        print(
-            f"  TE amplitude gain={gain:.3f}, "
-            f"angle amplitude={angle_amplitude_deg:.2f} deg"
+
+        run_angle_amplitudes = {}
+        for curve_index in ANGLE_CURVE_INDICES:
+            if curve_index >= num_curves:
+                continue
+            angle_history_deg = net_data_array[:, curve_index, 1] * 180.0 / np.pi
+            angle_amplitude_deg = steady_state_half_range(
+                angle_history_deg, discard_steps
+            )
+            angle_amplitudes_deg[curve_index][k].append(angle_amplitude_deg)
+            run_angle_amplitudes[curve_index] = angle_amplitude_deg
+
+        # Report the most tip-ward requested curve (the largest valid index) as a
+        # representative deformation for this run.
+        tip_curve = max(run_angle_amplitudes) if run_angle_amplitudes else None
+        tip_report = (
+            f"angle amplitude (curve {tip_curve})="
+            f"{run_angle_amplitudes[tip_curve]:.2f} deg"
+            if tip_curve is not None
+            else "no valid curve indices"
         )
+        print(f"  TE amplitude gain={gain:.3f}, {tip_report}")
 
 colors = plt.get_cmap("viridis")(np.linspace(0.0, 1.0, len(K_VALUES_NONDIM)))
 
@@ -497,7 +562,7 @@ for color, k in zip(colors, K_VALUES_NONDIM):
         color=color,
         label=f"K={k}",
     )
-rigid_sigmas = sorted(reference_te_amplitude_by_sigma)
+rigid_sigmas = sorted(REDUCED_FREQUENCY_VALUES)
 plt.plot(
     rigid_sigmas,
     np.ones(len(rigid_sigmas)),
@@ -513,23 +578,31 @@ plt.grid(True)
 plt.savefig("Trailing_Edge_Amplitude_Gain_vs_Reduced_Frequency.png")
 plt.show()
 
-# Wingtip deformation angle amplitude versus reduced frequency, one colored line per
-# K.
-plt.figure(figsize=(10, 6), dpi=200)
-for color, k in zip(colors, K_VALUES_NONDIM):
-    plt.plot(
-        sigmas_used[k],
-        angle_amplitudes_deg[k],
-        marker="o",
-        color=color,
-        label=f"K={k}",
+# Deformation angle amplitude versus reduced frequency, one figure per requested
+# spanwise curve index, each with one colored line per K. Curve indices that never
+# produced data (because they exceeded the geometry's spanwise station count) are
+# skipped.
+for curve_index in ANGLE_CURVE_INDICES:
+    if not any(angle_amplitudes_deg[curve_index][k] for k in K_VALUES_NONDIM):
+        print(f"Skipping curve {curve_index} plot: index out of range, no data.")
+        continue
+    plt.figure(figsize=(10, 6), dpi=200)
+    for color, k in zip(colors, K_VALUES_NONDIM):
+        plt.plot(
+            sigmas_used[k],
+            angle_amplitudes_deg[curve_index][k],
+            marker="o",
+            color=color,
+            label=f"K={k}",
+        )
+    plt.xlabel("reduced frequency, sigma = pi * c * f / U_inf")
+    plt.ylabel(f"Deformation Angle Amplitude at Curve {curve_index} (degrees)")
+    plt.title(
+        f"Deformation Angle Amplitude at Curve {curve_index} vs. Reduced Frequency"
     )
-plt.xlabel("reduced frequency, sigma = pi * c * f / U_inf")
-plt.ylabel(f"Deformation Angle Amplitude at Curve {wingtip_curve_index} (degrees)")
-plt.title("Deformation Angle Amplitude vs. Reduced Frequency")
-plt.legend()
-plt.grid(True)
-plt.savefig(
-    f"Deformation_Angle_Amplitude_Curve_{wingtip_curve_index}_vs_Reduced_Frequency.png"
-)
-plt.show()
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(
+        f"Deformation_Angle_Amplitude_Curve_{curve_index}_vs_Reduced_Frequency.png"
+    )
+    plt.show()

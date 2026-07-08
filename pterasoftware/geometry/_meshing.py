@@ -289,35 +289,33 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 ]
             )
 
-            # --------------------------------------------------------------------------
             # Mirroring this wing section across the airplane's plane of symmetry.
-            #
-            # Why an ACTIVE transformation is required here, and not
-            # just a passive change of reference frame:
-            #
-            # Expressed in their own local wing axes, relative to their own leading-edge
-            # root points, a wing and its mirror image DO have identical coordinates --
-            # that is exactly what "mirror image" means, and it's why a symmetric wing
-            # only needs to be defined once with a `symmetric` flag.
-            #
-            # But the two wings do not exist in isolation; they must be placed together
+
+            # Why an active transformation is required here, and not just a passive
+            # change of reference frame: Expressed in their own local wing axes,
+            # relative to their own leading-edge root points, a wing and its mirror
+            # image do have identical coordinates. That is exactly what "mirror image"
+            # means, and it's why a symmetric wing only needs to be defined once with a
+            # symmetric flag.
+
+            # But the two wings do not exist in isolation. They must be placed together
             # into one shared geometry axis system relative to the airplane's CG so the
             # solver can treat them as a single airframe. The mirrored wing's
-            # leading-edge root point and orientation (sweep, dihedral, incidence) are
-            # derived from the original wing's attributes.
-            #
-            # A reflection is an IMPROPER transformation (determinant -1) that flips
-            # handedness/chirality. A rotation or translation is a PROPER transformation
-            # (determinant +1) that preserves handedness. If we derived the mirrored wing's
-            # points using only a passive transformation, we would get a right-handed copy
-            # of the original wing just relocated -- meaning sweep, dihedral, twist, or
-            # camber would all carry the wrong geometric sign on the opposite side.
+            # leading-edge root point and orientation are derived from the original
+            # wing's attributes.
+
+            # A reflection is an improper transformation (determinant -1) that flips
+            # handedness/chirality. A rotation or translation is a proper
+            # transformation (determinant +1) that preserves handedness. If we derived
+            # the mirrored wing's points using only a passive transformation, we would
+            # get a right-handed copy of the original wing just relocated. That means
+            # camber would carry the wrong geometric sign on the opposite side.
             # Reflection is the only linear operation that genuinely inverts handedness
             # to turn a right wing into a left wing.
-            # --------------------------------------------------------------------------
+
             assert reflect_T_act is not None
 
-            # Step 1 (ACTIVE transformation): Mirror each local MCS point across the
+            # Step 1 (active transformation): Mirror each local MCS point across the
             # symmetry plane. This householder-like reflection explicitly flips the
             # geometric handedness.
             reflected_Fipp_Wn_Ler = _transformations.apply_T_to_vectors(
@@ -333,7 +331,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 reflect_T_act, Bopp_Wn_Ler, is_position=True
             )
 
-            # Step 2 (PASSIVE transformation): Re-express the now-reflected points
+            # Step 2 (passive transformation): Re-express the now-reflected points
             # from local wing axes into geometry axes relative to the CG.
             reflected_Fipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, is_position=True

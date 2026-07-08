@@ -15,6 +15,11 @@ from tqdm import tqdm
 # Package level logger. All module loggers should be children of this logger.
 PACKAGE_LOGGER_NAME = "pterasoftware"
 
+# Attach a null handler to the package logger, per the standard pattern for libraries.
+# Without one, records at WARNING and above from an unconfigured package would fall
+# through to Python's handler of last resort, which prints them bare to stderr.
+logging.getLogger(PACKAGE_LOGGER_NAME).addHandler(logging.NullHandler())
+
 # The current log-message nesting level. Each level indents messages formatted with
 # indent() by two spaces.
 _indent_level: contextvars.ContextVar[int] = contextvars.ContextVar(
@@ -178,7 +183,8 @@ def set_up_logging(
     """Configures logging for the pterasoftware package.
 
     Call this function when you want to see log messages from pterasoftware. Without it,
-    log messages are silently discarded (the default Python behavior for libraries).
+    log messages are silently discarded (the package installs a null handler, per the
+    standard pattern for libraries).
 
     If you want log messages printed to the console, call this function without passing
     a handler (e.g., ``ps.set_up_logging(level="Info")``). This installs a handler that

@@ -1440,18 +1440,27 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Per-wing deformation state. Indexed as [wing_idx].
         # Each element holds the current cumulative deformation angles for one wing.
+        # The y components are torsional angles in radians; the x and z components are
+        # zero.
         self.net_deformation_per_wing: list[np.ndarray] = []
-        # Per-wing angular velocity state. Indexed as [wing_idx].
+        # Per-wing angular velocity state. Indexed as [wing_idx]. The y components are
+        # torsional angular velocities in rad/s; the x and z components are zero.
         self.angular_velocities_per_wing: list[np.ndarray] = []
-        # Per-wing panel position history. Indexed as [wing_idx][step].
+        # Per-wing panel position history. Indexed as [wing_idx][step]. The positions
+        # are panel center points in meters.
         self.positions_per_wing: list[list[np.ndarray]] = []
-        # Per-wing moment and deformation history. Indexed as [wing_idx][step].
+        # Per-wing moment and deformation history. Indexed as [wing_idx][step]. The
+        # inertial and aerodynamic moments are in N*m, the net data snapshots hold
+        # torsional angles in radians in their y components, the angular velocity
+        # snapshots hold rad/s in their y components, and the flap points are position
+        # offsets in meters.
         self.per_step_inertial_per_wing: list[list[np.ndarray]] = []
         self.per_step_aero_per_wing: list[list[np.ndarray]] = []
         self.net_data_per_wing: list[list[np.ndarray]] = []
         self.angular_velocity_data_per_wing: list[list[np.ndarray]] = []
         self.flap_points_per_wing: list[list[np.ndarray]] = []
-        # Per-wing undeformed baseline positions. Indexed as [wing_idx].
+        # Per-wing undeformed baseline positions. Indexed as [wing_idx]. The positions
+        # are panel center points in meters.
         self.base_wing_positions_per_wing: list[np.ndarray] = []
 
         # Initialize per-wing state now that we have the initial airplane geometry.
@@ -1506,11 +1515,14 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         every Wing in the airplane and appends one entry per wing to each per-wing state
         list. The deformation accumulator (net_deformation_per_wing) and the angular
         velocity store (angular_velocities_per_wing) are each a zero-valued (N_span+1,
-        3) array. The history lists start empty: positions_per_wing holds panel center
-        positions, per_step_inertial_per_wing and per_step_aero_per_wing hold inertial
-        and aerodynamic moment arrays, net_data_per_wing holds cumulative deformation
-        snapshots, angular_velocity_data_per_wing holds angular velocity snapshots, and
-        flap_points_per_wing holds wing deflection offsets. The undeformed baseline
+        3) array whose y components carry the torsional angles (radians) and torsional
+        angular velocities (rad/s). The history lists start empty: positions_per_wing
+        holds panel center positions (meters), per_step_inertial_per_wing and
+        per_step_aero_per_wing hold inertial and aerodynamic moment arrays (N*m),
+        net_data_per_wing holds cumulative deformation snapshots (torsional angles in
+        radians in the y components), angular_velocity_data_per_wing holds angular
+        velocity snapshots (rad/s in the y components), and flap_points_per_wing holds
+        wing deflection offsets (meters). The undeformed baseline
         (base_wing_positions_per_wing) starts as a zero-size array marking it as unset.
 
         :param airplane: The initial Airplane whose Wings define the geometry.

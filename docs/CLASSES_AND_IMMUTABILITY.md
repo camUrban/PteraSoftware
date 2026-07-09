@@ -178,17 +178,17 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 
 These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to or reassigned element-wise by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
 
-| Attribute                        | Type                     | Notes                                                    |
-|----------------------------------|--------------------------|----------------------------------------------------------|
-| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles, per wing          |
-| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state, per wing                 |
-| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history, indexed `[wing][step]`    |
-| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history, indexed `[wing][step]`          |
-| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history, indexed `[wing][step]`       |
-| `net_data_per_wing`              | `list[list[np.ndarray]]` | Cumulative deformation snapshots, indexed `[wing][step]` |
-| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots, indexed `[wing][step]`       |
-| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets, indexed `[wing][step]`          |
-| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions, per wing            |
+| Attribute                        | Type                     | Notes                                                              |
+|----------------------------------|--------------------------|--------------------------------------------------------------------|
+| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles (radians), per wing          |
+| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state (rad/s), per wing                   |
+| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history (m), indexed `[wing][step]`          |
+| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history (N*m), indexed `[wing][step]`              |
+| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history (N*m), indexed `[wing][step]`           |
+| `net_data_per_wing`              | `list[list[np.ndarray]]` | Cumulative deformation snapshots (radians), indexed `[wing][step]` |
+| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots (rad/s), indexed `[wing][step]`         |
+| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets (m), indexed `[wing][step]`                |
+| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions (m), per wing                  |
 
 ## FreeFlightUnsteadyProblem Class (`problems.py`)
 

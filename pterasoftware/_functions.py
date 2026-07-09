@@ -589,3 +589,68 @@ def interp_between_points(
             gridInterpolatedPoints_A_a[i, j, :] = startPoint_A_a + scaledVector_A
 
     return gridInterpolatedPoints_A_a
+
+
+# The width to which format_duration left-pads its results when requested: the length
+# of the widest possible form, "-999 hr, 59 min, and 1.23E-305 s", built from the
+# widest possible components (a negative sign, three-digit hours, and a seconds
+# portion whose three-significant-figure form needs a three-digit exponent, the widest
+# a float can produce).
+_DURATION_PAD_WIDTH: int = 32
+
+
+def format_duration(total_seconds: float, left_pad: bool = False) -> str:
+    """Formats a duration as an hours, minutes, and seconds string.
+
+    The seconds portion is always less than 60 and is formatted with three significant
+    figures. The hours and minutes portions are dropped if the duration's magnitude is
+    less than one minute, and the hours portion is dropped if the magnitude is less than
+    one hour (which also drops the comma before the "and"). A magnitude of at least 1000
+    hours is formatted as hours alone with three significant figures. A negative
+    duration is formatted as its magnitude with a negative sign on the largest unit. A
+    seconds remainder that rounds to 60 at three significant figures is carried into the
+    minutes place, and a resulting 60 minutes is carried into the hours place.
+
+    :param total_seconds: The duration to format. The units are in seconds.
+    :param left_pad: Determines whether the result is left-padded with spaces to a
+        constant width, so the durations on successive log lines align. The default is
+        False.
+    :return: The formatted duration.
+    """
+    seconds_per_minute = 60.0
+    seconds_per_hour = 3600.0
+    max_whole_hours = 1000
+
+    sign = "-" if total_seconds < 0.0 else ""
+    magnitude_seconds = abs(total_seconds)
+
+    if magnitude_seconds >= max_whole_hours * seconds_per_hour:
+        formatted_duration = sign + f"{magnitude_seconds / seconds_per_hour:#.3G} hr"
+    else:
+        num_hours = int(magnitude_seconds // seconds_per_hour)
+        num_minutes = int(magnitude_seconds % seconds_per_hour // seconds_per_minute)
+        seconds_str = f"{magnitude_seconds % seconds_per_minute:#.3G}"
+
+        # Carry a seconds remainder that rounds to 60 at three significant figures
+        # into the minutes place, and a resulting 60 minutes into the hours place.
+        if float(seconds_str) >= seconds_per_minute:
+            seconds_str = f"{0.0:#.3G}"
+            num_minutes += 1
+            if num_minutes == 60:
+                num_minutes = 0
+                num_hours += 1
+
+        if num_hours >= max_whole_hours:
+            formatted_duration = sign + f"{float(num_hours):#.3G} hr"
+        elif num_hours > 0:
+            formatted_duration = (
+                sign + f"{num_hours} hr, {num_minutes} min, and {seconds_str} s"
+            )
+        elif num_minutes > 0:
+            formatted_duration = sign + f"{num_minutes} min and {seconds_str} s"
+        else:
+            formatted_duration = sign + f"{seconds_str} s"
+
+    if left_pad:
+        return formatted_duration.rjust(_DURATION_PAD_WIDTH)
+    return formatted_duration

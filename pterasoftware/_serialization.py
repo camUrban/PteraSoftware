@@ -235,7 +235,7 @@ def save(path: str | Path, obj: object) -> None:
             f"classes can be saved via save()."
         )
 
-    _logger.info("Saving %s to %s.", class_name, path)
+    _logger.info(_logging.indent() + "Saving %s to %s", class_name, path)
 
     data = _object_to_dict(obj)
 
@@ -257,7 +257,12 @@ def save(path: str | Path, obj: object) -> None:
             f.write(json_bytes)
 
     file_size = path.stat().st_size
-    _logger.info("Saved %s to %s (%d bytes).", type(obj).__name__, path, file_size)
+    _logger.info(
+        _logging.indent() + "Saved %s to %s (%d bytes)",
+        type(obj).__name__,
+        path,
+        file_size,
+    )
 
 
 def load(path: str | Path, max_size: int | None = None) -> object:
@@ -284,7 +289,7 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         )
     if path.is_dir():
         raise ValueError(f"Path must be a file path, got directory '{path}'.")
-    _logger.info("Loading from %s.", path)
+    _logger.info(_logging.indent() + "Loading from %s", path)
 
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
@@ -329,7 +334,7 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     _log_load_warnings(data)
 
     obj = _object_from_dict(data)
-    _logger.info("Loaded %s from %s.", type(obj).__name__, path)
+    _logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
     return obj
 
 
@@ -387,7 +392,10 @@ def _get_provenance() -> dict[str, str | bool | None]:
         )
         dirty = len(status) > 0
     except (FileNotFoundError, subprocess.CalledProcessError):  # pragma: no cover
-        _logger.warning("Git is not available. Provenance fields will be null.")
+        _logger.warning(
+            _logging.indent()
+            + "Git is not available, so the provenance fields will be null"
+        )
 
     return {
         "_pterasoftware_version": pkg_version,
@@ -405,8 +413,9 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
     """
     if data.get("_dirty"):  # pragma: no branch
         _logger.warning(
-            "The file was saved with uncommitted changes (_dirty=true). The _commit "
-            "hash may not fully represent the code state at save time."
+            _logging.indent()
+            + "The file was saved with uncommitted changes, so the hash may not "
+            "fully represent the code state"
         )
 
     file_commit = data.get("_commit")
@@ -421,7 +430,8 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
             )
             if file_commit != current_commit:  # pragma: no cover
                 _logger.warning(
-                    "The file was saved at commit %s, but the current HEAD is %s.",
+                    _logging.indent()
+                    + "The file was saved at commit %s, but the current HEAD is %s",
                     file_commit[:12],
                     current_commit[:12],
                 )
@@ -433,7 +443,10 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
                 .strip()
             )
             if len(current_status) > 0:  # pragma: no branch
-                _logger.warning("The current working tree has uncommitted changes.")
+                _logger.warning(
+                    _logging.indent()
+                    + "The current working tree has uncommitted changes"
+                )
         except (FileNotFoundError, subprocess.CalledProcessError):  # pragma: no cover
             pass
 
@@ -457,7 +470,7 @@ def _object_to_dict(
     if class_name not in _CLASS_REGISTRY:
         raise TypeError(f"_object_to_dict does not handle {class_name}.")
 
-    _logger.debug("Serializing %s.", class_name)
+    _logger.debug(_logging.indent() + "Serializing %s", class_name)
 
     # Solver skip slots always apply because the aliases are always redundant
     # with solver._steady_problem or solver.unsteady_problem.
@@ -519,7 +532,7 @@ def _object_from_dict(data: dict[str, Any]) -> object:
     if cls is None:
         raise TypeError(f"Unknown class in _object_from_dict: '{type_tag}'.")
 
-    _logger.debug("Deserializing %s.", type_tag)
+    _logger.debug(_logging.indent() + "Deserializing %s", type_tag)
 
     obj: object = object.__new__(cls)
     for slot_name in _all_slots(cls):

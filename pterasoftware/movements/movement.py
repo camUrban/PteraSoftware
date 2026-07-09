@@ -26,6 +26,14 @@ from . import operating_point_movement as operating_point_movement_mod
 
 _logger = _logging.get_logger("movements.movement")
 
+# The minimum number of time steps per LCM period that the default delta_time
+# estimate must provide. The analytical estimate matches the wake ring vortex
+# and bound ring vortex chord lengths, which does not by itself guarantee that
+# the motion is resolved in time: a coarse chordwise discretization or a slow
+# motion can produce a delta_time too large to sample the motion adequately.
+# The estimate is clamped to this temporal resolution to guard against that.
+_MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
+
 
 class Movement(_core.CoreMovement):
     """A class used to contain an UnsteadyProblem's movement.
@@ -83,13 +91,15 @@ class Movement(_core.CoreMovement):
             (default): Movement analytically estimates the delta_time that produces wake
             ring vortices with roughly the same chord length as the bound trailing edge
             ring vortices, accounting for both freestream and geometry motion
-            velocities. This provides good results across all Strouhal numbers.
-            "optimize": Movement first runs the analytical estimation, then uses that
-            result as an initial guess for an iterative optimization that minimizes the
-            area mismatch between wake ring vortices and their parent bound trailing
-            edge ring vortices. This is slower but may produce slightly more accurate
-            results. Positive number (int or float): Use the specified value directly.
-            All values are converted internally to floats. The units are in seconds.
+            velocities. For non static Movements, the estimate is then clamped so that
+            there are at least 30 time steps per LCM period of the motion. This provides
+            good results across all Strouhal numbers. "optimize": Movement first runs
+            the analytical estimation (including the clamp), then uses that result as an
+            initial guess for an iterative optimization that minimizes the area mismatch
+            between wake ring vortices and their parent bound trailing edge ring
+            vortices. This is slower but may produce slightly more accurate results.
+            Positive number (int or float): Use the specified value directly. All values
+            are converted internally to floats. The units are in seconds.
         :param num_cycles: The number of cycles of the maximum period motion used to
             calculate a num_steps parameter initialized as None if Movement isn't
             static. If num_steps is not None or if Movement is static, this must be
@@ -148,6 +158,28 @@ class Movement(_core.CoreMovement):
                 "operating_point_movement must be an OperatingPointMovement."
             )
 
+        # --- Compute period properties locally ---
+        # These are needed for the delta_time estimate clamp and for the
+        # num_steps and max_wake calculations before super().__init__() is
+        # called. The same values will be lazily cached by CoreMovement when
+        # accessed via properties.
+        _airplane_movement_max_periods = []
+        for airplane_movement in airplane_movements:
+            _airplane_movement_max_periods.append(airplane_movement.max_period)
+        _max_period = max(
+            max(_airplane_movement_max_periods),
+            operating_point_movement.max_period,
+        )
+        _static = _max_period == 0
+
+        _lcm_period: float = 0.0
+        if not _static:
+            _all_periods: list[float] = []
+            for airplane_movement in airplane_movements:
+                _all_periods.extend(airplane_movement.all_periods)
+            _all_periods.append(operating_point_movement.max_period)
+            _lcm_period = _core.lcm_multiple(_all_periods)
+
         # --- Resolve delta_time ---
 
         # Track whether iterative optimization should run after analytical.
@@ -189,6 +221,14 @@ class Movement(_core.CoreMovement):
                 initial_delta_time=fast_estimate,
             )
 
+            # Clamp the estimate so that there are at least
+            # _MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which
+            # the wake sizing criterion alone does not guarantee.
+            if _lcm_period > 0.0:
+                delta_time = min(
+                    delta_time, _lcm_period / _MIN_TIME_STEPS_PER_LCM_PERIOD
+                )
+
         # Run iterative optimization if requested, using the analytical result
         # as the initial guess.
         if _should_iteratively_optimize_delta_time:
@@ -197,27 +237,6 @@ class Movement(_core.CoreMovement):
                 operating_point_movement=operating_point_movement,
                 initial_delta_time=delta_time,
             )
-
-        # --- Compute period properties locally ---
-        # These are needed for num_steps and max_wake calculations before
-        # super().__init__() is called. The same values will be lazily cached
-        # by CoreMovement when accessed via properties.
-        _airplane_movement_max_periods = []
-        for airplane_movement in airplane_movements:
-            _airplane_movement_max_periods.append(airplane_movement.max_period)
-        _max_period = max(
-            max(_airplane_movement_max_periods),
-            operating_point_movement.max_period,
-        )
-        _static = _max_period == 0
-
-        _lcm_period: float = 0.0
-        if not _static:
-            _all_periods: list[float] = []
-            for airplane_movement in airplane_movements:
-                _all_periods.extend(airplane_movement.all_periods)
-            _all_periods.append(operating_point_movement.max_period)
-            _lcm_period = _core.lcm_multiple(_all_periods)
 
         # --- Resolve num_steps ---
         if num_steps is None:
@@ -1071,7 +1090,7 @@ def _optimize_delta_time(
         early. The default is 0.01.
     :return: The optimized delta_time value. Its units are in seconds.
     """
-    _logger.info("Starting delta_time optimization.")
+    _logger.info(_logging.indent() + "Starting delta_time optimization")
 
     # Collect all non zero periods to determine if static.
     all_periods: list[float] = []
@@ -1129,18 +1148,18 @@ def _optimize_delta_time_static(
         initial_delta_time, airplane_movements, operating_point_movement
     )
 
-    dt_str = str(round(initial_delta_time, 6))
-    mismatch_str = str(round(initial_mismatch, 6))
+    dt_str = f"{initial_delta_time:#.3G}"
+    mismatch_str = f"{initial_mismatch:#.3G}"
 
-    state_msg = "\tState: delta_time=" + dt_str
-    obj_msg = "\t\tMismatch: " + mismatch_str
+    state_msg = _logging.indent(1) + "State: delta_time = " + dt_str + " s"
+    obj_msg = _logging.indent(2) + "Mismatch: " + mismatch_str
 
     _logger.info(state_msg)
     _logger.info(obj_msg)
 
     if initial_mismatch < mismatch_cutoff:
-        _logger.info("Acceptable value reached.")
-        _logger.info("Optimization complete.")
+        _logger.info(_logging.indent() + "Acceptable value reached")
+        _logger.info(_logging.indent() + "Optimization complete")
         return initial_delta_time
 
     best_delta_time = initial_delta_time
@@ -1152,11 +1171,13 @@ def _optimize_delta_time_static(
             dt, airplane_movements, operating_point_movement
         )
 
-        this_dt_str = str(round(dt, 6))
-        this_mismatch_str = str(round(mismatch, 6))
+        this_dt_str = f"{dt:#.3G}"
+        this_mismatch_str = f"{mismatch:#.3G}"
 
-        this_state_msg = "\tState: delta_time=" + this_dt_str
-        this_obj_msg = "\t\tMismatch: " + this_mismatch_str
+        this_state_msg = (
+            _logging.indent(1) + "State: delta_time = " + this_dt_str + " s"
+        )
+        this_obj_msg = _logging.indent(2) + "Mismatch: " + this_mismatch_str
 
         _logger.info(this_state_msg)
         _logger.info(this_obj_msg)
@@ -1184,22 +1205,26 @@ def _optimize_delta_time_static(
         optimized_delta_time = float(result.x)
     except StopIteration:
         optimized_delta_time = best_delta_time
-        _logger.info("Acceptable value reached.")
+        _logger.info(_logging.indent() + "Acceptable value reached")
 
     # Warn if the optimized value is at one of the bounds.
     bound_tolerance = 1e-6
     if abs(optimized_delta_time - lower_bound) < bound_tolerance:
         _logger.warning(
-            "Optimized delta_time is at the lower bound. A better value may exist "
-            "below the search range."
+            _logging.indent() + "Optimized delta_time is at the lower bound"
+        )
+        _logger.warning(
+            _logging.indent() + "A better value may exist below the search range"
         )
     elif abs(optimized_delta_time - upper_bound) < bound_tolerance:
         _logger.warning(
-            "Optimized delta_time is at the upper bound. A better value may exist "
-            "above the search range."
+            _logging.indent() + "Optimized delta_time is at the upper bound"
+        )
+        _logger.warning(
+            _logging.indent() + "A better value may exist above the search range"
         )
 
-    _logger.info("Optimization complete.")
+    _logger.info(_logging.indent() + "Optimization complete")
 
     return optimized_delta_time
 
@@ -1232,7 +1257,8 @@ def _optimize_delta_time_non_static(
     max_num_steps = int(initial_num_steps * 2) + 1
 
     _logger.info(
-        "\tSearching num_steps_per_lcm_cycle from "
+        _logging.indent(1)
+        + "Searching num_steps_per_lcm_cycle from "
         + str(min_num_steps)
         + " to "
         + str(max_num_steps)
@@ -1256,12 +1282,13 @@ def _optimize_delta_time_non_static(
         mismatch = cached_mismatches[num_steps]
         delta_time = lcm_period / num_steps
         _logger.info(
-            "\tnum_steps="
+            _logging.indent(1)
+            + "num_steps_per_lcm_cycle = "
             + str(num_steps)
-            + ", delta_time="
-            + str(round(delta_time, 6))
-            + ", mismatch="
-            + str(round(mismatch, 6))
+            + ", delta_time = "
+            + f"{delta_time:#.3G}"
+            + " s, mismatch = "
+            + f"{mismatch:#.3G}"
         )
         if mismatch < best_mismatch:
             best_mismatch = mismatch
@@ -1270,26 +1297,36 @@ def _optimize_delta_time_non_static(
     optimized_delta_time = lcm_period / best_num_steps
 
     _logger.info(
-        "Optimization complete. Best: num_steps_per_lcm_cycle="
+        _logging.indent()
+        + "Best: num_steps_per_lcm_cycle = "
         + str(best_num_steps)
-        + ", delta_time="
-        + str(round(optimized_delta_time, 6))
-        + ", mismatch="
-        + str(round(best_mismatch, 6))
+        + ", delta_time = "
+        + f"{optimized_delta_time:#.3G}"
+        + " s, mismatch = "
+        + f"{best_mismatch:#.3G}"
     )
+    _logger.info(_logging.indent() + "Optimization complete")
 
     # Warn if the optimized value is at one of the bounds.
     if best_num_steps == min_num_steps:
         _logger.warning(
-            "Optimized num_steps_per_lcm_cycle is at the lower bound ("
+            _logging.indent()
+            + "Optimized num_steps_per_lcm_cycle is at the lower bound ("
             + str(min_num_steps)
-            + "). A better value may exist below the search range."
+            + ")"
+        )
+        _logger.warning(
+            _logging.indent() + "A better value may exist below the search range"
         )
     elif best_num_steps == max_num_steps:
         _logger.warning(
-            "Optimized num_steps_per_lcm_cycle is at the upper bound ("
+            _logging.indent()
+            + "Optimized num_steps_per_lcm_cycle is at the upper bound ("
             + str(max_num_steps)
-            + "). A better value may exist above the search range."
+            + ")"
+        )
+        _logger.warning(
+            _logging.indent() + "A better value may exist above the search range"
         )
 
     return optimized_delta_time
@@ -1325,7 +1362,7 @@ def _analytically_optimize_delta_time(
         Movements or degenerate cases.
     :return: The analytically optimized delta_time value. Its units are in seconds.
     """
-    _logger.info("Starting analytical delta_time optimization.")
+    _logger.info(_logging.indent() + "Starting analytical delta_time optimization")
 
     # Collect all non zero periods.
     all_periods: list[float] = []
@@ -1338,7 +1375,11 @@ def _analytically_optimize_delta_time(
 
     # If there is no motion, fall back to the initial estimate.
     if not non_zero_periods:
-        _logger.info("All motion is static. Returning initial delta_time estimate.")
+        _logger.info(
+            _logging.indent()
+            + "Returning the initial delta_time estimate because all motion is "
+            "static"
+        )
         return initial_delta_time
 
     min_period = min(non_zero_periods)
@@ -1353,11 +1394,12 @@ def _analytically_optimize_delta_time(
     max_preliminary_steps = 1000
     if preliminary_num_steps > max_preliminary_steps:
         _logger.warning(
-            "Preliminary num_steps ("
+            _logging.indent()
+            + "Capping preliminary num_steps ("
             + str(preliminary_num_steps)
-            + ") exceeds cap of "
+            + ") at "
             + str(max_preliminary_steps)
-            + ". Capping to prevent excessive computation."
+            + " to prevent excessive computation"
         )
         preliminary_num_steps = max_preliminary_steps
     if preliminary_num_steps < 1:
@@ -1495,7 +1537,9 @@ def _analytically_optimize_delta_time(
     # Step 4: Compute the weighted average of num_steps across all Wings.
     if not wing_num_steps_values:
         _logger.info(
-            "No valid wake displacement data. Returning initial delta_time estimate."
+            _logging.indent()
+            + "Returning the initial delta_time estimate because there is no "
+            "valid wake displacement data"
         )
         return initial_delta_time
 
@@ -1510,7 +1554,9 @@ def _analytically_optimize_delta_time(
 
     if weighted_num_steps <= 0.0:
         _logger.info(
-            "Computed num_steps is non positive. Returning initial delta_time estimate."
+            _logging.indent()
+            + "Returning the initial delta_time estimate because the computed "
+            "num_steps is non positive"
         )
         return initial_delta_time
 
@@ -1520,11 +1566,12 @@ def _analytically_optimize_delta_time(
         final_num_steps = 1
     optimized_delta_time = lcm_period / final_num_steps
 
-    dt_str = str(round(optimized_delta_time, 6))
+    dt_str = f"{optimized_delta_time:#.3G}"
     _logger.info(
-        "\tResult: delta_time="
+        _logging.indent(1)
+        + "Result: delta_time = "
         + dt_str
-        + " ("
+        + " s ("
         + str(final_num_steps)
         + " steps per LCM period)"
     )
@@ -1540,14 +1587,17 @@ def _analytically_optimize_delta_time(
     steps_per_min_period = min_period / optimized_delta_time
     if steps_per_min_period < 20:
         _logger.warning(
-            "Analytical optimization result implies only "
-            + str(round(steps_per_min_period, 1))
-            + " time steps per minimum period of motion. This may cause poor temporal "
-            + "resolution. Consider increasing the number of chordwise Panels or "
-            + "switching to cosine chordwise spacing to reduce the trailing edge "
-            + "Panels' chord lengths."
+            _logging.indent()
+            + "Analytical optimization implies only "
+            + f"{steps_per_min_period:#.3G}"
+            + " time steps per minimum period of motion"
+        )
+        _logger.warning(
+            _logging.indent()
+            + "Consider more chordwise Panels or cosine chordwise spacing to allow "
+            "finer time steps"
         )
 
-    _logger.info("Analytical optimization complete.")
+    _logger.info(_logging.indent() + "Analytical optimization complete")
 
     return optimized_delta_time

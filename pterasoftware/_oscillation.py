@@ -228,8 +228,8 @@ def _validate_custom_spacing_function(
     start_value = test_output[0]
     if not np.isclose(start_value, 0.0, atol=tolerance):
         raise ValueError(
-            f"Custom spacing function must start at 0.0. f(0.0) = {start_value:.4f}, "
-            f"but should be within {tolerance} of 0.0."
+            f"Custom spacing function must start at 0.0. f(0.0) = "
+            f"{start_value:#.3G}, but should be within {tolerance:#.3G} of 0.0."
         )
 
     # Check that the function returns to 0.0 after one period.
@@ -239,7 +239,8 @@ def _validate_custom_spacing_function(
     if not np.isclose(end_value, 0.0, atol=tolerance):
         raise ValueError(
             f"Custom spacing function must return to 0.0 after one period. "
-            f"f(2.0 * pi) = {end_value:.4f}, but should be within {tolerance} of 0.0."
+            f"f(2.0 * pi) = {end_value:#.3G}, but should be within {tolerance:#.3G} "
+            f"of 0.0."
         )
 
     # Check that the amplitude = 1.0.
@@ -249,7 +250,8 @@ def _validate_custom_spacing_function(
     if not np.isclose(amplitude, 1.0, atol=tolerance):
         raise ValueError(
             f"Custom spacing function must have an amplitude of 1.0. "
-            f"Amplitude = {amplitude:.4f}, but should be within {tolerance} of 1.0."
+            f"Amplitude = {amplitude:#.3G}, but should be within {tolerance:#.3G} "
+            f"of 1.0."
         )
 
     # Check periodicity by comparing the first and second periods.
@@ -262,6 +264,6 @@ def _validate_custom_spacing_function(
             max_diff = np.max(np.abs(first_period_output - second_period_output))
             raise ValueError(
                 f"Custom spacing function must be periodic with period 2.0 * pi. "
-                f"Maximum difference between first and second period: {max_diff:.4f}, "
-                f"but should be within {tolerance}."
+                f"Maximum difference between first and second period: "
+                f"{max_diff:#.3G}, but should be within {tolerance:#.3G}."
             )

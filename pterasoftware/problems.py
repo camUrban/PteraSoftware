@@ -1319,6 +1319,17 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 _AERO_SCALING = 1.0
 _DEFORMATION_SCALING = 1.0
 
+# Tolerances for the torsional spring-damper ODE integration in
+# spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# defaults because the integration is re-seeded from the previous state at every
+# outer time step, so its local errors compound across a simulation, and because a
+# loose absolute tolerance would swamp small torsional responses. The absolute
+# tolerance bounds both state components, the torsional angle (radians) and the
+# angular velocity (rad/s). Loosen these only for local debugging (for example, a
+# nearly massless wing makes the ODE stiff and the strict tolerances expensive).
+_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
+_SPRING_ODE_ABSOLUTE_TOLERANCE = 1e-9
+
 
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     """A subclass of _CoupledUnsteadyProblem used to couple aeroelastic wing
@@ -2237,7 +2248,13 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         Solves the second-order forced ODE: I * d^2(theta)/dt^2 = tau_aero + tau_inertial(t) - k*theta -
         c*d(theta)/dt
 
-        using scipy.integrate.solve_ivp with strict tolerances.
+        using scipy.integrate.solve_ivp with tolerances a few orders of magnitude
+        stricter than scipy's defaults. This integration is re-seeded from the previous
+        state at every outer time step, so its local errors compound across a
+        simulation rather than being controlled within a single integration. The
+        stricter tolerances guard against that accumulation, and against the absolute
+        tolerance floor swamping small torsional responses, at a cost that is small
+        relative to the aerodynamic solve.
 
         :param t: A (N,) ndarray of time points for integration evaluation.
         :param k: Spring constant (N*m/rad).
@@ -2267,8 +2284,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             (t[0], t[-1]),
             np.array([theta0, omega0]),
             t_eval=t,
-            rtol=1e-3,
-            atol=1e-4,
+            rtol=_SPRING_ODE_RELATIVE_TOLERANCE,
+            atol=_SPRING_ODE_ABSOLUTE_TOLERANCE,
         )
 
         theta = float(sol.y[0][-1])

@@ -2193,9 +2193,11 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             parameters are used. When None, falls back to self.wing_movement. The
             default is None.
         :return: A callable function that accepts time and returns the inertial torque
-            (N*m) due to the prescribed wing motion acceleration. **Notes:** For
-            sinusoidal spacing: tau = -I * b^2 * sin(b*t + h) * A, where b = 2*pi/period, h
-            = phase, A = amplitude. For custom spacing, uses the wing movement's
+            (N*m) due to the prescribed wing motion acceleration. For a zero flapping
+            amplitude (no prescribed flapping), the returned function is identically
+            zero regardless of the spacing. For sinusoidal spacing: tau = -I * b^2 *
+            sin(b * t + h) * A, where b = 2 * pi / period, h = phase, A = amplitude.
+            For custom spacing, uses the wing movement's
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which its constructor guarantees
             is present whenever the spacing is a custom callable.
         """
@@ -2203,6 +2205,13 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             wing_movement if wing_movement is not None else self.wing_movement
         )
         amp = _wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+
+        # A wing with no prescribed flapping applies no inertial torque. Return the
+        # zero function before computing the flapping frequency, whose 2 * pi / period
+        # expression is undefined for the zero period that a zero amplitude requires.
+        if amp == 0.0:
+            return lambda time: 0.0
+
         b = 2 * np.pi / _wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
         h = np.deg2rad(_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
         spacing = _wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]

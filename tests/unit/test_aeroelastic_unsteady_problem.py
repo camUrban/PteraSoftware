@@ -6,7 +6,11 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import numpy as np
 
 import pterasoftware as ps
-from tests.unit.fixtures import movement_fixtures, problem_fixtures
+from tests.unit.fixtures import (
+    aeroelastic_wing_movement_fixtures,
+    movement_fixtures,
+    problem_fixtures,
+)
 
 
 class TestAeroelasticUnsteadyProblem(unittest.TestCase):
@@ -185,6 +189,29 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         h = np.deg2rad(phase_deg)
         expected = -1.0 * b**2 * np.sin(b * t_eval + h) * np.deg2rad(amp_deg) * span_I
         self.assertAlmostEqual(torque_func(t_eval), expected, places=10)
+
+    def test_generate_inertial_torque_function_static_motion_returns_zero(self):
+        """Test that a motion-off wing movement (zero flapping amplitude and period)
+        produces an identically zero, finite inertial torque at every time.
+
+        A wing with no prescribed flapping applies no inertial torque, so the
+        returned function must evaluate to exactly 0.0 rather than to NaN from the
+        2 * pi / period frequency computation with a zero period.
+        """
+        static_wing_movement = (
+            aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
+        )
+        torque_func = self.problem.generate_inertial_torque_function(
+            span_I=1.0, wing_movement=static_wing_movement
+        )
+        for t_eval in (0.0, 0.1, 0.5):
+            result = torque_func(t_eval)
+            self.assertTrue(
+                np.isfinite(result),
+                msg=f"The inertial torque at time {t_eval} is {result}, which is "
+                f"not finite.",
+            )
+            self.assertAlmostEqual(float(result), 0.0, places=12)
 
     def test_generate_inertial_torque_function_uniform_spacing_raises(self):
         """Test that generate_inertial_torque_function raises ValueError when the

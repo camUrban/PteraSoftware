@@ -1698,7 +1698,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         entries in the history lists and returns None for that wing.
 
         :param solver: The solver instance providing aerodynamic moment data
-            (moments_GP1_Slep and stack_leading_edge_points).
+            (moments_GP1_Slep and stackSlep_GP1_CgP1).
         :param step: The current time step index (0-indexed).
         :return: A list of length len(airplane.wings) where each element is either an
             (N_spanwise+1, 3) ndarray of cumulative deformation angles for an
@@ -1802,7 +1802,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         Uses the strip leading edge points as the reference point for moment
         calculations, consistent with the assumption of a torsional spring at the
-        leading edge.
+        leading edge. Each strip's leading edge point is the leading edge point of its
+        outboard bounding WingCrossSection, the same WingCrossSection that receives the
+        strip's twist.
 
         :param solver: The solver instance with moments_GP1_Slep data.
         :param num_chordwise_panels: Number of chordwise panel rows.
@@ -1844,8 +1846,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param num_chordwise_panels: Number of chordwise panel rows.
         :param num_spanwise_panels: Number of spanwise panel rows.
         :param num_panels: Total number of panels (num_chordwise * num_spanwise).
-        :param panel_offset: The flat panel index offset into
-            solver.stack_leading_edge_points at which this wing's data begins.
+        :param panel_offset: The flat panel index offset into solver.stackSlep_GP1_CgP1
+            at which this wing's data begins.
         :param wing_idx: Index of the wing in airplane.wings.
         :return: An (N_chordwise, N_spanwise, 3) ndarray of inertial moment vectors.
         """
@@ -1863,7 +1865,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Calculate moments about leading edge points via cross product.
         inertial_moments = np.cross(
             self.positions_per_wing[wing_idx][-1]
-            - solver.stack_leading_edge_points[
+            - solver.stackSlep_GP1_CgP1[
                 panel_offset : panel_offset + num_panels
             ].reshape((num_chordwise_panels, num_spanwise_panels, 3)),
             inertial_forces,

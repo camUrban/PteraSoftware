@@ -1,12 +1,15 @@
 """Integration tests for the AeroelasticUnsteadyRingVortexLatticeMethodSolver.
 
-These tests verify three things:
+These tests verify four things:
 
 1. The solver runs to completion and populates the expected output state.
 2. A wing with higher density deforms more than a wing with lower density when all
    other parameters are held constant.
 3. A wing with a softer torsional spring deforms more than one with a stiffer spring
    when all other parameters are held constant.
+4. A geometrically and kinematically symmetric flapping configuration produces a
+   mirrored aeroelastic response: the per-strip torsional aerodynamic moments and the
+   twist histories of the main and reflected wings match.
 
 The second property follows from the torsional spring-damper model. The prescribed
 flapping motion applies an inertial torque tau_inertial = I * d^2(theta_prescribed)/dt^2
@@ -21,6 +24,16 @@ excitation is slow relative to the torsional natural frequency, the response is
 quasi-static and the deformation amplitude is approximately tau / k, so halving the
 spring constant roughly doubles the deformation. That comparison uses low damping to
 stay in this stiffness-dominated regime rather than the damping-limited one.
+
+The fourth property follows from mirror symmetry. The fixture wing is type-5
+symmetric, so the Airplane constructor generates the reflected half as a mirror-meshed
+Wing whose panel grid runs tip to root spanwise while the structural solve runs root
+to tip. Under a symmetric flap, each strip's torsional forcing and twist must match
+its mirror image's once the solve maps between the two orderings correctly, both in
+the strip pairing itself and in the SLEP moment reference points, which must be
+mirror-image corners on the two halves. With both mappings correct, the halves match
+to machine precision; mismatched chord, width, moment-arm, or reference-point pairings
+show up many orders of magnitude above the test's tolerance.
 """
 
 import unittest
@@ -359,3 +372,80 @@ class TestAeroelasticUnsteadySolverSpringStiffness(unittest.TestCase):
         max_theta_stiff_spring = float(np.max(np.abs(stiff_spring_outermost_thetas)))
 
         self.assertGreater(max_theta_soft_spring, max_theta_stiff_spring)
+
+
+class TestAeroelasticUnsteadySolverMirrorSymmetry(unittest.TestCase):
+    """Verifies that a geometrically and kinematically symmetric flapping
+    configuration produces a mirrored aeroelastic response between the main Wing and
+    the reflected Wing the Airplane constructor generates from it.
+
+    The reflected Wing is mirror-meshed, so its panel grid runs tip to root spanwise
+    while the structural solve runs root to tip. A correct mapping between the two
+    orderings, in both the strip pairing and the SLEP moment reference points, makes
+    the two halves' per-strip torsional moments and twist histories match to machine
+    precision, so the tolerance is set six orders of magnitude above that floor while
+    remaining six or more below any mispairing's signature (mispaired chords, strip
+    widths, moment arms, or reference corners produce relative asymmetries between
+    about one percent and order one).
+    """
+
+    RELATIVE_TOLERANCE = 1e-9
+    DENSITY = 0.5
+    SPRING_CONSTANT = 500.0
+    DAMPING_CONSTANT = 10.0
+
+    def setUp(self) -> None:
+        """Create and run the symmetric flapping solver.
+
+        :return: None
+        """
+        self.solver = _make_aeroelastic_solver(
+            self.DENSITY,
+            spring_constant=self.SPRING_CONSTANT,
+            damping_constant=self.DAMPING_CONSTANT,
+        )
+        self.solver.run(
+            prescribed_wake=False,
+            calculate_streamlines=False,
+            show_progress=False,
+        )
+        self.problem = self.solver._aeroelastic_unsteady_problem
+
+    def test_per_strip_torsional_moments_mirror(self) -> None:
+        """The per-strip torsional aerodynamic moments of the two halves match.
+
+        per_step_aero_per_wing entries have shape (num_chordwise, num_spanwise, 3)
+        in root-to-tip spanwise order for both halves. Each strip's torsional
+        forcing is its y-component sum over the chordwise panels, so the summed
+        arrays must match strip for strip.
+
+        :return: None
+        """
+        aero_main = np.array(self.problem.per_step_aero_per_wing[0])[:, :, :, 1].sum(
+            axis=1
+        )
+        aero_reflected = np.array(self.problem.per_step_aero_per_wing[1])[
+            :, :, :, 1
+        ].sum(axis=1)
+
+        scale = float(np.max(np.abs(aero_main)))
+        self.assertGreater(scale, 0.0)
+        max_mismatch = float(np.max(np.abs(aero_main - aero_reflected)))
+        self.assertLess(max_mismatch, self.RELATIVE_TOLERANCE * scale)
+
+    def test_twist_histories_mirror(self) -> None:
+        """The twist histories of the two halves match at every recorded step.
+
+        net_data entries have shape (num_spanwise_panels + 1, 3) in root-to-tip
+        order for both halves, with the y-component (index 1) holding the torsional
+        angle in radians, so the histories must match station for station.
+
+        :return: None
+        """
+        theta_main = np.array(self.problem.net_data_per_wing[0])[:, :, 1]
+        theta_reflected = np.array(self.problem.net_data_per_wing[1])[:, :, 1]
+
+        peak = float(np.max(np.abs(theta_main)))
+        self.assertGreater(peak, 0.0)
+        max_mismatch = float(np.max(np.abs(theta_main - theta_reflected)))
+        self.assertLess(max_mismatch, self.RELATIVE_TOLERANCE * peak)

@@ -2123,9 +2123,8 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.stackCblvpl_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.stackCblvpb_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.stackCpp_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackFlpp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stack_leading_edge_points, np.ndarray)
+        self.assertIsInstance(self.solver.stackSlep_GP1_CgP1, np.ndarray)
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""

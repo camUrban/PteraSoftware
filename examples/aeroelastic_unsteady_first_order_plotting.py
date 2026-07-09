@@ -13,10 +13,10 @@ import pterasoftware as ps
 # to the wing-tip spanwise station.
 CURVE_INDEX = 16
 
-# Default values used when a parameter is not being swept
+# These are the default values used when a parameter is not being swept.
 DEFAULT_K = 1000.0
 DEFAULT_B = 1000.0
-DEFAULT_DENSITY = 6
+DEFAULT_DENSITY = 6.0
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
@@ -29,8 +29,7 @@ def run_aeroelastic(
     spring_constant: float = DEFAULT_K,
     damping_constant: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
-    animate: bool = False,
-) -> tuple[list, ps.problems.AeroelasticUnsteadyProblem]:
+) -> tuple[list[np.ndarray], ps.problems.AeroelasticUnsteadyProblem]:
     """Run the aeroelastic solver and return the net deformation data.
 
     :param spring_constant: The torsional spring stiffness value.
@@ -312,13 +311,6 @@ def run_aeroelastic(
     problem = example_solver.unsteady_problem
     assert isinstance(problem, ps.problems.AeroelasticUnsteadyProblem)
 
-    if animate:
-        ps.output.animate(
-            unsteady_solver=example_solver,
-            scalar_type="lift",
-            show_wake_vortices=True,
-            save=True,
-        )
     return problem.net_data_per_wing[0], problem
 
 
@@ -354,11 +346,10 @@ results = {}
 flap_angle = None
 for val in sweep_values:
     print(f"Running with {sweep_symbol}={val}...")
-    net_data, problem = run_aeroelastic(**{sweep_kwarg: val}, animate=False)
-    # Extract y-component (torsional angle) for Curve 16 across all time steps
-    curve_16 = (
-        np.array(net_data)[:, CURVE_INDEX, 1] * 180 / np.pi
-    ).tolist()  # Convert to degrees
+    net_data, problem = run_aeroelastic(**{sweep_kwarg: val})
+    # Extract the y component (the torsional angle) for Curve 16 across all time
+    # steps, converting it from radians to degrees.
+    curve_16 = np.rad2deg(np.array(net_data)[:, CURVE_INDEX, 1]).tolist()
     results[val] = curve_16
     print(f"  Completed {sweep_symbol}={val}, {len(curve_16)} steps")
 

@@ -360,7 +360,7 @@ example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
 # with our integrator and debugging. Plotting the flap cycle can give good data as well.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=example_movement,
-    wing_density=6,
+    wing_density=6.0,
     spring_constant=100.0,
     damping_constant=1000.0,
     step_discards=5,

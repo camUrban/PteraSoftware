@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Callable
 from pathlib import Path
 
@@ -19,7 +20,7 @@ _logger = _logging.get_logger("_convergence_cache")
 # ignored and rebuilt from scratch. This is independent of the serialization format
 # version that hash_object folds into each key, which guards against changes to the
 # reference problem's serialized structure.
-_SOLVE_CACHE_VERSION = 2
+_SOLVE_CACHE_VERSION = 3
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
@@ -41,21 +42,28 @@ def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
     return "|".join([ref_problem_hash, *(str(component) for component in components)])
 
 
-def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
-    """Loads a JSON solve cache from disk into a dictionary of load coefficients.
+def load_solve_cache(
+    cache_path: Path | None,
+) -> dict[str, tuple[np.ndarray, float]]:
+    """Loads a JSON solve cache from disk into a dictionary of load coefficients and
+    solve times.
 
     The cache is a pure optimization, so any file that cannot be read as a current-
     schema solve cache yields an empty cache rather than an error and the sweep rebuilds
     it by solving each mesh. This covers a missing file, an unreadable file (for example
     a directory or a permission error), a file that is not valid JSON, a file whose
     schema version does not match the current one, and a current-version file whose
-    entries section is missing or malformed. An unreadable or invalid file is logged as
-    a warning so a silently degraded cache is still observable.
+    entries section is missing, malformed, or holds a malformed entry. An unreadable or
+    invalid file is logged as a warning so a silently degraded cache is still
+    observable.
 
     :param cache_path: The path to the JSON solve cache file, or None to skip caching
         and return an empty cache.
-    :return: A dict mapping each cache key to a (num_airplanes, 6) ndarray of floats
-        holding that mesh's per-Airplane load coefficients.
+    :return: A dict mapping each cache key to a tuple of a (num_airplanes, 6) ndarray of
+        floats holding that mesh's per-Airplane load coefficients (the three force
+        coefficients (in wind axes) followed by the three moment coefficients (in wind
+        axes, relative to the first Airplane's CG)) and a float holding the time, in
+        seconds, its solve took when it ran.
     """
     if cache_path is None or not cache_path.exists():
         return {}
@@ -65,10 +73,11 @@ def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
         _logger.warning(
-            "Ignoring unreadable solve cache at %s (%s); rebuilding it.",
+            _logging.indent()
+            + "Ignoring unreadable solve cache at %s, so rebuilding it",
             cache_path,
-            error,
         )
+        _logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
@@ -77,24 +86,38 @@ def load_solve_cache(cache_path: Path | None) -> dict[str, np.ndarray]:
     entries = data.get("entries", {})
     if not isinstance(entries, dict):
         _logger.warning(
-            "Ignoring solve cache at %s with a malformed entries section; rebuilding it.",
+            _logging.indent()
+            + "Ignoring solve cache at %s with a malformed entries section, so "
+            "rebuilding it",
             cache_path,
         )
         return {}
 
-    return {
-        key: np.array(coefficients, dtype=float)
-        for key, coefficients in entries.items()
-    }
+    try:
+        return {
+            key: (
+                np.array(entry["coefficients"], dtype=float),
+                float(entry["solve_time"]),
+            )
+            for key, entry in entries.items()
+        }
+    except (KeyError, TypeError, ValueError):
+        _logger.warning(
+            _logging.indent()
+            + "Ignoring solve cache at %s with a malformed entries section, so "
+            "rebuilding it",
+            cache_path,
+        )
+        return {}
 
 
 def write_cache(
     cache_path: Path,
-    solve_cache: dict[str, np.ndarray],
+    solve_cache: dict[str, tuple[np.ndarray, float]],
     memo_cache: dict[str, float],
 ) -> None:
-    """Writes the whole cache (solved coefficients and memos) to disk as JSON, replacing
-    any existing file atomically.
+    """Writes the whole cache (solved coefficients, solve times, and memos) to disk as
+    JSON, replacing any existing file atomically.
 
     Both sections are written together as one file image, so neither the solved
     coefficients nor the memos can clobber the other. The file is written to a temporary
@@ -104,8 +127,11 @@ def write_cache(
     file are not supported.
 
     :param cache_path: The path to the JSON cache file.
-    :param solve_cache: A dict mapping each solve-cache key to a (num_airplanes, 6)
-        ndarray of floats holding that mesh's per-Airplane load coefficients.
+    :param solve_cache: A dict mapping each solve-cache key to a tuple of a
+        (num_airplanes, 6) ndarray of floats holding that mesh's per-Airplane load
+        coefficients (the three force coefficients (in wind axes) followed by the three
+        moment coefficients (in wind axes, relative to the first Airplane's CG)) and a
+        float holding the time, in seconds, its solve took when it ran.
     :param memo_cache: A dict mapping each absolute-valued memo key to its value, as
         returned by memos_to_disk.
     :return: None
@@ -113,7 +139,11 @@ def write_cache(
     data = {
         "_cache_version": _SOLVE_CACHE_VERSION,
         "entries": {
-            key: coefficients.tolist() for key, coefficients in solve_cache.items()
+            key: {
+                "coefficients": coefficients.tolist(),
+                "solve_time": solve_time,
+            }
+            for key, (coefficients, solve_time) in solve_cache.items()
         },
         "memos": memo_cache,
     }
@@ -125,42 +155,51 @@ def write_cache(
 
 
 def cached_solve(
-    cache: dict[str, np.ndarray],
+    cache: dict[str, tuple[np.ndarray, float]],
     key: str,
     solve: Callable[[], np.ndarray],
     persist: Callable[[], None] | None = None,
-) -> np.ndarray:
-    """Returns a mesh's load coefficients from the cache, solving and storing them on a
-    miss.
+) -> tuple[np.ndarray, float]:
+    """Returns a mesh's load coefficients and solve time from the cache, solving,
+    timing, and storing them on a miss.
 
-    On a hit, the stored coefficients are returned and the expensive solve is skipped.
-    On a miss, solve is called, its result is added to the in-memory cache, and, when a
-    persist callback is given, it is invoked to write the whole cache through to disk so
-    an interrupted study keeps every iteration solved so far. The returned array is the
-    one held in the cache and must be treated as read-only by the caller.
+    On a hit, the stored coefficients and solve time are returned and the expensive
+    solve is skipped. On a miss, solve is called and timed, its result is added to the
+    in-memory cache, and, when a persist callback is given, it is invoked to write the
+    whole cache through to disk so an interrupted study keeps every iteration solved so
+    far. The returned solve time is the time the solve took when it actually ran, which
+    on a hit may have been during an earlier run or on another machine. The returned
+    array is the one held in the cache and must be treated as read-only by the caller.
 
-    :param cache: The in-memory cache mapping each key to a (num_airplanes, 6) ndarray
-        of floats, as returned by load_solve_cache. It is updated in place on a miss.
+    :param cache: The in-memory cache mapping each key to a tuple of a (num_airplanes,
+        6) ndarray of floats and a float solve time in seconds, as returned by
+        load_solve_cache. It is updated in place on a miss.
     :param key: The cache key identifying this solve, as returned by solve_cache_key.
     :param solve: A callable that builds and solves the mesh and returns its
-        (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients. It is
-        called only on a cache miss.
+        (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients (the
+        three force coefficients (in wind axes) followed by the three moment
+        coefficients (in wind axes, relative to the first Airplane's CG)). It is called
+        only on a cache miss.
     :param persist: An optional callback that writes the whole cache through to disk. It
         is called only on a cache miss, and only when caching to a file. When None, the
         cache is kept in memory only. The default is None.
-    :return: A (num_airplanes, 6) ndarray of floats holding the mesh's per-Airplane load
-        coefficients.
+    :return: A tuple of a (num_airplanes, 6) ndarray of floats holding the mesh's per-
+        Airplane load coefficients (the three force coefficients (in wind axes) followed
+        by the three moment coefficients (in wind axes, relative to the first Airplane's
+        CG)) and a float holding the time, in seconds, its solve took when it ran.
     """
     if key in cache:
         return cache[key]
 
+    solve_start = time.time()
     coefficients = solve()
-    cache[key] = coefficients
+    solve_time = time.time() - solve_start
+    cache[key] = (coefficients, solve_time)
 
     if persist is not None:
         persist()
 
-    return coefficients
+    return cache[key]
 
 
 def memos_to_disk(
@@ -345,8 +384,9 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
     each mesh as usual. This covers a None path, a missing file, an unreadable file (for
     example a directory or a permission error), a file that is not valid JSON, a file
     whose schema version does not match the current one, and a current-version file
-    whose memo section is missing or malformed. An unreadable or invalid file is logged
-    as a warning so a silently degraded cache is still observable.
+    whose memo section is missing, malformed, or holds a non-numeric value. An
+    unreadable or invalid file is logged as a warning so a silently degraded cache is
+    still observable.
 
     :param cache_path: The path to the JSON cache file, or None to skip caching and
         return an empty dictionary.
@@ -361,21 +401,33 @@ def load_memo_cache(cache_path: Path | None) -> dict[str, float]:
             data = json.load(cache_file)
     except (OSError, json.JSONDecodeError) as error:
         _logger.warning(
-            "Ignoring unreadable memo cache at %s (%s); resolving each mesh.",
+            _logging.indent()
+            + "Ignoring unreadable memo cache at %s, so resolving each mesh",
             cache_path,
-            error,
         )
+        _logger.warning(_logging.indent() + "The error was: %s", error)
         return {}
 
     if data.get("_cache_version") != _SOLVE_CACHE_VERSION:
         return {}
 
-    memos: dict[str, float] = data.get("memos", {})
+    memos = data.get("memos", {})
     if not isinstance(memos, dict):
         _logger.warning(
-            "Ignoring cache at %s with a malformed memo section; resolving each mesh.",
+            _logging.indent()
+            + "Ignoring cache at %s with a malformed memo section, so resolving "
+            "each mesh",
             cache_path,
         )
         return {}
 
-    return memos
+    try:
+        return {key: float(value) for key, value in memos.items()}
+    except (TypeError, ValueError):
+        _logger.warning(
+            _logging.indent()
+            + "Ignoring cache at %s with a malformed memo section, so resolving "
+            "each mesh",
+            cache_path,
+        )
+        return {}

@@ -8,6 +8,56 @@ import unittest
 from pterasoftware import _logging
 
 
+class TestIndent(unittest.TestCase):
+    """Tests for the indent function."""
+
+    def test_returns_empty_string_at_default_nesting_level(self):
+        """indent should return an empty string at the default nesting level."""
+        self.assertEqual(_logging.indent(), "")
+
+    def test_returns_two_spaces_per_level(self):
+        """indent should return two spaces per level beyond the nesting level."""
+        self.assertEqual(_logging.indent(3), "      ")
+
+
+class TestNested(unittest.TestCase):
+    """Tests for the nested context manager."""
+
+    def test_deepens_nesting_level_by_one_by_default(self):
+        """nested should deepen the nesting level by one level by default."""
+        with _logging.nested():
+            self.assertEqual(_logging.indent(), "  ")
+
+    def test_deepens_nesting_level_by_given_levels(self):
+        """nested should deepen the nesting level by the given number of levels."""
+        with _logging.nested(3):
+            self.assertEqual(_logging.indent(), "      ")
+
+    def test_nested_blocks_accumulate(self):
+        """nested blocks should accumulate their levels."""
+        with _logging.nested():
+            with _logging.nested(2):
+                self.assertEqual(_logging.indent(), "      ")
+
+    def test_indent_levels_add_to_nesting_level(self):
+        """indent's levels should add to the current nesting level."""
+        with _logging.nested():
+            self.assertEqual(_logging.indent(2), "      ")
+
+    def test_restores_nesting_level_after_block(self):
+        """nested should restore the nesting level after the block."""
+        with _logging.nested(2):
+            pass
+        self.assertEqual(_logging.indent(), "")
+
+    def test_restores_nesting_level_after_exception(self):
+        """nested should restore the nesting level when the block raises."""
+        with self.assertRaises(ValueError):
+            with _logging.nested():
+                raise ValueError("Test error")
+        self.assertEqual(_logging.indent(), "")
+
+
 class TestGetLogger(unittest.TestCase):
     """Tests for the get_logger function."""
 
@@ -146,6 +196,70 @@ class TestTqdmLoggingHandler(unittest.TestCase):
         self.assertIn("Test", output)
 
 
+class TestMaxModuleLoggerDisplayNameLength(unittest.TestCase):
+    """Tests for the _max_module_logger_display_name_length function."""
+
+    def test_returns_at_least_the_package_logger_name_length(self):
+        """Should return at least the length of the package logger name."""
+        self.assertGreaterEqual(
+            _logging._max_module_logger_display_name_length(),
+            len(_logging.PACKAGE_LOGGER_NAME),
+        )
+
+    def test_returns_the_longest_display_name_length(self):
+        """Should return the length of the longest module logger display name."""
+        self.assertEqual(
+            _logging._max_module_logger_display_name_length(),
+            len("_coupled_unsteady_ring_vortex_lattice_method"),
+        )
+
+
+class TestPackageLogFormatter(unittest.TestCase):
+    """Tests for the _PackageLogFormatter class."""
+
+    def test_strips_package_prefix_from_display_name(self):
+        """_PackageLogFormatter should strip the package prefix from the name."""
+        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        record = logging.LogRecord(
+            name="pterasoftware.trim",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
+        )
+        self.assertEqual(formatter.format(record), "trim|Test message")
+
+    def test_keeps_hierarchy_below_package_prefix(self):
+        """_PackageLogFormatter should keep the hierarchy below the prefix."""
+        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        record = logging.LogRecord(
+            name="pterasoftware.movements.movement",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
+        )
+        self.assertEqual(formatter.format(record), "movements.movement|Test message")
+
+    def test_keeps_bare_package_logger_name(self):
+        """_PackageLogFormatter should leave the bare package name unchanged."""
+        formatter = _logging._PackageLogFormatter("%(display_name)s|%(message)s")
+        record = logging.LogRecord(
+            name="pterasoftware",
+            level=logging.INFO,
+            pathname="",
+            lineno=0,
+            msg="Test message",
+            args=(),
+            exc_info=None,
+        )
+        self.assertEqual(formatter.format(record), "pterasoftware|Test message")
+
+
 class TestSetupLogging(unittest.TestCase):
     """Tests for the set_up_logging function."""
 
@@ -190,6 +304,30 @@ class TestSetupLogging(unittest.TestCase):
         logger = logging.getLogger(_logging.PACKAGE_LOGGER_NAME)
         self.assertIs(logger.handlers[0], custom_handler)
 
+    def test_default_format_right_pads_level_names(self):
+        """set_up_logging's default format should right pad the level names."""
+        stream = io.StringIO()
+        handler = logging.StreamHandler(stream)
+        _logging.set_up_logging(level=logging.INFO, handler=handler)
+
+        _logging.get_logger("trim").info("Test message")
+
+        self.assertTrue(stream.getvalue().startswith("INFO    |"))
+
+    def test_default_format_aligns_messages_across_modules(self):
+        """set_up_logging's default format should align messages across modules."""
+        stream = io.StringIO()
+        handler = logging.StreamHandler(stream)
+        _logging.set_up_logging(level=logging.INFO, handler=handler)
+
+        _logging.get_logger("trim").info("First message")
+        _logging.get_logger("movements.movement").info("Second message")
+        first_line, second_line = stream.getvalue().splitlines()
+
+        self.assertEqual(
+            first_line.index("First message"), second_line.index("Second message")
+        )
+
     def test_invalid_level_type_raises_type_error(self):
         """set_up_logging should raise TypeError for invalid level types."""
         with self.assertRaises(TypeError) as context:
@@ -231,7 +369,6 @@ class TestLoggerHierarchy(unittest.TestCase):
         """Child logger messages should go through package logger handlers."""
         stream = io.StringIO()
         handler = logging.StreamHandler(stream)
-        handler.setFormatter(logging.Formatter("%(name)s - %(message)s"))
 
         _logging.set_up_logging(level=logging.INFO, handler=handler)
         child_logger = _logging.get_logger("test_module")
@@ -239,5 +376,5 @@ class TestLoggerHierarchy(unittest.TestCase):
         child_logger.info("Test message")
         output = stream.getvalue()
 
-        self.assertIn("pterasoftware.test_module", output)
+        self.assertIn("test_module", output)
         self.assertIn("Test message", output)

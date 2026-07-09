@@ -1,108 +1,108 @@
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - Starting local search.
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.156
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.01, alpha=5.0, beta=0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.155
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.01, beta=0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.156
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.01, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.156
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.156
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.07, alpha=4.99, beta=-0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.151
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.08, alpha=4.99, beta=-0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.15
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.07, alpha=5.0, beta=-0.0, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.151
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.07, alpha=4.99, beta=0.01, externalFX_W=7.5
-INFO - pterasoftware.trim - 		Objective: 0.151
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=10.07, alpha=4.99, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.151
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.49, alpha=3.68, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.066
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.5, alpha=3.68, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.066
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.49, alpha=3.69, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.067
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.49, alpha=3.68, beta=0.01, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.066
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.49, alpha=3.68, beta=-0.0, externalFX_W=7.52
-INFO - pterasoftware.trim - 		Objective: 0.066
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=15.0, alpha=0.59, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.235
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=14.99, alpha=0.59, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.235
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=15.0, alpha=0.6, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.234
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=15.0, alpha=0.59, beta=0.01, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.235
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=15.0, alpha=0.59, beta=-0.0, externalFX_W=7.52
-INFO - pterasoftware.trim - 		Objective: 0.235
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.81, alpha=3.02, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.033
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.82, alpha=3.02, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.033
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.81, alpha=3.03, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.033
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.81, alpha=3.02, beta=0.01, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.033
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=13.81, alpha=3.02, beta=-0.0, externalFX_W=7.52
-INFO - pterasoftware.trim - 		Objective: 0.033
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware.trim - 	State: vCg__E=12.57, alpha=3.18, beta=-0.0, externalFX_W=7.51
-INFO - pterasoftware.trim - 		Objective: 0.018
-INFO - pterasoftware.trim - Acceptable value reached with local search.
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |Starting local search
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.0 m/s, alpha = 5.00 deg, beta = 0.00 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.156
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.0 m/s, alpha = 5.00 deg, beta = 0.00 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.155
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.0 m/s, alpha = 5.01 deg, beta = 0.00 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.156
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.0 m/s, alpha = 5.00 deg, beta = 0.0100 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.156
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.0 m/s, alpha = 5.00 deg, beta = 0.00 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.156
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.1 m/s, alpha = 4.99 deg, beta = -1.71E-07 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.151
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.1 m/s, alpha = 4.99 deg, beta = -1.71E-07 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.150
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.1 m/s, alpha = 5.00 deg, beta = -1.71E-07 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.151
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.1 m/s, alpha = 4.99 deg, beta = 0.0100 deg, externalFX_W = 7.50 N
+INFO    |trim                                        |    Objective: 0.151
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 10.1 m/s, alpha = 4.99 deg, beta = -1.71E-07 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.151
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.5 m/s, alpha = 3.68 deg, beta = -2.59E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0657
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.5 m/s, alpha = 3.68 deg, beta = -2.59E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0660
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.5 m/s, alpha = 3.69 deg, beta = -2.59E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0668
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.5 m/s, alpha = 3.68 deg, beta = 0.00997 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0657
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.5 m/s, alpha = 3.68 deg, beta = -2.59E-05 deg, externalFX_W = 7.52 N
+INFO    |trim                                        |    Objective: 0.0657
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 15.0 m/s, alpha = 0.588 deg, beta = -5.16E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.235
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 15.0 m/s, alpha = 0.588 deg, beta = -5.16E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.235
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 15.0 m/s, alpha = 0.598 deg, beta = -5.16E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.234
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 15.0 m/s, alpha = 0.588 deg, beta = 0.00995 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.235
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 15.0 m/s, alpha = 0.588 deg, beta = -5.16E-05 deg, externalFX_W = 7.52 N
+INFO    |trim                                        |    Objective: 0.235
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.8 m/s, alpha = 3.02 deg, beta = -3.14E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0327
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.8 m/s, alpha = 3.02 deg, beta = -3.14E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0329
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.8 m/s, alpha = 3.03 deg, beta = -3.14E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0325
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.8 m/s, alpha = 3.02 deg, beta = 0.00997 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0327
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 13.8 m/s, alpha = 3.02 deg, beta = -3.14E-05 deg, externalFX_W = 7.52 N
+INFO    |trim                                        |    Objective: 0.0327
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |trim                                        |  State: vCg__E = 12.6 m/s, alpha = 3.18 deg, beta = -2.22E-05 deg, externalFX_W = 7.51 N
+INFO    |trim                                        |    Objective: 0.0177
+INFO    |trim                                        |Acceptable value reached with local search

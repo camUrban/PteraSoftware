@@ -65,7 +65,9 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
         return cast(problems._CoupledUnsteadyProblem, self.unsteady_problem)
 
     def _initialize_step_vortices(self, step: int) -> None:
-        _logger.debug(f"Initializing step {step}'s bound ring vortices.")
+        _logger.debug(
+            _logging.indent() + f"Initializing step {step}'s bound ring vortices"
+        )
         self._initialize_panel_vortices_at(step)
 
     def _update_next_step_hook(self, step: int) -> None:

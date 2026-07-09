@@ -1,25 +1,25 @@
-INFO - pterasoftware.movements.movement - Starting analytical delta_time optimization.
-INFO - pterasoftware.movements.movement - All motion is static. Returning initial delta_time estimate.
-INFO - pterasoftware._serialization - Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz.
-INFO - pterasoftware._serialization - Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8406360 bytes).
-INFO - pterasoftware._serialization - Loading from example_solver.json.gz.
-WARNING - pterasoftware._serialization - The file was saved with uncommitted changes (_dirty=true). The _commit hash may not fully represent the code state at save time.
-WARNING - pterasoftware._serialization - The current working tree has uncommitted changes.
-INFO - pterasoftware._serialization - Loaded UnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz.
-INFO - pterasoftware.output - Airplane "Example Airplane":
-INFO - pterasoftware.output -   Final Forces (in Wind Axes):
-INFO - pterasoftware.output -     fX_W:        -10.502 N     Drag:             10.502 N
-INFO - pterasoftware.output -     fY_W:        -0.0 N        Side Force:       -0.0 N
-INFO - pterasoftware.output -     fZ_W:        -400.066 N    Lift:             400.066 N
-INFO - pterasoftware.output -   Final Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     mX_W_CgP1:   0.0 Nm        Rolling Moment:   0.0 Nm
-INFO - pterasoftware.output -     mY_W_CgP1:   2.144 Nm      Pitching Moment:  2.144 Nm
-INFO - pterasoftware.output -     mZ_W_CgP1:   -0.0 Nm       Yawing Moment:    -0.0 Nm
-INFO - pterasoftware.output -   Final Force Coefficients (in Wind Axes):
-INFO - pterasoftware.output -     cFX_W:       -0.009        CDi:              0.009
-INFO - pterasoftware.output -     cFY_W:       -0.0          CY:               -0.0
-INFO - pterasoftware.output -     cFZ_W:       -0.336        CL:               0.336
-INFO - pterasoftware.output -   Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO - pterasoftware.output -     cMX_W_CgP1:  0.0           Cl:               0.0
-INFO - pterasoftware.output -     cMY_W_CgP1:  0.001         Cm:               0.001
-INFO - pterasoftware.output -     cMZ_W_CgP1:  -0.0          Cn:               -0.0
+INFO    |movements.movement                          |Starting analytical delta_time optimization
+INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
+INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8410302 bytes)
+INFO    |_serialization                              |Loading from example_solver.json.gz
+WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
+WARNING |_serialization                              |The current working tree has uncommitted changes
+INFO    |_serialization                              |Loaded UnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |output                                      |Airplane "Example Airplane":
+INFO    |output                                      |  Final Forces (in Wind Axes):
+INFO    |output                                      |    fX_W:             -10.5 N     Drag:                   10.5 N
+INFO    |output                                      |    fY_W:         -3.80E-15 N     Side Force:        -3.80E-15 N
+INFO    |output                                      |    fZ_W:             -400. N     Lift:                   400. N
+INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    mX_W_CgP1:     1.63E-13 Nm    Rolling Moment:     1.63E-13 Nm
+INFO    |output                                      |    mY_W_CgP1:         2.14 Nm    Pitching Moment:        2.14 Nm
+INFO    |output                                      |    mZ_W_CgP1:    -2.03E-13 Nm    Yawing Moment:     -2.03E-13 Nm
+INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
+INFO    |output                                      |    cFX_W:         -0.00881       CDi:                 0.00881
+INFO    |output                                      |    cFY_W:        -3.19E-18       CY:                -3.19E-18
+INFO    |output                                      |    cFZ_W:           -0.336       CL:                    0.336
+INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
+INFO    |output                                      |    cMX_W_CgP1:    1.14E-17       Cl:                 1.14E-17
+INFO    |output                                      |    cMY_W_CgP1:     0.00110       Cm:                  0.00110
+INFO    |output                                      |    cMZ_W_CgP1:   -1.42E-17       Cn:                -1.42E-17

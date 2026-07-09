@@ -313,7 +313,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         self,
         step: int,
         delta_time: float | int,
-        deformation_angles_ixyz: np.ndarray | None = None,
+        deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
     ) -> geometry.wing.Wing:
         """Creates the Wing at a single time step, optionally applying structural
         deformation to each WingCrossSection.
@@ -325,11 +325,12 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param deformation_angles_ixyz: A (N, 3) ndarray of floats where N is the number
-            of WingCrossSections in this Wing. Each row is a (3,) deformation angle
-            vector using an intrinsic xy'z" sequence that is added to the corresponding
-            WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The units are in
-            degrees. When None, no deformation is applied. The default is None.
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A (N, 3) ndarray of floats where N is
+            the number of WingCrossSections in this Wing. Each row is a (3,) deformation
+            angle vector using an intrinsic xy'z" sequence that is added to the
+            corresponding WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The
+            units are in degrees. When None, no deformation is applied. The default is
+            None.
         :return: The Wing at this time step, with structural deformation applied to each
             WingCrossSection if provided.
         """
@@ -424,15 +425,17 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             )
 
             # Extract this WingCrossSection's deformation row, or None.
-            this_deformation = None
-            if deformation_angles_ixyz is not None:
-                this_deformation = deformation_angles_ixyz[i]
+            theseDeformationAngles_Wcsp_to_Wcs_ixyz = None
+            if deformationAngles_Wcsp_to_Wcs_ixyz is not None:
+                theseDeformationAngles_Wcsp_to_Wcs_ixyz = (
+                    deformationAngles_Wcsp_to_Wcs_ixyz[i]
+                )
 
             these_wing_cross_sections.append(
                 wing_cross_section_movement.generate_wing_cross_section_at_time_step(
                     step,
                     delta_time,
-                    deformation_angles_ixyz=this_deformation,
+                    deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,
                 )
             )
 

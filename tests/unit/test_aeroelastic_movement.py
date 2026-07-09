@@ -176,7 +176,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         )
         # The root (index 0) deformation must stay zero, since the clamped root
         # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
-        wing_deformation_angles_ixyz = [
+        deformationAngles_Wcsp_to_Wcs_ixyz = [
             np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
         ]
 
@@ -186,7 +186,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         deformed_airplane = aeroelastic_movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=1,
-            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         prescribed_wing_cross_sections = prescribed_airplane.wings[
@@ -197,7 +197,7 @@ class TestAeroelasticMovement(unittest.TestCase):
             npt.assert_allclose(
                 deformed_wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz
                 - prescribed_wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
-                wing_deformation_angles_ixyz[0][index],
+                deformationAngles_Wcsp_to_Wcs_ixyz[0][index],
                 rtol=1e-10,
                 atol=1e-14,
             )

@@ -175,7 +175,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
         self,
         step: int,
         delta_time: float | int,
-        deformation_angles_ixyz: np.ndarray | None = None,
+        deformationAngles_Wcsp_to_Wcs_ixyz: np.ndarray | None = None,
     ) -> geometry.wing_cross_section.WingCrossSection:
         """Creates the WingCrossSection at a single time step, optionally applying
         structural deformation.
@@ -188,8 +188,8 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param deformation_angles_ixyz: A (3,) ndarray of floats representing the
-            structural deformation angles to add to the prescribed
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A (3,) ndarray of floats representing
+            the structural deformation angles to add to the prescribed
             angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence. The units are in
             degrees. When None, no deformation is applied and the result is identical to
             the prescribed WingCrossSection. The default is None.
@@ -282,9 +282,9 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
         # Apply structural deformation if provided. The deformation angles
         # are added to the prescribed angles, representing the structural
         # response computed by the aeroelastic solver.
-        if deformation_angles_ixyz is not None:
+        if deformationAngles_Wcsp_to_Wcs_ixyz is not None:
             theseAngles_Wcsp_to_Wcs_ixyz = (
-                theseAngles_Wcsp_to_Wcs_ixyz + deformation_angles_ixyz
+                theseAngles_Wcsp_to_Wcs_ixyz + deformationAngles_Wcsp_to_Wcs_ixyz
             )
 
         return geometry.wing_cross_section.WingCrossSection(

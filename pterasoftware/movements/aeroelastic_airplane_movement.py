@@ -162,7 +162,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         self,
         step: int,
         delta_time: float | int,
-        wing_deformation_angles_ixyz: list[np.ndarray | None] | None = None,
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
     ) -> geometry.airplane.Airplane:
         """Creates the Airplane at a single time step, optionally applying structural
         deformation to each Wing.
@@ -173,9 +173,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param wing_deformation_angles_ixyz: A list of (N_wcs, 3) ndarrays of floats,
-            one per Wing, where N_wcs is the number of WingCrossSections in that Wing.
-            Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
+            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
+            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied to
@@ -226,9 +226,11 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         these_wings = []
         for i, wing_movement in enumerate(self.wing_movements):
             # Extract this Wing's deformation, or None.
-            this_deformation = None
-            if wing_deformation_angles_ixyz is not None:
-                this_deformation = wing_deformation_angles_ixyz[i]
+            theseDeformationAngles_Wcsp_to_Wcs_ixyz = None
+            if deformationAngles_Wcsp_to_Wcs_ixyz is not None:
+                theseDeformationAngles_Wcsp_to_Wcs_ixyz = (
+                    deformationAngles_Wcsp_to_Wcs_ixyz[i]
+                )
 
             if isinstance(
                 wing_movement,
@@ -238,7 +240,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                     wing_movement.generate_wing_at_time_step(
                         step,
                         delta_time,
-                        deformation_angles_ixyz=this_deformation,
+                        deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,
                     )
                 )
             else:

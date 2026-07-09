@@ -1648,21 +1648,21 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # calculate_wing_deformation returns a per-wing list: each element is either
         # the deformation ndarray for an aeroelastic wing or None for a standard wing.
-        wing_deformation_angles_ixyz = self.calculate_wing_deformation(
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self.calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
 
         # The structural model works in radians; the geometry API expects degrees.
-        wing_deformation_angles_ixyz_deg = [
+        deformationAngles_Wcsp_to_Wcs_ixyz = [
             np.rad2deg(arr) if arr is not None else None
-            for arr in wing_deformation_angles_ixyz
+            for arr in deformationAnglesRad_Wcsp_to_Wcs_ixyz
         ]
 
         # Generate the deformed airplane at this step.
         airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
-            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz_deg,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
         operating_point = self._aeroelastic_movement.operating_points[next_step]
 
@@ -1691,7 +1691,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param step: The current time step index (0-indexed).
         :return: A list of length len(airplane.wings) where each element is either an
             (N_spanwise+1, 3) ndarray of cumulative deformation angles for an
-            aeroelastic wing or None for a non-aeroelastic wing.
+            aeroelastic wing or None for a non-aeroelastic wing. Each row is a (3,)
+            angle vector that perturbs the corresponding WingCrossSection's
+            angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence. The units are in
+            radians.
         """
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]

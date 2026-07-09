@@ -146,7 +146,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             )
 
     def test_default_deformation_matches_explicit_none(self):
-        """Test that omitting deformation_angles_ixyz produces the same result as
+        """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same result as
         explicitly passing None.
         """
         aeroelastic_wing_movement = (
@@ -157,7 +157,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             step=2, delta_time=0.01
         )
         explicit_none_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
-            step=2, delta_time=0.01, deformation_angles_ixyz=None
+            step=2, delta_time=0.01, deformationAngles_Wcsp_to_Wcs_ixyz=None
         )
 
         npt.assert_array_equal(
@@ -171,7 +171,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             )
 
     def test_deformation_adds_to_prescribed_angles(self):
-        """Test that each row of deformation_angles_ixyz is added to the corresponding
+        """Test that each row of deformationAngles_Wcsp_to_Wcs_ixyz is added to the corresponding
         WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz.
         """
         aeroelastic_wing_movement = (
@@ -180,14 +180,14 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         base_wing = aeroelastic_wing_movement.base_wing
         # The root (index 0) deformation must stay zero, since the clamped root
         # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
-        deformation_angles_ixyz = np.array(
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array(
             [[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float
         )
 
         wing = aeroelastic_wing_movement.generate_wing_at_time_step(
             step=1,
             delta_time=0.01,
-            deformation_angles_ixyz=deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         # With static movement, the prescribed angles equal the base angles, so each
@@ -196,7 +196,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         for index in range(len(base_wing.wing_cross_sections)):
             expected_angles = (
                 base_wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz
-                + deformation_angles_ixyz[index]
+                + deformationAngles_Wcsp_to_Wcs_ixyz[index]
             )
             npt.assert_allclose(
                 wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
@@ -217,7 +217,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         zero_deformation_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
             step=2,
             delta_time=0.01,
-            deformation_angles_ixyz=np.zeros((2, 3), dtype=float),
+            deformationAngles_Wcsp_to_Wcs_ixyz=np.zeros((2, 3), dtype=float),
         )
 
         for index in range(len(no_deformation_wing.wing_cross_sections)):
@@ -239,7 +239,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         )
         # The root (index 0) deformation must stay zero, since the clamped root
         # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
-        deformation_angles_ixyz = np.array(
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array(
             [[0.0, 0.0, 0.0], [-1.0, 4.0, -3.0]], dtype=float
         )
 
@@ -249,7 +249,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
         deformed_wing = aeroelastic_wing_movement.generate_wing_at_time_step(
             step=3,
             delta_time=0.01,
-            deformation_angles_ixyz=deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         # Each WingCrossSection's deformed angles should differ from its prescribed
@@ -258,7 +258,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             npt.assert_allclose(
                 deformed_wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz
                 - prescribed_wing.wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
-                deformation_angles_ixyz[index],
+                deformationAngles_Wcsp_to_Wcs_ixyz[index],
                 rtol=1e-10,
                 atol=1e-14,
             )

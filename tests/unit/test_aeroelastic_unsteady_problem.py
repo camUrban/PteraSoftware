@@ -98,6 +98,78 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         accel = self.problem.calculate_wing_panel_accelerations()
         np.testing.assert_array_equal(accel, np.zeros_like(dummy_pos))
 
+    def test_calculate_spring_moments_accumulates_state_across_steps(self):
+        """Test that a strip's spring-damper ODE is re-seeded from its own state at
+        the end of the previous time step, so a constant aerodynamic moment drives
+        the twist to accumulate across steps toward the static equilibrium M / k.
+
+        Uses a single-strip wing in a slow, overdamped regime where the one-step
+        response from rest is a small fraction of M / k. If a strip's state were
+        discarded between steps (a restart from rest every step), the twist would
+        freeze at that one-step response instead of converging.
+        """
+        problem = ps.problems.AeroelasticUnsteadyProblem(
+            movement=movement_fixtures.make_basic_aeroelastic_movement_fixture(),
+            wing_density=0.01,
+            spring_constant=10.0,
+            damping_constant=20.0,
+        )
+        wing = problem.steady_problems[0].airplanes[0].wings[0]
+        num_spanwise_panels = wing.num_spanwise_panels
+        num_chordwise_panels = wing.num_chordwise_panels
+        assert num_spanwise_panels == 1
+        static_wing_movement = (
+            aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
+        )
+
+        # Choose the per-entry mass so the strip's ODE inertia, I = (1 / 2) * mass *
+        # L^2 with mass summed over the strip's mass-matrix entries, is exactly 1.0.
+        # With spring_constant = 10.0 and damping_constant = 20.0, the ODE is then
+        # overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5 per
+        # second, so it is far from settled within one 0.1 s time step.
+        L = (wing.wing_cross_sections[0].chord + wing.wing_cross_sections[1].chord) / 2
+        num_mass_entries = num_chordwise_panels * num_spanwise_panels * 3
+        mass_matrix = np.full(
+            (num_chordwise_panels, num_spanwise_panels, 3),
+            2.0 / (num_mass_entries * L**2),
+        )
+
+        # Apply a constant aerodynamic moment about the y axis, summing to 2.0 N*m
+        # over the strip's chordwise panels, so the static twist is M / k = 0.2 rad.
+        aero_moments = np.zeros((num_chordwise_panels, num_spanwise_panels, 3))
+        aero_moments[:, 0, 1] = 2.0 / num_chordwise_panels
+        static_twist = 2.0 / problem.spring_constant
+
+        # March the structural solve, replicating _apply_moment_updates's state
+        # commit for the post-discard regime after each step.
+        theta_history = []
+        for step in range(problem.step_discards + 1, problem.step_discards + 61):
+            thetas, omegas = problem.calculate_spring_moments(
+                num_spanwise_panels=num_spanwise_panels,
+                wing=wing,
+                mass_matrix=mass_matrix,
+                aero_moments=aero_moments,
+                step=step,
+                wing_idx=0,
+                wing_movement=static_wing_movement,
+            )
+            problem.net_deformation_per_wing[0] = problem._build_deformation_vector(
+                thetas, num_spanwise_panels
+            )
+            problem.angular_velocities_per_wing[0][:, 1] = omegas
+            theta_history.append(float(thetas[1]))
+
+        # The regime check: the one-step response must be well below the static
+        # twist, or freezing and converging would be indistinguishable.
+        self.assertLess(theta_history[0], 0.5 * static_twist)
+        # The twist must accumulate monotonically, as an overdamped rise from rest.
+        for earlier, later in zip(theta_history[:10], theta_history[1:11]):
+            self.assertGreater(later, earlier)
+        # The twist must approach the static equilibrium.
+        self.assertAlmostEqual(
+            theta_history[-1], static_twist, delta=0.1 * static_twist
+        )
+
     def test_spring_numerical_ode_zero_initial_zero_forces_theta_stays_zero(self):
         """Test that with zero initial conditions and zero external forces, theta
         remains zero."""

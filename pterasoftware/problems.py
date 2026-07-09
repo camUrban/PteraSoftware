@@ -1912,8 +1912,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Update internal moment and deformation state arrays for one wing.
 
         Stores per-step moment and deformation data, updates the cumulative net
-        deformation (with discarding of early unstable steps), and tracks wing
-        deflection points relative to the undeformed baseline.
+        deformation and angular velocity state (committing both together, and discarding
+        both during the early unstable steps), and tracks wing deflection points
+        relative to the undeformed baseline.
 
         :param step: The current time step index.
         :param step_deformation: The (N_spanwise+1, 3) deformation vector for this step,
@@ -1927,9 +1928,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param wing_idx: Index of the wing in airplane.wings (and the per-wing lists).
         :return: None
         """
-        # Update angular velocity state.
-        self.angular_velocities_per_wing[wing_idx][:, 1] = omegas
-
         # Generate the reference (undeformed) airplane at this step to get the
         # baseline panel positions for tracking wing deflection.
         ref_airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
@@ -1955,11 +1953,14 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         self.per_step_inertial_per_wing[wing_idx].append(inertial_moments.copy())
         self.per_step_aero_per_wing[wing_idx].append(aeroMoments_GP1_Slep.copy())
 
-        # Update cumulative deformation (with numerical stability discarding).
-        # Accounts for numerical instability causing large aerodynamic forces in
-        # initial steps.
+        # Update the cumulative deformation and angular velocity state together,
+        # discarding both during the first step_discards steps, whose numerical
+        # startup effects cause large aerodynamic forces. The strips' ODEs are
+        # re-seeded from this state, so committing only one component would seed a
+        # mixed state.
         if step > self.step_discards:
             self.net_deformation_per_wing[wing_idx] = step_deformation
+            self.angular_velocities_per_wing[wing_idx][:, 1] = omegas
 
         # Store deformation and angular velocity history.
         self.net_data_per_wing[wing_idx].append(
@@ -2072,11 +2073,16 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
         for span_panel in range(num_spanwise_panels):
             aero_span_moment = np.sum(aero_moments[:, span_panel, 1])
-            theta0: float = 0.0
-            omega0: float = 0.0
-            if span_panel != 0:
-                theta0 = self.net_deformation_per_wing[wing_idx][span_panel][1]
-                omega0 = self.angular_velocities_per_wing[wing_idx][span_panel][1]
+            # Re-seed the strip's ODE from its own state at the end of the previous
+            # time step. The state arrays hold one entry per WingCrossSection, and a
+            # strip's state lives at its outboard bounding WingCrossSection, index
+            # span_panel + 1. The WingCrossSection at index span_panel bounds this
+            # strip on its inboard side, and the root WingCrossSection (index 0) is
+            # clamped.
+            theta0: float = self.net_deformation_per_wing[wing_idx][span_panel + 1][1]
+            omega0: float = self.angular_velocities_per_wing[wing_idx][span_panel + 1][
+                1
+            ]
 
             dt = self.movement.delta_time
             mass = mass_matrix[:, span_panel, :].sum()

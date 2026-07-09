@@ -159,15 +159,13 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute               | Type    | Notes                                                  |
-|-------------------------|---------|--------------------------------------------------------|
-| `wing_density`          | `float` | Mass per unit span area (kg/m^2)                       |
-| `spring_constant`       | `float` | Torsional spring stiffness (N*m/rad)                   |
-| `damping_constant`      | `float` | Torsional damping coefficient (N*m*s/rad)              |
-| `aero_scaling`          | `float` | Scaling factor applied to aerodynamic moments          |
-| `moment_scaling_factor` | `float` | Scaling factor applied to deformation angles           |
-| `step_discards`         | `int`   | Number of initial steps discarded for stability        |
-| `plot_flap_cycle`       | `bool`  | Whether to plot time histories at the end of the solve |
+| Attribute          | Type    | Notes                                                  |
+|--------------------|---------|--------------------------------------------------------|
+| `wing_density`     | `float` | Mass per unit span area (kg/m^2)                       |
+| `spring_constant`  | `float` | Torsional spring stiffness (N*m/rad)                   |
+| `damping_constant` | `float` | Torsional damping coefficient (N*m*s/rad)              |
+| `step_discards`    | `int`   | Number of initial steps discarded for stability        |
+| `plot_flap_cycle`  | `bool`  | Whether to plot time histories at the end of the solve |
 
 #### Derived from Immutable (read-only property, no backing slot)
 

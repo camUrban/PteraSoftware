@@ -1309,6 +1309,17 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
+# Aeroelastic structural-coupling debug constants. _AERO_SCALING multiplies the
+# aerodynamic moments fed to the torsional spring-damper ODE, and
+# _DEFORMATION_SCALING multiplies the torsional deformation angles applied to the
+# geometry. Both are fixed at 1.0 so the coupling is physical; change them only for
+# local debugging. A value other than 1.0 shifts the converged equilibrium (for
+# example, a static twist becomes _AERO_SCALING * M / k) rather than stabilizing the
+# coupling.
+_AERO_SCALING = 1.0
+_DEFORMATION_SCALING = 1.0
+
+
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     """A subclass of _CoupledUnsteadyProblem used to couple aeroelastic wing
     deformations with unsteady aerodynamics.
@@ -1354,9 +1365,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         "_wing_density",
         "_spring_constant",
         "_damping_constant",
-        "_aero_scaling",
         "_step_discards",
-        "_moment_scaling_factor",
         "_plot_flap_cycle",
         "net_deformation_per_wing",
         "angular_velocities_per_wing",
@@ -1375,9 +1384,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         wing_density: float,
         spring_constant: float,
         damping_constant: float,
-        aero_scaling: float = 1.0,
         step_discards: int = 5,
-        moment_scaling_factor: float = 1.0,
         plot_flap_cycle: bool = False,
     ) -> None:
         """The initialization method.
@@ -1397,15 +1404,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             damper model (N*m/rad). Controls the restoring torque opposing deformation.
         :param damping_constant: The torsional damping coefficient (N*m*s/rad). Controls
             the viscous damping in the spring-mass-damper system.
-        :param aero_scaling: A scaling factor applied to aerodynamic moments (unitless).
-            The default is 1.0. Use values less than 1 to reduce aerodynamic influence.
         :param step_discards: The number of initial time steps to discard for numerical
             stability (there are inconsistent startup effects from the UVLM solver).
             During these steps, the solver will run but the results will not be applied
             to the deformation of the wings. The default is 5.
-        :param moment_scaling_factor: A scaling factor applied to the computed wing
-            deformation angles (unitless). The default is 1.0. Useful for adjusting the
-            magnitude of structural response.
         :param plot_flap_cycle: If True, plots time histories of moments and
             deformations at the end of the simulation. The default is False.
         :return: None
@@ -1428,10 +1430,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Tunable Parameters
         self._wing_density = wing_density  # per unit height kg/m^2
-        self._moment_scaling_factor = moment_scaling_factor
         self._spring_constant = spring_constant
         self._damping_constant = damping_constant
-        self._aero_scaling = aero_scaling
 
         # Permanent parameters
         self._step_discards = (
@@ -1490,14 +1490,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     @property
     def damping_constant(self) -> float:
         return self._damping_constant
-
-    @property
-    def aero_scaling(self) -> float:
-        return self._aero_scaling
-
-    @property
-    def moment_scaling_factor(self) -> float:
-        return self._moment_scaling_factor
 
     @property
     def step_discards(self) -> int:
@@ -1799,7 +1791,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             np.array(
                 solver.moments_GP1_Slep[panel_offset : panel_offset + num_panels]
             ).reshape(num_chordwise_panels, num_spanwise_panels, 3)
-            * self.aero_scaling
+            * _AERO_SCALING
         )
         return aeroMoments_GP1_Slep
 
@@ -1872,7 +1864,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 np.array(
                     [
                         0,
-                        thetas[i + 1] * self.moment_scaling_factor,
+                        thetas[i + 1] * _DEFORMATION_SCALING,
                         0,
                     ]
                 )

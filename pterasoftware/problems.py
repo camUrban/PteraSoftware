@@ -1309,6 +1309,28 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
+# Aeroelastic structural-coupling debug constants. _AERO_SCALING multiplies the
+# aerodynamic moments fed to the torsional spring-damper ODE, and
+# _DEFORMATION_SCALING multiplies the torsional deformation angles applied to the
+# geometry. Both are fixed at 1.0 so the coupling is physical; change them only for
+# local debugging. A value other than 1.0 shifts the converged equilibrium (for
+# example, a static twist becomes _AERO_SCALING * M / k) rather than stabilizing the
+# coupling.
+_AERO_SCALING = 1.0
+_DEFORMATION_SCALING = 1.0
+
+# Tolerances for the torsional spring-damper ODE integration in
+# spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# defaults because the integration is re-seeded from the previous state at every
+# outer time step, so its local errors compound across a simulation, and because a
+# loose absolute tolerance would swamp small torsional responses. The absolute
+# tolerance bounds both state components, the torsional angle (radians) and the
+# angular velocity (rad/s). Loosen these only for local debugging (for example, a
+# nearly massless wing makes the ODE stiff and the strict tolerances expensive).
+_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
+_SPRING_ODE_ABSOLUTE_TOLERANCE = 1e-9
+
+
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     """A subclass of _CoupledUnsteadyProblem used to couple aeroelastic wing
     deformations with unsteady aerodynamics.
@@ -1354,9 +1376,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         "_wing_density",
         "_spring_constant",
         "_damping_constant",
-        "_aero_scaling",
         "_step_discards",
-        "_moment_scaling_factor",
         "_plot_flap_cycle",
         "net_deformation_per_wing",
         "angular_velocities_per_wing",
@@ -1375,9 +1395,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         wing_density: float,
         spring_constant: float,
         damping_constant: float,
-        aero_scaling: float = 1.0,
         step_discards: int = 5,
-        moment_scaling_factor: float = 1.0,
         plot_flap_cycle: bool = False,
     ) -> None:
         """The initialization method.
@@ -1397,15 +1415,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             damper model (N*m/rad). Controls the restoring torque opposing deformation.
         :param damping_constant: The torsional damping coefficient (N*m*s/rad). Controls
             the viscous damping in the spring-mass-damper system.
-        :param aero_scaling: A scaling factor applied to aerodynamic moments (unitless).
-            The default is 1.0. Use values less than 1 to reduce aerodynamic influence.
         :param step_discards: The number of initial time steps to discard for numerical
             stability (there are inconsistent startup effects from the UVLM solver).
             During these steps, the solver will run but the results will not be applied
             to the deformation of the wings. The default is 5.
-        :param moment_scaling_factor: A scaling factor applied to the computed wing
-            deformation angles (unitless). The default is 1.0. Useful for adjusting the
-            magnitude of structural response.
         :param plot_flap_cycle: If True, plots time histories of moments and
             deformations at the end of the simulation. The default is False.
         :return: None
@@ -1428,10 +1441,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Tunable Parameters
         self._wing_density = wing_density  # per unit height kg/m^2
-        self._moment_scaling_factor = moment_scaling_factor
         self._spring_constant = spring_constant
         self._damping_constant = damping_constant
-        self._aero_scaling = aero_scaling
 
         # Permanent parameters
         self._step_discards = (
@@ -1440,18 +1451,27 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Per-wing deformation state. Indexed as [wing_idx].
         # Each element holds the current cumulative deformation angles for one wing.
+        # The y components are torsional angles in radians; the x and z components are
+        # zero.
         self.net_deformation_per_wing: list[np.ndarray] = []
-        # Per-wing angular velocity state. Indexed as [wing_idx].
+        # Per-wing angular velocity state. Indexed as [wing_idx]. The y components are
+        # torsional angular velocities in rad/s; the x and z components are zero.
         self.angular_velocities_per_wing: list[np.ndarray] = []
-        # Per-wing panel position history. Indexed as [wing_idx][step].
+        # Per-wing panel position history. Indexed as [wing_idx][step]. The positions
+        # are panel center points in meters.
         self.positions_per_wing: list[list[np.ndarray]] = []
-        # Per-wing moment and deformation history. Indexed as [wing_idx][step].
+        # Per-wing moment and deformation history. Indexed as [wing_idx][step]. The
+        # inertial and aerodynamic moments are in N*m, the net data snapshots hold
+        # torsional angles in radians in their y components, the angular velocity
+        # snapshots hold rad/s in their y components, and the flap points are position
+        # offsets in meters.
         self.per_step_inertial_per_wing: list[list[np.ndarray]] = []
         self.per_step_aero_per_wing: list[list[np.ndarray]] = []
         self.net_data_per_wing: list[list[np.ndarray]] = []
         self.angular_velocity_data_per_wing: list[list[np.ndarray]] = []
         self.flap_points_per_wing: list[list[np.ndarray]] = []
-        # Per-wing undeformed baseline positions. Indexed as [wing_idx].
+        # Per-wing undeformed baseline positions. Indexed as [wing_idx]. The positions
+        # are panel center points in meters.
         self.base_wing_positions_per_wing: list[np.ndarray] = []
 
         # Initialize per-wing state now that we have the initial airplane geometry.
@@ -1492,14 +1512,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         return self._damping_constant
 
     @property
-    def aero_scaling(self) -> float:
-        return self._aero_scaling
-
-    @property
-    def moment_scaling_factor(self) -> float:
-        return self._moment_scaling_factor
-
-    @property
     def step_discards(self) -> int:
         return self._step_discards
 
@@ -1514,11 +1526,14 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         every Wing in the airplane and appends one entry per wing to each per-wing state
         list. The deformation accumulator (net_deformation_per_wing) and the angular
         velocity store (angular_velocities_per_wing) are each a zero-valued (N_span+1,
-        3) array. The history lists start empty: positions_per_wing holds panel center
-        positions, per_step_inertial_per_wing and per_step_aero_per_wing hold inertial
-        and aerodynamic moment arrays, net_data_per_wing holds cumulative deformation
-        snapshots, angular_velocity_data_per_wing holds angular velocity snapshots, and
-        flap_points_per_wing holds wing deflection offsets. The undeformed baseline
+        3) array whose y components carry the torsional angles (radians) and torsional
+        angular velocities (rad/s). The history lists start empty: positions_per_wing
+        holds panel center positions (meters), per_step_inertial_per_wing and
+        per_step_aero_per_wing hold inertial and aerodynamic moment arrays (N*m),
+        net_data_per_wing holds cumulative deformation snapshots (torsional angles in
+        radians in the y components), angular_velocity_data_per_wing holds angular
+        velocity snapshots (rad/s in the y components), and flap_points_per_wing holds
+        wing deflection offsets (meters). The undeformed baseline
         (base_wing_positions_per_wing) starts as a zero-size array marking it as unset.
 
         :param airplane: The initial Airplane whose Wings define the geometry.
@@ -1644,15 +1659,21 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # calculate_wing_deformation returns a per-wing list: each element is either
         # the deformation ndarray for an aeroelastic wing or None for a standard wing.
-        wing_deformation_angles_ixyz = self.calculate_wing_deformation(
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self.calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
+
+        # The structural model works in radians; the geometry API expects degrees.
+        deformationAngles_Wcsp_to_Wcs_ixyz = [
+            np.rad2deg(arr) if arr is not None else None
+            for arr in deformationAnglesRad_Wcsp_to_Wcs_ixyz
+        ]
 
         # Generate the deformed airplane at this step.
         airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
-            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
         operating_point = self._aeroelastic_movement.operating_points[next_step]
 
@@ -1681,7 +1702,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param step: The current time step index (0-indexed).
         :return: A list of length len(airplane.wings) where each element is either an
             (N_spanwise+1, 3) ndarray of cumulative deformation angles for an
-            aeroelastic wing or None for a non-aeroelastic wing.
+            aeroelastic wing or None for a non-aeroelastic wing. Each row is a (3,)
+            angle vector that perturbs the corresponding WingCrossSection's
+            angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence. The units are in
+            radians.
         """
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]
@@ -1793,7 +1817,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             np.array(
                 solver.moments_GP1_Slep[panel_offset : panel_offset + num_panels]
             ).reshape(num_chordwise_panels, num_spanwise_panels, 3)
-            * self.aero_scaling
+            * _AERO_SCALING
         )
         return aeroMoments_GP1_Slep
 
@@ -1866,7 +1890,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 np.array(
                     [
                         0,
-                        thetas[i + 1] * self.moment_scaling_factor,
+                        thetas[i + 1] * _DEFORMATION_SCALING,
                         0,
                     ]
                 )
@@ -2183,7 +2207,15 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         h = np.deg2rad(_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
         spacing = _wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
         if spacing == "sine":
-            torque_func = lambda time: -1 * (b**2) * np.sin(b * time + h) * amp * span_I
+            # amp is in degrees (ampAngles_Gs_to_Wn_ixyz); convert to radians so
+            # the inertial torque (N*m) is consistent with the SI spring-damper ODE.
+            torque_func = (
+                lambda time: -1
+                * (b**2)
+                * np.sin(b * time + h)
+                * np.deg2rad(amp)
+                * span_I
+            )
         elif spacing == "uniform":
             raise ValueError(
                 "Sawtooth function (uniform spacing) is not differentiable, "
@@ -2194,7 +2226,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             # whenever the spacing component is a custom callable.
             deriv = _wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
             assert deriv is not None
-            torque_func = lambda time: deriv(time) * span_I
+            # deriv is the second derivative before amplitude scaling; amp is in
+            # degrees, so convert to radians to keep torque in N*m.
+            torque_func = lambda time: np.deg2rad(amp) * deriv(time) * span_I
 
         return torque_func
 
@@ -2214,7 +2248,13 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         Solves the second-order forced ODE: I * d^2(theta)/dt^2 = tau_aero + tau_inertial(t) - k*theta -
         c*d(theta)/dt
 
-        using scipy.integrate.solve_ivp with strict tolerances.
+        using scipy.integrate.solve_ivp with tolerances a few orders of magnitude
+        stricter than scipy's defaults. This integration is re-seeded from the previous
+        state at every outer time step, so its local errors compound across a
+        simulation rather than being controlled within a single integration. The
+        stricter tolerances guard against that accumulation, and against the absolute
+        tolerance floor swamping small torsional responses, at a cost that is small
+        relative to the aerodynamic solve.
 
         :param t: A (N,) ndarray of time points for integration evaluation.
         :param k: Spring constant (N*m/rad).
@@ -2244,8 +2284,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             (t[0], t[-1]),
             np.array([theta0, omega0]),
             t_eval=t,
-            rtol=1e-9,
-            atol=1e-12,
+            rtol=_SPRING_ODE_RELATIVE_TOLERANCE,
+            atol=_SPRING_ODE_ABSOLUTE_TOLERANCE,
         )
 
         theta = float(sol.y[0][-1])

@@ -2031,8 +2031,6 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.problem.wing_density, float)
         self.assertIsInstance(self.problem.spring_constant, float)
         self.assertIsInstance(self.problem.damping_constant, float)
-        self.assertIsInstance(self.problem.aero_scaling, float)
-        self.assertIsInstance(self.problem.moment_scaling_factor, float)
         self.assertIsInstance(self.problem.step_discards, int)
         self.assertIsInstance(self.problem.plot_flap_cycle, bool)
 

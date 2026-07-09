@@ -169,6 +169,23 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             torque_func_2(t_eval), 2.0 * torque_func_1(t_eval), places=10
         )
 
+    def test_generate_inertial_torque_function_sine_matches_analytic_value(self):
+        """Test that the sinusoidal-spacing torque equals -I*b^2*sin(b*t+h)*A with the
+        amplitude converted from degrees to radians so the torque is in SI N*m."""
+        wing_movement = self.problem.wing_movement
+        amp_deg = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+        period = wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
+        phase_deg = wing_movement.phaseAngles_Gs_to_Wn_ixyz[0]
+
+        span_I = 3.0
+        t_eval = 0.3
+        torque_func = self.problem.generate_inertial_torque_function(span_I=span_I)
+
+        b = 2.0 * np.pi / period
+        h = np.deg2rad(phase_deg)
+        expected = -1.0 * b**2 * np.sin(b * t_eval + h) * np.deg2rad(amp_deg) * span_I
+        self.assertAlmostEqual(torque_func(t_eval), expected, places=10)
+
     def test_generate_inertial_torque_function_uniform_spacing_raises(self):
         """Test that generate_inertial_torque_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
@@ -203,7 +220,11 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
             self.assertTrue(callable(torque_func))
             result = torque_func(0.5)
-            self.assertAlmostEqual(result, -np.sin(0.5) * 2.0, places=10)
+            # The amplitude is stored in degrees but the torque (N*m) must be in SI
+            # units, so the second derivative is scaled by np.deg2rad(amp).
+            amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+            expected = np.deg2rad(amp) * -np.sin(0.5) * 2.0
+            self.assertAlmostEqual(result, expected, places=10)
 
     def test_plot_aeroelastic_results_calls_plot_flap_cycle_curves_four_times(self):
         """Test that _plot_aeroelastic_results calls plot_flap_cycle_curves exactly

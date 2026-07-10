@@ -321,15 +321,20 @@ example_solver.run(
     prescribed_wake=True,
     show_progress=True,
 )
+print("The simulation has finished.")
 
 # Save the solved solver to a compressed JSON file. This allows us to load the results
 # later without re-running the simulation. Use ".json.gz" for gzip compression, which is
 # recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+print("Saving the solver...")
 ps.save("example_solver.json.gz", example_solver)
+print("Finished saving the solver.")
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
+print("Loading the saved solver...")
 loaded_solver = ps.load("example_solver.json.gz")
+print("Finished loading the saved solver.")
 
 # Now that we have run the solver, we can create an animation of the results.
 ps.output.animate(

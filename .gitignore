@@ -137,17 +137,17 @@ cython_debug/
 /dist
 
 # These are files and folders created by usage to ignore
-Animate.webp
-Draw.webp
-* Forces.png
-* Force Coefficients.png
-* Moments.png
-* Moment Coefficients.png
-* Position.png
-* Velocity.png
-* Orientation.png
-* Angular Velocity.png
-* Aerodynamic Angles.png
+animate.webp
+draw.webp
+*_forces.png
+*_force_coefficients.png
+*_moments.png
+*_moment_coefficients.png
+*_position.png
+*_velocity.png
+*_orientation.png
+*_angular_velocity.png
+*_aerodynamic_angles.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores

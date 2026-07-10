@@ -75,7 +75,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             base Airplane's Wings. Each element must be either an
             AeroelasticWingMovement (which will receive structural deformation at each
             time step) or a WingMovement (which will be advanced without deformation).
-            The list must have the same length as the base Airplane's list of Wings.
+            The list must have the same length as the base Airplane's list of Wings. No
+            AeroelasticWingMovement element may have a base Wing with type 4 symmetry;
+            see the AeroelasticWingMovement class docstring for details.
         :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             AeroelasticAirplaneMovement's changes in its Airplanes' Cg_GP1_CgP1
@@ -131,6 +133,31 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                     "AeroelasticWingMovement or a WingMovement."
                 )
 
+            # Reject an AeroelasticWingMovement whose base Wing has type 4
+            # symmetry. A type 4 symmetric Wing's mirrored half has Panels but no
+            # WingCrossSections, so its strips cannot deform. The check lives at
+            # this level rather than in AeroelasticWingMovement.__init__() because
+            # a base Wing may not have been meshed yet (and so had no symmetry
+            # type) when its AeroelasticWingMovement was constructed, while a base
+            # Wing shared with the base Airplane has been meshed in place by the
+            # base Airplane's constructor by the time this check runs. A base Wing
+            # that is unmeshed and not shared with the base Airplane still passes
+            # this check, but such a Wing fails loudly in the structural solve.
+            if (
+                isinstance(
+                    wing_movement,
+                    aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+                )
+                and wing_movement.base_wing.symmetry_type == 4
+            ):
+                raise ValueError(
+                    "An AeroelasticWingMovement's base Wing cannot have type 4 "
+                    "symmetry. A type 4 symmetric Wing's mirrored half has Panels "
+                    "but no WingCrossSections, so its strips cannot deform. Define "
+                    "the geometry with type 5 symmetry or as two explicitly "
+                    "defined Wings instead."
+                )
+
         super().__init__(
             base_airplane=base_airplane,
             wing_movements=wing_movements,
@@ -162,7 +189,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         self,
         step: int,
         delta_time: float | int,
-        wing_deformation_angles_ixyz: list[np.ndarray | None] | None = None,
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
     ) -> geometry.airplane.Airplane:
         """Creates the Airplane at a single time step, optionally applying structural
         deformation to each Wing.
@@ -173,9 +200,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param wing_deformation_angles_ixyz: A list of (N_wcs, 3) ndarrays of floats,
-            one per Wing, where N_wcs is the number of WingCrossSections in that Wing.
-            Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
+            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
+            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied to
@@ -226,9 +253,11 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         these_wings = []
         for i, wing_movement in enumerate(self.wing_movements):
             # Extract this Wing's deformation, or None.
-            this_deformation = None
-            if wing_deformation_angles_ixyz is not None:
-                this_deformation = wing_deformation_angles_ixyz[i]
+            theseDeformationAngles_Wcsp_to_Wcs_ixyz = None
+            if deformationAngles_Wcsp_to_Wcs_ixyz is not None:
+                theseDeformationAngles_Wcsp_to_Wcs_ixyz = (
+                    deformationAngles_Wcsp_to_Wcs_ixyz[i]
+                )
 
             if isinstance(
                 wing_movement,
@@ -238,7 +267,7 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                     wing_movement.generate_wing_at_time_step(
                         step,
                         delta_time,
-                        deformation_angles_ixyz=this_deformation,
+                        deformationAngles_Wcsp_to_Wcs_ixyz=theseDeformationAngles_Wcsp_to_Wcs_ixyz,
                     )
                 )
             else:

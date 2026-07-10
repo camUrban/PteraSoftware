@@ -468,7 +468,7 @@ The standard abbreviations and names are given below for reference. See the sect
 ### 13. Strip leading edge point (SLEP)
 
 * Only relevant in aeroelastic simulations
-* The front-left panel point of the root (innermost) panel of a spanwise strip. Each non-tip WingCrossSection defines one strip and therefore one SLEP. In stacked panel arrays, `_Slep` is used without a numeric index to implicitly mean "relative to the SLEP of the panel's own strip," rather than referring to a single named point.
+* The leading edge point of a spanwise strip's outboard bounding WingCrossSection, which is the same WingCrossSection that receives the strip's torsional deformation. Each non-root WingCrossSection defines one strip and therefore one SLEP. On the panel mesh, the SLEP is the outboard front point of the strip's first-chordwise-row panel: the front-right panel point on a root-to-tip grid, and the front-left panel point on a mirror-meshed (tip-to-root) grid. In stacked panel arrays, `_Slep` is used without a numeric index to implicitly mean "relative to the SLEP of the panel's own strip," rather than referring to a single named point.
 * Ownership: Wing
 * Local reference examples
     * Text: ...relative to the strip leading edge point...

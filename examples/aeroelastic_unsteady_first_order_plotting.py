@@ -14,13 +14,13 @@ import pterasoftware as ps
 CURVE_INDEX = 16
 
 # These are the default values used when a parameter is not being swept.
-DEFAULT_K = 1.0
-DEFAULT_B = 1.0
-DEFAULT_DENSITY = 0.012
+DEFAULT_K = 1000.0
+DEFAULT_B = 1000.0
+DEFAULT_DENSITY = 6.0
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
-K_VALUES: list[float] = [1.0, 4.0, 10.0, 40.0]
+K_VALUES: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
 B_VALUES: list[float] = []
 DENSITY_VALUES: list[float] = []
 
@@ -296,9 +296,7 @@ def run_aeroelastic(
         wing_density=wing_density,
         spring_constant=spring_constant,
         damping_constant=damping_constant,
-        aero_scaling=1.0,
         step_discards=5,
-        moment_scaling_factor=1.0,
         plot_flap_cycle=False,
     )
 
@@ -349,8 +347,9 @@ flap_angle = None
 for val in sweep_values:
     print(f"Running with {sweep_symbol}={val}...")
     net_data, problem = run_aeroelastic(**{sweep_kwarg: val})
-    # Extract the y component (torsional angle) for Curve 16 across all time steps.
-    curve_16 = np.array(net_data)[:, CURVE_INDEX, 1].tolist()
+    # Extract the y component (the torsional angle) for Curve 16 across all time
+    # steps, converting it from radians to degrees.
+    curve_16 = np.rad2deg(np.array(net_data)[:, CURVE_INDEX, 1]).tolist()
     results[val] = curve_16
     print(f"  Completed {sweep_symbol}={val}, {len(curve_16)} steps")
 

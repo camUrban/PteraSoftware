@@ -2031,8 +2031,6 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.problem.wing_density, float)
         self.assertIsInstance(self.problem.spring_constant, float)
         self.assertIsInstance(self.problem.damping_constant, float)
-        self.assertIsInstance(self.problem.aero_scaling, float)
-        self.assertIsInstance(self.problem.moment_scaling_factor, float)
         self.assertIsInstance(self.problem.step_discards, int)
         self.assertIsInstance(self.problem.plot_flap_cycle, bool)
 
@@ -2125,9 +2123,8 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.stackCblvpl_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.stackCblvpb_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.stackCpp_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackFlpp_GP1_CgP1, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stack_leading_edge_points, np.ndarray)
+        self.assertIsInstance(self.solver.stackSlep_GP1_CgP1, np.ndarray)
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""

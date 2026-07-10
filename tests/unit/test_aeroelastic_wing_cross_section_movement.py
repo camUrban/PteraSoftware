@@ -104,7 +104,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
 
     def test_default_deformation_matches_explicit_none(self):
-        """Test that omitting deformation_angles_ixyz produces the same result as
+        """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same result as
         explicitly passing None.
         """
         aeroelastic_wing_cross_section_movement = (
@@ -115,7 +115,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             step=2, delta_time=0.01
         )
         explicit_none_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
-            step=2, delta_time=0.01, deformation_angles_ixyz=None
+            step=2, delta_time=0.01, deformationAngles_Wcsp_to_Wcs_ixyz=None
         )
 
         npt.assert_array_equal(
@@ -128,7 +128,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
 
     def test_deformation_adds_to_prescribed_angles(self):
-        """Test that deformation_angles_ixyz is added to the prescribed
+        """Test that deformationAngles_Wcsp_to_Wcs_ixyz is added to the prescribed
         angles_Wcsp_to_Wcs_ixyz.
         """
         aeroelastic_wing_cross_section_movement = (
@@ -137,18 +137,19 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         base_wing_cross_section = (
             aeroelastic_wing_cross_section_movement.base_wing_cross_section
         )
-        deformation_angles_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
 
         wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
             step=1,
             delta_time=0.01,
-            deformation_angles_ixyz=deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         # With static movement, the prescribed angles equal the base angles, so the
         # result should be the base angles plus the deformation.
         expected_angles = (
-            base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz + deformation_angles_ixyz
+            base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz
+            + deformationAngles_Wcsp_to_Wcs_ixyz
         )
         npt.assert_allclose(
             wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
@@ -158,7 +159,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         )
 
     def test_deformation_leaves_Lp_unchanged(self):
-        """Test that deformation_angles_ixyz does not affect the generated
+        """Test that deformationAngles_Wcsp_to_Wcs_ixyz does not affect the generated
         Lp_Wcsp_Lpp.
         """
         aeroelastic_wing_cross_section_movement = (
@@ -167,12 +168,12 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         base_wing_cross_section = (
             aeroelastic_wing_cross_section_movement.base_wing_cross_section
         )
-        deformation_angles_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array([5.0, 5.0, 5.0], dtype=float)
 
         wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
             step=1,
             delta_time=0.01,
-            deformation_angles_ixyz=deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         npt.assert_allclose(
@@ -194,7 +195,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         zero_deformation_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
             step=2,
             delta_time=0.01,
-            deformation_angles_ixyz=np.zeros(3, dtype=float),
+            deformationAngles_Wcsp_to_Wcs_ixyz=np.zeros(3, dtype=float),
         )
 
         npt.assert_allclose(
@@ -211,7 +212,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
-        deformation_angles_ixyz = np.array([3.0, -2.0, 1.0], dtype=float)
+        deformationAngles_Wcsp_to_Wcs_ixyz = np.array([3.0, -2.0, 1.0], dtype=float)
 
         prescribed_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
             step=3, delta_time=0.01
@@ -219,7 +220,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         deformed_wing_cross_section = aeroelastic_wing_cross_section_movement.generate_wing_cross_section_at_time_step(
             step=3,
             delta_time=0.01,
-            deformation_angles_ixyz=deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )
 
         # The deformed angles should differ from the prescribed angles by exactly the
@@ -227,7 +228,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
         npt.assert_allclose(
             deformed_wing_cross_section.angles_Wcsp_to_Wcs_ixyz
             - prescribed_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-            deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz,
             rtol=1e-10,
             atol=1e-14,
         )

@@ -158,7 +158,7 @@ class AeroelasticMovement(_core.CoreMovement):
         self,
         airplane_movement_index: int,
         step: int,
-        wing_deformation_angles_ixyz: list[np.ndarray | None] | None = None,
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] | None = None,
     ) -> geometry.airplane.Airplane:
         """Creates the Airplane at a single time step for a given
         AeroelasticAirplaneMovement, applying deformation from the solver's structural
@@ -170,9 +170,9 @@ class AeroelasticMovement(_core.CoreMovement):
         :param airplane_movement_index: The index of the AeroelasticAirplaneMovement in
             this AeroelasticMovement's airplane_movements tuple.
         :param step: The time step index. Must be a non negative int.
-        :param wing_deformation_angles_ixyz: A list of (N_wcs, 3) ndarrays of floats,
-            one per Wing, where N_wcs is the number of WingCrossSections in that Wing.
-            Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
+            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
+            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied if
@@ -183,5 +183,5 @@ class AeroelasticMovement(_core.CoreMovement):
         ].generate_airplane_at_time_step(
             step,
             self._delta_time,
-            wing_deformation_angles_ixyz=wing_deformation_angles_ixyz,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
         )

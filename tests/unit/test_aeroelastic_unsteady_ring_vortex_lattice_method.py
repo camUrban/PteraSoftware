@@ -77,9 +77,9 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         """Test that moments_GP1_Slep is initially empty before any step."""
         self.assertEqual(self.solver.moments_GP1_Slep.size, 0)
 
-    def test_stack_leading_edge_points_initial_empty(self):
-        """Test that stack_leading_edge_points is initially empty before any step."""
-        self.assertEqual(self.solver.stack_leading_edge_points.size, 0)
+    def test_stack_slep_initial_empty(self):
+        """Test that stackSlep_GP1_CgP1 is initially empty before any step."""
+        self.assertEqual(self.solver.stackSlep_GP1_CgP1.size, 0)
 
     def test_reinitialize_step_arrays_hook_produces_zero_arrays(self):
         """Test that _reinitialize_step_arrays_hook fills all SLEP arrays with
@@ -92,7 +92,7 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             self.solver.stackCblvpb_GP1_Slep,
             self.solver.stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
-            self.solver.stackFlpp_GP1_CgP1,
+            self.solver.stackSlep_GP1_CgP1,
         ]
         for arr in arrays_to_check:
             with self.subTest(array=arr):
@@ -110,18 +110,29 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             self.solver.stackCblvpb_GP1_Slep,
             self.solver.stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
-            self.solver.stackFlpp_GP1_CgP1,
+            self.solver.stackSlep_GP1_CgP1,
         ]
         for arr in arrays_to_check:
             with self.subTest(array=arr):
                 self.assertEqual(arr.shape, expected_shape)
 
-    def test_slep_point_indices_length_equals_wcs_count(self):
-        """Test that slep_point_indices has one entry per WingCrossSection."""
-        first_problem = self.solver.unsteady_problem.steady_problems[0]
-        total_wcs = sum(
-            len(wing.wing_cross_sections)
-            for airplane in first_problem.airplanes
-            for wing in airplane.wings
+    def test_slep_point_indices_length_equals_panel_count(self):
+        """Test that slep_point_indices has one entry per panel."""
+        self.assertEqual(len(self.solver.slep_point_indices), self.solver.num_panels)
+
+    def test_slep_outboard_is_left_matches_wing_meshing(self):
+        """Test that _slep_outboard_is_left has one boolean entry per panel and marks
+        exactly the panels of mirror-meshed Wings."""
+        self.assertEqual(
+            len(self.solver._slep_outboard_is_left), self.solver.num_panels
         )
-        self.assertEqual(len(self.solver.slep_point_indices), total_wcs)
+        self.assertEqual(self.solver._slep_outboard_is_left.dtype, np.bool_)
+        expected = []
+        first_problem = self.solver.unsteady_problem.steady_problems[0]
+        for airplane in first_problem.airplanes:
+            for wing in airplane.wings:
+                num_wing_panels = wing.num_chordwise_panels * wing.num_spanwise_panels
+                expected.extend([wing.mirror_only] * num_wing_panels)
+        np.testing.assert_array_equal(
+            self.solver._slep_outboard_is_left, np.array(expected, dtype=bool)
+        )

@@ -75,7 +75,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             base Airplane's Wings. Each element must be either an
             AeroelasticWingMovement (which will receive structural deformation at each
             time step) or a WingMovement (which will be advanced without deformation).
-            The list must have the same length as the base Airplane's list of Wings.
+            The list must have the same length as the base Airplane's list of Wings. No
+            AeroelasticWingMovement element may have a base Wing with type 4 symmetry;
+            see the AeroelasticWingMovement class docstring for details.
         :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             AeroelasticAirplaneMovement's changes in its Airplanes' Cg_GP1_CgP1
@@ -129,6 +131,31 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                 raise TypeError(
                     "Every element in wing_movements must be an "
                     "AeroelasticWingMovement or a WingMovement."
+                )
+
+            # Reject an AeroelasticWingMovement whose base Wing has type 4
+            # symmetry. A type 4 symmetric Wing's mirrored half has Panels but no
+            # WingCrossSections, so its strips cannot deform. The check lives at
+            # this level rather than in AeroelasticWingMovement.__init__() because
+            # a base Wing may not have been meshed yet (and so had no symmetry
+            # type) when its AeroelasticWingMovement was constructed, while a base
+            # Wing shared with the base Airplane has been meshed in place by the
+            # base Airplane's constructor by the time this check runs. A base Wing
+            # that is unmeshed and not shared with the base Airplane still passes
+            # this check, but such a Wing fails loudly in the structural solve.
+            if (
+                isinstance(
+                    wing_movement,
+                    aeroelastic_wing_movement_mod.AeroelasticWingMovement,
+                )
+                and wing_movement.base_wing.symmetry_type == 4
+            ):
+                raise ValueError(
+                    "An AeroelasticWingMovement's base Wing cannot have type 4 "
+                    "symmetry. A type 4 symmetric Wing's mirrored half has Panels "
+                    "but no WingCrossSections, so its strips cannot deform. Define "
+                    "the geometry with type 5 symmetry or as two explicitly "
+                    "defined Wings instead."
                 )
 
         super().__init__(

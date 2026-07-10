@@ -56,6 +56,16 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     plane to transition from coincident to non coincident, or vice versa. This is
     checked by this AeroelasticWingMovement's parent AeroelasticAirplaneMovement's
     parent AeroelasticMovement.
+
+    Additionally, the base Wing cannot have type 4 symmetry. A type 4 symmetric Wing
+    meshes its mirrored half into its own Panel grid without giving that half any
+    WingCrossSections, so the structural model would have no WingCrossSections at which
+    to track the mirrored strips' deformation. Define such geometry with type 5
+    symmetry, which the parent Airplane splits into two reflected Wings that each have a
+    full set of WingCrossSections, or as two explicitly defined Wings. This is checked
+    by this AeroelasticWingMovement's parent AeroelasticAirplaneMovement's
+    initialization method, by which point the base Wing's symmetry type has been
+    determined (which happens when the Wing's parent Airplane is created).
     """
 
     __slots__ = ("_spacingAnglesSecondDerivative_Gs_to_Wn_ixyz",)
@@ -104,7 +114,8 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         """The initialization method.
 
         :param base_wing: The base Wing from which the Wing at each time step will be
-            created.
+            created. It cannot have type 4 symmetry; see this class's docstring for
+            details.
         :param wing_cross_section_movements: A list of
             AeroelasticWingCrossSectionMovements associated with each of the base Wing's
             WingCrossSections. It must have the same length as the base Wing's list of

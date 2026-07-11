@@ -5,8 +5,9 @@
 AeroelasticUnsteadyRingVortexLatticeMethodSolver: A subclass of
 CoupledUnsteadyRingVortexLatticeMethodSolver that solves AeroelasticUnsteadyProblems,
 extending the coupled solver with Strip Leading Edge Point (SLEP) functionality for
-computing aerodynamic moments about the strip leading edge so that wing deformations can
-be coupled with aerodynamic loads.
+computing the aerodynamic moments (in the first Airplane's geometry axes, relative to
+the strip leading edge points) so that wing deformations can be coupled with aerodynamic
+loads.
 
 **Contains the following functions:**
 
@@ -31,15 +32,18 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     """A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver that adds SLEP (Strip
     Leading Edge Point) functionality for aeroelastic simulations.
 
-    This solver extends the coupled solver with moment calculations about each panel's
-    strip leading edge point, which is important for analyzing wing loading and
-    deformation characteristics relative to the wing root.
+    This solver extends the coupled solver with calculations of the moments (in the
+    first Airplane's geometry axes) about each panel's strip leading edge point, which
+    is important for analyzing wing loading and deformation characteristics relative to
+    the wing root.
 
     **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:**
     initializes and maintains SLEP index mapping and position arrays, overrides
     ``_reinitialize_step_arrays_hook`` to reset SLEP arrays each step, overrides
-    ``_load_calculation_moment_processing_hook`` to compute SLEP moments, and computes
-    bound vortex positions relative to strip leading edge points.
+    ``_load_calculation_moment_processing_hook`` to compute the moments (in the first
+    Airplane's geometry axes) about the strip leading edge points, and computes the
+    bound vortex positions (in the first Airplane's geometry axes) relative to the strip
+    leading edge points.
     """
 
     __slots__ = (
@@ -80,8 +84,8 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         # Initialize SLEP (Strip Leading Edge Point) information. The SLEP is the
         # leading edge point of the strip's outboard bounding WingCrossSection, the
-        # same WingCrossSection that receives the strip's twist, so each strip's
-        # moments and its deformation share one reference. The solver's flat panel
+        # same WingCrossSection that receives the strip's torsional deformation, so
+        # each strip's moments and its deformation share one reference. The solver's flat panel
         # stack is ordered chord-major within each wing (all spanwise positions of
         # the first chordwise row, then all spanwise positions of the second
         # chordwise row, and so on), with the wings stacked in order. For each
@@ -161,16 +165,19 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         backLegForces_GP1,
         unsteady_forces_GP1,
     ) -> np.ndarray:
-        """Override parent to compute moments about both center-of-gravity and SLEP.
+        """Override parent to compute moments about both the first Airplane's CG and the
+        strip leading edge points.
 
         This hook extends the parent class's moment calculation by additionally
-        computing moments about each panel's Strip Leading Edge Point (SLEP). This is
-        used for analyzing wing loading and deformation characteristics relative to the
-        wing root.
+        computing the moments (in the first Airplane's geometry axes) about each panel's
+        strip leading edge point (SLEP). This is used for analyzing wing loading and
+        deformation characteristics relative to the wing root.
 
-        The method first calls the parent's implementation to get CG-based moments, then
-        updates bound vortex positions relative to SLEP points, recalculates all moment
-        contributions in the SLEP frame, and stores the SLEP moments in
+        The method first calls the parent's implementation to get the moments (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG), then
+        updates the bound vortex positions to be relative to the strip leading edge
+        points, recalculates all moment contributions (in the first Airplane's geometry
+        axes, each relative to its panel's strip leading edge point), and stores them in
         self.moments_GP1_Slep.
 
         :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
@@ -219,8 +226,9 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         return moments_GP1_CgP1
 
     def _update_bound_vortex_positions_relative_to_slep_points(self) -> None:
-        """Transform bound RingVortex leg center positions from CG-relative to SLEP-
-        relative.
+        """Transform the bound RingVortex leg center positions (in the first Airplane's
+        geometry axes) from relative to the first Airplane's CG to relative to each
+        panel's strip leading edge point.
 
         Gathers the outboard front point from each panel (the front-right point on a
         root-to-tip grid, and the front-left point on a mirror-meshed grid), maps each
@@ -228,8 +236,9 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         that SLEP position from the vortex leg center positions and the collocation
         points.
 
-        This prepares positions for computing moments about the strip leading edge,
-        which is important for analyzing local wing loading and deformations.
+        This prepares positions for computing the moments (in the first Airplane's
+        geometry axes) about the strip leading edge points, which is important for
+        analyzing local wing loading and deformations.
 
         :return: None
         """

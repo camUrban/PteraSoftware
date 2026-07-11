@@ -323,16 +323,15 @@ example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
 
 # Define the AeroelasticUnsteadyProblem.
 # The deformation parameters are set here.
-# The wing_density, spring_constant and damping_constant are the primary parameters
-# you should expect to change. The rest are more for considering numerical issues
-# with our integrator and debugging. Plotting the flap cycle can give good data as well.
+# The wing_density, spring_constant_rad, and damping_constant_rad are the
+# primary parameters you should expect to change. The step_discards parameter
+# is more for managing the UVLM solver's inconsistent startup effects.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=example_movement,
     wing_density=6.0,
-    spring_constant=1000.0,
-    damping_constant=1000.0,
+    spring_constant_rad=1000.0,
+    damping_constant_rad=1000.0,
     step_discards=5,
-    plot_flap_cycle=False,
 )
 
 # Define a new solver. We'll create an AeroelasticUnsteadyRingVortexLatticeMethodSolver,

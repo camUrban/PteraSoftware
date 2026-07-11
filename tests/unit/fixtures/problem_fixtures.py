@@ -13,11 +13,9 @@ from . import (
 )
 
 
-def make_basic_aeroelastic_unsteady_problem_fixture(plot_flap_cycle=False):
+def make_basic_aeroelastic_unsteady_problem_fixture():
     """This method makes a fixture that is an AeroelasticUnsteadyProblem for testing.
 
-    :param plot_flap_cycle: If True, the returned problem plots time histories at the
-        end of the simulation. The default is False.
     :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem
         This is the AeroelasticUnsteadyProblem configured for general testing.
     """
@@ -28,22 +26,21 @@ def make_basic_aeroelastic_unsteady_problem_fixture(plot_flap_cycle=False):
     basic_aeroelastic_unsteady_problem_fixture = ps.problems.AeroelasticUnsteadyProblem(
         movement=aeroelastic_movement,
         wing_density=0.01,
-        spring_constant=10.0,
-        damping_constant=0.5,
-        plot_flap_cycle=plot_flap_cycle,
+        spring_constant_rad=10.0,
+        damping_constant_rad=0.5,
     )
 
     return basic_aeroelastic_unsteady_problem_fixture
 
 
 def make_aeroelastic_unsteady_problem_with_standard_wing_fixture():
-    """This method makes a fixture that is an AeroelasticUnsteadyProblem whose wing is
+    """This method makes a fixture that is an AeroelasticUnsteadyProblem whose Wing is
     backed by a standard WingMovement rather than an AeroelasticWingMovement.
 
     :return aeroelastic_unsteady_problem_with_standard_wing_fixture:
         AeroelasticUnsteadyProblem
         This is the AeroelasticUnsteadyProblem configured for testing the
-        non-aeroelastic wing code path.
+        non-aeroelastic Wing code path.
     """
     # Create the AeroelasticMovement with a standard WingMovement child.
     movement = movement_fixtures.make_aeroelastic_movement_with_standard_wing_fixture()
@@ -53,8 +50,8 @@ def make_aeroelastic_unsteady_problem_with_standard_wing_fixture():
         ps.problems.AeroelasticUnsteadyProblem(
             movement=movement,
             wing_density=0.01,
-            spring_constant=10.0,
-            damping_constant=0.5,
+            spring_constant_rad=10.0,
+            damping_constant_rad=0.5,
         )
     )
 

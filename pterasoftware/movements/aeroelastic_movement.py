@@ -170,9 +170,10 @@ class AeroelasticMovement(_core.CoreMovement):
         :param airplane_movement_index: The index of the AeroelasticAirplaneMovement in
             this AeroelasticMovement's airplane_movements tuple.
         :param step: The time step index. Must be a non negative int.
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
-            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
-            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of ndarrays of floats, one per
+            Wing, each with one row per WingCrossSection in that Wing. Each row is a
+            (3,) deformation angle vector that perturbs the corresponding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied if

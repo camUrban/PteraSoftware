@@ -29,8 +29,9 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     In aeroelastic simulations, wing geometry is prescribed via oscillation parameters
     (the same oscillation based generation as WingMovement), but the solver adds
     structural deformation at each time step. This class overrides
-    generate_wing_at_time_step to accept per WingCrossSection deformation angles that
-    are threaded down to its AeroelasticWingCrossSectionMovement children.
+    generate_wing_at_time_step to accept per WingCrossSection deformation angles (which
+    perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to
+    its AeroelasticWingCrossSectionMovement children.
 
     **Contains the following methods:**
 
@@ -201,7 +202,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         :param spacingAnglesSecondDerivative_Gs_to_Wn_ixyz: An optional sequence with
             shape (3,) holding the analytical second time derivative of each
             spacingAngles_Gs_to_Wn_ixyz component, used by the aeroelastic solver to
-            compute the inertial torque from the prescribed flapping acceleration. Each
+            compute the inertial moment from the prescribed flapping acceleration. Each
             element is either a callable that accepts a time (in seconds) and returns
             the second derivative (in radians per second squared, before amplitude
             scaling), or None when the corresponding spacing component does not have
@@ -209,7 +210,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             component must agree with its matching spacingAngles_Gs_to_Wn_ixyz
             component: a custom (callable) spacing must have a non-None derivative here,
             and a "sine" or "uniform" spacing must have None here (their derivatives are
-            handled analytically or rejected as non-differentiable when the torque is
+            handled analytically or rejected as non-differentiable when the moment is
             generated, so a supplied derivative would be ignored). Either mismatch
             raises a ValueError. When None, every component is None, which is valid only
             when no spacingAngles_Gs_to_Wn_ixyz component is a custom callable. The
@@ -275,9 +276,9 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         # component, so the two must agree per component. A callable spacing has no
         # analytical derivative the solver can take, so it must be paired with one. A
         # named ("sine" or "uniform") spacing already has its derivative handled
-        # analytically or rejected as non-differentiable when the torque is generated,
+        # analytically or rejected as non-differentiable when the moment is generated,
         # so a supplied derivative would be silently ignored. Reject either mismatch
-        # here rather than when the torque is generated.
+        # here rather than when the moment is generated.
         for i, spacing in enumerate(self.spacingAngles_Gs_to_Wn_ixyz):
             spacing_is_callable = callable(spacing)
             if spacing_is_callable and derivatives[i] is None:
@@ -336,12 +337,11 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A (N, 3) ndarray of floats where N is
-            the number of WingCrossSections in this Wing. Each row is a (3,) deformation
-            angle vector using an intrinsic xy'z" sequence that is added to the
-            corresponding WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The
-            units are in degrees. When None, no deformation is applied. The default is
-            None.
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: An ndarray of floats with one row per
+            WingCrossSection in this Wing. Each row is a (3,) deformation angle vector
+            using an intrinsic xy'z" sequence that is added to the corresponding
+            WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz. The units are in
+            degrees. When None, no deformation is applied. The default is None.
         :return: The Wing at this time step, with structural deformation applied to each
             WingCrossSection if provided.
         """

@@ -2029,10 +2029,9 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     def test_config_property_access(self):
         """Test that the immutable structural config properties are accessible."""
         self.assertIsInstance(self.problem.wing_density, float)
-        self.assertIsInstance(self.problem.spring_constant, float)
-        self.assertIsInstance(self.problem.damping_constant, float)
+        self.assertIsInstance(self.problem.spring_constant_rad, float)
+        self.assertIsInstance(self.problem.damping_constant_rad, float)
         self.assertIsInstance(self.problem.step_discards, int)
-        self.assertIsInstance(self.problem.plot_flap_cycle, bool)
 
     def test_movement_property_access(self):
         """Test that the movement properties are accessible and correctly typed."""
@@ -2051,16 +2050,13 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.problem.steady_problems, tuple)
 
     def test_mutable_state_access(self):
-        """Test that the mutable per-wing solver state lists are accessible."""
-        self.assertIsInstance(self.problem.net_deformation_per_wing, list)
-        self.assertIsInstance(self.problem.angular_velocities_per_wing, list)
-        self.assertIsInstance(self.problem.positions_per_wing, list)
-        self.assertIsInstance(self.problem.per_step_inertial_per_wing, list)
-        self.assertIsInstance(self.problem.per_step_aero_per_wing, list)
-        self.assertIsInstance(self.problem.net_data_per_wing, list)
-        self.assertIsInstance(self.problem.angular_velocity_data_per_wing, list)
-        self.assertIsInstance(self.problem.flap_points_per_wing, list)
-        self.assertIsInstance(self.problem.base_wing_positions_per_wing, list)
+        """Test that the mutable per-wing solver time series lists are accessible."""
+        self.assertIsInstance(
+            self.problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, list
+        )
+        self.assertIsInstance(
+            self.problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, list
+        )
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""
@@ -2071,8 +2067,8 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
         # Verify config property values match.
         self.assertEqual(copied.wing_density, self.problem.wing_density)
-        self.assertEqual(copied.spring_constant, self.problem.spring_constant)
-        self.assertEqual(copied.damping_constant, self.problem.damping_constant)
+        self.assertEqual(copied.spring_constant_rad, self.problem.spring_constant_rad)
+        self.assertEqual(copied.damping_constant_rad, self.problem.damping_constant_rad)
 
         # Verify the movement is independent.
         self.assertIsNot(copied.movement, self.problem.movement)

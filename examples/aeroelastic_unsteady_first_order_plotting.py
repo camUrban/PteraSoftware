@@ -1,7 +1,7 @@
 """Demonstrates running Ptera Software's
 AeroelasticUnsteadyRingVortexLatticeMethodSolver across a sweep of parameters.
 
-The Curve 16 Net Deformation curves from each run are overlaid in a plot.
+The wing-tip twist histories from each run are overlaid in a plot.
 """
 
 import matplotlib.pyplot as plt
@@ -9,9 +9,10 @@ import numpy as np
 
 import pterasoftware as ps
 
-# The curve index to extract from each Net Deformation result. Curve 16 corresponds
-# to the wing-tip spanwise station.
-CURVE_INDEX = 16
+# The element to extract from each entry of the deformation angle time series. The
+# example's Wing has 16 spanwise panels, so index 16 corresponds to the wing-tip
+# WingCrossSection.
+TIP_INDEX = 16
 
 # These are the default values used when a parameter is not being swept.
 DEFAULT_K = 1000.0
@@ -26,16 +27,18 @@ DENSITY_VALUES: list[float] = []
 
 
 def run_aeroelastic(
-    spring_constant: float = DEFAULT_K,
-    damping_constant: float = DEFAULT_B,
+    spring_constant_rad: float = DEFAULT_K,
+    damping_constant_rad: float = DEFAULT_B,
     wing_density: float = DEFAULT_DENSITY,
 ) -> tuple[list[np.ndarray], ps.problems.AeroelasticUnsteadyProblem]:
-    """Run the aeroelastic solver and return the net deformation data.
+    """Run the aeroelastic solver and return the first Wing's deformation angle time
+    series.
 
-    :param spring_constant: The torsional spring stiffness value.
-    :param damping_constant: The damping constant value.
+    :param spring_constant_rad: The torsional spring stiffness value.
+    :param damping_constant_rad: The damping constant value.
     :param wing_density: The wing density per unit height (kg/m^2).
-    :return: A tuple of the first Wing's net deformation data and the solved
+    :return: A tuple of the first Wing's cumulative torsional deformation angle time
+        series (its entry of listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz) and the solved
         AeroelasticUnsteadyProblem.
     """
     # Initialize the WingCrossSection parameters.
@@ -294,10 +297,9 @@ def run_aeroelastic(
     example_problem = ps.problems.AeroelasticUnsteadyProblem(
         movement=example_movement,
         wing_density=wing_density,
-        spring_constant=spring_constant,
-        damping_constant=damping_constant,
+        spring_constant_rad=spring_constant_rad,
+        damping_constant_rad=damping_constant_rad,
         step_discards=5,
-        plot_flap_cycle=False,
     )
 
     example_solver = ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver(
@@ -311,7 +313,7 @@ def run_aeroelastic(
     problem = example_solver.unsteady_problem
     assert isinstance(problem, ps.problems.AeroelasticUnsteadyProblem)
 
-    return problem.net_data_per_wing[0], problem
+    return problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0], problem
 
 
 # Determine which parameter is being swept.
@@ -329,29 +331,34 @@ if K_VALUES:
     sweep_values = K_VALUES
     sweep_name = "Spring Constant"
     sweep_symbol = "k"
-    sweep_kwarg = "spring_constant"
+    sweep_kwarg = "spring_constant_rad"
 elif B_VALUES:
     sweep_values = B_VALUES
     sweep_name = "Damping Constant"
     sweep_symbol = "b"
-    sweep_kwarg = "damping_constant"
+    sweep_kwarg = "damping_constant_rad"
 else:
     sweep_values = DENSITY_VALUES
     sweep_name = "Wing Density"
     sweep_symbol = "rho"
     sweep_kwarg = "wing_density"
 
-# Run for each swept value and collect Curve 16 of the Net Deformation.
+# Run for each swept value and collect the wing-tip twist history.
 results = {}
 flap_angle = None
 for val in sweep_values:
     print(f"Running with {sweep_symbol}={val}...")
-    net_data, problem = run_aeroelastic(**{sweep_kwarg: val})
-    # Extract the y component (the torsional angle) for Curve 16 across all time
-    # steps, converting it from radians to degrees.
-    curve_16 = np.rad2deg(np.array(net_data)[:, CURVE_INDEX, 1]).tolist()
-    results[val] = curve_16
-    print(f"  Completed {sweep_symbol}={val}, {len(curve_16)} steps")
+    deformationAnglesYRad_Wcsp_to_Wcs_ixyz, problem = run_aeroelastic(
+        **{sweep_kwarg: val}
+    )
+    # Extract the wing-tip torsional angle from every time series entry (the first
+    # entry is the pre-solve seed state, and each later entry is one time step's
+    # state), converting it from radians to degrees.
+    tip_twist = np.rad2deg(
+        np.array(deformationAnglesYRad_Wcsp_to_Wcs_ixyz)[:, TIP_INDEX]
+    ).tolist()
+    results[val] = tip_twist
+    print(f"  Completed {sweep_symbol}={val}, {len(tip_twist)} entries")
 
     # Compute the prescribed flap angle once (it is the same for all runs).
     if flap_angle is None:
@@ -360,11 +367,11 @@ for val in sweep_values:
         period = wm.periodAngles_Gs_to_Wn_ixyz[0]
         phase = np.deg2rad(wm.phaseAngles_Gs_to_Wn_ixyz[0])
         dt = problem.movement.delta_time
-        num_steps = len(curve_16)
+        num_steps = len(tip_twist)
         t = np.arange(num_steps) * dt
         flap_angle = (amp * np.sin((2 * np.pi / period) * t + phase)).tolist()
 
-# Create an overlay plot of Curve 16 Net Deformation for all swept values.
+# Create an overlay plot of the wing-tip twist histories for all swept values.
 assert flap_angle is not None
 plt.figure(figsize=(12, 6), dpi=200)
 for val, curve in results.items():
@@ -378,11 +385,9 @@ plt.plot(
 )
 plt.xlabel("Step")
 plt.ylabel("Angle (degrees)")
-plt.title(f"Net Deformation (Curve {CURVE_INDEX}) - Varying {sweep_name}")
+plt.title(f"Wing-Tip Twist - Varying {sweep_name}")
 plt.legend()
 plt.grid(True)
-filename = (
-    f"net_deformation_curve_{CURVE_INDEX}_{sweep_name.lower().replace(' ', '_')}.png"
-)
+filename = f"wing_tip_twist_{sweep_name.lower().replace(' ', '_')}.png"
 plt.savefig(filename)
 plt.show()

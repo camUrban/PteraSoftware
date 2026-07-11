@@ -33,8 +33,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             ps.problems.AeroelasticUnsteadyProblem(
                 movement=basic_movement,
                 wing_density=0.01,
-                spring_constant=10.0,
-                damping_constant=0.5,
+                spring_constant_rad=10.0,
+                damping_constant_rad=0.5,
             )
 
     def test_num_steps(self):
@@ -53,17 +53,17 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that wing_density is stored correctly."""
         self.assertAlmostEqual(self.problem.wing_density, 0.01)
 
-    def test_spring_constant_stored(self):
-        """Test that spring_constant is stored correctly."""
-        self.assertAlmostEqual(self.problem.spring_constant, 10.0)
+    def test_spring_constant_rad_stored(self):
+        """Test that spring_constant_rad is stored correctly."""
+        self.assertAlmostEqual(self.problem.spring_constant_rad, 10.0)
 
-    def test_damping_constant_stored(self):
-        """Test that damping_constant is stored correctly."""
-        self.assertAlmostEqual(self.problem.damping_constant, 0.5)
+    def test_damping_constant_rad_stored(self):
+        """Test that damping_constant_rad is stored correctly."""
+        self.assertAlmostEqual(self.problem.damping_constant_rad, 0.5)
 
     def test_calculate_mass_matrix_shape(self):
         """Test that calculate_mass_matrix returns an array with shape
-        (num_chordwise, num_spanwise, 3)."""
+        (num_chordwise_panels, num_spanwise_panels, 3)."""
         wing = self.problem.steady_problems[0].airplanes[0].wings[0]
         mass_matrix = self.problem.calculate_mass_matrix(wing)
         self.assertEqual(len(mass_matrix.shape), 3)
@@ -84,35 +84,23 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         np.testing.assert_array_equal(mass_matrix[:, :, 0], mass_matrix[:, :, 1])
         np.testing.assert_array_equal(mass_matrix[:, :, 1], mass_matrix[:, :, 2])
 
-    def test_calculate_wing_panel_accelerations_no_positions_returns_scalar_zero(self):
-        """Test that calculate_wing_panel_accelerations returns zeros(1) when no
-        positions are stored yet."""
-        accel = self.problem.calculate_wing_panel_accelerations()
-        np.testing.assert_array_equal(accel, np.zeros(1))
-
-    def test_calculate_wing_panel_accelerations_one_position_returns_zeros_like(self):
-        """Test that calculate_wing_panel_accelerations returns zeros_like the
-        position when only one position is stored."""
-        dummy_pos = np.ones((2, 1, 3))
-        self.problem.positions_per_wing[0].append(dummy_pos)
-        accel = self.problem.calculate_wing_panel_accelerations()
-        np.testing.assert_array_equal(accel, np.zeros_like(dummy_pos))
-
     def test_calculate_spring_moments_accumulates_state_across_steps(self):
         """Test that a strip's spring-damper ODE is re-seeded from its own state at
         the end of the previous time step, so a constant aerodynamic moment drives
-        the twist to accumulate across steps toward the static equilibrium M / k.
+        the strip's deformation angle y component to accumulate across steps toward
+        the static equilibrium M / k.
 
-        Uses a single-strip wing in a slow, overdamped regime where the one-step
+        Uses a single-strip Wing in a slow, overdamped regime where the one-step
         response from rest is a small fraction of M / k. If a strip's state were
-        discarded between steps (a restart from rest every step), the twist would
-        freeze at that one-step response instead of converging.
+        discarded between steps (a restart from rest every step), the deformation
+        angle y component would freeze at that one-step response instead of
+        converging.
         """
         problem = ps.problems.AeroelasticUnsteadyProblem(
             movement=movement_fixtures.make_basic_aeroelastic_movement_fixture(),
             wing_density=0.01,
-            spring_constant=10.0,
-            damping_constant=20.0,
+            spring_constant_rad=10.0,
+            damping_constant_rad=20.0,
         )
         wing = problem.steady_problems[0].airplanes[0].wings[0]
         num_spanwise_panels = wing.num_spanwise_panels
@@ -124,8 +112,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
         # Choose the per-entry mass so the strip's ODE inertia, I = (1 / 2) * mass *
         # L^2 with mass summed over the strip's mass-matrix entries, is exactly 1.0.
-        # With spring_constant = 10.0 and damping_constant = 20.0, the ODE is then
-        # overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5 per
+        # With spring_constant_rad = 10.0 and damping_constant_rad = 20.0, the ODE is
+        # then overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5 per
         # second, so it is far from settled within one 0.1 s time step.
         L = (wing.wing_cross_sections[0].chord + wing.wing_cross_sections[1].chord) / 2
         num_mass_entries = num_chordwise_panels * num_spanwise_panels * 3
@@ -134,120 +122,240 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             2.0 / (num_mass_entries * L**2),
         )
 
-        # Apply a constant aerodynamic moment about the y axis, summing to 2.0 N*m
-        # over the strip's chordwise panels, so the static twist is M / k = 0.2 rad.
-        aero_moments = np.zeros((num_chordwise_panels, num_spanwise_panels, 3))
-        aero_moments[:, 0, 1] = 2.0 / num_chordwise_panels
-        static_twist = 2.0 / problem.spring_constant
+        # Apply a constant aerodynamic moment y component (in the first Airplane's
+        # geometry axes, relative to the strip's leading edge point), summing to 2.0
+        # N*m over the strip's chordwise panels, so the static deformation angle y
+        # component is M / k = 0.2 rad.
+        aeroMoments_GP1_Slep = np.zeros(
+            (num_chordwise_panels, num_spanwise_panels, 3), dtype=float
+        )
+        aeroMoments_GP1_Slep[:, 0, 1] = 2.0 / num_chordwise_panels
+        static_theta_rad = 2.0 / problem.spring_constant_rad
 
-        # March the structural solve, replicating _apply_moment_updates's state
-        # commit for the post-discard regime after each step.
-        theta_history = []
+        # March the structural solve, replicating _record_structural_state's
+        # post-discard recording after each time step.
+        theta_history_rad = []
         for step in range(problem.step_discards + 1, problem.step_discards + 61):
-            thetas, omegas = problem.calculate_spring_moments(
+            (
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+            ) = problem.calculate_spring_moments(
                 num_spanwise_panels=num_spanwise_panels,
                 wing=wing,
                 mass_matrix=mass_matrix,
-                aero_moments=aero_moments,
+                aeroMoments_GP1_Slep=aeroMoments_GP1_Slep,
                 step=step,
                 wing_idx=0,
                 wing_movement=static_wing_movement,
             )
-            problem.net_deformation_per_wing[0] = problem._build_deformation_vector(
-                thetas, num_spanwise_panels
+            problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0].append(
+                np.array(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, dtype=float)
             )
-            problem.angular_velocities_per_wing[0][:, 1] = omegas
-            theta_history.append(float(thetas[1]))
+            problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0].append(
+                np.array(
+                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, dtype=float
+                )
+            )
+            theta_history_rad.append(
+                float(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[1])
+            )
 
         # The regime check: the one-step response must be well below the static
-        # twist, or freezing and converging would be indistinguishable.
-        self.assertLess(theta_history[0], 0.5 * static_twist)
-        # The twist must accumulate monotonically, as an overdamped rise from rest.
-        for earlier, later in zip(theta_history[:10], theta_history[1:11]):
+        # equilibrium, or freezing and converging would be indistinguishable.
+        self.assertLess(theta_history_rad[0], 0.5 * static_theta_rad)
+        # The deformation angle y component must accumulate monotonically, as an
+        # overdamped rise from rest.
+        for earlier, later in zip(theta_history_rad[:10], theta_history_rad[1:11]):
             self.assertGreater(later, earlier)
-        # The twist must approach the static equilibrium.
+        # The deformation angle y component must approach the static equilibrium.
         self.assertAlmostEqual(
-            theta_history[-1], static_twist, delta=0.1 * static_twist
+            theta_history_rad[-1], static_theta_rad, delta=0.1 * static_theta_rad
+        )
+
+    def test_record_structural_state_records_new_state_after_discard_window(self):
+        """Test that _record_structural_state appends the new state to both time
+        series as fresh arrays when the time step is past the discard window."""
+        problem = self.problem
+        wing_idx = 0
+        num_wing_cross_sections = problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
+            wing_idx
+        ][-1].shape[0]
+        newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.full(
+            num_wing_cross_sections, 0.25, dtype=float
+        )
+        newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = np.full(
+            num_wing_cross_sections, -0.5, dtype=float
+        )
+
+        problem._record_structural_state(
+            step=problem.step_discards + 1,
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz=(
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+            ),
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz
+            ),
+            wing_idx=wing_idx,
+        )
+
+        deformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
+            problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+        )
+        deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
+            problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+        )
+        self.assertEqual(len(deformationAnglesYRad_Wcsp_to_Wcs_ixyz), 2)
+        self.assertEqual(len(deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz), 2)
+        np.testing.assert_array_equal(
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1],
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+        )
+        np.testing.assert_array_equal(
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1],
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+        )
+        # The recorded entries are fresh arrays, not aliases of the caller's arrays.
+        self.assertIsNot(
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1],
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+        )
+        self.assertIsNot(
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1],
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+        )
+
+    def test_record_structural_state_holds_previous_state_during_discard_window(self):
+        """Test that _record_structural_state ignores the new state during the discard
+        window, appending a copy of the previous entry to both time series."""
+        problem = self.problem
+        wing_idx = 0
+        num_wing_cross_sections = problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
+            wing_idx
+        ][-1].shape[0]
+        newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.full(
+            num_wing_cross_sections, 0.25, dtype=float
+        )
+        newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = np.full(
+            num_wing_cross_sections, -0.5, dtype=float
+        )
+
+        problem._record_structural_state(
+            step=problem.step_discards,
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz=(
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+            ),
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz
+            ),
+            wing_idx=wing_idx,
+        )
+
+        deformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
+            problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+        )
+        deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
+            problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+        )
+        self.assertEqual(len(deformationAnglesYRad_Wcsp_to_Wcs_ixyz), 2)
+        self.assertEqual(len(deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz), 2)
+        # Both series hold the seed (zero) state, not the passed values.
+        np.testing.assert_array_equal(
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1],
+            np.zeros(num_wing_cross_sections, dtype=float),
+        )
+        np.testing.assert_array_equal(
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1],
+            np.zeros(num_wing_cross_sections, dtype=float),
+        )
+        # The held entries are copies, not aliases of the previous entries.
+        self.assertIsNot(
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1],
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-2],
+        )
+        self.assertIsNot(
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1],
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-2],
         )
 
     def test_spring_numerical_ode_zero_initial_zero_forces_theta_stays_zero(self):
         """Test that with zero initial conditions and zero external forces, theta
         remains zero."""
         t = np.array([0.0, 0.05])
-        zero_torque_func = lambda time: 0.0
-        theta, omega = self.problem.spring_numerical_ode(
+        zero_moment_func = lambda time: 0.0
+        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
             t,
-            k=10.0,
-            c=0.5,
+            spring_constant_rad=10.0,
+            damping_constant_rad=0.5,
             I=1.0,
-            theta0=0.0,
-            omega0=0.0,
-            aero_torque=0.0,
-            inertial_torque_func=zero_torque_func,
+            theta0_rad=0.0,
+            theta_derivative0_rad=0.0,
+            aero_moment=0.0,
+            inertial_moment_func=zero_moment_func,
         )
-        self.assertAlmostEqual(theta, 0.0, places=6)
-        self.assertAlmostEqual(omega, 0.0, places=6)
+        self.assertAlmostEqual(theta_rad, 0.0, places=6)
+        self.assertAlmostEqual(theta_derivative_rad, 0.0, places=6)
 
     def test_spring_numerical_ode_returns_floats(self):
         """Test that spring_numerical_ode returns Python floats."""
         t = np.array([0.0, 0.1])
-        zero_torque_func = lambda time: 0.0
-        theta, omega = self.problem.spring_numerical_ode(
+        zero_moment_func = lambda time: 0.0
+        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
             t,
-            k=10.0,
-            c=0.5,
+            spring_constant_rad=10.0,
+            damping_constant_rad=0.5,
             I=1.0,
-            theta0=0.0,
-            omega0=0.0,
-            aero_torque=0.0,
-            inertial_torque_func=zero_torque_func,
+            theta0_rad=0.0,
+            theta_derivative0_rad=0.0,
+            aero_moment=0.0,
+            inertial_moment_func=zero_moment_func,
         )
-        self.assertIsInstance(theta, float)
-        self.assertIsInstance(omega, float)
+        self.assertIsInstance(theta_rad, float)
+        self.assertIsInstance(theta_derivative_rad, float)
 
     def test_spring_numerical_ode_spring_restores_toward_zero(self):
         """Test that a positive initial displacement decays toward zero with
         positive spring constant and damping."""
         t = np.array([0.0, 0.5, 1.0])
-        zero_torque_func = lambda time: 0.0
-        theta_init = 1.0
-        theta, omega = self.problem.spring_numerical_ode(
+        zero_moment_func = lambda time: 0.0
+        theta0_rad = 1.0
+        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
             t,
-            k=10.0,
-            c=2.0,
+            spring_constant_rad=10.0,
+            damping_constant_rad=2.0,
             I=1.0,
-            theta0=theta_init,
-            omega0=0.0,
-            aero_torque=0.0,
-            inertial_torque_func=zero_torque_func,
+            theta0_rad=theta0_rad,
+            theta_derivative0_rad=0.0,
+            aero_moment=0.0,
+            inertial_moment_func=zero_moment_func,
         )
         # With damping and spring, displacement should decrease in magnitude.
-        self.assertLess(abs(theta), abs(theta_init))
+        self.assertLess(abs(theta_rad), abs(theta0_rad))
 
-    def test_generate_inertial_torque_function_returns_callable(self):
-        """Test that generate_inertial_torque_function returns a callable."""
-        torque_func = self.problem.generate_inertial_torque_function(span_I=1.0)
-        self.assertTrue(callable(torque_func))
+    def test_generate_inertial_moment_function_returns_callable(self):
+        """Test that generate_inertial_moment_function returns a callable."""
+        moment_func = self.problem.generate_inertial_moment_function(span_I=1.0)
+        self.assertTrue(callable(moment_func))
 
-    def test_generate_inertial_torque_function_returns_float_at_zero(self):
-        """Test that the torque function returned by generate_inertial_torque_function
+    def test_generate_inertial_moment_function_returns_float_at_zero(self):
+        """Test that the moment function returned by generate_inertial_moment_function
         returns a numeric value when evaluated at time zero."""
-        torque_func = self.problem.generate_inertial_torque_function(span_I=1.0)
-        result = torque_func(0.0)
+        moment_func = self.problem.generate_inertial_moment_function(span_I=1.0)
+        result = moment_func(0.0)
         self.assertIsInstance(result, (float, np.floating))
 
-    def test_generate_inertial_torque_function_scales_with_span_i(self):
-        """Test that the torque function scales linearly with span_I."""
-        torque_func_1 = self.problem.generate_inertial_torque_function(span_I=1.0)
-        torque_func_2 = self.problem.generate_inertial_torque_function(span_I=2.0)
+    def test_generate_inertial_moment_function_scales_with_span_i(self):
+        """Test that the moment function scales linearly with span_I."""
+        moment_func_1 = self.problem.generate_inertial_moment_function(span_I=1.0)
+        moment_func_2 = self.problem.generate_inertial_moment_function(span_I=2.0)
         t_eval = 0.25
         self.assertAlmostEqual(
-            torque_func_2(t_eval), 2.0 * torque_func_1(t_eval), places=10
+            moment_func_2(t_eval), 2.0 * moment_func_1(t_eval), places=10
         )
 
-    def test_generate_inertial_torque_function_sine_matches_analytic_value(self):
-        """Test that the sinusoidal-spacing torque equals -I*b^2*sin(b*t+h)*A with the
-        amplitude converted from degrees to radians so the torque is in SI N*m."""
+    def test_generate_inertial_moment_function_sine_matches_analytic_value(self):
+        """Test that the sinusoidal-spacing moment equals -I * b^2 * sin(b * t + h) * A
+        with the amplitude converted from degrees to radians so the moment is in SI
+        N*m."""
         wing_movement = self.problem.wing_movement
         amp_deg = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
         period = wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
@@ -255,38 +363,44 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
         span_I = 3.0
         t_eval = 0.3
-        torque_func = self.problem.generate_inertial_torque_function(span_I=span_I)
+        moment_func = self.problem.generate_inertial_moment_function(span_I=span_I)
 
-        b = 2.0 * np.pi / period
-        h = np.deg2rad(phase_deg)
-        expected = -1.0 * b**2 * np.sin(b * t_eval + h) * np.deg2rad(amp_deg) * span_I
-        self.assertAlmostEqual(torque_func(t_eval), expected, places=10)
+        b_rad = 2.0 * np.pi / period
+        h_rad = np.deg2rad(phase_deg)
+        expected = (
+            -1.0
+            * b_rad**2
+            * np.sin(b_rad * t_eval + h_rad)
+            * np.deg2rad(amp_deg)
+            * span_I
+        )
+        self.assertAlmostEqual(moment_func(t_eval), expected, places=10)
 
-    def test_generate_inertial_torque_function_static_motion_returns_zero(self):
+    def test_generate_inertial_moment_function_static_motion_returns_zero(self):
         """Test that a motion-off wing movement (zero flapping amplitude and period)
-        produces an identically zero, finite inertial torque at every time.
+        produces an identically zero, finite inertial moment at every time.
 
-        A wing with no prescribed flapping applies no inertial torque, so the
+        A wing with no prescribed flapping applies no inertial moment, so the
         returned function must evaluate to exactly 0.0 rather than to NaN from the
         2 * pi / period frequency computation with a zero period.
         """
         static_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
-        torque_func = self.problem.generate_inertial_torque_function(
+        moment_func = self.problem.generate_inertial_moment_function(
             span_I=1.0, wing_movement=static_wing_movement
         )
         for t_eval in (0.0, 0.1, 0.5):
-            result = torque_func(t_eval)
+            result = moment_func(t_eval)
             self.assertTrue(
                 np.isfinite(result),
-                msg=f"The inertial torque at time {t_eval} is {result}, which is "
+                msg=f"The inertial moment at time {t_eval} is {result}, which is "
                 f"not finite.",
             )
             self.assertAlmostEqual(float(result), 0.0, places=12)
 
-    def test_generate_inertial_torque_function_uniform_spacing_raises(self):
-        """Test that generate_inertial_torque_function raises ValueError when the
+    def test_generate_inertial_moment_function_uniform_spacing_raises(self):
+        """Test that generate_inertial_moment_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
         wing_movement = self.problem.wing_movement
         with patch.object(
@@ -296,11 +410,11 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             return_value=("uniform", "sine", "sine"),
         ):
             with self.assertRaises(ValueError):
-                self.problem.generate_inertial_torque_function(span_I=1.0)
+                self.problem.generate_inertial_moment_function(span_I=1.0)
 
-    def test_generate_inertial_torque_function_callable_spacing_with_derivative(self):
-        """Test that generate_inertial_torque_function uses the wing movement's second
-        derivative when the spacing is a custom callable."""
+    def test_generate_inertial_moment_function_callable_spacing_with_derivative(self):
+        """Test that generate_inertial_moment_function uses the AeroelasticWingMovement's
+        second derivative when the spacing is a custom callable."""
         wing_movement = self.problem.wing_movement
         with (
             patch.object(
@@ -316,105 +430,14 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
                 return_value=(lambda t: -np.sin(t), None, None),
             ),
         ):
-            torque_func = self.problem.generate_inertial_torque_function(span_I=2.0)
-            self.assertTrue(callable(torque_func))
-            result = torque_func(0.5)
-            # The amplitude is stored in degrees but the torque (N*m) must be in SI
+            moment_func = self.problem.generate_inertial_moment_function(span_I=2.0)
+            self.assertTrue(callable(moment_func))
+            result = moment_func(0.5)
+            # The amplitude is stored in degrees but the moment (N*m) must be in SI
             # units, so the second derivative is scaled by np.deg2rad(amp).
             amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
             expected = np.deg2rad(amp) * -np.sin(0.5) * 2.0
             self.assertAlmostEqual(result, expected, places=10)
-
-    def test_plot_aeroelastic_results_calls_plot_flap_cycle_curves_four_times(self):
-        """Test that _plot_aeroelastic_results calls plot_flap_cycle_curves exactly
-        four times with the correct titles."""
-        self.problem.per_step_inertial_per_wing[0] = [np.zeros((1, 1, 3))]
-        self.problem.per_step_aero_per_wing[0] = [np.zeros((1, 1, 3))]
-        self.problem.net_data_per_wing[0] = [np.zeros((2, 3))]
-        self.problem.flap_points_per_wing[0] = [np.zeros((1, 1, 3))]
-
-        with patch.object(type(self.problem), "plot_flap_cycle_curves") as mock_plot:
-            self.problem._plot_aeroelastic_results()
-
-        self.assertEqual(mock_plot.call_count, 4)
-        titles = [call.args[1] for call in mock_plot.call_args_list]
-        self.assertIn("Net Deformation", titles)
-        self.assertIn("Per Step Inertial Moments", titles)
-        self.assertIn("Per Step Aero Moments", titles)
-        self.assertIn("Flap Points Z", titles)
-
-    def test_plot_flap_cycle_curves_executes_without_error(self):
-        """Test that plot_flap_cycle_curves runs without error when matplotlib
-        calls are mocked."""
-        with patch("pterasoftware.problems.plt") as mock_plt:
-            self.problem.plot_flap_cycle_curves(
-                data=[[0.0, 1.0, 2.0], [3.0, 4.0, 5.0]],
-                title="Test Plot",
-            )
-
-        mock_plt.figure.assert_called_once()
-        mock_plt.show.assert_called_once()
-        mock_plt.savefig.assert_called_once_with("Test_Plot.png")
-
-    def test_plot_flap_cycle_curves_with_flap_cycle_overlay(self):
-        """Test that plot_flap_cycle_curves plots the flap_cycle overlay when
-        provided."""
-        with patch("pterasoftware.problems.plt") as mock_plt:
-            self.problem.plot_flap_cycle_curves(
-                data=[[0.0, 1.0, 2.0]],
-                title="Test Plot",
-                flap_cycle=[0.5, 1.5, 2.5],
-            )
-
-        # One call for the data curve, one for the flap_cycle overlay.
-        self.assertEqual(mock_plt.plot.call_count, 2)
-
-    def test_calculate_wing_deformation_calls_plot_at_final_step(self):
-        """Test that calculate_wing_deformation calls _plot_aeroelastic_results when
-        plot_flap_cycle=True and step equals num_steps-1."""
-        problem = problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture(
-            plot_flap_cycle=True
-        )
-
-        mock_solver = MagicMock()
-        dummy_moments = np.zeros((1, 1, 3))
-        dummy_thetas = np.zeros(
-            problem.steady_problems[0].airplanes[0].wings[0].num_spanwise_panels + 1
-        )
-        dummy_omegas = np.zeros_like(dummy_thetas)
-        dummy_deformation = np.zeros(
-            (
-                problem.steady_problems[0].airplanes[0].wings[0].num_spanwise_panels
-                + 1,
-                3,
-            )
-        )
-
-        problem_type = type(problem)
-        with (
-            patch.object(
-                problem_type, "_extract_aero_moments", return_value=dummy_moments
-            ),
-            patch.object(
-                problem_type, "_calculate_inertial_moments", return_value=dummy_moments
-            ),
-            patch.object(
-                problem_type,
-                "calculate_spring_moments",
-                return_value=(dummy_thetas, dummy_omegas),
-            ),
-            patch.object(
-                problem_type,
-                "_build_deformation_vector",
-                return_value=dummy_deformation,
-            ),
-            patch.object(problem_type, "_apply_moment_updates"),
-            patch.object(problem_type, "_plot_aeroelastic_results") as mock_plot,
-        ):
-            final_step = problem.num_steps - 1
-            problem.calculate_wing_deformation(mock_solver, step=final_step)
-
-        mock_plot.assert_called_once()
 
 
 class TestRecordNullStepForWing(unittest.TestCase):
@@ -430,82 +453,75 @@ class TestRecordNullStepForWing(unittest.TestCase):
             problem_fixtures.make_aeroelastic_unsteady_problem_with_standard_wing_fixture()
         )
 
-    def test_record_null_step_for_wing_appends_one_entry_to_each_history_list(self):
+    def test_record_null_step_for_wing_appends_one_entry_to_each_time_series(self):
         """Test that _record_null_step_for_wing appends exactly one entry to each
-        per-wing history list."""
+        per-wing time series list."""
         wing_idx = 0
-        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
-        before = len(self.problem_aero.per_step_inertial_per_wing[wing_idx])
-
-        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
-
-        self.assertEqual(
-            len(self.problem_aero.per_step_inertial_per_wing[wing_idx]), before + 1
+        problem = self.problem_aero
+        num_previous_states = len(
+            problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
+        # The two time series are seeded together and recorded together, so their
+        # lengths are always equal.
         self.assertEqual(
-            len(self.problem_aero.per_step_aero_per_wing[wing_idx]), before + 1
-        )
-        self.assertEqual(len(self.problem_aero.net_data_per_wing[wing_idx]), before + 1)
-        self.assertEqual(
-            len(self.problem_aero.angular_velocity_data_per_wing[wing_idx]), before + 1
-        )
-        self.assertEqual(
-            len(self.problem_aero.flap_points_per_wing[wing_idx]), before + 1
+            len(
+                problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+            ),
+            num_previous_states,
         )
 
-    def test_record_null_step_for_wing_inertial_and_aero_shape_and_values(self):
-        """Test that _record_null_step_for_wing appends zero moment arrays with shape
-        (num_chordwise_panels, num_spanwise_panels, 3)."""
+        problem._record_null_step_for_wing(wing_idx)
+
+        self.assertEqual(
+            len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]),
+            num_previous_states + 1,
+        )
+        self.assertEqual(
+            len(
+                problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+            ),
+            num_previous_states + 1,
+        )
+
+    def test_record_null_step_for_wing_entry_shape_and_values(self):
+        """Test that _record_null_step_for_wing appends zero-valued entries, with one
+        element per WingCrossSection, to listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz and
+        _listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz."""
         wing_idx = 0
-        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
+        num_wing_cross_sections = (
+            self.problem_aero.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][
+                -1
+            ].shape[0]
+        )
 
-        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
+        self.problem_aero._record_null_step_for_wing(wing_idx)
 
-        expected_shape = (wing.num_chordwise_panels, wing.num_spanwise_panels, 3)
-        appended_inertial = self.problem_aero.per_step_inertial_per_wing[wing_idx][-1]
-        appended_aero = self.problem_aero.per_step_aero_per_wing[wing_idx][-1]
+        lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
+            self.problem_aero.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
+        )
+        lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
+            self.problem_aero._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[
+                wing_idx
+            ][-1]
+        )
+        expected_shape = (num_wing_cross_sections,)
 
-        self.assertEqual(appended_inertial.shape, expected_shape)
-        self.assertEqual(appended_aero.shape, expected_shape)
-        np.testing.assert_array_equal(appended_inertial, np.zeros(expected_shape))
-        np.testing.assert_array_equal(appended_aero, np.zeros(expected_shape))
-
-    def test_record_null_step_for_wing_net_data_shape_and_values(self):
-        """Test that _record_null_step_for_wing appends a zero net_data array with
-        shape (num_deformation_rows, 3)."""
-        wing_idx = 0
-        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
-        num_deformation_rows = self.problem_aero.net_deformation_per_wing[
-            wing_idx
-        ].shape[0]
-
-        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
-
-        appended_net = self.problem_aero.net_data_per_wing[wing_idx][-1]
-        appended_ang = self.problem_aero.angular_velocity_data_per_wing[wing_idx][-1]
-        expected_shape = (num_deformation_rows, 3)
-
-        self.assertEqual(appended_net.shape, expected_shape)
-        self.assertEqual(appended_ang.shape, expected_shape)
-        np.testing.assert_array_equal(appended_net, np.zeros(expected_shape))
-        np.testing.assert_array_equal(appended_ang, np.zeros(expected_shape))
-
-    def test_record_null_step_for_wing_flap_points_shape_and_values(self):
-        """Test that _record_null_step_for_wing appends a zero flap_points array with
-        shape (num_chordwise_panels, num_spanwise_panels, 3)."""
-        wing_idx = 0
-        wing = self.problem_aero.steady_problems[0].airplanes[0].wings[0]
-
-        self.problem_aero._record_null_step_for_wing(wing_idx, wing, step=0)
-
-        appended_flap = self.problem_aero.flap_points_per_wing[wing_idx][-1]
-        expected_shape = (wing.num_chordwise_panels, wing.num_spanwise_panels, 3)
-
-        self.assertEqual(appended_flap.shape, expected_shape)
-        np.testing.assert_array_equal(appended_flap, np.zeros(expected_shape))
+        self.assertEqual(
+            lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.shape, expected_shape
+        )
+        self.assertEqual(
+            lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.shape, expected_shape
+        )
+        np.testing.assert_array_equal(
+            lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, np.zeros(expected_shape)
+        )
+        np.testing.assert_array_equal(
+            lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+            np.zeros(expected_shape),
+        )
 
     def test_calculate_wing_deformation_returns_none_for_standard_wing_movement(self):
-        """Test that calculate_wing_deformation returns None for a wing backed by a
+        """Test that calculate_wing_deformation returns None for a Wing backed by a
         standard WingMovement (the else branch)."""
         mock_solver = MagicMock()
 
@@ -516,20 +532,25 @@ class TestRecordNullStepForWing(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
-    def test_calculate_wing_deformation_appends_history_for_standard_wing_movement(
+    def test_calculate_wing_deformation_appends_entries_for_standard_wing_movement(
         self,
     ):
-        """Test that calculate_wing_deformation populates history lists when a wing is
-        backed by a standard WingMovement."""
+        """Test that calculate_wing_deformation appends to the time series lists when a
+        Wing is backed by a standard WingMovement."""
         mock_solver = MagicMock()
         wing_idx = 0
 
         self.problem_std.calculate_wing_deformation(solver=mock_solver, step=0)
 
-        self.assertEqual(len(self.problem_std.per_step_inertial_per_wing[wing_idx]), 1)
-        self.assertEqual(len(self.problem_std.per_step_aero_per_wing[wing_idx]), 1)
-        self.assertEqual(len(self.problem_std.net_data_per_wing[wing_idx]), 1)
+        problem = self.problem_std
+        # The two structural state time series are seeded with an initial-state entry
+        # at construction, so one recorded step brings them to two entries.
         self.assertEqual(
-            len(self.problem_std.angular_velocity_data_per_wing[wing_idx]), 1
+            len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]), 2
         )
-        self.assertEqual(len(self.problem_std.flap_points_per_wing[wing_idx]), 1)
+        self.assertEqual(
+            len(
+                problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
+            ),
+            2,
+        )

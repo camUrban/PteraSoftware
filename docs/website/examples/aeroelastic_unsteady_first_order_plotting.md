@@ -6,7 +6,7 @@
 
 ## Output
 
-```{image} ../../examples_expected_output/aeroelastic_unsteady_first_order_plotting/net_deformation_curve_16_spring_constant.png
-:alt: Net wing deformation over time for a torsional spring constant of 16.
+```{image} ../../examples_expected_output/aeroelastic_unsteady_first_order_plotting/wing_tip_twist_spring_constant.png
+:alt: Wing-tip twist histories overlaid for four torsional spring constants, with the prescribed flap position for reference.
 :loading: lazy
 ```

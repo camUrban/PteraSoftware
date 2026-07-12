@@ -2109,14 +2109,14 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
             self.solver.unsteady_problem,
             ps.problems.AeroelasticUnsteadyProblem,
         )
-        self.assertIsInstance(self.solver.slep_point_indices, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpr_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpf_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpl_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpb_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCpp_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpr_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpf_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpl_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpb_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCpp_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackSlep_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._stackSlep_GP1_CgP1, np.ndarray)
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""
@@ -2130,7 +2130,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
 
         # Verify SLEP index values match.
         npt.assert_array_equal(
-            copied.slep_point_indices, self.solver.slep_point_indices
+            copied._slep_point_indices, self.solver._slep_point_indices
         )
 
 

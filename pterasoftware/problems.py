@@ -1442,7 +1442,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Per-wing time series of the cumulative torsional deformation state. Indexed
         # as [wing_idx][entry], where entry 0 is the zero-valued initial state and
-        # each solver step appends one entry, so the last entry is always the current
+        # every generated next step appends one entry, so the last entry is always the
         # state. Each entry is a (num_spanwise_panels + 1,) ndarray whose element n is
         # the y component (radians) of the deformation angle vector that perturbs the
         # corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles describing

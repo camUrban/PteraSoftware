@@ -1309,7 +1309,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
 
 # Tolerances for the torsional spring-damper ODE integration in
-# spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
 # defaults because the integration is re-seeded from the previous state at every
 # outer time step, so its local errors compound across a simulation, and because a
 # loose absolute tolerance would swamp small torsional responses. The absolute
@@ -1333,22 +1333,40 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
     **Contains the following methods:**
 
-    calculate_mass_matrix: Generates the mass distribution matrix for a Wing's Panels.
+    only_final_results: Determines whether the solver will only calculate loads for the
+    final time step or final cycle.
 
-    calculate_wing_deformation: Computes cumulative wing deformation for the current
-    step.
+    num_steps: The number of time steps.
 
-    calculate_spring_moments: Solves the torsional spring-damper ODE for each spanwise
-    section, returning the new torsional angles and their time derivatives.
+    delta_time: The time step size in seconds.
 
-    calculate_torsional_spring_moment: Solves the torsional spring-damper ODE for a
-    single strip.
+    first_averaging_step: The first time step included in cycle averaging.
 
-    generate_inertial_moment_function: Creates a moment function from prescribed wing
-    motion.
+    first_results_step: The first time step for which loads are calculated.
 
-    spring_numerical_ode: Numerically integrates the spring-damper differential
-    equation.
+    max_wake_rows: The maximum chordwise wake rows per Wing.
+
+    movement: The AeroelasticMovement that defines the motion parameters for this
+    AeroelasticUnsteadyProblem.
+
+    steady_problems: A tuple of SteadyProblems, one for each time step that has been
+    initialized so far.
+
+    get_steady_problem: Gets the SteadyProblem at a specified time step.
+
+    initialize_next_problem: Initializes the next time step's SteadyProblem from the
+    deformed geometry.
+
+    wing_movement: The primary AeroelasticWingMovement used by the aeroelastic model.
+
+    wing_density: The mass per unit span area of the wing (kg/m^2).
+
+    spring_constant_rad: The torsional spring stiffness for the spring-mass-damper model
+    (N*m/rad).
+
+    damping_constant_rad: The torsional damping coefficient (N*m*s/rad).
+
+    step_discards: The number of initial time steps to discard for numerical stability.
 
     **Notes:**
 
@@ -1529,7 +1547,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             np.zeros(num_wing_cross_sections, dtype=float)
         )
 
-    def calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
+    def _calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
         """Generate the mass distribution matrix for all of a Wing's Panels.
 
         Distributes the total spanwise mass (wing_density) across Panel areas to form a
@@ -1561,9 +1579,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         next_step = len(self._steady_problems)
 
-        # calculate_wing_deformation returns a per-wing list: each element is either
+        # _calculate_wing_deformation returns a per-wing list: each element is either
         # the deformation ndarray for an aeroelastic wing or None for a standard wing.
-        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self.calculate_wing_deformation(
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self._calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
 
@@ -1588,7 +1606,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             )
         )
 
-    def calculate_wing_deformation(
+    def _calculate_wing_deformation(
         self,
         solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         step: int,
@@ -1630,7 +1648,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 wing_movement,
                 aeroelastic_wing_movement_mod.AeroelasticWingMovement,
             ):
-                mass_matrix = self.calculate_mass_matrix(wing)
+                mass_matrix = self._calculate_mass_matrix(wing)
 
                 aeroMoments_GP1_Slep = self._extract_aero_moments(
                     solver,
@@ -1652,7 +1670,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 (
                     newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
                     newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
-                ) = self.calculate_spring_moments(
+                ) = self._calculate_spring_moments(
                     num_spanwise_panels=num_spanwise_panels,
                     wing=wing,
                     mass_matrix=mass_matrix,
@@ -1821,7 +1839,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1].copy()
             )
 
-    def calculate_spring_moments(
+    def _calculate_spring_moments(
         self,
         num_spanwise_panels: int,
         wing: geometry.wing.Wing,
@@ -1918,7 +1936,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             (
                 newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
                 newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
-            ) = self.calculate_torsional_spring_moment(
+            ) = self._calculate_torsional_spring_moment(
                 dt,
                 I=1 / 2 * mass * (L**2),
                 lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz=(
@@ -1939,7 +1957,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
         )
 
-    def calculate_torsional_spring_moment(
+    def _calculate_torsional_spring_moment(
         self,
         dt: float,
         I: float,
@@ -1995,7 +2013,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         t = np.linspace(dt * (step - 1), dt * step, num_steps)
 
         # Forced numerical integration of the spring-damper ODE
-        return self.spring_numerical_ode(
+        return self._spring_numerical_ode(
             t,
             self.spring_constant_rad,
             self.damping_constant_rad,
@@ -2003,10 +2021,12 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz,
             lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz,
             aeroMomentY_GP1_Slep,
-            self.generate_inertial_moment_function(span_I, wing_movement=wing_movement),
+            self._generate_inertial_moment_function(
+                span_I, wing_movement=wing_movement
+            ),
         )
 
-    def generate_inertial_moment_function(
+    def _generate_inertial_moment_function(
         self,
         span_I: float,
         wing_movement: (
@@ -2073,7 +2093,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         return moment_func
 
-    def spring_numerical_ode(
+    def _spring_numerical_ode(
         self,
         t: np.ndarray,
         spring_constant_rad: float,

@@ -62,10 +62,10 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.assertAlmostEqual(self.problem.damping_constant_rad, 0.5)
 
     def test_calculate_mass_matrix_shape(self):
-        """Test that calculate_mass_matrix returns an array with shape
+        """Test that _calculate_mass_matrix returns an array with shape
         (num_chordwise_panels, num_spanwise_panels, 3)."""
         wing = self.problem.steady_problems[0].airplanes[0].wings[0]
-        mass_matrix = self.problem.calculate_mass_matrix(wing)
+        mass_matrix = self.problem._calculate_mass_matrix(wing)
         self.assertEqual(len(mass_matrix.shape), 3)
         self.assertEqual(mass_matrix.shape[0], wing.num_chordwise_panels)
         self.assertEqual(mass_matrix.shape[1], wing.num_spanwise_panels)
@@ -74,13 +74,13 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_calculate_mass_matrix_non_negative(self):
         """Test that all entries in the mass matrix are non-negative."""
         wing = self.problem.steady_problems[0].airplanes[0].wings[0]
-        mass_matrix = self.problem.calculate_mass_matrix(wing)
+        mass_matrix = self.problem._calculate_mass_matrix(wing)
         self.assertTrue(np.all(mass_matrix >= 0.0))
 
     def test_calculate_mass_matrix_components_equal(self):
         """Test that all three spatial components of the mass matrix are equal."""
         wing = self.problem.steady_problems[0].airplanes[0].wings[0]
-        mass_matrix = self.problem.calculate_mass_matrix(wing)
+        mass_matrix = self.problem._calculate_mass_matrix(wing)
         np.testing.assert_array_equal(mass_matrix[:, :, 0], mass_matrix[:, :, 1])
         np.testing.assert_array_equal(mass_matrix[:, :, 1], mass_matrix[:, :, 2])
 
@@ -139,7 +139,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             (
                 newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
                 newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
-            ) = problem.calculate_spring_moments(
+            ) = problem._calculate_spring_moments(
                 num_spanwise_panels=num_spanwise_panels,
                 wing=wing,
                 mass_matrix=mass_matrix,
@@ -282,7 +282,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         remains zero."""
         t = np.array([0.0, 0.05])
         zero_moment_func = lambda time: 0.0
-        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
+        theta_rad, theta_derivative_rad = self.problem._spring_numerical_ode(
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=0.5,
@@ -296,10 +296,10 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.assertAlmostEqual(theta_derivative_rad, 0.0, places=6)
 
     def test_spring_numerical_ode_returns_floats(self):
-        """Test that spring_numerical_ode returns Python floats."""
+        """Test that _spring_numerical_ode returns Python floats."""
         t = np.array([0.0, 0.1])
         zero_moment_func = lambda time: 0.0
-        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
+        theta_rad, theta_derivative_rad = self.problem._spring_numerical_ode(
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=0.5,
@@ -318,7 +318,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         t = np.array([0.0, 0.5, 1.0])
         zero_moment_func = lambda time: 0.0
         theta0_rad = 1.0
-        theta_rad, theta_derivative_rad = self.problem.spring_numerical_ode(
+        theta_rad, theta_derivative_rad = self.problem._spring_numerical_ode(
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=2.0,
@@ -332,21 +332,21 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.assertLess(abs(theta_rad), abs(theta0_rad))
 
     def test_generate_inertial_moment_function_returns_callable(self):
-        """Test that generate_inertial_moment_function returns a callable."""
-        moment_func = self.problem.generate_inertial_moment_function(span_I=1.0)
+        """Test that _generate_inertial_moment_function returns a callable."""
+        moment_func = self.problem._generate_inertial_moment_function(span_I=1.0)
         self.assertTrue(callable(moment_func))
 
     def test_generate_inertial_moment_function_returns_float_at_zero(self):
-        """Test that the moment function returned by generate_inertial_moment_function
+        """Test that the moment function returned by _generate_inertial_moment_function
         returns a numeric value when evaluated at time zero."""
-        moment_func = self.problem.generate_inertial_moment_function(span_I=1.0)
+        moment_func = self.problem._generate_inertial_moment_function(span_I=1.0)
         result = moment_func(0.0)
         self.assertIsInstance(result, (float, np.floating))
 
     def test_generate_inertial_moment_function_scales_with_span_i(self):
         """Test that the moment function scales linearly with span_I."""
-        moment_func_1 = self.problem.generate_inertial_moment_function(span_I=1.0)
-        moment_func_2 = self.problem.generate_inertial_moment_function(span_I=2.0)
+        moment_func_1 = self.problem._generate_inertial_moment_function(span_I=1.0)
+        moment_func_2 = self.problem._generate_inertial_moment_function(span_I=2.0)
         t_eval = 0.25
         self.assertAlmostEqual(
             moment_func_2(t_eval), 2.0 * moment_func_1(t_eval), places=10
@@ -363,7 +363,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
         span_I = 3.0
         t_eval = 0.3
-        moment_func = self.problem.generate_inertial_moment_function(span_I=span_I)
+        moment_func = self.problem._generate_inertial_moment_function(span_I=span_I)
 
         b_rad = 2.0 * np.pi / period
         h_rad = np.deg2rad(phase_deg)
@@ -387,7 +387,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         static_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
-        moment_func = self.problem.generate_inertial_moment_function(
+        moment_func = self.problem._generate_inertial_moment_function(
             span_I=1.0, wing_movement=static_wing_movement
         )
         for t_eval in (0.0, 0.1, 0.5):
@@ -400,7 +400,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             self.assertAlmostEqual(float(result), 0.0, places=12)
 
     def test_generate_inertial_moment_function_uniform_spacing_raises(self):
-        """Test that generate_inertial_moment_function raises ValueError when the
+        """Test that _generate_inertial_moment_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
         wing_movement = self.problem.wing_movement
         with patch.object(
@@ -410,10 +410,10 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             return_value=("uniform", "sine", "sine"),
         ):
             with self.assertRaises(ValueError):
-                self.problem.generate_inertial_moment_function(span_I=1.0)
+                self.problem._generate_inertial_moment_function(span_I=1.0)
 
     def test_generate_inertial_moment_function_callable_spacing_with_derivative(self):
-        """Test that generate_inertial_moment_function uses the AeroelasticWingMovement's
+        """Test that _generate_inertial_moment_function uses the AeroelasticWingMovement's
         second derivative when the spacing is a custom callable."""
         wing_movement = self.problem.wing_movement
         with (
@@ -430,7 +430,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
                 return_value=(lambda t: -np.sin(t), None, None),
             ),
         ):
-            moment_func = self.problem.generate_inertial_moment_function(span_I=2.0)
+            moment_func = self.problem._generate_inertial_moment_function(span_I=2.0)
             self.assertTrue(callable(moment_func))
             result = moment_func(0.5)
             # The amplitude is stored in degrees but the moment (N*m) must be in SI
@@ -442,7 +442,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
 class TestRecordNullStepForWing(unittest.TestCase):
     """This class contains unit tests for the _record_null_step_for_wing method and
-    the standard WingMovement code path in calculate_wing_deformation."""
+    the standard WingMovement code path in _calculate_wing_deformation."""
 
     def setUp(self):
         """Set up a fresh AeroelasticUnsteadyProblem for each test."""
@@ -521,11 +521,11 @@ class TestRecordNullStepForWing(unittest.TestCase):
         )
 
     def test_calculate_wing_deformation_returns_none_for_standard_wing_movement(self):
-        """Test that calculate_wing_deformation returns None for a Wing backed by a
+        """Test that _calculate_wing_deformation returns None for a Wing backed by a
         standard WingMovement (the else branch)."""
         mock_solver = MagicMock()
 
-        results = self.problem_std.calculate_wing_deformation(
+        results = self.problem_std._calculate_wing_deformation(
             solver=mock_solver, step=0
         )
 
@@ -535,12 +535,12 @@ class TestRecordNullStepForWing(unittest.TestCase):
     def test_calculate_wing_deformation_appends_entries_for_standard_wing_movement(
         self,
     ):
-        """Test that calculate_wing_deformation appends to the time series lists when a
+        """Test that _calculate_wing_deformation appends to the time series lists when a
         Wing is backed by a standard WingMovement."""
         mock_solver = MagicMock()
         wing_idx = 0
 
-        self.problem_std.calculate_wing_deformation(solver=mock_solver, step=0)
+        self.problem_std._calculate_wing_deformation(solver=mock_solver, step=0)
 
         problem = self.problem_std
         # The two structural state time series are seeded with an initial-state entry

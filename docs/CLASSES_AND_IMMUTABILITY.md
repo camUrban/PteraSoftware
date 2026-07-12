@@ -171,7 +171,6 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 | Property                | Depends On              | Notes                                                                                               |
 |-------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|
 | `_aeroelastic_movement` | `_movement`             | Typed-narrow cast of the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
-| `wing_movement`         | `_aeroelastic_movement` | The first airplane movement's first wing movement, cast to `AeroelasticWingMovement`                |
 
 #### Mutable (populated by solver)
 

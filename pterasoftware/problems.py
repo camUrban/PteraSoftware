@@ -1357,8 +1357,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     initialize_next_problem: Initializes the next time step's SteadyProblem from the
     deformed geometry.
 
-    wing_movement: The primary AeroelasticWingMovement used by the aeroelastic model.
-
     wing_density: The mass per unit span area of the wing (kg/m^2).
 
     spring_constant_rad: The torsional spring stiffness for the spring-mass-damper model
@@ -1475,16 +1473,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         return cast(
             aeroelastic_movement_mod.AeroelasticMovement,
             self._movement,
-        )
-
-    @property
-    def wing_movement(
-        self,
-    ) -> aeroelastic_wing_movement_mod.AeroelasticWingMovement:
-        """Return the primary AeroelasticWingMovement used by the aeroelastic model."""
-        return cast(
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement,
-            self._aeroelastic_movement.airplane_movements[0].wing_movements[0],
         )
 
     @property
@@ -1966,9 +1954,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         aeroMomentY_GP1_Slep: float,
         step: int,
         span_I: float,
-        wing_movement: (
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
-        ) = None,
+        wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
         num_steps: int = 2,
     ) -> tuple[float, float]:
         """Solve the torsional spring-damper ODE for a single strip.
@@ -2001,8 +1987,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).
             This is the actual inertia used in the ODE solver.
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
-            parameters are used. When None, falls back to self.wing_movement. The
-            default is None.
+            parameters are used.
         :param num_steps: Number of time sub-steps for numerical integration. The
             default is 2.
         :return: A tuple of two floats: the new value (radians) of the y component of
@@ -2029,9 +2014,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     def _generate_inertial_moment_function(
         self,
         span_I: float,
-        wing_movement: (
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
-        ) = None,
+        wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
     ):
         """Generate the prescribed wing motion inertial moment function.
 
@@ -2042,8 +2025,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         :param span_I: The strip's rotational inertia about the flapping axis
             (kg*m^2).
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
-            parameters are used. When None, falls back to self.wing_movement. The
-            default is None.
+            parameters are used.
         :return: A callable function that accepts time and returns the inertial moment
             (N*m) due to the prescribed wing motion acceleration. For a zero flapping
             amplitude (no prescribed flapping), the returned function is identically
@@ -2053,10 +2035,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which its constructor guarantees
             is present whenever the spacing is a custom callable.
         """
-        _wing_movement = (
-            wing_movement if wing_movement is not None else self.wing_movement
-        )
-        amp = _wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+        amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
 
         # A wing with no prescribed flapping applies no inertial moment. Return the
         # zero function before computing the flapping frequency, whose 2 * pi / period
@@ -2064,9 +2043,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         if amp == 0.0:
             return lambda time: 0.0
 
-        b_rad = 2 * np.pi / _wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
-        h_rad = np.deg2rad(_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
-        spacing = _wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
+        b_rad = 2 * np.pi / wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
+        h_rad = np.deg2rad(wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
+        spacing = wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
         if spacing == "sine":
             # amp is in degrees (ampAngles_Gs_to_Wn_ixyz); convert to radians so
             # the inertial moment (N*m) is consistent with the SI spring-damper ODE.
@@ -2085,7 +2064,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         elif callable(spacing):
             # The AeroelasticWingMovement's constructor guarantees a matching second
             # derivative whenever the spacing component is a custom callable.
-            deriv = _wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
+            deriv = wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
             assert deriv is not None
             # deriv is the second derivative before amplitude scaling; amp is in
             # degrees, so convert to radians to keep the moment in N*m.

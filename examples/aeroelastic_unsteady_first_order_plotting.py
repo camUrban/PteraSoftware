@@ -19,6 +19,13 @@ DEFAULT_K = 1000.0
 DEFAULT_B = 1000.0
 DEFAULT_DENSITY = 6.0
 
+# The prescribed flapping motion's x-component amplitude (degrees), period (seconds),
+# and phase (degrees). The two aeroelastic wing movements are constructed with these
+# values, and the plotted flap-position overlay is computed from them.
+FLAP_AMPLITUDE = 15.0
+FLAP_PERIOD = 1.0
+FLAP_PHASE = 169.0
+
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
 K_VALUES: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
@@ -215,8 +222,6 @@ def run_aeroelastic(
             phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
         )
     )
-    dephase = 169.0
-
     main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
         base_wing=example_airplane.wings[0],
         wing_cross_section_movements=main_wcs_movements_list,
@@ -224,10 +229,10 @@ def run_aeroelastic(
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
         spacingLer_Gs_Cgs=("sine", "sine", "sine"),
         phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-        ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
-        periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+        ampAngles_Gs_to_Wn_ixyz=(FLAP_AMPLITUDE, 0.0, 0.0),
+        periodAngles_Gs_to_Wn_ixyz=(FLAP_PERIOD, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-        phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+        phaseAngles_Gs_to_Wn_ixyz=(FLAP_PHASE, 0.0, 0.0),
     )
 
     reflected_main_wing_movement = (
@@ -238,10 +243,10 @@ def run_aeroelastic(
             periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
             spacingLer_Gs_Cgs=("sine", "sine", "sine"),
             phaseLer_Gs_Cgs=(0.0, 0.0, 0.0),
-            ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
-            periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
+            ampAngles_Gs_to_Wn_ixyz=(FLAP_AMPLITUDE, 0.0, 0.0),
+            periodAngles_Gs_to_Wn_ixyz=(FLAP_PERIOD, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+            phaseAngles_Gs_to_Wn_ixyz=(FLAP_PHASE, 0.0, 0.0),
         )
     )
 
@@ -362,14 +367,13 @@ for val in sweep_values:
 
     # Compute the prescribed flap angle once (it is the same for all runs).
     if flap_angle is None:
-        wm = problem.wing_movement
-        amp = wm.ampAngles_Gs_to_Wn_ixyz[0]
-        period = wm.periodAngles_Gs_to_Wn_ixyz[0]
-        phase = np.deg2rad(wm.phaseAngles_Gs_to_Wn_ixyz[0])
+        phase_rad = np.deg2rad(FLAP_PHASE)
         dt = problem.movement.delta_time
         num_steps = len(tip_twist)
         t = np.arange(num_steps) * dt
-        flap_angle = (amp * np.sin((2 * np.pi / period) * t + phase)).tolist()
+        flap_angle = (
+            FLAP_AMPLITUDE * np.sin((2 * np.pi / FLAP_PERIOD) * t + phase_rad)
+        ).tolist()
 
 # Create an overlay plot of the wing-tip twist histories for all swept values.
 assert flap_angle is not None

@@ -21,6 +21,12 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.problem = (
             problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
         )
+        # The structural methods take the AeroelasticWingMovement whose prescribed
+        # flapping parameters they read, so grab the fixture problem's first Wing's
+        # movement.
+        self.wing_movement = self.problem._aeroelastic_movement.airplane_movements[
+            0
+        ].wing_movements[0]
 
     def test_initialization_accepts_aeroelastic_movement(self):
         """Test that AeroelasticUnsteadyProblem accepts an AeroelasticMovement."""
@@ -333,20 +339,28 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
     def test_generate_inertial_moment_function_returns_callable(self):
         """Test that _generate_inertial_moment_function returns a callable."""
-        moment_func = self.problem._generate_inertial_moment_function(span_I=1.0)
+        moment_func = self.problem._generate_inertial_moment_function(
+            span_I=1.0, wing_movement=self.wing_movement
+        )
         self.assertTrue(callable(moment_func))
 
     def test_generate_inertial_moment_function_returns_float_at_zero(self):
         """Test that the moment function returned by _generate_inertial_moment_function
         returns a numeric value when evaluated at time zero."""
-        moment_func = self.problem._generate_inertial_moment_function(span_I=1.0)
+        moment_func = self.problem._generate_inertial_moment_function(
+            span_I=1.0, wing_movement=self.wing_movement
+        )
         result = moment_func(0.0)
         self.assertIsInstance(result, (float, np.floating))
 
     def test_generate_inertial_moment_function_scales_with_span_i(self):
         """Test that the moment function scales linearly with span_I."""
-        moment_func_1 = self.problem._generate_inertial_moment_function(span_I=1.0)
-        moment_func_2 = self.problem._generate_inertial_moment_function(span_I=2.0)
+        moment_func_1 = self.problem._generate_inertial_moment_function(
+            span_I=1.0, wing_movement=self.wing_movement
+        )
+        moment_func_2 = self.problem._generate_inertial_moment_function(
+            span_I=2.0, wing_movement=self.wing_movement
+        )
         t_eval = 0.25
         self.assertAlmostEqual(
             moment_func_2(t_eval), 2.0 * moment_func_1(t_eval), places=10
@@ -356,14 +370,16 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that the sinusoidal-spacing moment equals -I * b^2 * sin(b * t + h) * A
         with the amplitude converted from degrees to radians so the moment is in SI
         N*m."""
-        wing_movement = self.problem.wing_movement
+        wing_movement = self.wing_movement
         amp_deg = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
         period = wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
         phase_deg = wing_movement.phaseAngles_Gs_to_Wn_ixyz[0]
 
         span_I = 3.0
         t_eval = 0.3
-        moment_func = self.problem._generate_inertial_moment_function(span_I=span_I)
+        moment_func = self.problem._generate_inertial_moment_function(
+            span_I=span_I, wing_movement=wing_movement
+        )
 
         b_rad = 2.0 * np.pi / period
         h_rad = np.deg2rad(phase_deg)
@@ -402,7 +418,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_moment_function_uniform_spacing_raises(self):
         """Test that _generate_inertial_moment_function raises ValueError when the
         wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
-        wing_movement = self.problem.wing_movement
+        wing_movement = self.wing_movement
         with patch.object(
             type(wing_movement),
             "spacingAngles_Gs_to_Wn_ixyz",
@@ -410,12 +426,14 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             return_value=("uniform", "sine", "sine"),
         ):
             with self.assertRaises(ValueError):
-                self.problem._generate_inertial_moment_function(span_I=1.0)
+                self.problem._generate_inertial_moment_function(
+                    span_I=1.0, wing_movement=wing_movement
+                )
 
     def test_generate_inertial_moment_function_callable_spacing_with_derivative(self):
         """Test that _generate_inertial_moment_function uses the AeroelasticWingMovement's
         second derivative when the spacing is a custom callable."""
-        wing_movement = self.problem.wing_movement
+        wing_movement = self.wing_movement
         with (
             patch.object(
                 type(wing_movement),
@@ -430,7 +448,9 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
                 return_value=(lambda t: -np.sin(t), None, None),
             ),
         ):
-            moment_func = self.problem._generate_inertial_moment_function(span_I=2.0)
+            moment_func = self.problem._generate_inertial_moment_function(
+                span_I=2.0, wing_movement=wing_movement
+            )
             self.assertTrue(callable(moment_func))
             result = moment_func(0.5)
             # The amplitude is stored in degrees but the moment (N*m) must be in SI

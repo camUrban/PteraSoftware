@@ -14,7 +14,6 @@ from pterasoftware import _core, _mujoco_model, _panel
 # noinspection PyProtectedMember
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
-    aeroelastic_operating_point_movement_fixtures,
     aeroelastic_wing_cross_section_movement_fixtures,
     aeroelastic_wing_movement_fixtures,
     airplane_movement_fixtures,
@@ -1772,44 +1771,6 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         )
 
 
-class TestAeroelasticOperatingPointMovementSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    AeroelasticOperatingPointMovement. All property and deepcopy behavior is tested at
-    the CoreOperatingPointMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
-    """
-
-    def setUp(self):
-        """Set up test fixtures for AeroelasticOperatingPointMovement slots tests."""
-        self.aopm = (
-            aeroelastic_operating_point_movement_fixtures.make_sine_spacing_aeroelastic_operating_point_movement_fixture()
-        )
-
-    def test_slots_defined(self):
-        """Test that __slots__ is defined on AeroelasticOperatingPointMovement."""
-        self.assertTrue(
-            hasattr(
-                ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement,
-                "__slots__",
-            )
-        )
-
-    def test_no_instance_dict(self):
-        """Test that AeroelasticOperatingPointMovement instances have no __dict__."""
-        self.assertFalse(hasattr(self.aopm, "__dict__"))
-
-    def test_dynamic_attribute_raises(self):
-        """Test that dynamic attribute assignment raises AttributeError."""
-        with self.assertRaises(AttributeError):
-            self.aopm.nonexistent_attribute = 42
-
-    def test_subclass(self):
-        """Test that AeroelasticOperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
-        self.assertIsInstance(self.aopm, _core.CoreOperatingPointMovement)
-
-
 class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
     AeroelasticWingCrossSectionMovement. All property and deepcopy behavior is tested at
@@ -1987,7 +1948,7 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
             self.aeroelastic_movement.airplane_movements[0],
         )
 
-        # Verify the AeroelasticOperatingPointMovement is independent.
+        # Verify the OperatingPointMovement is independent.
         self.assertIsNot(
             copied.operating_point_movement,
             self.aeroelastic_movement.operating_point_movement,

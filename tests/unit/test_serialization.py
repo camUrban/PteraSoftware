@@ -50,9 +50,6 @@ from pterasoftware.movements.aeroelastic_airplane_movement import (
     AeroelasticAirplaneMovement,
 )
 from pterasoftware.movements.aeroelastic_movement import AeroelasticMovement
-from pterasoftware.movements.aeroelastic_operating_point_movement import (
-    AeroelasticOperatingPointMovement,
-)
 from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
     AeroelasticWingCrossSectionMovement,
 )
@@ -1998,15 +1995,6 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         )
         result = _deserialize_value(_serialize_value(wing_cross_section_movement))
         assert isinstance(result, AeroelasticWingCrossSectionMovement)
-
-    def test_aeroelastic_operating_point_movement(self):
-        """Tests that an AeroelasticOperatingPointMovement survives a full round trip.
-
-        :return: None
-        """
-        operating_point_movement = self.problem.movement.operating_point_movement
-        result = _deserialize_value(_serialize_value(operating_point_movement))
-        assert isinstance(result, AeroelasticOperatingPointMovement)
 
     def test_custom_callable_spacing_is_not_serializable(self):
         """Tests that an AeroelasticWingMovement with a custom callable angular spacing

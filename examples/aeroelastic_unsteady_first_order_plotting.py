@@ -285,11 +285,13 @@ def run_aeroelastic(
         rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
     )
 
-    example_operating_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
-        base_operating_point=example_operating_point,
-        ampVCg__E=0.0,
-        periodVCg__E=0.0,
-        spacingVCg__E="sine",
+    example_operating_point_movement = (
+        ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=example_operating_point,
+            ampVCg__E=0.0,
+            periodVCg__E=0.0,
+            spacingVCg__E="sine",
+        )
     )
 
     example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(

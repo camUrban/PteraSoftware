@@ -83,7 +83,7 @@ def make_basic_aeroelastic_movement_fixture():
     )
 
     # Create the operating point movement.
-    op_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 
@@ -318,7 +318,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture():
     )
 
     # Create the OperatingPointMovement.
-    op_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 

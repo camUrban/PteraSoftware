@@ -1697,8 +1697,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         return results
 
+    @staticmethod
     def _extract_aero_moments(
-        self,
         solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         num_chordwise_panels: int,
         num_spanwise_panels: int,
@@ -1729,8 +1729,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         ).reshape(num_chordwise_panels, num_spanwise_panels, 3)
         return aeroMoments_GP1_Slep
 
+    @staticmethod
     def _build_deformation_vector(
-        self,
         deformationAnglesYRad_Wcsp_to_Wcs_ixyz: np.ndarray,
         num_spanwise_panels: int,
     ) -> np.ndarray:
@@ -2011,8 +2011,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             ),
         )
 
+    @staticmethod
     def _generate_inertial_moment_function(
-        self,
         span_I: float,
         wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
     ):
@@ -2072,8 +2072,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         return moment_func
 
+    @staticmethod
     def _spring_numerical_ode(
-        self,
         t: np.ndarray,
         spring_constant_rad: float,
         damping_constant_rad: float,
@@ -2143,7 +2143,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             atol=_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD,
         )
 
-        theta_rad = float(sol.y[0][-1])
-        theta_derivative_rad = float(sol.y[1][-1])
+        final_theta_rad = float(sol.y[0][-1])
+        final_theta_derivative_rad = float(sol.y[1][-1])
 
-        return theta_rad, theta_derivative_rad
+        return final_theta_rad, final_theta_derivative_rad

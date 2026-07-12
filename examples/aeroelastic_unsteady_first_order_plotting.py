@@ -317,10 +317,10 @@ def run_aeroelastic(
         prescribed_wake=True,
     )
 
-    problem = example_solver.unsteady_problem
-    assert isinstance(problem, ps.problems.AeroelasticUnsteadyProblem)
+    solved_problem = example_solver.unsteady_problem
+    assert isinstance(solved_problem, ps.problems.AeroelasticUnsteadyProblem)
 
-    return problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0], problem
+    return solved_problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0], solved_problem
 
 
 # Determine which parameter is being swept.

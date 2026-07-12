@@ -38,13 +38,13 @@ def oscillating_sin_at_time(
     """
     # Convert the function characteristics into classic wave function constants.
     a = amp
-    b = 0.0
+    b_rad = 0.0
     if amp != 0.0:
-        b = 2.0 * np.pi / period
-    h = np.deg2rad(phase)
+        b_rad = 2.0 * np.pi / period
+    h_rad = np.deg2rad(phase)
     k = base
 
-    return float(a * np.sin(b * time + h) + k)
+    return float(a * np.sin(b_rad * time + h_rad) + k)
 
 
 def oscillating_lin_at_time(
@@ -79,13 +79,13 @@ def oscillating_lin_at_time(
     """
     # Convert the function characteristics into classic wave function constants.
     a = amp
-    b = 0.0
+    b_rad = 0.0
     if amp != 0.0:
-        b = 2.0 * np.pi / period
-    h = (np.pi / 2.0) + np.deg2rad(phase)
+        b_rad = 2.0 * np.pi / period
+    h_rad = (np.pi / 2.0) + np.deg2rad(phase)
     k = base
 
-    return float(a * sp_sig.sawtooth((b * time + h), 0.5) + k)
+    return float(a * sp_sig.sawtooth((b_rad * time + h_rad), 0.5) + k)
 
 
 def oscillating_custom_at_time(
@@ -163,15 +163,15 @@ def oscillating_custom_at_time(
 
     # Convert the function characteristics into classic wave function constants.
     a = amp
-    b = 0.0
+    b_rad = 0.0
     if amp != 0.0:
-        b = 2.0 * np.pi / period
-    h = np.deg2rad(phase)
+        b_rad = 2.0 * np.pi / period
+    h_rad = np.deg2rad(phase)
     k = base
 
     # Calculate the output or raise an exception if custom_functions throws.
     try:
-        return float(a * custom_function(b * time + h) + k)
+        return float(a * custom_function(b_rad * time + h_rad) + k)
     except Exception as e:  # pragma: no cover
         raise ValueError(
             f"Calling your custom_function on the inputs resulted in the following "

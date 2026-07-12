@@ -15,8 +15,8 @@ import pterasoftware as ps
 TIP_INDEX = 16
 
 # These are the default values used when a parameter is not being swept.
-DEFAULT_K = 1000.0
-DEFAULT_B = 1000.0
+DEFAULT_K_RAD = 1000.0
+DEFAULT_B_RAD = 1000.0
 DEFAULT_DENSITY = 6.0
 
 # The prescribed flapping motion's x-component amplitude (degrees), period (seconds),
@@ -28,14 +28,14 @@ FLAP_PHASE = 169.0
 
 # Populate exactly ONE of these lists to sweep that parameter while holding the
 # others at their defaults. Leave the other two as empty lists.
-K_VALUES: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
-B_VALUES: list[float] = []
+K_VALUES_RAD: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
+B_VALUES_RAD: list[float] = []
 DENSITY_VALUES: list[float] = []
 
 
 def run_aeroelastic(
-    spring_constant_rad: float = DEFAULT_K,
-    damping_constant_rad: float = DEFAULT_B,
+    spring_constant_rad: float = DEFAULT_K_RAD,
+    damping_constant_rad: float = DEFAULT_B_RAD,
     wing_density: float = DEFAULT_DENSITY,
 ) -> tuple[list[np.ndarray], ps.problems.AeroelasticUnsteadyProblem]:
     """Run the aeroelastic solver and return the first Wing's deformation angle time
@@ -324,23 +324,24 @@ def run_aeroelastic(
 
 
 # Determine which parameter is being swept.
-active_sweeps = sum(1 for v in (K_VALUES, B_VALUES, DENSITY_VALUES) if v)
+active_sweeps = sum(1 for v in (K_VALUES_RAD, B_VALUES_RAD, DENSITY_VALUES) if v)
 if active_sweeps > 1:
     raise ValueError(
-        "Only one of K_VALUES, B_VALUES, or DENSITY_VALUES should be non-empty."
+        "Only one of K_VALUES_RAD, B_VALUES_RAD, or DENSITY_VALUES should be non-empty."
     )
 if active_sweeps == 0:
     raise ValueError(
-        "At least one of K_VALUES, B_VALUES, or DENSITY_VALUES must be non-empty."
+        "At least one of K_VALUES_RAD, B_VALUES_RAD, or DENSITY_VALUES must be "
+        "non-empty."
     )
 
-if K_VALUES:
-    sweep_values = K_VALUES
+if K_VALUES_RAD:
+    sweep_values = K_VALUES_RAD
     sweep_name = "Spring Constant"
     sweep_symbol = "k"
     sweep_kwarg = "spring_constant_rad"
-elif B_VALUES:
-    sweep_values = B_VALUES
+elif B_VALUES_RAD:
+    sweep_values = B_VALUES_RAD
     sweep_name = "Damping Constant"
     sweep_symbol = "b"
     sweep_kwarg = "damping_constant_rad"

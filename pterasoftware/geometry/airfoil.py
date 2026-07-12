@@ -677,23 +677,23 @@ class Airfoil:
 
                     # Convert the slope of the MCL to the angle between the airfoil
                     # x axis and the MCL tangent line.
-                    thetaSlope_Ax_to_MCL = np.arctan(mclSlope_A)
+                    thetaSlopeRad_Ax_to_MCL = np.arctan(mclSlope_A)
 
                     # Find the upper and lower points of the Airfoil's outline (in
                     # airfoil axes, relative to the leading point) using the MCL
                     # points, the perpendicular half-thickness, and the angle between
                     # the x axis and the MCL tangent line.
                     upperOutlineX_A_lp = mclX_A_lp - halfThickness_A * np.sin(
-                        thetaSlope_Ax_to_MCL
+                        thetaSlopeRad_Ax_to_MCL
                     )
                     lowerOutlineX_A_lp = mclX_A_lp + halfThickness_A * np.sin(
-                        thetaSlope_Ax_to_MCL
+                        thetaSlopeRad_Ax_to_MCL
                     )
                     upperOutlineY_A_lp = mclY_A_lp + halfThickness_A * np.cos(
-                        thetaSlope_Ax_to_MCL
+                        thetaSlopeRad_Ax_to_MCL
                     )
                     lowerOutlineY_A_lp = mclY_A_lp - halfThickness_A * np.cos(
-                        thetaSlope_Ax_to_MCL
+                        thetaSlopeRad_Ax_to_MCL
                     )
 
                     # Flip upper surface so it's back to front.
@@ -858,16 +858,16 @@ class Airfoil:
             te_A_lp = (upperTp_A_lp + lowerTp_A_lp) / 2
 
             # Calculate the angle the chord makes with the x axis.
-            chord_angle = np.arctan2(te_A_lp[1], te_A_lp[0])
+            chord_angle_rad = np.arctan2(te_A_lp[1], te_A_lp[0])
 
             # Check for excessive rotation on the first iteration. Minor rotation
             # offsets (implicit angle of attack) are acceptable, but large rotations
             # indicate the outline data is not in the expected orientation.
             max_rotation = 15.0
-            if iteration == 0 and np.abs(chord_angle) > np.deg2rad(max_rotation):
+            if iteration == 0 and np.abs(chord_angle_rad) > np.deg2rad(max_rotation):
                 raise ValueError(
                     f"The Airfoil's outline has excessive rotation "
-                    f"({np.rad2deg(chord_angle):#.3G} deg). The chord line must be "
+                    f"({np.rad2deg(chord_angle_rad):#.3G} deg). The chord line must be "
                     f"within 15 deg of the x axis. Minor rotation offsets (such as "
                     f"implicit angle of attack) are corrected automatically, but the "
                     f"outline data appears to be in an unexpected orientation."
@@ -876,7 +876,7 @@ class Airfoil:
             # Create an active rotation matrix to rotate the chord onto x axis.
             # Convert the angle to degrees to match the _transformations.py standard.
             rot_R_act = _transformations.generate_2D_rot_R(
-                angle=np.rad2deg(-chord_angle), passive=False
+                angle=np.rad2deg(-chord_angle_rad), passive=False
             )
 
             # Apply the active rotation to all points.

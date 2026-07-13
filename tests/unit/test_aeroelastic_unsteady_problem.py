@@ -116,11 +116,11 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
 
-        # Choose the per-entry mass so the strip's ODE inertia, I = (1 / 2) * mass *
-        # L^2 with mass summed over the strip's mass-matrix entries, is exactly 1.0.
-        # With spring_constant_rad = 10.0 and damping_constant_rad = 20.0, the ODE is
-        # then overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5 per
-        # second, so it is far from settled within one 0.1 s time step.
+        # Choose the per-entry mass so the strip's torsional inertia, I = (1 / 2) *
+        # mass * L^2 with mass summed over the strip's mass-matrix entries, is exactly
+        # 1.0. With spring_constant_rad = 10.0 and damping_constant_rad = 20.0, the ODE
+        # is then overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5
+        # per second, so it is far from settled within one 0.1 s time step.
         L = (wing.wing_cross_sections[0].chord + wing.wing_cross_sections[1].chord) / 2
         num_mass_entries = num_chordwise_panels * num_spanwise_panels * 3
         mass_matrix = np.full(
@@ -292,7 +292,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=0.5,
-            I=1.0,
+            torsional_inertia=1.0,
             theta0_rad=0.0,
             theta_derivative0_rad=0.0,
             aero_moment=0.0,
@@ -309,7 +309,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=0.5,
-            I=1.0,
+            torsional_inertia=1.0,
             theta0_rad=0.0,
             theta_derivative0_rad=0.0,
             aero_moment=0.0,
@@ -328,7 +328,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             t,
             spring_constant_rad=10.0,
             damping_constant_rad=2.0,
-            I=1.0,
+            torsional_inertia=1.0,
             theta0_rad=theta0_rad,
             theta_derivative0_rad=0.0,
             aero_moment=0.0,
@@ -340,7 +340,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_moment_function_returns_callable(self):
         """Test that _generate_inertial_moment_function returns a callable."""
         moment_func = self.problem._generate_inertial_moment_function(
-            span_I=1.0, wing_movement=self.wing_movement
+            flapping_axis_inertia=1.0, wing_movement=self.wing_movement
         )
         self.assertTrue(callable(moment_func))
 
@@ -348,18 +348,18 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that the moment function returned by _generate_inertial_moment_function
         returns a numeric value when evaluated at time zero."""
         moment_func = self.problem._generate_inertial_moment_function(
-            span_I=1.0, wing_movement=self.wing_movement
+            flapping_axis_inertia=1.0, wing_movement=self.wing_movement
         )
         result = moment_func(0.0)
         self.assertIsInstance(result, (float, np.floating))
 
-    def test_generate_inertial_moment_function_scales_with_span_i(self):
-        """Test that the moment function scales linearly with span_I."""
+    def test_generate_inertial_moment_function_scales_with_flapping_axis_inertia(self):
+        """Test that the moment function scales linearly with flapping_axis_inertia."""
         moment_func_1 = self.problem._generate_inertial_moment_function(
-            span_I=1.0, wing_movement=self.wing_movement
+            flapping_axis_inertia=1.0, wing_movement=self.wing_movement
         )
         moment_func_2 = self.problem._generate_inertial_moment_function(
-            span_I=2.0, wing_movement=self.wing_movement
+            flapping_axis_inertia=2.0, wing_movement=self.wing_movement
         )
         t_eval = 0.25
         self.assertAlmostEqual(
@@ -375,10 +375,10 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         period = wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
         phase_deg = wing_movement.phaseAngles_Gs_to_Wn_ixyz[0]
 
-        span_I = 3.0
+        flapping_axis_inertia = 3.0
         t_eval = 0.3
         moment_func = self.problem._generate_inertial_moment_function(
-            span_I=span_I, wing_movement=wing_movement
+            flapping_axis_inertia=flapping_axis_inertia, wing_movement=wing_movement
         )
 
         b_rad = 2.0 * np.pi / period
@@ -388,7 +388,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             * b_rad**2
             * np.sin(b_rad * t_eval + h_rad)
             * np.deg2rad(amp_deg)
-            * span_I
+            * flapping_axis_inertia
         )
         self.assertAlmostEqual(moment_func(t_eval), expected, places=10)
 
@@ -404,7 +404,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
         moment_func = self.problem._generate_inertial_moment_function(
-            span_I=1.0, wing_movement=static_wing_movement
+            flapping_axis_inertia=1.0, wing_movement=static_wing_movement
         )
         for t_eval in (0.0, 0.1, 0.5):
             result = moment_func(t_eval)
@@ -427,7 +427,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         ):
             with self.assertRaises(ValueError):
                 self.problem._generate_inertial_moment_function(
-                    span_I=1.0, wing_movement=wing_movement
+                    flapping_axis_inertia=1.0, wing_movement=wing_movement
                 )
 
     def test_generate_inertial_moment_function_callable_spacing_with_derivative(self):
@@ -449,7 +449,7 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             ),
         ):
             moment_func = self.problem._generate_inertial_moment_function(
-                span_I=2.0, wing_movement=wing_movement
+                flapping_axis_inertia=2.0, wing_movement=wing_movement
             )
             self.assertTrue(callable(moment_func))
             result = moment_func(0.5)

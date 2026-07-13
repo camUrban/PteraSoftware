@@ -1840,18 +1840,18 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Solve the torsional spring-damper ODE for each spanwise section.
 
         Solves the torsional spring-damper ODE independently for each spanwise section,
-        accounting for aerodynamic moments, inertial moments, and structural
-        properties. The state integrated for each strip is the y component (radians) of
-        the cumulative deformation angle vector that perturbs its outboard bounding
+        accounting for aerodynamic moments, inertial moments, and structural properties.
+        The state integrated for each strip is the y component (radians) of the
+        cumulative deformation angle vector that perturbs its outboard bounding
         WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence,
-        together with that y component's time derivative (rad/s). The rotational
-        inertia is computed as I = (1 / 12) * M * (L^2 + W^2) + M * d^2, where M is
-        panel mass, L is chord, W is span width, and d is distance from the flapping
-        axis (computed cumulatively using the parallel axis theorem).
+        together with that y component's time derivative (rad/s). Each strip's two
+        rotational inertias (the torsional inertia in its ODE and the flapping-axis
+        inertia that scales its prescribed-motion inertial forcing) come from
+        _calculate_strip_inertias.
 
         The spanwise section index runs root to tip, matching the order of the Wing's
-        wing_cross_sections, and the mass_matrix and aeroMoments_GP1_Slep arrays must
-        be supplied with their spanwise axes in that same root-to-tip order (the caller
+        wing_cross_sections, and the mass_matrix and aeroMoments_GP1_Slep arrays must be
+        supplied with their spanwise axes in that same root-to-tip order (the caller
         flips them for mirror-meshed Wings, whose panel grids run tip to root).
 
         :param num_spanwise_panels: Number of spanwise panel rows in the Wing.
@@ -1887,21 +1887,87 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
             self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
         )
-        d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
+        dt = self.movement.delta_time
+        torsional_inertias, flapping_axis_inertias = self._calculate_strip_inertias(
+            wing=wing,
+            num_spanwise_panels=num_spanwise_panels,
+            mass_matrix=mass_matrix,
+        )
         for span_panel in range(num_spanwise_panels):
             aeroMomentY_GP1_Slep = np.sum(aeroMoments_GP1_Slep[:, span_panel, 1])
+            # Re-seed the strip's ODE from its own state at the end of the previous
+            # time step. The state arrays hold one entry per WingCrossSection, and a
+            # strip's state lives at its outboard bounding WingCrossSection, index
+            # span_panel + 1. The WingCrossSection at index span_panel bounds this
+            # strip on its inboard side, and the root WingCrossSection (index 0) is
+            # clamped.
+            (
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
+            ) = self._calculate_torsional_spring_moment(
+                dt,
+                torsional_inertia=torsional_inertias[span_panel],
+                lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz=(
+                    lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
+                ),
+                lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                    lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
+                ),
+                aeroMomentY_GP1_Slep=aeroMomentY_GP1_Slep,
+                step=step,
+                flapping_axis_inertia=flapping_axis_inertias[span_panel],
+                wing_movement=wing_movement,
+            )
 
-            dt = self.movement.delta_time
+        return (
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+        )
+
+    @staticmethod
+    def _calculate_strip_inertias(
+        wing: geometry.wing.Wing,
+        num_spanwise_panels: int,
+        mass_matrix: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Calculate the two rotational inertias of each of a Wing's strips.
+
+        The structural model uses two distinct inertias per strip. The torsional
+        inertia, (1 / 2) * M * L^2, is the inertia paired with the strip's torsional
+        deformation state: it divides the net moment in the strip's spring-damper ODE.
+        The flapping-axis inertia, (1 / 12) * M * (L^2 + W^2) + M * d^2, is the inertia
+        of the strip (modeled as a rectangular prism) about the flapping axis, with the
+        M * d^2 term applying the parallel axis theorem: it never appears in the ODE
+        directly, and instead scales the prescribed flapping acceleration into the ODE's
+        inertial forcing moment. In both expressions, M is the strip's mass, L is its
+        mean chord, W is its span width, and d is the distance from the flapping axis to
+        its centroid, accumulated across strips in half-span-width increments.
+
+        The strip index runs root to tip, matching the order of the Wing's
+        wing_cross_sections, and the mass_matrix must be supplied with its spanwise axis
+        in that same root-to-tip order (the panel geometry reads flip the index for
+        mirror-meshed Wings, whose panel grids run tip to root).
+
+        :param wing: The Wing containing geometric and structural definitions.
+        :param num_spanwise_panels: Number of spanwise panel rows in the Wing.
+        :param mass_matrix: A (num_chordwise_panels, num_spanwise_panels, 3) ndarray of
+            panel masses, with the spanwise axis in root-to-tip order.
+        :return: A tuple of two (num_spanwise_panels,) ndarrays of floats: the strips'
+            torsional inertias and their flapping-axis inertias (both kg*m^2), in root-
+            to-tip order.
+        """
+        torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
+        flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
+        assert wing.panels is not None
+        # The distance from the flapping axis to the strip's centroid, accumulated
+        # in half-span-width increments.
+        d = 0.0
+        for span_panel in range(num_spanwise_panels):
             mass = mass_matrix[:, span_panel, :].sum()
-            # Equation for rotational inertia of rectangular prism about flapping axis
-            # Considers two factors, the first is the rotational inertial of a
-            # rectangular prism about its centroid, the second is the parallel axis
-            # theorem to account for distance from flapping axis to the panel centroid
             L = (
                 wing.wing_cross_sections[span_panel].chord
                 + wing.wing_cross_sections[span_panel + 1].chord
             ) / 2
-            assert wing.panels is not None
             # The span_panel index runs root to tip, matching the
             # wing_cross_sections list, but a mirror-meshed Wing's panel grid
             # runs tip to root spanwise, so map the index when reading panel
@@ -1914,46 +1980,22 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 np.linalg.norm(wing.panels[0][panel_span_index].frontLeg_G)
             )
             d += W / 2
-            span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
-            # Re-seed the strip's ODE from its own state at the end of the previous
-            # time step. The state arrays hold one entry per WingCrossSection, and a
-            # strip's state lives at its outboard bounding WingCrossSection, index
-            # span_panel + 1. The WingCrossSection at index span_panel bounds this
-            # strip on its inboard side, and the root WingCrossSection (index 0) is
-            # clamped.
-            (
-                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
-                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
-            ) = self._calculate_torsional_spring_moment(
-                dt,
-                I=1 / 2 * mass * (L**2),
-                lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz=(
-                    lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
-                ),
-                lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz=(
-                    lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
-                ),
-                aeroMomentY_GP1_Slep=aeroMomentY_GP1_Slep,
-                step=step,
-                span_I=span_I,
-                wing_movement=wing_movement,
-            )
+            torsional_inertias[span_panel] = 1 / 2 * mass * (L**2)
+            flapping_axis_inertias[span_panel] = 1 / 12 * mass * (
+                L**2 + W**2
+            ) + mass * (d**2)
             d += W / 2
-
-        return (
-            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
-            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
-        )
+        return torsional_inertias, flapping_axis_inertias
 
     def _calculate_torsional_spring_moment(
         self,
         dt: float,
-        I: float,
+        torsional_inertia: float,
         lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz: float,
         lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz: float,
         aeroMomentY_GP1_Slep: float,
         step: int,
-        span_I: float,
+        flapping_axis_inertia: float,
         wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
         num_steps: int = 2,
     ) -> tuple[float, float]:
@@ -1961,7 +2003,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         Integrates the forced torsional damped harmonic oscillator equation:
         I * d^2(theta)/dt^2 = M_aero + M_inertial - k * theta - c * d(theta)/dt, where
-        k and c are the problem's spring_constant_rad and damping_constant_rad.
+        I is the strip's torsional inertia and k and c are the problem's
+        spring_constant_rad and damping_constant_rad.
 
         The state integrated is the y component (radians) of the cumulative deformation
         angle vector that perturbs the strip's outboard bounding WingCrossSection's
@@ -1970,7 +2013,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         the time step.
 
         :param dt: The time step duration (seconds).
-        :param I: The rotational inertia about the flapping axis (kg*m^2).
+        :param torsional_inertia: The strip's torsional rotational inertia (kg*m^2),
+            the I dividing the net moment in the ODE above.
         :param lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz: The value (radians), at the
             end of the previous time step, of the y component of the deformation angle
             vector that perturbs the strip's outboard bounding WingCrossSection's
@@ -1984,8 +2028,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             aerodynamic moments (in the first Airplane's geometry axes, relative to the
             strip's leading edge point).
         :param step: The current time step index (used for inertial moment evaluation).
-        :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).
-            This is the actual inertia used in the ODE solver.
+        :param flapping_axis_inertia: The strip's rotational inertia about the flapping
+            axis (kg*m^2), including the parallel axis theorem term. It never divides
+            the net moment in the ODE above; it only scales the prescribed flapping
+            acceleration into the inertial forcing moment M_inertial.
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
             parameters are used.
         :param num_steps: Number of time sub-steps for numerical integration. The
@@ -2002,38 +2048,40 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             t,
             self.spring_constant_rad,
             self.damping_constant_rad,
-            I,
+            torsional_inertia,
             lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz,
             lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz,
             aeroMomentY_GP1_Slep,
             self._generate_inertial_moment_function(
-                span_I, wing_movement=wing_movement
+                flapping_axis_inertia, wing_movement=wing_movement
             ),
         )
 
     @staticmethod
     def _generate_inertial_moment_function(
-        span_I: float,
+        flapping_axis_inertia: float,
         wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
     ):
         """Generate the prescribed wing motion inertial moment function.
 
         Extracts the prescribed flapping motion from the wing_movement definition and
         creates a callable inertial moment function M_inertial = I *
-        d^2(theta_prescribed)/dt^2. Supports sinusoidal and custom spacing functions.
+        d^2(theta_prescribed)/dt^2, where I is the strip's flapping-axis inertia.
+        Supports sinusoidal and custom spacing functions.
 
-        :param span_I: The strip's rotational inertia about the flapping axis
-            (kg*m^2).
+        :param flapping_axis_inertia: The strip's rotational inertia about the
+            flapping axis (kg*m^2).
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
             parameters are used.
         :return: A callable function that accepts time and returns the inertial moment
             (N*m) due to the prescribed wing motion acceleration. For a zero flapping
             amplitude (no prescribed flapping), the returned function is identically
             zero regardless of the spacing. For sinusoidal spacing: M_inertial = -I * b^2 *
-            sin(b * t + h) * A, where b = 2 * pi / period, h = phase, A = amplitude.
-            For custom spacing, uses the AeroelasticWingMovement's
-            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which its constructor guarantees
-            is present whenever the spacing is a custom callable.
+            sin(b * t + h) * A, where I = flapping_axis_inertia, b = 2 * pi / period,
+            h = phase, A = amplitude. For custom spacing, uses the
+            AeroelasticWingMovement's spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which
+            its constructor guarantees is present whenever the spacing is a custom
+            callable.
         """
         amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
 
@@ -2054,7 +2102,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 * (b_rad**2)
                 * np.sin(b_rad * time + h_rad)
                 * np.deg2rad(amp)
-                * span_I
+                * flapping_axis_inertia
             )
         elif spacing == "uniform":
             raise ValueError(
@@ -2068,7 +2116,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             assert deriv is not None
             # deriv is the second derivative before amplitude scaling; amp is in
             # degrees, so convert to radians to keep the moment in N*m.
-            moment_func = lambda time: np.deg2rad(amp) * deriv(time) * span_I
+            moment_func = (
+                lambda time: np.deg2rad(amp) * deriv(time) * flapping_axis_inertia
+            )
 
         return moment_func
 
@@ -2077,7 +2127,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         t: np.ndarray,
         spring_constant_rad: float,
         damping_constant_rad: float,
-        I: float,
+        torsional_inertia: float,
         theta0_rad: float,
         theta_derivative0_rad: float,
         aero_moment: float,
@@ -2101,8 +2151,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             above.
         :param damping_constant_rad: The damping constant (N*m*s/rad), the c in the ODE
             above.
-        :param I: Rotational inertia (kg*m^2). This parameter is present for potential
-            alternative models of inertia.
+        :param torsional_inertia: The strip's torsional rotational inertia (kg*m^2),
+            the I in the ODE above.
         :param theta0_rad: Initial angular displacement (radians).
         :param theta_derivative0_rad: The initial angular displacement's time
             derivative (rad/s).
@@ -2130,7 +2180,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                         - damping_constant_rad * theta_derivative_rad
                         - spring_constant_rad * theta_rad
                     )
-                    / I,
+                    / torsional_inertia,
                 ]
             )
 

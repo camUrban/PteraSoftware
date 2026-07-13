@@ -24,7 +24,6 @@ import copy
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 
@@ -1309,26 +1308,16 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
-# Aeroelastic structural-coupling debug constants. _AERO_SCALING multiplies the
-# aerodynamic moments fed to the torsional spring-damper ODE, and
-# _DEFORMATION_SCALING multiplies the torsional deformation angles applied to the
-# geometry. Both are fixed at 1.0 so the coupling is physical; change them only for
-# local debugging. A value other than 1.0 shifts the converged equilibrium (for
-# example, a static twist becomes _AERO_SCALING * M / k) rather than stabilizing the
-# coupling.
-_AERO_SCALING = 1.0
-_DEFORMATION_SCALING = 1.0
-
 # Tolerances for the torsional spring-damper ODE integration in
-# spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
 # defaults because the integration is re-seeded from the previous state at every
 # outer time step, so its local errors compound across a simulation, and because a
 # loose absolute tolerance would swamp small torsional responses. The absolute
-# tolerance bounds both state components, the torsional angle (radians) and the
-# angular velocity (rad/s). Loosen these only for local debugging (for example, a
+# tolerance bounds both state components, the torsional angle (radians) and its
+# time derivative (rad/s). Loosen these only for local debugging (for example, a
 # nearly massless wing makes the ODE stiff and the strict tolerances expensive).
 _SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
-_SPRING_ODE_ABSOLUTE_TOLERANCE = 1e-9
+_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
 
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
@@ -1337,90 +1326,94 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
     This class couples aerodynamic loads with wing structural dynamics (spring-mass-
     damper system) to simulate aeroelastic deformation. Each time step, wing
-    deformations are calculated based on the combined effects of aerodynamic moments,
-    inertial forces, and spring-damper restoring forces.
+    deformations are calculated based on the combined effects of each strip's
+    aerodynamic, inertial, and spring-damper restoring torsional moments, all taken as y
+    components (in the first Airplane's geometry axes) of moments relative to the
+    strip's leading edge point.
 
     **Contains the following methods:**
 
-    calculate_wing_panel_accelerations: Computes panel accelerations from finite
-    difference of positions.
+    only_final_results: Determines whether the solver will only calculate loads for the
+    final time step or final cycle.
 
-    calculate_mass_matrix: Generates the mass distribution matrix for wing panels.
+    num_steps: The number of time steps.
 
-    calculate_wing_deformation: Computes cumulative wing deformation for the current
-    step.
+    delta_time: The time step size in seconds.
 
-    calculate_spring_moments: Solves the torsional spring-damper ODE for each spanwise
-    section, returning angular states.
+    first_averaging_step: The first time step included in cycle averaging.
 
-    calculate_torsional_spring_moment: Solves the torsional spring-damper ODE for a
-    single span section.
+    first_results_step: The first time step for which loads are calculated.
 
-    generate_inertial_torque_function: Creates a torque function from prescribed wing
-    motion.
+    max_wake_rows: The maximum chordwise wake rows per Wing.
 
-    spring_numerical_ode: Numerically integrates the spring-damper differential
-    equation.
+    movement: The AeroelasticMovement that defines the motion parameters for this
+    AeroelasticUnsteadyProblem.
 
-    plot_flap_cycle_curves: Visualizes moment and deformation time histories.
+    steady_problems: A tuple of SteadyProblems, one for each time step that has been
+    initialized so far.
+
+    get_steady_problem: Gets the SteadyProblem at a specified time step.
+
+    initialize_next_problem: Initializes the next time step's SteadyProblem from the
+    deformed geometry.
+
+    wing_density: The mass per unit span area of the wing (kg/m^2).
+
+    spring_constant_rad: The torsional spring stiffness for the spring-mass-damper model
+    (N*m/rad).
+
+    damping_constant_rad: The torsional damping coefficient (N*m*s/rad).
+
+    step_discards: The number of initial time steps to discard for numerical stability.
 
     **Notes:**
 
     The aeroelastic coupling assumes a torsional spring-mass-damper model for each
-    spanwise section. Wing motion is prescribed through wing flapping, and aerodynamic
-    moments from the solver are combined with inertial and spring restoring forces via
-    ODE integration to produce structural deformations.
+    spanwise section. Wing motion is prescribed through wing flapping, and each strip's
+    aerodynamic moment y components (in the first Airplane's geometry axes, relative to
+    the strip's leading edge point) are combined with its inertial and spring restoring
+    moments about the same axis and point via ODE integration to produce structural
+    deformations.
     """
 
     __slots__ = (
         "_wing_density",
-        "_spring_constant",
-        "_damping_constant",
+        "_spring_constant_rad",
+        "_damping_constant_rad",
         "_step_discards",
-        "_plot_flap_cycle",
-        "net_deformation_per_wing",
-        "angular_velocities_per_wing",
-        "positions_per_wing",
-        "per_step_inertial_per_wing",
-        "per_step_aero_per_wing",
-        "net_data_per_wing",
-        "angular_velocity_data_per_wing",
-        "flap_points_per_wing",
-        "base_wing_positions_per_wing",
+        "listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz",
+        "_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz",
     )
 
     def __init__(
         self,
         movement: aeroelastic_movement_mod.AeroelasticMovement,
         wing_density: float,
-        spring_constant: float,
-        damping_constant: float,
+        spring_constant_rad: float,
+        damping_constant_rad: float,
         step_discards: int = 5,
-        plot_flap_cycle: bool = False,
     ) -> None:
         """The initialization method.
 
         Sets up the aeroelastic problem with structural parameters for the torsional
-        spring-mass-damper model applied to each wing spanwise section. Initializes
-        storage for aerodynamic loads, deformations, moments, and solver state.
+        spring-mass-damper model applied to each wing spanwise section. Initializes the
+        per-wing structural state time series.
 
         See _CoupledUnsteadyProblem's initialization method for descriptions of
         inherited parameters.
 
-        :param movement: An AeroelasticMovement object containing the prescribed motion
-            and aerodynamic setup for the aeroelastic simulation.
+        :param movement: An AeroelasticMovement containing the prescribed motion and
+            aerodynamic setup for the aeroelastic simulation.
         :param wing_density: The mass per unit span area of the wing (kg/m^2). Used to
-            distribute wing mass across panels for inertial calculations.
-        :param spring_constant: The torsional spring stiffness for the spring-mass-
-            damper model (N*m/rad). Controls the restoring torque opposing deformation.
-        :param damping_constant: The torsional damping coefficient (N*m*s/rad). Controls
-            the viscous damping in the spring-mass-damper system.
+            distribute wing mass across Panels for inertial calculations.
+        :param spring_constant_rad: The torsional spring stiffness for the spring-mass-
+            damper model (N*m/rad). Controls the restoring moment opposing deformation.
+        :param damping_constant_rad: The torsional damping coefficient (N*m*s/rad).
+            Controls the viscous damping in the spring-mass-damper system.
         :param step_discards: The number of initial time steps to discard for numerical
             stability (there are inconsistent startup effects from the UVLM solver).
-            During these steps, the solver will run but the results will not be applied
-            to the deformation of the wings. The default is 5.
-        :param plot_flap_cycle: If True, plots time histories of moments and
-            deformations at the end of the simulation. The default is False.
+            During these time steps, the solver will run but the results will not be
+            applied to the deformation of the Wings. The default is 5.
         :return: None
         """
         if not isinstance(movement, aeroelastic_movement_mod.AeroelasticMovement):
@@ -1437,44 +1430,37 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             initial_operating_point=movement.operating_points[0],
         )
 
-        self._plot_flap_cycle = plot_flap_cycle
-
         # Tunable Parameters
         self._wing_density = wing_density  # per unit height kg/m^2
-        self._spring_constant = spring_constant
-        self._damping_constant = damping_constant
+        self._spring_constant_rad = spring_constant_rad
+        self._damping_constant_rad = damping_constant_rad
 
         # Permanent parameters
         self._step_discards = (
             step_discards  # number of initial steps to discard for numerical stability
         )
 
-        # Per-wing deformation state. Indexed as [wing_idx].
-        # Each element holds the current cumulative deformation angles for one wing.
-        # The y components are torsional angles in radians; the x and z components are
-        # zero.
-        self.net_deformation_per_wing: list[np.ndarray] = []
-        # Per-wing angular velocity state. Indexed as [wing_idx]. The y components are
-        # torsional angular velocities in rad/s; the x and z components are zero.
-        self.angular_velocities_per_wing: list[np.ndarray] = []
-        # Per-wing panel position history. Indexed as [wing_idx][step]. The positions
-        # are panel center points in meters.
-        self.positions_per_wing: list[list[np.ndarray]] = []
-        # Per-wing moment and deformation history. Indexed as [wing_idx][step]. The
-        # inertial and aerodynamic moments are in N*m, the net data snapshots hold
-        # torsional angles in radians in their y components, the angular velocity
-        # snapshots hold rad/s in their y components, and the flap points are position
-        # offsets in meters.
-        self.per_step_inertial_per_wing: list[list[np.ndarray]] = []
-        self.per_step_aero_per_wing: list[list[np.ndarray]] = []
-        self.net_data_per_wing: list[list[np.ndarray]] = []
-        self.angular_velocity_data_per_wing: list[list[np.ndarray]] = []
-        self.flap_points_per_wing: list[list[np.ndarray]] = []
-        # Per-wing undeformed baseline positions. Indexed as [wing_idx]. The positions
-        # are panel center points in meters.
-        self.base_wing_positions_per_wing: list[np.ndarray] = []
+        # Per-wing time series of the cumulative torsional deformation state. Indexed
+        # as [wing_idx][entry], where entry 0 is the zero-valued initial state and
+        # every generated next step appends one entry, so the last entry is always the
+        # state. Each entry is a (num_spanwise_panels + 1,) ndarray whose element n is
+        # the y component (radians) of the deformation angle vector that perturbs the
+        # corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles describing
+        # the orientation of the wing cross section axes relative to the wing cross
+        # section parent axes using an intrinsic xy'z" sequence); the perturbations' x
+        # and z components are structurally zero, so only the y components are
+        # stored. The derivative entries are the angle elements' time derivatives
+        # (rad/s). They are rates of change of scalar angle components, not angular
+        # velocity vector components, and they carry no reference frame ID because
+        # differentiating a scalar coordinate involves no rotating basis (see the
+        # Angle Component Time Derivatives section of
+        # ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
+        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: list[list[np.ndarray]] = []
+        self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: list[
+            list[np.ndarray]
+        ] = []
 
-        # Initialize per-wing state now that we have the initial airplane geometry.
+        # Initialize per-wing state now that we have the initial Airplane's geometry.
         self._initialize_per_wing_state(initial_airplane)
 
     # --- Immutable: read only properties ---
@@ -1490,51 +1476,30 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         )
 
     @property
-    def wing_movement(
-        self,
-    ) -> aeroelastic_wing_movement_mod.AeroelasticWingMovement:
-        """Return the primary wing movement definition used by the aeroelastic model."""
-        return cast(
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement,
-            self._aeroelastic_movement.airplane_movements[0].wing_movements[0],
-        )
-
-    @property
     def wing_density(self) -> float:
         return self._wing_density
 
     @property
-    def spring_constant(self) -> float:
-        return self._spring_constant
+    def spring_constant_rad(self) -> float:
+        return self._spring_constant_rad
 
     @property
-    def damping_constant(self) -> float:
-        return self._damping_constant
+    def damping_constant_rad(self) -> float:
+        return self._damping_constant_rad
 
     @property
     def step_discards(self) -> int:
         return self._step_discards
 
-    @property
-    def plot_flap_cycle(self) -> bool:
-        return self._plot_flap_cycle
-
     def _initialize_per_wing_state(self, airplane: geometry.airplane.Airplane) -> None:
-        """Allocate per-wing state arrays sized to the airplane geometry.
+        """Allocate per-wing time series lists sized to the Airplane's geometry.
 
-        Called once from __init__ after the initial airplane is generated. Iterates over
-        every Wing in the airplane and appends one entry per wing to each per-wing state
-        list. The deformation accumulator (net_deformation_per_wing) and the angular
-        velocity store (angular_velocities_per_wing) are each a zero-valued (N_span+1,
-        3) array whose y components carry the torsional angles (radians) and torsional
-        angular velocities (rad/s). The history lists start empty: positions_per_wing
-        holds panel center positions (meters), per_step_inertial_per_wing and
-        per_step_aero_per_wing hold inertial and aerodynamic moment arrays (N*m),
-        net_data_per_wing holds cumulative deformation snapshots (torsional angles in
-        radians in the y components), angular_velocity_data_per_wing holds angular
-        velocity snapshots (rad/s in the y components), and flap_points_per_wing holds
-        wing deflection offsets (meters). The undeformed baseline
-        (base_wing_positions_per_wing) starts as a zero-size array marking it as unset.
+        Called once from __init__ after the initial Airplane is generated. Iterates over
+        every Wing in the Airplane and appends one entry per Wing to each per-wing time
+        series list. listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz and
+        _listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz are each seeded with a
+        zero-valued (num_spanwise_panels + 1,) initial-state entry, so their last
+        entries always hold the current structural state.
 
         :param airplane: The initial Airplane whose Wings define the geometry.
         :return: None
@@ -1542,100 +1507,45 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         for wing in airplane.wings:
             num_spanwise_panels = wing.num_spanwise_panels
             assert num_spanwise_panels is not None
-            self.net_deformation_per_wing.append(
-                np.zeros((num_spanwise_panels + 1, 3), dtype=float)
+            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+                [np.zeros(num_spanwise_panels + 1, dtype=float)]
             )
-            self.angular_velocities_per_wing.append(
-                np.zeros((num_spanwise_panels + 1, 3), dtype=float)
+            self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
+                [np.zeros(num_spanwise_panels + 1, dtype=float)]
             )
-            self.positions_per_wing.append([])
-            self.per_step_inertial_per_wing.append([])
-            self.per_step_aero_per_wing.append([])
-            self.net_data_per_wing.append([])
-            self.angular_velocity_data_per_wing.append([])
-            self.flap_points_per_wing.append([])
-            self.base_wing_positions_per_wing.append(np.zeros(0, dtype=float))
 
-    def _record_null_step_for_wing(
-        self,
-        wing_idx: int,
-        wing: geometry.wing.Wing,
-        step: int,
-    ) -> None:
-        """Append zero-valued entries to the history lists for a non-aeroelastic wing.
+    def _record_null_step_for_wing(self, wing_idx: int) -> None:
+        """Append zero-valued entries to the time series lists for a non-aeroelastic
+        Wing.
 
-        Called once per time step for wings backed by a standard WingMovement (no
-        deformation). Keeps the history lists length-consistent with the aeroelastic
-        wings so that indexing by step is always valid.
+        Called once per time step for Wings backed by a standard WingMovement (no
+        deformation). Keeps the time series lists length-consistent with the aeroelastic
+        Wings so that indexing by time step is always valid.
 
-        :param wing_idx: Index of the wing in airplane.wings (and the per-wing lists).
-        :param wing: The Wing object at the current time step.
-        :param step: The current time step index.
+        :param wing_idx: Index of the Wing in airplane.wings (and the per-wing lists).
         :return: None
         """
-        assert wing.panels is not None
-        num_chordwise_panels = wing.num_chordwise_panels
-        num_spanwise_panels = wing.num_spanwise_panels
-        assert num_spanwise_panels is not None
-        zero_moments = np.zeros(
-            (num_chordwise_panels, num_spanwise_panels, 3), dtype=float
+        num_wing_cross_sections = self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
+            wing_idx
+        ][-1].shape[0]
+        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
+            np.zeros(num_wing_cross_sections, dtype=float)
         )
-        num_deformation_rows = self.net_deformation_per_wing[wing_idx].shape[0]
-        self.per_step_inertial_per_wing[wing_idx].append(zero_moments)
-        self.per_step_aero_per_wing[wing_idx].append(zero_moments)
-        self.net_data_per_wing[wing_idx].append(
-            np.zeros((num_deformation_rows, 3), dtype=float)
-        )
-        self.angular_velocity_data_per_wing[wing_idx].append(
-            np.zeros((num_deformation_rows, 3), dtype=float)
-        )
-        self.flap_points_per_wing[wing_idx].append(
-            np.zeros_like(
-                np.array(
-                    [[panel.Cpp_GP1_CgP1 for panel in row] for row in wing.panels]
-                ),
-                dtype=float,
-            )
+        self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx].append(
+            np.zeros(num_wing_cross_sections, dtype=float)
         )
 
-    def calculate_wing_panel_accelerations(self, wing_idx: int = 0) -> np.ndarray:
-        """Compute panel accelerations using finite difference of stored positions.
+    def _calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
+        """Generate the mass distribution matrix for all of a Wing's Panels.
 
-        Calculates second-order accelerations using the finite difference formula: a =
-        (p[n] - 2*p[n-1] + p[n-2]) / dt^2.
-
-        :param wing_idx: The index of the wing in airplane.wings whose positions are
-            used for the acceleration calculation. The default is 0.
-        :return: An (N_chordwise, N_spanwise, 3) ndarray of floats representing panel
-            center accelerations in the global frame. Returns zeros if fewer than 3
-            position snapshots are available.
-        """
-        positions = self.positions_per_wing[wing_idx]
-        if len(positions) <= 2:
-            if len(positions) == 0:
-                return np.zeros(1, dtype=float)
-            return np.zeros_like(positions[0])
-        dt = self.movement.delta_time
-        # If given a relatively large dt value, the finite difference calculation can
-        # produce very large accelerations that cause numerical instability in the
-        # spring ODE integration. A higher order model may be useful if this is the
-        # case.
-        pos_m1: np.ndarray = positions[-1]
-        pos_m2: np.ndarray = positions[-2]
-        pos_m3: np.ndarray = positions[-3]
-        return np.array((pos_m1 - 2 * pos_m2 + pos_m3) / (dt * dt))
-
-    def calculate_mass_matrix(self, wing: geometry.wing.Wing) -> np.ndarray:
-        """Generate the mass distribution matrix for all wing panels.
-
-        Distributes the total spanwise mass (wing_density) across panel areas to form a
-        panel-by-panel mass matrix. Each panel's mass is proportional to its area times
+        Distributes the total spanwise mass (wing_density) across Panel areas to form a
+        panel-by-panel mass matrix. Each Panel's mass is proportional to its area times
         the specified wing_density.
 
-        :param wing: A Wing object whose panels define the mass distribution.
-        :return: An (N_chordwise, N_spanwise, 3) ndarray of floats representing the mass
-            at each panel. The three components are identical (mass scalar replicated
-            for x, y, z axes).
+        :param wing: The Wing whose Panels define the mass distribution.
+        :return: A (num_chordwise_panels, num_spanwise_panels, 3) ndarray of floats
+            representing the mass at each Panel. The three components are identical
+            (mass scalar replicated for x, y, z axes).
         """
         assert wing.panels is not None
         areas = np.array([[panel.area for panel in row] for row in wing.panels])
@@ -1657,9 +1567,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         next_step = len(self._steady_problems)
 
-        # calculate_wing_deformation returns a per-wing list: each element is either
+        # _calculate_wing_deformation returns a per-wing list: each element is either
         # the deformation ndarray for an aeroelastic wing or None for a standard wing.
-        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self.calculate_wing_deformation(
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = self._calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
 
@@ -1684,28 +1594,29 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             )
         )
 
-    def calculate_wing_deformation(
+    def _calculate_wing_deformation(
         self,
         solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         step: int,
     ) -> list[np.ndarray | None]:
         """Compute cumulative wing deformation for the current time step.
 
-        Loops over every Wing in the current airplane. For wings backed by an
-        AeroelasticWingMovement, orchestrates the inertial moment, aero moment, and
-        spring ODE integration, updates internal per-wing state, and returns the
-        deformation array. For wings backed by a standard WingMovement, records null
-        entries in the history lists and returns None for that wing.
+        Loops over every Wing in the current Airplane. For Wings backed by an
+        AeroelasticWingMovement, orchestrates the aero moment extraction and spring ODE
+        integration, records the per-wing structural state, and returns the deformation
+        array. For Wings backed by a standard WingMovement, records null entries in the
+        time series lists and returns None for that Wing.
 
         :param solver: The solver instance providing aerodynamic moment data
-            (moments_GP1_Slep and stackSlep_GP1_CgP1).
+            (moments_GP1_Slep).
         :param step: The current time step index (0-indexed).
-        :return: A list of length len(airplane.wings) where each element is either an
-            (N_spanwise+1, 3) ndarray of cumulative deformation angles for an
-            aeroelastic wing or None for a non-aeroelastic wing. Each row is a (3,)
+        :return: A list of length len(airplane.wings) where each element is either a
+            (num_spanwise_panels + 1, 3) ndarray of cumulative deformation angles for an
+            aeroelastic Wing or None for a non-aeroelastic Wing. Each row is a (3,)
             angle vector that perturbs the corresponding WingCrossSection's
-            angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence. The units are in
-            radians.
+            angles_Wcsp_to_Wcs_ixyz (angles describing the orientation of the wing cross
+            section axes relative to the wing cross section parent axes using an
+            intrinsic xy'z" sequence). The units are in radians.
         """
         curr_problem: SteadyProblem = self._steady_problems[-1]
         airplane = curr_problem.airplanes[0]
@@ -1725,7 +1636,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 wing_movement,
                 aeroelastic_wing_movement_mod.AeroelasticWingMovement,
             ):
-                mass_matrix = self.calculate_mass_matrix(wing)
+                mass_matrix = self._calculate_mass_matrix(wing)
 
                 aeroMoments_GP1_Slep = self._extract_aero_moments(
                     solver,
@@ -1734,308 +1645,194 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                     num_panels,
                     panel_offset,
                 )
-                inertial_moments = self._calculate_inertial_moments(
-                    solver,
-                    wing,
-                    mass_matrix,
-                    num_chordwise_panels,
-                    num_spanwise_panels,
-                    num_panels,
-                    panel_offset,
-                    wing_idx,
-                )
 
                 # A mirror-meshed Wing's panel grid runs tip to root spanwise,
-                # while the structural solve and the WingCrossSection movements
+                # while the structural solve and the WingCrossSectionMovements
                 # that consume its output run root to tip, so flip the spanwise
                 # axis of the per-panel arrays to put them in root-to-tip strip
                 # order.
                 if wing.mirror_only:
                     mass_matrix = mass_matrix[:, ::-1, :]
                     aeroMoments_GP1_Slep = aeroMoments_GP1_Slep[:, ::-1, :]
-                    inertial_moments = inertial_moments[:, ::-1, :]
 
-                thetas, omegas = self.calculate_spring_moments(
+                (
+                    newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+                ) = self._calculate_spring_moments(
                     num_spanwise_panels=num_spanwise_panels,
                     wing=wing,
                     mass_matrix=mass_matrix,
-                    aero_moments=aeroMoments_GP1_Slep,
+                    aeroMoments_GP1_Slep=aeroMoments_GP1_Slep,
                     step=step,
                     wing_idx=wing_idx,
                     wing_movement=wing_movement,
                 )
 
-                step_deformation = self._build_deformation_vector(
-                    thetas, num_spanwise_panels
-                )
-                self._apply_moment_updates(
+                self._record_structural_state(
                     step=step,
-                    step_deformation=step_deformation,
-                    omegas=omegas,
-                    inertial_moments=inertial_moments,
-                    aeroMoments_GP1_Slep=aeroMoments_GP1_Slep,
+                    newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz=(
+                        newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz
+                    ),
+                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                        newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz
+                    ),
                     wing_idx=wing_idx,
                 )
 
-                results.append(self.net_deformation_per_wing[wing_idx])
+                # Expand the newly recorded deformation angle y components into the
+                # (num_spanwise_panels + 1, 3) deformation angle vectors that perturb
+                # the WingCrossSections' angles_Wcsp_to_Wcs_ixyz, which the movement
+                # chain consumes.
+                results.append(
+                    self._build_deformation_vector(
+                        self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1],
+                        num_spanwise_panels,
+                    )
+                )
             else:
-                self._record_null_step_for_wing(wing_idx, wing, step)
+                self._record_null_step_for_wing(wing_idx)
                 results.append(None)
 
             panel_offset += num_panels
 
-        # Plot results at end of simulation if enabled.
-        if self.plot_flap_cycle and step == self.num_steps - 1:
-            self._plot_aeroelastic_results()
-
         return results
 
+    @staticmethod
     def _extract_aero_moments(
-        self,
         solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
         num_chordwise_panels: int,
         num_spanwise_panels: int,
         num_panels: int,
         panel_offset: int,
     ) -> np.ndarray:
-        """Extract and scale aerodynamic moments from the solver output.
+        """Extract the aerodynamic moments (in the first Airplane's geometry axes, each
+        relative to its strip's leading edge point) from the solver output.
 
-        Uses the strip leading edge points as the reference point for moment
-        calculations, consistent with the assumption of a torsional spring at the
-        leading edge. Each strip's leading edge point is the leading edge point of its
-        outboard bounding WingCrossSection, the same WingCrossSection that receives the
-        strip's twist.
+        Uses the strip leading edge points as the moments' reference points, consistent
+        with the assumption of a torsional spring at the leading edge. Each strip's
+        leading edge point is the leading edge point of its outboard bounding
+        WingCrossSection, the same WingCrossSection that receives the strip's torsional
+        deformation.
 
         :param solver: The solver instance with moments_GP1_Slep data.
         :param num_chordwise_panels: Number of chordwise panel rows.
         :param num_spanwise_panels: Number of spanwise panel rows.
         :param num_panels: Total number of panels (num_chordwise * num_spanwise).
         :param panel_offset: The flat panel index offset into solver.moments_GP1_Slep at
-            which this wing's data begins.
-        :return: An (N_chordwise, N_spanwise, 3) ndarray of scaled aerodynamic moments
-            in the global panel frame.
+            which this Wing's data begins.
+        :return: A (num_chordwise_panels, num_spanwise_panels, 3) ndarray of aerodynamic
+            moments (in the first Airplane's geometry axes, each relative to its strip's
+            leading edge point).
         """
-        aeroMoments_GP1_Slep = (
-            np.array(
-                solver.moments_GP1_Slep[panel_offset : panel_offset + num_panels]
-            ).reshape(num_chordwise_panels, num_spanwise_panels, 3)
-            * _AERO_SCALING
-        )
+        aeroMoments_GP1_Slep = np.array(
+            solver.moments_GP1_Slep[panel_offset : panel_offset + num_panels]
+        ).reshape(num_chordwise_panels, num_spanwise_panels, 3)
         return aeroMoments_GP1_Slep
 
-    def _calculate_inertial_moments(
-        self,
-        solver: AeroelasticUnsteadyRingVortexLatticeMethodSolver,
-        wing: geometry.wing.Wing,
-        mass_matrix: np.ndarray,
-        num_chordwise_panels: int,
-        num_spanwise_panels: int,
-        num_panels: int,
-        panel_offset: int,
-        wing_idx: int,
-    ) -> np.ndarray:
-        """Calculate inertial moments from panel accelerations and mass distribution.
-
-        Computes panel accelerations via finite difference, multiplies by mass to get
-        forces, then calculates moments about the leading edge reference point using
-        cross products.
-
-        :param solver: The solver instance providing leading edge point positions.
-        :param wing: The Wing object containing panel definitions.
-        :param mass_matrix: An (N_chordwise, N_spanwise, 3) ndarray of panel masses.
-        :param num_chordwise_panels: Number of chordwise panel rows.
-        :param num_spanwise_panels: Number of spanwise panel rows.
-        :param num_panels: Total number of panels (num_chordwise * num_spanwise).
-        :param panel_offset: The flat panel index offset into solver.stackSlep_GP1_CgP1
-            at which this wing's data begins.
-        :param wing_idx: Index of the wing in airplane.wings.
-        :return: An (N_chordwise, N_spanwise, 3) ndarray of inertial moment vectors.
-        """
-        # Store current panel center positions.
-        assert wing.panels is not None
-        self.positions_per_wing[wing_idx].append(
-            np.array([[panel.Cpp_GP1_CgP1 for panel in row] for row in wing.panels])
-        )
-
-        # Calculate panel accelerations and inertial forces.
-        inertial_forces = (
-            self.calculate_wing_panel_accelerations(wing_idx) * mass_matrix
-        )
-
-        # Calculate moments about leading edge points via cross product.
-        inertial_moments = np.cross(
-            self.positions_per_wing[wing_idx][-1]
-            - solver.stackSlep_GP1_CgP1[
-                panel_offset : panel_offset + num_panels
-            ].reshape((num_chordwise_panels, num_spanwise_panels, 3)),
-            inertial_forces,
-            axis=2,
-        )
-        return np.array(inertial_moments)
-
+    @staticmethod
     def _build_deformation_vector(
-        self, thetas: np.ndarray, num_spanwise_panels: int
+        deformationAnglesYRad_Wcsp_to_Wcs_ixyz: np.ndarray,
+        num_spanwise_panels: int,
     ) -> np.ndarray:
-        """Construct the step deformation vector from torsional angles.
+        """Construct the deformation angle vectors from scalar torsional angles.
 
-        Converts the torsional angles output from the spring-damper ODE (one per
-        spanwise section) into a full (N_spanwise+1, 3) deformation vector with scaling
-        applied to the y-component (torsional angle).
+        Expands the stored torsional angle state (one scalar per WingCrossSection) into
+        the full (num_spanwise_panels + 1, 3) array of deformation angle vectors that
+        perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
+        sequence, which the movement chain consumes.
 
-        :param thetas: An (N_spanwise+1,) ndarray of torsional angles in radians.
+        :param deformationAnglesYRad_Wcsp_to_Wcs_ixyz: A (num_spanwise_panels + 1,)
+            ndarray holding, for each WingCrossSection, the y component (radians) of the
+            cumulative deformation angle vector that perturbs its
+            angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence.
         :param num_spanwise_panels: Number of spanwise panel rows.
-        :return: An (N_spanwise+1, 3) ndarray with zero-valued x and z components and
-            scaled torsional angles in the y component.
+        :return: A (num_spanwise_panels + 1, 3) ndarray of the deformation angle vectors
+            (radians) that perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz, with
+            zero-valued x and z components and the given torsional angles as the y
+            components.
         """
-        step_deformation = np.array(
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = np.array(
             [
                 np.array(
                     [
                         0,
-                        thetas[i + 1] * _DEFORMATION_SCALING,
+                        deformationAnglesYRad_Wcsp_to_Wcs_ixyz[i + 1],
                         0,
                     ]
                 )
                 for i in range(num_spanwise_panels)
             ]
         )
-        step_deformation = np.insert(step_deformation, 0, np.array([0, 0, 0]), axis=0)
-        return step_deformation
+        deformationAnglesRad_Wcsp_to_Wcs_ixyz = np.insert(
+            deformationAnglesRad_Wcsp_to_Wcs_ixyz, 0, np.array([0, 0, 0]), axis=0
+        )
+        return deformationAnglesRad_Wcsp_to_Wcs_ixyz
 
-    def _apply_moment_updates(
+    def _record_structural_state(
         self,
         step: int,
-        step_deformation: np.ndarray,
-        omegas: np.ndarray,
-        inertial_moments: np.ndarray,
-        aeroMoments_GP1_Slep: np.ndarray,
+        newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: np.ndarray,
+        newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: np.ndarray,
         wing_idx: int,
     ) -> None:
-        """Update internal moment and deformation state arrays for one wing.
+        """Append one Wing's new structural state to its time series.
 
-        Stores per-step moment and deformation data, updates the cumulative net
-        deformation and angular velocity state (committing both together, and discarding
-        both during the early unstable steps), and tracks wing deflection points
-        relative to the undeformed baseline.
+        The recorded state is the y components (radians) of the cumulative deformation
+        angle vectors that perturb the Wing's WingCrossSections' angles_Wcsp_to_Wcs_ixyz
+        (angles describing the orientation of each wing cross section's axes relative to
+        its parent axes using an intrinsic xy'z" sequence), together with those y
+        components' time derivatives (rad/s). Both are recorded together, and both are
+        held at their previous state during the early unstable time steps.
 
         :param step: The current time step index.
-        :param step_deformation: The (N_spanwise+1, 3) deformation vector for this step,
-            with its stations in root-to-tip order.
-        :param omegas: An (N_spanwise+1,) ndarray of angular velocities, with its
-            stations in root-to-tip order.
-        :param inertial_moments: An (N_chordwise, N_spanwise, 3) ndarray of inertial
-            moments, with the spanwise axis in root-to-tip order.
-        :param aeroMoments_GP1_Slep: An (N_chordwise, N_spanwise, 3) ndarray of aero
-            moments, with the spanwise axis in root-to-tip order.
-        :param wing_idx: Index of the wing in airplane.wings (and the per-wing lists).
+        :param newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: A (num_spanwise_panels + 1,)
+            ndarray of this time step's new values (radians) of the y components of the
+            deformation angle vectors that perturb the WingCrossSections'
+            angles_Wcsp_to_Wcs_ixyz, with one element per WingCrossSection, in root-to-
+            tip order.
+        :param newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: A
+            (num_spanwise_panels + 1,) ndarray of the new time derivatives (rad/s) of
+            the y components of the deformation angle vectors that perturb the
+            WingCrossSections' angles_Wcsp_to_Wcs_ixyz, with one element per
+            WingCrossSection, in root-to-tip order.
+        :param wing_idx: Index of the Wing in airplane.wings (and the per-wing lists).
         :return: None
         """
-        # Generate the reference (undeformed) airplane at this step to get the
-        # baseline panel positions for tracking wing deflection.
-        ref_airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
-            airplane_movement_index=0, step=step
+        # Append the cumulative torsional angles and their time derivatives together,
+        # holding both at their previous state during the first step_discards steps,
+        # whose numerical startup effects cause large aerodynamic forces. The strips'
+        # ODEs are re-seeded from the time series' last entries, so recording only
+        # one component would seed a mixed state. Each recorded entry is a fresh
+        # array, so no time series entry aliases a later one.
+        deformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
+            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
-        ref_problem = SteadyProblem(
-            [ref_airplane], self._aeroelastic_movement.operating_points[step]
+        deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
+            self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
-        undeformed_wing = ref_problem.airplanes[0].wings[wing_idx]
-        assert undeformed_wing.panels is not None
-        undeformed_positions = np.array(
-            [[panel.Cpp_GP1_CgP1 for panel in row] for row in undeformed_wing.panels]
-        )
-        if self.base_wing_positions_per_wing[wing_idx].size == 0:
-            self.base_wing_positions_per_wing[wing_idx] = np.array(undeformed_positions)
-
-        # Track wing deflection relative to undeformed baseline.
-        self.flap_points_per_wing[wing_idx].append(
-            np.array(undeformed_positions) - self.base_wing_positions_per_wing[wing_idx]
-        )
-
-        # Store per-step moment components for later analysis/plotting.
-        self.per_step_inertial_per_wing[wing_idx].append(inertial_moments.copy())
-        self.per_step_aero_per_wing[wing_idx].append(aeroMoments_GP1_Slep.copy())
-
-        # Update the cumulative deformation and angular velocity state together,
-        # discarding both during the first step_discards steps, whose numerical
-        # startup effects cause large aerodynamic forces. The strips' ODEs are
-        # re-seeded from this state, so committing only one component would seed a
-        # mixed state.
         if step > self.step_discards:
-            self.net_deformation_per_wing[wing_idx] = step_deformation
-            self.angular_velocities_per_wing[wing_idx][:, 1] = omegas
-
-        # Store deformation and angular velocity history.
-        self.net_data_per_wing[wing_idx].append(
-            self.net_deformation_per_wing[wing_idx].copy()
-        )
-        self.angular_velocity_data_per_wing[wing_idx].append(
-            self.angular_velocities_per_wing[wing_idx].copy()
-        )
-
-    def _plot_aeroelastic_results(self, wing_idx: int = 0) -> None:
-        """Generate and display time-history plots of aeroelastic results.
-
-        Creates plots of per-step and cumulative deformations, moment components
-        (inertial, aerodynamic), and wing deflection points. Useful for visualizing the
-        aeroelastic coupling behavior.
-
-        :param wing_idx: Index of the wing in airplane.wings whose data is plotted. The
-            default is 0.
-        :return: None
-        """
-        zero_curve = np.zeros(
-            (1, np.array(self.per_step_inertial_per_wing[wing_idx]).shape[0])
-        )
-
-        # Deformation time histories
-        self.plot_flap_cycle_curves(
-            np.array(self.net_data_per_wing[wing_idx])[:, :, 1].T.tolist(),
-            "Net Deformation",
-        )
-
-        # Moment component time histories
-        self.plot_flap_cycle_curves(
-            np.vstack(
-                (
-                    zero_curve,
-                    np.array(self.per_step_inertial_per_wing[wing_idx])[:, :, :, 2]
-                    .sum(axis=1)
-                    .T,
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+                np.array(newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, dtype=float)
+            )
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
+                np.array(
+                    newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, dtype=float
                 )
-            ).tolist(),
-            "Per Step Inertial Moments",
-        )
-        self.plot_flap_cycle_curves(
-            np.vstack(
-                (
-                    zero_curve,
-                    np.array(self.per_step_aero_per_wing[wing_idx])[:, :, :, 1]
-                    .sum(axis=1)
-                    .T,
-                )
-            ).tolist(),
-            "Per Step Aero Moments",
-        )
+            )
+        else:
+            deformationAnglesYRad_Wcsp_to_Wcs_ixyz.append(
+                deformationAnglesYRad_Wcsp_to_Wcs_ixyz[-1].copy()
+            )
+            deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz.append(
+                deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[-1].copy()
+            )
 
-        # Wing deflection tracking
-        self.plot_flap_cycle_curves(
-            np.vstack(
-                (
-                    zero_curve,
-                    np.array(self.flap_points_per_wing[wing_idx])[:, :, :, 2]
-                    .sum(axis=1)
-                    .T,
-                )
-            ).tolist(),
-            "Flap Points Z",
-        )
-
-    def calculate_spring_moments(
+    def _calculate_spring_moments(
         self,
         num_spanwise_panels: int,
         wing: geometry.wing.Wing,
         mass_matrix: np.ndarray,
-        aero_moments: np.ndarray,
+        aeroMoments_GP1_Slep: np.ndarray,
         step: int,
         wing_idx: int,
         wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
@@ -2043,60 +1840,134 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """Solve the torsional spring-damper ODE for each spanwise section.
 
         Solves the torsional spring-damper ODE independently for each spanwise section,
-        accounting for aerodynamic moments, inertial forces, and structural properties.
-        Uses the parallel axis theorem to compute rotational inertia about the flapping
-        axis.
+        accounting for aerodynamic moments, inertial moments, and structural properties.
+        The state integrated for each strip is the y component (radians) of the
+        cumulative deformation angle vector that perturbs its outboard bounding
+        WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence,
+        together with that y component's time derivative (rad/s). Each strip's two
+        rotational inertias (the torsional inertia in its ODE and the flapping-axis
+        inertia that scales its prescribed-motion inertial forcing) come from
+        _calculate_strip_inertias.
 
         The spanwise section index runs root to tip, matching the order of the Wing's
-        wing_cross_sections, and the mass_matrix and aero_moments arrays must be
+        wing_cross_sections, and the mass_matrix and aeroMoments_GP1_Slep arrays must be
         supplied with their spanwise axes in that same root-to-tip order (the caller
         flips them for mirror-meshed Wings, whose panel grids run tip to root).
 
-        :param num_spanwise_panels: Number of spanwise panel rows in the wing.
-        :param wing: The Wing object containing geometric and structural definitions.
-        :param mass_matrix: An (N_chordwise, N_spanwise, 3) ndarray of panel masses,
+        :param num_spanwise_panels: Number of spanwise panel rows in the Wing.
+        :param wing: The Wing containing geometric and structural definitions.
+        :param mass_matrix: A (num_chordwise_panels, num_spanwise_panels, 3) ndarray of
+            panel masses, with the spanwise axis in root-to-tip order.
+        :param aeroMoments_GP1_Slep: A (num_chordwise_panels, num_spanwise_panels, 3)
+            ndarray of aerodynamic moments from the aerodynamic solver (in the first
+            Airplane's geometry axes, each relative to its strip's leading edge point),
             with the spanwise axis in root-to-tip order.
-        :param aero_moments: An (N_chordwise, N_spanwise, 3) ndarray of aerodynamic
-            moments from the aerodynamic solver, with the spanwise axis in root-to-tip
-            order.
         :param step: The current time step index.
-        :param wing_idx: Index of the wing in airplane.wings.
+        :param wing_idx: Index of the Wing in airplane.wings.
         :param wing_movement: The AeroelasticWingMovement providing the prescribed
-            flapping parameters used for inertial torque generation.
-        :return: A tuple of two ndarrays: - thetas: (N_spanwise+1,) ndarray of
-            torsional angles (radians) at each station. - omegas: (N_spanwise+1,)
-            ndarray of angular velocities (rad/s) at each station. **Notes:** The
-            rotational inertia is computed as: I = (1/12)*M*(L^2 + W^2) + M*d^2, where M
-            is panel mass, L is chord, W is span width, and d is distance from the
-            flapping axis (computed cumulatively using the parallel axis theorem).
+            flapping parameters used for inertial moment generation.
+        :return: A tuple of two (num_spanwise_panels + 1,) ndarrays: the new values
+            (radians) of the y components of the deformation angle vectors that perturb
+            the WingCrossSections' angles_Wcsp_to_Wcs_ixyz, and those y components' new
+            time derivatives (rad/s), each with one element per WingCrossSection, in
+            root-to-tip order.
         """
-        thetas = np.zeros(num_spanwise_panels + 1)
-        omegas = np.zeros(num_spanwise_panels + 1)
-        d = 0.0  # distance from flapping axis to panel centroid (computed in half-span increments)
+        newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = np.zeros(
+            num_spanwise_panels + 1, dtype=float
+        )
+        newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = np.zeros(
+            num_spanwise_panels + 1, dtype=float
+        )
+        # The current structural state is the last entry of each time series list.
+        # Both reads happen before this step's entries are appended, so they see the
+        # state at the end of the previous time step.
+        lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
+            self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
+        )
+        lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = (
+            self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
+        )
+        dt = self.movement.delta_time
+        torsional_inertias, flapping_axis_inertias = self._calculate_strip_inertias(
+            wing=wing,
+            num_spanwise_panels=num_spanwise_panels,
+            mass_matrix=mass_matrix,
+        )
         for span_panel in range(num_spanwise_panels):
-            aero_span_moment = np.sum(aero_moments[:, span_panel, 1])
+            aeroMomentY_GP1_Slep = np.sum(aeroMoments_GP1_Slep[:, span_panel, 1])
             # Re-seed the strip's ODE from its own state at the end of the previous
             # time step. The state arrays hold one entry per WingCrossSection, and a
             # strip's state lives at its outboard bounding WingCrossSection, index
             # span_panel + 1. The WingCrossSection at index span_panel bounds this
             # strip on its inboard side, and the root WingCrossSection (index 0) is
             # clamped.
-            theta0: float = self.net_deformation_per_wing[wing_idx][span_panel + 1][1]
-            omega0: float = self.angular_velocities_per_wing[wing_idx][span_panel + 1][
-                1
-            ]
+            (
+                newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
+                newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
+            ) = self._calculate_torsional_spring_moment(
+                dt,
+                torsional_inertia=torsional_inertias[span_panel],
+                lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz=(
+                    lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
+                ),
+                lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz=(
+                    lastDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1]
+                ),
+                aeroMomentY_GP1_Slep=aeroMomentY_GP1_Slep,
+                step=step,
+                flapping_axis_inertia=flapping_axis_inertias[span_panel],
+                wing_movement=wing_movement,
+            )
 
-            dt = self.movement.delta_time
+        return (
+            newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz,
+            newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz,
+        )
+
+    @staticmethod
+    def _calculate_strip_inertias(
+        wing: geometry.wing.Wing,
+        num_spanwise_panels: int,
+        mass_matrix: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Calculate the two rotational inertias of each of a Wing's strips.
+
+        The structural model uses two distinct inertias per strip. The torsional
+        inertia, (1 / 2) * M * L^2, is the inertia paired with the strip's torsional
+        deformation state: it divides the net moment in the strip's spring-damper ODE.
+        The flapping-axis inertia, (1 / 12) * M * (L^2 + W^2) + M * d^2, is the inertia
+        of the strip (modeled as a rectangular prism) about the flapping axis, with the
+        M * d^2 term applying the parallel axis theorem: it never appears in the ODE
+        directly, and instead scales the prescribed flapping acceleration into the ODE's
+        inertial forcing moment. In both expressions, M is the strip's mass, L is its
+        mean chord, W is its span width, and d is the distance from the flapping axis to
+        its centroid, accumulated across strips in half-span-width increments.
+
+        The strip index runs root to tip, matching the order of the Wing's
+        wing_cross_sections, and the mass_matrix must be supplied with its spanwise axis
+        in that same root-to-tip order (the panel geometry reads flip the index for
+        mirror-meshed Wings, whose panel grids run tip to root).
+
+        :param wing: The Wing containing geometric and structural definitions.
+        :param num_spanwise_panels: Number of spanwise panel rows in the Wing.
+        :param mass_matrix: A (num_chordwise_panels, num_spanwise_panels, 3) ndarray of
+            panel masses, with the spanwise axis in root-to-tip order.
+        :return: A tuple of two (num_spanwise_panels,) ndarrays of floats: the strips'
+            torsional inertias and their flapping-axis inertias (both kg*m^2), in root-
+            to-tip order.
+        """
+        torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
+        flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
+        assert wing.panels is not None
+        # The distance from the flapping axis to the strip's centroid, accumulated
+        # in half-span-width increments.
+        d = 0.0
+        for span_panel in range(num_spanwise_panels):
             mass = mass_matrix[:, span_panel, :].sum()
-            # Equation for rotational inertia of rectangular prism about flapping axis
-            # Considers two factors, the first is the rotational inertial of a
-            # rectangular prism about its centroid, the second is the parallel axis
-            # theorem to account for distance from flapping axis to the panel centroid
             L = (
                 wing.wing_cross_sections[span_panel].chord
                 + wing.wing_cross_sections[span_panel + 1].chord
             ) / 2
-            assert wing.panels is not None
             # The span_panel index runs root to tip, matching the
             # wing_cross_sections list, but a mirror-meshed Wing's panel grid
             # runs tip to root spanwise, so map the index when reading panel
@@ -2109,161 +1980,163 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 np.linalg.norm(wing.panels[0][panel_span_index].frontLeg_G)
             )
             d += W / 2
-            span_I = 1 / 12 * mass * (L**2 + W**2) + mass * (d**2)
-            theta, omega = self.calculate_torsional_spring_moment(
-                dt,
-                I=1 / 2 * mass * (L**2),
-                theta0=theta0,
-                omega0=omega0,
-                aero_span_moment=aero_span_moment,
-                step=step,
-                span_I=span_I,
-                wing_movement=wing_movement,
-            )
+            torsional_inertias[span_panel] = 1 / 2 * mass * (L**2)
+            flapping_axis_inertias[span_panel] = 1 / 12 * mass * (
+                L**2 + W**2
+            ) + mass * (d**2)
             d += W / 2
-            thetas[span_panel + 1] = theta
-            omegas[span_panel + 1] = omega
+        return torsional_inertias, flapping_axis_inertias
 
-        return thetas, omegas
-
-    def calculate_torsional_spring_moment(
+    def _calculate_torsional_spring_moment(
         self,
         dt: float,
-        I: float,
-        theta0: float,
-        omega0: float,
-        aero_span_moment: float,
+        torsional_inertia: float,
+        lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz: float,
+        lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz: float,
+        aeroMomentY_GP1_Slep: float,
         step: int,
-        span_I: float,
-        wing_movement: (
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
-        ) = None,
+        flapping_axis_inertia: float,
+        wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
         num_steps: int = 2,
     ) -> tuple[float, float]:
-        """Solve the torsional spring-damper ODE for a single wing section.
+        """Solve the torsional spring-damper ODE for a single strip.
 
         Integrates the forced torsional damped harmonic oscillator equation:
-        I*d(omega)/dt = tau_aero + tau_inertial - k*theta - c*omega
+        I * d^2(theta)/dt^2 = M_aero + M_inertial - k * theta - c * d(theta)/dt, where
+        I is the strip's torsional inertia and k and c are the problem's
+        spring_constant_rad and damping_constant_rad.
 
-        Returns the angular displacement and velocity at the end of the time step.
+        The state integrated is the y component (radians) of the cumulative deformation
+        angle vector that perturbs the strip's outboard bounding WingCrossSection's
+        angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z" sequence, together with that
+        y component's time derivative (rad/s). Returns their new values at the end of
+        the time step.
 
         :param dt: The time step duration (seconds).
-        :param I: The rotational inertia about the flapping axis (kg*m^2).
-        :param theta0: Initial torsional angle at the start of the time step (radians).
-        :param omega0: Initial angular velocity at the start of the time step (rad/s).
-        :param aero_span_moment: The y-component aerodynamic moment summed over
-            chordwise panels for this spanwise section (N*m).
-        :param step: The current time step index (used for inertial torque evaluation).
-        :param span_I: The rotational inertia including parallel axis theorem (kg*m^2).
-            This is the actual inertia used in the ODE solver.
+        :param torsional_inertia: The strip's torsional rotational inertia (kg*m^2),
+            the I dividing the net moment in the ODE above.
+        :param lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz: The value (radians), at the
+            end of the previous time step, of the y component of the deformation angle
+            vector that perturbs the strip's outboard bounding WingCrossSection's
+            angles_Wcsp_to_Wcs_ixyz. It seeds the integration.
+        :param lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz: The time derivative
+            (rad/s), at the end of the previous time step, of the y component of the
+            deformation angle vector that perturbs the strip's outboard bounding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz. It seeds the integration.
+        :param aeroMomentY_GP1_Slep: The strip's torsional aerodynamic forcing (N*m):
+            the sum, over its chordwise Panels, of the y components of their
+            aerodynamic moments (in the first Airplane's geometry axes, relative to the
+            strip's leading edge point).
+        :param step: The current time step index (used for inertial moment evaluation).
+        :param flapping_axis_inertia: The strip's rotational inertia about the flapping
+            axis (kg*m^2), including the parallel axis theorem term. It never divides
+            the net moment in the ODE above; it only scales the prescribed flapping
+            acceleration into the inertial forcing moment M_inertial.
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
-            parameters are used. When None, falls back to self.wing_movement. The
-            default is None.
+            parameters are used.
         :param num_steps: Number of time sub-steps for numerical integration. The
             default is 2.
-        :return: A tuple of (theta, omega) where: - theta: Final torsional angle
-            (radians). - omega: Final angular velocity (rad/s).
+        :return: A tuple of two floats: the new value (radians) of the y component of
+            the deformation angle vector that perturbs the strip's outboard bounding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, and that y component's new time
+            derivative (rad/s), both at the end of the time step.
         """
-        k = self.spring_constant
-        c = self.damping_constant
         t = np.linspace(dt * (step - 1), dt * step, num_steps)
 
         # Forced numerical integration of the spring-damper ODE
-        theta, omega = self.spring_numerical_ode(
+        return self._spring_numerical_ode(
             t,
-            k,
-            c,
-            I,
-            theta0,
-            omega0,
-            aero_span_moment,
-            self.generate_inertial_torque_function(span_I, wing_movement=wing_movement),
+            self.spring_constant_rad,
+            self.damping_constant_rad,
+            torsional_inertia,
+            lastDeformationAngleYRad_Wcsp_to_Wcs_ixyz,
+            lastDeformationAngleDerivativeYRad_Wcsp_to_Wcs_ixyz,
+            aeroMomentY_GP1_Slep,
+            self._generate_inertial_moment_function(
+                flapping_axis_inertia, wing_movement=wing_movement
+            ),
         )
 
-        return theta, omega
-
-    def generate_inertial_torque_function(
-        self,
-        span_I: float,
-        wing_movement: (
-            aeroelastic_wing_movement_mod.AeroelasticWingMovement | None
-        ) = None,
+    @staticmethod
+    def _generate_inertial_moment_function(
+        flapping_axis_inertia: float,
+        wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
     ):
-        """Generate the prescribed wing motion inertial torque function.
+        """Generate the prescribed wing motion inertial moment function.
 
         Extracts the prescribed flapping motion from the wing_movement definition and
-        creates a callable inertial torque function tau_inertial = I *
-        d^2(theta_prescribed)/dt^2. Supports sinusoidal and custom spacing functions.
+        creates a callable inertial moment function M_inertial = I *
+        d^2(theta_prescribed)/dt^2, where I is the strip's flapping-axis inertia.
+        Supports sinusoidal and custom spacing functions.
 
-        :param span_I: The rotational inertia of the wing span section about the
+        :param flapping_axis_inertia: The strip's rotational inertia about the
             flapping axis (kg*m^2).
         :param wing_movement: The AeroelasticWingMovement whose prescribed flapping
-            parameters are used. When None, falls back to self.wing_movement. The
-            default is None.
-        :return: A callable function that accepts time and returns the inertial torque
+            parameters are used.
+        :return: A callable function that accepts time and returns the inertial moment
             (N*m) due to the prescribed wing motion acceleration. For a zero flapping
             amplitude (no prescribed flapping), the returned function is identically
-            zero regardless of the spacing. For sinusoidal spacing: tau = -I * b^2 *
-            sin(b * t + h) * A, where b = 2 * pi / period, h = phase, A = amplitude.
-            For custom spacing, uses the wing movement's
-            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which its constructor guarantees
-            is present whenever the spacing is a custom callable.
+            zero regardless of the spacing. For sinusoidal spacing: M_inertial = -I * b^2 *
+            sin(b * t + h) * A, where I = flapping_axis_inertia, b = 2 * pi / period,
+            h = phase, A = amplitude. For custom spacing, uses the
+            AeroelasticWingMovement's spacingAnglesSecondDerivative_Gs_to_Wn_ixyz, which
+            its constructor guarantees is present whenever the spacing is a custom
+            callable.
         """
-        _wing_movement = (
-            wing_movement if wing_movement is not None else self.wing_movement
-        )
-        amp = _wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
+        amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
 
-        # A wing with no prescribed flapping applies no inertial torque. Return the
+        # A wing with no prescribed flapping applies no inertial moment. Return the
         # zero function before computing the flapping frequency, whose 2 * pi / period
         # expression is undefined for the zero period that a zero amplitude requires.
         if amp == 0.0:
             return lambda time: 0.0
 
-        b = 2 * np.pi / _wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
-        h = np.deg2rad(_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
-        spacing = _wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
+        b_rad = 2 * np.pi / wing_movement.periodAngles_Gs_to_Wn_ixyz[0]
+        h_rad = np.deg2rad(wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
+        spacing = wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
         if spacing == "sine":
             # amp is in degrees (ampAngles_Gs_to_Wn_ixyz); convert to radians so
-            # the inertial torque (N*m) is consistent with the SI spring-damper ODE.
-            torque_func = (
+            # the inertial moment (N*m) is consistent with the SI spring-damper ODE.
+            moment_func = (
                 lambda time: -1
-                * (b**2)
-                * np.sin(b * time + h)
+                * (b_rad**2)
+                * np.sin(b_rad * time + h_rad)
                 * np.deg2rad(amp)
-                * span_I
+                * flapping_axis_inertia
             )
         elif spacing == "uniform":
             raise ValueError(
                 "Sawtooth function (uniform spacing) is not differentiable, "
-                "cannot be used for inertial torque function."
+                "cannot be used for inertial moment function."
             )
         elif callable(spacing):
-            # The wing movement's constructor guarantees a matching second derivative
-            # whenever the spacing component is a custom callable.
-            deriv = _wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
+            # The AeroelasticWingMovement's constructor guarantees a matching second
+            # derivative whenever the spacing component is a custom callable.
+            deriv = wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
             assert deriv is not None
             # deriv is the second derivative before amplitude scaling; amp is in
-            # degrees, so convert to radians to keep torque in N*m.
-            torque_func = lambda time: np.deg2rad(amp) * deriv(time) * span_I
+            # degrees, so convert to radians to keep the moment in N*m.
+            moment_func = (
+                lambda time: np.deg2rad(amp) * deriv(time) * flapping_axis_inertia
+            )
 
-        return torque_func
+        return moment_func
 
-    def spring_numerical_ode(
-        self,
+    @staticmethod
+    def _spring_numerical_ode(
         t: np.ndarray,
-        k: float,
-        c: float,
-        I: float,
-        theta0: float,
-        omega0: float,
-        aero_torque: float,
-        inertial_torque_func,
+        spring_constant_rad: float,
+        damping_constant_rad: float,
+        torsional_inertia: float,
+        theta0_rad: float,
+        theta_derivative0_rad: float,
+        aero_moment: float,
+        inertial_moment_func,
     ) -> tuple[float, float]:
         """Numerically integrate the torsional spring-damper ODE.
 
-        Solves the second-order forced ODE: I * d^2(theta)/dt^2 = tau_aero + tau_inertial(t) - k*theta -
-        c*d(theta)/dt
+        Solves the second-order forced ODE: I * d^2(theta)/dt^2 = M_aero +
+        M_inertial(t) - k * theta - c * d(theta)/dt
 
         using scipy.integrate.solve_ivp with tolerances a few orders of magnitude
         stricter than scipy's defaults. This integration is re-seeded from the previous
@@ -2274,77 +2147,53 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         relative to the aerodynamic solve.
 
         :param t: A (N,) ndarray of time points for integration evaluation.
-        :param k: Spring constant (N*m/rad).
-        :param c: Damping constant (N*m*s/rad).
-        :param I: Rotational inertia (kg*m^2). This parameter is present for potential
-            alternative models of inertia.
-        :param theta0: Initial angular displacement (radians).
-        :param omega0: Initial angular velocity (rad/s).
-        :param aero_torque: Constant aerodynamic torque acting on the section (N*m).
-        :param inertial_torque_func: A callable function of time that returns the
-            inertial torque from prescribed motion acceleration (N*m).
-        :return: A tuple of (theta, omega) representing the final angle and angular
-            velocity at the last time point in t.
+        :param spring_constant_rad: The spring constant (N*m/rad), the k in the ODE
+            above.
+        :param damping_constant_rad: The damping constant (N*m*s/rad), the c in the ODE
+            above.
+        :param torsional_inertia: The strip's torsional rotational inertia (kg*m^2),
+            the I in the ODE above.
+        :param theta0_rad: Initial angular displacement (radians).
+        :param theta_derivative0_rad: The initial angular displacement's time
+            derivative (rad/s).
+        :param aero_moment: Constant aerodynamic moment acting on the section (N*m).
+        :param inertial_moment_func: A callable function of time that returns the
+            inertial moment from prescribed motion acceleration (N*m).
+        :return: A tuple of two floats: the final angle (radians) and its time
+            derivative (rad/s) at the last time point in t.
         """
 
-        def tau(time: float) -> float:
-            """Total external torque (aerodynamic + inertial from prescribed motion)."""
-            return float(aero_torque + inertial_torque_func(time))
+        def external_moment(time: float) -> float:
+            """Total external moment M_external (aerodynamic + inertial from prescribed
+            motion)."""
+            return float(aero_moment + inertial_moment_func(time))
 
         def ode(time: float, y: np.ndarray) -> np.ndarray:
-            """ODE system: d(theta)/dt = omega, d(omega)/dt = (tau - c*omega - k*theta)/I."""
-            theta, omega = y
-            return np.array([omega, (tau(time) - c * omega - k * theta) / I])
+            """ODE system: the state is (theta, d(theta)/dt), and d^2(theta)/dt^2 =
+            (M_external - c * d(theta)/dt - k * theta) / I."""
+            theta_rad, theta_derivative_rad = y
+            return np.array(
+                [
+                    theta_derivative_rad,
+                    (
+                        external_moment(time)
+                        - damping_constant_rad * theta_derivative_rad
+                        - spring_constant_rad * theta_rad
+                    )
+                    / torsional_inertia,
+                ]
+            )
 
         sol = solve_ivp(
             ode,
             (t[0], t[-1]),
-            np.array([theta0, omega0]),
+            np.array([theta0_rad, theta_derivative0_rad], dtype=float),
             t_eval=t,
             rtol=_SPRING_ODE_RELATIVE_TOLERANCE,
-            atol=_SPRING_ODE_ABSOLUTE_TOLERANCE,
+            atol=_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD,
         )
 
-        theta = float(sol.y[0][-1])
-        omega = float(sol.y[1][-1])
+        final_theta_rad = float(sol.y[0][-1])
+        final_theta_derivative_rad = float(sol.y[1][-1])
 
-        return theta, omega
-
-    def plot_flap_cycle_curves(
-        self,
-        data: list,
-        title: str,
-        flap_cycle=None,
-    ) -> None:
-        """Visualize time histories of moments, deformations, or forces.
-
-        Creates a multi-curve line plot showing moment or deformation values across all
-        time steps, with optional overlay of a reference flap cycle.
-
-        :param data: A list of lists where each inner list represents a curve to plot.
-            Values in each curve are plotted against step number.
-        :param title: The title for the plot and the output PNG filename (spaces
-            replaced with underscores).
-        :param flap_cycle: Optional reference curve to overlay on the plot. If provided,
-            should be a list of values to plot with label "Flap Cycle" in black. The
-            default is None.
-        :return: None **Notes:** The plot is saved as a PNG file with the title as the
-            filename. The plot window is displayed to the user. Figure size is 12x6
-            inches at 200 DPI.
-        """
-        plt.figure(figsize=(12, 6), dpi=200)
-
-        for i, curve in enumerate(data):
-            x = range(len(curve))
-            plt.plot(x, curve, label=f"Curve {i}")
-        if flap_cycle is not None:
-            plt.plot(
-                range(len(flap_cycle)), flap_cycle, label=f"Flap Cycle", color="black"
-            )
-        plt.xlabel("Step")
-        plt.ylabel("Value")
-        plt.title(title)
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(f"{title.replace(' ', '_')}.png")
-        plt.show()
+        return final_theta_rad, final_theta_derivative_rad

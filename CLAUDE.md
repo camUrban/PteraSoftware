@@ -87,7 +87,6 @@ Requires Python 3.11, but active development is done in 3.13
     - `movements/`: Package with movement classes (definitions for time-dependent motion)
         - `aeroelastic_airplane_movement.py`: AeroelasticAirplaneMovement class
         - `aeroelastic_movement.py`: AeroelasticMovement class
-        - `aeroelastic_operating_point_movement.py`: AeroelasticOperatingPointMovement class
         - `aeroelastic_wing_cross_section_movement.py`: AeroelasticWingCrossSectionMovement class
         - `aeroelastic_wing_movement.py`: AeroelasticWingMovement class
         - `airplane_movement.py`: AirplaneMovement class
@@ -159,7 +158,6 @@ Requires Python 3.11, but active development is done in 3.13
         - `fixtures/`: Fixtures for unit tests
             - `aerodynamics_functions_fixtures.py`
             - `aeroelastic_airplane_movement_fixtures.py`
-            - `aeroelastic_operating_point_movement_fixtures.py`
             - `aeroelastic_wing_cross_section_movement_fixtures.py`
             - `aeroelastic_wing_movement_fixtures.py`
             - `airplane_movement_fixtures.py`
@@ -186,7 +184,6 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_aerodynamics_functions.py`
         - `test_aeroelastic_airplane_movement.py`
         - `test_aeroelastic_movement.py`
-        - `test_aeroelastic_operating_point_movement.py`
         - `test_aeroelastic_unsteady_problem.py`
         - `test_aeroelastic_unsteady_ring_vortex_lattice_method.py`
         - `test_aeroelastic_wing_cross_section_movement.py`

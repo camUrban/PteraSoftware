@@ -50,9 +50,6 @@ from pterasoftware.movements.aeroelastic_airplane_movement import (
     AeroelasticAirplaneMovement,
 )
 from pterasoftware.movements.aeroelastic_movement import AeroelasticMovement
-from pterasoftware.movements.aeroelastic_operating_point_movement import (
-    AeroelasticOperatingPointMovement,
-)
 from pterasoftware.movements.aeroelastic_wing_cross_section_movement import (
     AeroelasticWingCrossSectionMovement,
 )
@@ -1999,15 +1996,6 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(wing_cross_section_movement))
         assert isinstance(result, AeroelasticWingCrossSectionMovement)
 
-    def test_aeroelastic_operating_point_movement(self):
-        """Tests that an AeroelasticOperatingPointMovement survives a full round trip.
-
-        :return: None
-        """
-        operating_point_movement = self.problem.movement.operating_point_movement
-        result = _deserialize_value(_serialize_value(operating_point_movement))
-        assert isinstance(result, AeroelasticOperatingPointMovement)
-
     def test_custom_callable_spacing_is_not_serializable(self):
         """Tests that an AeroelasticWingMovement with a custom callable angular spacing
         raises on serialization, matching the standard movement-class behavior.
@@ -2046,8 +2034,8 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, problem.num_steps)
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
         self.assertEqual(result.wing_density, problem.wing_density)
-        self.assertEqual(result.spring_constant, problem.spring_constant)
-        self.assertEqual(result.damping_constant, problem.damping_constant)
+        self.assertEqual(result.spring_constant_rad, problem.spring_constant_rad)
+        self.assertEqual(result.damping_constant_rad, problem.damping_constant_rad)
         self.assertEqual(result.step_discards, problem.step_discards)
 
     def test_save_load_round_trip(self):
@@ -2107,8 +2095,11 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
             self.assertIs(reconstructed, problem_side)
 
     def test_per_wing_state_round_trip(self):
-        """Tests that the AeroelasticUnsteadyProblem's per-wing deformation state
-        survives the solver round trip.
+        """Tests that the AeroelasticUnsteadyProblem's per-wing deformation state (both
+        the angle and angle derivative time series) survives the solver round trip.
+
+        The spring-damper ODEs are re-seeded from both time series, so both must
+        survive for a reconstructed problem's structural state to be usable.
 
         :return: None
         """
@@ -2119,12 +2110,28 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         original = solver.unsteady_problem
         reconstructed = result.unsteady_problem
         self.assertEqual(
-            len(reconstructed.net_deformation_per_wing),
-            len(original.net_deformation_per_wing),
+            len(reconstructed.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz),
+            len(original.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz),
+        )
+        self.assertEqual(
+            len(reconstructed.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0]),
+            len(original.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0]),
         )
         npt.assert_array_equal(
-            reconstructed.net_deformation_per_wing[0],
-            original.net_deformation_per_wing[0],
+            reconstructed.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0][-1],
+            original.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0][-1],
+        )
+        self.assertEqual(
+            len(reconstructed._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz),
+            len(original._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz),
+        )
+        self.assertEqual(
+            len(reconstructed._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0]),
+            len(original._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0]),
+        )
+        npt.assert_array_equal(
+            reconstructed._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0][-1],
+            original._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0][-1],
         )
 
     def test_save_load_round_trip(self):

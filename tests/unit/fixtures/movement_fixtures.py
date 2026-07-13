@@ -64,7 +64,7 @@ def make_basic_aeroelastic_movement_fixture():
     )
 
     # Create a wing movement with sinusoidal flapping (non-zero period required
-    # by generate_inertial_torque_function when spacing is "sine").
+    # by _generate_inertial_moment_function when spacing is "sine").
     wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
         base_wing=airplane.wings[0],
         wing_cross_section_movements=[root_wcs_movement, tip_wcs_movement],
@@ -83,7 +83,7 @@ def make_basic_aeroelastic_movement_fixture():
     )
 
     # Create the operating point movement.
-    op_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 
@@ -318,7 +318,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture():
     )
 
     # Create the OperatingPointMovement.
-    op_point_movement = ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+    op_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
     )
 

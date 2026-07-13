@@ -8,10 +8,10 @@ import numpy.testing as npt
 import pterasoftware as ps
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
-    aeroelastic_operating_point_movement_fixtures,
     airplane_movement_fixtures,
+    free_flight_operating_point_movement_fixtures,
     movement_fixtures,
-    operating_point_fixtures,
+    operating_point_movement_fixtures,
 )
 
 
@@ -49,7 +49,7 @@ class TestAeroelasticMovement(unittest.TestCase):
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
         operating_point_movement = (
-            aeroelastic_operating_point_movement_fixtures.make_sine_spacing_aeroelastic_operating_point_movement_fixture()
+            operating_point_movement_fixtures.make_sine_spacing_operating_point_movement_fixture()
         )
 
         with self.assertRaises(TypeError):
@@ -60,17 +60,17 @@ class TestAeroelasticMovement(unittest.TestCase):
                 num_steps=1,
             )
 
-    def test_rejects_non_aeroelastic_operating_point_movement(self):
+    def test_rejects_non_standard_operating_point_movement(self):
         """Test that AeroelasticMovement rejects a CoreOperatingPointMovement that is
-        not an AeroelasticOperatingPointMovement.
+        not an OperatingPointMovement.
         """
-        # A standard OperatingPointMovement is a CoreOperatingPointMovement but not an
-        # AeroelasticOperatingPointMovement, so it must be rejected.
+        # A FreeFlightOperatingPointMovement is a CoreOperatingPointMovement but not
+        # an OperatingPointMovement, so it must be rejected.
         airplane_movements = [
             aeroelastic_airplane_movement_fixtures.make_static_aeroelastic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        operating_point_movement = (
+            free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
         with self.assertRaises(TypeError):
@@ -96,16 +96,16 @@ class TestAeroelasticMovement(unittest.TestCase):
                 ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement,
             )
 
-    def test_operating_point_movement_property_returns_aeroelastic(self):
+    def test_operating_point_movement_property_returns_operating_point_movement(self):
         """Test that the operating_point_movement property returns an
-        AeroelasticOperatingPointMovement.
+        OperatingPointMovement.
         """
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
         self.assertIsInstance(
             aeroelastic_movement.operating_point_movement,
-            ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement,
+            ps.movements.operating_point_movement.OperatingPointMovement,
         )
 
     def test_operating_points_property_returns_tuple(self):

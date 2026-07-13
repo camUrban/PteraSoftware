@@ -14,7 +14,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
     - BAD: "update the Wing objects" (unnecessary)
 - **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section".
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
-- **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_AND_COORDINATE_SYSTEMS.md` and `AXES_POINTS_AND_FRAMES.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
+- **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_POINTS_AND_FRAMES.md` and `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
 
 ## Running CodeSpell
 
@@ -76,7 +76,7 @@ If a legitimate reason to violate this rule arises (a contribution must include 
 
 - Avoid abbreviations in text unless they are well-known in the context.
 - For subtraction, use a hyphen surrounded by spaces (e.g., "a - b").
-- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi").
+- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N*m", "kg*m^2", and "N*m*s/rad").
 - For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
 - When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - Always end *.py file with an empty line.
@@ -84,7 +84,7 @@ If a legitimate reason to violate this rule arises (a contribution must include 
 - Write comments as complete sentences ending with a period.
 - Prefer comments on their own line above the code they describe.
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
-- Write "time step" instead of "timestep", "time-step", or "step".
+- Write a simulation time increment as either "time step" or "step"; the two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
 - In markdown files, always include a blank line after a header line. Also precede them with a blank line, except for header lines that happen to also be the first line in their file.
 - In markdown files, do not use trailing whitespace for line breaks. Markdown already handles breaks between paragraphs, list items, and headings.
 - In markdown files, do not use hard line wrapping.

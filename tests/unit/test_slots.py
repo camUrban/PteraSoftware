@@ -14,7 +14,6 @@ from pterasoftware import _core, _mujoco_model, _panel
 # noinspection PyProtectedMember
 from tests.unit.fixtures import (
     aeroelastic_airplane_movement_fixtures,
-    aeroelastic_operating_point_movement_fixtures,
     aeroelastic_wing_cross_section_movement_fixtures,
     aeroelastic_wing_movement_fixtures,
     airplane_movement_fixtures,
@@ -1772,44 +1771,6 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         )
 
 
-class TestAeroelasticOperatingPointMovementSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    AeroelasticOperatingPointMovement. All property and deepcopy behavior is tested at
-    the CoreOperatingPointMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
-    """
-
-    def setUp(self):
-        """Set up test fixtures for AeroelasticOperatingPointMovement slots tests."""
-        self.aopm = (
-            aeroelastic_operating_point_movement_fixtures.make_sine_spacing_aeroelastic_operating_point_movement_fixture()
-        )
-
-    def test_slots_defined(self):
-        """Test that __slots__ is defined on AeroelasticOperatingPointMovement."""
-        self.assertTrue(
-            hasattr(
-                ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement,
-                "__slots__",
-            )
-        )
-
-    def test_no_instance_dict(self):
-        """Test that AeroelasticOperatingPointMovement instances have no __dict__."""
-        self.assertFalse(hasattr(self.aopm, "__dict__"))
-
-    def test_dynamic_attribute_raises(self):
-        """Test that dynamic attribute assignment raises AttributeError."""
-        with self.assertRaises(AttributeError):
-            self.aopm.nonexistent_attribute = 42
-
-    def test_subclass(self):
-        """Test that AeroelasticOperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
-        self.assertIsInstance(self.aopm, _core.CoreOperatingPointMovement)
-
-
 class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
     AeroelasticWingCrossSectionMovement. All property and deepcopy behavior is tested at
@@ -1987,7 +1948,7 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
             self.aeroelastic_movement.airplane_movements[0],
         )
 
-        # Verify the AeroelasticOperatingPointMovement is independent.
+        # Verify the OperatingPointMovement is independent.
         self.assertIsNot(
             copied.operating_point_movement,
             self.aeroelastic_movement.operating_point_movement,
@@ -2029,10 +1990,9 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     def test_config_property_access(self):
         """Test that the immutable structural config properties are accessible."""
         self.assertIsInstance(self.problem.wing_density, float)
-        self.assertIsInstance(self.problem.spring_constant, float)
-        self.assertIsInstance(self.problem.damping_constant, float)
+        self.assertIsInstance(self.problem.spring_constant_rad, float)
+        self.assertIsInstance(self.problem.damping_constant_rad, float)
         self.assertIsInstance(self.problem.step_discards, int)
-        self.assertIsInstance(self.problem.plot_flap_cycle, bool)
 
     def test_movement_property_access(self):
         """Test that the movement properties are accessible and correctly typed."""
@@ -2044,23 +2004,16 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
             self.problem._aeroelastic_movement,
             ps.movements.aeroelastic_movement.AeroelasticMovement,
         )
-        self.assertIsInstance(
-            self.problem.wing_movement,
-            ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement,
-        )
         self.assertIsInstance(self.problem.steady_problems, tuple)
 
     def test_mutable_state_access(self):
-        """Test that the mutable per-wing solver state lists are accessible."""
-        self.assertIsInstance(self.problem.net_deformation_per_wing, list)
-        self.assertIsInstance(self.problem.angular_velocities_per_wing, list)
-        self.assertIsInstance(self.problem.positions_per_wing, list)
-        self.assertIsInstance(self.problem.per_step_inertial_per_wing, list)
-        self.assertIsInstance(self.problem.per_step_aero_per_wing, list)
-        self.assertIsInstance(self.problem.net_data_per_wing, list)
-        self.assertIsInstance(self.problem.angular_velocity_data_per_wing, list)
-        self.assertIsInstance(self.problem.flap_points_per_wing, list)
-        self.assertIsInstance(self.problem.base_wing_positions_per_wing, list)
+        """Test that the mutable per-wing solver time series lists are accessible."""
+        self.assertIsInstance(
+            self.problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, list
+        )
+        self.assertIsInstance(
+            self.problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, list
+        )
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""
@@ -2071,8 +2024,8 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
         # Verify config property values match.
         self.assertEqual(copied.wing_density, self.problem.wing_density)
-        self.assertEqual(copied.spring_constant, self.problem.spring_constant)
-        self.assertEqual(copied.damping_constant, self.problem.damping_constant)
+        self.assertEqual(copied.spring_constant_rad, self.problem.spring_constant_rad)
+        self.assertEqual(copied.damping_constant_rad, self.problem.damping_constant_rad)
 
         # Verify the movement is independent.
         self.assertIsNot(copied.movement, self.problem.movement)
@@ -2117,14 +2070,14 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
             self.solver.unsteady_problem,
             ps.problems.AeroelasticUnsteadyProblem,
         )
-        self.assertIsInstance(self.solver.slep_point_indices, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpr_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpf_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpl_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCblvpb_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackCpp_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpr_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpf_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpl_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCblvpb_GP1_Slep, np.ndarray)
+        self.assertIsInstance(self.solver._stackCpp_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver.stackSlep_GP1_CgP1, np.ndarray)
+        self.assertIsInstance(self.solver._stackSlep_GP1_CgP1, np.ndarray)
 
     def test_deepcopy(self):
         """Test that copy.deepcopy produces a correct independent copy."""
@@ -2138,7 +2091,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
 
         # Verify SLEP index values match.
         npt.assert_array_equal(
-            copied.slep_point_indices, self.solver.slep_point_indices
+            copied._slep_point_indices, self.solver._slep_point_indices
         )
 
 

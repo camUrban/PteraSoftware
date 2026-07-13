@@ -159,36 +159,27 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 Each is stored in a `_`-prefixed backing slot and exposed through a read-only property of the unprefixed name.
 
-| Attribute          | Type    | Notes                                                  |
-|--------------------|---------|--------------------------------------------------------|
-| `wing_density`     | `float` | Mass per unit span area (kg/m^2)                       |
-| `spring_constant`  | `float` | Torsional spring stiffness (N*m/rad)                   |
-| `damping_constant` | `float` | Torsional damping coefficient (N*m*s/rad)              |
-| `step_discards`    | `int`   | Number of initial steps discarded for stability        |
-| `plot_flap_cycle`  | `bool`  | Whether to plot time histories at the end of the solve |
+| Attribute              | Type    | Notes                                                  |
+|------------------------|---------|--------------------------------------------------------|
+| `wing_density`         | `float` | Mass per unit span area (kg/m^2)                       |
+| `spring_constant_rad`  | `float` | Torsional spring stiffness (N*m/rad)                   |
+| `damping_constant_rad` | `float` | Torsional damping coefficient (N*m*s/rad)              |
+| `step_discards`        | `int`   | Number of initial steps discarded for stability        |
 
 #### Derived from Immutable (read-only property, no backing slot)
 
 | Property                | Depends On              | Notes                                                                                               |
 |-------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|
 | `_aeroelastic_movement` | `_movement`             | Typed-narrow cast of the inherited `_movement` slot to `AeroelasticMovement` (recomputed, uncached) |
-| `wing_movement`         | `_aeroelastic_movement` | The first airplane movement's first wing movement, cast to `AeroelasticWingMovement`                |
 
 #### Mutable (populated by solver)
 
-These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to or reassigned element-wise by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
+These lists are allocated in `__init__` with one entry per wing in the initial airplane, then appended to by the solver during the run. They are plain slots rather than read-only properties because the solver must update them after construction, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem`.
 
-| Attribute                        | Type                     | Notes                                                              |
-|----------------------------------|--------------------------|--------------------------------------------------------------------|
-| `net_deformation_per_wing`       | `list[np.ndarray]`       | Current cumulative deformation angles (radians), per wing          |
-| `angular_velocities_per_wing`    | `list[np.ndarray]`       | Current angular velocity state (rad/s), per wing                   |
-| `positions_per_wing`             | `list[list[np.ndarray]]` | Panel center position history (m), indexed `[wing][step]`          |
-| `per_step_inertial_per_wing`     | `list[list[np.ndarray]]` | Inertial moment history (N*m), indexed `[wing][step]`              |
-| `per_step_aero_per_wing`         | `list[list[np.ndarray]]` | Aerodynamic moment history (N*m), indexed `[wing][step]`           |
-| `net_data_per_wing`              | `list[list[np.ndarray]]` | Cumulative deformation snapshots (radians), indexed `[wing][step]` |
-| `angular_velocity_data_per_wing` | `list[list[np.ndarray]]` | Angular velocity snapshots (rad/s), indexed `[wing][step]`         |
-| `flap_points_per_wing`           | `list[list[np.ndarray]]` | Wing deflection offsets (m), indexed `[wing][step]`                |
-| `base_wing_positions_per_wing`   | `list[np.ndarray]`       | Undeformed baseline panel positions (m), per wing                  |
+| Attribute                                                | Type                     | Notes                                                                                 |
+|----------------------------------------------------------|--------------------------|---------------------------------------------------------------------------------------|
+| `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz`             | `list[list[np.ndarray]]` | Cumulative torsional angle time series (radians), indexed `[wing][entry]`, seeded     |
+| `_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz`  | `list[list[np.ndarray]]` | Torsional angle time derivative time series (rad/s), indexed `[wing][entry]`, seeded  |
 
 ## FreeFlightUnsteadyProblem Class (`problems.py`)
 

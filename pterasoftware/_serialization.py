@@ -41,9 +41,6 @@ from .geometry.wing import Wing
 from .geometry.wing_cross_section import WingCrossSection
 from .movements.aeroelastic_airplane_movement import AeroelasticAirplaneMovement
 from .movements.aeroelastic_movement import AeroelasticMovement
-from .movements.aeroelastic_operating_point_movement import (
-    AeroelasticOperatingPointMovement,
-)
 from .movements.aeroelastic_wing_cross_section_movement import (
     AeroelasticWingCrossSectionMovement,
 )
@@ -83,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 16
+_FORMAT_VERSION = 19
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -130,7 +127,6 @@ _CLASS_REGISTRY: dict[str, type] = {
     "AeroelasticAirplaneMovement": AeroelasticAirplaneMovement,
     "AeroelasticWingMovement": AeroelasticWingMovement,
     "AeroelasticWingCrossSectionMovement": AeroelasticWingCrossSectionMovement,
-    "AeroelasticOperatingPointMovement": AeroelasticOperatingPointMovement,
     "AeroelasticUnsteadyProblem": AeroelasticUnsteadyProblem,
     "AeroelasticUnsteadyRingVortexLatticeMethodSolver": AeroelasticUnsteadyRingVortexLatticeMethodSolver,
     "FreeFlightMovement": FreeFlightMovement,
@@ -165,7 +161,6 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
         "AeroelasticAirplaneMovement",
         "AeroelasticWingMovement",
         "AeroelasticWingCrossSectionMovement",
-        "AeroelasticOperatingPointMovement",
         "AeroelasticUnsteadyProblem",
         "AeroelasticUnsteadyRingVortexLatticeMethodSolver",
         "FreeFlightMovement",

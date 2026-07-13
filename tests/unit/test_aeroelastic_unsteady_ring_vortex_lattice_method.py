@@ -56,43 +56,45 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertGreater(self.solver.num_panels, 0)
 
     def test_slep_point_indices_is_ndarray(self):
-        """Test that slep_point_indices is a numpy ndarray."""
-        self.assertIsInstance(self.solver.slep_point_indices, np.ndarray)
+        """Test that _slep_point_indices is a numpy ndarray."""
+        self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
 
     def test_slep_point_indices_starts_at_zero(self):
-        """Test that slep_point_indices[0] is zero (first panel is always the
+        """Test that _slep_point_indices[0] is zero (first panel is always the
         first SLEP)."""
-        self.assertEqual(self.solver.slep_point_indices[0], 0)
+        self.assertEqual(self.solver._slep_point_indices[0], 0)
 
     def test_slep_point_indices_non_decreasing(self):
-        """Test that slep_point_indices is non-decreasing."""
-        indices = self.solver.slep_point_indices
+        """Test that _slep_point_indices is non-decreasing."""
+        indices = self.solver._slep_point_indices
         self.assertTrue(np.all(np.diff(indices) >= 0))
 
     def test_slep_point_indices_integer_dtype(self):
-        """Test that slep_point_indices has integer dtype."""
-        self.assertTrue(np.issubdtype(self.solver.slep_point_indices.dtype, np.integer))
+        """Test that _slep_point_indices has integer dtype."""
+        self.assertTrue(
+            np.issubdtype(self.solver._slep_point_indices.dtype, np.integer)
+        )
 
     def test_moments_gp1_slep_initial_empty(self):
         """Test that moments_GP1_Slep is initially empty before any step."""
         self.assertEqual(self.solver.moments_GP1_Slep.size, 0)
 
     def test_stack_slep_initial_empty(self):
-        """Test that stackSlep_GP1_CgP1 is initially empty before any step."""
-        self.assertEqual(self.solver.stackSlep_GP1_CgP1.size, 0)
+        """Test that _stackSlep_GP1_CgP1 is initially empty before any step."""
+        self.assertEqual(self.solver._stackSlep_GP1_CgP1.size, 0)
 
     def test_reinitialize_step_arrays_hook_produces_zero_arrays(self):
         """Test that _reinitialize_step_arrays_hook fills all SLEP arrays with
         zeros."""
         self.solver._reinitialize_step_arrays_hook()
         arrays_to_check = [
-            self.solver.stackCblvpr_GP1_Slep,
-            self.solver.stackCblvpf_GP1_Slep,
-            self.solver.stackCblvpl_GP1_Slep,
-            self.solver.stackCblvpb_GP1_Slep,
-            self.solver.stackCpp_GP1_Slep,
+            self.solver._stackCblvpr_GP1_Slep,
+            self.solver._stackCblvpf_GP1_Slep,
+            self.solver._stackCblvpl_GP1_Slep,
+            self.solver._stackCblvpb_GP1_Slep,
+            self.solver._stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
-            self.solver.stackSlep_GP1_CgP1,
+            self.solver._stackSlep_GP1_CgP1,
         ]
         for arr in arrays_to_check:
             with self.subTest(array=arr):
@@ -104,21 +106,21 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.solver._reinitialize_step_arrays_hook()
         expected_shape = (self.solver.num_panels, 3)
         arrays_to_check = [
-            self.solver.stackCblvpr_GP1_Slep,
-            self.solver.stackCblvpf_GP1_Slep,
-            self.solver.stackCblvpl_GP1_Slep,
-            self.solver.stackCblvpb_GP1_Slep,
-            self.solver.stackCpp_GP1_Slep,
+            self.solver._stackCblvpr_GP1_Slep,
+            self.solver._stackCblvpf_GP1_Slep,
+            self.solver._stackCblvpl_GP1_Slep,
+            self.solver._stackCblvpb_GP1_Slep,
+            self.solver._stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
-            self.solver.stackSlep_GP1_CgP1,
+            self.solver._stackSlep_GP1_CgP1,
         ]
         for arr in arrays_to_check:
             with self.subTest(array=arr):
                 self.assertEqual(arr.shape, expected_shape)
 
     def test_slep_point_indices_length_equals_panel_count(self):
-        """Test that slep_point_indices has one entry per panel."""
-        self.assertEqual(len(self.solver.slep_point_indices), self.solver.num_panels)
+        """Test that _slep_point_indices has one entry per panel."""
+        self.assertEqual(len(self.solver._slep_point_indices), self.solver.num_panels)
 
     def test_slep_outboard_is_left_matches_wing_meshing(self):
         """Test that _slep_outboard_is_left has one boolean entry per panel and marks

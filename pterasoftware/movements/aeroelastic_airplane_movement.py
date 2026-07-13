@@ -28,8 +28,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
     In aeroelastic simulations, airplane geometry is prescribed via oscillation
     parameters (the same oscillation based generation as AirplaneMovement), but the
     solver adds structural deformation at each time step. This class overrides
-    generate_airplane_at_time_step to accept per Wing deformation that is threaded down
-    to its AeroelasticWingMovement children.
+    generate_airplane_at_time_step to accept per Wing deformation angles (which perturb
+    the Wings' WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to its
+    AeroelasticWingMovement children.
 
     **Contains the following methods:**
 
@@ -200,9 +201,10 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
         :param step: The time step index. Must be a non negative int.
         :param delta_time: The time between each time step in seconds. Must be a
             positive number (int or float).
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
-            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
-            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of ndarrays of floats, one per
+            Wing, each with one row per WingCrossSection in that Wing. Each row is a
+            (3,) deformation angle vector that perturbs the corresponding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied to

@@ -330,9 +330,9 @@ example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define the operating point's AeroelasticOperatingPointMovement.
+# Define the operating point's OperatingPointMovement.
 example_operating_point_movement = (
-    ps.movements.aeroelastic_operating_point_movement.AeroelasticOperatingPointMovement(
+    ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=example_operating_point,
         ampVCg__E=0.0,
         periodVCg__E=0.0,
@@ -344,7 +344,7 @@ example_operating_point_movement = (
 del example_operating_point
 
 # Define the AeroelasticMovement. This contains the AeroelasticAirplaneMovement and
-# the AeroelasticOperatingPointMovement. The delta_time and num_steps must be specified
+# the OperatingPointMovement. The delta_time and num_steps must be specified
 # explicitly. With a flapping period of 1.0s, 3 cycles at dt=0.03s gives 100 steps.
 example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
     airplane_movements=[example_airplane_movement],
@@ -355,16 +355,15 @@ example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
 
 # Define the AeroelasticUnsteadyProblem.
 # The deformation parameters are set here.
-# The wing_density, spring_constant and damping_constant are the primary parameters
-# you should expect to change. The rest are more for considering numerical issues
-# with our integrator and debugging. Plotting the flap cycle can give good data as well.
+# The wing_density, spring_constant_rad, and damping_constant_rad are the
+# primary parameters you should expect to change. The step_discards parameter
+# is more for managing the UVLM solver's inconsistent startup effects.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=example_movement,
     wing_density=6.0,
-    spring_constant=1000.0,
-    damping_constant=1000.0,
+    spring_constant_rad=1000.0,
+    damping_constant_rad=1000.0,
     step_discards=5,
-    plot_flap_cycle=False,
 )
 
 # Define a new solver. We'll create an AeroelasticUnsteadyRingVortexLatticeMethodSolver,

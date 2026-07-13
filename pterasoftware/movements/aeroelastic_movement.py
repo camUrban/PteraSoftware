@@ -18,9 +18,7 @@ import numpy as np
 from .. import _core, geometry
 from .. import operating_point as operating_point_mod
 from . import aeroelastic_airplane_movement as aeroelastic_airplane_movement_mod
-from . import (
-    aeroelastic_operating_point_movement as aeroelastic_operating_point_movement_mod,
-)
+from . import operating_point_movement as operating_point_movement_mod
 
 
 class AeroelasticMovement(_core.CoreMovement):
@@ -28,8 +26,8 @@ class AeroelasticMovement(_core.CoreMovement):
 
     In aeroelastic simulations, wing geometry is prescribed via oscillation parameters
     (flapping, CG oscillation, etc.) but the solver adds structural deformation at each
-    time step based on aerodynamic loads. OperatingPoints are prescribed via the same
-    oscillation parameters as OperatingPointMovement.
+    time step based on aerodynamic loads. OperatingPoints are prescribed by a standard
+    OperatingPointMovement.
 
     AeroelasticMovement pre generates all OperatingPoints upfront (since they are
     prescribed) but does not pre generate Airplanes, because the deformed wing geometry
@@ -62,7 +60,7 @@ class AeroelasticMovement(_core.CoreMovement):
         airplane_movements: list[
             aeroelastic_airplane_movement_mod.AeroelasticAirplaneMovement
         ],
-        operating_point_movement: aeroelastic_operating_point_movement_mod.AeroelasticOperatingPointMovement,
+        operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
         delta_time: float | int,
         num_steps: int,
         max_wake_rows: int | None = None,
@@ -76,9 +74,8 @@ class AeroelasticMovement(_core.CoreMovement):
 
         :param airplane_movements: A list of the AeroelasticAirplaneMovements associated
             with each of the AeroelasticUnsteadyProblem's Airplanes.
-        :param operating_point_movement: An AeroelasticOperatingPointMovement holding
-            the oscillation parameters for prescribing OperatingPoints at each time
-            step.
+        :param operating_point_movement: An OperatingPointMovement holding the
+            oscillation parameters for prescribing OperatingPoints at each time step.
         :param delta_time: The time, in seconds, between each time step. It must be a
             positive number (int or float). It will be converted internally to a float.
         :param num_steps: The number of time steps to simulate. It must be a positive
@@ -100,15 +97,15 @@ class AeroelasticMovement(_core.CoreMovement):
                     "AeroelasticAirplaneMovement."
                 )
 
-        # Validate that operating_point_movement is an
-        # AeroelasticOperatingPointMovement.
+        # Validate that operating_point_movement is an OperatingPointMovement.
+        # CoreMovement.__init__() validates at the Core level, but
+        # AeroelasticMovement enforces the concrete type.
         if not isinstance(
             operating_point_movement,
-            aeroelastic_operating_point_movement_mod.AeroelasticOperatingPointMovement,
+            operating_point_movement_mod.OperatingPointMovement,
         ):
             raise TypeError(
-                "operating_point_movement must be an "
-                "AeroelasticOperatingPointMovement."
+                "operating_point_movement must be an OperatingPointMovement."
             )
 
         # --- Initialize CoreMovement ---
@@ -134,10 +131,10 @@ class AeroelasticMovement(_core.CoreMovement):
     @property
     def operating_point_movement(
         self,
-    ) -> aeroelastic_operating_point_movement_mod.AeroelasticOperatingPointMovement:
+    ) -> operating_point_movement_mod.OperatingPointMovement:
         assert isinstance(
             self._operating_point_movement,
-            aeroelastic_operating_point_movement_mod.AeroelasticOperatingPointMovement,
+            operating_point_movement_mod.OperatingPointMovement,
         )
         return self._operating_point_movement
 
@@ -170,9 +167,10 @@ class AeroelasticMovement(_core.CoreMovement):
         :param airplane_movement_index: The index of the AeroelasticAirplaneMovement in
             this AeroelasticMovement's airplane_movements tuple.
         :param step: The time step index. Must be a non negative int.
-        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of (N_wcs, 3) ndarrays of
-            floats, one per Wing, where N_wcs is the number of WingCrossSections in that
-            Wing. Each row is a (3,) deformation angle vector using an intrinsic xy'z"
+        :param deformationAngles_Wcsp_to_Wcs_ixyz: A list of ndarrays of floats, one per
+            Wing, each with one row per WingCrossSection in that Wing. Each row is a
+            (3,) deformation angle vector that perturbs the corresponding
+            WingCrossSection's angles_Wcsp_to_Wcs_ixyz, using an intrinsic xy'z"
             sequence. The units are in degrees. When None, no deformation is applied.
             The default is None.
         :return: The Airplane at this time step, with structural deformation applied if

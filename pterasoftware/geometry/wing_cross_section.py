@@ -187,8 +187,8 @@ class WingCrossSection:
         self._airfoil = airfoil
 
         # Perform a preliminary validation for num_spanwise_panels (immutable). The
-        # parent Wing will later check that this is None if this WingCrossSection is
-        # a tip WingCrossSection.
+        # parent Wing will later check that this is None if this WingCrossSection is a
+        # tip WingCrossSection.
         if num_spanwise_panels is not None:
             num_spanwise_panels = _parameter_validation.int_in_range_return_int(
                 num_spanwise_panels,
@@ -203,9 +203,9 @@ class WingCrossSection:
             chord, "chord", min_val=0.0, min_inclusive=False
         )
 
-        # Perform a preliminary validation for Lp_Wcsp_Lpp (immutable). The parent
-        # Wing will later check that this is a zero vector if this WingCrossSection
-        # is a root WingCrossSection.
+        # Perform a preliminary validation for Lp_Wcsp_Lpp (immutable). The parent Wing
+        # will later check that this is a zero vector if this WingCrossSection is a root
+        # WingCrossSection.
         Lp_Wcsp_Lpp = _parameter_validation.threeD_number_vectorLike_return_float(
             Lp_Wcsp_Lpp, "Lp_Wcsp_Lpp"
         )
@@ -215,8 +215,8 @@ class WingCrossSection:
         self._Lp_Wcsp_Lpp = Lp_Wcsp_Lpp
         self._Lp_Wcsp_Lpp.flags.writeable = False
 
-        # Perform a preliminary validation for angles_Wcsp_to_Wcs_ixyz (immutable).
-        # The parent Wing will later check that this is a zero vector if this
+        # Perform a preliminary validation for angles_Wcsp_to_Wcs_ixyz (immutable). The
+        # parent Wing will later check that this is a zero vector if this
         # WingCrossSection is a root WingCrossSection.
         angles_Wcsp_to_Wcs_ixyz = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -277,9 +277,9 @@ class WingCrossSection:
             )
         )
 
-        # Perform a preliminary validation for spanwise_spacing (immutable). The
-        # parent Wing will later check that this is None if this WingCrossSection is
-        # a tip WingCrossSection.
+        # Perform a preliminary validation for spanwise_spacing (immutable). The parent
+        # Wing will later check that this is None if this WingCrossSection is a tip
+        # WingCrossSection.
         if spanwise_spacing is not None:
             spanwise_spacing = _parameter_validation.str_return_str(
                 spanwise_spacing, "spanwise_spacing"
@@ -292,14 +292,14 @@ class WingCrossSection:
                 )
         self._spanwise_spacing = spanwise_spacing
 
-        # Define a flag for if this WingCrossSection has been fully validated
-        # (set once). This will be set by the parent Wing after calling its
-        # additional validation methods.
+        # Define a flag for if this WingCrossSection has been fully validated (set
+        # once). This will be set by the parent Wing after calling its additional
+        # validation methods.
         self._validated: bool = False
 
-        # Define a flag for this WingCrossSection's parent Wing's symmetry type
-        # (set once). This will be set by its parent Wing immediately after it has
-        # its own symmetry_type parameter set by its parent Airplane.
+        # Define a flag for this WingCrossSection's parent Wing's symmetry type (set
+        # once). This will be set by its parent Wing immediately after it has its own
+        # symmetry_type parameter set by its parent Airplane.
         self._symmetry_type: int | None = None
 
         # Initialize the caches for the properties derived from the immutable

@@ -95,8 +95,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
             max_wake_rows=None,
             lcm_period=0.0,
         )
-        # When only_final_results is True, first_results_step ==
-        # first_averaging_step.
+        # When only_final_results is True, first_results_step == first_averaging_step.
         self.assertEqual(
             core_unsteady_problem.first_results_step,
             core_unsteady_problem.first_averaging_step,

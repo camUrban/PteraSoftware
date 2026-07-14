@@ -217,10 +217,9 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             default is None.
         :return: None
         """
-        # Validate that every element is an AeroelasticWingCrossSectionMovement,
-        # not just a CoreWingCrossSectionMovement. CoreWingMovement.__init__()
-        # validates at the Core level, but AeroelasticWingMovement enforces the
-        # stricter type.
+        # Validate that every element is an AeroelasticWingCrossSectionMovement, not
+        # just a CoreWingCrossSectionMovement. CoreWingMovement.__init__() validates at
+        # the Core level, but AeroelasticWingMovement enforces the stricter type.
         for wing_cross_section_movement in wing_cross_section_movements:
             if not isinstance(
                 wing_cross_section_movement,
@@ -384,8 +383,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Evaluate the oscillating value for each dimension of
-        # angles_Gs_to_Wn_ixyz.
+        # Evaluate the oscillating value for each dimension of angles_Gs_to_Wn_ixyz.
         theseAngles_Gs_to_Wn_ixyz = np.zeros(3, dtype=float)
         for dim in range(3):
             this_spacing = self._spacingAngles_Gs_to_Wn_ixyz[dim]
@@ -424,8 +422,8 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Generate the WingCrossSections for this time step, threading
-        # deformation to each AeroelasticWingCrossSectionMovement child.
+        # Generate the WingCrossSections for this time step, threading deformation to
+        # each AeroelasticWingCrossSectionMovement child.
         these_wing_cross_sections = []
         for i, wing_cross_section_movement in enumerate(
             self._wing_cross_section_movements
@@ -450,9 +448,8 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
                 )
             )
 
-        # If there is a non zero rotation point offset, adjust the position
-        # to account for rotation about the offset point instead of the
-        # leading edge root.
+        # If there is a non zero rotation point offset, adjust the position to account
+        # for rotation about the offset point instead of the leading edge root.
         if not np.allclose(self._rotationPointOffset_Gs_Ler, np.zeros(3, dtype=float)):
             rot_T_act = _transformations.generate_rot_T(
                 theseAngles_Gs_to_Wn_ixyz,

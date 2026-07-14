@@ -235,8 +235,7 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Evaluate the oscillating value for each dimension of
-        # angles_Wcsp_to_Wcs_ixyz.
+        # Evaluate the oscillating value for each dimension of angles_Wcsp_to_Wcs_ixyz.
         theseAngles_Wcsp_to_Wcs_ixyz = np.zeros(3, dtype=float)
         for dim in range(3):
             this_spacing = self._spacingAngles_Wcsp_to_Wcs_ixyz[dim]
@@ -279,9 +278,9 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Apply structural deformation if provided. The deformation angles
-        # are added to the prescribed angles, representing the structural
-        # response computed by the aeroelastic solver.
+        # Apply structural deformation if provided. The deformation angles are added to
+        # the prescribed angles, representing the structural response computed by the
+        # aeroelastic solver.
         if deformationAngles_Wcsp_to_Wcs_ixyz is not None:
             theseAngles_Wcsp_to_Wcs_ixyz = (
                 theseAngles_Wcsp_to_Wcs_ixyz + deformationAngles_Wcsp_to_Wcs_ixyz

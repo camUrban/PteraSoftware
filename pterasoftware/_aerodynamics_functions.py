@@ -40,12 +40,12 @@ _four_lamb = 4.0 * _lamb
 
 # The smallest number of evaluations worth handing one thread of a parallel kernel
 # launch, where one evaluation is computing one line vortex's induced velocity at one
-# point. Sized so a thread's share of the work takes several times longer than the
-# cost of rallying the thread pool: waking its threads, splitting the work, and
-# waiting for the slowest member to finish. A launch too small to clear one grain
-# would spend more time rallying than computing, so it runs on a single thread. The
-# grain is expressed as work per thread rather than as a core count, so it transfers
-# across machines of different sizes without per-machine calibration.
+# point. Sized so a thread's share of the work takes several times longer than the cost
+# of rallying the thread pool: waking its threads, splitting the work, and waiting for
+# the slowest member to finish. A launch too small to clear one grain would spend more
+# time rallying than computing, so it runs on a single thread. The grain is expressed as
+# work per thread rather than as a core count, so it transfers across machines of
+# different sizes without per-machine calibration.
 _GRAIN = 10_000
 
 
@@ -91,12 +91,12 @@ def _threads_for_launch(num_points: int, num_vortices: int) -> int:
 
     # The kernels parallelize over points alone, summing each point's vortices in a
     # serial inner loop, so a launch can never use more threads than it has points.
-    # Handing it more would leave the surplus threads with no iteration to run while they
-    # still pay the parallel region's entry and its closing barrier, which is the very
-    # overhead this dispatch exists to avoid. The cap binds when a launch carries more
-    # than one grain of vortices and fewer points than the ceiling, as an unsteady run's
-    # wake influences do on a small mesh once the wake grows, and as streamline launches
-    # do generally.
+    # Handing it more would leave the surplus threads with no iteration to run while
+    # they still pay the parallel region's entry and its closing barrier, which is the
+    # very overhead this dispatch exists to avoid. The cap binds when a launch carries
+    # more than one grain of vortices and fewer points than the ceiling, as an unsteady
+    # run's wake influences do on a small mesh once the wake grows, and as streamline
+    # launches do generally.
     return min(max(evaluations // _GRAIN, 1), max(num_points, 1))
 
 
@@ -222,8 +222,8 @@ def collapsed_velocities_from_ring_vortices(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
-    # Read the current thread mask so the dispatch honors any cap the user has set,
-    # and restore it once the kernel launches finish.
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launches finish.
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
@@ -320,8 +320,8 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
-    # Read the current thread mask so the dispatch honors any cap the user has set,
-    # and restore it once the kernel launches finish.
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launches finish.
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
@@ -422,8 +422,8 @@ def expanded_velocities_from_ring_vortices(
         (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
     )
 
-    # Read the current thread mask so the dispatch honors any cap the user has set,
-    # and restore it once the kernel launches finish.
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launches finish.
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
@@ -518,8 +518,8 @@ def collapsed_velocities_from_horseshoe_vortices(
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
-    # Read the current thread mask so the dispatch honors any cap the user has set,
-    # and restore it once the kernel launches finish.
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launches finish.
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
@@ -616,8 +616,8 @@ def expanded_velocities_from_horseshoe_vortices(
         (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
     )
 
-    # Read the current thread mask so the dispatch honors any cap the user has set,
-    # and restore it once the kernel launches finish.
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launches finish.
     external_cap = numba.get_num_threads()
     numba.set_num_threads(
         min(
@@ -711,8 +711,8 @@ def _collapsed_velocities_from_line_vortices(
     num_vortices = stackSlvp_GP1_CgP1.shape[0]
     num_points = stackP_GP1_CgP1.shape[0]
 
-    # Initialize an empty array, which we will fill with the induced velocities (in
-    # the first Airplane's geometry axes, observed from the Earth frame).
+    # Initialize an empty array, which we will fill with the induced velocities (in the
+    # first Airplane's geometry axes, observed from the Earth frame).
     stackVInd_GP1__E = np.zeros((num_points, 3))
 
     # If the user didn't specify any ages, set the age of each line vortex to 0.0
@@ -756,8 +756,8 @@ def _collapsed_velocities_from_line_vortices(
         # Pre compute r0 * _tol outside the parallel loop.
         vortex_r0_times_tol[vortex_id] = r0 * _tol
 
-        # Calculate the radius of the line vortex's core squared. The initial core radius
-        # ensures nonzero regularization even for bound vortices with zero age.
+        # Calculate the radius of the line vortex's core squared. The initial core
+        # radius ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
         vortex_c1[vortex_id] = strength / _four_pi
@@ -781,8 +781,8 @@ def _collapsed_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
-            # the first Airplane's geometry axes).
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point
+            # (in the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]
@@ -972,8 +972,8 @@ def _expanded_velocities_from_line_vortices(
         # Pre compute r0 * _tol outside the parallel loop.
         vortex_r0_times_tol[vortex_id] = r0 * _tol
 
-        # Calculate the radius of the line vortex's core squared. The initial core radius
-        # ensures nonzero regularization even for bound vortices with zero age.
+        # Calculate the radius of the line vortex's core squared. The initial core
+        # radius ensures nonzero regularization even for bound vortices with zero age.
         r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
 
         vortex_c1[vortex_id] = strength / _four_pi
@@ -997,8 +997,8 @@ def _expanded_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
-            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point (in
-            # the first Airplane's geometry axes).
+            # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point
+            # (in the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
             r1Y_GP1 = Slvp_GP1_CgP1[1] - P_GP1_CgP1[1]
             r1Z_GP1 = Slvp_GP1_CgP1[2] - P_GP1_CgP1[2]

@@ -187,16 +187,16 @@ def calculate_streamlines(
             -1, :, :
         ]
 
-        # Finds the fluid velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at each streamline point in the previous row due to
-        # the freestream velocity and the induced velocity from the vortices.
+        # Finds the fluid velocity (in the first Airplane's geometry axes, observed from
+        # the Earth frame) at each streamline point in the previous row due to the
+        # freestream velocity and the induced velocity from the vortices.
         stackVLastRowStreamlinePoints_GP1__E = solver.calculate_solution_velocity(
             stackP_GP1_CgP1=lastRowStackStreamlinePoints_GP1_CgP1,
             bound_singularity_counts=bound_singularity_counts,
         )
 
-        # Interpolate to find the new row of streamline points (in the first
-        # Airplane's geometry axes, relative to the first Airplane's CG).
+        # Interpolate to find the new row of streamline points (in the first Airplane's
+        # geometry axes, relative to the first Airplane's CG).
         newRowStackStreamlinePoints_GP1_CgP1 = (
             lastRowStackStreamlinePoints_GP1_CgP1
             + stackVLastRowStreamlinePoints_GP1__E * delta_time
@@ -316,8 +316,8 @@ def process_solver_loads(
     stackAirplaneForces_GP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
     stackAirplaneMoments_GP1_CgP1 = np.zeros((solver.num_airplanes, 3), dtype=float)
 
-    # Iterate through each Airplane and find the total loads on each by summing up
-    # the contributions from its Panels.
+    # Iterate through each Airplane and find the total loads on each by summing up the
+    # contributions from its Panels.
     for airplane_num, airplane in enumerate(these_airplanes):
         for wing in airplane.wings:
             assert wing.panels is not None
@@ -412,8 +412,8 @@ def update_ring_vortex_solvers_panel_attributes(
     ring_vortex_solver.stackCpp_GP1_CgP1[global_panel_position, :] = panel.Cpp_GP1_CgP1
 
     # Bound ring vortex corner points. The right leg goes from the back right corner to
-    # the front right corner, the front leg from front right to front left, the left
-    # leg from front left to back left, and the back leg from back left to back right.
+    # the front right corner, the front leg from front right to front left, the left leg
+    # from front left to back left, and the back leg from back left to back right.
     assert ring_vortex_solver.stackBrbrvp_GP1_CgP1 is not None
     ring_vortex_solver.stackBrbrvp_GP1_CgP1[global_panel_position, :] = Brrvp_GP1_CgP1
     assert ring_vortex_solver.stackFrbrvp_GP1_CgP1 is not None
@@ -423,8 +423,8 @@ def update_ring_vortex_solvers_panel_attributes(
     assert ring_vortex_solver.stackBlbrvp_GP1_CgP1 is not None
     ring_vortex_solver.stackBlbrvp_GP1_CgP1[global_panel_position, :] = Blrvp_GP1_CgP1
 
-    # Bound line vortex leg center points and direction vectors, derived from the
-    # corner points.
+    # Bound line vortex leg center points and direction vectors, derived from the corner
+    # points.
     assert ring_vortex_solver.stackCblvpr_GP1_CgP1 is not None
     ring_vortex_solver.stackCblvpr_GP1_CgP1[global_panel_position, :] = 0.5 * (
         Brrvp_GP1_CgP1 + Frrvp_GP1_CgP1
@@ -471,9 +471,9 @@ def update_ring_vortex_solvers_panel_attributes(
     assert ring_vortex_solver.panel_is_left_edge is not None
     ring_vortex_solver.panel_is_left_edge[global_panel_position] = panel.is_left_edge
 
-    # Check if this Panel is on the trailing edge. If so, calculate its streamline
-    # seed point (in the first Airplane's geometry axes, relative to the first
-    # Airplane's CG) and add it to the solver's ndarray of streamline seed points.
+    # Check if this Panel is on the trailing edge. If so, calculate its streamline seed
+    # point (in the first Airplane's geometry axes, relative to the first Airplane's CG)
+    # and add it to the solver's ndarray of streamline seed points.
     if panel.is_trailing_edge:
         assert ring_vortex_solver.stackSeedPoints_GP1_CgP1 is not None
         assert panel.Brpp_GP1_CgP1 is not None
@@ -595,11 +595,11 @@ def interp_between_points(
     return gridInterpolatedPoints_A_a
 
 
-# The width to which format_duration left-pads its results when requested: the length
-# of the widest possible form, "-999 hr, 59 min, and 1.23E-305 s", built from the
-# widest possible components (a negative sign, three-digit hours, and a seconds
-# portion whose three-significant-figure form needs a three-digit exponent, the widest
-# a float can produce).
+# The width to which format_duration left-pads its results when requested: the length of
+# the widest possible form, "-999 hr, 59 min, and 1.23E-305 s", built from the widest
+# possible components (a negative sign, three-digit hours, and a seconds portion whose
+# three-significant-figure form needs a three-digit exponent, the widest a float can
+# produce).
 _DURATION_PAD_WIDTH: int = 32
 
 
@@ -635,8 +635,8 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
         num_minutes = int(magnitude_seconds % seconds_per_hour // seconds_per_minute)
         seconds_str = f"{magnitude_seconds % seconds_per_minute:#.3G}"
 
-        # Carry a seconds remainder that rounds to 60 at three significant figures
-        # into the minutes place, and a resulting 60 minutes into the hours place.
+        # Carry a seconds remainder that rounds to 60 at three significant figures into
+        # the minutes place, and a resulting 60 minutes into the hours place.
         if float(seconds_str) >= seconds_per_minute:
             seconds_str = f"{0.0:#.3G}"
             num_minutes += 1
@@ -661,25 +661,25 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
 
 
 # The Panel count at or above which letting the BLAS library multi-thread the linear
-# solves wins whole runs. Below it, a multi-threaded solve's post-work spin window
-# taxes the parallel kernel launches that follow it by more than the threaded solve
-# itself saves, so the solve runs single-threaded instead. Derived by timing whole
-# solver runs with the kernel thread dispatch in place, rather than the solve in
-# isolation, because an isolated timing cannot see the spin window's effect on the
-# launches around it and so puts the crossover well below its in-solver value. One
-# threshold serves both solver families.
+# solves wins whole runs. Below it, a multi-threaded solve's post-work spin window taxes
+# the parallel kernel launches that follow it by more than the threaded solve itself
+# saves, so the solve runs single-threaded instead. Derived by timing whole solver runs
+# with the kernel thread dispatch in place, rather than the solve in isolation, because
+# an isolated timing cannot see the spin window's effect on the launches around it and
+# so puts the crossover well below its in-solver value. One threshold serves both solver
+# families.
 _SOLVE_THREAD_THRESHOLD = 3_000
 
 # Guards the process-wide BLAS thread limit that a solve loop installs. A BLAS library
-# has one thread count per process, and threadpoolctl neither locks nor reference counts,
-# so two overlapping limits each record the other's width as the original to restore. An
-# out of order unwind then leaves the process pinned to a single BLAS thread for the rest
-# of its life, which is silent and slows everything that follows. Concurrent runs also
-# want conflicting widths, since a small run wants 1 thread and a large one wants the
-# full pool, and one process cannot hold both. Rather than corrupt the process quietly,
-# or serialize every run to accommodate a case that cannot pay off anyway (the compiled
-# kernels hold the GIL, so threads never speed the solvers up), a second concurrent solve
-# loop raises.
+# has one thread count per process, and threadpoolctl neither locks nor reference
+# counts, so two overlapping limits each record the other's width as the original to
+# restore. An out of order unwind then leaves the process pinned to a single BLAS thread
+# for the rest of its life, which is silent and slows everything that follows.
+# Concurrent runs also want conflicting widths, since a small run wants 1 thread and a
+# large one wants the full pool, and one process cannot hold both. Rather than corrupt
+# the process quietly, or serialize every run to accommodate a case that cannot pay off
+# anyway (the compiled kernels hold the GIL, so threads never speed the solvers up), a
+# second concurrent solve loop raises.
 _solve_loop_lock = threading.Lock()
 _solve_loop_owner: str | None = None
 _solve_loop_limiter: threadpoolctl.threadpool_limits | None = None

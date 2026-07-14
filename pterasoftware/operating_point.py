@@ -380,12 +380,13 @@ class OperatingPoint:
         else:
             new_operating_point._surfacePoint_E_Eo = None
 
-        # Copy the scalar dynamic pressure cache directly, preserving None when it has not
-        # been computed.
+        # Copy the scalar dynamic pressure cache directly, preserving None when it has
+        # not been computed.
         new_operating_point._qInf__E = self._qInf__E
 
         # Copy each cached transformation matrix into a new read only array, or keep it
-        # None. These are all derived from immutable attributes, so the copies stay valid.
+        # None. These are all derived from immutable attributes, so the copies stay
+        # valid.
         if self._T_pas_GP1_CgP1_to_BP1_CgP1 is not None:
             new_operating_point._T_pas_GP1_CgP1_to_BP1_CgP1 = (
                 self._T_pas_GP1_CgP1_to_BP1_CgP1.copy()
@@ -471,8 +472,8 @@ class OperatingPoint:
         else:
             new_operating_point._T_pas_E_CgP1_to_W_CgP1 = None
 
-        # Copy each remaining cached derived array into a new read only array, or keep it
-        # None. These are also derived from immutable attributes.
+        # Copy each remaining cached derived array into a new read only array, or keep
+        # it None. These are also derived from immutable attributes.
         if self._surfaceNormal_GP1 is not None:
             new_operating_point._surfaceNormal_GP1 = self._surfaceNormal_GP1.copy()
             new_operating_point._surfaceNormal_GP1.flags.writeable = False

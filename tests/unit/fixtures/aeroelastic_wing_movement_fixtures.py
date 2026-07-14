@@ -16,9 +16,9 @@ def make_static_aeroelastic_wing_movement_fixture():
         WingCrossSections so that the generated Wings stay valid.
     """
     # Initialize the constructing fixtures. Build a static
-    # AeroelasticWingCrossSectionMovement for each of the base Wing's
-    # WingCrossSections, which keeps the generated Wings valid (in particular, the
-    # first WingCrossSection keeps its required zero Lp_Wcsp_Lpp).
+    # AeroelasticWingCrossSectionMovement for each of the base Wing's WingCrossSections,
+    # which keeps the generated Wings valid (in particular, the first WingCrossSection
+    # keeps its required zero Lp_Wcsp_Lpp).
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
         ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(

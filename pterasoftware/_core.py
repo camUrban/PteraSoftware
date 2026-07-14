@@ -25,8 +25,8 @@ def lcm(a: float, b: float) -> float:
     """
     if a == 0.0 or b == 0.0:
         return 0.0
-    # Convert to integers (periods are typically whole multiples of delta_time).
-    # Use sufficiently large multiplier to preserve precision.
+    # Convert to integers (periods are typically whole multiples of delta_time). Use
+    # sufficiently large multiplier to preserve precision.
     multiplier = 1000000
     a_int = int(round(a * multiplier))
     b_int = int(round(b * multiplier))
@@ -127,8 +127,7 @@ class CoreOperatingPointMovement:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
         self._phaseVCg__E = phaseVCg__E
 
-        # Initialize the cache for the property derived from the immutable
-        # attributes.
+        # Initialize the cache for the property derived from the immutable attributes.
         self._max_period: float | None = None
 
     # --- Immutable: read only properties ---
@@ -333,8 +332,8 @@ class CoreWingCrossSectionMovement:
             angles_Wcsp_to_Wcs_ixyz oscillation in degrees.
         :return: None
         """
-        # Validate and store immutable attributes. Set those that are numpy
-        # arrays to be read only.
+        # Validate and store immutable attributes. Set those that are numpy arrays to be
+        # read only.
         if not isinstance(
             base_wing_cross_section,
             geometry.wing_cross_section.WingCrossSection,
@@ -479,15 +478,14 @@ class CoreWingCrossSectionMovement:
             avoid infinite recursion.
         :return: A new instance with copied attributes.
         """
-        # Create a new instance without calling __init__ to avoid redundant
-        # validation. Use type(self) so subclasses get the correct type.
+        # Create a new instance without calling __init__ to avoid redundant validation.
+        # Use type(self) so subclasses get the correct type.
         new_movement = object.__new__(type(self))
 
         # Store this instance in memo to handle potential circular references.
         memo[id(self)] = new_movement
 
-        # Deep copy the base WingCrossSection to ensure independence
-        # (immutable).
+        # Deep copy the base WingCrossSection to ensure independence (immutable).
         new_movement._base_wing_cross_section = copy.deepcopy(
             self._base_wing_cross_section, memo
         )
@@ -523,8 +521,7 @@ class CoreWingCrossSectionMovement:
             self._spacingAngles_Wcsp_to_Wcs_ixyz
         )
 
-        # Initialize cache variables to None (caches will be recomputed on
-        # access).
+        # Initialize cache variables to None (caches will be recomputed on access).
         new_movement._all_periods = None
         new_movement._max_period = None
 
@@ -663,8 +660,7 @@ class CoreWingCrossSectionMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Evaluate the oscillating value for each dimension of
-        # angles_Wcsp_to_Wcs_ixyz.
+        # Evaluate the oscillating value for each dimension of angles_Wcsp_to_Wcs_ixyz.
         theseAngles_Wcsp_to_Wcs_ixyz = np.zeros(3, dtype=float)
         for dim in range(3):
             this_spacing = self._spacingAngles_Wcsp_to_Wcs_ixyz[dim]
@@ -849,8 +845,8 @@ class CoreWingMovement:
             angular motion in meters.
         :return: None
         """
-        # Validate and store immutable attributes. Set those that are numpy
-        # arrays to be read only.
+        # Validate and store immutable attributes. Set those that are numpy arrays to be
+        # read only.
         if not isinstance(base_wing, geometry.wing.Wing):
             raise TypeError("base_wing must be a Wing.")
         self._base_wing = base_wing
@@ -1022,8 +1018,8 @@ class CoreWingMovement:
             avoid infinite recursion.
         :return: A new instance with copied attributes.
         """
-        # Create a new instance without calling __init__ to avoid redundant
-        # validation. Use type(self) so subclasses get the correct type.
+        # Create a new instance without calling __init__ to avoid redundant validation.
+        # Use type(self) so subclasses get the correct type.
         new_movement = object.__new__(type(self))
 
         # Store this instance in memo to handle potential circular references.
@@ -1068,8 +1064,7 @@ class CoreWingMovement:
         new_movement._spacingLer_Gs_Cgs = self._spacingLer_Gs_Cgs
         new_movement._spacingAngles_Gs_to_Wn_ixyz = self._spacingAngles_Gs_to_Wn_ixyz
 
-        # Initialize cache variables to None (caches will be recomputed on
-        # access).
+        # Initialize cache variables to None (caches will be recomputed on access).
         new_movement._all_periods = None
         new_movement._max_period = None
 
@@ -1230,8 +1225,7 @@ class CoreWingMovement:
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Evaluate the oscillating value for each dimension of
-        # angles_Gs_to_Wn_ixyz.
+        # Evaluate the oscillating value for each dimension of angles_Gs_to_Wn_ixyz.
         theseAngles_Gs_to_Wn_ixyz = np.zeros(3, dtype=float)
         for dim in range(3):
             this_spacing = self._spacingAngles_Gs_to_Wn_ixyz[dim]
@@ -1279,9 +1273,8 @@ class CoreWingMovement:
                 )
             )
 
-        # If there is a non zero rotation point offset, adjust the position
-        # to account for rotation about the offset point instead of the
-        # leading edge root.
+        # If there is a non zero rotation point offset, adjust the position to account
+        # for rotation about the offset point instead of the leading edge root.
         if not np.allclose(self._rotationPointOffset_Gs_Ler, np.zeros(3, dtype=float)):
             # Get the active rotation matrix for this step's angles.
             rot_T_act = _transformations.generate_rot_T(
@@ -1292,8 +1285,7 @@ class CoreWingMovement:
             )
             rot_R_act = rot_T_act[:3, :3]
 
-            # Compute the position adjustment due to the offset rotation
-            # point.
+            # Compute the position adjustment due to the offset rotation point.
             offsetRotationPointAdjustment_Gs = (
                 _transformations.compute_offset_rotation_adjustment(
                     rotation_matrix=rot_R_act,
@@ -1402,8 +1394,8 @@ class CoreAirplaneMovement:
             degrees.
         :return: None
         """
-        # Validate and store immutable attributes. Set those that are numpy
-        # arrays to be read only.
+        # Validate and store immutable attributes. Set those that are numpy arrays to be
+        # read only.
         if not isinstance(base_airplane, geometry.airplane.Airplane):
             raise TypeError("base_airplane must be an Airplane.")
         self._base_airplane = base_airplane
@@ -1489,8 +1481,8 @@ class CoreAirplaneMovement:
             avoid infinite recursion.
         :return: A new instance with copied attributes.
         """
-        # Create a new instance without calling __init__ to avoid redundant
-        # validation. Use type(self) so subclasses get the correct type.
+        # Create a new instance without calling __init__ to avoid redundant validation.
+        # Use type(self) so subclasses get the correct type.
         new_movement = object.__new__(type(self))
 
         # Store this instance in memo to handle potential circular references.
@@ -1517,8 +1509,7 @@ class CoreAirplaneMovement:
         # Copy tuple directly (it is immutable).
         new_movement._spacingCg_GP1_CgP1 = self._spacingCg_GP1_CgP1
 
-        # Initialize cache variables to None (caches will be recomputed on
-        # access).
+        # Initialize cache variables to None (caches will be recomputed on access).
         new_movement._all_periods = None
         new_movement._max_period = None
 
@@ -1779,8 +1770,7 @@ class CoreAirplaneMovement:
         # Step 1: Calculate geometry LCM period.
         geometry_lcm = self._geometry_lcm_period()
 
-        # Step 2: Pre-validation checks.
-        # Check if period aligns cleanly with delta_time.
+        # Step 2: Pre-validation checks. Check if period aligns cleanly with delta_time.
         steps_per_period_float = geometry_lcm / delta_time
         steps_per_period = int(round(steps_per_period_float))
 
@@ -1811,8 +1801,8 @@ class CoreAirplaneMovement:
             )
             wings[wing_movement_id, :] = this_wings_list_of_wings
 
-        # Step 4: Validate periodicity.
-        # Compare step 0 geometry to step steps_per_period.
+        # Step 4: Validate periodicity. Compare step 0 geometry to step
+        # steps_per_period.
         if not self._geometry_matches(
             wings_step_a=wings[:, 0],
             wings_step_b=wings[:, steps_per_period],
@@ -2057,8 +2047,8 @@ class CoreMovement:
         self._operating_point_movement = operating_point_movement
 
         # Initialize the caches for the properties derived from the immutable
-        # attributes. These are initialized early because static is accessed
-        # below during __init__ to validate max_wake_rows.
+        # attributes. These are initialized early because static is accessed below
+        # during __init__ to validate max_wake_rows.
         self._lcm_period: float | None = None
         self._max_period: float | None = None
         self._min_period: float | None = None
@@ -2153,16 +2143,15 @@ class CoreMovement:
             be 0.0.
         """
         if self._max_period is None:
-            # Iterate through the AirplaneMovements and find the one with the
-            # largest max period.
+            # Iterate through the AirplaneMovements and find the one with the largest
+            # max period.
             airplane_movement_max_periods = []
             for airplane_movement in self._airplane_movements:
                 airplane_movement_max_periods.append(airplane_movement.max_period)
             max_airplane_period = max(airplane_movement_max_periods)
 
-            # The global max period is the maximum of the max
-            # AirplaneMovement period and the OperatingPointMovement max
-            # period.
+            # The global max period is the maximum of the max AirplaneMovement period
+            # and the OperatingPointMovement max period.
             self._max_period = max(
                 max_airplane_period,
                 self._operating_point_movement.max_period,
@@ -2296,8 +2285,8 @@ class CoreUnsteadyProblem:
         # For CoreUnsteadyProblems with a static CoreMovement, we are typically
         # interested in the final time step's forces and moments, which, assuming
         # convergence, will be the most accurate. For CoreUnsteadyProblems with cyclic
-        # movement (e.g., flapping wings), we are typically interested in the forces
-        # and moments averaged over the last cycle simulated. Use the LCM of all motion
+        # movement (e.g., flapping wings), we are typically interested in the forces and
+        # moments averaged over the last cycle simulated. Use the LCM of all motion
         # periods to ensure we average over a complete cycle of all motions.
         self._first_averaging_step: int
         if lcm_period == 0:
@@ -2320,8 +2309,8 @@ class CoreUnsteadyProblem:
 
         # Initialize empty lists to hold the final loads and load coefficients each
         # Airplane experiences. These will only be populated if this
-        # CoreUnsteadyProblem's motion is static. These are mutable and populated by
-        # the solver.
+        # CoreUnsteadyProblem's motion is static. These are mutable and populated by the
+        # solver.
         self.finalForces_W: list[np.ndarray] = []
         self.finalForceCoefficients_W: list[np.ndarray] = []
         self.finalMoments_W_CgP1: list[np.ndarray] = []
@@ -2329,8 +2318,8 @@ class CoreUnsteadyProblem:
 
         # Initialize empty lists to hold the final cycle averaged loads and load
         # coefficients each Airplane experiences. These will only be populated if this
-        # CoreUnsteadyProblem's motion is cyclic. These are mutable and populated by
-        # the solver.
+        # CoreUnsteadyProblem's motion is cyclic. These are mutable and populated by the
+        # solver.
         self.finalMeanForces_W: list[np.ndarray] = []
         self.finalMeanForceCoefficients_W: list[np.ndarray] = []
         self.finalMeanMoments_W_CgP1: list[np.ndarray] = []

@@ -155,8 +155,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 cache_path=cache_path,
             )
 
-            # On the warm run every mesh should be a cache hit, so the solver must
-            # never run. Patching run to raise turns any solve into a test failure.
+            # On the warm run every mesh should be a cache hit, so the solver must never
+            # run. Patching run to raise turns any solve into a test failure.
             solver_class = (
                 ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
             )
@@ -257,9 +257,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
             cache_path = Path(tmp) / "cache.json"
 
             # A cold run over wider Panel aspect ratio bounds populates the cache with
-            # every mesh the narrower run below will need. The memos are keyed on absolute
-            # mesh values, so they carry over even though the two runs index their sweeps
-            # differently.
+            # every mesh the narrower run below will need. The memos are keyed on
+            # absolute mesh values, so they carry over even though the two runs index
+            # their sweeps differently.
             ps.convergence.analyze_unsteady_convergence(
                 ref_problem=self.unsteady_validation_problem,
                 prescribed_wake=True,
@@ -273,9 +273,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 cache_path=cache_path,
             )
 
-            # The narrower run reuses those cached memos, so its delta_time optimizer must
-            # never run despite the different bounds. Patching it to raise turns any
-            # optimization into a test failure.
+            # The narrower run reuses those cached memos, so its delta_time optimizer
+            # must never run despite the different bounds. Patching it to raise turns
+            # any optimization into a test failure.
             with mock.patch.object(
                 ps.movements.movement,
                 "_optimize_delta_time",
@@ -408,9 +408,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
 
         # The Panel aspect ratio and chordwise Panel bounds are kept tight because an
         # edge-defined Wing refined to a fine Panel aspect ratio with many chordwise
-        # Panels needs many WingCrossSections, which makes the unsteady solves expensive.
-        # These bounds still span enough of each parameter direction to detect
-        # convergence.
+        # Panels needs many WingCrossSections, which makes the unsteady solves
+        # expensive. These bounds still span enough of each parameter direction to
+        # detect convergence.
         converged_parameters = ps.convergence.analyze_unsteady_convergence(
             ref_problem=edge_defined_unsteady_problem,
             prescribed_wake=True,

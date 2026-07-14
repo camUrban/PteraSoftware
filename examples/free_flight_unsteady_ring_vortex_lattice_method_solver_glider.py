@@ -20,12 +20,11 @@ import pterasoftware as ps
 # the console alongside progress bars instead, omit the handler argument.
 ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
-# Create an Airplane with our custom geometry. I am going to declare every parameter
-# for Airplane, even though most of them have usable default values. This is for
-# educational purposes, but keep in mind that it makes the code much longer than it
-# needs to be. For details about each parameter, read the detailed class docstring.
-# The same caveats apply to the other classes, methods, and functions I call in this
-# script.
+# Create an Airplane with our custom geometry. I am going to declare every parameter for
+# Airplane, even though most of them have usable default values. This is for educational
+# purposes, but keep in mind that it makes the code much longer than it needs to be. For
+# details about each parameter, read the detailed class docstring. The same caveats
+# apply to the other classes, methods, and functions I call in this script.
 #
 # This is a simple glider: a cambered main wing, a symmetric horizontal stabilizer set
 # at a negative incidence relative to the main wing, and a single vertical stabilizer.
@@ -182,9 +181,9 @@ example_airplane = ps.geometry.airplane.Airplane(
 # Now define each Wing's WingMovements (and the WingCrossSectionMovements they contain).
 # The main Wing was defined with symmetric=True, mirror_only=False, and a symmetry plane
 # coincident with its axes' xz-plane, giving it type 4 symmetry (see the Wing class
-# documentation for more details on symmetry types), so it stays a single Wing and is not
-# split into a separate reflected Wing. The Airplane therefore has exactly three Wings,
-# and we need one WingMovement per Wing.
+# documentation for more details on symmetry types), so it stays a single Wing and is
+# not split into a separate reflected Wing. The Airplane therefore has exactly three
+# Wings, and we need one WingMovement per Wing.
 #
 # This is a free flight of a rigid glider, so there is no prescribed flapping or
 # deformation: every prescribed-motion amplitude is left at its zero default. The only
@@ -220,8 +219,8 @@ del wing_movements
 # Define a new OperatingPoint describing the trimmed gliding condition. The speed and
 # angle of attack are the trimmed glide found for this airframe. The initial body
 # orientation (angles_E_to_BP1_izyx) pitches the airplane nose up by the angle of attack
-# with zero sideslip, which places the trim velocity along the horizontal Earth x axis at
-# the start of free flight. The glider flies an unpowered glide: externalFX_W must be
+# with zero sideslip, which places the trim velocity along the horizontal Earth x axis
+# at the start of free flight. The glider flies an unpowered glide: externalFX_W must be
 # zero in free flight (the dynamics never apply it), and thrust would instead be modeled
 # with FreeFlightUnsteadyProblem's external_loads_fn. Standard gravity is set explicitly
 # via g_E (the default is no gravitational field), while the zero initial body rates
@@ -271,9 +270,9 @@ del operating_point_movement
 # which is at the geometry origin. The off-diagonal terms are the body-axes products of
 # inertia. The mass equals the Airplane's weight (420.0 N) divided by the gravitational
 # acceleration magnitude (9.80665 m/s^2), which keeps the weight, mass, and gravity
-# consistent; the solver applies the gravitational force as mass * g_E. No external loads
-# are applied (external_loads_fn=None), so the glider flies an unpowered glide driven only
-# by its aerodynamics, gravity, and inertia.
+# consistent; the solver applies the gravitational force as mass * g_E. No external
+# loads are applied (external_loads_fn=None), so the glider flies an unpowered glide
+# driven only by its aerodynamics, gravity, and inertia.
 example_problem = ps.problems.FreeFlightUnsteadyProblem(
     movement=movement,
     mass=420.0 / 9.80665,

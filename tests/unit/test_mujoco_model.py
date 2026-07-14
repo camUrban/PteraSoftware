@@ -736,8 +736,8 @@ class TestMuJoCoModelConventions(unittest.TestCase):
 
         velocity_E__E = self.model.get_state()["velocity_E__E"]
 
-        # The body accelerates along Earth +x, so the velocity is dominated by a positive
-        # x component with negligible y and z components.
+        # The body accelerates along Earth +x, so the velocity is dominated by a
+        # positive x component with negligible y and z components.
         self.assertGreater(velocity_E__E[0], 0.0)
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[1]))
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[2]))

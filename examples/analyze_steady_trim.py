@@ -70,10 +70,10 @@ trim_airplane = ps.geometry.airplane.Airplane(
     weight=250,
 )
 
-# Create an OperatingPoint. We must specify an external thrust because this Airplane
-# is not flapping, so it won't generate thrust via its Wings. Therefore, to balance
-# induced drag, we need an external thrust force which could be due to a propeller or
-# other type of engine.
+# Create an OperatingPoint. We must specify an external thrust because this Airplane is
+# not flapping, so it won't generate thrust via its Wings. Therefore, to balance induced
+# drag, we need an external thrust force which could be due to a propeller or other type
+# of engine.
 trim_operating_point = ps.operating_point.OperatingPoint(externalFX_W=5)
 
 # Construct a SteadyProblem containing the Airplane and OperatingPoint
@@ -81,9 +81,9 @@ trim_problem = ps.problems.SteadyProblem(
     airplanes=[trim_airplane], operating_point=trim_operating_point
 )
 
-# Call the analyze_steady_trim function to search for a trim condition (thrust
-# balances drag, weight balances lift, and all moments are close to zero) within a
-# certain set of bounds.
+# Call the analyze_steady_trim function to search for a trim condition (thrust balances
+# drag, weight balances lift, and all moments are close to zero) within a certain set of
+# bounds.
 trim_conditions = ps.trim.analyze_steady_trim(
     problem=trim_problem,
     solver_type="steady horseshoe vortex lattice method",

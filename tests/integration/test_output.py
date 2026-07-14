@@ -34,8 +34,8 @@ class TestOutput(unittest.TestCase):
         :return: None
         """
 
-        # Call the plot_results_versus_time method on the solver fixture. The show
-        # flag is set to False, so the figures will not be displayed.
+        # Call the plot_results_versus_time method on the solver fixture. The show flag
+        # is set to False, so the figures will not be displayed.
         ps.output.plot_results_versus_time(
             unsteady_solver=self.unsteady_solver, show=False
         )
@@ -46,8 +46,8 @@ class TestOutput(unittest.TestCase):
         :return: None
         """
 
-        # Call the animate function on the unsteady solver fixture. The testing flag
-        # is true so the animation will start automatically after 1 second.
+        # Call the animate function on the unsteady solver fixture. The testing flag is
+        # true so the animation will start automatically after 1 second.
         ps.output.animate(
             unsteady_solver=self.unsteady_solver,
             scalar_type=None,
@@ -62,8 +62,8 @@ class TestOutput(unittest.TestCase):
         :return: None
         """
 
-        # Call the draw function on the unsteady solver fixture. The testing flag is
-        # set to true, so the plotter will close after 1 second.
+        # Call the draw function on the unsteady solver fixture. The testing flag is set
+        # to true, so the plotter will close after 1 second.
         ps.output.draw(
             solver=self.unsteady_solver,
             scalar_type=None,

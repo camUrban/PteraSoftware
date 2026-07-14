@@ -6,12 +6,11 @@ custom flapping-wing airplane."""
 # pterasoftware" in your terminal.
 import pterasoftware as ps
 
-# Create an Airplane with our custom geometry. I am going to declare every parameter
-# for Airplane, even though most of them have usable default values. This is for
-# educational purposes, but keep in mind that it makes the code much longer than it
-# needs to be. For details about each parameter, read the detailed class docstring.
-# The same caveats apply to the other classes, methods, and functions I call in this
-# script.
+# Create an Airplane with our custom geometry. I am going to declare every parameter for
+# Airplane, even though most of them have usable default values. This is for educational
+# purposes, but keep in mind that it makes the code much longer than it needs to be. For
+# details about each parameter, read the detailed class docstring. The same caveats
+# apply to the other classes, methods, and functions I call in this script.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
@@ -142,12 +141,12 @@ main_wing_tip_wing_cross_section_movement = (
 )
 
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
-# symmetry plane offset non coincident with the Wing's axes yz plane. Therefore,
-# that Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the
-# second Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected
-# main wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry plane offset non coincident with the Wing's axes yz plane. Therefore, that
+# Wing had type 5 symmetry (see the Wing class documentation for more details on
+# symmetry types). Therefore, it was actually split into two Wings, the with the second
+# Wing being a reflected version of the first. Therefore, we need to define a
+# WingMovement for this reflected Wing. To start, we'll first define the reflected main
+# wing's root and tip WingCrossSections' WingCrossSectionMovements.
 reflected_main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -310,8 +309,8 @@ example_problem = ps.problems.UnsteadyProblem(
 )
 
 # Define a new solver. The available solver classes are
-# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
-# and UnsteadyRingVortexLatticeMethodSolver. We'll create an
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
+# UnsteadyRingVortexLatticeMethodSolver. We'll create an
 # UnsteadyRingVortexLatticeMethodSolver, which requires a UnsteadyProblem.
 example_solver = (
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(

@@ -232,8 +232,8 @@ def _validate_custom_spacing_function(
             f"{start_value:#.3G}, but should be within {tolerance:#.3G} of 0.0."
         )
 
-    # Check that the function returns to 0.0 after one period.
-    # Find the index closest to 2.0 * pi.
+    # Check that the function returns to 0.0 after one period. Find the index closest to
+    # 2.0 * pi.
     end_period_idx = np.argmin(np.abs(test_times - 2.0 * np.pi))
     end_value = test_output[end_period_idx]
     if not np.isclose(end_value, 0.0, atol=tolerance):

@@ -261,7 +261,8 @@ class TestMemoTranslation(unittest.TestCase):
         ar_list = [4, 3, 2, 1]
         chord_list = [3, 4]
 
-        # The sweep index (1, 0) resolves to Panel aspect ratio 3 and 3 chordwise Panels.
+        # The sweep index (1, 0) resolves to Panel aspect ratio 3 and 3 chordwise
+        # Panels.
         num_spanwise_panels_cache = {(1, 0, 0, 0, 0): 5}
         num_wing_cross_sections_cache = {(1, 0, 0, 0): 7}
         delta_time_cache = {(1, 0): 0.0125}

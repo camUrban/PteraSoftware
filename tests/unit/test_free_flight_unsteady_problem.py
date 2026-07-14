@@ -380,7 +380,8 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.final_step = self.problem.num_steps - 1
 
         # The solver populates the current Airplane's load attributes via
-        # _calculate_loads before invoking initialize_next_problem, so emulate that here.
+        # _calculate_loads before invoking initialize_next_problem, so emulate that
+        # here.
         self.current_airplane = self.problem.steady_problems[0].airplanes[0]
         self.current_airplane.forces_W = np.array([1.0, 2.0, 3.0], dtype=float)
         self.current_airplane.forceCoefficients_W = np.array(

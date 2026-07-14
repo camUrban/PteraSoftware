@@ -28,17 +28,16 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 
-# The backdrop marks every pixel that is not part of a frame. Light red is used
-# because it is unlikely to appear in real rendered output, so it is visually
-# unambiguous.
+# The backdrop marks every pixel that is not part of a frame. Light red is used because
+# it is unlikely to appear in real rendered output, so it is visually unambiguous.
 BACKDROP_RGB = np.array([1.0, 0.815, 0.815], dtype=float)
 
 DPI = 110.0
 
-# At this module's DPI constant, this width makes a default 9-tile sheet of 4:3
-# frames render at about 2000 x 1600 pixels, which fits within the resolution
-# at which current Claude models view images natively (2576 pixels on the long
-# edge and roughly 3.6 megapixels) with no downscaling.
+# At this module's DPI constant, this width makes a default 9-tile sheet of 4:3 frames
+# render at about 2000 x 1600 pixels, which fits within the resolution at which current
+# Claude models view images natively (2576 pixels on the long edge and roughly 3.6
+# megapixels) with no downscaling.
 SHEET_TILE_WIDTH_INCHES = 6.0
 
 
@@ -129,18 +128,18 @@ def _render_tiles(
         ax.axis("off")
     fig.tight_layout()
 
-    # Render the figure with a fully transparent background so the pixels
-    # inside each frame keep their original alpha values.
+    # Render the figure with a fully transparent background so the pixels inside each
+    # frame keep their original alpha values.
     buffer = io.BytesIO()
     fig.savefig(buffer, format="png", dpi=DPI, transparent=True)
     buffer.seek(0)
     rendered = mpimg.imread(buffer)
     height, width = rendered.shape[:2]
 
-    # Composite the whole render over the opaque backdrop, then refill each
-    # frame's exact extent: with the raw pixels (keeping their original alpha
-    # values) by default, or composited over the given background color. Labels
-    # land in the margins, so they survive the backdrop compositing.
+    # Composite the whole render over the opaque backdrop, then refill each frame's
+    # exact extent: with the raw pixels (keeping their original alpha values) by
+    # default, or composited over the given background color. Labels land in the
+    # margins, so they survive the backdrop compositing.
     alpha = rendered[:, :, 3:4]
     out = np.empty((height, width, 4), dtype=float)
     out[:, :, :3] = rendered[:, :, :3] * alpha + BACKDROP_RGB * (1.0 - alpha)

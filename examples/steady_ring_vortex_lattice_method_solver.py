@@ -15,12 +15,11 @@ import pterasoftware as ps
 # the console alongside progress bars instead, omit the handler argument.
 ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
-# Create an Airplane with our custom geometry. I am going to declare every parameter
-# for Airplane, even though most of them have usable default values. This is for
-# educational purposes, but keep in mind that it makes the code much longer than it
-# needs to be. For details about each parameter, read the detailed class docstring.
-# The same caveats apply to the other classes, methods, and functions I call in this
-# script.
+# Create an Airplane with our custom geometry. I am going to declare every parameter for
+# Airplane, even though most of them have usable default values. This is for educational
+# purposes, but keep in mind that it makes the code much longer than it needs to be. For
+# details about each parameter, read the detailed class docstring. The same caveats
+# apply to the other classes, methods, and functions I call in this script.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
@@ -185,8 +184,8 @@ del example_airplane
 del example_operating_point
 
 # Define a new solver. The available solver classes are
-# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
-# and UnsteadyRingVortexLatticeMethodSolver. We'll create a
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
+# UnsteadyRingVortexLatticeMethodSolver. We'll create a
 # SteadyRingVortexLatticeMethodSolver, which requires a SteadyProblem.
 example_solver = (
     ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(

@@ -275,8 +275,8 @@ example_operating_point_movement = (
     )
 )
 
-# Delete the extraneous pointers to the Airplanes and the OperatingPoint, as these
-# are now accessible within their respective movement objects.
+# Delete the extraneous pointers to the Airplanes and the OperatingPoint, as these are
+# now accessible within their respective movement objects.
 del lead_airplane
 del trailing_right_airplane
 del trailing_left_airplane

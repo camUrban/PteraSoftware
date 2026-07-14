@@ -2,6 +2,7 @@
 
 import math
 import unittest
+import warnings
 from unittest.mock import patch
 
 import numba
@@ -1926,6 +1927,81 @@ class TestThreadsForLaunch(unittest.TestCase):
             ),
             4,
         )
+
+
+class TestReportThreadSettings(unittest.TestCase):
+    """This is a class with functions to test the report_thread_settings function."""
+
+    _LOGGER_NAME = "pterasoftware._aerodynamics_functions"
+
+    def setUp(self):
+        """Save the ambient Numba thread mask so every test restores it."""
+        self.original_num_threads = numba.get_num_threads()
+        self.addCleanup(numba.set_num_threads, self.original_num_threads)
+
+    def test_workqueue_layer_raises_a_user_warning(self):
+        """Test that report_thread_settings warns when Numba has fallen back to its
+        workqueue threading layer.
+
+        The layer is patched because the warning fires only on a machine that can load
+        neither TBB nor OpenMP. No continuous integration runner is such a machine, so
+        the path that most needs covering is the one no test host would ever run.
+        """
+        with patch("numba.threading_layer", return_value="workqueue"):
+            with self.assertWarns(UserWarning) as caught:
+                _aerodynamics_functions.report_thread_settings()
+
+        # The warning has to name the layer and both of its remedies to be worth
+        # raising at all.
+        message = str(caught.warning)
+        self.assertIn("workqueue", message)
+        self.assertIn("tbb", message)
+        self.assertIn("OpenMP", message)
+
+    def test_healthy_threading_layer_does_not_warn(self):
+        """Test that report_thread_settings stays silent on a threading layer that does
+        not charge the workqueue layer's per launch cost."""
+        for threading_layer in ("omp", "tbb"):
+            with self.subTest(threading_layer=threading_layer):
+                with patch("numba.threading_layer", return_value=threading_layer):
+                    with warnings.catch_warnings(record=True) as caught:
+                        warnings.simplefilter("always")
+                        _aerodynamics_functions.report_thread_settings()
+
+                self.assertFalse(
+                    [
+                        warning
+                        for warning in caught
+                        if "workqueue" in str(warning.message)
+                    ],
+                    f"The {threading_layer} layer should not warn about workqueue.",
+                )
+
+    def test_reports_the_thread_mask_and_the_resulting_kernel_thread_cap(self):
+        """Test that report_thread_settings reports the thread mask it read, the
+        ceiling, and the cap those two put on a kernel launch.
+
+        The reported values are what this asserts on, not the phrasing that carries
+        them, so rewording the records does not fail this test.
+        """
+        ceiling = _aerodynamics_functions._ceiling()
+        if ceiling < 2:
+            self.skipTest(
+                "This pool is too narrow for a mask to sit below the ceiling."
+            )
+
+        # Cap Numba below the ceiling, so it is the mask that binds and the reported cap
+        # has to follow the mask rather than the ceiling.
+        mask = ceiling - 1
+        numba.set_num_threads(mask)
+
+        with self.assertLogs(self._LOGGER_NAME, level="DEBUG") as caught:
+            _aerodynamics_functions.report_thread_settings()
+
+        records = "\n".join(caught.output)
+        self.assertIn(f"thread mask: {mask}", records)
+        self.assertIn(f"ceiling: {ceiling}", records)
+        self.assertIn(f"at most {mask} threads", records)
 
 
 class TestParallelDispatchWrappers(unittest.TestCase):

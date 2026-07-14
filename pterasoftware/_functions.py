@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-import contextlib
 import logging
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -668,22 +670,39 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
 # threshold serves both solver families.
 _SOLVE_THREAD_THRESHOLD = 3_000
 
+# Guards the process-wide BLAS thread limit that a solve loop installs. A BLAS library
+# has one thread count per process, and threadpoolctl neither locks nor reference counts,
+# so two overlapping limits each record the other's width as the original to restore. An
+# out of order unwind then leaves the process pinned to a single BLAS thread for the rest
+# of its life, which is silent and slows everything that follows. Concurrent runs also
+# want conflicting widths, since a small run wants 1 thread and a large one wants the
+# full pool, and one process cannot hold both. Rather than corrupt the process quietly,
+# or serialize every run to accommodate a case that cannot pay off anyway (the compiled
+# kernels hold the GIL, so threads never speed the solvers up), a second concurrent solve
+# loop raises.
+_solve_loop_lock = threading.Lock()
+_solve_loop_owner: str | None = None
+_solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
 
-def solve_loop_thread_limits(
-    num_panels: int,
-) -> threadpoolctl.threadpool_limits | contextlib.nullcontext:
-    """Returns a context manager that sets the BLAS threading for a run's solve loop.
 
-    Below the threshold Panel count, the returned context limits every controllable BLAS
-    library to 1 thread, because a multi-threaded solve's post-work spin window would
-    otherwise tax the parallel kernel launches between solves. At or above the
-    threshold, the returned context does nothing, leaving the BLAS library at full
-    width. The limit takes effect when the context is constructed and is removed when
-    the context exits.
+@contextmanager
+def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
+    """Sets the BLAS threading for a solver run's solve loop, for the duration of a with
+    block.
 
-    Enter the context once around a run's entire solve loop, not per solve: entering
-    scans the process's loaded libraries, which is too slow to repeat every time step,
-    and the wider scope silences any stray BLAS activity between solves.
+    Below the threshold Panel count, the BLAS libraries are limited to 1 thread, because
+    a multi-threaded solve's post-work spin window would otherwise tax the parallel
+    kernel launches between solves. At or above the threshold, they are left at full
+    width.
+
+    Enter this once around a run's entire solve loop, not per solve: entering scans the
+    process's loaded libraries, which is too slow to repeat every time step, and the
+    wider scope silences any stray BLAS activity between solves.
+
+    Only one solve loop may be active per process. A second one entered while the first
+    is still running raises, rather than silently corrupting the process-wide BLAS
+    thread count that both would be saving and restoring. Run simulations in parallel
+    with separate processes rather than separate threads.
 
     threadpoolctl cannot control Apple's Accelerate BLAS, so the limit is a silent no-op
     there. This is acceptable because Accelerate parks idle threads quickly instead of
@@ -692,8 +711,39 @@ def solve_loop_thread_limits(
     :param num_panels: A positive int representing the run's total Panel count, which is
         also the size of the linear system being solved (the system has one row per
         Panel).
-    :return: The context manager to enter around the run's solve loop.
+    :raises RuntimeError: If a solver run is already in progress in this process.
+    :return: None
     """
-    if num_panels < _SOLVE_THREAD_THRESHOLD:
-        return threadpoolctl.threadpool_limits(limits=1, user_api="blas")
-    return contextlib.nullcontext()
+    global _solve_loop_owner, _solve_loop_limiter
+
+    this_thread = threading.current_thread().name
+
+    with _solve_loop_lock:
+        if _solve_loop_owner is not None:
+            raise RuntimeError(
+                f"A solver run is already in progress in thread "
+                f"'{_solve_loop_owner}', and thread '{this_thread}' tried to start "
+                f"another. Ptera Software's solvers cannot run concurrently within one "
+                f"process, because limiting the BLAS thread pool around a run's linear "
+                f"solves changes process-wide state that concurrent runs would corrupt, "
+                f"silently capping the process at a single BLAS thread. Run simulations "
+                f"in parallel with separate processes, for example with the "
+                f"multiprocessing module, rather than with separate threads. Threads "
+                f"would not speed the solvers up in any case, because the compiled "
+                f"Biot-Savart kernels hold the global interpreter lock."
+            )
+
+        _solve_loop_owner = this_thread
+        if num_panels < _SOLVE_THREAD_THRESHOLD:
+            _solve_loop_limiter = threadpoolctl.threadpool_limits(
+                limits=1, user_api="blas"
+            )
+
+    try:
+        yield
+    finally:
+        with _solve_loop_lock:
+            if _solve_loop_limiter is not None:
+                _solve_loop_limiter.restore_original_limits()
+                _solve_loop_limiter = None
+            _solve_loop_owner = None

@@ -674,21 +674,21 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # With rotation about a point offset in y (0.5m in y direction from Ler),
-        # z positions should vary when rotating about x axis.
-        # The offset is perpendicular to the rotation axis, so position changes occur.
+        # With rotation about a point offset in y (0.5 m in y direction from Ler), z
+        # positions should vary when rotating about x axis. The offset is perpendicular
+        # to the rotation axis, so position changes occur.
         z_positions = np.array([wing.Ler_Gs_Cgs[2] for wing in wings])
         y_positions = np.array([wing.Ler_Gs_Cgs[1] for wing in wings])
 
         # Verify that z positions are not all zero (they should oscillate).
         self.assertFalse(np.allclose(z_positions, 0.0))
 
-        # For rotation about x axis with offset P = (0, 0.5, 0), the position
-        # adjustment is (I - R) @ P where R is the rotation matrix about x.
-        # The active rotation matrix for angle theta about x is:
+        # For rotation about x axis with offset P = (0, 0.5, 0), the position adjustment
+        # is (I - R) @ P where R is the rotation matrix about x. The active rotation
+        # matrix for angle theta about x is:
         # R = [[1, 0, 0], [0, cos(theta), -sin(theta)], [0, sin(theta), cos(theta)]]
-        # So (I - R) @ [0, 0.5, 0] = [0, 0.5*(1 - cos(theta)), -0.5*sin(theta)]
-        # Thus y_adj = 0.5*(1 - cos(theta)) and z_adj = -0.5*sin(theta)
+        # So (I - R) @ [0, 0.5, 0] = [0, 0.5 * (1 - cos(theta)), -0.5 * sin(theta)].
+        # Thus y_adj = 0.5 * (1 - cos(theta)) and z_adj = -0.5 * sin(theta).
         times = np.linspace(0, num_steps * delta_time, num_steps, endpoint=False)
         stackAngleXRads = np.deg2rad(10.0 * np.sin(2 * np.pi * times / 1.0))
         expected_y = 0.5 * (1.0 - np.cos(stackAngleXRads))
@@ -772,29 +772,26 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_all_periods_Ler_only(self):
         """Test that all_periods returns correct periods for Ler only movement."""
         wing_movement = self.Ler_only_wing_movement
-        # periodLer_Gs_Cgs is (1.5, 1.5, 1.5), all non zero.
-        # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0).
-        # WingCrossSectionMovements are static (all zeros).
-        # Should return tuple with three 1.5 values.
+        # periodLer_Gs_Cgs is (1.5, 1.5, 1.5), all non zero. periodAngles_Gs_to_Wn_ixyz
+        # is (0.0, 0.0, 0.0). WingCrossSectionMovements are static (all zeros). The
+        # property should return a tuple with three 1.5 values.
         self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_angles_only(self):
         """Test that all_periods returns correct periods for angles only movement."""
         wing_movement = self.angles_only_wing_movement
-        # periodLer_Gs_Cgs is (0.0, 0.0, 0.0).
-        # periodAngles_Gs_to_Wn_ixyz is (1.5, 1.5, 1.5), all non zero.
-        # WingCrossSectionMovements are static (all zeros).
-        # Should return tuple with three 1.5 values.
+        # periodLer_Gs_Cgs is (0.0, 0.0, 0.0). periodAngles_Gs_to_Wn_ixyz is (1.5, 1.5,
+        # 1.5), all non zero. WingCrossSectionMovements are static (all zeros). The
+        # property should return a tuple with three 1.5 values.
         self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_mixed(self):
         """Test that all_periods returns all non zero periods for mixed movement."""
         wing_movement = self.multiple_periods_wing_movement
-        # periodLer_Gs_Cgs is (1.0, 2.0, 3.0).
-        # periodAngles_Gs_to_Wn_ixyz is (0.5, 1.5, 2.5).
-        # WingCrossSectionMovements include one with multiple periods.
-        # Should return tuple with all non zero values from WingCrossSectionMovements first,
-        # then CoreWingMovement's own periods.
+        # periodLer_Gs_Cgs is (1.0, 2.0, 3.0). periodAngles_Gs_to_Wn_ixyz is (0.5, 1.5,
+        # 2.5). WingCrossSectionMovements include one with multiple periods. The
+        # property should return a tuple with all non zero values from
+        # WingCrossSectionMovements first, then CoreWingMovement's own periods.
         all_periods = wing_movement.all_periods
 
         # Verify CoreWingMovement's own periods are included.
@@ -812,9 +809,9 @@ class TestCoreWingMovement(unittest.TestCase):
         wing_movement = self.basic_wing_movement
         all_periods = wing_movement.all_periods
 
-        # Both periodLer_Gs_Cgs and periodAngles_Gs_to_Wn_ixyz are (2.0, 2.0, 2.0).
-        # This contributes six 2.0 values. Plus WingCrossSectionMovement periods.
-        # Count how many times 2.0 appears (should be at least 6 from CoreWingMovement).
+        # Both periodLer_Gs_Cgs and periodAngles_Gs_to_Wn_ixyz are (2.0, 2.0, 2.0). This
+        # contributes six 2.0 values, plus WingCrossSectionMovement periods. Count how
+        # many times 2.0 appears (should be at least 6 from CoreWingMovement).
         count_2_0 = all_periods.count(2.0)
         self.assertGreaterEqual(count_2_0, 6)
 
@@ -822,9 +819,8 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test all_periods with only some dimensions having non zero periods."""
         wing_movement = self.sine_spacing_Ler_wing_movement
         # periodLer_Gs_Cgs is (1.0, 0.0, 0.0), only first element is non zero.
-        # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0).
-        # WingCrossSectionMovements are static.
-        # Should return tuple with one 1.0 value.
+        # periodAngles_Gs_to_Wn_ixyz is (0.0, 0.0, 0.0). WingCrossSectionMovements are
+        # static. The property should return a tuple with one 1.0 value.
         self.assertEqual(wing_movement.all_periods, (1.0,))
 
 

@@ -444,9 +444,8 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         # Verify that values vary (not constant).
         self.assertFalse(np.allclose(vCg_values, vCg_values[0]))
 
-        # Verify that values are within expected range.
-        # For custom_harmonic with amp=15.0 and base=100.0, values should be roughly
-        # in [85.0, 115.0].
+        # Verify that values are within expected range. For custom_harmonic with amp =
+        # 15.0 and base = 100.0, values should be roughly in [85.0, 115.0].
         self.assertTrue(np.all(vCg_values >= 80.0))
         self.assertTrue(np.all(vCg_values <= 120.0))
 
@@ -575,7 +574,8 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         # Use low-speed operating point with vCg__E = 10.0.
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
-        # Create CoreOperatingPointMovement with amplitude that will drive vCg__E negative.
+        # Create CoreOperatingPointMovement with amplitude that will drive vCg__E
+        # negative.
         core_op_movement = ps._core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=15.0,

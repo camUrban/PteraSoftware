@@ -11,8 +11,7 @@ airplane.
 
 import pterasoftware as ps
 
-# Initialize the WingCrossSection parameters.
-# Define the offsets for the spacing.
+# Initialize the WingCrossSection parameters. Define the offsets for the spacing.
 num_spanwise_panels = 2
 Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
 cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
@@ -64,12 +63,12 @@ wing_1 = ps.geometry.wing.Wing(
     chordwise_spacing="uniform",
 )
 
-# Actually generate the airplane. The V-tail is added as a second lifting surface but
-# is not split into deformation strips, because it follows prescribed rigid motion
-# rather than deforming. The solver deforms each wing from its own aerodynamic loads,
-# but only wings backed by an AeroelasticWingMovement; wings backed by a standard
-# WingMovement stay rigid. Leaving the tail rigid also keeps its movement definition
-# simpler, since it then needs no per-strip cross sections.
+# Actually generate the airplane. The V-tail is added as a second lifting surface but is
+# not split into deformation strips, because it follows prescribed rigid motion rather
+# than deforming. The solver deforms each wing from its own aerodynamic loads, but only
+# wings backed by an AeroelasticWingMovement. Wings backed by a standard WingMovement
+# stay rigid. Leaving the tail rigid also keeps its movement definition simpler, since
+# it then needs no per-strip wing cross sections.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         wing_1,
@@ -128,12 +127,12 @@ example_airplane = ps.geometry.airplane.Airplane(
 )
 
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
-# symmetry plane offset non-coincident with the Wing's axes yz plane. Therefore,
-# that Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the
-# second Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected
-# main wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry plane offset non-coincident with the Wing's axes yz plane. Therefore, that
+# Wing had type 5 symmetry (see the Wing class documentation for more details on
+# symmetry types). Therefore, it was actually split into two Wings, the with the second
+# Wing being a reflected version of the first. Therefore, we need to define a
+# WingMovement for this reflected Wing. To start, we'll first define the reflected main
+# wing's root and tip WingCrossSections' WingCrossSectionMovements.
 
 # Define the WingCrossSectionMovement parameters.
 dephase_x = 0.0
@@ -216,10 +215,10 @@ for i in range(len(example_airplane.wings[1].wing_cross_sections)):
     reflected_wcs_movements_list.append(reflected_wcs_movement)
 
 
-# Now define the v-tail's root and tip WingCrossSections' WingCrossSectionMovements.
-# The V-tail is not an aeroelastic surface, so we use standard WingCrossSectionMovements
-# and a standard WingMovement. This keeps the V-tail mesh consistent across all time
-# steps without applying any structural deformation.
+# Now define the V-tail's root and tip WingCrossSections' WingCrossSectionMovements. The
+# V-tail is not an aeroelastic surface, so we use standard WingCrossSectionMovements and
+# a standard WingMovement. This keeps the V-tail mesh consistent across all time steps
+# without applying any structural deformation.
 v_tail_root_wcs_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
@@ -252,8 +251,8 @@ v_tail_tip_wcs_movement = (
 # This dephase parameter is used to make the Wing start in a flat position.
 dephase = 169.0
 
-# Now define the main wing's AeroelasticWingMovement, the reflected main wing's
-# standard WingMovement (no aeroelastic deformation), and the v-tail's WingMovement.
+# Now define the main Wing's AeroelasticWingMovement, the reflected main Wing's standard
+# WingMovement (no aeroelastic deformation), and the V-tail's WingMovement.
 main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=main_wcs_movements_list,
@@ -343,9 +342,9 @@ example_operating_point_movement = (
 # Delete the extraneous pointer.
 del example_operating_point
 
-# Define the AeroelasticMovement. This contains the AeroelasticAirplaneMovement and
-# the OperatingPointMovement. The delta_time and num_steps must be specified
-# explicitly. With a flapping period of 1.0s, 3 cycles at dt=0.03s gives 100 steps.
+# Define the AeroelasticMovement. This contains the AeroelasticAirplaneMovement and the
+# OperatingPointMovement. The delta_time and num_steps must be specified explicitly.
+# With a flapping period of 1.0 s, 3 cycles at dt = 0.03 s gives 100 steps.
 example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
     airplane_movements=[example_airplane_movement],
     operating_point_movement=example_operating_point_movement,
@@ -353,11 +352,10 @@ example_movement = ps.movements.aeroelastic_movement.AeroelasticMovement(
     num_steps=100,
 )
 
-# Define the AeroelasticUnsteadyProblem.
-# The deformation parameters are set here.
-# The wing_density, spring_constant_rad, and damping_constant_rad are the
-# primary parameters you should expect to change. The step_discards parameter
-# is more for managing the UVLM solver's inconsistent startup effects.
+# Define the AeroelasticUnsteadyProblem. The deformation parameters are set here. The
+# wing_density, spring_constant_rad, and damping_constant_rad are the primary parameters
+# you should expect to change. The step_discards parameter is more for managing the UVLM
+# solver's inconsistent startup effects.
 example_problem = ps.problems.AeroelasticUnsteadyProblem(
     movement=example_movement,
     wing_density=6.0,

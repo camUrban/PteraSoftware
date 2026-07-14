@@ -582,9 +582,9 @@ def make_rotation_point_offset_core_wing_movement_fixture():
         core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
     ]
 
-    # Create the CoreWingMovement with rotation point offset.
-    # The offset is in y direction (0.0, 0.5, 0.0), and we rotate about the x axis.
-    # This causes the wing to trace an arc in the yz plane as it rotates.
+    # Create the CoreWingMovement with rotation point offset. The offset is in y
+    # direction (0.0, 0.5, 0.0), and we rotate about the x axis. This causes the wing to
+    # trace an arc in the yz plane as it rotates.
     rotation_point_offset_core_wing_movement_fixture = CoreWingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wcs_movements,
@@ -620,8 +620,8 @@ def make_periodic_geometry_core_wing_movement_fixture():
         core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
     ]
 
-    # Create the periodic geometry CoreWingMovement.
-    # Use a 0.1s period for angular motion (plunging wing motion).
+    # Create the periodic geometry CoreWingMovement. Use a 0.1 s period for angular
+    # motion (plunging wing motion).
     periodic_geometry_core_wing_movement_fixture = CoreWingMovement(
         base_wing=base_wing,
         wing_cross_section_movements=wcs_movements,

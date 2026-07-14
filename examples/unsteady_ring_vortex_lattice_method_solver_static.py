@@ -149,7 +149,7 @@ main_wing_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the v tail's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the V-tail's root and tip WingCrossSections' WingCrossSectionMovements.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -177,7 +177,7 @@ v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the main wing's WingMovement and the v tail's WingMovement.
+# Now define the main Wing's WingMovement and the V-tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[

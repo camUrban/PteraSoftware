@@ -2163,7 +2163,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # A two grain launch asks for 2 threads, but the ambient thread mask and the
         # ceiling cap the count on machines with very narrow pools.
         expected_num_threads = min(
-            2, self.original_num_threads, _aerodynamics_functions._CEILING
+            2, self.original_num_threads, _aerodynamics_functions._ceiling()
         )
         self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
 
@@ -2192,7 +2192,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
     def test_many_grain_launch_is_capped_at_the_ceiling(self):
         """Test that a launch spanning more grains than the ceiling is capped at
         three quarters of the pool width."""
-        # Compute the documented ceiling independently of the module's constant:
+        # Compute the documented ceiling independently of the module's own derivation:
         # three quarters of the pool width, rounded down, never below 1.
         ceiling = max((3 * numba.config.NUMBA_NUM_THREADS) // 4, 1)
 
@@ -2213,21 +2213,21 @@ class TestParallelDispatchWrappers(unittest.TestCase):
     def test_mask_below_ceiling_is_honored_exactly(self):
         """Test that a thread mask set below the ceiling caps the kernel's thread
         count exactly and survives the wrapper."""
-        if _aerodynamics_functions._CEILING < 2:
+        if _aerodynamics_functions._ceiling() < 2:
             self.skipTest(
                 "No thread mask can sit below the ceiling on this machine's Numba "
                 "pool."
             )
 
         # Simulate a user capping the thread count just below the ceiling.
-        below_ceiling_mask = _aerodynamics_functions._CEILING - 1
+        below_ceiling_mask = _aerodynamics_functions._ceiling() - 1
         numba.set_num_threads(below_ceiling_mask)
 
         # With one ring vortex, this stack of points makes each leg's launch span
         # one more grain than the ceiling, so only the mask holds its thread count
         # below the ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._CEILING + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
@@ -2241,21 +2241,23 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         """Test that a thread mask set exactly at the ceiling runs the kernel with
         the ceiling's thread count."""
         # Simulate a user capping the thread count exactly at the ceiling.
-        numba.set_num_threads(_aerodynamics_functions._CEILING)
+        numba.set_num_threads(_aerodynamics_functions._ceiling())
 
         # With one ring vortex, this stack of points makes each leg's launch span
         # one more grain than the ceiling, so the work-proportional count exceeds
         # the ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._CEILING + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
 
-        self.assertEqual(recorded_thread_counts, [_aerodynamics_functions._CEILING] * 4)
+        self.assertEqual(
+            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+        )
 
         # The wrapper must restore the user's mask.
-        self.assertEqual(numba.get_num_threads(), _aerodynamics_functions._CEILING)
+        self.assertEqual(numba.get_num_threads(), _aerodynamics_functions._ceiling())
 
     def test_full_width_mask_is_throttled_to_the_ceiling(self):
         """Test that a thread mask set at the pool's full width is throttled to the
@@ -2268,12 +2270,14 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # one more grain than the ceiling, so the work-proportional count exceeds
         # the ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
-            (_aerodynamics_functions._CEILING + 1) * _aerodynamics_functions._GRAIN
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )
 
         recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
 
-        self.assertEqual(recorded_thread_counts, [_aerodynamics_functions._CEILING] * 4)
+        self.assertEqual(
+            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+        )
 
         # The wrapper must restore the full-width mask, not the ceiling.
         self.assertEqual(numba.get_num_threads(), numba.config.NUMBA_NUM_THREADS)

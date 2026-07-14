@@ -19,6 +19,7 @@ autodoc_mock_imports = [
     "numpy",
     "pyvista",
     "scipy",
+    "threadpoolctl",
     "tqdm",
     "webp",
 ]

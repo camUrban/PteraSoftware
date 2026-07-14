@@ -48,17 +48,32 @@ _four_lamb = 4.0 * _lamb
 # across machines of different sizes without per-machine calibration.
 _GRAIN = 10_000
 
-# The largest share of the Numba thread pool that a kernel launch may use: three
-# quarters of the pool width, rounded down, never below 1. A team that claims every
-# logical processor stalls on its closing barrier whenever anything else on the
-# machine wants CPU time, because the scheduler delays one member and the barrier
-# waits for that laggard. Three quarters leaves enough slack to absorb realistic
-# background bursts, and it costs nothing where it binds, having measured as the
-# fastest width in every non-idle condition tested. The ceiling applies uniformly,
-# including to thread masks set at or above it. Masks below the ceiling are honored
-# exactly. Reading numba.config.NUMBA_NUM_THREADS here is safe because, unlike
-# numba.get_num_threads, it doesn't launch the thread pool as an import side effect.
-_CEILING = max((3 * numba.config.NUMBA_NUM_THREADS) // 4, 1)
+
+def _ceiling() -> int:
+    """Returns the largest share of the Numba thread pool that a kernel launch may use.
+
+    The share is three quarters of the pool's width, rounded down, never below 1. A team
+    that claims every logical processor stalls on its closing barrier whenever anything
+    else on the machine wants CPU time, because the scheduler delays one member and the
+    barrier waits for that laggard. Three quarters leaves enough slack to absorb
+    realistic background bursts, and it costs nothing where it binds, having measured as
+    the fastest width in every non-idle condition tested. The ceiling applies uniformly,
+    including to thread masks set at or above it. Masks below the ceiling are honored
+    exactly.
+
+    The pool's width is read here rather than at import, because a module-level read
+    would do arithmetic on a Numba attribute while the module is being imported, which
+    fails wherever Numba is not fully importable (Sphinx's autodoc mocks it, for one).
+    Reading it is cheap and, unlike numba.get_num_threads, does not launch the thread
+    pool.
+
+    :return: A positive int representing the most threads a single kernel launch may
+        use.
+    """
+    # Numba populates its config module's attributes dynamically, so mypy sees this one
+    # as untyped. Convert it explicitly rather than returning an untyped value.
+    pool_width = int(numba.config.NUMBA_NUM_THREADS)
+    return max((3 * pool_width) // 4, 1)
 
 
 def _threads_for_launch(num_points: int, num_vortices: int) -> int:
@@ -100,7 +115,8 @@ def report_thread_settings() -> None:
     # emitted in the opposite order, which the reads do not constrain.
     external_cap = numba.get_num_threads()
     threading_layer = numba.threading_layer()
-    kernel_cap = min(external_cap, _CEILING)
+    ceiling = _ceiling()
+    kernel_cap = min(external_cap, ceiling)
 
     if threading_layer == "workqueue":
         warnings.warn(
@@ -117,7 +133,7 @@ def report_thread_settings() -> None:
     _logger.debug(
         _logging.indent()
         + f"Numba thread pool width: {numba.config.NUMBA_NUM_THREADS}, thread mask: "
-        + f"{external_cap}, ceiling: {_CEILING} (three quarters of the pool)"
+        + f"{external_cap}, ceiling: {ceiling} (three quarters of the pool)"
     )
     _logger.debug(
         _logging.indent()
@@ -203,7 +219,7 @@ def collapsed_velocities_from_ring_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _CEILING,
+            _ceiling(),
         )
     )
 
@@ -301,7 +317,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _CEILING,
+            _ceiling(),
         )
     )
 
@@ -403,7 +419,7 @@ def expanded_velocities_from_ring_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _CEILING,
+            _ceiling(),
         )
     )
 
@@ -499,7 +515,7 @@ def collapsed_velocities_from_horseshoe_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _CEILING,
+            _ceiling(),
         )
     )
 
@@ -597,7 +613,7 @@ def expanded_velocities_from_horseshoe_vortices(
         min(
             _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
             external_cap,
-            _CEILING,
+            _ceiling(),
         )
     )
 

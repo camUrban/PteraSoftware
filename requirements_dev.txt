@@ -6,6 +6,7 @@ coverage
 docformatter
 isort
 mypy
+octowrap == 0.6.2
 pre-commit
 scipy-stubs
 twine

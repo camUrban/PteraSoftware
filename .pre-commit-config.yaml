@@ -84,6 +84,16 @@ repos:
         exclude: ^docs/_static/benchmarks/.*\.html$
   - repo: local
     hooks:
+      - id: octowrap
+        name: checker  octowrap
+        entry: "bash -c 'output=$(octowrap --check \"$@\" 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"$output\" | grep -v -e \"would be reformatted\" -e \"^$\"; echo; echo \"Run: octowrap -i .\"; exit 1; fi' --"
+        language: python
+        additional_dependencies: [octowrap==0.6.2]
+        types: [python]
+        # Pre-commit batches the passed filenames to parallelize hook invocations, and
+        # each failing batch would print the hint line independently. Serializing
+        # guarantees a single invocation, so the hint prints exactly once.
+        require_serial: true
       - id: ascii-only
         name: checker  ascii-only
         entry: python scripts/check_ascii_only.py

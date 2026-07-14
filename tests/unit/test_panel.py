@@ -123,8 +123,7 @@ class TestPanel(unittest.TestCase):
 
         Cpp_G_Cg = panel.Cpp_G_Cg
 
-        # Should be at 75% chord, midspan
-        # Expected: [0.75, 0.25, 0.0]
+        # Should be at 75% chord, midspan. Expected: [0.75, 0.25, 0.0].
         expected_Cpp_G_Cg = np.array([0.75, 0.25, 0.0])
         npt.assert_array_almost_equal(Cpp_G_Cg, expected_Cpp_G_Cg)
 
@@ -260,8 +259,8 @@ class TestPanel(unittest.TestCase):
 
         aspect_ratio = panel.aspect_ratio
 
-        # For basic panel: span = 0.5 m, chord = 1.0 m
-        # Aspect ratio = span / chord = 0.5
+        # For the basic Panel: span = 0.5 m, chord = 1.0 m. Aspect ratio = span / chord
+        # = 0.5.
         expected_aspect_ratio = 0.5
         self.assertAlmostEqual(aspect_ratio, expected_aspect_ratio, places=10)
 
@@ -295,8 +294,7 @@ class TestPanel(unittest.TestCase):
 
         aspect_ratio = panel.aspect_ratio
 
-        # For a panel with span = 4.0 m, chord = 1.0 m
-        # Aspect ratio = 4.0
+        # For a Panel with span = 4.0 m, chord = 1.0 m. Aspect ratio = 4.0.
         expected_aspect_ratio = 4.0
         self.assertAlmostEqual(aspect_ratio, expected_aspect_ratio, places=10)
 
@@ -428,8 +426,8 @@ class TestPanelGP1Properties(unittest.TestCase):
 
         unitNormal_GP1 = panel.unitNormal_GP1
 
-        # Should be same as local since it's a unit vector (rotation invariant for
-        # pure translation)
+        # Should be same as local since it's a unit vector (rotation invariant for pure
+        # translation).
         expected_unitNormal_GP1 = np.array([0.0, 0.0, 1.0])
         npt.assert_array_almost_equal(unitNormal_GP1, expected_unitNormal_GP1)
 
@@ -446,26 +444,27 @@ class TestPanelGP1Properties(unittest.TestCase):
         """Test GP1 properties when global position includes rotation effect."""
         panel = panel_fixtures.make_basic_panel_fixture()
 
-        # Simulate a -90 degree rotation about z-axis in global coordinates
-        # Rotation matrix for -90 degrees about z: [[0, 1, 0], [-1, 0, 0], [0, 0, 1]]
-        # Original: Frpp = [0, 0.5, 0] -> [0.5, 0, 0]
-        # Original: Flpp = [0, 0, 0] -> [0, 0, 0]
-        # Original: Blpp = [1, 0, 0] -> [0, -1, 0]
-        # Original: Brpp = [1, 0.5, 0] -> [0.5, -1, 0]
+        # Simulate a -90 degree rotation about the z axis in global coordinates. The
+        # rotation matrix for -90 degrees about the z axis is [[0, 1, 0], [-1, 0, 0],
+        # [0, 0, 1]]. The original Frpp is [0.0, 0.5, 0.0], which maps to [0.5, 0.0,
+        # 0.0]. The original Flpp is [0.0, 0.0, 0.0], which maps to [0.0, 0.0, 0.0]. The
+        # original Blpp is [1.0, 0.0, 0.0], which maps to [0.0, -1.0, 0.0]. The original
+        # Brpp is [1, 0.5, 0], which maps to [0.5, -1, 0].
+        # octowrap: on
         panel.Frpp_GP1_CgP1 = np.array([0.5, 0.0, 0.0])
         panel.Flpp_GP1_CgP1 = np.array([0.0, 0.0, 0.0])
         panel.Blpp_GP1_CgP1 = np.array([0.0, -1.0, 0.0])
         panel.Brpp_GP1_CgP1 = np.array([0.5, -1.0, 0.0])
 
-        # The leg vectors should now be rotated
-        # Original rightLeg_G = Frpp - Brpp = [0, 0.5, 0] - [1, 0.5, 0] = [-1, 0, 0]
-        # After -90 degree rotation: [0, 1, 0]
+        # The leg vectors should now be rotated. The original rightLeg_G is Frpp - Brpp
+        # = [0.0, 0.5, 0.0] - [1.0, 0.5, 0.0] = [-1.0, 0.0, 0.0]. After the -90 degree
+        # rotation, this becomes [0.0, 1.0, 0.0].
         rightLeg_GP1 = panel.rightLeg_GP1
         expected_rightLeg_GP1 = np.array([0.0, 1.0, 0.0])
         npt.assert_array_almost_equal(rightLeg_GP1, expected_rightLeg_GP1)
 
-        # Unit normal should still point in +z direction for flat panel (rotation
-        # around z axis preserves the z component of vectors in the xy plane)
+        # Unit normal should still point in +z direction for a flat Panel (rotation
+        # around the z axis preserves the z component of vectors in the xy plane).
         unitNormal_GP1 = panel.unitNormal_GP1
         expected_unitNormal_GP1 = np.array([0.0, 0.0, 1.0])
         npt.assert_array_almost_equal(unitNormal_GP1, expected_unitNormal_GP1)

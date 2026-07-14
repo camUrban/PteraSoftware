@@ -52,8 +52,8 @@ class TestAirplane(unittest.TestCase):
 
     def test_name_parameter_validation(self):
         """Test name parameter validation."""
-        # Test valid string name
-        # Create fresh fixture since Wings can only be processed once
+        # Test a valid string name. Create a fresh fixture since Wings can only be
+        # processed once.
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         airplane = ps.geometry.airplane.Airplane(
             wings=[test_wing], name="Valid Test Name"
@@ -134,8 +134,8 @@ class TestAirplane(unittest.TestCase):
                         wings=[test_wing], weight=invalid_weight
                     )
 
-        # Test invalid weight types
-        # Create fresh fixture since Wings can only be processed once
+        # Test invalid weight types. Create fresh fixture since Wings can only be
+        # processed once.
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
@@ -159,8 +159,8 @@ class TestAirplane(unittest.TestCase):
         self.assertEqual(self.custom_reference_airplane.c_ref, 2.0)
         self.assertEqual(self.custom_reference_airplane.b_ref, 10.0)
 
-        # Test validation of reference dimensions
-        # Create fresh fixtures since Wings can only be processed once
+        # Test validation of reference dimensions. Create fresh fixtures since Wings can
+        # only be processed once.
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=-1.0)
@@ -347,11 +347,12 @@ class TestAirplane(unittest.TestCase):
 
     def test_process_wing_symmetry_control_surface_validation_types_1_2_3(self):
         """Test control surface validation for symmetry types 1, 2, 3."""
-        # Type 1: should fail with control surfaces
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Type 1: should fail with control surfaces. Create fresh fixtures since
+        # WingCrossSections can only be validated once.
         wing_cross_sections = [
             geometry_fixtures.make_root_wing_cross_section_fixture(),
-            geometry_fixtures.make_basic_wing_cross_section_fixture(),  # Has control surface
+            # This fixture has a control surface.
+            geometry_fixtures.make_basic_wing_cross_section_fixture(),
         ]
         with self.assertRaises(ValueError):
             wing_type_1 = ps.geometry.wing.Wing(
@@ -361,11 +362,12 @@ class TestAirplane(unittest.TestCase):
             )
             ps.geometry.airplane.Airplane.process_wing_symmetry(wing_type_1)
 
-        # Type 2: should fail with control surfaces
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Type 2: should fail with control surfaces. Create fresh fixtures since
+        # WingCrossSections can only be validated once.
         wing_cross_sections = [
             geometry_fixtures.make_root_wing_cross_section_fixture(),
-            geometry_fixtures.make_basic_wing_cross_section_fixture(),  # Has control surface
+            # This fixture has a control surface.
+            geometry_fixtures.make_basic_wing_cross_section_fixture(),
         ]
         with self.assertRaises(ValueError):
             wing_type_2 = ps.geometry.wing.Wing(
@@ -382,7 +384,8 @@ class TestAirplane(unittest.TestCase):
         # Create Wings without control surface configurations
         wing_cross_sections = [
             geometry_fixtures.make_root_wing_cross_section_fixture(),
-            geometry_fixtures.make_minimal_wing_cross_section_fixture(),  # No control surface
+            # This fixture has no control surface.
+            geometry_fixtures.make_minimal_wing_cross_section_fixture(),
         ]
 
         # Type 4: should fail without control surfaces
@@ -398,8 +401,8 @@ class TestAirplane(unittest.TestCase):
 
     def test_process_wing_symmetry_type_5_control_surface_deflections(self):
         """Test type 5 Wing processing with different control surface deflections."""
-        # Create asymmetric control surface Wing cross sections
-        # Use root fixture with asymmetric control surface already configured
+        # Create the asymmetric control surface WingCrossSections. Use the root fixture
+        # with an asymmetric control surface already configured.
         root_wcs = (
             geometry_fixtures.make_root_asymmetric_control_surface_wing_cross_section_fixture()
         )
@@ -423,7 +426,8 @@ class TestAirplane(unittest.TestCase):
         # Should return two Wings
         self.assertEqual(len(result), 2)
 
-        # Check that asymmetric control surface deflections are negated in reflected Wing
+        # Check that asymmetric control surface deflections are negated in the reflected
+        # Wing.
         original_wing = result[0]
         reflected_wing = result[1]
 

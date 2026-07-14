@@ -220,8 +220,8 @@ class Airplane:
         self._num_panels: int | None = None
         self._T_pas_G_Cg_to_GP1_CgP1: np.ndarray | None = None
 
-        # Initialize mutable attributes to hold the forces, moments, force
-        # coefficients, and moment coefficients this Airplane experiences.
+        # Initialize mutable attributes to hold the loads and load coefficients this
+        # Airplane experiences.
         self.forces_W: np.ndarray | None = None
         self.forceCoefficients_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
@@ -329,8 +329,8 @@ class Airplane:
         new_airplane._c_ref = self._c_ref
         new_airplane._b_ref = self._b_ref
 
-        # Copy _num_panels cache (depends only on Wings, not position).
-        # Reset _T_pas_G_Cg_to_GP1_CgP1 to None (depends on Cg_GP1_CgP1).
+        # Copy _num_panels cache (depends only on Wings, not position). Reset
+        # _T_pas_G_Cg_to_GP1_CgP1 to None (depends on Cg_GP1_CgP1).
         new_airplane._num_panels = self._num_panels
         new_airplane._T_pas_G_Cg_to_GP1_CgP1 = None
 
@@ -401,8 +401,8 @@ class Airplane:
             Airplane's geometry axes, relative to its CG.
         """
         if self._T_pas_G_Cg_to_GP1_CgP1 is None:
-            # generate_trans_T with passive=True expects the `translations` parameter
-            # to be the position of the target reference point (CgP1) relative to the
+            # generate_trans_T with passive=True expects the `translations` parameter to
+            # be the position of the target reference point (CgP1) relative to the
             # source reference point (Cg). Using the notation from
             # AXES_POINTS_AND_FRAMES.md: translations=CgP1_G_Cg. However, we have
             # Cg_GP1_CgP1 (position of Cg, in GP1 axes, relative to CgP1). Since
@@ -448,8 +448,8 @@ class Airplane:
         panel_vertices = np.empty((0, 3), dtype=float)
         panel_faces = np.empty(0, dtype=int)
 
-        # Initialize a variable to keep track of how many Panels' data has been added
-        # to the ndarrays.
+        # Initialize a variable to keep track of how many Panels' data has been added to
+        # the ndarrays.
         panel_num = 0
 
         # Iterate through this Airplane's Wings.
@@ -478,8 +478,8 @@ class Airplane:
                     ]
                 )
 
-                # Stack this Panel's vertices and faces with the array of all
-                # vertices and faces.
+                # Stack this Panel's vertices and faces with the array of all vertices
+                # and faces.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
@@ -719,8 +719,8 @@ class Airplane:
                 panel_vertices = np.empty((0, 3), dtype=float)
                 panel_faces = np.empty(0, dtype=int)
 
-                # Initialize a variable to keep track of how many Panels' data has
-                # been added to the arrays
+                # Initialize a variable to keep track of how many Panels' data has been
+                # added to the arrays
                 panel_num = 0
 
                 # Unravel the Wing's Panel matrix and iterate through it
@@ -802,24 +802,23 @@ class Airplane:
             followed by the new reflected Wing. Before returning them, it also calls
             each Wing's generate_mesh method, preparing them for use simulation.
         """
-        # Determine if the symmetry plane is coincident with the wing axes' xz plane.
-        # If symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no
-        # symmetry and the symmetry plane doesn't exist. Otherwise, the symmetry
-        # plane is coincident to the wing axes' xz plane if Ler_Gs_Cgs lies on the
-        # symmetry plane, and if symmetryNormal_G is parallel with WnY_G. We don't
-        # need to check types, values, or normalize because this is done in Wing's
-        # init method.
+        # Determine if the symmetry plane is coincident with the wing axes' xz plane. If
+        # symmetryNormal_G or symmetryPoint_G_Cg is None, then there is no symmetry and
+        # the symmetry plane doesn't exist. Otherwise, the symmetry plane is coincident
+        # to the wing axes' xz plane if Ler_Gs_Cgs lies on the symmetry plane, and if
+        # symmetryNormal_G is parallel with WnY_G. We don't need to check types, values,
+        # or normalize because this is done in Wing's init method.
         coincident_symmetry_plane = True
         if wing.symmetryPoint_G_Cg is None or wing.symmetryNormal_G is None:
             coincident_symmetry_plane = False
         else:
-            # If the symmetry plane exists, we first need to check if its normal
-            # vector is parallel with the wing axes' y axis vector.
+            # If the symmetry plane exists, we first need to check if its normal vector
+            # is parallel with the wing axes' y axis vector.
 
-            # Actively transform geometry axes' second basis vector (in geometry
-            # axes) to this Wing's axes' second basis vector (in geometry axes). We
-            # can skip the translation step (step 2) as we are only transforming a
-            # direction vector, not a position vector.
+            # Actively transform geometry axes' second basis vector (in geometry axes)
+            # to this Wing's axes' second basis vector (in geometry axes). We can skip
+            # the translation step (step 2) as we are only transforming a direction
+            # vector, not a position vector.
             GY_G = np.array([0.0, 1.0, 0.0], dtype=float)
             GsY_G = _transformations.apply_T_to_vectors(
                 _transformations.generate_reflect_T(
@@ -851,21 +850,20 @@ class Airplane:
             if not is_parallel:
                 coincident_symmetry_plane = False
             else:
-                # If the symmetry plane's normal vector and the wing axes y axis
-                # vector are parallel, then the last check for a coincident symmetry
-                # plane is to check if the Ler is on the symmetry plane.
+                # If the symmetry plane's normal vector and the wing axes' y axis vector
+                # are parallel, then the last check for a coincident symmetry plane is
+                # to check if the Ler is on the symmetry plane.
 
                 # To do this, we first find the symmetry plane's normal vector (in
-                # geometry axes after accounting for symmetry) and the symmetry
-                # plane's point (in geometry axes after accounting for symmetry,
-                # relative to the CG after accounting for symmetry). As the symmetry
-                # plane is defined using these quantities, they don't change after
-                # reflection.
+                # geometry axes after accounting for symmetry) and the symmetry plane's
+                # point (in geometry axes after accounting for symmetry, relative to the
+                # CG after accounting for symmetry). As the symmetry plane is defined
+                # using these quantities, they don't change after reflection.
                 symmetryPoint_Gs_Cgs = wing.symmetryPoint_G_Cg
                 symmetryNormal_Gs_Cgs = wing.symmetryNormal_G
 
-                # The leading edge root point is on the symmetry plane if the
-                # distance between it and the symmetry plane is zero.
+                # The leading edge root point is on the symmetry plane if the distance
+                # between it and the symmetry plane is zero.
                 Ler_on_plane = np.allclose(
                     np.dot(
                         symmetryNormal_Gs_Cgs, (wing.Ler_Gs_Cgs - symmetryPoint_Gs_Cgs)
@@ -876,8 +874,8 @@ class Airplane:
                 if not Ler_on_plane:
                     coincident_symmetry_plane = False
 
-        # See the Wing class docstring for the interpretation of the different
-        # symmetry types.
+        # See the Wing class docstring for the interpretation of the different symmetry
+        # types.
         if not wing.symmetric:
             if not wing.mirror_only:
                 # Type 1 Symmetry:
@@ -902,9 +900,9 @@ class Airplane:
                 # symmetric=True, coincident_symmetry_plane=False
                 symmetry_type = 5
 
-        # Based on the determined symmetry type, validate the Wing's
-        # WingCrossSections' control_surface_symmetry types. From the validation done
-        # during each WingCrossSection's initialization method, we already know that
+        # Based on the determined symmetry type, validate the Wing's WingCrossSections'
+        # control_surface_symmetry types. From the validation done during each
+        # WingCrossSection's initialization method, we already know that
         # control_surface_symmetry type is None or a valid string.
         for wing_cross_section in wing.wing_cross_sections:
             control_surface_symmetry_type = (

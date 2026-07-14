@@ -166,19 +166,19 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         # Run the solve with the BLAS threading appropriate for this run's size.
         with _functions.solve_loop_thread_limits(self.num_panels):
-            # Compute the horseshoe vortex geometries and collapse them, along with
-            # each Panel's per panel scalars, into 1D ndarrays of attributes.
+            # Compute the horseshoe vortex geometries and collapse them, along with each
+            # Panel's per Panel scalars, into 1D ndarrays of attributes.
             _logger.debug(_logging.indent() + "Collapsing the geometry")
             self._collapse_geometry()
 
-            # Find the matrix of Wing-wing influence coefficients associated with
-            # this SteadyProblem's geometry.
+            # Find the matrix of Wing-Wing influence coefficients associated with this
+            # SteadyProblem's geometry.
             _logger.debug(_logging.indent() + "Calculating the Wing Wing influences")
             self._calculate_wing_wing_influences()
 
-            # Find the normal velocity (in the first Airplane's geometry axes,
-            # observed from the Earth frame) at every collocation point due solely to
-            # the freestream.
+            # Find the normal velocity (in the first Airplane's geometry axes, observed
+            # from the Earth frame) at every collocation point due solely to the
+            # freestream.
             _logger.debug(
                 _logging.indent() + "Calculating the freestream Wing influences"
             )
@@ -190,9 +190,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             )
             self._calculate_vortex_strengths()
 
-            # Solve for the forces (in the first Airplane's geometry axes) and
-            # moments (in the first Airplane's geometry axes, relative to the first
-            # Airplane's CG) on each Panel.
+            # Solve for the forces (in the first Airplane's geometry axes) and moments
+            # (in the first Airplane's geometry axes, relative to the first Airplane's
+            # CG) on each Panel.
             _logger.debug(_logging.indent() + "Calculating the forces and moments")
             self._calculate_loads()
 
@@ -215,12 +215,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Find the freestream direction (in the first Airplane's geometry axes,
-        # observed from the Earth frame).
+        # Find the freestream direction (in the first Airplane's geometry axes, observed
+        # from the Earth frame).
         vInfHat_GP1__E = self.operating_point.vInfHat_GP1__E
 
-        # Initialize a variable to hold the global position of the current Panel as
-        # we iterate through them.
+        # Initialize a variable to hold the global position of the current Panel as we
+        # iterate through them.
         global_panel_position = 0
 
         # Iterate through each Airplane's Wings.
@@ -249,14 +249,14 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                     Flhvp_GP1_CgP1 = panel.Flbvp_GP1_CgP1
                     assert Flhvp_GP1_CgP1 is not None
 
-                    # The semi infinite legs trail downstream from the front
-                    # corners along the freestream direction.
+                    # The semi infinite legs trail downstream from the front corners
+                    # along the freestream direction.
                     Brhvp_GP1_CgP1 = Frhvp_GP1_CgP1 + infinite_leg_offset_GP1
                     Blhvp_GP1_CgP1 = Flhvp_GP1_CgP1 + infinite_leg_offset_GP1
 
                     # Update the solver's list of attributes with this Panel's
-                    # attributes (in the first Airplane's geometry axes, relative
-                    # to the first Airplane's CG).
+                    # attributes (in the first Airplane's geometry axes, relative to the
+                    # first Airplane's CG).
                     self.panels[global_panel_position] = panel
                     self.stackUnitNormals_GP1[global_panel_position, :] = (
                         panel.unitNormal_GP1
@@ -286,10 +286,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                         _Brpp_GP1_CgP1 = panel.Brpp_GP1_CgP1
                         assert _Brpp_GP1_CgP1 is not None
 
-                        # Calculate this Panel's streamline seed point (in the
-                        # first Airplane's geometry axes, relative to the first
-                        # Airplane's CG). Add it to the solver's 1D ndarray of
-                        # seed points.
+                        # Calculate this Panel's streamline seed point (in the first
+                        # Airplane's geometry axes, relative to the first Airplane's
+                        # CG). Add it to the solver's 1D ndarray of seed points.
                         self.stackSeedPoints_GP1_CgP1 = np.vstack(
                             (
                                 self.stackSeedPoints_GP1_CgP1,
@@ -311,9 +310,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Find the 2D ndarray of normalized velocities (in the first Airplane's
-        # geometry axes, observed from the Earth frame) induced at each Panel's
-        # collocation point by each horseshoe vortex.
+        # Find the 2D ndarray of normalized velocities (in the first Airplane's geometry
+        # axes, observed from the Earth frame) induced at each Panel's collocation point
+        # by each horseshoe vortex.
         singularity_counts = np.zeros(4, dtype=np.int64)
         gridNormVIndCpp_GP1__E = (
             _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
@@ -367,11 +366,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             unexpected_singularity_counts,
         )
 
-        # Take the batch dot product of the normalized induced velocities (in the
-        # first Airplane's geometry axes, observed from the Earth frame) with each
-        # Panel's unit normal direction (in the first Airplane's geometry axes). This
-        # is now the Problem's 2D ndarray of Wing Wing influence coefficients (observed
-        # from the Earth frame).
+        # Take the batch dot product of the normalized induced velocities (in the first
+        # Airplane's geometry axes, observed from the Earth frame) with each Panel's
+        # unit normal direction (in the first Airplane's geometry axes). This is now the
+        # SteadyProblem's 2D ndarray of Wing-Wing influence coefficients (observed from
+        # the Earth frame).
         self._gridWingWingInfluences__E = np.einsum(
             "...k,...k->...",
             gridNormVIndCpp_GP1__E,
@@ -485,9 +484,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         :return: None
         """
-        # Calculate the velocity (in the first Airplane's geometry axes, observed
-        # from the Earth frame) at the center of every Panel's horseshoe vortex's
-        # finite leg.
+        # Calculate the velocity (in the first Airplane's geometry axes, observed from
+        # the Earth frame) at the center of every Panel's horseshoe vortex's finite leg.
         bound_singularity_counts = np.zeros(4, dtype=np.int64)
         stackVelocityBoundVortexCenters_GP1__E = self.calculate_solution_velocity(
             stackP_GP1_CgP1=self._stackBoundVortexCenters_GP1_CgP1,
@@ -496,9 +494,9 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
 
-        # Subtract the expected structural collinearity before logging. Each
-        # bound vortex center is collinear with its own finite leg, producing
-        # exactly one collinearity singularity per Panel.
+        # Subtract the expected structural collinearity before logging. Each bound
+        # vortex center is collinear with its own finite leg, producing exactly one
+        # collinearity singularity per Panel.
         unexpected_bound_singularity_counts[3] -= self.num_panels
         _functions.log_unexpected_singularity_counts(
             _logger,

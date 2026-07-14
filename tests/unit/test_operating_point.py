@@ -314,45 +314,43 @@ class TestOperatingPoint(unittest.TestCase):
         """Test transformation with zero alpha and beta."""
         op = self.zero_alpha_beta_op
 
-        # With alpha = beta = 0, wind axes align with body axes.
-        # The freestream direction in wind axes is [-1, 0, 0].
-        # Transform to the first Airplane's geometry axes to verify direction.
+        # With alpha = beta = 0, wind axes align with body axes. The freestream
+        # direction in wind axes is [-1, 0, 0]. Transform to the first Airplane's
+        # geometry axes to verify direction.
         vInfHat_GP1__E = op.vInfHat_GP1__E
 
-        # Geometry axes: +x = aft, +y = right, +z = up
-        # Body axes: +x = forward, +y = right, +z = down
-        # With alpha = beta = 0, wind axes align with body axes.
-        # So freestream [-1, 0, 0] in wind axes means freestream comes from
-        # backward in body axes (forward velocity).
-        # In geometry axes, this should be [+1, 0, 0] (forward in geometry is
-        # aft direction, opposite of body).
+        # In geometry axes, +x points aft, +y points right, and +z points up. In body
+        # axes, +x points forward, +y points right, and +z points down. With alpha =
+        # beta = 0, wind axes align with body axes. So freestream [-1, 0, 0] in wind
+        # axes means freestream comes from backward in body axes (forward velocity). In
+        # geometry axes, this should be [+1, 0, 0] (forward in geometry axes is the aft
+        # direction, opposite of body axes).
         npt.assert_allclose(vInfHat_GP1__E[0], 1.0, atol=1e-14)
         npt.assert_allclose(vInfHat_GP1__E[1], 0.0, atol=1e-14)
         npt.assert_allclose(vInfHat_GP1__E[2], 0.0, atol=1e-14)
 
     def test_transformation_alpha_only(self):
         """Test transformation with alpha only (beta = 0)."""
-        # Positive alpha means the nose points above the direction of travel,
-        # so the relative wind comes from below. In the first Airplane's geometry
-        # axes (+z = up), the freestream velocity vector should have a positive
-        # z-component.
+        # Positive alpha means the nose points above the direction of travel, so the
+        # relative wind comes from below. In the first Airplane's geometry axes (+z =
+        # up), the freestream velocity vector should have a positive z component.
         op_positive_alpha = ps.operating_point.OperatingPoint(alpha=10.0, beta=0.0)
         vInf_GP1__E_pos = op_positive_alpha.vInfHat_GP1__E
 
-        # With positive alpha, the freestream should have a positive z-component
-        # in the first Airplane's geometry axes (wind comes from below).
+        # With positive alpha, the freestream should have a positive z component in the
+        # first Airplane's geometry axes (wind comes from below).
         self.assertGreater(vInf_GP1__E_pos[2], 0.0)
 
         # The y-component should be approximately zero (no sideslip).
         npt.assert_allclose(vInf_GP1__E_pos[1], 0.0, atol=1e-14)
 
-        # Negative alpha means the nose points below the direction of travel,
-        # so the relative wind comes from above.
+        # Negative alpha means the nose points below the direction of travel, so the
+        # relative wind comes from above.
         op_negative_alpha = ps.operating_point.OperatingPoint(alpha=-10.0, beta=0.0)
         vInf_GP1__E_neg = op_negative_alpha.vInfHat_GP1__E
 
-        # With negative alpha, the freestream should have a negative z-component
-        # in the first Airplane's geometry axes (wind comes from above).
+        # With negative alpha, the freestream should have a negative z component in the
+        # first Airplane's geometry axes (wind comes from above).
         self.assertLess(vInf_GP1__E_neg[2], 0.0)
 
         # The y-component should be approximately zero (no sideslip).
@@ -360,29 +358,29 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_transformation_beta_only(self):
         """Test transformation with beta only (alpha = 0)."""
-        # Positive beta means the nose points to the left of the direction of
-        # travel, so the airplane moves to the right of where the nose points.
-        # The relative wind comes from the right. In the first Airplane's geometry
-        # axes (+y = right), the freestream velocity vector should have a negative
-        # y-component (pointing left, opposite the airplane's rightward motion).
+        # Positive beta means the nose points to the left of the direction of travel, so
+        # the airplane moves to the right of where the nose points. The relative wind
+        # comes from the right. In the first Airplane's geometry axes (+y = right), the
+        # freestream velocity vector should have a negative y-component (pointing left,
+        # opposite the airplane's rightward motion).
         op_positive_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=10.0)
         vInf_GP1__E_pos = op_positive_beta.vInfHat_GP1__E
 
-        # With positive beta, the freestream should have a negative y-component
-        # in the first Airplane's geometry axes (wind from right, pointing left).
+        # With positive beta, the freestream should have a negative y component in the
+        # first Airplane's geometry axes (wind from right, pointing left).
         self.assertLess(vInf_GP1__E_pos[1], 0.0)
 
         # The z-component should be approximately zero (no vertical component).
         npt.assert_allclose(vInf_GP1__E_pos[2], 0.0, atol=1e-14)
 
-        # Negative beta means the nose points to the right of the direction of
-        # travel, so the airplane moves to the left of where the nose points.
-        # The relative wind comes from the left.
+        # Negative beta means the nose points to the right of the direction of travel,
+        # so the airplane moves to the left of where the nose points. The relative wind
+        # comes from the left.
         op_negative_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=-10.0)
         vInf_GP1__E_neg = op_negative_beta.vInfHat_GP1__E
 
-        # With negative beta, the freestream should have a positive y-component
-        # in the first Airplane's geometry axes (wind from left, pointing right).
+        # With negative beta, the freestream should have a positive y component in the
+        # first Airplane's geometry axes (wind from left, pointing right).
         self.assertGreater(vInf_GP1__E_neg[1], 0.0)
 
         # The z-component should be approximately zero (no vertical component).
@@ -443,8 +441,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_vInfHat_GP1__E_direction(self):
         """Test vInfHat_GP1__E direction consistency."""
         # For zero alpha and beta, verify direction aligns as expected. In wind axes,
-        # freestream is [-1, 0, 0]. Transform to the first Airplane's geometry axes
-        # and verify it's a unit vector.
+        # freestream is [-1, 0, 0]. Transform to the first Airplane's geometry axes and
+        # verify it's a unit vector.
         op = self.zero_alpha_beta_op
         vInfHat_GP1__E = op.vInfHat_GP1__E
 
@@ -1524,24 +1522,22 @@ class TestOperatingPoint(unittest.TestCase):
             surfacePoint_E_Eo=(0.0, 0.0, 0.0),
         )
 
-        # With zero attitude angles, E to GP1 flips z. The surface point
-        # relative to CG is (0, 0, -Cg_z) in Earth, which maps to (0, 0, Cg_z)
-        # in GP1. But Cg_z is negative (above ground), so the GP1 z component
-        # should be negative (below CG in GP1's z up frame).
+        # With zero attitude angles, E to GP1 flips z. The surface point relative to CG
+        # is (0, 0, -Cg_z) in Earth, which maps to (0, 0, Cg_z) in GP1. But Cg_z is
+        # negative (above ground), so the GP1 z component should be negative (below CG
+        # in GP1's z up frame).
         point_near = op_near.surfacePoint_GP1_CgP1
         point_far = op_far.surfacePoint_GP1_CgP1
 
-        # The airplane further from the ground should have a more negative
-        # z component in GP1.
+        # The airplane further from the ground should have a more negative z component
+        # in GP1.
         self.assertLess(point_far[2], point_near[2])
 
-        # Verify specific values. E to GP1 flips x and z.
-        # Near: surfacePoint_E_CgP1 = (0,0,0) - (0,0,-5) = (0,0,5).
-        # In GP1: (0,0,-5).
+        # Verify specific values. E to GP1 flips x and z. Near: surfacePoint_E_CgP1 =
+        # (0,0,0) - (0,0,-5) = (0,0,5). In GP1: (0,0,-5).
         npt.assert_allclose(point_near, [0.0, 0.0, -5.0], atol=1e-14)
 
-        # Far: surfacePoint_E_CgP1 = (0,0,0) - (0,0,-20) = (0,0,20).
-        # In GP1: (0,0,-20).
+        # Far: surfacePoint_E_CgP1 = (0,0,0) - (0,0,-20) = (0,0,20). In GP1: (0,0,-20).
         npt.assert_allclose(point_far, [0.0, 0.0, -20.0], atol=1e-14)
 
     def test_derived_surface_properties_read_only(self):
@@ -1624,11 +1620,12 @@ class TestOperatingPoint(unittest.TestCase):
 
         reflected = _transformations.apply_T_to_vectors(T, point, is_position=True)
 
-        # The surface point in GP1_CgP1 is at z = -10 (10 meters below CgP1 in
-        # GP1 z, corresponding to the ground at z = 0 in Earth). The surface
-        # normal in GP1 is (0, 0, 1) (180 degree y rotation flips Earth's
-        # (0, 0, -1) to (0, 0, 1)). Reflecting (1, 2, 3) across a plane at
-        # z = -10 with normal (0, 0, 1) gives (1, 2, -23).
+        # The surface point in GP1_CgP1 is at z = -10.0 (10.0 meters below CgP1 in the
+        # GP1 z direction, corresponding to the ground at z = 0.0 in Earth axes). The
+        # surface normal in GP1 axes is (0.0, 0.0, 1.0) (a 180 degree rotation about the
+        # y axis flips Earth's (0.0, 0.0, -1.0) to (0.0, 0.0, 1.0)). Reflecting (1.0,
+        # 2.0, 3.0) across a plane at z = -10.0 with normal (0.0, 0.0, 1.0) gives (1.0,
+        # 2.0, -23.0).
         expected = np.array([1.0, 2.0, -23.0])
         npt.assert_allclose(reflected, expected, atol=1e-12)
 
@@ -1643,8 +1640,8 @@ class TestOperatingPoint(unittest.TestCase):
         op = self.with_ground_surface_op
         T = op.surfaceReflect_T_act_GP1_CgP1
 
-        # The surface normal in GP1 is (0, 0, 1) for this fixture. Reflecting
-        # a velocity vector should negate only the z component.
+        # The surface normal in GP1 is (0, 0, 1) for this fixture. Reflecting a velocity
+        # vector should negate only the z component.
         velocity = np.array([5.0, -3.0, 7.0])
         reflected = _transformations.apply_T_to_vectors(T, velocity, is_position=False)
 
@@ -1694,8 +1691,8 @@ class TestOperatingPoint(unittest.TestCase):
         op = self.with_tilted_surface_op
         T = op.surfaceReflect_T_act_GP1_CgP1
 
-        # The surface point in GP1_CgP1 should lie on the reflection plane.
-        # Reflecting it should return the same point.
+        # The surface point in GP1_CgP1 should lie on the reflection plane. Reflecting
+        # it should return the same point.
         surface_point = op.surfacePoint_GP1_CgP1
         reflected = _transformations.apply_T_to_vectors(
             T, surface_point, is_position=True

@@ -16,9 +16,9 @@ import numpy as np
 
 from . import _logging
 
-# This module is inherently coupled to the internals of every class in the package
-# (it reads __slots__, knows class structure, and imports all classes into its
-# registry), so importing from a sibling private module is acceptable here.
+# This module is inherently coupled to the internals of every class in the package (it
+# reads __slots__, knows class structure, and imports all classes into its registry), so
+# importing from a sibling private module is acceptable here.
 # noinspection PyProtectedMember
 from ._mujoco_model import MuJoCoModel
 from ._oscillation import oscillating_lin_at_time, oscillating_sin_at_time
@@ -180,9 +180,9 @@ _UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
     {"current_airplanes", "current_operating_point", "panels"}
 )
 
-# Slots on Movement that are redundant when serialized inside an UnsteadyProblem.
-# The canonical data lives in the SteadyProblem objects; these are reconstructed
-# on deserialization to preserve object identity.
+# Slots on Movement that are redundant when serialized inside an UnsteadyProblem. The
+# canonical data lives in the SteadyProblem objects; these are reconstructed on
+# deserialization to preserve object identity.
 _MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
 
 # Slots on MuJoCoModel that are serialized as null. _model and _data wrap native MuJoCo
@@ -240,8 +240,8 @@ def save(path: str | Path, obj: object) -> None:
     data = {**header, **data}
 
     if path.name.endswith(".json.gz"):
-        # Use compact format for gzip since readability does not matter and
-        # whitespace would increase the pre-compression size.
+        # Use compact format for gzip since readability does not matter and whitespace
+        # would increase the pre-compression size.
         json_bytes = json.dumps(data).encode("utf-8")
         with gzip.open(path, "wb") as f:
             f.write(json_bytes)
@@ -467,8 +467,8 @@ def _object_to_dict(
 
     _logger.debug(_logging.indent() + "Serializing %s", class_name)
 
-    # Solver skip slots always apply because the aliases are always redundant
-    # with solver._steady_problem or solver.unsteady_problem.
+    # Solver skip slots always apply because the aliases are always redundant with
+    # solver._steady_problem or solver.unsteady_problem.
     if isinstance(
         obj,
         (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
@@ -480,11 +480,11 @@ def _object_to_dict(
     # The MuJoCoModel's native model and data objects cannot be serialized; they are
     # rebuilt from the XML string on deserialization.
     if isinstance(obj, MuJoCoModel):
-        # An asset-based model cannot survive that rebuild: the engine is recreated
-        # from the stored XML alone, whose asset references would be unresolvable.
-        # Refuse to save rather than produce a file that fails on load.
-        # This module is inherently coupled to class internals, so reading a private
-        # attribute directly is acceptable here.
+        # An asset-based model cannot survive that rebuild: the engine is recreated from
+        # the stored XML alone, whose asset references would be unresolvable. Refuse to
+        # save rather than produce a file that fails on load. This module is inherently
+        # coupled to class internals, so reading a private attribute directly is
+        # acceptable here.
         # noinspection PyProtectedMember
         if obj._mujoco_assets:
             raise ValueError(
@@ -500,8 +500,8 @@ def _object_to_dict(
         if slot_name in _skip_slots:
             result[slot_name] = None
         elif is_unsteady_problem and slot_name == "_movement":
-            # Pass _MOVEMENT_SKIP_SLOTS to the Movement child so that
-            # _airplanes and _operating_points are serialized as null.
+            # Pass _MOVEMENT_SKIP_SLOTS to the Movement child so that _airplanes and
+            # _operating_points are serialized as null.
             result[slot_name] = _object_to_dict(
                 getattr(obj, slot_name), _skip_slots=_MOVEMENT_SKIP_SLOTS
             )
@@ -547,10 +547,9 @@ def _reconstruct_shared_references(obj: object) -> None:
     :return: None
     """
     if isinstance(obj, MuJoCoModel):
-        # The native model and data objects were skipped during serialization; rebuild
-        # them from the deserialized XML string.
-        # This module is inherently coupled to class internals, so calling a private
-        # method directly is acceptable here.
+        # The native model and data objects were skipped during serialization. Rebuild
+        # them from the deserialized XML string. This module is inherently coupled to
+        # class internals, so calling a private method directly is acceptable here.
         # noinspection PyProtectedMember
         obj._rebuild_engine()
 
@@ -558,8 +557,8 @@ def _reconstruct_shared_references(obj: object) -> None:
         obj,
         (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
     ):
-        # This module is inherently coupled to class internals (it reads __slots__
-        # and writes private backing stores for all classes), so accessing a private
+        # This module is inherently coupled to class internals (it reads __slots__ and
+        # writes private backing stores for all classes), so accessing a private
         # attribute directly is acceptable here.
         # noinspection PyProtectedMember
         problem = obj._steady_problem
@@ -569,8 +568,7 @@ def _reconstruct_shared_references(obj: object) -> None:
         object.__setattr__(obj, "vInf_GP1__E", problem.operating_point.vInf_GP1__E)
 
         if obj.ran:
-            # Reconstruct the flattened panels array (same order as
-            # _collapse_geometry).
+            # Reconstruct the flattened panels array (same order as _collapse_geometry).
             panels_list: list[Panel] = []
             for airplane in problem.airplanes:
                 for wing in airplane.wings:
@@ -578,8 +576,7 @@ def _reconstruct_shared_references(obj: object) -> None:
                     panels_list.extend(np.ravel(wing.panels))
             object.__setattr__(obj, "panels", np.array(panels_list, dtype=object))
         else:
-            # Pre run: panels is an uninitialized object array sized to
-            # num_panels.
+            # Pre run: panels is an uninitialized object array sized to num_panels.
             object.__setattr__(obj, "panels", np.empty(obj.num_panels, dtype=object))
 
     if isinstance(obj, UnsteadyProblem):
@@ -588,8 +585,8 @@ def _reconstruct_shared_references(obj: object) -> None:
         num_steps = len(steady_problems)
         num_airplane_movements = len(movement.airplane_movements)
 
-        # Reconstruct Movement._airplanes as a tuple[tuple[Airplane, ...], ...].
-        # Outer index = airplane movement, inner index = time step.
+        # Reconstruct Movement._airplanes as a tuple[tuple[Airplane, ...], ...]. The
+        # outer index is the AirplaneMovement, and the inner index is the time step.
         airplanes = tuple(
             tuple(
                 steady_problems[step].airplanes[airplane_movement_index]
@@ -599,8 +596,8 @@ def _reconstruct_shared_references(obj: object) -> None:
         )
         object.__setattr__(movement, "_airplanes", airplanes)
 
-        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...].
-        # Indexed by time step.
+        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...]. Indexed by
+        # time step.
         operating_points = tuple(
             steady_problems[step].operating_point for step in range(num_steps)
         )
@@ -609,8 +606,8 @@ def _reconstruct_shared_references(obj: object) -> None:
     if isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
         unsteady_problem = obj.unsteady_problem
 
-        # This module is inherently coupled to class internals (it reads __slots__
-        # and writes private backing stores for all classes), so accessing a private
+        # This module is inherently coupled to class internals (it reads __slots__ and
+        # writes private backing stores for all classes), so accessing a private
         # attribute directly is acceptable here.
         # noinspection PyProtectedMember
         current_step = obj._current_step
@@ -634,8 +631,8 @@ def _reconstruct_shared_references(obj: object) -> None:
                 obj, "panels", np.array(current_panels_list, dtype=object)
             )
         else:
-            # Pre run: current_airplanes is an empty tuple and panels is an
-            # empty object array.
+            # Pre run: current_airplanes is an empty tuple and panels is an empty object
+            # array.
             object.__setattr__(obj, "current_airplanes", ())
             object.__setattr__(obj, "panels", np.empty(0, dtype=object))
 

@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import math
+import warnings
 
+import numba
 import numpy as np
 from numba import njit, prange
+
+from . import _logging
+
+_logger = _logging.get_logger("_aerodynamics_functions")
 
 # Squire's parameter relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is slightly controversial. It dramatically affects
@@ -32,8 +38,120 @@ _tol = 1.0e-10
 _four_pi = 4.0 * math.pi
 _four_lamb = 4.0 * _lamb
 
+# The smallest number of evaluations worth handing one thread of a parallel kernel
+# launch, where one evaluation is computing one line vortex's induced velocity at one
+# point. Sized so a thread's share of the work takes several times longer than the
+# cost of rallying the thread pool: waking its threads, splitting the work, and
+# waiting for the slowest member to finish. A launch too small to clear one grain
+# would spend more time rallying than computing, so it runs on a single thread. The
+# grain is expressed as work per thread rather than as a core count, so it transfers
+# across machines of different sizes without per-machine calibration.
+_GRAIN = 10_000
 
-@njit(cache=True, fastmath=False)
+
+def _ceiling() -> int:
+    """Returns the largest share of the Numba thread pool that a kernel launch may use.
+
+    The share is three quarters of the pool's width, rounded down, never below 1. A team
+    that claims every logical processor stalls on its closing barrier whenever anything
+    else on the machine wants CPU time, because the scheduler delays one member and the
+    barrier waits for that laggard. Three quarters leaves enough slack to absorb
+    realistic background bursts, and it costs nothing where it binds, having measured as
+    the fastest width in every non-idle condition tested. The ceiling applies uniformly,
+    including to thread masks set at or above it. Masks below the ceiling are honored
+    exactly.
+
+    The pool's width is read here rather than at import, because a module-level read
+    would do arithmetic on a Numba attribute while the module is being imported, which
+    fails wherever Numba is not fully importable (Sphinx's autodoc mocks it, for one).
+    Reading it is cheap and, unlike numba.get_num_threads, does not launch the thread
+    pool.
+
+    :return: A positive int representing the most threads a single kernel launch may
+        use.
+    """
+    # Numba populates its config module's attributes dynamically, so mypy sees this one
+    # as untyped. Convert it explicitly rather than returning an untyped value.
+    pool_width = int(numba.config.NUMBA_NUM_THREADS)
+    return max((3 * pool_width) // 4, 1)
+
+
+def _threads_for_launch(num_points: int, num_vortices: int) -> int:
+    """Returns the work-proportional thread count for a parallel kernel launch.
+
+    :param num_points: A non negative int representing the number of points at which the
+        launch computes induced velocities.
+    :param num_vortices: A non negative int representing the number of line vortices
+        whose induced velocities the launch computes at each point.
+    :return: A positive int representing the number of threads the launch's work
+        justifies: one thread per whole grain of evaluations, floored at 1 and capped at
+        the launch's point count.
+    """
+    evaluations = num_points * num_vortices
+
+    # The kernels parallelize over points alone, summing each point's vortices in a
+    # serial inner loop, so a launch can never use more threads than it has points.
+    # Handing it more would leave the surplus threads with no iteration to run while they
+    # still pay the parallel region's entry and its closing barrier, which is the very
+    # overhead this dispatch exists to avoid. The cap binds when a launch carries more
+    # than one grain of vortices and fewer points than the ceiling, as an unsteady run's
+    # wake influences do on a small mesh once the wake grows, and as streamline launches
+    # do generally.
+    return min(max(evaluations // _GRAIN, 1), max(num_points, 1))
+
+
+def report_thread_settings() -> None:
+    """Reports the thread dispatch settings that a solver run's parallel kernel launches
+    will operate under.
+
+    Logged at the debug level: the active Numba threading layer, the Numba thread pool's
+    width, the current thread mask, the kernel thread ceiling, and the upper bound those
+    put on a launch's thread count. A launch whose work falls below the grain uses fewer
+    threads than that bound.
+
+    Raises a UserWarning, rather than logging one, if Numba is running on its workqueue
+    threading layer. That layer slows every simulation, users land on it without being
+    told, and the fix is a change to the user's environment rather than to anything
+    Ptera Software can do, which is the case the warnings module exists for. The
+    warnings module also suppresses the repeats itself, which matters because a trim or
+    convergence analysis runs the solver many times over and Numba fixes the threading
+    layer for the life of the process.
+
+    :return: None
+    """
+    # Read the thread mask before the threading layer. Reading the mask launches the
+    # thread pool if it isn't already running, and launching the pool initializes the
+    # threading layer, so the layer is only queryable afterwards. The records below are
+    # emitted in the opposite order, which the reads do not constrain.
+    external_cap = numba.get_num_threads()
+    threading_layer = numba.threading_layer()
+    ceiling = _ceiling()
+    kernel_cap = min(external_cap, ceiling)
+
+    if threading_layer == "workqueue":
+        warnings.warn(
+            "Numba is running on its workqueue threading layer, which it falls "
+            "back to when neither TBB nor OpenMP can be loaded. That layer charges "
+            "a large fixed cost to every parallel kernel launch, no matter how "
+            "small the launch or how few threads it uses, which slows every "
+            "simulation. Install tbb, or a system OpenMP runtime, to let Numba use "
+            "a faster layer. Numba also falls back to workqueue when an installed "
+            "tbb cannot be loaded, so having tbb installed does not rule this out."
+        )
+
+    _logger.debug(_logging.indent() + f"Numba threading layer: {threading_layer}")
+    _logger.debug(
+        _logging.indent()
+        + f"Numba thread pool width: {numba.config.NUMBA_NUM_THREADS}, thread mask: "
+        + f"{external_cap}, ceiling: {ceiling} (three quarters of the pool)"
+    )
+    _logger.debug(
+        _logging.indent()
+        + f"Kernel launches will use at most {kernel_cap} threads, and fewer when a "
+        + "launch's work is below the grain"
+    )
+
+
 def collapsed_velocities_from_ring_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -51,7 +169,9 @@ def collapsed_velocities_from_ring_vortices(
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
-    does cause a performance drop for the less intense steady simulations.
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -100,25 +220,38 @@ def collapsed_velocities_from_ring_vortices(
         stackBrrvp_GP1_CgP1,
     ]
 
-    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
+    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
+
+    # Read the current thread mask so the dispatch honors any cap the user has set,
+    # and restore it once the kernel launches finish.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
 
     # Get the velocity induced by each leg of each ring vortex (in the first Airplane's
     # geometry axes, observed from the Earth frame).
-    for i in range(4):
-        stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
-            stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
-            strengths=strengths,
-            r_c0s=r_c0s,
-            singularity_counts=singularity_counts,
-            ages=ages,
-            nu=nu,
-        )
+    try:
+        for i in range(4):
+            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
+                stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
+                strengths=strengths,
+                r_c0s=r_c0s,
+                singularity_counts=singularity_counts,
+                ages=ages,
+                nu=nu,
+            )
+    finally:
+        numba.set_num_threads(external_cap)
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_ring_vortices_chordwise_segments(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -137,7 +270,9 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
-    does cause a performance drop for the less intense steady simulations.
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -183,25 +318,38 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         stackBlrvp_GP1_CgP1,
     ]
 
-    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
+    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
+
+    # Read the current thread mask so the dispatch honors any cap the user has set,
+    # and restore it once the kernel launches finish.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
 
     # Get the velocity induced by the left and right legs of each ring vortex (in the
     # first Airplane's geometry axes, observed from the Earth frame).
-    for i in range(2):
-        stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
-            stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
-            strengths=strengths,
-            r_c0s=r_c0s,
-            singularity_counts=singularity_counts,
-            ages=ages,
-            nu=nu,
-        )
+    try:
+        for i in range(2):
+            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
+                stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
+                strengths=strengths,
+                r_c0s=r_c0s,
+                singularity_counts=singularity_counts,
+                ages=ages,
+                nu=nu,
+            )
+    finally:
+        numba.set_num_threads(external_cap)
     return stackVInd_GP1__E
 
 
-@njit(cache=True, fastmath=False)
 def expanded_velocities_from_ring_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,
@@ -219,7 +367,9 @@ def expanded_velocities_from_ring_vortices(
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
-    does cause a performance drop for the less intense steady simulations.
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -268,27 +418,42 @@ def expanded_velocities_from_ring_vortices(
         stackBrrvp_GP1_CgP1,
     ]
 
-    gridVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], strengths.shape[0], 3))
+    gridVInd_GP1__E = np.zeros(
+        (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
+    )
+
+    # Read the current thread mask so the dispatch honors any cap the user has set,
+    # and restore it once the kernel launches finish.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
 
     # Get the velocity induced by each leg of each ring vortex (in the first Airplane's
     # geometry axes, observed from the Earth frame).
-    for i in range(4):
-        gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
-            stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
-            strengths=strengths,
-            r_c0s=r_c0s,
-            singularity_counts=singularity_counts,
-            ages=ages,
-            nu=nu,
-        )
+    try:
+        for i in range(4):
+            gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
+                stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
+                strengths=strengths,
+                r_c0s=r_c0s,
+                singularity_counts=singularity_counts,
+                ages=ages,
+                nu=nu,
+            )
+    finally:
+        numba.set_num_threads(external_cap)
     return gridVInd_GP1__E
 
 
 # TODO: Remove the ability to specify horseshoe vortex ages, since they are never used
 #  in unsteady simulations.
-@njit(cache=True, fastmath=False)
 def collapsed_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrhvp_GP1_CgP1: np.ndarray,
@@ -305,7 +470,9 @@ def collapsed_velocities_from_horseshoe_vortices(
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
-    does cause a performance drop for the less intense steady simulations.
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -349,27 +516,40 @@ def collapsed_velocities_from_horseshoe_vortices(
         stackBlhvp_GP1_CgP1,
     ]
 
-    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3))
+    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
+
+    # Read the current thread mask so the dispatch honors any cap the user has set,
+    # and restore it once the kernel launches finish.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
 
     # Get the velocity induced by each leg of each horseshoe vortex (in the first
     # Airplane's geometry axes, observed from the Earth frame).
-    for i in range(3):
-        stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
-            stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
-            strengths=strengths,
-            r_c0s=r_c0s,
-            singularity_counts=singularity_counts,
-            ages=None,
-            nu=nu,
-        )
+    try:
+        for i in range(3):
+            stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
+                stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
+                strengths=strengths,
+                r_c0s=r_c0s,
+                singularity_counts=singularity_counts,
+                ages=None,
+                nu=nu,
+            )
+    finally:
+        numba.set_num_threads(external_cap)
     return stackVInd_GP1__E
 
 
 # TODO: Remove the ability to specify horseshoe vortex ages, since they are never used
 #  in unsteady simulations.
-@njit(cache=True, fastmath=False)
 def expanded_velocities_from_horseshoe_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrhvp_GP1_CgP1: np.ndarray,
@@ -386,7 +566,9 @@ def expanded_velocities_from_horseshoe_vortices(
 
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
-    does cause a performance drop for the less intense steady simulations.
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -430,21 +612,37 @@ def expanded_velocities_from_horseshoe_vortices(
         stackBlhvp_GP1_CgP1,
     ]
 
-    gridVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], strengths.shape[0], 3))
+    gridVInd_GP1__E = np.zeros(
+        (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
+    )
+
+    # Read the current thread mask so the dispatch honors any cap the user has set,
+    # and restore it once the kernel launches finish.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
 
     # Get the velocity induced by each leg of each horseshoe vortex (in the first
     # Airplane's geometry axes, observed from the Earth frame).
-    for i in range(3):
-        gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
-            stackP_GP1_CgP1=stackP_GP1_CgP1,
-            stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
-            stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
-            strengths=strengths,
-            r_c0s=r_c0s,
-            singularity_counts=singularity_counts,
-            ages=None,
-            nu=nu,
-        )
+    try:
+        for i in range(3):
+            gridVInd_GP1__E += _expanded_velocities_from_line_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
+                stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
+                strengths=strengths,
+                r_c0s=r_c0s,
+                singularity_counts=singularity_counts,
+                ages=None,
+                nu=nu,
+            )
+    finally:
+        numba.set_num_threads(external_cap)
     return gridVInd_GP1__E
 
 

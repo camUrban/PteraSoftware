@@ -1,9 +1,11 @@
 """This module contains classes to test shared utility functions."""
 
+import threading
 import unittest
 
 import numpy as np
 import numpy.testing as npt
+import threadpoolctl
 
 # noinspection PyProtectedMember
 from pterasoftware import _functions
@@ -416,3 +418,191 @@ class TestFormatDuration(unittest.TestCase):
             padded = _functions.format_duration(duration, left_pad=True)
             self.assertEqual(padded, unpadded.rjust(_functions._DURATION_PAD_WIDTH))
             self.assertEqual(len(padded), _functions._DURATION_PAD_WIDTH)
+
+
+class TestSolveLoopThreadLimits(unittest.TestCase):
+    """Tests for the solve_loop_thread_limits function."""
+
+    @staticmethod
+    def _blas_num_threads():
+        """Returns each controllable BLAS library's current thread count, keyed by its
+        file path."""
+        return {
+            library["filepath"]: library["num_threads"]
+            for library in threadpoolctl.threadpool_info()
+            if library["user_api"] == "blas"
+        }
+
+    def test_below_threshold_limits_blas_to_one_thread(self):
+        """Inside the below-threshold context, every controllable BLAS library
+        should be limited to 1 thread."""
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            for library in threadpoolctl.threadpool_info():
+                if library["user_api"] == "blas":
+                    self.assertEqual(library["num_threads"], 1)
+
+    def test_below_threshold_leaves_non_blas_pools_alone(self):
+        """The below-threshold context should not limit non BLAS thread pools, such
+        as the one behind Numba's threading layer."""
+        outside_num_threads = {
+            library["filepath"]: library["num_threads"]
+            for library in threadpoolctl.threadpool_info()
+            if library["user_api"] != "blas"
+        }
+
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            inside_num_threads = {
+                library["filepath"]: library["num_threads"]
+                for library in threadpoolctl.threadpool_info()
+                if library["user_api"] != "blas"
+            }
+
+        self.assertEqual(inside_num_threads, outside_num_threads)
+
+    def test_below_threshold_restores_blas_after_exiting(self):
+        """The below-threshold context should restore each BLAS library's original
+        thread count when it exits."""
+        outside_num_threads = self._blas_num_threads()
+
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            pass
+
+        self.assertEqual(self._blas_num_threads(), outside_num_threads)
+
+    def test_at_threshold_leaves_blas_at_full_width(self):
+        """A Panel count at the threshold should leave every BLAS library's thread
+        count untouched."""
+        outside_num_threads = self._blas_num_threads()
+
+        with _functions.solve_loop_thread_limits(_functions._SOLVE_THREAD_THRESHOLD):
+            inside_num_threads = self._blas_num_threads()
+
+        self.assertEqual(inside_num_threads, outside_num_threads)
+
+    def test_above_threshold_leaves_blas_at_full_width(self):
+        """A Panel count above the threshold should leave every BLAS library's thread
+        count untouched."""
+        outside_num_threads = self._blas_num_threads()
+
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD + 1
+        ):
+            inside_num_threads = self._blas_num_threads()
+
+        self.assertEqual(inside_num_threads, outside_num_threads)
+
+    def test_concurrent_solve_loop_in_another_thread_raises(self):
+        """A second solve loop entered while one is already running should raise, rather
+        than corrupt the process-wide BLAS thread count that both would save and
+        restore."""
+        first_entered = threading.Event()
+        second_may_exit = threading.Event()
+        second_error = []
+
+        def run_second():
+            first_entered.wait(5)
+            try:
+                with _functions.solve_loop_thread_limits(
+                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                ):
+                    pass
+            except RuntimeError as error:
+                second_error.append(error)
+            finally:
+                second_may_exit.set()
+
+        second_thread = threading.Thread(target=run_second, name="SecondSolveLoop")
+        second_thread.start()
+
+        # Hold the first solve loop open until the second one has tried to start its
+        # own, so the two genuinely overlap.
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            first_entered.set()
+            second_may_exit.wait(5)
+
+        second_thread.join(5)
+
+        self.assertEqual(len(second_error), 1)
+        self.assertIn("already in progress", str(second_error[0]))
+        self.assertIn("separate processes", str(second_error[0]))
+
+    def test_concurrent_solve_loop_leaves_blas_uncorrupted(self):
+        """After a rejected concurrent solve loop, the first solve loop should still
+        restore each BLAS library's original thread count."""
+        outside_num_threads = self._blas_num_threads()
+
+        first_entered = threading.Event()
+        second_may_exit = threading.Event()
+
+        def run_second():
+            first_entered.wait(5)
+            try:
+                with _functions.solve_loop_thread_limits(
+                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                ):
+                    pass
+            except RuntimeError:
+                pass
+            finally:
+                second_may_exit.set()
+
+        second_thread = threading.Thread(target=run_second, name="SecondSolveLoop")
+        second_thread.start()
+
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            first_entered.set()
+            second_may_exit.wait(5)
+
+        second_thread.join(5)
+
+        self.assertEqual(self._blas_num_threads(), outside_num_threads)
+
+    def test_sequential_solve_loops_in_different_threads_are_allowed(self):
+        """The guard should reject only overlapping solve loops, so a solve loop that
+        starts after another has finished should run even from a different thread."""
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            pass
+
+        errors = []
+
+        def run_after():
+            try:
+                with _functions.solve_loop_thread_limits(
+                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                ):
+                    pass
+            except RuntimeError as error:
+                errors.append(error)
+
+        later_thread = threading.Thread(target=run_after, name="LaterSolveLoop")
+        later_thread.start()
+        later_thread.join(5)
+
+        self.assertEqual(errors, [])
+
+    def test_solve_loop_releases_the_guard_when_its_body_raises(self):
+        """A solver run that raises should still release the guard, so the next run is
+        not rejected forever."""
+        with self.assertRaises(ZeroDivisionError):
+            with _functions.solve_loop_thread_limits(
+                _functions._SOLVE_THREAD_THRESHOLD - 1
+            ):
+                raise ZeroDivisionError
+
+        # The guard is free again, so this must not raise.
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            pass

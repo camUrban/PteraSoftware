@@ -2,7 +2,10 @@
 
 import math
 import unittest
+import warnings
+from unittest.mock import patch
 
+import numba
 import numpy as np
 import numpy.testing as npt
 
@@ -1831,3 +1834,559 @@ class TestLogSingularityCounts(unittest.TestCase):
 
         self.assertEqual(len(cm.output), 1)
         self.assertIn("ERROR", cm.output[0])
+
+
+class TestThreadsForLaunch(unittest.TestCase):
+    """This is a class with functions to test the _threads_for_launch dispatch
+    function."""
+
+    def test_zero_evaluation_launch_clamps_to_one_thread(self):
+        """Test that _threads_for_launch returns 1 thread for a launch with zero
+        evaluations."""
+        self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 0), 1)
+        self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 100), 1)
+        self.assertEqual(_aerodynamics_functions._threads_for_launch(100, 0), 1)
+
+    def test_sub_grain_launch_clamps_to_one_thread(self):
+        """Test that _threads_for_launch returns 1 thread for a launch with fewer
+        evaluations than one grain."""
+        self.assertEqual(_aerodynamics_functions._threads_for_launch(1, 1), 1)
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                1, _aerodynamics_functions._GRAIN - 1
+            ),
+            1,
+        )
+
+    def test_single_grain_launch_gets_one_thread(self):
+        """Test that _threads_for_launch returns 1 thread for a launch with exactly
+        one grain of evaluations."""
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                1, _aerodynamics_functions._GRAIN
+            ),
+            1,
+        )
+
+    def test_whole_grain_launches_scale_linearly(self):
+        """Test that _threads_for_launch returns one thread per whole grain of
+        evaluations."""
+        for num_grains in (2, 3, 7):
+            with self.subTest(num_grains=num_grains):
+                self.assertEqual(
+                    _aerodynamics_functions._threads_for_launch(
+                        num_grains, _aerodynamics_functions._GRAIN
+                    ),
+                    num_grains,
+                )
+
+    def test_partial_grains_round_down(self):
+        """Test that _threads_for_launch ignores a partial grain of evaluations.
+
+        Both launches carry more points than the thread count they justify, so the point
+        cap cannot bind and the rounding is tested on its own.
+        """
+        # Two points and one vortex short of a grain each, so just under two grains.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                2, _aerodynamics_functions._GRAIN - 1
+            ),
+            1,
+        )
+
+        # Three points and one vortex short of a grain each, so just under three grains.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                3, _aerodynamics_functions._GRAIN - 1
+            ),
+            2,
+        )
+
+    def test_thread_count_never_exceeds_the_point_count(self):
+        """Test that _threads_for_launch never asks for more threads than the launch has
+        points.
+
+        The kernels parallelize over points alone and sum each point's vortices in a
+        serial inner loop, so threads beyond the point count could never receive an
+        iteration. They would still pay the parallel region's entry and closing barrier,
+        which is the overhead the dispatch exists to avoid.
+        """
+        # A single point with a hundred grains of vortices. The work would justify a
+        # hundred threads, but only one of them could ever run an iteration.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                1, 100 * _aerodynamics_functions._GRAIN
+            ),
+            1,
+        )
+
+        # Four points with a hundred grains of vortices each, capped at the four points.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                4, 100 * _aerodynamics_functions._GRAIN
+            ),
+            4,
+        )
+
+
+class TestReportThreadSettings(unittest.TestCase):
+    """This is a class with functions to test the report_thread_settings function."""
+
+    _LOGGER_NAME = "pterasoftware._aerodynamics_functions"
+
+    def setUp(self):
+        """Save the ambient Numba thread mask so every test restores it."""
+        self.original_num_threads = numba.get_num_threads()
+        self.addCleanup(numba.set_num_threads, self.original_num_threads)
+
+    def test_workqueue_layer_raises_a_user_warning(self):
+        """Test that report_thread_settings warns when Numba has fallen back to its
+        workqueue threading layer.
+
+        The layer is patched because the warning fires only on a machine that can load
+        neither TBB nor OpenMP. No continuous integration runner is such a machine, so
+        the path that most needs covering is the one no test host would ever run.
+        """
+        with patch("numba.threading_layer", return_value="workqueue"):
+            with self.assertWarns(UserWarning) as caught:
+                _aerodynamics_functions.report_thread_settings()
+
+        # The warning has to name the layer and both of its remedies to be worth
+        # raising at all.
+        message = str(caught.warning)
+        self.assertIn("workqueue", message)
+        self.assertIn("tbb", message)
+        self.assertIn("OpenMP", message)
+
+    def test_healthy_threading_layer_does_not_warn(self):
+        """Test that report_thread_settings stays silent on a threading layer that does
+        not charge the workqueue layer's per launch cost."""
+        for threading_layer in ("omp", "tbb"):
+            with self.subTest(threading_layer=threading_layer):
+                with patch("numba.threading_layer", return_value=threading_layer):
+                    with warnings.catch_warnings(record=True) as caught:
+                        warnings.simplefilter("always")
+                        _aerodynamics_functions.report_thread_settings()
+
+                self.assertFalse(
+                    [
+                        warning
+                        for warning in caught
+                        if "workqueue" in str(warning.message)
+                    ],
+                    f"The {threading_layer} layer should not warn about workqueue.",
+                )
+
+    def test_reports_the_thread_mask_and_the_resulting_kernel_thread_cap(self):
+        """Test that report_thread_settings reports the thread mask it read, the
+        ceiling, and the cap those two put on a kernel launch.
+
+        The reported values are what this asserts on, not the phrasing that carries
+        them, so rewording the records does not fail this test.
+        """
+        ceiling = _aerodynamics_functions._ceiling()
+        if ceiling < 2:
+            self.skipTest(
+                "This pool is too narrow for a mask to sit below the ceiling."
+            )
+
+        # Cap Numba below the ceiling, so it is the mask that binds and the reported cap
+        # has to follow the mask rather than the ceiling.
+        mask = ceiling - 1
+        numba.set_num_threads(mask)
+
+        with self.assertLogs(self._LOGGER_NAME, level="DEBUG") as caught:
+            _aerodynamics_functions.report_thread_settings()
+
+        records = "\n".join(caught.output)
+        self.assertIn(f"thread mask: {mask}", records)
+        self.assertIn(f"ceiling: {ceiling}", records)
+        self.assertIn(f"at most {mask} threads", records)
+
+
+class TestParallelDispatchWrappers(unittest.TestCase):
+    """This is a class with functions to test the thread mask dispatch wrappers
+    around the parallel Biot-Savart kernels."""
+
+    def setUp(self):
+        """Set up fixtures and thread mask restoration for dispatch tests."""
+        # Save the ambient thread mask, and guarantee it is restored even if a test
+        # fails, so these tests can't leak thread settings into other tests.
+        self.original_num_threads = numba.get_num_threads()
+        self.addCleanup(numba.set_num_threads, self.original_num_threads)
+
+        # Evaluation point fixture.
+        self.single_point = aerodynamics_functions_fixtures.make_single_point_fixture()
+
+        # Create fixtures for ndarrays of ring and horseshoe vortices.
+        (
+            self.simple_ring_Brrvp,
+            self.simple_ring_Frrvp,
+            self.simple_ring_Flrvp,
+            self.simple_ring_Blrvp,
+            self.simple_ring_strengths,
+        ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
+
+        (
+            self.simple_horseshoe_Brhvp,
+            self.simple_horseshoe_Frhvp,
+            self.simple_horseshoe_Flhvp,
+            self.simple_horseshoe_Blhvp,
+            self.simple_horseshoe_strengths,
+        ) = (
+            aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
+        )
+
+        # Create an initial core radius fixture.
+        self.simple_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1)
+
+    def _call_collapsed_ring(self):
+        """Helper to call collapsed_velocities_from_ring_vortices with the simple
+        ring vortex fixture and the single evaluation point."""
+        return _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
+            strengths=self.simple_ring_strengths,
+            r_c0s=self.simple_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
+        )
+
+    def _call_chordwise_segments(self):
+        """Helper to call collapsed_velocities_from_ring_vortices_chordwise_segments
+        with the simple ring vortex fixture and the single evaluation point."""
+        return _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
+            strengths=self.simple_ring_strengths,
+            r_c0s=self.simple_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
+        )
+
+    def _call_expanded_ring(self):
+        """Helper to call expanded_velocities_from_ring_vortices with the simple ring
+        vortex fixture and the single evaluation point."""
+        return _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=self.single_point,
+            stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
+            strengths=self.simple_ring_strengths,
+            r_c0s=self.simple_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
+        )
+
+    def _call_collapsed_horseshoe(self):
+        """Helper to call collapsed_velocities_from_horseshoe_vortices with the
+        simple horseshoe vortex fixture and the single evaluation point."""
+        return _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
+            strengths=self.simple_horseshoe_strengths,
+            r_c0s=self.simple_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
+        )
+
+    def _call_expanded_horseshoe(self):
+        """Helper to call expanded_velocities_from_horseshoe_vortices with the simple
+        horseshoe vortex fixture and the single evaluation point."""
+        return _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+            stackP_GP1_CgP1=self.single_point,
+            stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
+            stackFrhvp_GP1_CgP1=self.simple_horseshoe_Frhvp,
+            stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
+            stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
+            strengths=self.simple_horseshoe_strengths,
+            r_c0s=self.simple_rc0s,
+            singularity_counts=np.zeros(4, dtype=np.int64),
+        )
+
+    # ---- Thread mask restoration tests (successful kernel calls) ----
+
+    def test_collapsed_velocities_from_ring_vortices_restores_thread_mask(self):
+        """Test that collapsed_velocities_from_ring_vortices restores the thread mask
+        after its kernel calls."""
+        self._call_collapsed_ring()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_collapsed_velocities_from_ring_vortices_chordwise_segments_restores_thread_mask(
+        self,
+    ):
+        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments
+        restores the thread mask after its kernel calls."""
+        self._call_chordwise_segments()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_expanded_velocities_from_ring_vortices_restores_thread_mask(self):
+        """Test that expanded_velocities_from_ring_vortices restores the thread mask
+        after its kernel calls."""
+        self._call_expanded_ring()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_collapsed_velocities_from_horseshoe_vortices_restores_thread_mask(self):
+        """Test that collapsed_velocities_from_horseshoe_vortices restores the thread
+        mask after its kernel calls."""
+        self._call_collapsed_horseshoe()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_expanded_velocities_from_horseshoe_vortices_restores_thread_mask(self):
+        """Test that expanded_velocities_from_horseshoe_vortices restores the thread
+        mask after its kernel calls."""
+        self._call_expanded_horseshoe()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    # ---- Thread mask restoration tests (kernel raises) ----
+
+    def test_collapsed_velocities_from_ring_vortices_restores_thread_mask_on_raise(
+        self,
+    ):
+        """Test that collapsed_velocities_from_ring_vortices restores the thread mask
+        when its kernel raises."""
+        with patch.object(
+            _aerodynamics_functions,
+            "_collapsed_velocities_from_line_vortices",
+            side_effect=RuntimeError("Mock kernel failure."),
+        ):
+            with self.assertRaises(RuntimeError):
+                self._call_collapsed_ring()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_collapsed_velocities_from_ring_vortices_chordwise_segments_restores_thread_mask_on_raise(
+        self,
+    ):
+        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments
+        restores the thread mask when its kernel raises."""
+        with patch.object(
+            _aerodynamics_functions,
+            "_collapsed_velocities_from_line_vortices",
+            side_effect=RuntimeError("Mock kernel failure."),
+        ):
+            with self.assertRaises(RuntimeError):
+                self._call_chordwise_segments()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_expanded_velocities_from_ring_vortices_restores_thread_mask_on_raise(
+        self,
+    ):
+        """Test that expanded_velocities_from_ring_vortices restores the thread mask
+        when its kernel raises."""
+        with patch.object(
+            _aerodynamics_functions,
+            "_expanded_velocities_from_line_vortices",
+            side_effect=RuntimeError("Mock kernel failure."),
+        ):
+            with self.assertRaises(RuntimeError):
+                self._call_expanded_ring()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_collapsed_velocities_from_horseshoe_vortices_restores_thread_mask_on_raise(
+        self,
+    ):
+        """Test that collapsed_velocities_from_horseshoe_vortices restores the thread
+        mask when its kernel raises."""
+        with patch.object(
+            _aerodynamics_functions,
+            "_collapsed_velocities_from_line_vortices",
+            side_effect=RuntimeError("Mock kernel failure."),
+        ):
+            with self.assertRaises(RuntimeError):
+                self._call_collapsed_horseshoe()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    def test_expanded_velocities_from_horseshoe_vortices_restores_thread_mask_on_raise(
+        self,
+    ):
+        """Test that expanded_velocities_from_horseshoe_vortices restores the thread
+        mask when its kernel raises."""
+        with patch.object(
+            _aerodynamics_functions,
+            "_expanded_velocities_from_line_vortices",
+            side_effect=RuntimeError("Mock kernel failure."),
+        ):
+            with self.assertRaises(RuntimeError):
+                self._call_expanded_horseshoe()
+        self.assertEqual(numba.get_num_threads(), self.original_num_threads)
+
+    # ---- Work-proportional thread count tests ----
+
+    def _record_kernel_thread_counts(self, stackP_GP1_CgP1):
+        """Helper that calls collapsed_velocities_from_ring_vortices with a mocked
+        kernel and returns the thread masks recorded during its kernel launches.
+
+        The mocked kernel records numba.get_num_threads() at call time and returns an
+        all zero velocity array of the correct shape.
+        """
+        recorded_thread_counts = []
+
+        def _fake_kernel(**kwargs):
+            recorded_thread_counts.append(numba.get_num_threads())
+            return np.zeros((kwargs["stackP_GP1_CgP1"].shape[0], 3), dtype=float)
+
+        with patch.object(
+            _aerodynamics_functions,
+            "_collapsed_velocities_from_line_vortices",
+            new=_fake_kernel,
+        ):
+            _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
+                stackP_GP1_CgP1=stackP_GP1_CgP1,
+                stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
+                stackFrrvp_GP1_CgP1=self.simple_ring_Frrvp,
+                stackFlrvp_GP1_CgP1=self.simple_ring_Flrvp,
+                stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
+                strengths=self.simple_ring_strengths,
+                r_c0s=self.simple_rc0s,
+                singularity_counts=np.zeros(4, dtype=np.int64),
+            )
+
+        return recorded_thread_counts
+
+    def test_sub_grain_launch_runs_kernel_with_one_thread(self):
+        """Test that a launch smaller than one grain runs its kernel with 1
+        thread."""
+        recorded_thread_counts = self._record_kernel_thread_counts(self.single_point)
+
+        # The ring vortex wrapper launches the kernel once per leg, and each launch
+        # spans far less than one grain of evaluations.
+        self.assertEqual(recorded_thread_counts, [1, 1, 1, 1])
+
+    def test_multi_grain_launch_runs_kernel_with_work_proportional_threads(self):
+        """Test that a launch spanning multiple grains runs its kernel with a
+        work-proportional thread count, capped by the external thread mask."""
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # exactly two grains of evaluations.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            2 * _aerodynamics_functions._GRAIN
+        )
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        # A two grain launch asks for 2 threads, but the ambient thread mask and the
+        # ceiling cap the count on machines with very narrow pools.
+        expected_num_threads = min(
+            2, self.original_num_threads, _aerodynamics_functions._ceiling()
+        )
+        self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
+
+    def test_external_thread_cap_limits_multi_grain_launch(self):
+        """Test that an externally set thread mask caps the work-proportional thread
+        count and survives the wrapper."""
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # exactly two grains of evaluations.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            2 * _aerodynamics_functions._GRAIN
+        )
+
+        # Simulate a user capping the thread count before running a solver.
+        numba.set_num_threads(1)
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        # The external cap of 1 thread beats the work-proportional count of 2.
+        self.assertEqual(recorded_thread_counts, [1, 1, 1, 1])
+
+        # The wrapper must restore the user's cap, not the pool's full width.
+        self.assertEqual(numba.get_num_threads(), 1)
+
+    # ---- Pool-width ceiling tests ----
+
+    def test_many_grain_launch_is_capped_at_the_ceiling(self):
+        """Test that a launch spanning more grains than the ceiling is capped at
+        three quarters of the pool width."""
+        # Compute the documented ceiling independently of the module's own derivation:
+        # three quarters of the pool width, rounded down, never below 1.
+        ceiling = max((3 * numba.config.NUMBA_NUM_THREADS) // 4, 1)
+
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # one more grain than the ceiling, so the work-proportional count exceeds
+        # the ceiling.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            (ceiling + 1) * _aerodynamics_functions._GRAIN
+        )
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        # The ceiling caps the count when the ambient thread mask sits at the pool's
+        # full width. A narrower ambient mask caps it first.
+        expected_num_threads = min(ceiling, self.original_num_threads)
+        self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
+
+    def test_mask_below_ceiling_is_honored_exactly(self):
+        """Test that a thread mask set below the ceiling caps the kernel's thread
+        count exactly and survives the wrapper."""
+        if _aerodynamics_functions._ceiling() < 2:
+            self.skipTest(
+                "No thread mask can sit below the ceiling on this machine's Numba "
+                "pool."
+            )
+
+        # Simulate a user capping the thread count just below the ceiling.
+        below_ceiling_mask = _aerodynamics_functions._ceiling() - 1
+        numba.set_num_threads(below_ceiling_mask)
+
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # one more grain than the ceiling, so only the mask holds its thread count
+        # below the ceiling.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+        )
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        self.assertEqual(recorded_thread_counts, [below_ceiling_mask] * 4)
+
+        # The wrapper must restore the user's mask.
+        self.assertEqual(numba.get_num_threads(), below_ceiling_mask)
+
+    def test_mask_at_ceiling_runs_kernel_at_the_ceiling(self):
+        """Test that a thread mask set exactly at the ceiling runs the kernel with
+        the ceiling's thread count."""
+        # Simulate a user capping the thread count exactly at the ceiling.
+        numba.set_num_threads(_aerodynamics_functions._ceiling())
+
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # one more grain than the ceiling, so the work-proportional count exceeds
+        # the ceiling.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+        )
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        self.assertEqual(
+            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+        )
+
+        # The wrapper must restore the user's mask.
+        self.assertEqual(numba.get_num_threads(), _aerodynamics_functions._ceiling())
+
+    def test_full_width_mask_is_throttled_to_the_ceiling(self):
+        """Test that a thread mask set at the pool's full width is throttled to the
+        ceiling, like the untouched default, and survives the wrapper."""
+        # A mask at the pool's full width is indistinguishable from the untouched
+        # default, so the dispatch throttles both the same way.
+        numba.set_num_threads(numba.config.NUMBA_NUM_THREADS)
+
+        # With one ring vortex, this stack of points makes each leg's launch span
+        # one more grain than the ceiling, so the work-proportional count exceeds
+        # the ceiling.
+        stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
+            (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
+        )
+
+        recorded_thread_counts = self._record_kernel_thread_counts(stackP_GP1_CgP1)
+
+        self.assertEqual(
+            recorded_thread_counts, [_aerodynamics_functions._ceiling()] * 4
+        )
+
+        # The wrapper must restore the full-width mask, not the ceiling.
+        self.assertEqual(numba.get_num_threads(), numba.config.NUMBA_NUM_THREADS)

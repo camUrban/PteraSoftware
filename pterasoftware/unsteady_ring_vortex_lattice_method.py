@@ -403,6 +403,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             show_progress, "show_progress"
         )
 
+        # Report the thread dispatch settings this run's kernel launches will operate
+        # under, and warn if Numba's threading layer will make them slow.
+        _aerodynamics_functions.report_thread_settings()
+
         # The per step list arrays for both bound and wake state were
         # pre-allocated in __init__. Recompute the total panel count (used by
         # the progress bar weighting) here.
@@ -435,16 +439,21 @@ class UnsteadyRingVortexLatticeMethodSolver:
         approx_times[0] = round(approx_partial_time / 100)
         approx_total_time = np.sum(approx_times)
 
-        with tqdm(
-            total=approx_total_time,
-            unit="",
-            unit_scale=True,
-            ncols=100,
-            desc="Simulating",
-            disable=not show_progress,
-            bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
-            "Remaining: {remaining}",
-        ) as bar:
+        # Run the solve loop with the BLAS threading appropriate for this run's
+        # size.
+        with (
+            _functions.solve_loop_thread_limits(self.num_panels),
+            tqdm(
+                total=approx_total_time,
+                unit="",
+                unit_scale=True,
+                ncols=100,
+                desc="Simulating",
+                disable=not show_progress,
+                bar_format="{desc}:{percentage:3.0f}% |{bar}| Elapsed: {elapsed}, "
+                "Remaining: {remaining}",
+            ) as bar,
+        ):
             # Update the progress bar based on the initialization step's predicted
             # approximate, relative computing time.
             bar.update(n=float(approx_times[0]))

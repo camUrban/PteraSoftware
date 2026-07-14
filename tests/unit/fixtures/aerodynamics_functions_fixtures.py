@@ -71,6 +71,25 @@ def make_random_points_fixture():
     return random_points_fixture
 
 
+def make_origin_points_fixture(num_points):
+    """This method makes a fixture that is a stack of evaluation points, all at the
+    origin, for testing the parallel dispatch wrappers.
+
+    The number of points sets the size of the kernel launch that a dispatch wrapper
+    sees, so the dispatch tests use this fixture to build launches with a chosen
+    number of evaluations. Those tests mock out the kernel, so the points' values are
+    never read.
+
+    :param num_points: An int representing the number of evaluation points.
+    :return origin_points_fixture: (num_points, 3) ndarray of floats
+        This is a stack of num_points evaluation points, all at the origin (in the
+        first Airplane's geometry axes, relative to the first Airplane's CG).
+    """
+    origin_points_fixture = np.zeros((num_points, 3), dtype=float)
+
+    return origin_points_fixture
+
+
 def make_simple_ring_vortex_arrays_fixture():
     """This method makes a fixture containing arrays describing a single ring vortex
     for testing velocity calculation functions.

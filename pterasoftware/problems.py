@@ -105,8 +105,8 @@ class SteadyProblem:
         self._airplanes[0].validate_first_airplane_constraints()
 
         # Populate GP1_CgP1 coordinates for all Airplanes' Panels. This finds the
-        # Panels' positions in the first Airplane's geometry axes, relative to the
-        # first Airplane's CG based on their locally defined positions.
+        # Panels' positions in the first Airplane's geometry axes, relative to the first
+        # Airplane's CG based on their locally defined positions.
         for airplane in self._airplanes:
             # Compute the passive transformation matrix from this Airplane's local
             # geometry axes, relative to its CG, to the first Airplane's geometry axes,
@@ -219,8 +219,8 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
             will be converted internally to a bool. The default is False.
         :return: None
         """
-        # Validate and store the Movement before calling super().__init__() because
-        # the Movement provides the parameters that the core class needs.
+        # Validate and store the Movement before calling super().__init__() because the
+        # Movement provides the parameters that the core class needs.
         if not isinstance(movement, movements.movement.Movement):
             raise TypeError("movement must be a Movement.")
         self._movement = movement
@@ -393,8 +393,8 @@ _EXTRA_XML_INJECTION_POINTS = frozenset(
 _MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
 
 # Strongly coupled free-flight sub-iteration tunables. The relative and absolute
-# tolerances form the mixed convergence test on the nondimensionalized state residual. The
-# divergence tolerance guards the Aitken relaxation factor against a collapsing
+# tolerances form the mixed convergence test on the nondimensionalized state residual.
+# The divergence tolerance guards the Aitken relaxation factor against a collapsing
 # denominator. The initial relaxation factor under-relaxes the first update before the
 # Aitken formula takes over.
 _SUBITERATION_RELATIVE_TOLERANCE = 1e-6
@@ -591,10 +591,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 "simulation, leave both g_E and the weight at zero)."
             )
 
-        # The free-flight dynamics never apply externalFX_W: non-aerodynamic loads
-        # enter free flight only through external_loads_fn, which is strictly more
-        # capable (full force and moment, time varying). A nonzero value would be
-        # silently ignored, so raise instead.
+        # The free-flight dynamics never apply externalFX_W: non-aerodynamic loads enter
+        # free flight only through external_loads_fn, which is strictly more capable
+        # (full force and moment, time varying). A nonzero value would be silently
+        # ignored, so raise instead.
         if initial_operating_point.externalFX_W != 0.0:
             raise ValueError(
                 "The OperatingPoint's externalFX_W must be zero for free flight. The "
@@ -608,7 +608,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Tracks whether the external_loads_fn's return structure has been validated.
         # The return contract is static across time steps, so it is checked once, on the
-        # function's first invocation in initialize_next_problem, rather than every step.
+        # function's first invocation in initialize_next_problem, rather than every
+        # step.
         self._external_loads_validated = False
 
         # The cap on the strongly coupled sub-iteration count per free-flight time step.
@@ -653,8 +654,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml = validated_extra_xml
 
         # Validate the mujoco_assets dict (it must be a dict, or None, mapping str
-        # filenames to bytes). Whether a referenced asset is actually supplied is left to
-        # MuJoCo's own parser.
+        # filenames to bytes). Whether a referenced asset is actually supplied is left
+        # to MuJoCo's own parser.
         if mujoco_assets is not None:
             if not isinstance(mujoco_assets, dict):
                 raise TypeError("mujoco_assets must be a dict or None.")
@@ -1038,8 +1039,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         )
         velocity_E__E = state["velocity_E__E"]
         # Rotate the angular rate from the first Airplane's body axes into Earth axes
-        # (v_E = R_pas_E_to_BP1.T @ v_BP1, a proper rotation that preserves the axial-
-        # vector sign) and convert to radians per second.
+        # (v_E = R_pas_E_to_BP1.T @ v_BP1, a proper rotation that preserves the
+        # axial-vector sign) and convert to radians per second.
         omegasRad_E__E = R_pas_E_to_BP1.T @ np.deg2rad(state["omegas_BP1__E"])
 
         return np.concatenate(
@@ -1150,9 +1151,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         # the model is still at it, the solver's frozen step data, and the weighting.
         # Build the transient next-step SteadyProblem over a scratch copy of the
         # prescribed next-step Airplane, so the trials evaluate aerodynamics on the copy
-        # and the canonical Airplane's set-once panel coordinates are reserved for the
-        # official SteadyProblem committed once the solve accepts. Its OperatingPoint is a
-        # placeholder; the trial OperatingPoint is supplied to each trial.
+        # and the canonical Airplane's set-once Panel coordinates are reserved for the
+        # official SteadyProblem committed once the solve accepts. Its OperatingPoint is
+        # a placeholder. The trial OperatingPoint is supplied to each trial.
         snapshot = self._mujoco_model.save_state()
         snapshot_x = self._state_to_vector(self._mujoco_model.get_state())
         next_airplane = self._free_flight_movement.airplanes[0][step + 1]
@@ -1163,7 +1164,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         solver.freeze_substep(transient_next_steady_problem)
         weights = self._build_relaxation_weights()
 
-        # Seed the iteration with the loose step, S(x_n, l_n), evaluated from the snapshot.
+        # Seed the iteration with the loose step, S(x_n, l_n), evaluated from the
+        # snapshot.
         snapshot_interval_loads = self._assemble_interval_loads(
             current_operating_point, current_airplane, step
         )
@@ -1176,7 +1178,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         for iteration in range(self.k_max + 1):
             # Aerodynamic loads at the trial state: build the trial OperatingPoint,
-            # evaluate the aerodynamics at it, and assemble the Earth-axes interval load.
+            # evaluate the aerodynamics at it, and assemble the Earth-axes interval
+            # load.
             trial_operating_point = self._operating_point_from_vector(
                 trial_x, current_operating_point
             )
@@ -1248,9 +1251,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 residual_norm,
             )
 
-        # Accept: the final dynamics-propagated state, at which the model now sits, is the
-        # next step's state. Commit its OperatingPoint, then restore the solver's current-
-        # step state for the official wake build in the inherited run loop.
+        # Accept: the final dynamics-propagated state, at which the model now sits, is
+        # the next step's state. Commit its OperatingPoint, then restore the solver's
+        # current-step state for the official wake build in the inherited run loop.
         accepted_operating_point = self._operating_point_from_state(
             self._mujoco_model.get_state(), current_operating_point
         )
@@ -1308,14 +1311,14 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
-# Tolerances for the torsional spring-damper ODE integration in
-# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
-# defaults because the integration is re-seeded from the previous state at every
-# outer time step, so its local errors compound across a simulation, and because a
-# loose absolute tolerance would swamp small torsional responses. The absolute
-# tolerance bounds both state components, the torsional angle (radians) and its
-# time derivative (rad/s). Loosen these only for local debugging (for example, a
-# nearly massless wing makes the ODE stiff and the strict tolerances expensive).
+# Tolerances for the torsional spring-damper ODE integration in _spring_numerical_ode.
+# They are a few orders of magnitude stricter than scipy's defaults because the
+# integration is re-seeded from the previous state at every outer time step, so its
+# local errors compound across a simulation, and because a loose absolute tolerance
+# would swamp small torsional responses. The absolute tolerance bounds both state
+# components, the torsional angle (radians) and its time derivative (rad/s). Loosen
+# these only for local debugging (for example, a nearly massless wing makes the ODE
+# stiff and the strict tolerances expensive).
 _SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
 _SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
@@ -1440,21 +1443,20 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             step_discards  # number of initial steps to discard for numerical stability
         )
 
-        # Per-wing time series of the cumulative torsional deformation state. Indexed
-        # as [wing_idx][entry], where entry 0 is the zero-valued initial state and
-        # every generated next step appends one entry, so the last entry is always the
-        # state. Each entry is a (num_spanwise_panels + 1,) ndarray whose element n is
-        # the y component (radians) of the deformation angle vector that perturbs the
+        # Per-wing time series of the cumulative torsional deformation state. Indexed as
+        # [wing_idx][entry], where entry 0 is the zero-valued initial state and every
+        # generated next step appends one entry, so the last entry is always the state.
+        # Each entry is a (num_spanwise_panels + 1,) ndarray whose element n is the y
+        # component (radians) of the deformation angle vector that perturbs the
         # corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles describing
         # the orientation of the wing cross section axes relative to the wing cross
         # section parent axes using an intrinsic xy'z" sequence); the perturbations' x
-        # and z components are structurally zero, so only the y components are
-        # stored. The derivative entries are the angle elements' time derivatives
-        # (rad/s). They are rates of change of scalar angle components, not angular
-        # velocity vector components, and they carry no reference frame ID because
-        # differentiating a scalar coordinate involves no rotating basis (see the
-        # Angle Component Time Derivatives section of
-        # ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
+        # and z components are structurally zero, so only the y components are stored.
+        # The derivative entries are the angle elements' time derivatives (rad/s). They
+        # are rates of change of scalar angle components, not angular velocity vector
+        # components, and they carry no reference frame ID because differentiating a
+        # scalar coordinate involves no rotating basis (see the Angle Component Time
+        # Derivatives section of ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
         self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: list[list[np.ndarray]] = []
         self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: list[
             list[np.ndarray]
@@ -1646,11 +1648,10 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                     panel_offset,
                 )
 
-                # A mirror-meshed Wing's panel grid runs tip to root spanwise,
-                # while the structural solve and the WingCrossSectionMovements
-                # that consume its output run root to tip, so flip the spanwise
-                # axis of the per-panel arrays to put them in root-to-tip strip
-                # order.
+                # A mirror-meshed Wing's Panel grid runs tip to root spanwise, while the
+                # structural solve and the WingCrossSectionMovements that consume its
+                # output run root to tip, so flip the spanwise axis of the per-Panel
+                # arrays to put them in root-to-tip strip order.
                 if wing.mirror_only:
                     mass_matrix = mass_matrix[:, ::-1, :]
                     aeroMoments_GP1_Slep = aeroMoments_GP1_Slep[:, ::-1, :]
@@ -1801,9 +1802,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # Append the cumulative torsional angles and their time derivatives together,
         # holding both at their previous state during the first step_discards steps,
         # whose numerical startup effects cause large aerodynamic forces. The strips'
-        # ODEs are re-seeded from the time series' last entries, so recording only
-        # one component would seed a mixed state. Each recorded entry is a fresh
-        # array, so no time series entry aliases a later one.
+        # ODEs are re-seeded from the time series' last entries, so recording only one
+        # component would seed a mixed state. Each recorded entry is a fresh array, so
+        # no time series entry aliases a later one.
         deformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
             self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]
         )
@@ -1878,9 +1879,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz = np.zeros(
             num_spanwise_panels + 1, dtype=float
         )
-        # The current structural state is the last entry of each time series list.
-        # Both reads happen before this step's entries are appended, so they see the
-        # state at the end of the previous time step.
+        # The current structural state is the last entry of each time series list. Both
+        # reads happen before this step's entries are appended, so they see the state at
+        # the end of the previous time step.
         lastDeformationAnglesYRad_Wcsp_to_Wcs_ixyz = (
             self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx][-1]
         )
@@ -1895,12 +1896,11 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         )
         for span_panel in range(num_spanwise_panels):
             aeroMomentY_GP1_Slep = np.sum(aeroMoments_GP1_Slep[:, span_panel, 1])
-            # Re-seed the strip's ODE from its own state at the end of the previous
-            # time step. The state arrays hold one entry per WingCrossSection, and a
-            # strip's state lives at its outboard bounding WingCrossSection, index
-            # span_panel + 1. The WingCrossSection at index span_panel bounds this
-            # strip on its inboard side, and the root WingCrossSection (index 0) is
-            # clamped.
+            # Re-seed the strip's ODE from its own state at the end of the previous time
+            # step. The state arrays hold one entry per WingCrossSection, and a strip's
+            # state lives at its outboard bounding WingCrossSection, index span_panel +
+            # 1. The WingCrossSection at index span_panel bounds this strip on its
+            # inboard side, and the root WingCrossSection (index 0) is clamped.
             (
                 newDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
                 newDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[span_panel + 1],
@@ -1959,8 +1959,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
         flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
         assert wing.panels is not None
-        # The distance from the flapping axis to the strip's centroid, accumulated
-        # in half-span-width increments.
+        # The distance from the flapping axis to the strip's centroid, accumulated in
+        # half-span-width increments.
         d = 0.0
         for span_panel in range(num_spanwise_panels):
             mass = mass_matrix[:, span_panel, :].sum()
@@ -1968,10 +1968,9 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
                 wing.wing_cross_sections[span_panel].chord
                 + wing.wing_cross_sections[span_panel + 1].chord
             ) / 2
-            # The span_panel index runs root to tip, matching the
-            # wing_cross_sections list, but a mirror-meshed Wing's panel grid
-            # runs tip to root spanwise, so map the index when reading panel
-            # geometry.
+            # The span_panel index runs root to tip, matching the wing_cross_sections
+            # list, but a mirror-meshed Wing's Panel grid runs tip to root spanwise, so
+            # map the index when reading Panel geometry.
             if wing.mirror_only:
                 panel_span_index = num_spanwise_panels - 1 - span_panel
             else:
@@ -2085,8 +2084,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """
         amp = wing_movement.ampAngles_Gs_to_Wn_ixyz[0]
 
-        # A wing with no prescribed flapping applies no inertial moment. Return the
-        # zero function before computing the flapping frequency, whose 2 * pi / period
+        # A wing with no prescribed flapping applies no inertial moment. Return the zero
+        # function before computing the flapping frequency, whose 2 * pi / period
         # expression is undefined for the zero period that a zero amplitude requires.
         if amp == 0.0:
             return lambda time: 0.0
@@ -2095,7 +2094,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         h_rad = np.deg2rad(wing_movement.phaseAngles_Gs_to_Wn_ixyz[0])
         spacing = wing_movement.spacingAngles_Gs_to_Wn_ixyz[0]
         if spacing == "sine":
-            # amp is in degrees (ampAngles_Gs_to_Wn_ixyz); convert to radians so
+            # Since amp is in degrees (ampAngles_Gs_to_Wn_ixyz), convert to radians so
             # the inertial moment (N*m) is consistent with the SI spring-damper ODE.
             moment_func = (
                 lambda time: -1

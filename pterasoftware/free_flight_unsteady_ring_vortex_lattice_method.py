@@ -25,8 +25,8 @@ from ._coupled_unsteady_ring_vortex_lattice_method import (
 )
 
 # Body and geometry axes differ by a 180-degree rotation about y, so transforming a free
-# vector (such as an angular velocity) from the first Airplane's body axes to its geometry
-# axes negates the x and z components.
+# vector (such as an angular velocity) from the first Airplane's body axes to its
+# geometry axes negates the x and z components.
 _BP1_TO_GP1_FLIP = np.array([-1.0, 1.0, -1.0], dtype=float)
 _BP1_TO_GP1_FLIP.flags.writeable = False
 
@@ -89,15 +89,15 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
         # Transient working state for the strongly coupled sub-iteration, established by
         # freeze_substep and cleared by restore_substep. Each is None between substeps.
-        # The next step and its transient SteadyProblem and trial OperatingPoint redirect
-        # the inherited geometry and wake reads to a scratch copy of the next Airplane and
-        # the current trial state, since the canonical next-step SteadyProblem is not
-        # committed until the solve accepts. The frozen induced velocities are the
-        # iterate-independent part of the wake transport; the two strength snapshots are
-        # the current and previous steps' solved bound ring vortex strengths. These are
-        # initialized before the inherited constructor runs, because it calls
-        # _get_steady_problem_at, which this solver's override consults for the substep
-        # state.
+        # The next step and its transient SteadyProblem and trial OperatingPoint
+        # redirect the inherited geometry and wake reads to a scratch copy of the next
+        # Airplane and the current trial state, since the canonical next-step
+        # SteadyProblem is not committed until the solve accepts. The frozen induced
+        # velocities are the iterate-independent part of the wake transport. The two
+        # strength snapshots are the current and previous steps' solved bound ring
+        # vortex strengths. These are initialized before the inherited constructor runs,
+        # because it calls _get_steady_problem_at, which this solver's override consults
+        # for the substep state.
         self._substep_next_step: int | None = None
         self._substep_next_steady_problem: problems.SteadyProblem | None = None
         self._substep_next_operating_point: operating_point.OperatingPoint | None = None
@@ -280,10 +280,10 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._initialize_panel_vortices_at(next_step)
 
         # P: age the current step's wake into the next step. The wake builder reads the
-        # current step as the reference step, the next step's trial OperatingPoint for the
-        # frame terms, and the snapshot bound strengths for the newly shed row, so set the
-        # current step's context and restore the snapshot strengths first. The induced
-        # transport is the frozen precompute from freeze_substep.
+        # current step as the reference step, the next step's trial OperatingPoint for
+        # the frame terms, and the snapshot bound strengths for the newly shed row, so
+        # set the current step's context and restore the snapshot strengths first. The
+        # induced transport is the frozen precompute from freeze_substep.
         current_problem = self._get_steady_problem_at(step)
         self._current_step = step
         self.current_airplanes = current_problem.airplanes
@@ -297,8 +297,8 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
 
         # C and L: solve the circulation and loads at the next step against the trial
         # geometry and the freshly aged wake. The current Airplanes are the scratch copy
-        # and the current OperatingPoint is the trial. The unsteady load term differences
-        # the solved strengths against the snapshot strengths.
+        # and the current OperatingPoint is the trial. The unsteady load term
+        # differences the solved strengths against the snapshot strengths.
         self._current_step = next_step
         self.current_airplanes = self._get_steady_problem_at(next_step).airplanes
         self.current_operating_point = trial_operating_point

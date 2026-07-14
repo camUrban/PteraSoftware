@@ -62,8 +62,8 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
             [operating_point.omegas_BP1__E for operating_point in operating_points]
         )
 
-        # In Ptera Software's wind axes, lift is the negative z-component of the wind-axes
-        # force.
+        # In Ptera Software's wind axes, lift is the negative z component of the wind
+        # axes force.
         forces_W = np.array(
             [
                 steady_problem.airplanes[0].forces_W
@@ -167,8 +167,8 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         # (increasing z) loses potential energy.
         potential_energies = -self.mass * (self.positions_E_Eo @ self.g_E)
 
-        # Rotational kinetic energy, using the body-axes angular velocity (converted from
-        # degrees per second to radians per second) and inertia matrix.
+        # Rotational kinetic energy, using the body-axes angular velocity (converted
+        # from degrees per second to radians per second) and inertia matrix.
         omegasRad_BP1__E = np.deg2rad(self.omegas_BP1__E)
         rotational_kinetic_energies = np.array(
             [
@@ -232,8 +232,8 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
             [operating_point.CgP1_E_Eo for operating_point in operating_points]
         )
 
-        # In Ptera Software's wind axes, lift is the negative z-component of the wind-axes
-        # force and the lateral side force is the y-component.
+        # In Ptera Software's wind axes, lift is the negative z component of the wind
+        # axes force and the lateral side force is the y component.
         forces_W = np.array(
             [
                 steady_problem.airplanes[0].forces_W

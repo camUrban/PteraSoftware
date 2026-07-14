@@ -87,7 +87,7 @@ def _threads_for_launch(num_points: int, num_vortices: int) -> int:
         justifies: one thread per whole grain of evaluations, floored at 1.
     """
     evaluations = num_points * num_vortices
-    return max(evaluations // _GRAIN, 1)
+    return min(max(evaluations // _GRAIN, 1), max(num_points, 1))
 
 
 def report_thread_settings() -> None:

@@ -2617,12 +2617,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 _lastBlpp_GP1_CgP1 = last_panel.Blpp_GP1_CgP1
                                 assert _lastBlpp_GP1_CgP1 is not None
 
-                                # Subtract (thisBlpp_GP1_CgP1 - lastBlpp_GP1_CgP1)
-                                # / self.delta_time from vInf_GP1__E to get the
-                                # apparent fluid velocity due to motion (observed
-                                # from the Earth frame, in the first Airplane's
-                                # geometry axes). This is the vector pointing
-                                # opposite the velocity from motion.
+                                # Subtract (thisBlpp_GP1_CgP1 - lastBlpp_GP1_CgP1) /
+                                # self.delta_time from vInf_GP1__E to get the apparent
+                                # fluid velocity due to motion (observed from the Earth
+                                # frame, in the first Airplane's geometry axes). This is
+                                # the vector pointing opposite the velocity from motion.
                                 Blrvp_GP1_CgP1 = (
                                     _thisBlpp_GP1_CgP1
                                     + (

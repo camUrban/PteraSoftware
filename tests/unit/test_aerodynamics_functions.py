@@ -911,8 +911,8 @@ class TestSingularityGuards(unittest.TestCase):
         )
 
         # Simple (non degenerate) ring vortex fixture for vertex proximity and
-        # collinearity tests. Corners: Br=(1,0.5,0), Fr=(0,0.5,0),
-        # Fl=(0,-0.5,0), Bl=(1,-0.5,0).
+        # collinearity tests. Corners: Br = (1.0, 0.5, 0.0), Fr = (0.0, 0.5, 0.0), Fl =
+        # (0.0, -0.5, 0.0), Bl = (1.0, -0.5, 0.0).
         (
             self.ring_Brrvp,
             self.ring_Frrvp,
@@ -921,9 +921,9 @@ class TestSingularityGuards(unittest.TestCase):
             self.ring_strengths,
         ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
 
-        # Simple (non degenerate) horseshoe vortex fixture for vertex proximity
-        # and collinearity tests. Corners: Br = (20.0, 0.5, 0.0), Fr = (0.0, 0.5, 0.0),
-        # Fl = (0.0, -0.5, 0.0), Bl = (20.0, -0.5, 0.0).
+        # Simple (non degenerate) horseshoe vortex fixture for vertex proximity and
+        # collinearity tests. Corners: Br = (20.0, 0.5, 0.0), Fr = (0.0, 0.5, 0.0), Fl =
+        # (0.0, -0.5, 0.0), Bl = (20.0, -0.5, 0.0).
         (
             self.horseshoe_Brhvp,
             self.horseshoe_Frhvp,

@@ -268,8 +268,8 @@ def build_unsteady_problem(
     # 5. Iterate over the WingMovements.
     #   5.1. Reference the WingMovement's base Wing.
     #   5.2. Reference the WingMovement's list of WingCrossSectionMovements.
-    #   5.3. Create an empty list for the WingCrossSectionMovements' base WingCrossSection
-    #        copies.
+    #   5.3. Create an empty list for the WingCrossSectionMovements' base
+    #        WingCrossSection copies.
     #   5.4. Create an empty list for the WingCrossSectionMovement copies.
     #   5.5. Iterate over the WingCrossSectionMovements.
     #     5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
@@ -277,8 +277,8 @@ def build_unsteady_problem(
     #            combination of Panel aspect ratio and number of chordwise Panels.
     #     5.5.3. Create a copy of the base WingCrossSection.
     #     5.5.4. Create a copy of the WingCrossSectionMovement.
-    #     5.5.5. Append the base WingCrossSection copy to the list of base WingCrossSection
-    #            copies.
+    #     5.5.5. Append the base WingCrossSection copy to the list of base
+    #            WingCrossSection copies.
     #     5.5.6. Append the WingCrossSectionMovement copy to the list of
     #            WingCrossSectionMovement copies.
     #   5.6. Create a copy of the base Wing.

@@ -2310,10 +2310,10 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         lcm_period = 2.0  # Fixture has period 2.0.
         initial_delta_time = 0.1  # Results in ~20 steps, search range ~10 to ~41.
 
-        # Mock the cached batch evaluator to return mismatches that increase
-        # with num_steps, so the best is at min_num_steps (lower bound = largest
-        # delta_time). This mirrors the original 1.0 / delta_time shape via
-        # delta_time = lcm_period / num_steps.
+        # Mock the cached batch evaluator to return mismatches that increase with
+        # num_steps, so the best is at min_num_steps (lower bound = largest delta_time).
+        # This mirrors the original 1.0 / delta_time shape via delta_time = lcm_period /
+        # num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
             airplane_movements,

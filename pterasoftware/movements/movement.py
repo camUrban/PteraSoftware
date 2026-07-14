@@ -134,10 +134,10 @@ class Movement(_core.CoreMovement):
         :return: None
         """
         # --- Validate types early ---
-        # CoreMovement.__init__() validates these, but Movement needs to use
-        # the parameters before calling super().__init__() (for delta_time estimation
-        # and period computation). Validate here so that bad types produce clear
-        # TypeErrors rather than AttributeErrors.
+        # CoreMovement.__init__() validates these, but Movement needs to use the
+        # parameters before calling super().__init__() (for delta_time estimation and
+        # period computation). Validate here so that bad types produce clear TypeErrors
+        # rather than AttributeErrors.
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
         if len(airplane_movements) < 1:
@@ -965,10 +965,9 @@ def _evaluate_cached_wake_area_mismatch(
             + weights_next_v * v_inf_high_res[next_indices]
         )
 
-        # Comparison axis: index i in [0, num_steps - 2] maps to
-        # step = i + 1, prev_step = i. Slice the panel arrays accordingly so
-        # bound and wake area calculations can run as one vectorized batch
-        # rather than a Python step loop.
+        # Comparison axis: index i in [0, num_steps - 2] maps to step = i + 1, prev_step
+        # = i. Slice the panel arrays accordingly so bound and wake area calculations
+        # can run as one vectorized batch rather than a Python step loop.
         Flpp_prev_arr = Flpp[: num_steps - 1]
         Frpp_prev_arr = Frpp[: num_steps - 1]
         Blpp_prev_arr = Blpp[: num_steps - 1]

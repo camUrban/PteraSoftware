@@ -88,9 +88,9 @@ class FreeFlightMovement(_core.CoreMovement):
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """
-        # Validate that every element is an AirplaneMovement.
-        # CoreMovement.__init__() validates at the Core level, but
-        # FreeFlightMovement enforces the concrete type.
+        # Validate that every element is an AirplaneMovement. CoreMovement.__init__()
+        # validates at the Core level, but FreeFlightMovement enforces the concrete
+        # type.
         for airplane_movement in airplane_movements:
             if not isinstance(
                 airplane_movement,

@@ -98,8 +98,8 @@ class AeroelasticMovement(_core.CoreMovement):
                 )
 
         # Validate that operating_point_movement is an OperatingPointMovement.
-        # CoreMovement.__init__() validates at the Core level, but
-        # AeroelasticMovement enforces the concrete type.
+        # CoreMovement.__init__() validates at the Core level, but AeroelasticMovement
+        # enforces the concrete type.
         if not isinstance(
             operating_point_movement,
             operating_point_movement_mod.OperatingPointMovement,

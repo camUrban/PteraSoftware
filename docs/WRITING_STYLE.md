@@ -83,6 +83,7 @@ If a legitimate reason to violate this rule arises (a contribution must include 
 - For division, use a slash surrounded by spaces (e.g., "a / b").
 - For equals signs in inline equations and value descriptions, surround with spaces (e.g., "area = 0.5", not "area=0.5").
 - For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
+- When writing tuples or vectors in prose, include a space after each comma (e.g., "(1.0, 2.0, 3.0)", not "(1.0,2.0,3.0)").
 - When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - Always end *.py file with an empty line.
 - Preserve existing comment structure and detail level.

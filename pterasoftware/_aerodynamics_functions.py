@@ -84,9 +84,19 @@ def _threads_for_launch(num_points: int, num_vortices: int) -> int:
     :param num_vortices: A non negative int representing the number of line vortices
         whose induced velocities the launch computes at each point.
     :return: A positive int representing the number of threads the launch's work
-        justifies: one thread per whole grain of evaluations, floored at 1.
+        justifies: one thread per whole grain of evaluations, floored at 1 and capped at
+        the launch's point count.
     """
     evaluations = num_points * num_vortices
+
+    # The kernels parallelize over points alone, summing each point's vortices in a
+    # serial inner loop, so a launch can never use more threads than it has points.
+    # Handing it more would leave the surplus threads with no iteration to run while they
+    # still pay the parallel region's entry and its closing barrier, which is the very
+    # overhead this dispatch exists to avoid. The cap binds when a launch carries more
+    # than one grain of vortices and fewer points than the ceiling, as an unsteady run's
+    # wake influences do on a small mesh once the wake grows, and as streamline launches
+    # do generally.
     return min(max(evaluations // _GRAIN, 1), max(num_points, 1))
 
 
@@ -160,8 +170,8 @@ def collapsed_velocities_from_ring_vortices(
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
     does cause a performance drop for the less intense steady simulations. Each kernel
-    launch runs with a work-proportional thread count, which never exceeds the current
-    Numba thread mask or the module's kernel thread ceiling.
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -261,8 +271,8 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
     does cause a performance drop for the less intense steady simulations. Each kernel
-    launch runs with a work-proportional thread count, which never exceeds the current
-    Numba thread mask or the module's kernel thread ceiling.
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -358,8 +368,8 @@ def expanded_velocities_from_ring_vortices(
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
     does cause a performance drop for the less intense steady simulations. Each kernel
-    launch runs with a work-proportional thread count, which never exceeds the current
-    Numba thread mask or the module's kernel thread ceiling.
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -461,8 +471,8 @@ def collapsed_velocities_from_horseshoe_vortices(
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
     does cause a performance drop for the less intense steady simulations. Each kernel
-    launch runs with a work-proportional thread count, which never exceeds the current
-    Numba thread mask or the module's kernel thread ceiling.
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's
@@ -557,8 +567,8 @@ def expanded_velocities_from_horseshoe_vortices(
     This function's performance has been highly optimized for unsteady simulations via
     Numba. While using Numba dramatically increases unsteady simulation performance, it
     does cause a performance drop for the less intense steady simulations. Each kernel
-    launch runs with a work-proportional thread count, which never exceeds the current
-    Numba thread mask or the module's kernel thread ceiling.
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
 
     :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
         points (in the first Airplane's geometry axes, relative to the first Airplane's

@@ -1880,18 +1880,51 @@ class TestThreadsForLaunch(unittest.TestCase):
                 )
 
     def test_partial_grains_round_down(self):
-        """Test that _threads_for_launch ignores a partial grain of evaluations."""
+        """Test that _threads_for_launch ignores a partial grain of evaluations.
+
+        Both launches carry more points than the thread count they justify, so the point
+        cap cannot bind and the rounding is tested on its own.
+        """
+        # Two points and one vortex short of a grain each, so just under two grains.
         self.assertEqual(
             _aerodynamics_functions._threads_for_launch(
-                1, 2 * _aerodynamics_functions._GRAIN - 1
+                2, _aerodynamics_functions._GRAIN - 1
             ),
             1,
         )
+
+        # Three points and one vortex short of a grain each, so just under three grains.
         self.assertEqual(
             _aerodynamics_functions._threads_for_launch(
-                1, 3 * _aerodynamics_functions._GRAIN - 1
+                3, _aerodynamics_functions._GRAIN - 1
             ),
             2,
+        )
+
+    def test_thread_count_never_exceeds_the_point_count(self):
+        """Test that _threads_for_launch never asks for more threads than the launch has
+        points.
+
+        The kernels parallelize over points alone and sum each point's vortices in a
+        serial inner loop, so threads beyond the point count could never receive an
+        iteration. They would still pay the parallel region's entry and closing barrier,
+        which is the overhead the dispatch exists to avoid.
+        """
+        # A single point with a hundred grains of vortices. The work would justify a
+        # hundred threads, but only one of them could ever run an iteration.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                1, 100 * _aerodynamics_functions._GRAIN
+            ),
+            1,
+        )
+
+        # Four points with a hundred grains of vortices each, capped at the four points.
+        self.assertEqual(
+            _aerodynamics_functions._threads_for_launch(
+                4, 100 * _aerodynamics_functions._GRAIN
+            ),
+            4,
         )
 
 

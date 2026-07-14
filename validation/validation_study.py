@@ -30,16 +30,16 @@ chord = 0.072
 # Set the given forward flight velocity in meters per second.
 validation_velocity = 2.9
 
-# Set the given angle of attack in degrees. Note: If you analyze a different
-# operating point where this is not zero, you need to modify the code to rotate the
-# experimental lift into the wind axes.
+# Set the given angle of attack in degrees. Note: If you analyze a different operating
+# point where this is not zero, you need to modify the code to rotate the experimental
+# lift into the wind axes.
 validation_alpha = 0
 
 # Set the given flapping frequency in Hertz.
 validation_flapping_frequency = 3.3
 
-# This wing planform has a rounded tip so the outermost WingCrossSection needs to
-# be inset some amount. This value is in meters.
+# This wing planform has a rounded tip so the outermost WingCrossSection needs to be
+# inset some amount. This value is in meters.
 tip_inset = 0.005
 
 # A similar constraint is that Ptera Software requires symmetric, flapping Wings have
@@ -47,11 +47,11 @@ tip_inset = 0.005
 wing_midline_offset = 0.005
 
 # Import the extracted points from the paper's diagram of the planform. The resulting
-# array is of the form [spanwise coordinate, chordwise coordinate], and is ordered
-# from the leading edge root, to the tip, to the trailing edge root. The origin is
-# the trailing edge root point. The positive spanwise axis extends from root to tip
-# and the positive chordwise axis from trailing edge to leading edge. The values
-# are in millimeters. I'll call this the Yeo axis system.
+# array is of the form [spanwise coordinate, chordwise coordinate], and is ordered from
+# the leading edge root, to the tip, to the trailing edge root. The origin is the
+# trailing edge root point. The positive spanwise axis extends from root to tip and the
+# positive chordwise axis from trailing edge to leading edge. The values are in
+# millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
     "extracted_planform_coordinates.csv", delimiter=","
 )
@@ -69,18 +69,18 @@ stackPlanformPoints_YeoXReversed_Ler = stackPlanformPoints_Yeo_Ler * np.array(
     [1, -1], dtype=float
 )
 
-# Swap the axes to the form [chordwise coordinate, spanwise coordinate]. The
-# coordinates are now in wing axes projected onto its xy-plane, and relative to the
-# leading edge root point.
+# Swap the axes to the form [chordwise coordinate, spanwise coordinate]. The coordinates
+# are now in wing axes projected onto its xy-plane, and relative to the leading edge
+# root point.
 stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
 # Find the index of the point where the planform point's x component equals the half
 # span.
 tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
 
-# Using the tip index, split the points into two ndarrays of leading and trailing
-# edge points (in wing axes projected onto its xy-plane, relative to the leading edge
-# root point).
+# Using the tip index, split the points into two ndarrays of leading and trailing edge
+# points (in wing axes projected onto its xy-plane, relative to the leading edge root
+# point).
 stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[:tip_index, :]
 stackTrailingPointsXY_Wn_Ler = np.flip(
     stackPlanformPointsXY_Wn_Ler[tip_index:, :], axis=0
@@ -97,16 +97,16 @@ num_chordwise_panels = 5
 # WingCrossSections per Wing half. The converged result is 18 spanwise sections.
 num_spanwise_sections = 18
 
-# Set the chordwise spacing scheme for the Panels. This is set to uniform,
-# as is standard for UVLM simulations.
+# Set the chordwise spacing scheme for the Panels. This is set to uniform, as is
+# standard for UVLM simulations.
 chordwise_spacing = "uniform"
 
 # Calculate the spanwise distance between the WingCrossSections.
 spanwise_step = (half_span - tip_inset) / num_spanwise_sections
 
 # Define four ndarrays to hold the leading and trailing points of each section's left
-# and right WingCrossSections (in wing axes projected onto its xy-plane, relative to
-# the leading edge root point).
+# and right WingCrossSections (in wing axes projected onto its xy plane, relative to the
+# leading edge root point).
 stackLeftLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 stackRightLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 stackLeftTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
@@ -123,8 +123,8 @@ for spanwise_loc in range(num_spanwise_sections):
     stackRightLpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
     stackRightTpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
 
-    # Interpolate between the points to find their x components (in wing axes
-    # projected onto its xy-plane, relative to the leading edge root point).
+    # Interpolate between the points to find their x components (in wing axes projected
+    # onto its xy plane, relative to the leading edge root point).
     stackLeftLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
         spanwise_loc * spanwise_step,
         stackLeadingPointsXY_Wn_Ler[:, 1],
@@ -179,8 +179,8 @@ for i in range(num_spanwise_sections):
     # Append this WingCrossSection to the list of WingCrossSections.
     validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
-    # If this is the last section, also create the right WingCrossSection and append
-    # it to the list.
+    # If this is the last section, also create the right WingCrossSection and append it
+    # to the list.
     if i == num_spanwise_sections - 1:
         thisLpY_Wcsp_Lpp = spanwise_step
         thisLpX_Wcsp_Lpp = (
@@ -374,8 +374,8 @@ del validation_airplane
 del main_wing_movement
 del reflected_main_wing_movement
 
-# Define an OperatingPoint and OperatingPointMovement corresponding to the conditions
-# of the validation study.
+# Define an OperatingPoint and OperatingPointMovement corresponding to the conditions of
+# the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
     vCg__E=validation_velocity, alpha=validation_alpha
 )
@@ -412,8 +412,8 @@ validation_solver = (
 # Delete the extraneous pointer.
 del validation_problem
 
-# Define the position of the points of interest and the area of their rectangles.
-# These values were extracted by digitizing the figures in Yeo et al., 2011.
+# Define the position of the points of interest and the area of their rectangles. These
+# values were extracted by digitizing the figures in Yeo et al., 2011.
 blueTrailingPointsXY_Wn_Ler = [0.060, 0.036]
 blue_trailing_area = 0.072 * 0.024
 blueMiddlePointsXY_Wn_Ler = [0.036, 0.036]
@@ -448,8 +448,8 @@ times = np.linspace(
     endpoint=False,
 )
 
-# Discretize the time period of the final flap analyzed into 100 steps. Store this to
-# a ndarray.
+# Discretize the time period of the final flap analyzed into 100 steps. Store this to a
+# ndarray.
 final_flap_times = np.linspace(
     (num_flaps - 1) / validation_flapping_frequency,
     num_flaps / validation_flapping_frequency,
@@ -460,10 +460,9 @@ final_flap_times = np.linspace(
 # Discretize the normalized flap cycle times into 100 steps. Store this to a ndarray.
 normalized_times = np.linspace(0, 1, 100, endpoint=False)
 
-# Pull the experimental pressure vs. time histories from the digitized data. These
-# data sets are stored in CSV files in the same directory as this script. The
-# pressure units used are inAq and time units are normalized flap cycle times from 0
-# to 1.
+# Pull the experimental pressure vs. time histories from the digitized data. These data
+# sets are stored in CSV files in the same directory as this script. The pressure units
+# used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
     "blue_trailing_point_experimental_pressures.csv", delimiter=","
 )
@@ -492,8 +491,8 @@ exp_green_leading_point_pressures = np.genfromtxt(
     "green_leading_point_experimental_pressures.csv", delimiter=","
 )
 
-# Interpolate the experimental pressure data to ensure that they all reference the
-# same normalized timescale.
+# Interpolate the experimental pressure data to ensure that they all reference the same
+# normalized timescale.
 exp_blue_trailing_point_pressures_norm = np.interp(
     normalized_times,
     exp_blue_trailing_point_pressures[:, 0],
@@ -569,8 +568,8 @@ exp_green_leading_normal_forces = (
     248.84 * exp_green_leading_point_pressures_norm * green_leading_area
 )
 
-# Convert each experimental panel's normal force time history to a time history of
-# the force's geometry axes' z-component.
+# Convert each experimental panel's normal force time history to a time history of the
+# force's z component in geometry axes.
 stackExpBlueTrailingForcesZ_G = exp_blue_trailing_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
@@ -599,9 +598,9 @@ stackExpGreenLeadingForcesZ_G = exp_green_leading_normal_forces * np.cos(
     time_normalized_validation_geometry_sweep_function_rad(normalized_times)
 )
 
-# Calculate the net experimental force's geometry axes' z-component. This is
-# multiplied by two because the experimental panels only cover one of the symmetric
-# wing halves.
+# Calculate the net experimental force's z component in geometry axes. This is
+# multiplied by two because the experimental panels only cover one of the symmetric wing
+# halves.
 stackExpNetForcesZ_G = 2 * (
     stackExpBlueTrailingForcesZ_G
     + stackExpBlueMiddleForcesZ_G
@@ -617,9 +616,9 @@ stackExpNetForcesZ_G = 2 * (
 # Initialize a ndarray to hold the net force's wind axes' z-component.
 stackExpNetForcesZ_W = np.zeros(stackExpNetForcesZ_G.size, dtype=float)
 
-# Get the passive transformation matrix which maps in homogeneous coordinates from
-# the first Airplane's geometry axes relative to the first Airplane's CG to wind
-# axes relative to the first Airplane's CG.
+# Get the passive transformation matrix which maps in homogeneous coordinates from the
+# first Airplane's geometry axes relative to the first Airplane's CG to wind axes
+# relative to the first Airplane's CG.
 T_pas_GP1_CgP1_to_W_CgP1 = validation_operating_point.T_pas_GP1_CgP1_to_W_CgP1
 
 # Delete the extraneous pointer.
@@ -680,10 +679,10 @@ lift_axes.set_facecolor(figure_background_color)
 
 marker_spacing = 1.0 / num_markers
 
-# Plot the simulated lift values. The x-axis is set to the normalized times,
-# which may seem odd because we just interpolated to get them in terms of the
-# normalized final flap times. But, they are discretized in exactly the same way as
-# the normalized times, just horizontally shifted.
+# Plot the simulated lift values. The x axis is set to the normalized times, which may
+# seem odd because we just interpolated to get them in terms of the normalized final
+# flap times. But, they are discretized in exactly the same way as the normalized times,
+# just horizontally shifted.
 lift_axes.plot(
     normalized_times,
     final_flap_sim_lifts,
@@ -738,9 +737,9 @@ del stackSimForces_W
 del step
 
 # Calculate the lift mean absolute error (MAE). The experimental and simulated lift
-# comparison here is valid because, due to the interpolation steps, the experimental
-# and simulated lifts time histories are discretized so that they are with respect to
-# the same timescale.
+# comparison here is valid because, due to the interpolation steps, the experimental and
+# simulated lifts time histories are discretized so that they are with respect to the
+# same timescale.
 lift_absolute_errors = np.abs(final_flap_sim_lifts - exp_lifts)
 lift_mean_absolute_error = np.mean(lift_absolute_errors)
 

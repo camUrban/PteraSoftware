@@ -61,8 +61,8 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract positions (in Earth axes, relative to the simulation starting
-        # point) from generated Airplanes.
+        # Extract positions (in Earth axes, relative to the simulation starting point)
+        # from generated Airplanes.
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
 
         # Calculate expected sine wave values.
@@ -82,8 +82,8 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract positions (in Earth axes, relative to the simulation starting
-        # point) from generated Airplanes.
+        # Extract positions (in Earth axes, relative to the simulation starting point)
+        # from generated Airplanes.
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
 
         # Calculate expected triangular wave values.
@@ -102,8 +102,8 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract positions (in Earth axes, relative to the simulation starting
-        # point) from generated Airplanes.
+        # Extract positions (in Earth axes, relative to the simulation starting point)
+        # from generated Airplanes.
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
         y_positions = np.array([airplane.Cg_GP1_CgP1[1] for airplane in airplanes])
         z_positions = np.array([airplane.Cg_GP1_CgP1[2] for airplane in airplanes])
@@ -415,9 +415,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
 
-        # Check that non-changing attributes are preserved. Note: s_ref, c_ref,
-        # and b_ref are NOT included because they are calculated from the Wings,
-        # which change due to WingMovement or WingCrossSectionMovement.
+        # Check that non-changing attributes are preserved. Note: s_ref, c_ref, and
+        # b_ref are not included because they are calculated from the Wings, which
+        # change due to WingMovement or WingCrossSectionMovement.
         for airplane in airplanes:
             self.assertEqual(airplane.name, base_airplane.name)
             self.assertEqual(airplane.weight, base_airplane.weight)
@@ -438,14 +438,13 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         airplane_movement = self.phase_offset_Cg_airplane_movement
         airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
 
-        # Extract positions (in Earth axes, relative to the simulation starting
-        # point).
+        # Extract positions (in Earth axes, relative to the simulation starting point).
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
         y_positions = np.array([airplane.Cg_GP1_CgP1[1] for airplane in airplanes])
         z_positions = np.array([airplane.Cg_GP1_CgP1[2] for airplane in airplanes])
 
-        # Verify that phase offset causes non-zero initial values.
-        # With phase offsets, the first values should not all be at the base position.
+        # Verify that phase offset causes non-zero initial values. With phase offsets,
+        # the first values should not all be at the base position.
         self.assertFalse(np.allclose(x_positions[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(y_positions[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(z_positions[0], 0.0, atol=1e-10))
@@ -455,8 +454,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         airplane_movement = self.sine_spacing_Cg_airplane_movement
         airplanes = airplane_movement.generate_airplanes(num_steps=50, delta_time=0.01)
 
-        # Extract positions (in Earth axes, relative to the simulation starting
-        # point).
+        # Extract positions (in Earth axes, relative to the simulation starting point).
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
         y_positions = np.array([airplane.Cg_GP1_CgP1[1] for airplane in airplanes])
         z_positions = np.array([airplane.Cg_GP1_CgP1[2] for airplane in airplanes])
@@ -478,8 +476,8 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         # Verify that values vary (not constant).
         self.assertFalse(np.allclose(x_positions, x_positions[0]))
 
-        # Verify that values are within expected range.
-        # For custom_harmonic with amp=0.08, values should be in [-0.08, 0.08].
+        # Verify that values are within expected range. For custom_harmonic with
+        # amp=0.08, values should be in [-0.08, 0.08].
         self.assertTrue(np.all(x_positions >= -0.09))
         self.assertTrue(np.all(x_positions <= 0.09))
 
@@ -585,8 +583,8 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
         """Test that variable geometry optimization applies for periodic motion."""
         airplane_movement = self.periodic_geometry_airplane_movement
 
-        # Use delta_time = 0.01 and period = 0.1, so steps_per_period = 10.
-        # With 30 steps, we get 3 periods, so optimization should apply.
+        # Use delta_time = 0.01 and period = 0.1, so steps_per_period = 10. With 30
+        # steps, we get 3 periods, so optimization should apply.
         num_steps = 30
         delta_time = 0.01
 
@@ -614,8 +612,8 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
             num_steps=num_steps, delta_time=delta_time
         )
 
-        # Check that geometry repeats at period boundaries.
-        # Compare step 0 to step 10 to step 20.
+        # Check that geometry repeats at period boundaries. Compare step 0 to step 10 to
+        # step 20.
         for period_num in range(1, 3):
             base_step = 0
             compare_step = period_num * steps_per_period
@@ -1052,9 +1050,8 @@ class TestCoreAirplaneMovementAllPeriods(unittest.TestCase):
     def test_all_periods_Cg_only_movement(self):
         """Test that all_periods includes Cg periods."""
         airplane_movement = self.Cg_airplane_movement
-        # periodCg_GP1_CgP1 is (1.5, 1.5, 1.5), all non zero.
-        # WingMovement is static, so no geometry periods.
-        # Should return tuple with three 1.5 values.
+        # periodCg_GP1_CgP1 is (1.5, 1.5, 1.5), all non zero. WingMovement is static, so
+        # no geometry periods. Should return tuple with three 1.5 values.
         self.assertEqual(airplane_movement.all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_returns_tuple(self):
@@ -1067,9 +1064,8 @@ class TestCoreAirplaneMovementAllPeriods(unittest.TestCase):
         airplane_movement = self.multiple_periods_airplane_movement
         all_periods = airplane_movement.all_periods
 
-        # Should include periods from both Cg and WingMovements.
-        # Cg periods: (1.0, 2.0, 3.0).
-        # WingMovements contribute additional periods.
+        # Should include periods from both Cg and WingMovements. Cg periods: (1.0, 2.0,
+        # 3.0). WingMovements contribute additional periods.
         self.assertIn(1.0, all_periods)
         self.assertIn(2.0, all_periods)
         self.assertIn(3.0, all_periods)

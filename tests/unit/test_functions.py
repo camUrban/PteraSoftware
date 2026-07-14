@@ -1,9 +1,11 @@
 """This module contains classes to test shared utility functions."""
 
+import contextlib
 import unittest
 
 import numpy as np
 import numpy.testing as npt
+import threadpoolctl
 
 # noinspection PyProtectedMember
 from pterasoftware import _functions
@@ -416,3 +418,64 @@ class TestFormatDuration(unittest.TestCase):
             padded = _functions.format_duration(duration, left_pad=True)
             self.assertEqual(padded, unpadded.rjust(_functions._DURATION_PAD_WIDTH))
             self.assertEqual(len(padded), _functions._DURATION_PAD_WIDTH)
+
+
+class TestSolveLoopThreadLimits(unittest.TestCase):
+    """Tests for the solve_loop_thread_limits function."""
+
+    def test_below_threshold_returns_blas_limiter(self):
+        """A Panel count below the threshold should return a threadpoolctl BLAS
+        limiter."""
+        limiter = _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        )
+
+        # Constructing a threadpoolctl limiter applies the limit immediately, so
+        # enter and exit the context before finishing the test to guarantee the
+        # ambient limits are restored.
+        with limiter:
+            self.assertIsInstance(limiter, threadpoolctl.threadpool_limits)
+
+    def test_below_threshold_limits_blas_to_one_thread(self):
+        """Inside the below-threshold context, every controllable BLAS library
+        should be limited to 1 thread."""
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            for library in threadpoolctl.threadpool_info():
+                if library["user_api"] == "blas":
+                    self.assertEqual(library["num_threads"], 1)
+
+    def test_below_threshold_leaves_non_blas_pools_alone(self):
+        """The below-threshold context should not limit non BLAS thread pools, such
+        as the one behind Numba's threading layer."""
+        outside_num_threads = {
+            library["filepath"]: library["num_threads"]
+            for library in threadpoolctl.threadpool_info()
+            if library["user_api"] != "blas"
+        }
+
+        with _functions.solve_loop_thread_limits(
+            _functions._SOLVE_THREAD_THRESHOLD - 1
+        ):
+            inside_num_threads = {
+                library["filepath"]: library["num_threads"]
+                for library in threadpoolctl.threadpool_info()
+                if library["user_api"] != "blas"
+            }
+
+        self.assertEqual(inside_num_threads, outside_num_threads)
+
+    def test_at_threshold_returns_null_context(self):
+        """A Panel count at the threshold should leave BLAS at full width."""
+        self.assertIsInstance(
+            _functions.solve_loop_thread_limits(_functions._SOLVE_THREAD_THRESHOLD),
+            contextlib.nullcontext,
+        )
+
+    def test_above_threshold_returns_null_context(self):
+        """A Panel count above the threshold should leave BLAS at full width."""
+        self.assertIsInstance(
+            _functions.solve_loop_thread_limits(_functions._SOLVE_THREAD_THRESHOLD + 1),
+            contextlib.nullcontext,
+        )

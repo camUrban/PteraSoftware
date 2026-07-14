@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
+import threadpoolctl
 from numba import njit
 
 from . import (
@@ -654,3 +656,44 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
     if left_pad:
         return formatted_duration.rjust(_DURATION_PAD_WIDTH)
     return formatted_duration
+
+
+# The Panel count at or above which letting the BLAS library multi-thread the linear
+# solves wins whole runs. Below it, a multi-threaded solve's post-work spin window
+# taxes the parallel kernel launches that follow it by more than the threaded solve
+# itself saves, so the solve runs single-threaded instead. Derived by timing whole
+# solver runs with the kernel thread dispatch in place, rather than the solve in
+# isolation, because an isolated timing cannot see the spin window's effect on the
+# launches around it and so puts the crossover well below its in-solver value. One
+# threshold serves both solver families.
+_SOLVE_THREAD_THRESHOLD = 3_000
+
+
+def solve_loop_thread_limits(
+    num_panels: int,
+) -> threadpoolctl.threadpool_limits | contextlib.nullcontext:
+    """Returns a context manager that sets the BLAS threading for a run's solve loop.
+
+    Below the threshold Panel count, the returned context limits every controllable BLAS
+    library to 1 thread, because a multi-threaded solve's post-work spin window would
+    otherwise tax the parallel kernel launches between solves. At or above the
+    threshold, the returned context does nothing, leaving the BLAS library at full
+    width. The limit takes effect when the context is constructed and is removed when
+    the context exits.
+
+    Enter the context once around a run's entire solve loop, not per solve: entering
+    scans the process's loaded libraries, which is too slow to repeat every time step,
+    and the wider scope silences any stray BLAS activity between solves.
+
+    threadpoolctl cannot control Apple's Accelerate BLAS, so the limit is a silent no-op
+    there. This is acceptable because Accelerate parks idle threads quickly instead of
+    spin-waiting, so it doesn't exhibit the pathology the limit exists to prevent.
+
+    :param num_panels: A positive int representing the run's total Panel count, which is
+        also the size of the linear system being solved (the system has one row per
+        Panel).
+    :return: The context manager to enter around the run's solve loop.
+    """
+    if num_panels < _SOLVE_THREAD_THRESHOLD:
+        return threadpoolctl.threadpool_limits(limits=1, user_api="blas")
+    return contextlib.nullcontext()

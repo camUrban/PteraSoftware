@@ -42,6 +42,12 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
 
     __slots__ = ()
 
+    # _CoupledUnsteadyProblem is deliberately given a private class name inside the
+    # public problems module so it stays out of the user-facing API. Referencing it from
+    # this in-package solver is the intended design, so silence PyCharm's cross-module
+    # protected-member inspection on the signature and the isinstance guard below.
+
+    # noinspection PyProtectedMember
     def __init__(self, unsteady_problem: problems._CoupledUnsteadyProblem) -> None:
         """The initialization method.
 
@@ -52,6 +58,10 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
             raise TypeError("unsteady_problem must be a _CoupledUnsteadyProblem.")
         super().__init__(unsteady_problem)
 
+    # As in __init__, the reference to the deliberately private _CoupledUnsteadyProblem
+    # is by design; silence the cross-module protected-member inspection.
+
+    # noinspection PyProtectedMember
     @property
     def _coupled_unsteady_problem(self) -> problems._CoupledUnsteadyProblem:
         """Type narrowed view of the inherited unsteady_problem attribute.

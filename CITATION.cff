@@ -10,8 +10,6 @@ authors:
 repository-code: "https://github.com/camUrban/PteraSoftware"
 url: "https://docs.pterasoftware.com"
 license: MIT
-version: 5.1.0
-date-released: "2026-07-14"
 # This is the Zenodo concept DOI. It always resolves to the latest release, so it is
 # the right identifier for a citation that should follow the project across versions.
 # Do not replace it with a per-version DOI.

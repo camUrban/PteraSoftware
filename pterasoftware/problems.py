@@ -438,6 +438,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     I_BP1_CgP1: The inertia matrix of the Airplane (in the first Airplane's body axes,
     relative to the first Airplane's CG) in kilogram square meters.
 
+    k_max: The maximum number of strongly coupled sub-iterations per free-flight time
+    step.
+
     external_loads_fn: A callable that computes additional forces and moments to apply
     to the Airplane during the simulation, or None.
     """

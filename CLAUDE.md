@@ -233,6 +233,7 @@ Requires Python 3.11, but active development is done in 3.13
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file
 - `.readthedocs.yaml`: Read the Docs build configuration
+- `CITATION.cff`: Citation metadata for the project (powers GitHub's cite-this-repository feature and the Zenodo release record)
 - `codecov.yml`: Codecov configuration for test coverage reporting
 - `CONTRIBUTING.md`: Contribution guidelines for developers
 - `MANIFEST.in`: Manifest file for packaging

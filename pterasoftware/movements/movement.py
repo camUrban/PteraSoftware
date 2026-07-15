@@ -26,12 +26,12 @@ from . import operating_point_movement as operating_point_movement_mod
 
 _logger = _logging.get_logger("movements.movement")
 
-# The minimum number of time steps per LCM period that the default delta_time
-# estimate must provide. The analytical estimate matches the wake ring vortex
-# and bound ring vortex chord lengths, which does not by itself guarantee that
-# the motion is resolved in time: a coarse chordwise discretization or a slow
-# motion can produce a delta_time too large to sample the motion adequately.
-# The estimate is clamped to this temporal resolution to guard against that.
+# The minimum number of time steps per LCM period that the default delta_time estimate
+# must provide. The analytical estimate matches the wake ring vortex and bound ring
+# vortex chord lengths, which does not by itself guarantee that the motion is resolved
+# in time: a coarse chordwise discretization or a slow motion can produce a delta_time
+# too large to sample the motion adequately. The estimate is clamped to this temporal
+# resolution to guard against that.
 _MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
 
 
@@ -134,10 +134,10 @@ class Movement(_core.CoreMovement):
         :return: None
         """
         # --- Validate types early ---
-        # CoreMovement.__init__() validates these, but Movement needs to use
-        # the parameters before calling super().__init__() (for delta_time
-        # estimation and period computation). Validate here so that bad types
-        # produce clear TypeErrors rather than AttributeErrors.
+        # CoreMovement.__init__() validates these, but Movement needs to use the
+        # parameters before calling super().__init__() (for delta_time estimation and
+        # period computation). Validate here so that bad types produce clear TypeErrors
+        # rather than AttributeErrors.
         if not isinstance(airplane_movements, list):
             raise TypeError("airplane_movements must be a list.")
         if len(airplane_movements) < 1:
@@ -159,10 +159,9 @@ class Movement(_core.CoreMovement):
             )
 
         # --- Compute period properties locally ---
-        # These are needed for the delta_time estimate clamp and for the
-        # num_steps and max_wake calculations before super().__init__() is
-        # called. The same values will be lazily cached by CoreMovement when
-        # accessed via properties.
+        # These are needed for the delta_time estimate clamp and for the num_steps and
+        # max_wake calculations before super().__init__() is called. The same values
+        # will be lazily cached by CoreMovement when accessed via properties.
         _airplane_movement_max_periods = []
         for airplane_movement in airplane_movements:
             _airplane_movement_max_periods.append(airplane_movement.max_period)
@@ -198,9 +197,9 @@ class Movement(_core.CoreMovement):
                 delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
-            # Calculate a fast initial delta_time estimate based on freestream
-            # velocity. This is used as a fallback for static movements and as
-            # a starting point for the analytical optimization.
+            # Calculate a fast initial delta_time estimate based on freestream velocity.
+            # This is used as a fallback for static Movements and as a starting point
+            # for the analytical optimization.
             delta_times = []
             for airplane_movement in airplane_movements:
                 # TODO: Consider making this also average across each Airplane's Wings.
@@ -213,8 +212,8 @@ class Movement(_core.CoreMovement):
                 )
             fast_estimate = sum(delta_times) / len(delta_times)
 
-            # Run analytical optimization to get a better delta_time that accounts
-            # for both freestream and geometry motion velocities.
+            # Run analytical optimization to get a better delta_time that accounts for
+            # both freestream and geometry motion velocities.
             delta_time = _analytically_optimize_delta_time(
                 airplane_movements=list(airplane_movements),
                 operating_point_movement=operating_point_movement,
@@ -222,15 +221,15 @@ class Movement(_core.CoreMovement):
             )
 
             # Clamp the estimate so that there are at least
-            # _MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which
-            # the wake sizing criterion alone does not guarantee.
+            # _MIN_TIME_STEPS_PER_LCM_PERIOD time steps per LCM period, which the wake
+            # sizing criterion alone does not guarantee.
             if _lcm_period > 0.0:
                 delta_time = min(
                     delta_time, _lcm_period / _MIN_TIME_STEPS_PER_LCM_PERIOD
                 )
 
-        # Run iterative optimization if requested, using the analytical result
-        # as the initial guess.
+        # Run iterative optimization if requested, using the analytical result as the
+        # initial guess.
         if _should_iteratively_optimize_delta_time:
             delta_time = _optimize_delta_time(
                 airplane_movements=list(airplane_movements),
@@ -296,8 +295,8 @@ class Movement(_core.CoreMovement):
             )
         else:
             if _static:
-                # Find the value of the largest reference chord length of all the
-                # base Airplanes.
+                # Find the value of the largest reference chord length of all the base
+                # Airplanes.
                 c_refs = []
                 for airplane_movement in airplane_movements:
                     c_ref = airplane_movement.base_airplane.c_ref
@@ -305,8 +304,8 @@ class Movement(_core.CoreMovement):
                     c_refs.append(c_ref)
                 max_c_ref = max(c_refs)
 
-                # Set the number of time steps such that the wake extends back by
-                # some number of reference chord lengths.
+                # Set the number of time steps such that the wake extends back by some
+                # number of reference chord lengths.
                 assert num_chords is not None
                 wake_length = num_chords * max_c_ref
                 distance_per_time_step = (
@@ -314,9 +313,9 @@ class Movement(_core.CoreMovement):
                 )
                 num_steps = math.ceil(wake_length / distance_per_time_step)
             else:
-                # Set the number of time steps such that the simulation runs for
-                # some number of cycles of all motions. Use the LCM of all periods
-                # to ensure each motion completes an integer number of cycles.
+                # Set the number of time steps such that the simulation runs for some
+                # number of cycles of all motions. Use the LCM of all periods to ensure
+                # each motion completes an integer number of cycles.
                 assert num_cycles is not None
                 num_steps = math.ceil(num_cycles * _lcm_period / delta_time)
 
@@ -353,8 +352,8 @@ class Movement(_core.CoreMovement):
                 min_inclusive=True,
             )
 
-        # Convert max_wake_chords to max_wake_rows using the same formula as
-        # num_chords to num_steps.
+        # Convert max_wake_chords to max_wake_rows using the same formula as num_chords
+        # to num_steps.
         if max_wake_chords is not None:
             c_refs = []
             for airplane_movement in airplane_movements:
@@ -370,8 +369,8 @@ class Movement(_core.CoreMovement):
                 max_wake_chords * max_c_ref / distance_per_time_step
             )
 
-        # Convert max_wake_cycles to max_wake_rows using the same formula as
-        # num_cycles to num_steps.
+        # Convert max_wake_cycles to max_wake_rows using the same formula as num_cycles
+        # to num_steps.
         if max_wake_cycles is not None:
             max_wake_rows = math.ceil(max_wake_cycles * _lcm_period / delta_time)
 
@@ -384,11 +383,10 @@ class Movement(_core.CoreMovement):
             max_wake_rows=max_wake_rows,
         )
 
-        # Pre-populate the lazy caches with values already computed above so
-        # that accessing the inherited properties does not redundantly
-        # recompute them. _max_period, _lcm_period, and _static are set here
-        # because they are always needed during __init__ (via the static
-        # check). _min_period remains lazy.
+        # Pre-populate the lazy caches with values already computed above so that
+        # accessing the inherited properties does not redundantly recompute them.
+        # _max_period, _lcm_period, and _static are set here because they are always
+        # needed during __init__ (via the static check). _min_period remains lazy.
         self._max_period = _max_period
         self._lcm_period = _lcm_period
         self._static = _static
@@ -498,11 +496,10 @@ class Movement(_core.CoreMovement):
         return self._operating_points
 
 
-# Oversampling factor for the non static cached path. The high resolution
-# Movement is built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps
-# intervals (and therefore one more snapshot) so the maximum and half maximum
-# candidates have integer strides and other candidates stay within roughly
-# half a high resolution step of the nominal time.
+# Oversampling factor for the non static cached path. The high resolution Movement is
+# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
+# more snapshot) so the maximum and half maximum candidates have integer strides and
+# other candidates stay within roughly half a high resolution step of the nominal time.
 _NON_STATIC_CACHE_OVERSAMPLE: int = 2
 
 
@@ -719,17 +716,17 @@ def _compute_wake_area_mismatch(
                 )
 
                 # Wake first row area depends on how the solver's wake populator
-                # constructs the back vertices. At step 1 (first wake population, run
-                # at solver step 0), there is no preexisting wake grid: the populator
-                # sets row 0 to the bound TE back vertices at step 1 and row 1 to
-                # row 0 + vInf(0) * dt. The area collapses to
-                # dt * |cross(Brrvp_curr - Blrvp_curr, vInf_prev)|. At step k >= 2,
-                # the populator copies the previous step's wake grid forward, advects
-                # it by vInf(k - 1) * dt, then prepends a new front row from bound TE
-                # back vertices at step k. The first wake row's back vertices are
-                # therefore Blrvp_prev + vInf_prev * dt and Brrvp_prev +
-                # vInf_prev * dt, where Blrvp_prev and Brrvp_prev are the previous
-                # step's bound TE back vertices already computed above.
+                # constructs the back vertices. At step 1 (first wake population, run at
+                # solver step 0), there is no preexisting wake grid: the populator sets
+                # row 0 to the bound TE back vertices at step 1 and row 1 to row 0 +
+                # vInf(0) * dt. The area collapses to dt * |cross(Brrvp_curr -
+                # Blrvp_curr, vInf_prev)|. At step k >= 2, the populator copies the
+                # previous step's wake grid forward, advects it by vInf(k - 1) * dt,
+                # then prepends a new front row from bound TE back vertices at step k.
+                # The first wake row's back vertices are therefore Blrvp_prev +
+                # vInf_prev * dt and Brrvp_prev + vInf_prev * dt, where Blrvp_prev and
+                # Brrvp_prev are the previous step's bound TE back vertices already
+                # computed above.
                 if step == 1:
                     span_vec = Brrvp_curr - Blrvp_curr
                     wake_areas = delta_time * np.linalg.norm(
@@ -798,8 +795,8 @@ def _compute_wake_area_mismatches_cached_non_static(
     max_candidate = max(num_steps_candidates)
     high_res_num_intervals = _NON_STATIC_CACHE_OVERSAMPLE * max_candidate
     high_res_dt = lcm_period / high_res_num_intervals
-    # The Movement covers high_res_num_intervals + 1 snapshots so that one full
-    # LCM period worth of intervals can be sampled.
+    # The Movement covers high_res_num_intervals + 1 snapshots so that one full LCM
+    # period worth of intervals can be sampled.
     high_res_num_steps = high_res_num_intervals + 1
 
     airplane_movements_copy = copy.deepcopy(airplane_movements)
@@ -815,10 +812,9 @@ def _compute_wake_area_mismatches_cached_non_static(
 
     first_problem = temp_problem.steady_problems[0]
 
-    # Per (airplane, wing) cache of TE panel corners. Each stored array has
-    # shape (high_res_num_steps, num_spanwise_panels, 3) so that strided
-    # advanced indexing produces (N + 1, num_spanwise_panels, 3) views per
-    # candidate.
+    # Per (Airplane, Wing) cache of TE Panel corners. Each stored array has shape
+    # (high_res_num_steps, num_spanwise_panels, 3) so that strided advanced indexing
+    # produces (N + 1, num_spanwise_panels, 3) views per candidate.
     cache_per_wing: list[dict] = []
     for airplane_id, airplane in enumerate(first_problem.airplanes):
         for wing_id, wing in enumerate(airplane.wings):
@@ -923,18 +919,18 @@ def _evaluate_cached_wake_area_mismatch(
 
     delta_time = lcm_period / num_steps
 
-    # Linear interpolation mapping from candidate steps to high resolution
-    # samples. The floor index gives the lower bracketing sample; the fractional
-    # part is the interpolation weight on the next sample. Only num_steps
-    # candidate samples are generated since the comparison loop reads indices
-    # [0, num_steps - 1]; the t = lcm_period sample would be dead.
+    # Linear interpolation mapping from candidate steps to high resolution samples. The
+    # floor index gives the lower bracketing sample; the fractional part is the
+    # interpolation weight on the next sample. Only num_steps candidate samples are
+    # generated since the comparison loop reads indices [0, num_steps - 1]; the t =
+    # lcm_period sample would be dead.
     fractional_indices = np.arange(num_steps) * high_res_num_intervals / num_steps
     floor_indices = np.floor(fractional_indices).astype(int)
     weights_next = fractional_indices - floor_indices
     next_indices = floor_indices + 1
     weights_floor = 1.0 - weights_next
-    # Reshape weights for broadcasting against (num_samples, num_spanwise, 3)
-    # panel arrays.
+    # Reshape weights for broadcasting against (num_samples, num_spanwise, 3) Panel
+    # arrays.
     weights_floor_b = weights_floor[:, None, None]
     weights_next_b = weights_next[:, None, None]
     # Reshape weights for broadcasting against (num_samples, 3) vInf arrays.
@@ -945,9 +941,9 @@ def _evaluate_cached_wake_area_mismatch(
     num_comparisons = 0
 
     for cache in cache_per_wing:
-        # Sample and linearly interpolate the cached panel attribute arrays at
-        # the candidate step times. Each result has shape (num_steps,
-        # num_spanwise_panels, 3); v_inf has shape (num_steps, 3).
+        # Sample and linearly interpolate the cached Panel attribute arrays at the
+        # candidate step times. Each result has shape (num_steps, num_spanwise_panels,
+        # 3). v_inf has shape (num_steps, 3).
         Flpp = (
             weights_floor_b * cache["Flpp"][floor_indices]
             + weights_next_b * cache["Flpp"][next_indices]
@@ -969,10 +965,9 @@ def _evaluate_cached_wake_area_mismatch(
             + weights_next_v * v_inf_high_res[next_indices]
         )
 
-        # Comparison axis: index i in [0, num_steps - 2] maps to
-        # step = i + 1, prev_step = i. Slice the panel arrays accordingly so
-        # bound and wake area calculations can run as one vectorized batch
-        # rather than a Python step loop.
+        # Comparison axis: index i in [0, num_steps - 2] maps to step = i + 1, prev_step
+        # = i. Slice the panel arrays accordingly so bound and wake area calculations
+        # can run as one vectorized batch rather than a Python step loop.
         Flpp_prev_arr = Flpp[: num_steps - 1]
         Frpp_prev_arr = Frpp[: num_steps - 1]
         Blpp_prev_arr = Blpp[: num_steps - 1]
@@ -982,17 +977,17 @@ def _evaluate_cached_wake_area_mismatch(
         v_inf_prev_arr = v_inf[: num_steps - 1, None, :]
         v_inf_curr_arr = v_inf[1:num_steps, None, :]
 
-        # Bound RingVortex front vertices at the previous step (panel quarter
-        # chord, no derivative term).
+        # Bound RingVortex front vertices at the previous step (Panel quarter chord, no
+        # derivative term).
         Flrvp_prev = 0.75 * Flpp_prev_arr + 0.25 * Blpp_prev_arr
         Frrvp_prev = 0.75 * Frpp_prev_arr + 0.25 * Brpp_prev_arr
 
-        # Bound RingVortex back vertices at the previous step. For comparison
-        # index 0 (prev_step == 0) there is no panel at step - 2; substituting
-        # the step - 1 panel makes the derivative formula collapse to the
-        # solver's no-derivative form 0.75*Blpp + 0.25*Blpp + 0.25*vInf*dt =
-        # Blpp + 0.25*vInf*dt, so we get the correct value for both i == 0 and
-        # i >= 1 from a single vectorized expression.
+        # Bound RingVortex back vertices at the previous step. For comparison index 0
+        # (prev_step == 0) there is no Panel at step - 2. Substituting the step - 1
+        # Panel makes the derivative formula collapse to the solver's no-derivative form
+        # 0.75 * Blpp + 0.25 * Blpp + 0.25 * vInf * dt = Blpp + 0.25 * vInf * dt, so we
+        # get the correct value for both i == 0 and i >= 1 from a single vectorized
+        # expression.
         Blpp_prev_prev_arr = np.concatenate(
             [Blpp_prev_arr[:1], Blpp_prev_arr[:-1]], axis=0
         )
@@ -1016,8 +1011,8 @@ def _evaluate_cached_wake_area_mismatch(
         bound_diag2 = Flrvp_prev - Brrvp_prev
         bound_areas = 0.5 * np.linalg.norm(np.cross(bound_diag1, bound_diag2), axis=-1)
 
-        # Bound RingVortex back vertices at the current step. These are the
-        # front vertices of the wake first row at the current step.
+        # Bound RingVortex back vertices at the current step. These are the front
+        # vertices of the wake first row at the current step.
         Blrvp_curr = (
             0.75 * Blpp_curr_arr
             + 0.25 * Blpp_prev_arr
@@ -1029,12 +1024,12 @@ def _evaluate_cached_wake_area_mismatch(
             + 0.25 * v_inf_curr_arr * delta_time
         )
 
-        # Wake first row back vertices. At comparison index 0 (step == 1, first
-        # wake population) the solver sets row 1 = row 0 + vInf * dt, so the
-        # wake's back row is the bound TE back at the *current* step advected.
-        # At i >= 1 the wake's back row is the bound TE back at the *previous*
-        # step advected. Substituting Blrvp_curr[0] for index 0 of the previous
-        # step array makes a single vectorized expression cover both cases.
+        # The following computes the wake first row back vertices. At comparison index 0
+        # (step == 1, first wake population) the solver sets row 1 = row 0 + vInf * dt,
+        # so the wake's back row is the bound TE back at the current step advected. At i
+        # >= 1 the wake's back row is the bound TE back at the previous step advected.
+        # Substituting Blrvp_curr[0] for index 0 of the previous step array makes a
+        # single vectorized expression cover both cases.
         Blrvp_prev_for_wake = np.concatenate([Blrvp_curr[:1], Blrvp_prev[1:]], axis=0)
         Brrvp_prev_for_wake = np.concatenate([Brrvp_curr[:1], Brrvp_prev[1:]], axis=0)
         Flwrvp = Blrvp_curr
@@ -1266,10 +1261,10 @@ def _optimize_delta_time_non_static(
 
     candidates = list(range(min_num_steps, max_num_steps + 1))
 
-    # Build one high resolution Movement and score every integer candidate against it
-    # by linearly interpolating the cached panel corners. This collapses the per
-    # candidate Movement and UnsteadyProblem cost into a single up front build for
-    # the entire bracket.
+    # Build one high resolution Movement and score every integer candidate against it by
+    # linearly interpolating the cached panel corners. This collapses the per candidate
+    # Movement and UnsteadyProblem cost into a single up front build for the entire
+    # bracket.
     cached_mismatches = _compute_wake_area_mismatches_cached_non_static(
         airplane_movements=airplane_movements,
         operating_point_movement=operating_point_movement,
@@ -1441,11 +1436,11 @@ def _analytically_optimize_delta_time(
             assert _panels is not None
             num_spanwise = _panels.shape[1]
 
-            # Compute the mean chordwise width of trailing edge Panels. This is
-            # the target chord length for wake ring vortices. We use the trailing
-            # edge Panel chord directly (rather than standard_mean_chord /
-            # num_chordwise) because non uniform chordwise spacing can cause
-            # trailing edge Panels to have different chords than average.
+            # Compute the mean chordwise width of trailing edge Panels. This is the
+            # target chord length for wake ring vortices. We use the trailing edge Panel
+            # chord directly (rather than standard_mean_chord / num_chordwise) because
+            # non uniform chordwise spacing can cause trailing edge Panels to have
+            # different chords than average.
             total_te_panel_chord = 0.0
             for spanwise_id in range(num_spanwise):
                 te_panel = _panels[num_chordwise - 1, spanwise_id]
@@ -1461,8 +1456,8 @@ def _analytically_optimize_delta_time(
                 total_te_panel_chord += panel_chord
             mean_te_panel_chord = total_te_panel_chord / num_spanwise
 
-            # Accumulate displacement distance across all trailing edge Panels
-            # across all consecutive time step pairs.
+            # Accumulate displacement distance across all trailing edge Panels across
+            # all consecutive time step pairs.
             total_distance = 0.0
             num_measurements = 0
 
@@ -1528,8 +1523,8 @@ def _analytically_optimize_delta_time(
 
             # Average distance over one LCM period per spanwise Panel.
             average_distance = total_distance / num_measurements
-            # The desired number of steps per LCM period is such that each wake
-            # ring vortex chord equals the trailing edge bound Panel chord.
+            # The desired number of steps per LCM period is such that each wake ring
+            # vortex chord equals the trailing edge bound Panel chord.
             wing_num_steps_per_lcm = average_distance / mean_te_panel_chord
             wing_num_steps_values.append(wing_num_steps_per_lcm)
             wing_num_spanwise_panels_values.append(num_spanwise)

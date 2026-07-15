@@ -8,9 +8,9 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
 # Mock all runtime dependencies so autodoc can import pterasoftware (via the
-# autofunction directives for save, load, and set_up_logging) without them
-# installed. This is safe because the documented functions only use stdlib
-# types in their signatures.
+# autofunction directives for save, load, and set_up_logging) without them installed.
+# This is safe because the documented functions only use stdlib types in their
+# signatures.
 autodoc_mock_imports = [
     "cmocean",
     "matplotlib",
@@ -112,24 +112,24 @@ myst_substitutions = _load_benchmark_host_info()
 # Suppress warnings that are informational or unavoidable
 suppress_warnings = [
     "toc.not_included",  # Template files not in toctree (expected)
-    "autosectionlabel.*",  # Duplicate labels from {include} directive pulling in source files
+    # Duplicate labels from {include} directive pulling in source files.
+    "autosectionlabel.*",
 ]
 
 autosectionlabel_prefix_document = True
 
-# Render every Python signature with one parameter per line. Any signature
-# longer than this threshold (in characters) wraps so that each parameter sits
-# on its own indented line with a trailing comma and the closing parenthesis on
-# its own line. A threshold of one forces this multi-line layout for every
-# signature that takes at least one parameter, which keeps long class and
-# function parameter lists readable instead of running together on one line.
+# Render every Python signature with one parameter per line. Any signature longer than
+# this threshold (in characters) wraps so that each parameter sits on its own indented
+# line with a trailing comma and the closing parenthesis on its own line. A threshold of
+# one forces this multi-line layout for every signature that takes at least one
+# parameter, which keeps long class and function parameter lists readable instead of
+# running together on one line.
 python_maximum_signature_line_length = 1
 
-# AutoAPI renders docstrings as reStructuredText, where a vector magnitude written
-# with bars (for example, "|g_E|") parses as a substitution reference. Define those
-# tokens so the reference resolves to the literal barred text instead of emitting an
-# "Undefined substitution referenced" build error, without annotating the docstrings
-# themselves.
+# AutoAPI renders docstrings as reStructuredText, where a vector magnitude written with
+# bars (for example, "|g_E|") parses as a substitution reference. Define those tokens so
+# the reference resolves to the literal barred text instead of emitting an "Undefined
+# substitution referenced" build error, without annotating the docstrings themselves.
 rst_prolog = r"""
 .. |g_E| replace:: \|g_E\|
 """
@@ -151,8 +151,8 @@ exclude_patterns = [
     "../lambert_2015_2_3__2_4",
     "../RUNNING_TESTS_AND_TYPE_CHECKS.md",
     "../examples_expected_output",
-    # Exclude source markdown files to avoid duplicate autosectionlabel labels
-    # (they are included into docs/website/ files, so we only want one copy processed)
+    # Exclude source markdown files to avoid duplicate autosectionlabel labels (they are
+    # included into docs/website/ files, so we only want one copy processed).
     "../ANGLE_VECTORS_AND_TRANSFORMATIONS.md",
     "../AXES_POINTS_AND_FRAMES.md",
     "../CLASSES_AND_IMMUTABILITY.md",
@@ -181,8 +181,8 @@ napoleon_attr_annotations = True
 html_theme = "furo"
 html_title = "PteraSoftware"
 html_favicon = "favicon/favicon.ico"
-# Drop the "View this page" source link (and the _sources/*.txt dump it points
-# to) so no page exposes a link to its underlying source.
+# Drop the "View this page" source link (and the _sources/*.txt dump it points to) so no
+# page exposes a link to its underlying source.
 html_show_sourcelink = False
 html_copy_source = False
 html_static_path = ["_static", "../_static", "Black_Text_Logo.png", "Logo.png"]

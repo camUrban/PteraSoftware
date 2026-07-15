@@ -287,8 +287,7 @@ class TestUnsteadyProblem(unittest.TestCase):
 
     def test_initialization_only_final_results_true(self):
         """Test UnsteadyProblem initialization with only_final_results=True."""
-        # Test that UnsteadyProblem with only_final_results=True initializes
-        # correctly.
+        # Test that UnsteadyProblem with only_final_results=True initializes correctly.
         self.assertIsInstance(
             self.only_final_results_unsteady_problem,
             ps.problems.UnsteadyProblem,
@@ -366,8 +365,8 @@ class TestUnsteadyProblem(unittest.TestCase):
 
     def test_steady_problems_list_airplanes(self):
         """Test that each SteadyProblem has correct Airplanes."""
-        # Each SteadyProblem should have the same number of Airplanes as the
-        # Movement has AirplaneMovements.
+        # Each SteadyProblem should have the same number of Airplanes as the Movement
+        # has AirplaneMovements.
         num_airplanes = len(self.basic_unsteady_problem.movement.airplane_movements)
 
         for steady_problem in self.basic_unsteady_problem.steady_problems:

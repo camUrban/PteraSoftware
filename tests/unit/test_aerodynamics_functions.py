@@ -675,8 +675,8 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         v1_A__I = self.ref_calculate_biot_savart_velocity(S1_A_a, E1_A_a, P_A_a, gamma)
         v2_A__I = self.ref_calculate_biot_savart_velocity(S2_A_a, E2_A_a, P_A_a, gamma)
 
-        # The total velocity (in A axes, observed from an inertial frame) should have
-        # a zero y-component (due to symmetry) and should have a non-zero magnitude.
+        # The total velocity (in A axes, observed from an inertial frame) should have a
+        # zero y component (due to symmetry) and should have a non-zero magnitude.
         v_A__I = v1_A__I + v2_A__I
         self.assertAlmostEqual(v_A__I[1], 0.0, places=10)
         self.assertGreater(np.linalg.norm(v_A__I), 0.0)
@@ -911,8 +911,8 @@ class TestSingularityGuards(unittest.TestCase):
         )
 
         # Simple (non degenerate) ring vortex fixture for vertex proximity and
-        # collinearity tests. Corners: Br=(1,0.5,0), Fr=(0,0.5,0),
-        # Fl=(0,-0.5,0), Bl=(1,-0.5,0).
+        # collinearity tests. Corners: Br = (1.0, 0.5, 0.0), Fr = (0.0, 0.5, 0.0), Fl =
+        # (0.0, -0.5, 0.0), Bl = (1.0, -0.5, 0.0).
         (
             self.ring_Brrvp,
             self.ring_Frrvp,
@@ -921,9 +921,9 @@ class TestSingularityGuards(unittest.TestCase):
             self.ring_strengths,
         ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
 
-        # Simple (non degenerate) horseshoe vortex fixture for vertex proximity
-        # and collinearity tests. Corners: Br=(20,0.5,0), Fr=(0,0.5,0),
-        # Fl=(0,-0.5,0), Bl=(20,-0.5,0).
+        # Simple (non degenerate) horseshoe vortex fixture for vertex proximity and
+        # collinearity tests. Corners: Br = (20.0, 0.5, 0.0), Fr = (0.0, 0.5, 0.0), Fl =
+        # (0.0, -0.5, 0.0), Bl = (20.0, -0.5, 0.0).
         (
             self.horseshoe_Brhvp,
             self.horseshoe_Frhvp,
@@ -934,7 +934,7 @@ class TestSingularityGuards(unittest.TestCase):
             aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
         )
 
-        # Zero initial core radii for coreless comparison with the reference
+        # The initial core radii are zero for coreless comparison with the reference
         # Biot-Savart implementation.
         self.zero_rc0s = np.zeros(1, dtype=float)
 
@@ -1055,8 +1055,8 @@ class TestSingularityGuards(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-        # Compute expected velocity from the two non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the two non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
@@ -1091,8 +1091,8 @@ class TestSingularityGuards(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-        # Compute expected velocity from the two non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the two non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
@@ -1131,8 +1131,8 @@ class TestSingularityGuards(unittest.TestCase):
             )
         )
 
-        # Compute expected velocity from the one non singular leg using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the one non singular leg using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         expected = ref(self.horseshoe_Flhvp[0], self.horseshoe_Blhvp[0], P, gamma)
@@ -1169,8 +1169,8 @@ class TestSingularityGuards(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the three non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
@@ -1208,8 +1208,8 @@ class TestSingularityGuards(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the three non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
@@ -1248,8 +1248,8 @@ class TestSingularityGuards(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the three non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
@@ -1290,8 +1290,8 @@ class TestSingularityGuards(unittest.TestCase):
             )
         )
 
-        # Compute expected velocity from the two non singular legs using the
-        # reference Biot-Savart implementation.
+        # Compute expected velocity from the two non singular legs using the reference
+        # Biot-Savart implementation.
         ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
         P = point[0]
         v_right = ref(self.horseshoe_Brhvp[0], self.horseshoe_Frhvp[0], P, gamma)
@@ -1317,8 +1317,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
             self.ring_strengths,
         ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
 
-        # Evaluation point above the ring vortex center, away from any
-        # singularity.
+        # Evaluation point above the ring vortex center, away from any singularity.
         self.center_point = np.array([[0.5, 0.0, 1.0]], dtype=float)
 
     @staticmethod
@@ -1501,8 +1500,8 @@ class TestCoreRadiusFormula(unittest.TestCase):
         # Call the kernel.
         velocities = self._call_collapsed_ring(rc0s)
 
-        # Compute expected velocity from all four legs using the regularized
-        # reference implementation.
+        # Compute expected velocity from all four legs using the regularized reference
+        # implementation.
         expected = self._compute_reference_ring_velocity(r_c)
 
         # Verify the kernel result matches the reference.
@@ -1522,8 +1521,8 @@ class TestCoreRadiusFormula(unittest.TestCase):
         rc0s = np.array([r_c0], dtype=float)
         ages = np.array([age], dtype=float)
 
-        # Manually compute r_c using the Ramasamy-Leishman formula with the
-        # module's physical constants.
+        # Manually compute r_c using the Ramasamy-Leishman formula with the module's
+        # physical constants.
         lamb = _aerodynamics_functions._lamb
         squire = _aerodynamics_functions._squire
         r_c = np.sqrt(r_c0**2 + 4.0 * lamb * (nu + squire * abs(gamma)) * age)
@@ -1531,8 +1530,8 @@ class TestCoreRadiusFormula(unittest.TestCase):
         # Call the kernel.
         velocities = self._call_collapsed_ring(rc0s, ages=ages, nu=nu)
 
-        # Compute expected velocity from all four legs using the regularized
-        # reference implementation.
+        # Compute expected velocity from all four legs using the regularized reference
+        # implementation.
         expected = self._compute_reference_ring_velocity(r_c)
 
         # Verify the kernel result matches the reference.
@@ -1617,9 +1616,9 @@ class TestSingularityCounters(unittest.TestCase):
             singularity_counts=singularity_counts,
         )
 
-        # The right leg (Br to Fr) hits the r2/r0 guard (counter 2) because
-        # the evaluation point is at Fr. The front leg (Fr to Fl) hits the
-        # r1/r0 guard (counter 1) because the evaluation point is at Fr.
+        # The right leg (Br to Fr) hits the r2 / r0 guard (counter 2) because the
+        # evaluation point is at Fr. The front leg (Fr to Fl) hits the r1 / r0 guard
+        # (counter 1) because the evaluation point is at Fr.
         self.assertGreater(singularity_counts[1], 0)
         self.assertGreater(singularity_counts[2], 0)
 
@@ -1664,8 +1663,8 @@ class TestSingularityCounters(unittest.TestCase):
             singularity_counts=singularity_counts,
         )
 
-        # The point is collinear with the right leg (Br to Fr) but lies off the
-        # filament (c_3 > 0), so the counter is not incremented.
+        # The point is collinear with the right leg (Br to Fr) but lies off the filament
+        # (c_3 > 0), so the counter is not incremented.
         self.assertEqual(singularity_counts[3], 0)
 
     def test_non_singular_configuration_has_zero_counts(self):
@@ -1951,8 +1950,8 @@ class TestReportThreadSettings(unittest.TestCase):
             with self.assertWarns(UserWarning) as caught:
                 _aerodynamics_functions.report_thread_settings()
 
-        # The warning has to name the layer and both of its remedies to be worth
-        # raising at all.
+        # The warning has to name the layer and both of its remedies to be worth raising
+        # at all.
         message = str(caught.warning)
         self.assertIn("workqueue", message)
         self.assertIn("tbb", message)
@@ -2305,9 +2304,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # three quarters of the pool width, rounded down, never below 1.
         ceiling = max((3 * numba.config.NUMBA_NUM_THREADS) // 4, 1)
 
-        # With one ring vortex, this stack of points makes each leg's launch span
-        # one more grain than the ceiling, so the work-proportional count exceeds
-        # the ceiling.
+        # With one ring vortex, this stack of points makes each leg's launch span one
+        # more grain than the ceiling, so the work-proportional count exceeds the
+        # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (ceiling + 1) * _aerodynamics_functions._GRAIN
         )
@@ -2332,9 +2331,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         below_ceiling_mask = _aerodynamics_functions._ceiling() - 1
         numba.set_num_threads(below_ceiling_mask)
 
-        # With one ring vortex, this stack of points makes each leg's launch span
-        # one more grain than the ceiling, so only the mask holds its thread count
-        # below the ceiling.
+        # With one ring vortex, this stack of points makes each leg's launch span one
+        # more grain than the ceiling, so only the mask holds its thread count below the
+        # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )
@@ -2352,9 +2351,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # Simulate a user capping the thread count exactly at the ceiling.
         numba.set_num_threads(_aerodynamics_functions._ceiling())
 
-        # With one ring vortex, this stack of points makes each leg's launch span
-        # one more grain than the ceiling, so the work-proportional count exceeds
-        # the ceiling.
+        # With one ring vortex, this stack of points makes each leg's launch span one
+        # more grain than the ceiling, so the work-proportional count exceeds the
+        # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )
@@ -2375,9 +2374,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # default, so the dispatch throttles both the same way.
         numba.set_num_threads(numba.config.NUMBA_NUM_THREADS)
 
-        # With one ring vortex, this stack of points makes each leg's launch span
-        # one more grain than the ceiling, so the work-proportional count exceeds
-        # the ceiling.
+        # With one ring vortex, this stack of points makes each leg's launch span one
+        # more grain than the ceiling, so the work-proportional count exceeds the
+        # ceiling.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
             (_aerodynamics_functions._ceiling() + 1) * _aerodynamics_functions._GRAIN
         )

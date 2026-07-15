@@ -70,8 +70,8 @@ class TestWing(unittest.TestCase):
 
     def test_symmetry_parameter_validation(self):
         """Test symmetry parameter validation logic."""
-        # Test that symmetric and mirror_only cannot both be True
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Test that symmetric and mirror_only cannot both be True. Create fresh fixtures
+        # since WingCrossSections can only be validated once.
         root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
         tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
@@ -359,8 +359,8 @@ class TestWing(unittest.TestCase):
 
         for spacing in spacing_options:
             with self.subTest(spacing=spacing):
-                # Create fresh fixtures for each iteration since WingCrossSections
-                # can only be validated once
+                # Create fresh fixtures for each iteration since WingCrossSections can
+                # only be validated once.
                 root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
                 tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
                 wing = ps.geometry.wing.Wing(
@@ -375,8 +375,8 @@ class TestWing(unittest.TestCase):
 
         for count in panel_counts:
             with self.subTest(count=count):
-                # Create fresh fixtures for each iteration since WingCrossSections
-                # can only be validated once
+                # Create fresh fixtures for each iteration since WingCrossSections can
+                # only be validated once.
                 root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
                 tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
                 wing = ps.geometry.wing.Wing(
@@ -387,8 +387,8 @@ class TestWing(unittest.TestCase):
 
     def test_wing_parameter_validation(self):
         """Test parameter validation for Wing initialization."""
-        # Test invalid Ler position
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Test invalid Ler position. Create fresh fixtures since WingCrossSections can
+        # only be validated once.
         root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
         tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
@@ -455,8 +455,8 @@ class TestWing(unittest.TestCase):
 
     def test_wing_name_validation(self):
         """Test Wing name parameter validation."""
-        # Test valid string name
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Test valid string name. Create fresh fixtures since WingCrossSections can only
+        # be validated once.
         root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
         tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
         wing = ps.geometry.wing.Wing(
@@ -515,13 +515,15 @@ class TestWing(unittest.TestCase):
 
     def test_invalid_middle_wing_cross_section_raises_error(self):
         """Test that Wing with invalid middle WingCrossSection raises ValueError."""
-        # Test that Wing with middle WingCrossSection having num_spanwise_panels=None fails
+        # Test that Wing with middle WingCrossSection having num_spanwise_panels=None
+        # fails.
         with self.assertRaises(ValueError):
             geometry_fixtures.make_invalid_three_section_wing_fixture()
 
     def test_invalid_root_wing_cross_section_raises_error(self):
         """Test that Wing with invalid root WingCrossSection raises ValueError."""
-        # Test that Wing with root WingCrossSection having num_spanwise_panels=None fails
+        # Test that Wing with root WingCrossSection having num_spanwise_panels=None
+        # fails.
         with self.assertRaises(ValueError):
             geometry_fixtures.make_invalid_root_wing_fixture()
 
@@ -616,8 +618,8 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected projected area: 4.5 square meters
-        # Trapezoid: (chord_root + chord_tip) / 2 * span = (2.0 + 1.0) / 2 * 3.0 = 4.5
+        # Expected projected area: 4.5 square meters. Trapezoid: (chord_root +
+        # chord_tip) / 2.0 * span = (2.0 + 1.0) / 2.0 * 3.0 = 4.5.
         expected_area = 4.5
         actual_area = wing.projected_area
 
@@ -630,8 +632,8 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
-        # Expected projected area: 7.5 square meters
-        # Rectangle: chord * span = 1.5 * 5.0 = 7.5
+        # Expected projected area: 7.5 square meters. Rectangle: chord * span = 1.5 *
+        # 5.0 = 7.5.
         expected_area = 7.5
         actual_area = wing.projected_area
 
@@ -643,10 +645,9 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected projected area: 8.0 square meters
-        # Section 1 (root to middle): (3.0 + 2.0) / 2 * 2.0 = 5.0
-        # Section 2 (middle to tip): (2.0 + 1.0) / 2 * 2.0 = 3.0
-        # Total: 5.0 + 3.0 = 8.0
+        # Expected projected area: 8.0 square meters. Section 1 (root to middle): (3.0 +
+        # 2.0) / 2.0 * 2.0 = 5.0. Section 2 (middle to tip): (2.0 + 1.0) / 2.0 * 2.0 =
+        # 3.0. Total: 5.0 + 3.0 = 8.0.
         expected_area = 8.0
         actual_area = wing.projected_area
 
@@ -892,7 +893,8 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_dihedral_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 3.0 meters (dihedral in z direction does not affect y extent in wing axes)
+        # Expected span: 3.0 meters (dihedral in z direction does not affect y extent in
+        # wing axes).
         expected_span = 3.0
 
         actual_span = wing.span
@@ -950,12 +952,12 @@ class TestWing(unittest.TestCase):
         average_aspect_ratio = wing.average_panel_aspect_ratio
         self.assertIsNotNone(average_aspect_ratio)
 
-        # For a rectangular wing with uniform spacing:
-        # Panel chord = wing_chord / num_chordwise_panels = 1.0 / 4 = 0.25
-        # Panel span = wing_span / num_spanwise_panels = 2.0 / 8 = 0.25
-        # Expected aspect ratio ~ 1.0 for roughly square panels.
-        # This is an approximate check since actual Panel aspect ratios depend on
-        # the meshing algorithm's implementation details.
+        # For a rectangular Wing with uniform spacing: Panel chord = wing_chord /
+        # num_chordwise_panels = 1.0 / 4 = 0.25 Panel span = wing_span /
+        # num_spanwise_panels = 2.0 / 8 = 0.25 The expected aspect ratio is
+        # approximately 1.0 for roughly square Panels. This is an approximate check
+        # since actual Panel aspect ratios depend on the meshing algorithm's
+        # implementation details.
         self.assertGreater(average_aspect_ratio, 0.0)
         self.assertLess(average_aspect_ratio, 100.0)
 

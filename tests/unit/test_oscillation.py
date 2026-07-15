@@ -68,8 +68,8 @@ class TestOscillation(unittest.TestCase):
             time=0.0,
         )
 
-        # Verify that phase offset shifts the waveform.
-        # At t=0.0, sine with 90.0 degree phase should equal the amplitude.
+        # Verify that phase offset shifts the waveform. At t = 0.0, sine with 90.0
+        # degree phase should equal the amplitude.
         npt.assert_allclose(result, self.phase_offset_amp, rtol=1e-10, atol=1e-14)
 
     def test_oscillating_sin_at_time_max_phase(self):
@@ -82,8 +82,8 @@ class TestOscillation(unittest.TestCase):
             time=0.0,
         )
 
-        # Verify that max phase (180.0 degrees) inverts the waveform.
-        # At t=0.0, sine with 180.0 degree phase should be approximately 0.0.
+        # Verify that max phase (180.0 degrees) inverts the waveform. At t = 0.0, sine
+        # with 180.0 degree phase should be approximately 0.0.
         npt.assert_allclose(result, 0.0, rtol=1e-10, atol=1e-14)
 
     def test_oscillating_lin_at_time_static_parameters(self):
@@ -109,8 +109,8 @@ class TestOscillation(unittest.TestCase):
             time=0.0,
         )
 
-        # Verify that phase offset shifts the waveform.
-        # At t=0.0, triangular wave with 90.0 degree phase should be near maximum.
+        # Verify that phase offset shifts the waveform. At t = 0.0, triangular wave with
+        # 90.0 degree phase should be near maximum.
         self.assertGreater(result, 0.5 * self.phase_offset_amp)
 
     def test_oscillating_custom_at_time_static_parameters(self):

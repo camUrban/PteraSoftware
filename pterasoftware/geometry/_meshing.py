@@ -49,8 +49,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     num_wing_cross_sections = len(wing_cross_sections)
     num_wing_sections = num_wing_cross_sections - 1
 
-    # Initialize an empty array that will hold the Panels of this Wing. It currently
-    # has 0 columns and M rows, where M is the number of the Wing's chordwise Panels.
+    # Initialize an empty array that will hold the Panels of this Wing. It currently has
+    # 0 columns and M rows, where M is the number of the Wing's chordwise Panels.
     wing_panels: np.ndarray = np.empty((num_chordwise_panels, 0), dtype=object)
 
     # The type 4 mirrored half is reflected about the wing's symmetry plane. Re-express
@@ -84,9 +84,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
         inner_wing_cross_section = wing_cross_sections[inner_wing_cross_section_num]
         outer_wing_cross_section = wing_cross_sections[inner_wing_cross_section_num + 1]
 
-        # Get the homogeneous passive transformation matrices from the inner and
-        # outer WingCrossSection's axes relative to their respective leading points
-        # to wing axes relative to the leading edge root point.
+        # Get the homogeneous passive transformation matrices from the inner and outer
+        # WingCrossSection's axes relative to their respective leading points to wing
+        # axes relative to the leading edge root point.
         T_pas_Wcsi_Lpi_to_Wn_Ler = children_T_pas_Wcs_Lp_to_Wn_Ler[
             inner_wing_cross_section_num
         ]
@@ -125,8 +125,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
         else:
             spanwise_coordinates = _functions.cosspace(0, 1, num_spanwise_coordinates)
 
-        # Get this wing section's MCS points (in wing axes, relative to the leading
-        # edge root point).
+        # Get this wing section's MCS points (in wing axes, relative to the leading edge
+        # root point).
         [
             Fipp_Wn_Ler,
             Fopp_Wn_Ler,
@@ -159,9 +159,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             T_pas_Wn_Ler_to_G_Cg, Bopp_Wn_Ler, is_position=True
         )
 
-        # Compute a matrix that is (M,N), where M and N are the number of chordwise
-        # and spanwise Panels. The values are either 1 if the Panel at that location
-        # is a trailing edge, or 0 if not.
+        # Compute a matrix that is (M,N), where M and N are the number of chordwise and
+        # spanwise Panels. The values are either 1 if the Panel at that location is a
+        # trailing edge, or 0 if not.
         wing_section_is_trailing_edge = np.vstack(
             [
                 np.zeros((num_chordwise_panels - 1, num_spanwise_panels), dtype=bool),
@@ -169,9 +169,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             ]
         )
 
-        # Compute a matrix that is (M,N), where M and N are the number of chordwise
-        # and spanwise Panels. The values are either 1 if the Panel at that location
-        # is a leading edge, or 0 if not.
+        # Compute a matrix that is (M,N), where M and N are the number of chordwise and
+        # spanwise Panels. The values are either 1 if the Panel at that location is a
+        # leading edge, or 0 if not.
         wing_section_is_leading_edge = np.vstack(
             [
                 np.ones((1, num_spanwise_panels), dtype=bool),
@@ -265,9 +265,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 spanwise_coordinates,
             )
 
-            # Compute a matrix that is (M,N), where M and N are the number of
-            # chordwise and spanwise Panels. The values are either 1 if the Panel at
-            # that location is a trailing edge, or 0 if not.
+            # Compute a matrix that is (M,N), where M and N are the number of chordwise
+            # and spanwise Panels. The values are either 1 if the Panel at that location
+            # is a trailing edge, or 0 if not.
             wing_section_is_trailing_edge = np.vstack(
                 [
                     np.zeros(
@@ -277,9 +277,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 ]
             )
 
-            # Compute a matrix that is (M,N), where M and N are the number of
-            # chordwise and spanwise Panels. The values are either 1 if the Panel at
-            # that location is a leading edge, or 0 if not.
+            # Compute a matrix that is (M,N), where M and N are the number of chordwise
+            # and spanwise Panels. The values are either 1 if the Panel at that location
+            # is a leading edge, or 0 if not.
             wing_section_is_leading_edge = np.vstack(
                 [
                     np.ones((1, num_spanwise_panels), dtype=bool),
@@ -305,13 +305,13 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             # wing's attributes.
 
             # A reflection is an improper transformation (determinant -1) that flips
-            # handedness/chirality. A rotation or translation is a proper
-            # transformation (determinant +1) that preserves handedness. If we derived
-            # the mirrored wing's points using only a passive transformation, we would
-            # get a right-handed copy of the original wing just relocated. That means
-            # camber would carry the wrong geometric sign on the opposite side.
-            # Reflection is the only linear operation that genuinely inverts handedness
-            # to turn a right wing into a left wing.
+            # handedness/chirality. A rotation or translation is a proper transformation
+            # (determinant +1) that preserves handedness. If we derived the mirrored
+            # wing's points using only a passive transformation, we would get a
+            # right-handed copy of the original wing just relocated. That means camber
+            # would carry the wrong geometric sign on the opposite side. Reflection is
+            # the only linear operation that genuinely inverts handedness to turn a
+            # right wing into a left wing.
 
             assert reflect_T_act is not None
 
@@ -331,8 +331,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 reflect_T_act, Bopp_Wn_Ler, is_position=True
             )
 
-            # Step 2 (passive transformation): Re-express the now-reflected points
-            # from local wing axes into geometry axes relative to the CG.
+            # Step 2 (passive transformation): Re-express the now-reflected points from
+            # local wing axes into geometry axes relative to the CG.
             reflected_Fipp_G_Cg = _transformations.apply_T_to_vectors(
                 T_pas_Wn_Ler_to_G_Cg, reflected_Fipp_Wn_Ler, is_position=True
             )
@@ -356,8 +356,8 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 is_leading_edge=wing_section_is_leading_edge,
             )
 
-            # This wing section's Panels array is stacked horizontally, to the left
-            # of the Wing's Panel array.
+            # This wing section's Panels array is stacked horizontally, to the left of
+            # the Wing's Panel array.
             wing_panels = np.hstack([np.flip(wing_section_panels, axis=1), wing_panels])
 
     # Iterate through the Panels and populate their local position attributes.
@@ -402,30 +402,30 @@ def _get_mcl_points(
         components, and (4) the outer Airfoil's MCL points' x components. The values are
         normalized from 0.0 to 1.0 and are unitless.
     """
-    # Make the MCLs for each Airfoil. First index is point number, second index is
-    # the coordinates of that point on the MCL (in each Airfoil's axes, relative to
-    # each Airfoil's leading point).
+    # Make the MCLs for each Airfoil. First index is point number, second index is the
+    # coordinates of that point on the MCL (in each Airfoil's axes, relative to each
+    # Airfoil's leading point).
     inner_mcl_points_Ai_lpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
     outer_mcl_points_Ao_lpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
 
-    # Extract the y components of the inner Airfoil's MCL points (in the inner
-    # Airfoil's axes, relative to the inner Airfoil's leading point) and put them in
-    # a column vector.
+    # Extract the y components of the inner Airfoil's MCL points (in the inner Airfoil's
+    # axes, relative to the inner Airfoil's leading point) and put them in a column
+    # vector.
     inner_mcl_pointsY_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 1], 1)
 
-    # Extract the x components of the inner Airfoil's MCL points (in the inner
-    # Airfoil's axes, relative to the inner Airfoil's leading point) and put them in
-    # a column vector.
+    # Extract the x components of the inner Airfoil's MCL points (in the inner Airfoil's
+    # axes, relative to the inner Airfoil's leading point) and put them in a column
+    # vector.
     inner_mcl_pointsX_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 0], 1)
 
-    # Extract the y components of the outer Airfoil's MCL points (in the outer
-    # Airfoil's axes, relative to the outer Airfoil's leading point) and put them in
-    # a column vector.
+    # Extract the y components of the outer Airfoil's MCL points (in the outer Airfoil's
+    # axes, relative to the outer Airfoil's leading point) and put them in a column
+    # vector.
     outer_mcl_pointsY_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 1], 1)
 
-    # Extract the x components of the outer Airfoil's MCL points (in the outer
-    # Airfoil's axes, relative to the outer Airfoil's leading point) and put them in
-    # a column vector.
+    # Extract the x components of the outer Airfoil's MCL points (in the outer Airfoil's
+    # axes, relative to the outer Airfoil's leading point) and put them in a column
+    # vector.
     outer_mcl_pointsX_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 0], 1)
 
     return [
@@ -528,8 +528,8 @@ def _get_mcs_points(
     )
 
     # Find the vertices of the points on this wing section's (MCS) (in wing axes,
-    # relative to the leading edge root point) with interpolation. This returns an (
-    # M,N,3) array, where M and N are the number of chordwise points and spanwise
+    # relative to the leading edge root point) with interpolation. This returns an
+    # (M,N,3) array, where M and N are the number of chordwise points and spanwise
     # points.
     wing_section_mcl_vertices = _functions.interp_between_points(
         inner_mcl_points_Wn_Ler, outer_mcl_points_Wn_Ler, spanwise_coordinates
@@ -585,8 +585,8 @@ def _get_panels(
     num_chordwise_panels = Flpp_G_Cg.shape[0]
     num_spanwise_panels = Flpp_G_Cg.shape[1]
 
-    # Initialize an empty ndarray to hold the wing section's Panels. The ndarray is
-    # size (M,N), where M and N are the number of chordwise and spanwise Panels.
+    # Initialize an empty ndarray to hold the wing section's Panels. The ndarray is size
+    # (M,N), where M and N are the number of chordwise and spanwise Panels.
     panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
     # Loop through the empty Panels array and create a new Panel in each position.

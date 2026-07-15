@@ -51,9 +51,9 @@ class FreeFlightOperatingPointMovement(_core.CoreOperatingPointMovement):
         """
         super().__init__(base_operating_point=base_operating_point)
 
-        # Mutable list of OperatingPoints. The solver appends new
-        # OperatingPoints from dynamics integration at each time step. Starts
-        # with the base OperatingPoint at step 0.
+        # Mutable list of OperatingPoints. The solver appends new OperatingPoints from
+        # dynamics integration at each time step. Starts with the base OperatingPoint at
+        # step 0.
         self.operating_points: list[operating_point_mod.OperatingPoint] = [
             base_operating_point
         ]

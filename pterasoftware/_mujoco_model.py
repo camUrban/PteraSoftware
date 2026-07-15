@@ -203,9 +203,9 @@ class MuJoCoModel:
         </mujoco>
         """
 
-        # Create the internal MuJoCo model object from the XML str. If mujoco_assets
-        # is provided, pass it so MuJoCo can resolve virtual filenames (e.g., STL
-        # meshes) without writing them to disk.
+        # Create the internal MuJoCo model object from the XML str. If mujoco_assets is
+        # provided, pass it so MuJoCo can resolve virtual filenames (e.g., STL meshes)
+        # without writing them to disk.
         # noinspection PyArgumentList
         if mujoco_assets is not None:
             self._model: mujoco.MjModel = mujoco.MjModel.from_xml_string(
@@ -237,9 +237,9 @@ class MuJoCoModel:
         # Set the internal model's state to the initial conditions.
         mujoco.mj_resetDataKeyframe(self._model, self._data, self._initial_key_frame_id)
 
-        # Run forward kinematics to compute derived quantities (xmat, xpos, etc.)
-        # from the initial qpos/qvel. Without this, xmat would be zeros until the
-        # first call to mj_step.
+        # Run forward kinematics to compute derived quantities (xmat, xpos, etc.) from
+        # the initial qpos/qvel. Without this, xmat would be zeros until the first call
+        # to mj_step.
         mujoco.mj_forward(self._model, self._data)
 
         # Store initial state for reset functionality.
@@ -351,8 +351,8 @@ class MuJoCoModel:
         # Airplane's body axes to Earth axes. To get R_pas_E_to_BP1, we take the
         # transpose.
         R_pas_BP1_to_E = self._data.xmat[self._body_id].reshape(3, 3)
-        # TODO: Consider creating an invert_R_pas function in _transformations.py
-        #  and calling it here.
+        # TODO: Consider creating an invert_R_pas function in _transformations.py and
+        #  calling it here.
         R_pas_E_to_BP1 = R_pas_BP1_to_E.T
 
         return {

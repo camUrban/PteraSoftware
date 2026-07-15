@@ -26,8 +26,8 @@ FLAP_AMPLITUDE = 15.0
 FLAP_PERIOD = 1.0
 FLAP_PHASE = 169.0
 
-# Populate exactly ONE of these lists to sweep that parameter while holding the
-# others at their defaults. Leave the other two as empty lists.
+# Populate exactly ONE of these lists to sweep that parameter while holding the others
+# at their defaults. Leave the other two as empty lists.
 K_VALUES_RAD: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
 B_VALUES_RAD: list[float] = []
 DENSITY_VALUES: list[float] = []
@@ -359,9 +359,9 @@ for val in sweep_values:
     deformationAnglesYRad_Wcsp_to_Wcs_ixyz, problem = run_aeroelastic(
         **{sweep_kwarg: val}
     )
-    # Extract the wing-tip torsional angle from every time series entry (the first
-    # entry is the pre-solve seed state, and each later entry is one time step's
-    # state), converting it from radians to degrees.
+    # Extract the wing-tip torsional angle from every time series entry (the first entry
+    # is the pre-solve seed state, and each later entry is one time step's state),
+    # converting it from radians to degrees.
     tip_twist = np.rad2deg(
         np.array(deformationAnglesYRad_Wcsp_to_Wcs_ixyz)[:, TIP_INDEX]
     ).tolist()

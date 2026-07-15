@@ -67,8 +67,8 @@ def make_mixed_spacing_Lp_core_wing_cross_section_movement_fixture():
     :return mixed_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with mixed spacing for Lp_Wcsp_Lpp.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture which has Lp_Wcsp_Lpp[1] = 2.0, allowing for amplitude of 1.5.
+    # Initialize the constructing fixture. Use the tip fixture, which has Lp_Wcsp_Lpp[1]
+    # = 2.0, allowing for amplitude of 1.5.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the CoreWingCrossSectionMovement with mixed spacing.
@@ -226,8 +226,8 @@ def make_basic_core_wing_cross_section_movement_fixture():
     :return basic_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with general-purpose values.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the basic CoreWingCrossSectionMovement.
@@ -254,8 +254,8 @@ def make_Lp_only_core_wing_cross_section_movement_fixture():
     :return Lp_only_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with only Lp_Wcsp_Lpp movement.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the Lp-only CoreWingCrossSectionMovement.
@@ -310,8 +310,8 @@ def make_phase_offset_Lp_core_wing_cross_section_movement_fixture():
     :return phase_offset_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with phase offset for Lp_Wcsp_Lpp.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the phase-offset CoreWingCrossSectionMovement.
@@ -370,8 +370,8 @@ def make_multiple_periods_core_wing_cross_section_movement_fixture():
     :return multiple_periods_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with different periods.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the multiple-periods CoreWingCrossSectionMovement.
@@ -400,8 +400,8 @@ def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture():
     :return custom_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with custom spacing for Lp_Wcsp_Lpp.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Define a custom harmonic spacing function.
@@ -495,8 +495,8 @@ def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixt
         This is the CoreWingCrossSectionMovement with mixed custom and standard
         spacing.
     """
-    # Initialize the constructing fixture.
-    # Use tip fixture to ensure Lp values stay non-negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non-negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Define a custom harmonic spacing function.

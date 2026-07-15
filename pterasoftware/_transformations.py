@@ -11,8 +11,8 @@ import numpy as np
 # average error, and standard deviation.
 _QUAT_BRANCH_THRESHOLD = 0.0
 
-# Threshold above which |sin(angleY)| triggers the gimbal-lock fallback decomposition
-# in R_to_angles_izyx, equivalent to angleY within about 8.1e-5 degrees of the +/- 90
+# Threshold above which |sin(angleY)| triggers the gimbal-lock fallback decomposition in
+# R_to_angles_izyx, equivalent to angleY within about 8.1e-5 degrees of the +/- 90
 # degree pole. Picked to sit four orders of magnitude above float64 epsilon (1e-16): the
 # standard atan2 formula keeps cos(angleY) as a shared factor that cancels in the ratio,
 # so it works correctly until cos(angleY) approaches machine epsilon (cos at this
@@ -712,6 +712,7 @@ def alpha_and_beta_from_vInf_BP1(
 
     vInfX_BP1__E, vInfY_BP1__E, vInfZ_BP1__E = vInf_BP1__E
 
+    # octowrap: off
     # Invert the wind axes construction defined in docs/AXES_POINTS_AND_FRAMES.md and
     # implemented by OperatingPoint. In that convention the CG velocity in body axes (the
     # negated freestream, vCg_BP1__E = -vInf_BP1__E) has components
@@ -723,6 +724,7 @@ def alpha_and_beta_from_vInf_BP1(
     # textbook order that swaps which angle uses arcsin, keeps this function the exact
     # inverse of OperatingPoint. Deriving alpha and beta here and storing them back on an
     # OperatingPoint then reproduces the original freestream.
+    # octowrap: on
     sin_alpha = float(np.clip(-vInfZ_BP1__E / vCg__E, -1.0, 1.0))
     alpha = float(np.rad2deg(np.arcsin(sin_alpha)))
     beta = float(np.rad2deg(np.arctan2(-vInfY_BP1__E, -vInfX_BP1__E)))

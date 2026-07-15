@@ -13,8 +13,8 @@ import pterasoftware as ps
 # the console instead, omit the handler argument.
 ps.set_up_logging(level="Info", handler=logging.FileHandler("example_convergence.log"))
 
-# Create two Airplanes. Read through the solver and formation examples for
-# more details on creating these Airplanes.
+# Create two Airplanes. Read through the solver and formation examples for more details
+# on creating these Airplanes.
 leading_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
@@ -162,8 +162,8 @@ del trailing_airplane
 del operating_point
 
 # Run the steady convergence analysis. This will run several simulations, modifying
-# average Panel aspect ratio and number of chordwise Panels with each iteration. Once
-# it detects that each load coefficient has stopped changing by more than the relative
+# average Panel aspect ratio and number of chordwise Panels with each iteration. Once it
+# detects that each load coefficient has stopped changing by more than the relative
 # tolerance (rtol) plus the absolute tolerance (atol) between successive meshes, it will
 # return the parameters it found to result in a converged solution. See the
 # analyze_steady_convergence function docstring for more details.

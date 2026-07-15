@@ -94,8 +94,8 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with positive delta_time works. Use num_steps=1 to speed up the test;
-        # we only need to verify delta_time is accepted, not generate many airplanes.
+        # Test with positive delta_time works. Use num_steps = 1 to speed up the test.
+        # We only need to verify delta_time is accepted, not generate many Airplanes.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -245,8 +245,8 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer. Use num_cycles=1 to speed up the test;
-        # the validation logic doesn't depend on the specific value.
+        # Test with valid positive integer. Use num_cycles = 1 to speed up the test. The
+        # validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -275,8 +275,8 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer. Use num_chords=1 to speed up the test;
-        # the validation logic doesn't depend on the specific value.
+        # Test with valid positive integer. Use num_chords = 1 to speed up the test. The
+        # validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -305,8 +305,8 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Test with valid positive integer. Use num_steps=1 to speed up the test;
-        # the validation logic doesn't depend on the specific value.
+        # Test with valid positive integer. Use num_steps = 1 to speed up the test. The
+        # validation logic doesn't depend on the specific value.
         movement = ps.movements.movement.Movement(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -438,8 +438,8 @@ class TestMovement(unittest.TestCase):
             num_chords=5,
         )
 
-        # num_steps should be at least num_chords * c_ref / (delta_time * vCg__E).
-        # Since we use math.ceil, it should be an integer.
+        # num_steps should be at least num_chords * c_ref / (delta_time * vCg__E). Since
+        # we use math.ceil, it should be an integer.
         self.assertIsInstance(movement.num_steps, int)
         self.assertGreater(movement.num_steps, 0)
 
@@ -459,8 +459,8 @@ class TestMovement(unittest.TestCase):
             num_cycles=3,
         )
 
-        # num_steps should be at least num_cycles * max_period / delta_time.
-        # Since we use math.ceil, it should be an integer.
+        # num_steps should be at least num_cycles * max_period / delta_time. Since we
+        # use math.ceil, it should be an integer.
         self.assertIsInstance(movement.num_steps, int)
         self.assertGreater(movement.num_steps, 0)
 
@@ -496,8 +496,8 @@ class TestMovement(unittest.TestCase):
             for wcs in processed_wing.wing_cross_sections
         ]
 
-        # Create a WingMovement with rotation that will cause the symmetry plane
-        # to become non-coincident (type 4->5 transition).
+        # Create a WingMovement with rotation that will cause the symmetry plane to
+        # become non-coincident (type 4->5 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wcs_movements,
@@ -559,8 +559,8 @@ class TestMovement(unittest.TestCase):
             for wcs in processed_wing.wing_cross_sections
         ]
 
-        # Create a WingMovement with rotation that will cause the symmetry plane
-        # to become coincident (type 3->2 transition).
+        # Create a WingMovement with rotation that will cause the symmetry plane to
+        # become coincident (type 3->2 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wcs_movements,
@@ -623,8 +623,8 @@ class TestMovement(unittest.TestCase):
             for wcs in processed_wing.wing_cross_sections
         ]
 
-        # Create a WingMovement with rotation that will cause the symmetry plane
-        # to become non-coincident (type 2->3 transition).
+        # Create a WingMovement with rotation that will cause the symmetry plane to
+        # become non-coincident (type 2->3 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
             wing_cross_section_movements=wcs_movements,
@@ -803,8 +803,8 @@ class TestMovement(unittest.TestCase):
             # Verify the analytical optimizer was called exactly once.
             mock_analytical.assert_called_once()
 
-            # Verify the iterative optimizer was called exactly once with the
-            # analytical result as initial_delta_time.
+            # Verify the iterative optimizer was called exactly once with the analytical
+            # result as initial_delta_time.
             mock_iterative.assert_called_once()
             call_kwargs = mock_iterative.call_args[1]
             self.assertEqual(
@@ -827,8 +827,8 @@ class TestMovement(unittest.TestCase):
 
     def test_min_period_with_multiple_periods(self):
         """Test that min_period returns the smallest non zero period."""
-        # Reuse the multi airplane fixture which has periods 2.0 and 0.0.
-        # The min non zero period should be 2.0.
+        # Reuse the multi airplane fixture which has periods 2.0 and 0.0. The min non
+        # zero period should be 2.0.
         movement = self.movement_with_multiple_airplanes
         self.assertEqual(movement.min_period, 2.0)
 
@@ -913,10 +913,10 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a known value instantly.
-        # The value is below this fixture's clamp threshold (an LCM period of 2.0
-        # seconds divided by the minimum of 30 time steps per LCM period), so it
-        # passes through the clamp unchanged.
+        # Mock _analytically_optimize_delta_time to return a known value instantly. The
+        # value is below this fixture's clamp threshold (an LCM period of 2.0 seconds
+        # divided by the minimum of 30 time steps per LCM period), so it passes through
+        # the clamp unchanged.
         fake_optimized_delta_time = 0.0123456789
 
         with patch(
@@ -924,8 +924,8 @@ class TestMovement(unittest.TestCase):
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
-            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
-            # only time spent is generating Airplanes after getting the delta_time.
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
+            # time spent is generating Airplanes after getting the delta_time.
             movement = ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
@@ -953,9 +953,9 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a value far above the
-        # clamp threshold (an LCM period of 2.0 seconds divided by the minimum of
-        # 30 time steps per LCM period).
+        # Mock _analytically_optimize_delta_time to return a value far above the clamp
+        # threshold (an LCM period of 2.0 seconds divided by the minimum of 30 time
+        # steps per LCM period).
         fake_optimized_delta_time = 10.0
 
         with patch(
@@ -963,8 +963,8 @@ class TestMovement(unittest.TestCase):
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
-            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
-            # only time spent is generating Airplanes after getting the delta_time.
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
+            # time spent is generating Airplanes after getting the delta_time.
             movement = ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
@@ -972,8 +972,8 @@ class TestMovement(unittest.TestCase):
                 num_steps=1,
             )
 
-            # Verify the Movement clamped the optimizer's return value to the LCM
-            # period divided by the minimum number of time steps per LCM period.
+            # Verify the Movement clamped the optimizer's return value to the LCM period
+            # divided by the minimum number of time steps per LCM period.
             self.assertEqual(movement.delta_time, movement.lcm_period / 30)
 
     def test_delta_time_estimate_not_clamped_for_static_movement(self):
@@ -990,9 +990,9 @@ class TestMovement(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Mock _analytically_optimize_delta_time to return a large value instantly.
-        # For a static Movement, the real optimizer would return its initial
-        # estimate unchanged.
+        # Mock _analytically_optimize_delta_time to return a large value instantly. For
+        # a static Movement, the real optimizer would return its initial estimate
+        # unchanged.
         fake_optimized_delta_time = 10.0
 
         with patch(
@@ -1000,8 +1000,8 @@ class TestMovement(unittest.TestCase):
         ) as mock_optimize:
             mock_optimize.return_value = fake_optimized_delta_time
 
-            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the
-            # only time spent is generating Airplanes after getting the delta_time.
+            # Use num_steps=1 to speed up the test. The optimizer is mocked, so the only
+            # time spent is generating Airplanes after getting the delta_time.
             movement = ps.movements.movement.Movement(
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
@@ -1009,8 +1009,7 @@ class TestMovement(unittest.TestCase):
                 num_steps=1,
             )
 
-            # Verify the Movement used the optimizer's return value without
-            # clamping it.
+            # Verify the Movement used the optimizer's return value without clamping it.
             self.assertEqual(movement.delta_time, fake_optimized_delta_time)
 
     def test_max_wake_rows_default_none(self):
@@ -1325,8 +1324,8 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Use a delta_time that results in only 1 step for static movement.
-        # With max_period = 0, num_steps will be 1, so step > 0 never runs.
+        # Use a delta_time that results in only 1 step for a static Movement. With
+        # max_period = 0, num_steps will be 1, so step > 0 never runs.
         delta_time = 0.01
 
         mismatch = _compute_wake_area_mismatch(
@@ -1444,10 +1443,10 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
             all_periods.extend(airplane_movement.all_periods)
         lcm_period = lcm_multiple(all_periods)
 
-        # Seed with the analytical result so the brute force bracket is centered
-        # near the true optimum, mirroring real usage. The analytical's
-        # initial_delta_time is only used as a fallback for fully static
-        # Movements, so any positive placeholder works here.
+        # Seed with the analytical result so the brute force bracket is centered near
+        # the true optimum, mirroring real usage. The analytical's initial_delta_time is
+        # only used as a fallback for fully static Movements, so any positive
+        # placeholder works here.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1485,10 +1484,10 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
             all_periods.extend(airplane_movement.all_periods)
         lcm_period = lcm_multiple(all_periods)
 
-        # Seed with the analytical result so the brute force bracket is centered
-        # near the true optimum, mirroring real usage. The analytical's
-        # initial_delta_time is only used as a fallback for fully static
-        # Movements, so any positive placeholder works here.
+        # Seed with the analytical result so the brute force bracket is centered near
+        # the true optimum, mirroring real usage. The analytical's initial_delta_time is
+        # only used as a fallback for fully static Movements, so any positive
+        # placeholder works here.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1526,12 +1525,12 @@ class TestOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Seed the iterative optimizer with the analytical result. This keeps the
-        # brute force bracket centered near the true optimum so the search does
-        # not hit either bound, mirroring real usage. The initial_delta_time
-        # passed to _analytically_optimize_delta_time is only used as a fallback
-        # for fully static Movements, so any positive placeholder works here
-        # since the fixture has motion.
+        # Seed the iterative optimizer with the analytical result. This keeps the brute
+        # force bracket centered near the true optimum so the search does not hit either
+        # bound, mirroring real usage. The initial_delta_time passed to
+        # _analytically_optimize_delta_time is only used as a fallback for fully static
+        # Movements, so any positive placeholder works here since the fixture has
+        # motion.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
@@ -1900,8 +1899,8 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             _analytically_optimize_delta_time,
         )
 
-        # Create a multi wing Airplane with Cg_GP1_CgP1 at origin.
-        # Use simple tapered wings.
+        # Create an Airplane with multiple Wings, with Cg_GP1_CgP1 at the origin. Use
+        # simple tapered Wings.
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
 
@@ -1966,11 +1965,12 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             _analytically_optimize_delta_time,
         )
 
-        # Create an AirplaneMovement with very fast motion (short period) and few
-        # chordwise panels. This should result in fewer than 20 steps per min period.
-        # The basic fixture has period 2.0 s. With few chordwise panels and fast motion,
-        # the trailing edge panels are large relative to the motion displacement.
-        # Create a Wing with only 2 chordwise panels to make trailing edge panels large.
+        # Create an AirplaneMovement with very fast motion (a short period) and few
+        # chordwise Panels. This should result in fewer than 20 steps per min period.
+        # The basic fixture has a period of 2.0 s. With few chordwise Panels and fast
+        # motion, the trailing edge Panels are large relative to the motion
+        # displacement. Create a Wing with only 2 chordwise Panels to make trailing edge
+        # Panels large.
         base_airplane = geometry_fixtures.make_2_chordwise_panels_airplane_fixture()
         wing = base_airplane.wings[0]
 
@@ -2137,8 +2137,8 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        # Use a delta_time that results in multiple time steps over the max period.
-        # The basic fixture has period 2.0 s. With delta_time=0.5, we get 4 steps.
+        # Use a delta_time that results in multiple time steps over the max period. The
+        # basic fixture has period 2.0 s. With delta_time=0.5, we get 4 steps.
         delta_time = 0.5
 
         mismatch = _compute_wake_area_mismatch(
@@ -2271,8 +2271,8 @@ class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
             _evaluate_cached_wake_area_mismatch,
         )
 
-        # The function returns early before touching cache_per_wing or
-        # v_inf_high_res, so minimal placeholder inputs are sufficient.
+        # The function returns early before touching cache_per_wing or v_inf_high_res,
+        # so minimal placeholder inputs are sufficient.
         result = _evaluate_cached_wake_area_mismatch(
             cache_per_wing=[],
             v_inf_high_res=np.zeros((1, 3)),
@@ -2310,10 +2310,10 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         lcm_period = 2.0  # Fixture has period 2.0.
         initial_delta_time = 0.1  # Results in ~20 steps, search range ~10 to ~41.
 
-        # Mock the cached batch evaluator to return mismatches that increase
-        # with num_steps, so the best is at min_num_steps (lower bound = largest
-        # delta_time). Mirrors the original 1.0 / delta_time shape via
-        # delta_time = lcm_period / num_steps.
+        # Mock the cached batch evaluator to return mismatches that increase with
+        # num_steps, so the best is at min_num_steps (lower bound = largest delta_time).
+        # This mirrors the original 1.0 / delta_time shape via delta_time = lcm_period /
+        # num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
             airplane_movements,
@@ -2371,10 +2371,10 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
         lcm_period = 2.0  # Fixture has period 2.0.
         initial_delta_time = 0.1  # Results in ~20 steps, search range ~10 to ~41.
 
-        # Mock the cached batch evaluator to return mismatches that decrease
-        # with num_steps, so the best is at max_num_steps (upper bound =
-        # smallest delta_time). Mirrors the original delta_time * 10.0 shape
-        # via delta_time = lcm_period / num_steps.
+        # Mock the cached batch evaluator to return mismatches that decrease with
+        # num_steps, so the best is at max_num_steps (upper bound = smallest
+        # delta_time). Mirrors the original delta_time * 10.0 shape via delta_time =
+        # lcm_period / num_steps.
         # noinspection PyUnusedLocal,PyShadowingNames
         def mock_cached_mismatches(
             airplane_movements,

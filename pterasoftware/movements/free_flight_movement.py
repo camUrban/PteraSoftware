@@ -88,9 +88,9 @@ class FreeFlightMovement(_core.CoreMovement):
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """
-        # Validate that every element is an AirplaneMovement.
-        # CoreMovement.__init__() validates at the Core level, but
-        # FreeFlightMovement enforces the concrete type.
+        # Validate that every element is an AirplaneMovement. CoreMovement.__init__()
+        # validates at the Core level, but FreeFlightMovement enforces the concrete
+        # type.
         for airplane_movement in airplane_movements:
             if not isinstance(
                 airplane_movement,
@@ -101,8 +101,7 @@ class FreeFlightMovement(_core.CoreMovement):
                     "AirplaneMovement."
                 )
 
-        # Validate that operating_point_movement is a
-        # FreeFlightOperatingPointMovement.
+        # Validate that operating_point_movement is a FreeFlightOperatingPointMovement.
         if not isinstance(
             operating_point_movement,
             free_flight_operating_point_movement_mod.FreeFlightOperatingPointMovement,
@@ -142,9 +141,8 @@ class FreeFlightMovement(_core.CoreMovement):
 
         # --- Batch generate Airplanes ---
         # Generate a list of lists of Airplanes that are the steps through each
-        # AirplaneMovement. The first index identifies the
-        # AirplaneMovement, and the second index identifies the time
-        # step.
+        # AirplaneMovement. The first index identifies the AirplaneMovement, and the
+        # second index identifies the time step.
         airplanes_temp: list[list[geometry.airplane.Airplane]] = []
         for airplane_movement in self.airplane_movements:
             airplanes_temp.append(
@@ -153,8 +151,7 @@ class FreeFlightMovement(_core.CoreMovement):
                 )
             )
 
-        # Validate that all Wings maintain their symmetry type across all time
-        # steps.
+        # Validate that all Wings maintain their symmetry type across all time steps.
         for airplane_movement_id, airplane_list in enumerate(airplanes_temp):
             # Get the base Airplane (first time step).
             base_airplane = airplane_list[0]

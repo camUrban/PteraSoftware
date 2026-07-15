@@ -23,3 +23,16 @@ source = ["pterasoftware"]
 black = true
 recursive = true
 force-wrap = true
+
+[tool.octowrap]
+line-length = 88
+recursive = true
+inline = true
+list-wrap = true
+diff-only = false
+diff-base = "HEAD"
+todo-case-sensitive = true
+todo-multiline = true
+extend-exclude = ["private", ".venv-wsl", "experimental"]
+todo-patterns = ["TODO:", "FIXME:"]
+extend-todo-patterns = ["TEST:"]

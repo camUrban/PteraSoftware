@@ -310,8 +310,8 @@ class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_rotation_offset_aeroelastic_wing_movement_fixture()
         )
 
-        # At step 1 the sine spaced angular motion is non zero, so the offset
-        # adjustment shifts Ler_Gs_Cgs.
+        # At step 1 the sine spaced angular motion is non zero, so the offset adjustment
+        # shifts Ler_Gs_Cgs.
         basic_wing = basic_wing_movement.generate_wing_at_time_step(
             step=1, delta_time=0.1
         )

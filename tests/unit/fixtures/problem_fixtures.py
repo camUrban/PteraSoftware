@@ -246,9 +246,9 @@ def make_basic_free_flight_unsteady_problem_fixture(
 
     # Create the FreeFlightOperatingPointMovement. Free flight requires the Airplane's
     # weight, the mass, and the gravitational field to agree (weight == mass * |g_E|).
-    # The shared operating-point fixtures default to no gravity, so rebuild the operating
-    # point with standard gravity here (preserving every other field) and derive the
-    # matching mass from the Airplane's weight.
+    # The shared OperatingPoint fixtures default to no gravity, so rebuild the
+    # OperatingPoint with standard gravity here (preserving every other field) and
+    # derive the matching mass from the Airplane's weight.
     if base_operating_point is None:
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()

@@ -113,8 +113,8 @@ _text_min_position = (0.85, 0.050)
 _text_speed_position = (0.05, 0.075)
 _text_font_size = 11
 
-# Set the line widths for the results plots. Lines are drawn from thickest to
-# thinnest so that all remain visible even when they overlap.
+# Set the line widths for the results plots. Lines are drawn from thickest to thinnest
+# so that all remain visible even when they overlap.
 _max_line_width = 3.5
 _min_line_width = 1.5
 _legend_line_width = (_max_line_width + _min_line_width) / 2
@@ -251,9 +251,9 @@ def draw(
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
     # body flies through the scene. T_pas_GP1_CgP1_to_E_Eo holds the passive
-    # transformation from the first Airplane's geometry axes (relative to its CG) to Earth
-    # axes (relative to the Earth origin) for the drawn time step, and stays None for the
-    # standard body-fixed rendering in geometry axes.
+    # transformation from the first Airplane's geometry axes (relative to its CG) to
+    # Earth axes (relative to the Earth origin) for the drawn time step, and stays None
+    # for the standard body-fixed rendering in geometry axes.
     is_free_flight = isinstance(
         solver,
         free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -349,9 +349,9 @@ def draw(
     image_surface_mesh = None
 
     # For free flight, the active reflection is represented in geometry axes, but the
-    # geometry has been mapped into Earth axes. Re-expressing the reflection in Earth axes
-    # (a change of basis by the same passive transformation) lets the reflected-geometry
-    # code below operate entirely in Earth axes.
+    # geometry has been mapped into Earth axes. Re-expressing the reflection in Earth
+    # axes (a change of basis by the same passive transformation) lets the
+    # reflected-geometry code below operate entirely in Earth axes.
     if T_pas_GP1_CgP1_to_E_Eo is not None and T_reflect is not None:
         T_reflect = (
             T_pas_GP1_CgP1_to_E_Eo
@@ -359,8 +359,8 @@ def draw(
             @ _transformations.invert_T_pas(T_pas_GP1_CgP1_to_E_Eo)
         )
 
-    # If an image surface is defined, add reflected geometry. The image surface plane
-    # is added later, after the geometry bounds are captured.
+    # If an image surface is defined, add reflected geometry. The image surface plane is
+    # added later, after the geometry bounds are captured.
     if T_reflect is not None:
         mute = _image_reflection_mute_factor
         muted_edge_color = _mute_color("black", mute)
@@ -410,8 +410,8 @@ def draw(
             # Iterate through the streamline points at this spanwise position.
             for point_index in range(stackStreamlinePoints_GP1_CgP1.shape[0]):
 
-                # Skip the first point because it has no previous point with which
-                # to make a line.
+                # Skip the first point because it has no previous point with which to
+                # make a line.
                 if point_index != 0:
                     # Get the current and last point.
                     point = stackStreamlinePoints_GP1_CgP1[point_index, :]
@@ -462,18 +462,18 @@ def draw(
                             smooth_shading=False,
                         )
 
-    # If an image surface is defined, save the geometry bounds (which now include
-    # the reflected geometry but not the image surface plane), add the image surface
-    # plane, then fit the camera to the saved bounds so the view is not dominated by
-    # the much larger image surface plane. When an image surface is present, cpos is
-    # not passed to show() because that would trigger an auto-fit to all actors
-    # (including the image surface).
+    # If an image surface is defined, save the geometry bounds (which now include the
+    # reflected geometry but not the image surface plane), add the image surface plane,
+    # then fit the camera to the saved bounds so the view is not dominated by the much
+    # larger image surface plane. When an image surface is present, cpos is not passed
+    # to show() because that would trigger an auto-fit to all actors (including the
+    # image surface).
     if T_reflect is not None:
         geometry_bounds = plotter.bounds
         if T_pas_GP1_CgP1_to_E_Eo is not None:
-            # The image surface helper builds the plane from geometry-axis quantities, so
-            # it needs geometry-axis bounds. Build the plane there, then map it into Earth
-            # axes to match the rendered geometry.
+            # The image surface helper builds the plane from geometry-axis quantities,
+            # so it needs geometry-axis bounds. Build the plane there, then map it into
+            # Earth axes to match the rendered geometry.
             geometry_axis_bounds = _get_panel_surfaces(airplanes).bounds
             image_surface_result = _get_image_surface_mesh_and_texture(
                 draw_operating_point, geometry_axis_bounds
@@ -505,10 +505,11 @@ def draw(
             plotter.camera.up = (0, 0, 1)
             plotter.reset_camera(bounds=geometry_bounds)  # type: ignore[call-arg]
 
-    # Choose the camera position. Free flight frames the body in Earth axes with physical
-    # up as Earth -z. The standard rendering views geometry axes from (-1, -1, 1), unless
-    # an image surface is present, in which case the camera was already fitted above and
-    # cpos is left None so show() does not auto-fit to the large image surface plane.
+    # Choose the camera position. Free flight frames the body in Earth axes with
+    # physical up as Earth -z. The standard rendering views geometry axes from (-1, -1,
+    # 1), unless an image surface is present, in which case the camera was already
+    # fitted above and cpos is left None so show() does not auto-fit to the large image
+    # surface plane.
     draw_cpos: tuple | None
     if is_free_flight:
         # Aim the camera along the Earth-axes view direction with physical up, then fit
@@ -535,9 +536,9 @@ def draw(
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
     if not testing:
-        # Show the Plotter so the user can adjust the camera position and window.
-        # When the user closes the window, the Plotter still exists. Therefore,
-        # it can later be saved as an image if desired.
+        # Show the Plotter so the user can adjust the camera position and window. When
+        # the user closes the window, the Plotter still exists. Therefore, it can later
+        # be saved as an image if desired.
         plotter.show(
             title="Orient the view, then press any key to continue.",
             cpos=draw_cpos,
@@ -545,8 +546,8 @@ def draw(
             auto_close=False,
         )
     else:
-        # Show the Plotter for 1 second, then proceed automatically. This is useful
-        # for testing.
+        # Show the Plotter for 1 second, then proceed automatically. This is useful for
+        # testing.
         plotter.show(
             cpos=draw_cpos,
             full_screen=False,
@@ -645,18 +646,18 @@ def animate(
 
     first_results_step = unsteady_solver.first_results_step
 
-    # Get the solver's SteadyProblems' Airplanes. This will become a list of lists,
-    # with the first index being the time step and the second index identifying each
-    # Airplane at that time step.
+    # Get the solver's SteadyProblems' Airplanes. This will become a list of lists, with
+    # the first index being the time step and the second index identifying each Airplane
+    # at that time step.
     step_airplanes = []
     for steady_problem in unsteady_solver.steady_problems:
         step_airplanes.append(steady_problem.airplanes)
 
-    # For a free flight solver, each time step's geometry is rendered in its true Earth-
-    # frame pose so the body flies through the scene. step_transforms holds, per time
-    # step, the passive transformation from the first Airplane's geometry axes (relative
-    # to its CG) to Earth axes (relative to the Earth origin). It stays empty for the
-    # standard body-fixed rendering in geometry axes.
+    # For a free flight solver, each time step's geometry is rendered in its true
+    # Earth-frame pose so the body flies through the scene. step_transforms holds, per
+    # time step, the passive transformation from the first Airplane's geometry axes
+    # (relative to its CG) to Earth axes (relative to the Earth origin). It stays empty
+    # for the standard body-fixed rendering in geometry axes.
     is_free_flight = isinstance(
         unsteady_solver,
         free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -668,8 +669,8 @@ def animate(
             for steady_problem in unsteady_solver.steady_problems
         ]
 
-    # Scale down the true-speed frames per second to at most 50 fps. This is the
-    # maximum speed at which some programs can render WebPs.
+    # Scale down the true-speed frames per second to at most 50 fps. This is the maximum
+    # speed at which some programs can render WebPs.
     requested_fps = 1.0 / unsteady_solver.delta_time
     speed = 1.0
     if requested_fps > 50.0:
@@ -724,12 +725,12 @@ def animate(
         min_scalar = float(min(all_scalars))
         max_scalar = float(max(all_scalars))
 
-    # Pre-compute the image surface mesh and reflection matrix from the last time
-    # step's geometry so that the plane is large enough to encompass the fully
-    # developed wake. The mesh, texture, and reflection matrix are static and reused
-    # for every frame. The last step's geometry bounds (including reflected geometry
-    # but not the image surface plane) are also saved so the camera can be fitted to
-    # the geometry rather than the larger image surface.
+    # Pre-compute the image surface mesh and reflection matrix from the last time step's
+    # geometry so that the plane is large enough to encompass the fully developed wake.
+    # The mesh, texture, and reflection matrix are static and reused for every frame.
+    # The last step's geometry bounds (including reflected geometry but not the image
+    # surface plane) are also saved so the camera can be fitted to the geometry rather
+    # than the larger image surface.
     last_step = len(step_airplanes) - 1
     last_step_operating_point = unsteady_solver.steady_problems[
         last_step
@@ -740,10 +741,10 @@ def animate(
     if is_free_flight:
         if T_reflect is not None:
             # The image surface is fixed in the world, so build its plane once from the
-            # last step's geometry-axis quantities, then map it into Earth axes. Re-
-            # expressing the reflection in Earth axes (a change of basis by the same
+            # last step's quantities in geometry axes, then map it into Earth axes.
+            # Re-expressing the reflection in Earth axes (a change of basis by the same
             # passive transformation) lets the reflected geometry be built from the
-            # Earth-axes panels each frame.
+            # panels in Earth axes each frame.
             T_pas_last = step_transforms[last_step]
             geometry_axis_bounds = _get_panel_surfaces(step_airplanes[last_step]).bounds
             image_surface_result = _get_image_surface_mesh_and_texture(
@@ -791,10 +792,11 @@ def animate(
         image_surface_texture = None
 
     # For free flight, compute a fixed camera that frames the whole trajectory. The body
-    # moves through the scene, so the camera is centered on the trajectory's midpoint and
-    # the parallel scale is fit to the projected extent of the trajectory's geometry so
-    # the whole glide stays in view. The clipping range is sized later, after the user has
-    # oriented the view, so it tracks the user's chosen camera rather than the default.
+    # moves through the scene, so the camera is centered on the trajectory's midpoint
+    # and the parallel scale is fit to the projected extent of the trajectory's geometry
+    # so the whole glide stays in view. The clipping range is sized later, after the
+    # user has oriented the view, so it tracks the user's chosen camera rather than the
+    # default.
     free_flight_cpos: list | None = None
     free_flight_parallel_scale = 0.0
     free_flight_clip_meshes: list = []
@@ -808,8 +810,8 @@ def animate(
             np.linalg.norm(finalPosition_E_Eo - initialPosition_E_Eo)
         )
 
-        # Map the first and last frames' Panel surfaces into Earth axes. These two frames
-        # bound the trajectory, so their combined extent frames the whole glide.
+        # Map the first and last frames' Panel surfaces into Earth axes. These two
+        # frames bound the trajectory, so their combined extent frames the whole glide.
         first_step_panel_surfaces = _transform_mesh(
             _get_panel_surfaces(step_airplanes[0]), step_transforms[0]
         )
@@ -822,8 +824,9 @@ def animate(
             np.linalg.norm(airplane_bounds[1::2] - airplane_bounds[::2])
         )
 
-        # Aim the camera along the Earth-axes view direction with physical up, centered on
-        # the trajectory's midpoint and far enough back to clear the geometry at both ends.
+        # Aim the camera along the Earth-axes view direction with physical up, centered
+        # on the trajectory's midpoint and far enough back to clear the geometry at both
+        # ends.
         padding = max(2.0 * airplane_diagonal, 0.5 * trajectory_extent)
         camera_distance = trajectory_extent + padding
         cameraPosition_E_Eo = (
@@ -835,9 +838,9 @@ def animate(
             _free_flight_view_up_E,
         ]
 
-        # Collect the geometry that frames the trajectory: the body at both ends, plus the
-        # last frame's wake (the largest) if it is shown. The last frame's surfaces are
-        # reused below to size the clipping range after the user orients the view.
+        # Collect the geometry that frames the trajectory: the body at both ends, plus
+        # the last frame's wake (the largest) if it is shown. The last frame's surfaces
+        # are reused below to size the clipping range after the user orients the view.
         framing_meshes = [first_step_panel_surfaces, last_step_panel_surfaces]
         free_flight_clip_meshes = [last_step_panel_surfaces]
         if show_wake_vortices:
@@ -850,9 +853,9 @@ def animate(
                 free_flight_clip_meshes.append(last_step_wake_surfaces)
 
         # Fit the parallel scale (half the viewport height in world units, since the
-        # projection is parallel) to the projected extent of that geometry about the focal
-        # point. This frames the glide snugly; the user can rescale interactively before
-        # the animation is captured.
+        # projection is parallel) to the projected extent of that geometry about the
+        # focal point. This frames the glide snugly. The user can rescale interactively
+        # before the animation is captured.
         free_flight_parallel_scale = _free_flight_fit_parallel_scale(
             framing_meshes,
             trajectoryMidpoint_E_Eo,
@@ -876,8 +879,8 @@ def animate(
     if is_free_flight:
         panel_surfaces = _transform_mesh(panel_surfaces, step_transforms[0])
 
-    # Plot the first time step's Airplanes' Panels either with scalar coloring or
-    # with a uniform color.
+    # Plot the first time step's Airplanes' Panels either with scalar coloring or with a
+    # uniform color.
     if scalar_type is not None and first_results_step == 0:
         these_scalars = _get_scalars(
             step_airplanes[0],
@@ -908,8 +911,8 @@ def animate(
     # If an image surface is defined, add reflected geometry, plot the pre-computed
     # plane, set the camera direction, and fit the camera to the last time step's
     # geometry bounds so the view is not dominated by the much larger image surface
-    # plane. When an image surface is present, cpos is not passed to show() because
-    # that would trigger an auto-fit to all actors (including the image surface).
+    # plane. When an image surface is present, cpos is not passed to show() because that
+    # would trigger an auto-fit to all actors (including the image surface).
     if T_reflect is not None:
         assert image_surface_mesh is not None
         mute = _image_reflection_mute_factor
@@ -964,10 +967,10 @@ def animate(
     # explicitly (rather than through show()'s cpos) so it survives the mesh additions
     # above and becomes the default for the held first frame; cpos is then left None so
     # show() does not reset it, which lets the user's interactive reorientation and
-    # rescaling carry through to the animation. The standard rendering views geometry axes
-    # from (-1, -1, 1), unless an image surface is present, in which case the camera was
-    # already fitted above and cpos is left None so show() does not auto-fit to the large
-    # image surface plane.
+    # rescaling carry through to the animation. The standard rendering views geometry
+    # axes from (-1, -1, 1), unless an image surface is present, in which case the
+    # camera was already fitted above and cpos is left None so show() does not auto-fit
+    # to the large image surface plane.
     animate_cpos: tuple | list | None
     if is_free_flight:
         assert free_flight_cpos is not None
@@ -982,10 +985,10 @@ def animate(
     # Set the Plotter's background color.
     plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
 
-    # If not testing, show the Plotter with the first time step so the user can
-    # orient the view. When the user presses any key, set the title back to the
-    # animation title and proceed. If testing, show the Plotter with the first time
-    # step for 1 second, and start the animation with the current window view.
+    # If not testing, show the Plotter with the first time step so the user can orient
+    # the view. When the user presses any key, set the title back to the animation title
+    # and proceed. If testing, show the Plotter with the first time step for 1 second,
+    # and start the animation with the current window view.
     if not testing:
         plotter.show(
             title="Orient the view, then press any key to produce the animation.",
@@ -1006,10 +1009,11 @@ def animate(
         time.sleep(1)
 
     # The user may have reoriented or rescaled the view during the held first frame.
-    # Preserve that camera and only size the clipping range so every frame stays visible:
-    # temporarily add the last frame's geometry (the first frame's is already present), fit
-    # the clipping range to both, then remove the temporary actors. The body moves through
-    # the scene, so a clipping range fit to the first frame alone would clip later frames.
+    # Preserve that camera and only size the clipping range so every frame stays
+    # visible: temporarily add the last frame's geometry (the first frame's is already
+    # present), fit the clipping range to both, then remove the temporary actors. The
+    # body moves through the scene, so a clipping range fit to the first frame alone
+    # would clip later frames.
     if is_free_flight:
         temporary_actors = [
             plotter.add_mesh(clip_mesh) for clip_mesh in free_flight_clip_meshes
@@ -1042,8 +1046,8 @@ def animate(
         # Clear the Plotter.
         plotter.clear()
 
-        # Get the Panel surfaces of this time step's Airplane(s), mapping them into Earth
-        # axes for free flight.
+        # Get the Panel surfaces of this time step's Airplane(s), mapping them into
+        # Earth axes for free flight.
         panel_surfaces = _get_panel_surfaces(airplanes)
         if is_free_flight:
             panel_surfaces = _transform_mesh(
@@ -1076,8 +1080,8 @@ def animate(
                 color=_wake_vortex_color,
             )
 
-        # Plot the Panels either with a uniform color or, if the current time step
-        # has results, with scalar coloring.
+        # Plot the Panels either with a uniform color or, if the current time step has
+        # results, with scalar coloring.
         if scalar_type is not None and first_results_step <= current_step:
             these_scalars = _get_scalars(
                 airplanes,
@@ -1154,15 +1158,15 @@ def animate(
 
         # If an image surface is present, force VTK to recalculate the scalar bar
         # layout. Adding the image surface mesh with opacity causes VTK's
-        # UnconstrainedFontSize layout to misposition the left label (PyVista
-        # issue #7516).
+        # UnconstrainedFontSize layout to misposition the left label (PyVista issue
+        # #7516).
         if T_reflect is not None:
             for scalar_bar_actor in plotter.scalar_bars.values():
                 scalar_bar_actor.Modified()
             plotter.render()
 
-        # If saving, append a WebP Image of this frame to the list of Images. To do
-        # so, take a screenshot, convert it to a ndarray, and convert that to an Image.
+        # If saving, append a WebP Image of this frame to the list of Images. To do so,
+        # take a screenshot, convert it to a ndarray, and convert that to an Image.
         if save:
             images.append(
                 webp.Image.fromarray(
@@ -1234,8 +1238,8 @@ def plot_results_versus_time(
 
     first_results_step = unsteady_solver.first_results_step
 
-    # Get the time step characteristics. Note that the first time step (time step
-    # 0), occurs at 0 seconds.
+    # Get the time step characteristics. Note that the first time step (time step 0),
+    # occurs at 0 seconds.
     num_steps = unsteady_solver.num_steps
     delta_time = unsteady_solver.delta_time
     num_airplanes = unsteady_solver.num_airplanes
@@ -1342,8 +1346,8 @@ def plot_results_versus_time(
         moment_coefficients_figure.patch.set_facecolor(_figure_background_color)
         moment_coefficients_axes.set_facecolor(_figure_background_color)
 
-        # Populate the plots. Lines are drawn from thickest to thinnest so that
-        # all three remain visible even when the curves overlap.
+        # Populate the plots. Lines are drawn from thickest to thinnest so that all
+        # three remain visible even when the curves overlap.
         _widths_3 = np.linspace(_max_line_width, _min_line_width, 3)
         force_axes.plot(
             times,
@@ -1456,9 +1460,9 @@ def plot_results_versus_time(
             "(in Wind Axes, Relative to the First Airplane's CG)"
         )
 
-        # Name the plots' axis labels, titles, and subtitles. The main title
-        # uses suptitle at the default size, and the subtitle uses set_title at
-        # a smaller size so the two render at different scales.
+        # Name the plots' axis labels, titles, and subtitles. The main title uses
+        # suptitle at the default size, and the subtitle uses set_title at a smaller
+        # size so the two render at different scales.
         force_axes.set_xlabel("Time (s)", color=_text_color_normalized)
         force_axes.set_ylabel("Force (N)", color=_text_color_normalized)
         force_figure.suptitle(force_title, color=_text_color_normalized)
@@ -1496,8 +1500,8 @@ def plot_results_versus_time(
             fontsize="small",
         )
 
-        # Format the plots' legends. The handler map normalizes legend line
-        # widths so the thickness staggering does not appear in the legend.
+        # Format the plots' legends. The handler map normalizes legend line widths so
+        # the thickness staggering does not appear in the legend.
         _legend_handler_map = {
             plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
                 update_func=lambda h, orig: (
@@ -1660,8 +1664,8 @@ def plot_results_versus_time(
             airplane_name_snake + "_aerodynamic_angles.png",
         )
 
-    # If the user wants to show the plots, do so. This is done outside the loop so
-    # that plt.show() is only called once after all figures are created.
+    # If the user wants to show the plots, do so. This is done outside the loop so that
+    # plt.show() is only called once after all figures are created.
     if show:
         plt.show()
     else:
@@ -1960,11 +1964,11 @@ def log_results(
             _logging.indent() + "The First Airplane's Free Flight State History:"
         )
 
-        # Each vector state quantity is broken into one row per component, mirroring
-        # the per-component force and moment rows above, and each component row is
-        # labeled with its variable-convention name. The four group headers are logged
-        # before their first component (at flat indices 0, 3, 6, and 9), and the
-        # component labels are padded to a common width so the values align.
+        # Each vector state quantity is broken into one row per component, mirroring the
+        # per-component force and moment rows above, and each component row is labeled
+        # with its variable-convention name. The four group headers are logged before
+        # their first component (at flat indices 0, 3, 6, and 9), and the component
+        # labels are padded to a common width so the values align.
         state_component_labels = [
             "cgP1X_E_Eo",
             "cgP1Y_E_Eo",
@@ -2143,8 +2147,8 @@ def _plot_state_history(
     figure.patch.set_facecolor(_figure_background_color)
     axes.set_facecolor(_figure_background_color)
 
-    # Populate the plot. Lines are drawn from thickest to thinnest so that all
-    # remain visible even when the curves overlap.
+    # Populate the plot. Lines are drawn from thickest to thinnest so that all remain
+    # visible even when the curves overlap.
     num_series = len(series)
     widths = np.linspace(_max_line_width, _min_line_width, num_series)
     for series_id, (this_series, label, color) in enumerate(
@@ -2212,8 +2216,8 @@ def _get_panel_surfaces(
             # Unravel this Wing's ndarray of Panels iterate through it.
             panels = np.ravel(_panels)
             for panel in panels:
-                # Arrange this Panel's vertices and faces into ndarrays in the
-                # proper form to represent PolyData surfaces.
+                # Arrange this Panel's vertices and faces into ndarrays in the proper
+                # form to represent PolyData surfaces.
                 panel_vertices_to_add = np.vstack(
                     (
                         panel.Flpp_GP1_CgP1,
@@ -2233,8 +2237,8 @@ def _get_panel_surfaces(
                     dtype=int,
                 )
 
-                # Add this Panel's vertices and faces to the ndarray of all vertices
-                # and faces.
+                # Add this Panel's vertices and faces to the ndarray of all vertices and
+                # faces.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
@@ -2419,9 +2423,9 @@ def _free_flight_fit_parallel_scale(
         is 1.15.
     :return: The parallel-projection scale.
     """
-    # Build the camera's screen right and up axes in Earth axes. The camera looks from its
-    # position back toward the focal point, i.e. along the negative view direction. The up
-    # axis is the supplied up made orthogonal to that look direction.
+    # Build the camera's screen right and up axes in Earth axes. The camera looks from
+    # its position back toward the focal point, i.e. along the negative view direction.
+    # The up axis is the supplied up made orthogonal to that look direction.
     lookDirection_E = -viewDirection_E
     lookDirection_E = lookDirection_E / np.linalg.norm(lookDirection_E)
     upDirection_E = viewUp_E - np.dot(viewUp_E, lookDirection_E) * lookDirection_E
@@ -2442,10 +2446,10 @@ def _free_flight_fit_parallel_scale(
     corners_E = np.array(corners_E_Eo) - focalPoint_E_Eo
 
     # Each matrix-vector product is a batch of dot products, one per corner: the (N, 3)
-    # array of corners times a (3,) screen axis gives an (N,) array whose entries are each
-    # corner's signed distance from the focal point along that axis (the axes are unit
-    # vectors, so the dot product is the scalar projection). Take the largest magnitude
-    # along either axis so neither screen dimension is clipped.
+    # array of corners times a (3,) screen axis gives an (N,) array whose entries are
+    # each corner's signed distance from the focal point along that axis (the axes are
+    # unit vectors, so the dot product is the scalar projection). Take the largest
+    # magnitude along either axis so neither screen dimension is clipped.
     half_extent_right = float(np.abs(corners_E @ rightDirection_E).max())
     half_extent_up = float(np.abs(corners_E @ upDirection_E).max())
     return margin * max(half_extent_right, half_extent_up)

@@ -381,8 +381,8 @@ class TestAeroelasticAirplaneMovementMixedWings(unittest.TestCase):
                 atol=1e-14,
             )
 
-        # The standard Wing (index 1) is advanced without deformation, so it matches
-        # its static base.
+        # The standard Wing (index 1) is advanced without deformation, so it matches its
+        # static base.
         base_standard_wing_cross_sections = base_airplane.wings[1].wing_cross_sections
         standard_wing_cross_sections = airplane.wings[1].wing_cross_sections
         for index in range(len(base_standard_wing_cross_sections)):

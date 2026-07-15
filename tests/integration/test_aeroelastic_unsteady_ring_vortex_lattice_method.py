@@ -77,8 +77,8 @@ def _make_aeroelastic_solver(
     airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
 
     # Three WingCrossSections: root, one intermediate, and tip. Each non-tip
-    # WingCrossSection has num_spanwise_panels=1 so each strip is modeled as a
-    # single torsional spring element.
+    # WingCrossSection has num_spanwise_panels=1 so each strip is modeled as a single
+    # torsional spring element.
     root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         num_spanwise_panels=1,
         chord=1.0,
@@ -113,10 +113,10 @@ def _make_aeroelastic_solver(
         airfoil=airfoil,
     )
 
-    # Wing root is offset slightly from the symmetry plane (y=0), which produces
-    # type-5 (non-coincident) symmetry and causes the Airplane constructor to generate
-    # a reflected Wing at airplane.wings[1]. AeroelasticUnsteadyProblem requires at
-    # least two WingMovements so that wings[0] and wings[1] both receive deformation.
+    # Wing root is offset slightly from the symmetry plane (y=0), which produces type-5
+    # (non-coincident) symmetry and causes the Airplane constructor to generate a
+    # reflected Wing at airplane.wings[1]. AeroelasticUnsteadyProblem requires at least
+    # two WingMovements so that wings[0] and wings[1] both receive deformation.
     main_wing = ps.geometry.wing.Wing(
         wing_cross_sections=[
             root_wing_cross_section,
@@ -142,9 +142,9 @@ def _make_aeroelastic_solver(
         weight=0.0,
     )
 
-    # Build WingCrossSectionMovements from wings[0]'s WingCrossSections. Following
-    # the example's pattern, the same movement objects are reused for the reflected
-    # Wing (wings[1]) since both halves flap symmetrically.
+    # Build WingCrossSectionMovements from wings[0]'s WingCrossSections. Following the
+    # example's pattern, the same movement objects are reused for the reflected Wing
+    # (wings[1]) since both halves flap symmetrically.
     wing_cross_section_movements = [
         ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,

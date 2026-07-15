@@ -15,12 +15,11 @@ import pterasoftware as ps
 # the console alongside progress bars instead, omit the handler argument.
 ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"))
 
-# Create an Airplane with our custom geometry. I am going to declare every parameter
-# for Airplane, even though most of them have usable default values. This is for
-# educational purposes, but keep in mind that it makes the code much longer than it
-# needs to be. For details about each parameter, read the detailed class docstring.
-# The same caveats apply to the other classes, methods, and functions I call in this
-# script.
+# Create an Airplane with our custom geometry. I am going to declare every parameter for
+# Airplane, even though most of them have usable default values. This is for educational
+# purposes, but keep in mind that it makes the code much longer than it needs to be. For
+# details about each parameter, read the detailed class docstring. The same caveats
+# apply to the other classes, methods, and functions I call in this script.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
@@ -150,7 +149,7 @@ main_wing_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the v tail's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the V-tail's root and tip WingCrossSections' WingCrossSectionMovements.
 v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -178,7 +177,7 @@ v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the main wing's WingMovement and the v tail's WingMovement.
+# Now define the main Wing's WingMovement and the V-tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
     wing_cross_section_movements=[
@@ -270,8 +269,8 @@ example_problem = ps.problems.UnsteadyProblem(
 )
 
 # Define a new solver. The available solver classes are
-# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
-# and UnsteadyRingVortexLatticeMethodSolver. We'll create an
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
+# UnsteadyRingVortexLatticeMethodSolver. We'll create an
 # UnsteadyRingVortexLatticeMethodSolver, which requires a UnsteadyProblem.
 example_solver = (
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
@@ -309,9 +308,9 @@ ps.output.draw(
     save=True,
 )
 
-# Call the animate function on the loaded solver. This produces a GIF of the wake being shed.
-# The GIF is saved in the same directory as this script. Press any key, after orienting
-# the view, to begin the animation.
+# Call the animate function on the loaded solver. This produces a GIF of the wake being
+# shed. The GIF is saved in the same directory as this script. Press any key, after
+# orienting the view, to begin the animation.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",

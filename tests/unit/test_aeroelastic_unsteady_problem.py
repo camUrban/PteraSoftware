@@ -116,11 +116,11 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
 
-        # Choose the per-entry mass so the strip's torsional inertia, I = (1 / 2) *
-        # mass * L^2 with mass summed over the strip's mass-matrix entries, is exactly
-        # 1.0. With spring_constant_rad = 10.0 and damping_constant_rad = 20.0, the ODE
-        # is then overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5
-        # per second, so it is far from settled within one 0.1 s time step.
+        # Choose the per-entry mass so the strip's torsional inertia, I = (1 / 2) * mass
+        # * L^2 with mass summed over the strip's mass-matrix entries, is exactly 1.0.
+        # With spring_constant_rad = 10.0 and damping_constant_rad = 20.0, the ODE is
+        # then overdamped (c^2 > 4 * k * I) with a slowest decay rate of about 0.5 per
+        # second, so it is far from settled within one 0.1 s time step.
         L = (wing.wing_cross_sections[0].chord + wing.wing_cross_sections[1].chord) / 2
         num_mass_entries = num_chordwise_panels * num_spanwise_panels * 3
         mass_matrix = np.full(
@@ -129,9 +129,9 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         )
 
         # Apply a constant aerodynamic moment y component (in the first Airplane's
-        # geometry axes, relative to the strip's leading edge point), summing to 2.0
-        # N*m over the strip's chordwise panels, so the static deformation angle y
-        # component is M / k = 0.2 rad.
+        # geometry axes, relative to the strip's leading edge point), summing to 2.0 N*m
+        # over the strip's chordwise panels, so the static deformation angle y component
+        # is M / k = 0.2 rad.
         aeroMoments_GP1_Slep = np.zeros(
             (num_chordwise_panels, num_spanwise_panels, 3), dtype=float
         )
@@ -563,8 +563,8 @@ class TestRecordNullStepForWing(unittest.TestCase):
         self.problem_std._calculate_wing_deformation(solver=mock_solver, step=0)
 
         problem = self.problem_std
-        # The two structural state time series are seeded with an initial-state entry
-        # at construction, so one recorded step brings them to two entries.
+        # The two structural state time series are seeded with an initial-state entry at
+        # construction, so one recorded step brings them to two entries.
         self.assertEqual(
             len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[wing_idx]), 2
         )

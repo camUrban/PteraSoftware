@@ -45,8 +45,8 @@ _seed = 42
 # TEST: Consider adding unit tests for this function.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
-# TODO: It would be awesome if we could incorporate control surface deflections into
-#  the steady trim analysis.
+# TODO: It would be awesome if we could incorporate control surface deflections into the
+#  steady trim analysis.
 def analyze_steady_trim(
     problem: problems.SteadyProblem,
     solver_type: str,
@@ -190,9 +190,8 @@ def analyze_steady_trim(
         num_calls, "num_calls", min_val=1, min_inclusive=True
     )
 
-    # Get the SteadyProblem's OperatingPoint's initial parameter values and check
-    # that the ones that will vary to find a trim condition are within the specified
-    # bounds.
+    # Get the SteadyProblem's OperatingPoint's initial parameter values and check that
+    # the ones that will vary to find a trim condition are within the specified bounds.
     weight = problem.airplanes[0].weight
     baseVCg__E = problem.operating_point.vCg__E
     base_alpha = problem.operating_point.alpha
@@ -274,8 +273,8 @@ def analyze_steady_trim(
         qInf__E = trial_operating_point.qInf__E
 
         # Deep copy the airplanes so the new SteadyProblem can set fresh Panel
-        # coordinates. This ensures correctness for multi-airplane problems where
-        # Panel coordinates depend on relative airplane positions.
+        # coordinates. This ensures correctness for multi-airplane problems where Panel
+        # coordinates depend on relative airplane positions.
         trial_airplanes = [copy.deepcopy(airplane) for airplane in problem.airplanes]
 
         # Create a new SteadyProblem with the trial operating point and copied
@@ -290,13 +289,12 @@ def analyze_steady_trim(
 
         # To my knowledge, there isn't a standard way to define "external" force
         # coefficients. However, simply checking trim against forces and moments in
-        # Newtons and Newton meters isn't a good solution because, for example,
-        # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non dimensionalize with reference area,
-        # as that is what is used for aerodynamic force coefficients. If we later
-        # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non dimensionalize using different
-        # dimensions.
+        # Newtons and Newton meters isn't a good solution because, for example, an
+        # imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
+        # flying microrobot. I'm choosing to non dimensionalize with reference area, as
+        # that is what is used for aerodynamic force coefficients. If we later allow
+        # users to apply external moments we may need to come up with a better approach,
+        # as moment coefficients non dimensionalize using different dimensions.
         externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
@@ -430,9 +428,9 @@ def analyze_steady_trim(
 # TEST: Consider adding integration tests for this function.
 # TODO: Add the ability to specify running the solver with a prescribed or free wake.
 # TODO: It would be awesome if we could incorporate particular amplitude and period
-#  parameters of the AirplaneMovement's WingMovements and WingCrossSectionMovements
-#  into the unsteady trim analysis. Incorporating control surface deflection would
-#  also be great but less important.
+#  parameters of the AirplaneMovement's WingMovements and WingCrossSectionMovements into
+#  the unsteady trim analysis. Incorporating control surface deflection would also be
+#  great but less important.
 def analyze_unsteady_trim(
     problem: problems.UnsteadyProblem,
     boundsVCg__E: tuple[float | int, float | int],
@@ -585,9 +583,8 @@ def analyze_unsteady_trim(
         problem.movement.operating_point_movement.base_operating_point
     )
 
-    # Get the base OperatingPoint's initial parameter values and check
-    # that the ones that will vary to find a trim condition are within the specified
-    # bounds.
+    # Get the base OperatingPoint's initial parameter values and check that the ones
+    # that will vary to find a trim condition are within the specified bounds.
     weight = problem.movement.airplane_movements[0].base_airplane.weight
     baseVCg__E = base_operating_point.vCg__E
     base_alpha = base_operating_point.alpha
@@ -674,13 +671,12 @@ def analyze_unsteady_trim(
 
         # To my knowledge, there isn't a standard way to define "external" force
         # coefficients. However, simply checking trim against forces and moments in
-        # Newtons and Newton meters isn't a good solution because, for example,
-        # an imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
-        # flying microrobot. I'm choosing to non dimensionalize with reference area,
-        # as that is what is used for aerodynamic force coefficients. If we later
-        # allow users to apply external moments we may need to come up with a better
-        # approach, as moment coefficients non dimensionalize using different
-        # dimensions.
+        # Newtons and Newton meters isn't a good solution because, for example, an
+        # imbalance of 0.01 N may be trivial to a bird-scale UAV but critical to a
+        # flying microrobot. I'm choosing to non dimensionalize with reference area, as
+        # that is what is used for aerodynamic force coefficients. If we later allow
+        # users to apply external moments we may need to come up with a better approach,
+        # as moment coefficients non dimensionalize using different dimensions.
         externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 

@@ -279,8 +279,8 @@ class TestSteadyConvergence(unittest.TestCase):
                 cache_path=cache_path,
             )
 
-            # On the warm run every mesh should be a cache hit, so the solver must
-            # never run. Patching run to raise turns any solve into a test failure.
+            # On the warm run every mesh should be a cache hit, so the solver must never
+            # run. Patching run to raise turns any solve into a test failure.
             solver_class = (
                 ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
             )
@@ -322,8 +322,8 @@ class TestSteadyConvergence(unittest.TestCase):
             )
 
             # On the warm run every mesh's spanwise Panel counts should be cache hits,
-            # so the resolver must never recompute one. Patching the computation to raise
-            # turns any recomputation into a test failure.
+            # so the resolver must never recompute one. Patching the computation to
+            # raise turns any recomputation into a test failure.
             with mock.patch.object(
                 _convergence_meshing,
                 "_get_wing_section_num_spanwise_panels",

@@ -98,8 +98,7 @@ class TestLcmFunctions(unittest.TestCase):
 
     def test_lcm_multiple_non_integer_periods(self):
         """Test _lcm_multiple returns correct LCM for non integer periods."""
-        # LCM(1.5, 2.0, 2.5) = 30.0.
-        # 30.0/1.5=20, 30.0/2.0=15, 30.0/2.5=12.
+        # LCM(1.5, 2.0, 2.5) = 30.0. 30.0/1.5=20, 30.0/2.0=15, 30.0/2.5=12.
         result = ps._core.lcm_multiple([1.5, 2.0, 2.5])
         self.assertAlmostEqual(result, 30.0, places=6)
 

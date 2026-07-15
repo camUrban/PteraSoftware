@@ -90,19 +90,18 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
 
-        # Initialize SLEP (Strip Leading Edge Point) information. The SLEP is the
-        # leading edge point of the strip's outboard bounding WingCrossSection, the
-        # same WingCrossSection that receives the strip's torsional deformation, so
-        # each strip's moments and its deformation share one reference. The solver's flat panel
-        # stack is ordered chord-major within each wing (all spanwise positions of
-        # the first chordwise row, then all spanwise positions of the second
-        # chordwise row, and so on), with the wings stacked in order. For each
-        # panel, we record the flat index of the panel at the same wing and
-        # spanwise position in the first chordwise row, because that panel's
-        # outboard front point is the strip's leading edge point. Which grid corner
-        # is outboard depends on the meshing direction: the front-right point on a
-        # root-to-tip grid, and the front-left point on a mirror-meshed
-        # (tip-to-root) grid.
+        # Initialize SLEP (strip leading edge point) information. The SLEP is the
+        # leading edge point of the strip's outboard bounding WingCrossSection, the same
+        # WingCrossSection that receives the strip's torsional deformation, so each
+        # strip's moments and its deformation share one reference. The solver's flat
+        # Panel stack is ordered chord-major within each Wing (all spanwise positions of
+        # the first chordwise row, then all spanwise positions of the second chordwise
+        # row, and so on), with the Wings stacked in order. For each Panel, we record
+        # the flat index of the Panel at the same Wing and spanwise position in the
+        # first chordwise row, because that Panel's outboard front point is the strip's
+        # leading edge point. Which grid corner is outboard depends on the meshing
+        # direction: the front-right point on a root-to-tip grid, and the front-left
+        # point on a mirror-meshed (tip-to-root) grid.
         panel_count = 0
         slep_point_indices_list: list[int] = []
         slep_outboard_is_left_list: list[bool] = []
@@ -123,18 +122,18 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
             slep_outboard_is_left_list, dtype=bool
         )
 
-        # The current time step's center bound LineVortex points for the right,
-        # front, left, and back legs (in the first Airplane's geometry axes,
-        # relative to the local strip leading edge point).
+        # The current time step's center bound LineVortex points for the right, front,
+        # left, and back legs (in the first Airplane's geometry axes, relative to the
+        # local strip leading edge point).
         self._stackCblvpr_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self._stackCblvpf_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self._stackCblvpl_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self._stackCblvpb_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
 
-        # The colocation panel points (in the first Airplane's geometry axes,
-        # relative to the local strip leading edge point), and each panel's own
-        # strip's leading edge point (in the first Airplane's geometry axes,
-        # relative to the first Airplane's CG).
+        # The collocation Panel points (in the first Airplane's geometry axes, relative
+        # to the local strip leading edge point), and each Panel's own strip's leading
+        # edge point (in the first Airplane's geometry axes, relative to the first
+        # Airplane's CG).
         self._stackCpp_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self._stackSlep_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
@@ -250,9 +249,9 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         :return: None
         """
-        # Stage each panel's outboard front point. Only the first-chordwise-row
-        # entries are consumed by the gather below, since every strip's SLEP is a
-        # first-row panel's corner.
+        # Stage each Panel's outboard front point. Only the first-chordwise-row entries
+        # are consumed by the gather below, since every strip's SLEP is a first-row
+        # Panel's corner.
         outboardFrontPoints_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
         for panel_num, panel in enumerate(self.panels):
             if self._slep_outboard_is_left[panel_num]:

@@ -77,8 +77,7 @@ example_operating_point_movement = (
     )
 )
 
-# Create a Movement using the AirplaneMovement and OperatingPointMovement
-# objects.
+# Create a Movement using the AirplaneMovement and OperatingPointMovement objects.
 example_movement = ps.movements.movement.Movement(
     airplane_movements=[example_airplane_movement],
     operating_point_movement=example_operating_point_movement,

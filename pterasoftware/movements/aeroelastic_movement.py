@@ -84,9 +84,9 @@ class AeroelasticMovement(_core.CoreMovement):
             Wing. Must be a positive int if set. The default is None (no truncation).
         :return: None
         """
-        # Validate that every element is an AeroelasticAirplaneMovement, not
-        # just a CoreAirplaneMovement. CoreMovement.__init__() validates at
-        # the Core level, but AeroelasticMovement enforces the stricter type.
+        # Validate that every element is an AeroelasticAirplaneMovement, not just a
+        # CoreAirplaneMovement. CoreMovement.__init__() validates at the Core level, but
+        # AeroelasticMovement enforces the stricter type.
         for airplane_movement in airplane_movements:
             if not isinstance(
                 airplane_movement,
@@ -98,8 +98,8 @@ class AeroelasticMovement(_core.CoreMovement):
                 )
 
         # Validate that operating_point_movement is an OperatingPointMovement.
-        # CoreMovement.__init__() validates at the Core level, but
-        # AeroelasticMovement enforces the concrete type.
+        # CoreMovement.__init__() validates at the Core level, but AeroelasticMovement
+        # enforces the concrete type.
         if not isinstance(
             operating_point_movement,
             operating_point_movement_mod.OperatingPointMovement,
@@ -118,8 +118,8 @@ class AeroelasticMovement(_core.CoreMovement):
         )
 
         # --- Batch generate OperatingPoints ---
-        # OperatingPoints are prescribed in aeroelastic simulations, so
-        # generate them all upfront.
+        # OperatingPoints are prescribed in aeroelastic simulations, so generate them
+        # all upfront.
         operating_points_list = operating_point_movement.generate_operating_points(
             num_steps=self._num_steps, delta_time=self._delta_time
         )

@@ -118,9 +118,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             0.0).
         :return: None
         """
-        # Validate that every element is an AeroelasticWingMovement or a
-        # WingMovement. CoreAirplaneMovement.__init__() validates at the Core level,
-        # but AeroelasticAirplaneMovement enforces this stricter requirement.
+        # Validate that every element is an AeroelasticWingMovement or a WingMovement.
+        # CoreAirplaneMovement.__init__() validates at the Core level, but
+        # AeroelasticAirplaneMovement enforces this stricter requirement.
         for wing_movement in wing_movements:
             if not isinstance(
                 wing_movement,
@@ -134,16 +134,16 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
                     "AeroelasticWingMovement or a WingMovement."
                 )
 
-            # Reject an AeroelasticWingMovement whose base Wing has type 4
-            # symmetry. A type 4 symmetric Wing's mirrored half has Panels but no
-            # WingCrossSections, so its strips cannot deform. The check lives at
-            # this level rather than in AeroelasticWingMovement.__init__() because
-            # a base Wing may not have been meshed yet (and so had no symmetry
-            # type) when its AeroelasticWingMovement was constructed, while a base
-            # Wing shared with the base Airplane has been meshed in place by the
-            # base Airplane's constructor by the time this check runs. A base Wing
-            # that is unmeshed and not shared with the base Airplane still passes
-            # this check, but such a Wing fails loudly in the structural solve.
+            # Reject an AeroelasticWingMovement whose base Wing has type 4 symmetry. A
+            # type 4 symmetric Wing's mirrored half has Panels but no WingCrossSections,
+            # so its strips cannot deform. The check lives at this level rather than in
+            # AeroelasticWingMovement.__init__() because a base Wing may not have been
+            # meshed yet (and so had no symmetry type) when its AeroelasticWingMovement
+            # was constructed, while a base Wing shared with the base Airplane has been
+            # meshed in place by the base Airplane's constructor by the time this check
+            # runs. A base Wing that is unmeshed and not shared with the base Airplane
+            # still passes this check, but such a Wing fails loudly in the structural
+            # solve.
             if (
                 isinstance(
                     wing_movement,
@@ -249,9 +249,9 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
             else:
                 raise ValueError(f"Invalid spacing value: {this_spacing}")
 
-        # Generate the Wings for this time step, threading deformation to
-        # each AeroelasticWingMovement child. WingMovement children are advanced
-        # without deformation.
+        # Generate the Wings for this time step, threading deformation to each
+        # AeroelasticWingMovement child. WingMovement children are advanced without
+        # deformation.
         these_wings = []
         for i, wing_movement in enumerate(self.wing_movements):
             # Extract this Wing's deformation, or None.

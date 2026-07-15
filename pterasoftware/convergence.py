@@ -245,8 +245,8 @@ def analyze_steady_convergence(
         range(num_chordwise_panels_bounds[0], num_chordwise_panels_bounds[1] + 1)
     )
 
-    # Initialize some empty ndarrays to hold variables related to each iteration.
-    # Going forward, an "iteration" refers to a SteadyProblem containing one of the
+    # Initialize some empty ndarrays to hold variables related to each iteration. Going
+    # forward, an "iteration" refers to a SteadyProblem containing one of the
     # combinations of Panel aspect ratio and number of chordwise Panels.
     iter_times = np.zeros(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
@@ -271,19 +271,21 @@ def analyze_steady_convergence(
     # solve-cache and memo keys to this specific geometry, operating point, and motion.
     ref_problem_hash = _serialization.hash_object(ref_problem)
 
-    # Load the JSON solve cache, or start empty when caching is disabled or the file does
-    # not yet exist. Solved coefficients are looked up from and written through to it.
+    # Load the JSON solve cache, or start empty when caching is disabled or the file
+    # does not yet exist. Solved coefficients are looked up from and written through to
+    # it.
     solve_cache = _convergence_cache.load_solve_cache(cache_path)
 
-    # Pre-populate the in-loop memo caches from the cache file's memo section, translating
-    # each stored memo from its absolute mesh back onto this run's sweep indices. Memos
-    # outside this run's bounds or written for another reference problem are dropped. A
-    # cache with a populated memo section lets a warm run reuse these counts instead of
-    # re-resolving them. The number of spanwise Panels cache is keyed on a tuple of 5
-    # ints (ar_id, chord_id, ref_airplane_id, ref_wing_id, ref_wing_cross_section_id) for
-    # trapezoidal Wings, and the analogous number of WingCrossSections cache is keyed on a
-    # tuple of 4 ints (ar_id, chord_id, ref_airplane_id, ref_wing_id) for edge-defined
-    # Wings. A steady analysis has no delta_time, so that cache is discarded.
+    # Pre-populate the in-loop memo caches from the cache file's memo section,
+    # translating each stored memo from its absolute mesh back onto this run's sweep
+    # indices. Memos outside this run's bounds or written for another reference problem
+    # are dropped. A cache with a populated memo section lets a warm run reuse these
+    # counts instead of re-resolving them. The number of spanwise Panels cache is keyed
+    # on a tuple of 5 ints (ar_id, chord_id, ref_airplane_id, ref_wing_id,
+    # ref_wing_cross_section_id) for trapezoidal Wings, and the analogous number of
+    # WingCrossSections cache is keyed on a tuple of 4 ints (ar_id, chord_id,
+    # ref_airplane_id, ref_wing_id) for edge-defined Wings. A steady analysis has no
+    # delta_time, so that cache is discarded.
     num_spanwise_panels_cache, num_wing_cross_sections_cache, _ = (
         _convergence_cache.memos_from_disk(
             _convergence_cache.load_memo_cache(cache_path),
@@ -293,9 +295,9 @@ def analyze_steady_convergence(
         )
     )
 
-    # Persist the whole cache (solved coefficients and memos) to disk on each solve miss.
-    # The memo caches are translated back to their absolute mesh keys at write time. This
-    # is None when caching is disabled, in which case nothing is written.
+    # Persist the whole cache (solved coefficients and memos) to disk on each solve
+    # miss. The memo caches are translated back to their absolute mesh keys at write
+    # time. This is None when caching is disabled, in which case nothing is written.
     persist_cache: Callable[[], None] | None = None
     if cache_path is not None:
 
@@ -360,8 +362,8 @@ def analyze_steady_convergence(
                     num_wing_cross_sections_cache,
                 )
             ):
-                # The build's log messages nest at and one level under this
-                # iteration's messages.
+                # The build's log messages nest at and one level under this iteration's
+                # messages.
                 with _logging.nested(3):
                     this_problem = _convergence_meshing.build_steady_problem(
                         ar_id,
@@ -401,8 +403,8 @@ def analyze_steady_convergence(
                 with _logging.nested(4):
                     this_solver.run(calculate_streamlines=False)
 
-                # Create and fill an ndarray with each of this iteration's Airplanes' six
-                # load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1,
+                # Create and fill an ndarray with each of this iteration's Airplanes'
+                # six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1,
                 # cMZ_W_CgP1).
                 solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
@@ -443,9 +445,9 @@ def analyze_steady_convergence(
                 )
 
             # Check per-coefficient convergence in each parameter direction against the
-            # incrementally coarser iteration. A direction cannot be checked on its first
-            # value, where there is no coarser iteration to compare against, so it starts
-            # as not converged.
+            # incrementally coarser iteration. A direction cannot be checked on its
+            # first value, where there is no coarser iteration to compare against, so it
+            # starts as not converged.
             ar_converged = False
             chord_converged = False
 
@@ -508,13 +510,13 @@ def analyze_steady_convergence(
             # degree of fineness.
             ar_saturated = panel_aspect_ratio == 1
 
-            # Check if only one value for either the Panel aspect ratio or the number
-            # of chordwise Panels were specified.
+            # Check if only one value for either the Panel aspect ratio or the number of
+            # chordwise Panels were specified.
             single_ar = len(panel_aspect_ratios_list) == 1
             single_chord = len(num_chordwise_panels_list) == 1
 
-            # Consider each convergence parameter to have "passed" if it is
-            # converged, single, or saturated.
+            # Consider each convergence parameter to have "passed" if it is converged,
+            # single, or saturated.
             ar_passed = ar_converged or single_ar or ar_saturated
             chord_passed = chord_converged or single_chord
 
@@ -578,8 +580,8 @@ def analyze_steady_convergence(
                         _logger.info(_logging.indent(3) + wing.name + ":")
 
                         # An edge-defined Wing is refined by its number of
-                        # WingCrossSections rather than its number of spanwise Panels, so
-                        # report that instead.
+                        # WingCrossSections rather than its number of spanwise Panels,
+                        # so report that instead.
                         if wing.spanwise_mesh == "edge_defined":
                             num_wing_cross_sections_key = (
                                 converged_ar_id,
@@ -627,10 +629,10 @@ def analyze_steady_convergence(
                                 + str(num_spanwise_panels)
                             )
 
-                # If requested, recreate and run the solver at the converged
-                # parameters so it can be returned. The converged parameters are
-                # frequently coarser than this iteration's, so the converged solver is
-                # rebuilt rather than reusing this iteration's finer solver.
+                # If requested, recreate and run the solver at the converged parameters
+                # so it can be returned. The converged parameters are frequently coarser
+                # than this iteration's, so the converged solver is rebuilt rather than
+                # reusing this iteration's finer solver.
                 converged_solver: (
                     steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
                     | steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
@@ -642,8 +644,8 @@ def analyze_steady_convergence(
                         + "Recreating and running the converged solver"
                     )
 
-                    # The rebuild's and the solver's log messages nest under the
-                    # message above.
+                    # The rebuild's and the solver's log messages nest under the message
+                    # above.
                     with _logging.nested():
                         converged_problem = _convergence_meshing.build_steady_problem(
                             converged_ar_id,
@@ -676,9 +678,9 @@ def analyze_steady_convergence(
                     converged_solver,
                 )
 
-    # If all iterations have been checked and none of them resulted in both
-    # convergence parameters passing, then indicate that no converged case was found
-    # and return values of None for the converged parameters.
+    # If all iterations have been checked and none of them resulted in both convergence
+    # parameters passing, then indicate that no converged case was found and return
+    # values of None for the converged parameters.
     _logger.info(
         _logging.indent()
         + "The analysis did not find a converged case within the given bounds"
@@ -973,8 +975,8 @@ def analyze_unsteady_convergence(
         for ref_airplane_movement in ref_airplane_movements
     )
 
-    # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal or
-    # edge-defined).
+    # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal
+    # or edge-defined).
     _reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
 
     # Create the list of wake states to iterate over.
@@ -992,8 +994,8 @@ def analyze_unsteady_convergence(
         assert num_cycles_bounds is not None
         wake_lengths_list = list(range(num_cycles_bounds[0], num_cycles_bounds[1] + 1))
 
-    # Create the lists of Panel aspect ratios and number of chordwise Panels to
-    # iterate over.
+    # Create the lists of Panel aspect ratios and number of chordwise Panels to iterate
+    # over.
     panel_aspect_ratios_list = list(
         range(panel_aspect_ratio_bounds[0], panel_aspect_ratio_bounds[1] - 1, -1)
     )
@@ -1001,10 +1003,10 @@ def analyze_unsteady_convergence(
         range(num_chordwise_panels_bounds[0], num_chordwise_panels_bounds[1] + 1)
     )
 
-    # Initialize some empty ndarrays to hold variables regarding each iteration.
-    # Going forward, an "iteration" refers to an UnsteadyProblem containing one of
-    # the combinations of the wake state, wake length, Panel aspect ratio, and number
-    # of chordwise Panels.
+    # Initialize some empty ndarrays to hold variables regarding each iteration. Going
+    # forward, an "iteration" refers to an UnsteadyProblem containing one of the
+    # combinations of the wake state, wake length, Panel aspect ratio, and number of
+    # chordwise Panels.
     iter_times = np.zeros(
         (
             len(wake_list),
@@ -1041,22 +1043,24 @@ def analyze_unsteady_convergence(
     # solve-cache and memo keys to this specific geometry, operating point, and motion.
     ref_problem_hash = _serialization.hash_object(ref_problem)
 
-    # Load the JSON solve cache, or start empty when caching is disabled or the file does
-    # not yet exist. Solved coefficients are looked up from and written through to it.
+    # Load the JSON solve cache, or start empty when caching is disabled or the file
+    # does not yet exist. Solved coefficients are looked up from and written through to
+    # it.
     solve_cache = _convergence_cache.load_solve_cache(cache_path)
 
-    # Pre-populate the in-loop memo caches from the cache file's memo section, translating
-    # each stored memo from its absolute mesh back onto this run's sweep indices. Memos
-    # outside this run's bounds or written for another reference problem are dropped. A
-    # cache with a populated memo section lets a warm run reuse these values instead of
-    # re-resolving them, which for the delta_time cache skips the iterative optimizer. The
-    # number of spanwise Panels cache is keyed on a tuple of 5 ints (ar_id, chord_id,
-    # ref_base_airplane_id, ref_base_wing_id, ref_base_wing_cross_section_id) for
-    # trapezoidal Wings, the number of WingCrossSections cache is keyed on a tuple of 4
-    # ints (ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id) for edge-defined
-    # Wings, and the delta_time cache is keyed on a tuple of 2 ints (ar_id, chord_id),
-    # since the optimum depends only on the mesh and is reused across every wake state and
-    # wake length at that mesh.
+    # Pre-populate the in-loop memo caches from the cache file's memo section,
+    # translating each stored memo from its absolute mesh back onto this run's sweep
+    # indices. Memos outside this run's bounds or written for another reference problem
+    # are dropped. A cache with a populated memo section lets a warm run reuse these
+    # values instead of re-resolving them, which for the delta_time cache skips the
+    # iterative optimizer. The number of spanwise Panels cache is keyed on a tuple of 5
+    # ints (ar_id, chord_id, ref_base_airplane_id, ref_base_wing_id,
+    # ref_base_wing_cross_section_id) for trapezoidal Wings, the number of
+    # WingCrossSections cache is keyed on a tuple of 4 ints (ar_id, chord_id,
+    # ref_base_airplane_id, ref_base_wing_id) for edge-defined Wings, and the delta_time
+    # cache is keyed on a tuple of 2 ints (ar_id, chord_id), since the optimum depends
+    # only on the mesh and is reused across every wake state and wake length at that
+    # mesh.
     (
         num_spanwise_panels_cache,
         num_wing_cross_sections_cache,
@@ -1068,9 +1072,9 @@ def analyze_unsteady_convergence(
         num_chordwise_panels_list,
     )
 
-    # Persist the whole cache (solved coefficients and memos) to disk on each solve miss.
-    # The memo caches are translated back to their absolute mesh keys at write time. This
-    # is None when caching is disabled, in which case nothing is written.
+    # Persist the whole cache (solved coefficients and memos) to disk on each solve
+    # miss. The memo caches are translated back to their absolute mesh keys at write
+    # time. This is None when caching is disabled, in which case nothing is written.
     persist_cache: Callable[[], None] | None = None
     if cache_path is not None:
 
@@ -1132,8 +1136,8 @@ def analyze_unsteady_convergence(
                     )
 
                     # Build this mesh's solve-cache key from the reference problem and
-                    # the wake state, wake length, and mesh parameters that determine the
-                    # solve.
+                    # the wake state, wake length, and mesh parameters that determine
+                    # the solve.
                     solve_cache_key = _convergence_cache.solve_cache_key(
                         ref_problem_hash,
                         wake,
@@ -1211,8 +1215,8 @@ def analyze_unsteady_convergence(
 
                         for airplane_id in range(len(ref_airplane_movements)):
                             # For static geometry, the final load coefficients are the
-                            # final time step's. For variable geometry, they are the mean
-                            # over the final cycle (the signed time-average).
+                            # final time step's. For variable geometry, they are the
+                            # mean over the final cycle (the signed time-average).
                             if static:
                                 solved_coefficients[airplane_id, 0:3] = (
                                     this_problem.finalForceCoefficients_W[airplane_id]
@@ -1390,9 +1394,9 @@ def analyze_unsteady_convergence(
 
                     # Consider the Panel aspect ratio value to be saturated if it is
                     # equal to 1. This is because a Panel aspect ratio of 1 is
-                    # considered the maximum degree of fineness. Consider the wake
-                    # state to be saturated if it False (which corresponds to a free
-                    # wake), as this is considered to be the most accurate wake state.
+                    # considered the maximum degree of fineness. Consider the wake state
+                    # to be saturated if it is False (which corresponds to a free wake),
+                    # as this is considered to be the most accurate wake state.
                     wake_saturated = not wake
                     ar_saturated = panel_aspect_ratio == 1
 
@@ -1410,9 +1414,9 @@ def analyze_unsteady_convergence(
                     ar_passed = ar_converged or single_ar or ar_saturated
                     chord_passed = chord_converged or single_chord
 
-                    # If all four convergence parameters have passed, then a
-                    # converged or semi-converged combination of parameters has been
-                    # found and will be returned.
+                    # If all four convergence parameters have passed, then a converged
+                    # or semi-converged combination of parameters has been found and
+                    # will be returned.
                     if wake_passed and length_passed and ar_passed and chord_passed:
                         converged_wake_id = _converged_parameter_id(
                             wake_id, single_wake, wake_converged
@@ -1554,8 +1558,8 @@ def analyze_unsteady_convergence(
                                         )
                                         - 1
                                     ):
-                                        # Not the last WingCrossSection, retrieve
-                                        # from cache.
+                                        # Not the last WingCrossSection, retrieve from
+                                        # cache.
                                         num_spanwise_panels_key = (
                                             converged_ar_id,
                                             converged_chord_id,
@@ -1592,8 +1596,8 @@ def analyze_unsteady_convergence(
                                 + "Recreating and running the converged solver"
                             )
 
-                            # The rebuild's and the solver's log messages nest under
-                            # the message above.
+                            # The rebuild's and the solver's log messages nest under the
+                            # message above.
                             with _logging.nested():
                                 converged_problem = (
                                     _convergence_meshing.build_unsteady_problem(
@@ -1631,9 +1635,9 @@ def analyze_unsteady_convergence(
                             converged_solver,
                         )
 
-    # If all iterations have been checked and none of them resulted in all
-    # convergence parameters passing, then indicate that no converged solution was
-    # found and return values of None for the converged parameters.
+    # If all iterations have been checked and none of them resulted in all convergence
+    # parameters passing, then indicate that no converged solution was found and return
+    # values of None for the converged parameters.
     _logger.info(
         _logging.indent()
         + "The analysis did not find a converged case within the given bounds"
@@ -1805,8 +1809,8 @@ def _check_coefficient_convergence(
 
     all_converged = bool(np.all(converged[:, coefficient_mask]))
 
-    # The metric is 100.0 for a converged coefficient (including one with zero error) and
-    # falls toward 0.0 as the error grows past its tolerance.
+    # The metric is 100.0 for a converged coefficient (including one with zero error)
+    # and falls toward 0.0 as the error grows past its tolerance.
     with np.errstate(divide="ignore", invalid="ignore"):
         metrics = np.where(
             errors == 0.0,
@@ -1814,8 +1818,9 @@ def _check_coefficient_convergence(
             100.0 * np.minimum(1.0, tolerances / errors),
         )
 
-    # Exclude the masked-out coefficients from the limiting-coefficient search by setting
-    # their metrics to infinity. The mask has shape (6,) and broadcasts across Airplanes.
+    # Exclude the masked-out coefficients from the limiting-coefficient search by
+    # setting their metrics to infinity. The mask has shape (6,) and broadcasts across
+    # Airplanes.
     masked_metrics = np.where(coefficient_mask, metrics, np.inf)
     min_metric = float(np.min(masked_metrics))
     limiting_coefficient_id = int(np.argmin(masked_metrics) % 6)

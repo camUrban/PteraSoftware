@@ -339,13 +339,13 @@ class Wing:
         # refine.
         self._spanwise_mesh: str = "exploded" if explode_into_strips else "trapezoidal"
 
-        # The original, full resolution leading edge and trailing edge curves a Wing
-        # was built from. These are populated only by from_edge_points, which sets the
+        # The original, full resolution leading edge and trailing edge curves a Wing was
+        # built from. These are populated only by from_edge_points, which sets the
         # spanwise mesh marker to "edge_defined" and stores the curves (together with
         # the tip trim fraction applied while resampling them) so a future non
         # trapezoidal convergence tool can resample them to a different number of
-        # WingCrossSections. A Wing built any other way carries no such curves and a None
-        # tip trim fraction.
+        # WingCrossSections. A Wing built any other way carries no such curves and a
+        # None tip trim fraction.
         self._leadingEdgePoints_Wn_Ler: np.ndarray | None = None
         self._trailingEdgePoints_Wn_Ler: np.ndarray | None = None
         self._tip_trim_fraction: float | None = None
@@ -455,8 +455,8 @@ class Wing:
         self._children_T_pas_G_Cg_to_Wcs_Lp: list[np.ndarray] | None = None
         self._children_T_pas_Wcs_Lp_to_G_Cg: list[np.ndarray] | None = None
 
-        # Caches for properties derived from set once attributes. These are populated
-        # on first access and reset to None in deepcopy.
+        # Caches for properties derived from set once attributes. These are populated on
+        # first access and reset to None in deepcopy.
         self._projected_area: float | None = None
         self._wetted_area: float | None = None
         self._average_panel_aspect_ratio: float | None = None
@@ -595,8 +595,7 @@ class Wing:
         # the spanwise (y) direction, from the root (y of 0) to the trimmed tip. Without
         # trimming the trimmed tip is the shared maximum y. The tip_trim_fraction pulls
         # it inboard so a planform that tapers to a point at the tip ends at a finite
-        # chord.
-        # The z component is zero at every point in this planar version.
+        # chord. The z component is zero at every point in this planar version.
         yTip_Wn_Ler = float(leadingEdgePoints_Wn_Ler[-1, 1])
         yTrimmedTip_Wn_Ler = (1.0 - tip_trim_fraction) * yTip_Wn_Ler
         ys_Wn_Ler = np.linspace(0.0, yTrimmedTip_Wn_Ler, num_wing_cross_sections)
@@ -623,18 +622,19 @@ class Wing:
                     "value at every WingCrossSection."
                 )
 
-        # A symmetric Wing always resolves to symmetry type 4 or 5, both of which require
-        # every WingCrossSection to carry a non None control_surface_symmetry_type, while
-        # a non symmetric Wing (types 1 through 3) requires None. These Wings build no
-        # control surfaces, so "symmetric" with the default zero deflection adds no
-        # geometry. It is just the value that lets a symmetric Wing mesh.
+        # A symmetric Wing always resolves to symmetry type 4 or 5, both of which
+        # require every WingCrossSection to carry a non None
+        # control_surface_symmetry_type, while a non symmetric Wing (types 1 through 3)
+        # requires None. These Wings build no control surfaces, so "symmetric" with the
+        # default zero deflection adds no geometry. It is just the value that lets a
+        # symmetric Wing mesh.
         control_surface_symmetry_type = "symmetric" if symmetric else None
 
-        # Stage 3: build one single-panel WingCrossSection from each resampled point. The
-        # parent relative leading point offset is the difference of consecutive resampled
-        # leading edge points taken directly in wing axes, which is valid only because
-        # every angle vector is zero, so the wing cross section parent axes coincide with
-        # the wing axes. The root offset is the zero vector.
+        # Stage 3: build one single-panel WingCrossSection from each resampled point.
+        # The parent relative leading point offset is the difference of consecutive
+        # resampled leading edge points taken directly in wing axes, which is valid only
+        # because every angle vector is zero, so the wing cross section parent axes
+        # coincide with the wing axes. The root offset is the zero vector.
         wing_cross_sections = []
         for wing_cross_section_id in range(num_wing_cross_sections):
             is_tip = wing_cross_section_id == num_wing_cross_sections - 1
@@ -759,8 +759,8 @@ class Wing:
             else None
         )
 
-        # Copy set once mesh metadata directly to private attributes (bypassing
-        # setters) since we're copying, not setting for the first time.
+        # Copy set once mesh metadata directly to private attributes (bypassing setters)
+        # since we're copying, not setting for the first time.
         new_wing._symmetry_type = self._symmetry_type
         new_wing._num_spanwise_panels = self._num_spanwise_panels
         new_wing._num_panels = self._num_panels
@@ -782,8 +782,8 @@ class Wing:
         else:
             new_wing.gridWrvp_GP1_CgP1 = None
 
-        # Preserve caches for properties derived from immutable attributes.
-        # Copy numpy arrays and make them read-only.
+        # Preserve caches for properties derived from immutable attributes. Copy numpy
+        # arrays and make them read-only.
         if self._T_pas_G_Cg_to_Wn_Ler is not None:
             new_wing._T_pas_G_Cg_to_Wn_Ler = self._T_pas_G_Cg_to_Wn_Ler.copy()
             new_wing._T_pas_G_Cg_to_Wn_Ler.flags.writeable = False
@@ -982,17 +982,17 @@ class Wing:
             T_reflect_pas_G_Cg_to_Gs_Cgs = np.eye(4, dtype=float)
 
         # Step 2: Create T_trans_pas_Gs_Cgs_to_Gs_Ler, which maps in homogeneous
-        # coordinates from geometry axes (after accounting for symmetry) relative to
-        # the CG (after accounting for symmetry) to geometry axes (after accounting
-        # for symmetry) relative to the leading edge root point. This is the
-        # translation step.
+        # coordinates from geometry axes (after accounting for symmetry) relative to the
+        # CG (after accounting for symmetry) to geometry axes (after accounting for
+        # symmetry) relative to the leading edge root point. This is the translation
+        # step.
         T_trans_pas_Gs_Cgs_to_Gs_Ler = _transformations.generate_trans_T(
             self.Ler_Gs_Cgs, passive=True
         )
 
-        # Step 3: Create T_rot_pas_Gs_to_Wn, which maps in homogeneous coordinates
-        # from geometry axes (after accounting for symmetry) to wing axes. This is
-        # the rotation step.
+        # Step 3: Create T_rot_pas_Gs_to_Wn, which maps in homogeneous coordinates from
+        # geometry axes (after accounting for symmetry) to wing axes. This is the
+        # rotation step.
         T_rot_pas_Gs_to_Wn = _transformations.generate_rot_T(
             self.angles_Gs_to_Wn_ixyz, passive=True, intrinsic=True, order="xyz"
         )
@@ -1310,8 +1310,8 @@ class Wing:
         WnZ_G = self.WnZ_G
         assert WnZ_G is not None
 
-        # Iterate through the chordwise and spanwise indices of the Panels and add
-        # their area to the total projected area.
+        # Iterate through the chordwise and spanwise indices of the Panels and add their
+        # area to the total projected area.
         assert self._num_spanwise_panels is not None
         for chordwise_location in range(self._num_chordwise_panels):
             for spanwise_location in range(self._num_spanwise_panels):
@@ -1346,8 +1346,8 @@ class Wing:
 
         wetted_area = 0.0
 
-        # Iterate through the chordwise and spanwise indices of the panels and add
-        # their area to the total wetted area.
+        # Iterate through the chordwise and spanwise indices of the panels and add their
+        # area to the total wetted area.
         assert self._num_spanwise_panels is not None
         for chordwise_location in range(self._num_chordwise_panels):
             for spanwise_location in range(self._num_spanwise_panels):
@@ -1377,8 +1377,8 @@ class Wing:
 
         aspect_ratio_sum = 0.0
 
-        # Iterate through the chordwise and spanwise indices of the Panels and sum
-        # all the Panels' aspect ratios.
+        # Iterate through the chordwise and spanwise indices of the Panels and sum all
+        # the Panels' aspect ratios.
         assert self._num_spanwise_panels is not None
         for chordwise_location in range(self._num_chordwise_panels):
             for spanwise_location in range(self._num_spanwise_panels):
@@ -1489,11 +1489,11 @@ class Wing:
         if self._mean_aerodynamic_chord is not None:
             return self._mean_aerodynamic_chord
 
-        # This method is based on the equation for the mean aerodynamic chord of a
-        # wing, which can be found here: https://en.wikipedia.org/wiki/Chord_(
-        # aeronautics)#Mean_aerodynamic_chord. This equation integrates the squared
-        # chord from the Wing's center to the Wing's tip. We will perform this
-        # integral piecewise for each section of the Wing.
+        # This method is based on the equation for the mean aerodynamic chord of a wing,
+        # which can be found here:
+        # https://en.wikipedia.org/wiki/Chord_(aeronautics)#Mean_aerodynamic_chord. This
+        # equation integrates the squared chord from the Wing's center to the Wing's
+        # tip. We will perform this integral piecewise for each section of the Wing.
         integral = 0.0
 
         # Iterate through the WingCrossSections to add the contribution of their
@@ -1533,7 +1533,8 @@ class Wing:
                 T_pas_nextWcs_nextLp_to_Wn_Ler, nextLp_nextWcs_nextLp, is_position=True
             )
 
-            # Find the section vector and project it onto spanwise direction (wing axes y direction)
+            # Find the section vector and project it onto spanwise direction (wing axes
+            # y direction)
             nextLp_Wn_Lp = nextLp_Wn_Ler - Lp_Wn_Ler
 
             nextLpProj_Wn_Lp = np.dot(
@@ -1542,10 +1543,9 @@ class Wing:
 
             section_span = float(np.linalg.norm(nextLpProj_Wn_Lp))
 
-            # Each Wing section is, by definition, trapezoidal (at least when
-            # projected on to the wing axes' xy plane). For a trapezoid,
-            # the integral from the cited equation can be shown to evaluate to the
-            # following.
+            # Each Wing section is, by definition, trapezoidal (at least when projected
+            # on to the wing axes' xy plane). For a trapezoid, the integral from the
+            # cited equation can be shown to evaluate to the following.
             integral += (
                 section_span * (chord**2 + chord * next_chord + next_chord**2) / 3
             )
@@ -1571,10 +1571,10 @@ class Wing:
             class docstring for details on how to interpret the symmetry types.
         :return: None
         """
-        # Validate and apply symmetry_type. 5 isn't a valid symmetry type, because
-        # the parent Airplane should have modified a Wing that initially had type 5
-        # symmetry to have type 1 symmetry, and then made a new reflected Wing with
-        # type 3 symmetry.
+        # Validate and apply symmetry_type. 5 isn't a valid symmetry type, because the
+        # parent Airplane should have modified a Wing that initially had type 5 symmetry
+        # to have type 1 symmetry, and then made a new reflected Wing with type 3
+        # symmetry.
         validated_symmetry_type = _parameter_validation.int_in_range_return_int(
             symmetry_type,
             "symmetry_type",
@@ -1589,10 +1589,10 @@ class Wing:
         for wing_cross_section in self.wing_cross_sections:
             wing_cross_section.symmetry_type = validated_symmetry_type
 
-        # Find the number of spanwise panels on the wing by adding each cross
-        # section's number of spanwise panels. Exclude the last cross section's
-        # number of spanwise panels as this is irrelevant. If the wing has type 4
-        # symmetry multiply the summation by two.
+        # Find the number of spanwise Panels on this Wing by adding each
+        # WingCrossSection's number of spanwise Panels. Exclude the last
+        # WingCrossSection's number of spanwise Panels as this is irrelevant. If this
+        # Wing has type 4 symmetry multiply the summation by two.
         computed_num_spanwise_panels = 0
         for wing_cross_section in self.wing_cross_sections[:-1]:
             assert wing_cross_section.num_spanwise_panels is not None
@@ -1820,8 +1820,8 @@ class Wing:
                     ]
                 )
 
-                # Stack this Panel's vertices and faces with the array of all
-                # vertices and faces.
+                # Stack this Panel's vertices and faces with the array of all vertices
+                # and faces.
                 panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
                 panel_faces = np.hstack((panel_faces, panel_face_to_add))
 
@@ -1985,9 +1985,10 @@ class Wing:
             chord = (1 - t) * wcs1.chord + t * wcs2.chord
             # Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz are parent-relative deltas (see
             # WingCrossSection's constructor docstring), so each of the N intermediates
-            # carries 1/N of wcs2's delta and the chain composes back to wcs2's offset
-            # and twist. This is exact only when the intermediates are uniformly
-            # spaced, which _explode_wing enforces by validating the input.
+            # carries 1.0 / N of the second WingCrossSection's delta and the chain
+            # composes back to the second WingCrossSection's offset and twist. This is
+            # exact only when the intermediates are uniformly spaced, which
+            # _explode_wing enforces by validating the input.
             Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
             angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
             is_final_section = wcs2.num_spanwise_panels is None and i == N - 1

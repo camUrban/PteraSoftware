@@ -959,17 +959,14 @@ class TestComposeTPas(unittest.TestCase):
         """
         # Goal: c_B_b, "the position of point c (in B axes, relative to point b)"
 
-        # Given:
-        # The position of point c (in A axes, relative to point a)
+        # Given: The position of point c (in A axes, relative to point a).
         c_A_a = np.array([0.5, -1.0, 2.0])
 
-        # Given:
-        # The position of point b (in A axes, relative to point a)
+        # Given: The position of point b (in A axes, relative to point a).
         b_A_a = np.array([1.0, 2.0, 0.5])
 
-        # Given:
-        # The orientation of B axes relative to A axes using an intrinsic zy'x"
-        # rotation
+        # Given: The orientation of B axes relative to A axes using an intrinsic zy'x"
+        # rotation.
         angles_A_to_B_izyx = np.array([0.0, 0.0, 90.0])
 
         T_rot_pas_A_to_B = _transformations.generate_rot_T(

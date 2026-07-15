@@ -48,8 +48,8 @@ class TestCoreMovement(unittest.TestCase):
 
     def test_lcm_period_for_single_period_core_movement(self):
         """Test that lcm_period returns correct value when all periods are the same."""
-        # The basic_core_movement has period of 2.0 for all motion.
-        # LCM of identical periods should equal that period.
+        # The basic_core_movement has period of 2.0 for all motion. LCM of identical
+        # periods should equal that period.
         self.assertEqual(self.basic_core_movement.lcm_period, 2.0)
 
     def test_lcm_period_with_multiple_wings_same_airplane(self):
@@ -132,8 +132,8 @@ class TestCoreMovement(unittest.TestCase):
         # The max_period should be 4.0 (the max of 3.0 and 4.0).
         self.assertEqual(core_movement.max_period, 4.0)
 
-        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail
-        # if lcm_period only uses max_period from each CoreAirplaneMovement instead of
+        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail if
+        # lcm_period only uses max_period from each CoreAirplaneMovement instead of
         # collecting all individual periods.
         self.assertEqual(core_movement.lcm_period, 12.0)
 
@@ -188,8 +188,8 @@ class TestCoreMovement(unittest.TestCase):
             Cg_GP1_CgP1=(0.0, 0.0, 0.0),
         )
 
-        # Root CoreWingCrossSectionMovement must be static.
-        # Middle has period 3.0 s, tip has period 4.0 s.
+        # Root CoreWingCrossSectionMovement must be static. Middle has period 3.0 s, tip
+        # has period 4.0 s.
         wing_cross_section_movements = [
             ps._core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing.wing_cross_sections[0],
@@ -236,8 +236,8 @@ class TestCoreMovement(unittest.TestCase):
         # The max_period should be 4.0 (the max of 3.0 and 4.0).
         self.assertEqual(core_movement.max_period, 4.0)
 
-        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail
-        # if lcm_period only uses max_period from each CoreWingMovement instead of
+        # The lcm_period should be LCM(3.0, 4.0) = 12.0, not 4.0. This test will fail if
+        # lcm_period only uses max_period from each CoreWingMovement instead of
         # collecting all individual periods from CoreWingCrossSectionMovements.
         self.assertEqual(core_movement.lcm_period, 12.0)
 
@@ -357,8 +357,8 @@ class TestCoreMovement(unittest.TestCase):
             num_steps=1,
         )
 
-        # The CoreMovement has one static (period 0.0) and one with period 2.0.
-        # Should return 2.0.
+        # The CoreMovement has one static (period 0.0) and one with period 2.0. Should
+        # return 2.0.
         self.assertEqual(core_movement.max_period, 2.0)
 
 
@@ -429,8 +429,8 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
             num_steps=1,
         )
 
-        # The lcm_period should be 3.0 (from CoreOperatingPointMovement).
-        # Since the CoreAirplaneMovement is static (period 0.0), the only period is 3.0.
+        # The lcm_period should be 3.0 (from CoreOperatingPointMovement). Since the
+        # CoreAirplaneMovement is static (period 0.0), the only period is 3.0.
         self.assertEqual(core_movement.lcm_period, 3.0)
 
     def test_lcm_period_combines_airplane_and_operating_point_periods(self):

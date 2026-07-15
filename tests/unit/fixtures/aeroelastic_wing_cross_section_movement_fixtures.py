@@ -44,8 +44,8 @@ def make_basic_aeroelastic_wing_cross_section_movement_fixture():
         AeroelasticWingCrossSectionMovement
         This is the AeroelasticWingCrossSectionMovement with general-purpose values.
     """
-    # Initialize the constructing fixture.
-    # Use the tip fixture to ensure Lp values stay non negative during oscillation.
+    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
+    # non negative during oscillation.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Create the basic AeroelasticWingCrossSectionMovement.

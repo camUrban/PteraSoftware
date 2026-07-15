@@ -648,9 +648,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
     def test_max_period_mixed(self):
         """Test that max_period returns maximum of all periods for mixed movement."""
         core_wcs_movement = self.multiple_periods_core_wcs_movement
-        # periodLp_Wcsp_Lpp is (1.0, 2.0, 3.0).
-        # periodAngles_Wcsp_to_Wcs_ixyz is (0.5, 1.5, 2.5).
-        # Maximum should be 3.0.
+        # periodLp_Wcsp_Lpp is (1.0, 2.0, 3.0). periodAngles_Wcsp_to_Wcs_ixyz is (0.5,
+        # 1.5, 2.5). Maximum should be 3.0.
         self.assertEqual(core_wcs_movement.max_period, 3.0)
 
     def test_max_period_multiple_dimensions(self):
@@ -669,24 +668,22 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         """Test that all_periods returns correct periods for Lp only movement."""
         wing_cross_section_movement = self.Lp_only_core_wcs_movement
         # periodLp_Wcsp_Lpp is (1.5, 1.5, 1.5), all non zero.
-        # periodAngles_Wcsp_to_Wcs_ixyz is (0.0, 0.0, 0.0).
-        # Should return tuple with three 1.5 values.
+        # periodAngles_Wcsp_to_Wcs_ixyz is (0.0, 0.0, 0.0). Should return tuple with
+        # three 1.5 values.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_angles_only(self):
         """Test that all_periods returns correct periods for angles only movement."""
         wing_cross_section_movement = self.angles_only_core_wcs_movement
-        # periodLp_Wcsp_Lpp is (0.0, 0.0, 0.0).
-        # periodAngles_Wcsp_to_Wcs_ixyz is (1.5, 1.5, 1.5), all non zero.
-        # Should return tuple with three 1.5 values.
+        # periodLp_Wcsp_Lpp is (0.0, 0.0, 0.0). periodAngles_Wcsp_to_Wcs_ixyz is (1.5,
+        # 1.5, 1.5), all non zero. Should return tuple with three 1.5 values.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.5, 1.5, 1.5))
 
     def test_all_periods_mixed(self):
         """Test that all_periods returns all non zero periods for mixed movement."""
         wing_cross_section_movement = self.multiple_periods_core_wcs_movement
-        # periodLp_Wcsp_Lpp is (1.0, 2.0, 3.0).
-        # periodAngles_Wcsp_to_Wcs_ixyz is (0.5, 1.5, 2.5).
-        # Should return tuple with all six values.
+        # periodLp_Wcsp_Lpp is (1.0, 2.0, 3.0). periodAngles_Wcsp_to_Wcs_ixyz is (0.5,
+        # 1.5, 2.5). Should return tuple with all six values.
         expected = (1.0, 2.0, 3.0, 0.5, 1.5, 2.5)
         self.assertEqual(wing_cross_section_movement.all_periods, expected)
 
@@ -704,8 +701,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         """Test all_periods with only some dimensions having non zero periods."""
         wing_cross_section_movement = self.sine_spacing_Lp_core_wcs_movement
         # periodLp_Wcsp_Lpp is (1.0, 0.0, 0.0), only first element is non zero.
-        # periodAngles_Wcsp_to_Wcs_ixyz is (0.0, 0.0, 0.0).
-        # Should return tuple with one 1.0 value.
+        # periodAngles_Wcsp_to_Wcs_ixyz is (0.0, 0.0, 0.0). Should return tuple with one
+        # 1.0 value.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.0,))
 
     def test_generate_wing_cross_sections_parameter_validation(self):
@@ -802,7 +799,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             num_steps=50, delta_time=0.01
         )
 
-        # All WingCrossSections should have same Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz.
+        # All WingCrossSections should have same Lp_Wcsp_Lpp and
+        # angles_Wcsp_to_Wcs_ixyz.
         for wcs in wing_cross_sections:
             npt.assert_array_equal(wcs.Lp_Wcsp_Lpp, base_wcs.Lp_Wcsp_Lpp)
             npt.assert_array_equal(
@@ -821,8 +819,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         y_positions = np.array([wcs.Lp_Wcsp_Lpp[1] for wcs in wing_cross_sections])
         z_positions = np.array([wcs.Lp_Wcsp_Lpp[2] for wcs in wing_cross_sections])
 
-        # Verify that phase offset causes non-zero initial values.
-        # With phase offsets, the first values should not all be at the base position.
+        # Verify that phase offset causes non-zero initial values. With phase offsets,
+        # the first values should not all be at the base position.
         self.assertFalse(np.allclose(x_positions[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(y_positions[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(z_positions[0], 0.0, atol=1e-10))
@@ -845,8 +843,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             [wcs.angles_Wcsp_to_Wcs_ixyz[2] for wcs in wing_cross_sections]
         )
 
-        # Verify that phase offset causes non-zero initial values.
-        # With phase offsets, the first values should not all be at the base angles.
+        # Verify that phase offset causes non-zero initial values. With phase offsets,
+        # the first values should not all be at the base angles.
         self.assertFalse(np.allclose(angles_z[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(angles_y[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(angles_x[0], 0.0, atol=1e-10))
@@ -951,8 +949,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Verify that values vary (not constant).
         self.assertFalse(np.allclose(x_positions, x_positions[0]))
 
-        # Verify that values are within expected range.
-        # For custom_harmonic with amp=1.0, values should be in [-1.0, 1.0].
+        # Verify that values are within expected range. For custom_harmonic with
+        # amp=1.0, values should be in [-1.0, 1.0].
         self.assertTrue(np.all(x_positions >= -1.1))
         self.assertTrue(np.all(x_positions <= 1.1))
 
@@ -971,8 +969,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Verify that values vary (not constant).
         self.assertFalse(np.allclose(angles_z, angles_z[0]))
 
-        # Verify that values are within expected range.
-        # For custom_triangle with amp=10.0, values should be in [-10.0, 10.0].
+        # Verify that values are within expected range. For custom_triangle with
+        # amp=10.0, values should be in [-10.0, 10.0].
         self.assertTrue(np.all(angles_z >= -11.0))
         self.assertTrue(np.all(angles_z <= 11.0))
 
@@ -1143,8 +1141,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Use root fixture with Lp_Wcsp_Lpp = [0.0, 0.0, 0.0].
         base_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
 
-        # Create CoreWingCrossSectionMovement with amplitude that will drive the second element in
-        # Lp_Wcsp_Lpp negative, which is never allowed by WingCrossSection.
+        # Create CoreWingCrossSectionMovement with amplitude that will drive the second
+        # element in Lp_Wcsp_Lpp negative, which is never allowed by WingCrossSection.
         core_wcs_movement = ps._core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wcs,
             ampLp_Wcsp_Lpp=(0.0, 1.0, 0.0),
@@ -1169,8 +1167,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Use root fixture with angles = [0.0, 0.0, 0.0].
         base_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
 
-        # Create CoreWingCrossSectionMovement with amplitude that will drive angles out of valid range.
-        # Valid range for angles is (-180, 180], so amplitude 181 with base 0 will exceed.
+        # Create CoreWingCrossSectionMovement with amplitude that will drive angles out
+        # of valid range. Valid range for angles is (-180, 180], so amplitude 181 with
+        # base 0 will exceed.
         core_wcs_movement = ps._core.CoreWingCrossSectionMovement(
             base_wing_cross_section=base_wcs,
             ampAngles_Wcsp_to_Wcs_ixyz=(179.0, 0.0, 0.0),

@@ -236,8 +236,8 @@ class TestAirfoil(unittest.TestCase):
         """Test that invalid parameters raise appropriate errors."""
         # Test outlines with insufficient points in upper portion. These outlines have
         # only 4 points total, and the point ordering places only 1 point in the upper
-        # portion (the leading point itself), which fails the requirement for at least
-        # 3 unique points in each portion.
+        # portion (the leading point itself), which fails the requirement for at least 3
+        # unique points in each portion.
         invalid_outline = np.array([[-0.1, 0.0], [0.5, 0.1], [1.0, 0.0], [0.5, -0.1]])
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(
@@ -267,9 +267,9 @@ class TestAirfoil(unittest.TestCase):
         airfoil_30_percent = ps.geometry.airfoil.Airfoil(name="NACA0030")
         self.assertIsNotNone(airfoil_30_percent.outline_A_lp)
 
-        # Test that airfoils with inconsistent camber parameters (first two digits must
-        # both be zero or both be non zero) raise a ValueError.
-        # Case 1: Camber without camber location (e.g., NACA1012, NACA9012).
+        # Test that Airfoils with inconsistent camber parameters (first two digits must
+        # both be zero or both be non zero) raise a ValueError. Case 1: camber without
+        # camber location (e.g., NACA1012, NACA9012).
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="NACA1012")
 
@@ -291,26 +291,27 @@ class TestAirfoil(unittest.TestCase):
         airfoil_cambered = ps.geometry.airfoil.Airfoil(name="NACA2412")
         self.assertIsNotNone(airfoil_cambered.outline_A_lp)
 
-        # Test that airfoils with position of maximum camber too close to the leading
+        # Test that Airfoils with position of maximum camber too close to the leading
         # edge relative to camber and thickness raise a ValueError. The constraint is:
-        # camber_loc >= max_camber + thickness / 2.
-        # NACA9130: camber_loc=0.1, max_camber=0.09, thickness=0.30
-        # 0.1 < 0.09 + 0.15 = 0.24, so this should fail.
+        # camber_loc >= max_camber + thickness / 2.0. NACA9130: camber_loc = 0.1,
+        # max_camber = 0.09, thickness = 0.3. Since 0.1 < 0.09 + 0.15 = 0.24, this
+        # should fail.
+        # octowrap: on
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="NACA9130")
 
-        # NACA5115: camber_loc=0.1, max_camber=0.05, thickness=0.15
-        # 0.1 < 0.05 + 0.075 = 0.125, so this should fail.
+        # NACA5115: camber_loc = 0.1, max_camber = 0.05, thickness = 0.15 0.1 < 0.05 +
+        # 0.075 = 0.125, so this should fail.
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="NACA5115")
 
-        # NACA4212: camber_loc=0.2, max_camber=0.04, thickness=0.12
-        # 0.2 >= 0.04 + 0.06 = 0.10, so this should pass.
+        # NACA4212: camber_loc = 0.2, max_camber = 0.04, thickness = 0.12 0.2 >= 0.04 +
+        # 0.06 = 0.10, so this should pass.
         airfoil_valid_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA4212")
         self.assertIsNotNone(airfoil_valid_camber_pos.outline_A_lp)
 
-        # NACA2110: camber_loc=0.1, max_camber=0.02, thickness=0.10
-        # 0.1 >= 0.02 + 0.05 = 0.07, so this should pass.
+        # NACA2110: camber_loc = 0.1, max_camber = 0.02, thickness = 0.10 0.1 >= 0.02 +
+        # 0.05 = 0.07, so this should pass.
         airfoil_boundary_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA2110")
         self.assertIsNotNone(airfoil_boundary_camber_pos.outline_A_lp)
 
@@ -321,8 +322,8 @@ class TestAirfoil(unittest.TestCase):
             outline_A_lp = airfoil.outline_A_lp
             outlineY_A_lp = outline_A_lp[:, 1]
 
-            # Find upper and lower surfaces roughly
-            # For properly ordered airfoils, we expect some variation in y
+            # Find upper and lower surfaces roughly. For properly ordered airfoils, we
+            # expect some variation in y.
             max_thickness = np.max(outlineY_A_lp) - np.min(outlineY_A_lp)
             self.assertAlmostEqual(max_thickness, 0.12, places=2)
 
@@ -464,8 +465,8 @@ class TestAirfoil(unittest.TestCase):
 
     def test_self_intersection_rejection(self):
         """Test that self-intersecting outlines are rejected."""
-        # Create an outline where upper surface crosses below lower surface
-        # This is a "twisted" airfoil that would self-intersect
+        # Create an outline where upper surface crosses below lower surface. This is a
+        # "twisted" airfoil that would self-intersect.
         self_intersecting_outline = np.array(
             [
                 [1.00, 0.00],
@@ -593,7 +594,8 @@ class TestAirfoil(unittest.TestCase):
                 outline_A_lp=too_few_points,
                 resample=False,
             )
-        # Should fail for either "at least five points" or "at least three unique points"
+        # Should fail for either "at least five points" or "at least three unique
+        # points."
         error_msg = str(context.exception).lower()
         self.assertTrue(
             "five" in error_msg or "three" in error_msg or "unique" in error_msg
@@ -620,7 +622,8 @@ class TestAirfoil(unittest.TestCase):
                     if (max_camber > 0) != (camber_loc > 0):
                         continue
 
-                    # Constraint: For cambered airfoils, camber_loc >= max_camber + thickness/2
+                    # Constraint: for cambered Airfoils, camber_loc >= max_camber +
+                    # thickness / 2.0.
                     if max_camber > 0:
                         thickness_fraction = thickness * 0.01
                         if camber_loc < max_camber + thickness_fraction / 2:

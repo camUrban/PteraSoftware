@@ -14,33 +14,41 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
     - BAD: "update the Wing objects" (unnecessary)
 - **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section".
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
+- **"strip leading edge point"**: When spelled out in prose, do not capitalize "strip leading edge point" unless it starts a sentence.
+- **"V-tail"**: Always write "V-tail" (capital V, hyphenated) in prose. Never use "v-tail", "v tail", "Vtail", or other variants. Identifier strings keep their canonical form and are not affected: variable names like `v_tail_movement` and string literals like `"V-Tail"` stay as-is.
+- **"time step"**: Write a simulation time increment as either "time step" or "step"; the two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
+- **Axis references**: When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
+- **Abbreviations**: Avoid abbreviations in text unless they are well-known in the context.
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_POINTS_AND_FRAMES.md` and `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
 
-## Running CodeSpell
+## Sentence Structure
 
-CodeSpell is configured as a pre-commit hook. Run it with:
+- Write comments as complete sentences starting with a capital letter and ending with a period. This means actual complete sentences with a subject and verb, not fragments with punctuation stapled on.
+- Preserve existing comment structure and detail level.
+- Prefer comments on their own line above the code they describe.
+- Avoid semicolons in prose. Replace them with commas, colons, or sentence breaks.
+- Capitalize the first word after a colon only if what follows is a complete sentence. Keep it lowercase for fragments, lists, or continuations.
+- Use American English spelling (e.g., "color" not "colour", "center" not "centre").
+- Do not use asterisks for bold or italics, and do not capitalize or use all caps for emphasis in comments.
+- Never use doubled hyphens (`--`) as an em dash substitute. Restructure the sentence instead: split it into two sentences, use a comma, use a colon, or place the clause in parentheses. See [How to Handle Each Forbidden Case](#how-to-handle-each-forbidden-case) for the full em dash and en dash rules.
 
-```shell
-pre-commit run --all-files codespell
-```
+## Math and Numbers
 
-## Running docformatter
+- For subtraction, use a hyphen surrounded by spaces (e.g., "a - b").
+- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N*m", "kg*m^2", and "N*m*s/rad").
+- For division, use a slash surrounded by spaces (e.g., "a / b").
+- For equals signs in inline equations and value descriptions, surround with spaces (e.g., "area = 0.5", not "area=0.5").
+- For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
+- When writing tuples or vectors in prose, include a space after each comma (e.g., "(1.0, 2.0, 3.0)", not "(1.0,2.0,3.0)").
+- When writing numerals that represent float values in prose, include a trailing ".0" (e.g., "1.0" not "1", "0.0" not "0") when the context describes float-valued quantities.
+- Include a space between a numeral and its unit (e.g., "0.5 m" not "0.5m", "1.0 s" not "1.0s").
 
-docformatter is configured as a pre-commit hook. Run it with:
+## File Formatting
 
-```shell
-pre-commit run --all-files docformatter
-```
-
-## Running ascii-only
-
-ascii-only is configured as a pre-commit hook that enforces the [ASCII Only](#ascii-only) rule below. Run it with:
-
-```shell
-pre-commit run --all-files ascii-only
-```
-
-The hook reports each violation with its line, column, the offending character, its Unicode code point and name, and its UTF-8 byte sequence. The check is read-only; it never modifies files. Qt Designer `.ui` files are excluded because Qt regenerates them on every save.
+- Always end *.py files with an empty line.
+- In markdown files, always include a blank line after a header line. Also precede them with a blank line, except for header lines that happen to also be the first line in their file.
+- In markdown files, do not use trailing whitespace for line breaks. Markdown already handles breaks between paragraphs, list items, and headings.
+- In markdown files, do not use hard line wrapping.
 
 ## ASCII Only
 
@@ -72,19 +80,28 @@ The constraint is on what you author. Content quoted verbatim from external sour
 
 If a legitimate reason to violate this rule arises (a contribution must include a file with Unicode contents, or correctness requires a specific Unicode character), flag it in the PR description rather than assume.
 
-## Miscellaneous Guidelines
+## Running CodeSpell
 
-- Avoid abbreviations in text unless they are well-known in the context.
-- For subtraction, use a hyphen surrounded by spaces (e.g., "a - b").
-- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N*m", "kg*m^2", and "N*m*s/rad").
-- For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
-- When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
-- Always end *.py file with an empty line.
-- Preserve existing comment structure and detail level.
-- Write comments as complete sentences ending with a period.
-- Prefer comments on their own line above the code they describe.
-- Use American English spelling (e.g., "color" not "colour", "center" not "centre").
-- Write a simulation time increment as either "time step" or "step"; the two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
-- In markdown files, always include a blank line after a header line. Also precede them with a blank line, except for header lines that happen to also be the first line in their file.
-- In markdown files, do not use trailing whitespace for line breaks. Markdown already handles breaks between paragraphs, list items, and headings.
-- In markdown files, do not use hard line wrapping.
+CodeSpell is configured as a pre-commit hook. Run it with:
+
+```shell
+pre-commit run --all-files codespell
+```
+
+## Running docformatter
+
+docformatter is configured as a pre-commit hook. Run it with:
+
+```shell
+pre-commit run --all-files docformatter
+```
+
+## Running ascii-only
+
+ascii-only is configured as a pre-commit hook that enforces the [ASCII Only](#ascii-only) rule above. Run it with:
+
+```shell
+pre-commit run --all-files ascii-only
+```
+
+The hook reports each violation with its line, column, the offending character, its Unicode code point and name, and its UTF-8 byte sequence. The check is read-only; it never modifies files. Qt Designer `.ui` files are excluded because Qt regenerates them on every save.

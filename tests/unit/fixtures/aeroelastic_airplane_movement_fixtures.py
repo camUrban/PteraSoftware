@@ -28,8 +28,8 @@ def make_static_aeroelastic_airplane_movement_fixture():
     )
 
     # Build a static AeroelasticWingCrossSectionMovement for each of the base Wing's
-    # WingCrossSections, which keeps the generated Wings valid (in particular, the
-    # first WingCrossSection keeps its required zero Lp_Wcsp_Lpp).
+    # WingCrossSections, which keeps the generated Wings valid (in particular, the first
+    # WingCrossSection keeps its required zero Lp_Wcsp_Lpp).
     wing_cross_section_movements = [
         ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section

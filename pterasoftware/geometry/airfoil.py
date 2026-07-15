@@ -140,8 +140,8 @@ class Airfoil:
         if self._resample:
             self._resample_outline(self._n_points_per_side)
 
-        # Initialize an attribute for an array of points along the MCL (in airfoil
-        # axes, relative to the leading point). It will be set by _populate_mcl.
+        # Initialize an attribute for an array of points along the MCL (in airfoil axes,
+        # relative to the leading point). It will be set by _populate_mcl.
         self._mcl_A_lp: np.ndarray | None = None
         self._populate_mcl()
 
@@ -205,14 +205,13 @@ class Airfoil:
         return self._mcl_A_lp
 
     # --- Other methods ---
-    # TODO: In the future, if adding control surfaces becomes more important,
-    #  we may want to rework this method. Using this method we need to artificially
-    #  limit the maximum deflection to 5.0 degrees because higher values may cause
-    #  the upper and lower outlines to intersect. This is because they each rotate
-    #  about points on their respective outlines. Instead, it would be better to have
-    #  everything rotate about the MCL's hinge point, however, this causes
-    #  self intersections for the upper and lower outlines, so we'd need to write some
-    #  logic to remove those.
+    # TODO: In the future, if adding control surfaces becomes more important, we may
+    #  want to rework this method. Using this method we need to artificially limit the
+    #  maximum deflection to 5.0 degrees because higher values may cause the upper and
+    #  lower outlines to intersect. This is because they each rotate about points on
+    #  their respective outlines. Instead, it would be better to have everything rotate
+    #  about the MCL's hinge point, however, this causes self intersections for the
+    #  upper and lower outlines, so we'd need to write some logic to remove those.
     def add_control_surface(
         self, deflection: float | int, hinge_point: float | int
     ) -> Airfoil:
@@ -354,9 +353,9 @@ class Airfoil:
         )
 
         # Return the new flapped Airfoil, with the _TRUST token so that we don't
-        # re-validate the outline, which would fail because the validation requires
-        # the trailing edge points be roughly at y=0.0 (in airfoil axes, relative to
-        # the leading point).
+        # re-validate the outline, which would fail because the validation requires the
+        # trailing edge points be roughly at y=0.0 (in airfoil axes, relative to the
+        # leading point).
         return Airfoil(
             name=self.name + " flapped",
             outline_A_lp=flappedOutline_A_lp,
@@ -501,8 +500,8 @@ class Airfoil:
             + np.power(mclY_A_lp[:-1] - mclY_A_lp[1:], 2)
         )
 
-        # Create a horizontal 1D array that contains the distance along the MCL of
-        # each point on the MCL.
+        # Create a horizontal 1D array that contains the distance along the MCL of each
+        # point on the MCL.
         mcl_distances_cumulative = np.hstack(
             (0, np.cumsum(mcl_distances_between_points))
         )
@@ -592,9 +591,8 @@ class Airfoil:
                             "supported."
                         )
 
-                    # Reject inconsistent camber parameters. The first two digits
-                    # must either both be zero (symmetric) or both be non zero
-                    # (cambered).
+                    # Reject inconsistent camber parameters. The first two digits must
+                    # either both be zero (symmetric) or both be non zero (cambered).
                     if (max_camber > 0) != (camber_loc > 0):
                         raise ValueError(
                             "NACA 4 series airfoils must have consistent camber "
@@ -639,8 +637,8 @@ class Airfoil:
                     if camber_loc == 0:
                         camber_loc = 0.5
 
-                    # Get the y components of the MCL (in airfoil axes, relative to
-                    # the leading point).
+                    # Get the y components of the MCL (in airfoil axes, relative to the
+                    # leading point).
                     mclY1_A_lp = (
                         max_camber
                         / camber_loc**2
@@ -675,14 +673,14 @@ class Airfoil:
                     )
                     mclSlope_A = np.hstack((mclSlope1_A, mclSlope2_A))
 
-                    # Convert the slope of the MCL to the angle between the airfoil
-                    # x axis and the MCL tangent line.
+                    # Convert the slope of the MCL to the angle between the airfoil x
+                    # axis and the MCL tangent line.
                     thetaSlopeRad_Ax_to_MCL = np.arctan(mclSlope_A)
 
                     # Find the upper and lower points of the Airfoil's outline (in
-                    # airfoil axes, relative to the leading point) using the MCL
-                    # points, the perpendicular half-thickness, and the angle between
-                    # the x axis and the MCL tangent line.
+                    # airfoil axes, relative to the leading point) using the MCL points,
+                    # the perpendicular half-thickness, and the angle between the x axis
+                    # and the MCL tangent line.
                     upperOutlineX_A_lp = mclX_A_lp - halfThickness_A * np.sin(
                         thetaSlopeRad_Ax_to_MCL
                     )
@@ -791,8 +789,8 @@ class Airfoil:
                 outline_A_lp, "outline_A_lp"
             )
         )
-        # Make a copy to ensure the Airfoil owns its own data. This is important
-        # because the input might be a read only array from another Airfoil.
+        # Make a copy to ensure the Airfoil owns its own data. This is important because
+        # the input might be a read only array from another Airfoil.
         validated_outline_A_lp = validated_outline_A_lp.copy()
 
         n_outline_points = validated_outline_A_lp.shape[0]
@@ -873,8 +871,8 @@ class Airfoil:
                     f"outline data appears to be in an unexpected orientation."
                 )
 
-            # Create an active rotation matrix to rotate the chord onto x axis.
-            # Convert the angle to degrees to match the _transformations.py standard.
+            # Create an active rotation matrix to rotate the chord onto x axis. Convert
+            # the angle to degrees to match the _transformations.py standard.
             rot_R_act = _transformations.generate_2D_rot_R(
                 angle=np.rad2deg(-chord_angle_rad), passive=False
             )
@@ -926,9 +924,9 @@ class Airfoil:
                 y_at_1 = y0 + (y1 - y0) * (1.0 - x0) / (x1 - x0)
                 self._outline_A_lp[-1, :] = [1.0, y_at_1]
 
-        # Remove duplicate interior points while preserving first and last points.
-        # For closed trailing edges, the upper and lower TE points may be identical,
-        # but both must be kept to maintain proper outline topology.
+        # Remove duplicate interior points while preserving first and last points. For
+        # closed trailing edges, the upper and lower TE points may be identical, but
+        # both must be kept to maintain proper outline topology.
         interior = self._outline_A_lp[1:-1]
         _, unique_indices = np.unique(interior, axis=0, return_index=True)
         unique_indices = np.sort(unique_indices)
@@ -938,11 +936,11 @@ class Airfoil:
         )
 
         # Correct small trailing edge inversions. After normalization, floating-point
-        # precision or minor data quality issues may cause the upper TE y to be
-        # slightly below the lower TE y. If the inversion is small (<=0.1% chord),
-        # correct it by averaging the y values to create a closed trailing edge.
-        # Larger inversions indicate genuinely malformed data and are left for
-        # _validate_outline_final() to catch.
+        # precision or minor data quality issues may cause the upper TE y to be slightly
+        # below the lower TE y. If the inversion is small (<=0.1% chord), correct it by
+        # averaging the y values to create a closed trailing edge. Larger inversions
+        # indicate genuinely malformed data and are left for _validate_outline_final()
+        # to catch.
         upperTpY_A_lp = self._outline_A_lp[0, 1]
         lowerTpY_A_lp = self._outline_A_lp[-1, 1]
         if lowerTpY_A_lp > upperTpY_A_lp:
@@ -1012,9 +1010,9 @@ class Airfoil:
         upperOutlineDiffX_A = np.diff(upperOutline_A_lp[:, 0])
         lowerOutlineDiffX_A = np.diff(lowerOutline_A_lp[:, 0])
 
-        # Check that the upper outline is non increasing in x and that the lower
-        # outline is non decreasing in x (in airfoil axes). Adjacent points may have
-        # the same x value.
+        # Check that the upper outline is non increasing in x and that the lower outline
+        # is non decreasing in x (in airfoil axes). Adjacent points may have the same x
+        # value.
         if not np.all(upperOutlineDiffX_A <= 0.0):
             raise ValueError(
                 "Every point in the Airfoil's outline's upper portion must have "
@@ -1105,8 +1103,8 @@ class Airfoil:
             )
         )
 
-        # Create a horizontal 1D array that contains the cumulative distance along
-        # the upper flipped original outline of each point.
+        # Create a horizontal 1D array that contains the cumulative distance along the
+        # upper flipped original outline of each point.
         flippedUpperOutline_distances_cumulative = np.hstack(
             (0, np.cumsum(flippedUpperOutline_distances_between_points))
         )
@@ -1135,8 +1133,8 @@ class Airfoil:
             )
         )
 
-        # Create a horizontal 1D array that contains the cumulative distance along
-        # the lower original outline of each point.
+        # Create a horizontal 1D array that contains the cumulative distance along the
+        # lower original outline of each point.
         lowerOutline_distances_cumulative = np.hstack(
             (0, np.cumsum(lowerOutline_distances_between_points))
         )
@@ -1151,8 +1149,8 @@ class Airfoil:
             0.0, 1.0, n_points_per_side
         )
 
-        # Use linear interpolation to find the x and y components of the upper and
-        # lower outline points at each of the resampled cosine spaced distances.
+        # Use linear interpolation to find the x and y components of the upper and lower
+        # outline points at each of the resampled cosine spaced distances.
         upperResampledOutlineX_A_lp = np.flipud(
             np.interp(
                 cosine_spaced_normalized_distances,
@@ -1206,8 +1204,8 @@ class Airfoil:
             0.0, 1.0, self._n_points_per_side
         )
 
-        # Use linear interpolation to find the y values of the upper and lower
-        # outlines at the cosine spaced x positions.
+        # Use linear interpolation to find the y values of the upper and lower outlines
+        # at the cosine spaced x positions.
         flippedUpperOutlineY_A_lp = np.interp(
             cosine_spaced_chord_fractions,
             flippedUpperOutline_A_lp[:, 0],
@@ -1219,8 +1217,8 @@ class Airfoil:
             lowerOutline_A_lp[:, 1],
         )
 
-        # Calculate the approximate MCL points (in airfoil axes, relative to the
-        # leading point) and set the class attribute.
+        # Calculate the approximate MCL points (in airfoil axes, relative to the leading
+        # point) and set the class attribute.
         self._mcl_A_lp = np.column_stack(
             [
                 cosine_spaced_chord_fractions,

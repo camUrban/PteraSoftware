@@ -53,9 +53,9 @@ def build_steady_problem(
     ref_airplanes = ref_problem.airplanes
     ref_operating_point = ref_problem.operating_point
 
-    # Initialize an empty list to hold this iteration's Airplanes. Then, fill the list by
-    # making new copies of each of the Airplanes with modified values for Panel aspect
-    # ratio and number of chordwise Panels.
+    # Initialize an empty list to hold this iteration's Airplanes. Then, fill the list
+    # by making new copies of each of the Airplanes with modified values for Panel
+    # aspect ratio and number of chordwise Panels.
     these_airplanes = []
     for ref_airplane_id, ref_airplane in enumerate(ref_airplanes):
         ref_wings = ref_airplane.wings
@@ -268,8 +268,8 @@ def build_unsteady_problem(
     # 5. Iterate over the WingMovements.
     #   5.1. Reference the WingMovement's base Wing.
     #   5.2. Reference the WingMovement's list of WingCrossSectionMovements.
-    #   5.3. Create an empty list for the WingCrossSectionMovements' base WingCrossSection
-    #        copies.
+    #   5.3. Create an empty list for the WingCrossSectionMovements' base
+    #        WingCrossSection copies.
     #   5.4. Create an empty list for the WingCrossSectionMovement copies.
     #   5.5. Iterate over the WingCrossSectionMovements.
     #     5.5.1. Reference the WingCrossSectionMovement's base WingCrossSection.
@@ -277,13 +277,13 @@ def build_unsteady_problem(
     #            combination of Panel aspect ratio and number of chordwise Panels.
     #     5.5.3. Create a copy of the base WingCrossSection.
     #     5.5.4. Create a copy of the WingCrossSectionMovement.
-    #     5.5.5. Append the base WingCrossSection copy to the list of base WingCrossSection
-    #            copies.
+    #     5.5.5. Append the base WingCrossSection copy to the list of base
+    #            WingCrossSection copies.
     #     5.5.6. Append the WingCrossSectionMovement copy to the list of
     #            WingCrossSectionMovement copies.
     #   5.6. Create a copy of the base Wing.
     #   5.7. Create a copy of the WingMovement.
-    #   5.8. Append the base Wing copy to the list  of base Wing copies.
+    #   5.8. Append the base Wing copy to the list of base Wing copies.
     #   5.9. Append the WingMovement copy to the list of WingMovement copies.
     # 6. Create a copy of the base Airplane.
     # 7. Create a copy of the AirplaneMovement.
@@ -312,11 +312,11 @@ def build_unsteady_problem(
 
             # An edge-defined Wing is refined by resampling its stored edge curves into
             # the number of WingCrossSections that achieves the desired Panel aspect
-            # ratio. Resampling changes the WingCrossSection count, so it cannot preserve
-            # per-WingCrossSection motion. Every WingCrossSectionMovement must therefore
-            # be static; the refined WingCrossSections are wrapped in motion free
-            # WingCrossSectionMovements and only the WingMovement's own motion is carried
-            # over.
+            # ratio. Resampling changes the WingCrossSection count, so it cannot
+            # preserve per-WingCrossSection motion. Every WingCrossSectionMovement must
+            # therefore be static; the refined WingCrossSections are wrapped in motion
+            # free WingCrossSectionMovements and only the WingMovement's own motion is
+            # carried over.
             if ref_base_wing.spanwise_mesh == "edge_defined":
                 for (
                     ref_wing_cross_section_movement_id,
@@ -466,7 +466,8 @@ def build_unsteady_problem(
 
                 # 5.5.4. Create a copy of the WingCrossSectionMovement.
                 this_wing_cross_section_movement = movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    # These values are copied from the reference WingCrossSectionMovement.
+                    # These values are copied from the reference
+                    # WingCrossSectionMovement.
                     ampLp_Wcsp_Lpp=ref_wing_cross_section_movement.ampLp_Wcsp_Lpp,
                     periodLp_Wcsp_Lpp=ref_wing_cross_section_movement.periodLp_Wcsp_Lpp,
                     spacingLp_Wcsp_Lpp=ref_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
@@ -582,8 +583,8 @@ def build_unsteady_problem(
         )
 
     # Cache the optimized delta_time on a miss so it is reused across the other
-    # wake-state and wake-length combinations at this mesh. Only a hit is logged,
-    # since on a miss the optimizer has just logged the value itself.
+    # wake-state and wake-length combinations at this mesh. Only a hit is logged, since
+    # on a miss the optimizer has just logged the value itself.
     if delta_time_key not in delta_time_cache:
         delta_time_cache[delta_time_key] = this_movement.delta_time
     else:
@@ -987,15 +988,15 @@ def _get_num_wing_cross_sections_for_panel_ar(
     lower_num = max(int(start_val), 2)
     lower_average_panel_aspect_ratio = average_panel_aspect_ratio_at(lower_num)
 
-    # If the starting count already meets the target, it is the smallest count that does,
-    # so return it.
+    # If the starting count already meets the target, it is the smallest count that
+    # does, so return it.
     if lower_average_panel_aspect_ratio <= desired_average_panel_aspect_ratio:
         return lower_num
 
-    # Proportionally jump to bracket the target from above. The average Panel aspect ratio
-    # scales roughly as 1 / (num_wing_cross_sections - 1), so this estimate lands near the
-    # crossing in a few steps. Each jump strictly increases the count, and the aspect
-    # ratio falls toward zero as the count grows, so the loop terminates.
+    # Proportionally jump to bracket the target from above. The average Panel aspect
+    # ratio scales roughly as 1.0 / (num_wing_cross_sections - 1), so this estimate
+    # lands near the crossing in a few steps. Each jump strictly increases the count,
+    # and the aspect ratio falls toward zero as the count grows, so the loop terminates.
     upper_num = lower_num
     upper_average_panel_aspect_ratio = lower_average_panel_aspect_ratio
     while upper_average_panel_aspect_ratio > desired_average_panel_aspect_ratio:
@@ -1019,8 +1020,9 @@ def _get_num_wing_cross_sections_for_panel_ar(
         else:
             upper_num = middle_num
 
-    # Return whichever of the two straddling counts gives the closer average Panel aspect
-    # ratio. On a tie, prefer the finer mesh (upper_num), matching the trapezoidal search.
+    # Return whichever of the two straddling counts gives the closer average Panel
+    # aspect ratio. On a tie, prefer the finer mesh (upper_num), matching the
+    # trapezoidal search.
     lower_difference = abs(
         average_panel_aspect_ratio_at(lower_num) - desired_average_panel_aspect_ratio
     )
@@ -1088,8 +1090,8 @@ def _resolve_num_wing_cross_sections(
     else:
         # Start the search from a conservative lower bound: the smallest number of
         # WingCrossSections already found for this Wing at an incrementally coarser mesh
-        # (in Panel aspect ratio, number of chordwise Panels, or both), since the current
-        # finer mesh must use at least that many. The floor is two, the fewest
+        # (in Panel aspect ratio, number of chordwise Panels, or both), since the
+        # current finer mesh must use at least that many. The floor is two, the fewest
         # WingCrossSections an edge-defined Wing can have.
         starting_num_wing_cross_sections = 2
         last_ar_key = (

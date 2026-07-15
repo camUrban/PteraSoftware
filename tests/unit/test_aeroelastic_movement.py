@@ -64,8 +64,8 @@ class TestAeroelasticMovement(unittest.TestCase):
         """Test that AeroelasticMovement rejects a CoreOperatingPointMovement that is
         not an OperatingPointMovement.
         """
-        # A FreeFlightOperatingPointMovement is a CoreOperatingPointMovement but not
-        # an OperatingPointMovement, so it must be rejected.
+        # A FreeFlightOperatingPointMovement is a CoreOperatingPointMovement but not an
+        # OperatingPointMovement, so it must be rejected.
         airplane_movements = [
             aeroelastic_airplane_movement_fixtures.make_static_aeroelastic_airplane_movement_fixture()
         ]

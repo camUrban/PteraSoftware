@@ -250,8 +250,8 @@ class Panel:
             avoid infinite recursion.
         :return: A new Panel with preserved mesh geometry and reset solver state.
         """
-        # Create a new Panel instance without calling __init__ to avoid redundant
-        # cache invalidation.
+        # Create a new Panel instance without calling __init__ to avoid redundant cache
+        # invalidation.
         new_panel = object.__new__(Panel)
 
         # Store this Panel in memo to handle potential circular references.
@@ -897,9 +897,9 @@ class Panel:
         projFirstDiagonalOnPlane_G = firstDiagonal_G - projFirstDiagonalOnNormal_G
         projSecondDiagonalOnPlane_G = secondDiagonal_G - projSecondDiagonalOnNormal_G
 
-        # The projected area is found by dividing the magnitude of cross product of
-        # the diagonal vectors (in geometry axes) by two. Read the area method for a
-        # more detailed explanation.
+        # The projected area is found by dividing the magnitude of cross product of the
+        # diagonal vectors (in geometry axes) by two. Read the area method for a more
+        # detailed explanation.
         projDiagonalsOnPlaneCross_G = np.cross(
             projFirstDiagonalOnPlane_G, projSecondDiagonalOnPlane_G
         )

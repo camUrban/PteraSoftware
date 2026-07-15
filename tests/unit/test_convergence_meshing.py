@@ -71,8 +71,8 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
         upper_difference = abs(self._average_panel_aspect_ratio(result + 1) - target)
         self.assertLessEqual(chosen_difference, upper_difference)
 
-        # The smallest valid number of spanwise Panels is one, so the lower neighbor only
-        # exists above that.
+        # The smallest valid number of spanwise Panels is one, so the lower neighbor
+        # only exists above that.
         if result > 1:
             lower_difference = abs(
                 self._average_panel_aspect_ratio(result - 1) - target
@@ -169,8 +169,8 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         upper_difference = abs(self._average_panel_aspect_ratio(result + 1) - target)
         self.assertLessEqual(chosen_difference, upper_difference)
 
-        # An edge-defined Wing needs at least two WingCrossSections, so the lower neighbor
-        # only exists above that.
+        # An edge-defined Wing needs at least two WingCrossSections, so the lower
+        # neighbor only exists above that.
         if result > 2:
             lower_difference = abs(
                 self._average_panel_aspect_ratio(result - 1) - target

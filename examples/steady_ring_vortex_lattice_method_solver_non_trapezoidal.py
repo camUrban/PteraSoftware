@@ -32,8 +32,8 @@ span = 6.0
 num_edge_samples = 100
 ys_Wn_Ler = np.linspace(0.0, span, num_edge_samples)
 
-# An elliptical chord distribution tapers smoothly from the root chord to a point at
-# the tip.
+# An elliptical chord distribution tapers smoothly from the root chord to a point at the
+# tip.
 chords = root_chord * np.sqrt(1.0 - (ys_Wn_Ler / span) ** 2)
 
 # Keep the quarter chord line straight along the span, which is what makes the planform
@@ -112,8 +112,8 @@ del example_airplane
 del example_operating_point
 
 # Define a new solver. The available solver classes are
-# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver,
-# and UnsteadyRingVortexLatticeMethodSolver. We'll create a
+# SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver, and
+# UnsteadyRingVortexLatticeMethodSolver. We'll create a
 # SteadyRingVortexLatticeMethodSolver, which requires a SteadyProblem.
 example_solver = (
     ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(

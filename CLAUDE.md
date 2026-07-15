@@ -46,6 +46,7 @@ Requires Python 3.11, but active development is done in 3.13
         - `isort.yml`
         - `label-sync.yml`
         - `mypy.yml`
+        - `octowrap.yml`
         - `pre-commit-hooks.yml`
         - `publish.yml`
         - `tests.yml`

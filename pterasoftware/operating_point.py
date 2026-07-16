@@ -100,13 +100,13 @@ class OperatingPoint:
         self,
         rho: float | int = 1.225,
         vCg__E: float | int = 10.0,
-        alpha: float | int | _Unset = _UNSET,
-        beta: float | int = 0.0,
+        alpha: float | int | None | _Unset = _UNSET,
+        beta: float | int | None = None,
         angles_E_to_BP1_izyx: None | np.ndarray | Sequence[float | int] = None,
         CgP1_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
         surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
-        externalFX_W: float | int | _Unset = _UNSET,
+        externalFX_W: float | int | None | _Unset = _UNSET,
         nu: float | int = 15.06e-6,
         g_E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         omegas_BP1__E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
@@ -129,14 +129,16 @@ class OperatingPoint:
             details on the exact interpretation of this value, see the description of
             wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or
             float) in the range (-180.0, 180.0] and will be converted internally to a
-            float. The units are in degrees. If alpha is not passed, it defaults to 5.0
-            and a FutureWarning is issued, because the default will change to None in
-            v6.0.0. Pass alpha explicitly to silence the warning.
+            float. The units are in degrees. None is also accepted and resolves
+            internally to 0.0. If alpha is not passed, it defaults to 5.0 and a
+            FutureWarning is issued, because the default will change to None in v6.0.0.
+            Pass alpha explicitly to silence the warning.
         :param beta: The sideslip angle for the problem's Airplane(s). For more details
             on the exact interpretation of this value, see the description of wind axes
-            in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
-            range (-180.0, 180.0] and will be converted internally to a float. The units
-            are in degrees. The default is 0.0.
+            in docs/AXES_POINTS_AND_FRAMES.md. It must be None or a number (int or
+            float) in the range (-180.0, 180.0] and will be converted internally to a
+            float. The units are in degrees. The default is None, which resolves
+            internally to 0.0.
         :param angles_E_to_BP1_izyx: None, or an array-like object of 3 numbers
             representing the angles from Earth axes to the first Airplane's body axes
             using an intrinsic zy'x" sequence. Can be None, a tuple, list, or ndarray.
@@ -180,9 +182,10 @@ class OperatingPoint:
             internally to a float. The units are in Newtons. The default is 0.0. The
             free-flight solver never applies externalFX_W and raises if it is non-zero;
             model thrust there with FreeFlightUnsteadyProblem's external_loads_fn
-            instead. externalFX_W is deprecated: passing it issues a DeprecationWarning,
-            and it will be removed in v6.0.0 in favor of a more general external_loads
-            parameter.
+            instead. None is also accepted and resolves internally to 0.0. externalFX_W
+            is deprecated: passing it (including as None) issues a DeprecationWarning,
+            and the parameter will be removed in v6.0.0 in favor of a more general
+            external_loads parameter.
         :param nu: The fluid's kinematic viscosity. The units are in meters squared per
             second. This parameter is only used in the unsteady ring vortex lattice
             method's vortex core growth model. It must be a positive number and will be
@@ -214,8 +217,9 @@ class OperatingPoint:
         self._vCg__E = _parameter_validation.number_in_range_return_float(
             vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
         )
-        # Resolve the alpha sentinel. Alpha's implicit default is scheduled to change in
-        # v6.0.0, so warn users who rely on it.
+        # Resolve the alpha sentinel and None. Alpha's implicit default is scheduled to
+        # change in v6.0.0, so warn users who rely on it. None is the explicit request
+        # for the resolved default, so it does not warn.
         if isinstance(alpha, _Unset):
             warnings.warn(
                 "OperatingPoint was constructed without an explicit alpha, which "
@@ -227,6 +231,11 @@ class OperatingPoint:
                 stacklevel=2,
             )
             alpha = 5.0
+        elif alpha is None:
+            alpha = 0.0
+        # Resolve None for beta, which requests the resolved default.
+        if beta is None:
+            beta = 0.0
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
         self._alpha = _parameter_validation.number_in_range_return_float(
@@ -316,8 +325,10 @@ class OperatingPoint:
             )
         self._surfaceNormal_E = surfaceNormal_E
         self._surfacePoint_E_Eo = surfacePoint_E_Eo
-        # Resolve the externalFX_W sentinel. The parameter is scheduled for removal in
-        # v6.0.0, so warn users who pass it.
+        # Resolve the externalFX_W sentinel and None, both of which request the resolved
+        # default. The parameter is scheduled for removal in v6.0.0, so warn users who
+        # pass anything, including None: only the sentinel (an omitted argument) is
+        # silent.
         if isinstance(externalFX_W, _Unset):
             externalFX_W = 0.0
         else:
@@ -328,6 +339,8 @@ class OperatingPoint:
                 DeprecationWarning,
                 stacklevel=2,
             )
+            if externalFX_W is None:
+                externalFX_W = 0.0
         self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )

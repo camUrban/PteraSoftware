@@ -158,6 +158,13 @@ class TestOperatingPoint(unittest.TestCase):
                 op = ps.operating_point.OperatingPoint(alpha=alpha)
                 self.assertEqual(op.alpha, float(alpha))
 
+        # Test that None resolves to 0.0 without the FutureWarning that an omitted alpha
+        # issues.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", FutureWarning)
+            op = ps.operating_point.OperatingPoint(alpha=None)
+        self.assertEqual(op.alpha, 0.0)
+
         # Test invalid values (outside range)
         invalid_alpha_values = [180.1, -180.0, -180.1, 200.0, -200.0]
 
@@ -180,6 +187,10 @@ class TestOperatingPoint(unittest.TestCase):
             with self.subTest(beta=beta):
                 op = ps.operating_point.OperatingPoint(alpha=5.0, beta=beta)
                 self.assertEqual(op.beta, float(beta))
+
+        # Test that None (the default) resolves to 0.0.
+        op = ps.operating_point.OperatingPoint(alpha=5.0, beta=None)
+        self.assertEqual(op.beta, 0.0)
 
         # Test invalid values (outside range)
         invalid_beta_values = [180.1, -180.0, -180.1, 200.0, -200.0]
@@ -208,19 +219,22 @@ class TestOperatingPoint(unittest.TestCase):
                     )
                 self.assertEqual(op.externalFX_W, float(externalFX_W))
 
-        # Test invalid types (string, None)
-        invalid_external_force_values: list[Any] = ["invalid", None]
+        # Test that None resolves to 0.0. Passing None still counts as passing the
+        # deprecated parameter, so it issues the DeprecationWarning.
+        with self.assertWarns(DeprecationWarning):
+            op = ps.operating_point.OperatingPoint(alpha=5.0, externalFX_W=None)
+        self.assertEqual(op.externalFX_W, 0.0)
 
-        for invalid_external_force in invalid_external_force_values:
-            with self.subTest(invalid_external_force=invalid_external_force):
-                # Suppress the deprecation warning, which fires before validation
-                # rejects the value.
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", DeprecationWarning)
-                    with self.assertRaises(TypeError):
-                        ps.operating_point.OperatingPoint(
-                            alpha=5.0, externalFX_W=invalid_external_force
-                        )
+        # Test invalid types (string)
+        bad_externalFX_W: Any = "invalid"
+        with warnings.catch_warnings():
+            # Suppress the deprecation warning, which fires before validation rejects
+            # the value.
+            warnings.simplefilter("ignore", DeprecationWarning)
+            with self.assertRaises(TypeError):
+                ps.operating_point.OperatingPoint(
+                    alpha=5.0, externalFX_W=bad_externalFX_W
+                )
 
     def test_nu_parameter_validation(self) -> None:
         """Test nu parameter validation."""

@@ -12,12 +12,21 @@ None
 
 from __future__ import annotations
 
+import warnings
 from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
 
 from . import _parameter_validation, _transformations
+
+
+class _AlphaUnset:
+    """A sentinel class used to mark that alpha was not passed to an OperatingPoint."""
+
+
+# The module-level sentinel instance that marks an omitted alpha argument.
+_ALPHA_UNSET = _AlphaUnset()
 
 
 class OperatingPoint:
@@ -90,7 +99,7 @@ class OperatingPoint:
         self,
         rho: float | int = 1.225,
         vCg__E: float | int = 10.0,
-        alpha: float | int = 5.0,
+        alpha: float | int | _AlphaUnset = _ALPHA_UNSET,
         beta: float | int = 0.0,
         angles_E_to_BP1_izyx: None | np.ndarray | Sequence[float | int] = None,
         CgP1_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
@@ -119,7 +128,9 @@ class OperatingPoint:
             details on the exact interpretation of this value, see the description of
             wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or
             float) in the range (-180.0, 180.0] and will be converted internally to a
-            float. The units are in degrees. The default is 5.0.
+            float. The units are in degrees. If alpha is not passed, it defaults to 5.0
+            and a FutureWarning is issued, because the default will change to None in
+            v6.0.0. Pass alpha explicitly to silence the warning.
         :param beta: The sideslip angle for the problem's Airplane(s). For more details
             on the exact interpretation of this value, see the description of wind axes
             in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
@@ -200,6 +211,19 @@ class OperatingPoint:
         self._vCg__E = _parameter_validation.number_in_range_return_float(
             vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
         )
+        # Resolve the alpha sentinel. Alpha's implicit default is scheduled to change in
+        # v6.0.0, so warn users who rely on it.
+        if isinstance(alpha, _AlphaUnset):
+            warnings.warn(
+                "OperatingPoint was constructed without an explicit alpha, which "
+                "currently defaults to 5.0. In v6.0.0, the default will change to "
+                "None, which will resolve to 0.0 when vCg__E is positive and to NaN "
+                "when vCg__E is 0.0. Pass alpha explicitly to keep the current "
+                "behavior and silence this warning.",
+                FutureWarning,
+                stacklevel=2,
+            )
+            alpha = 5.0
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
         self._alpha = _parameter_validation.number_in_range_return_float(

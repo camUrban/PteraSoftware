@@ -74,7 +74,7 @@ trim_airplane = ps.geometry.airplane.Airplane(
 # not flapping, so it won't generate thrust via its Wings. Therefore, to balance induced
 # drag, we need an external thrust force which could be due to a propeller or other type
 # of engine.
-trim_operating_point = ps.operating_point.OperatingPoint(externalFX_W=5)
+trim_operating_point = ps.operating_point.OperatingPoint(alpha=5.0, externalFX_W=5)
 
 # Construct a SteadyProblem containing the Airplane and OperatingPoint
 trim_problem = ps.problems.SteadyProblem(

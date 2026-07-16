@@ -110,6 +110,7 @@ trim_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 
 # Create an OperatingPoint using default values.
 trim_operating_point = ps.operating_point.OperatingPoint(
+    alpha=5.0,
     externalFX_W=7.5,
 )
 

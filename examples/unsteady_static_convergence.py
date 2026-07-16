@@ -70,7 +70,7 @@ example_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
 )
 
 # Create an OperatingPoint and an OperatingPointMovement.
-example_operating_point = ps.operating_point.OperatingPoint()
+example_operating_point = ps.operating_point.OperatingPoint(alpha=5.0)
 example_operating_point_movement = (
     ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=example_operating_point

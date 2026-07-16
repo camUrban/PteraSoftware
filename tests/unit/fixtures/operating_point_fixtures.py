@@ -485,6 +485,7 @@ def make_with_body_rates_operating_point_fixture() -> ps.operating_point.Operati
         axes (observed from the Earth frame).
     """
     with_body_rates_operating_point_fixture = ps.operating_point.OperatingPoint(
+        alpha=5.0,
         omegas_BP1__E=(0.0, 0.0, 1.0),
     )
 
@@ -504,6 +505,7 @@ def make_with_full_body_rates_operating_point_fixture() -> (
         (observed from the Earth frame) has three distinct non zero components.
     """
     with_full_body_rates_operating_point_fixture = ps.operating_point.OperatingPoint(
+        alpha=5.0,
         omegas_BP1__E=(1.0, 2.0, 3.0),
     )
 

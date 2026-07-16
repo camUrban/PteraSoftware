@@ -799,7 +799,7 @@ class TestHashObject(unittest.TestCase):
 
         :return: None
         """
-        result = hash_object(OperatingPoint())
+        result = hash_object(OperatingPoint(alpha=5.0))
         self.assertIsInstance(result, str)
         self.assertEqual(len(result), 64)
         self.assertTrue(all(character in "0123456789abcdef" for character in result))
@@ -837,7 +837,7 @@ class TestHashObject(unittest.TestCase):
         :return: None
         """
         self.assertNotEqual(
-            hash_object(OperatingPoint()),
+            hash_object(OperatingPoint(alpha=5.0)),
             hash_object(Airfoil(name="NACA0012")),
         )
 
@@ -860,7 +860,7 @@ class TestHashObject(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         base_hash = hash_object(operating_point)
         with mock.patch(
             "pterasoftware._serialization._FORMAT_VERSION", _FORMAT_VERSION + 1
@@ -885,7 +885,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test.json"
             save(path, operating_point)
@@ -898,7 +898,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test.json"
             save(path, operating_point)
@@ -915,7 +915,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test.json"
             save(path, operating_point)
@@ -937,7 +937,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = str(Path(tmp) / "test.json")
             save(path, operating_point)
@@ -949,7 +949,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with self.assertRaises(ValueError):
             save("test.txt", operating_point)
 
@@ -966,7 +966,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test.json"
             path.mkdir()
@@ -989,7 +989,7 @@ class TestSaveLoad(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test.json.gz"
             save(path, operating_point)
@@ -1074,6 +1074,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point = OperatingPoint(
+            alpha=5.0,
             surfaceNormal_E=(0.0, 0.0, 1.0),
             surfacePoint_E_Eo=(0.0, 0.0, -1.0),
         )
@@ -1093,7 +1094,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         result = _deserialize_value(_serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         self.assertIsNone(result.surfaceNormal_E)
@@ -1104,7 +1105,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        operating_point = OperatingPoint()
+        operating_point = OperatingPoint(alpha=5.0)
         result = _deserialize_value(_serialize_value(operating_point))
         assert isinstance(result, OperatingPoint)
         self.assertIsNone(object.__getattribute__(result, "_qInf__E"))
@@ -1622,7 +1623,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point_movement = OperatingPointMovement(
-            base_operating_point=OperatingPoint(),
+            base_operating_point=OperatingPoint(alpha=5.0),
         )
         result = _deserialize_value(_serialize_value(operating_point_movement))
         assert isinstance(result, OperatingPointMovement)
@@ -1691,7 +1692,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         :return: None
         """
         operating_point_movement = OperatingPointMovement(
-            base_operating_point=OperatingPoint(),
+            base_operating_point=OperatingPoint(alpha=5.0),
         )
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "operating_point_movement.json"

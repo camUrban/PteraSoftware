@@ -149,7 +149,7 @@ trailing_airplane = ps.geometry.airplane.Airplane(
 )
 
 # Create an OperatingPoint.
-operating_point = ps.operating_point.OperatingPoint()
+operating_point = ps.operating_point.OperatingPoint(alpha=5.0)
 
 # Create a SteadyProblem. We will pass this into the convergence function.
 steady_problem = ps.problems.SteadyProblem(

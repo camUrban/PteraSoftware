@@ -62,7 +62,7 @@ def make_meshed_airplane_fixture() -> Airplane:
         chordwise_spacing="uniform",
     )
     airplane = Airplane(wings=[wing])
-    operating_point = OperatingPoint()
+    operating_point = OperatingPoint(alpha=5.0)
     SteadyProblem(airplanes=[airplane], operating_point=operating_point)
     return airplane
 
@@ -131,7 +131,7 @@ def make_formation_steady_problem_fixture() -> SteadyProblem:
         wings=[_make_two_airplane_wing()],
         Cg_GP1_CgP1=(0.0, 10.0, 0.0),
     )
-    operating_point = OperatingPoint()
+    operating_point = OperatingPoint(alpha=5.0)
     return SteadyProblem(
         airplanes=[airplane1, airplane2], operating_point=operating_point
     )
@@ -177,7 +177,7 @@ def make_unsteady_problem_fixture() -> UnsteadyProblem:
         wing_movements=[wing_movement],
     )
     operating_point_movement = OperatingPointMovement(
-        base_operating_point=OperatingPoint(),
+        base_operating_point=OperatingPoint(alpha=5.0),
     )
     movement = Movement(
         airplane_movements=[airplane_movement],
@@ -266,7 +266,7 @@ def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
     movement = Movement(
         airplane_movements=[airplane_movement1, airplane_movement2],
         operating_point_movement=OperatingPointMovement(
-            base_operating_point=OperatingPoint(),
+            base_operating_point=OperatingPoint(alpha=5.0),
         ),
         num_steps=3,
     )

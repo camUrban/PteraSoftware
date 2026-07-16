@@ -21,6 +21,7 @@ None
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
@@ -1019,20 +1020,26 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         )
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
 
-        return operating_point_mod.OperatingPoint(
-            rho=reference_operating_point.rho,
-            vCg__E=vCg__E,
-            alpha=alpha,
-            beta=beta,
-            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
-            CgP1_E_Eo=position_E_Eo,
-            surfaceNormal_E=reference_operating_point.surfaceNormal_E,
-            surfacePoint_E_Eo=reference_operating_point.surfacePoint_E_Eo,
-            externalFX_W=reference_operating_point.externalFX_W,
-            nu=reference_operating_point.nu,
-            g_E=reference_operating_point.g_E,
-            omegas_BP1__E=omegas_BP1__E,
-        )
+        # Suppress the externalFX_W deprecation warning: this construction only carries
+        # the reference OperatingPoint's value across, which will migrate when
+        # externalFX_W is removed, so the warning is only meant for the user's own
+        # construction sites.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            return operating_point_mod.OperatingPoint(
+                rho=reference_operating_point.rho,
+                vCg__E=vCg__E,
+                alpha=alpha,
+                beta=beta,
+                angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
+                CgP1_E_Eo=position_E_Eo,
+                surfaceNormal_E=reference_operating_point.surfaceNormal_E,
+                surfacePoint_E_Eo=reference_operating_point.surfacePoint_E_Eo,
+                externalFX_W=reference_operating_point.externalFX_W,
+                nu=reference_operating_point.nu,
+                g_E=reference_operating_point.g_E,
+                omegas_BP1__E=omegas_BP1__E,
+            )
 
     @staticmethod
     def _state_to_vector(state: _mujoco_model.MuJoCoState) -> np.ndarray:

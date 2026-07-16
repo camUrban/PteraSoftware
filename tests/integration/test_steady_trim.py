@@ -1,6 +1,7 @@
 """This module contains a testing case for the steady trim function."""
 
 import unittest
+import warnings
 
 import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures
@@ -30,12 +31,16 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
         this_airplane = (
             airplane_fixtures.make_multiple_wing_steady_validation_airplane()
         )
-        this_operating_point = ps.operating_point.OperatingPoint(
-            vCg__E=corrupted_v_x,
-            alpha=corrupted_alpha,
-            beta=corrupted_beta,
-            externalFX_W=corrupted_thrust,
-        )
+        # Suppress the warning for the deprecated externalFX_W parameter, which trim
+        # analyses still require as their initial thrust guess.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            this_operating_point = ps.operating_point.OperatingPoint(
+                vCg__E=corrupted_v_x,
+                alpha=corrupted_alpha,
+                beta=corrupted_beta,
+                externalFX_W=corrupted_thrust,
+            )
 
         # Create the SteadyProblem.
         self.steady_validation_problem = ps.problems.SteadyProblem(
@@ -63,16 +68,19 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             self.thrust_ans + thrust_delta,
         )
 
-        trim_conditions = ps.trim.analyze_steady_trim(
-            problem=self.steady_validation_problem,
-            solver_type="steady horseshoe vortex lattice method",
-            boundsVCg__E=v_x_bounds,
-            alpha_bounds=alpha_bounds,
-            beta_bounds=beta_bounds,
-            boundsExternalFX_W=thrust_bounds,
-            objective_cut_off=0.01,
-            num_calls=100,
-        )
+        # Calling analyze_steady_trim is deprecated while it still uses
+        # boundsExternalFX_W, so it issues a DeprecationWarning.
+        with self.assertWarns(DeprecationWarning):
+            trim_conditions = ps.trim.analyze_steady_trim(
+                problem=self.steady_validation_problem,
+                solver_type="steady horseshoe vortex lattice method",
+                boundsVCg__E=v_x_bounds,
+                alpha_bounds=alpha_bounds,
+                beta_bounds=beta_bounds,
+                boundsExternalFX_W=thrust_bounds,
+                objective_cut_off=0.01,
+                num_calls=100,
+            )
 
         assert trim_conditions[0] is not None
         assert trim_conditions[1] is not None

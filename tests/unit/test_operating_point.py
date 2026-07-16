@@ -2,6 +2,7 @@
 
 import copy
 import unittest
+import warnings
 from collections.abc import Sequence
 from typing import Any
 
@@ -200,9 +201,11 @@ class TestOperatingPoint(unittest.TestCase):
 
         for externalFX_W in valid_external_force_values:
             with self.subTest(externalFX_W=externalFX_W):
-                op = ps.operating_point.OperatingPoint(
-                    alpha=5.0, externalFX_W=externalFX_W
-                )
+                # Passing externalFX_W is deprecated, so it issues a DeprecationWarning.
+                with self.assertWarns(DeprecationWarning):
+                    op = ps.operating_point.OperatingPoint(
+                        alpha=5.0, externalFX_W=externalFX_W
+                    )
                 self.assertEqual(op.externalFX_W, float(externalFX_W))
 
         # Test invalid types (string, None)
@@ -210,10 +213,14 @@ class TestOperatingPoint(unittest.TestCase):
 
         for invalid_external_force in invalid_external_force_values:
             with self.subTest(invalid_external_force=invalid_external_force):
-                with self.assertRaises(TypeError):
-                    ps.operating_point.OperatingPoint(
-                        alpha=5.0, externalFX_W=invalid_external_force
-                    )
+                # Suppress the deprecation warning, which fires before validation
+                # rejects the value.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", DeprecationWarning)
+                    with self.assertRaises(TypeError):
+                        ps.operating_point.OperatingPoint(
+                            alpha=5.0, externalFX_W=invalid_external_force
+                        )
 
     def test_nu_parameter_validation(self) -> None:
         """Test nu parameter validation."""

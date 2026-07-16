@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import math
+import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING
 
@@ -205,20 +206,26 @@ class CoreOperatingPointMovement:
         else:
             raise ValueError(f"Invalid spacing value: {self._spacingVCg__E}")
 
-        return operating_point_mod.OperatingPoint(
-            rho=self._base_operating_point.rho,
-            vCg__E=this_vCg__E,
-            alpha=self._base_operating_point.alpha,
-            beta=self._base_operating_point.beta,
-            externalFX_W=self._base_operating_point.externalFX_W,
-            nu=self._base_operating_point.nu,
-            angles_E_to_BP1_izyx=self._base_operating_point.angles_E_to_BP1_izyx,
-            CgP1_E_Eo=self._base_operating_point.CgP1_E_Eo,
-            surfaceNormal_E=self._base_operating_point.surfaceNormal_E,
-            surfacePoint_E_Eo=self._base_operating_point.surfacePoint_E_Eo,
-            g_E=self._base_operating_point.g_E,
-            omegas_BP1__E=self._base_operating_point.omegas_BP1__E,
-        )
+        # Suppress the externalFX_W deprecation warning: this per step construction only
+        # propagates the base OperatingPoint's value, which will migrate when
+        # externalFX_W is removed, so the warning is only meant for the user's own
+        # construction sites.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            return operating_point_mod.OperatingPoint(
+                rho=self._base_operating_point.rho,
+                vCg__E=this_vCg__E,
+                alpha=self._base_operating_point.alpha,
+                beta=self._base_operating_point.beta,
+                externalFX_W=self._base_operating_point.externalFX_W,
+                nu=self._base_operating_point.nu,
+                angles_E_to_BP1_izyx=self._base_operating_point.angles_E_to_BP1_izyx,
+                CgP1_E_Eo=self._base_operating_point.CgP1_E_Eo,
+                surfaceNormal_E=self._base_operating_point.surfaceNormal_E,
+                surfacePoint_E_Eo=self._base_operating_point.surfacePoint_E_Eo,
+                g_E=self._base_operating_point.g_E,
+                omegas_BP1__E=self._base_operating_point.omegas_BP1__E,
+            )
 
     def generate_operating_points(
         self, num_steps: int, delta_time: float | int

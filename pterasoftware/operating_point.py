@@ -21,12 +21,13 @@ import numpy as np
 from . import _parameter_validation, _transformations
 
 
-class _AlphaUnset:
-    """A sentinel class used to mark that alpha was not passed to an OperatingPoint."""
+class _Unset:
+    """A sentinel class used to mark that an argument was not passed to an
+    OperatingPoint."""
 
 
-# The module-level sentinel instance that marks an omitted alpha argument.
-_ALPHA_UNSET = _AlphaUnset()
+# The module-level sentinel instance that marks an omitted argument.
+_UNSET = _Unset()
 
 
 class OperatingPoint:
@@ -99,13 +100,13 @@ class OperatingPoint:
         self,
         rho: float | int = 1.225,
         vCg__E: float | int = 10.0,
-        alpha: float | int | _AlphaUnset = _ALPHA_UNSET,
+        alpha: float | int | _Unset = _UNSET,
         beta: float | int = 0.0,
         angles_E_to_BP1_izyx: None | np.ndarray | Sequence[float | int] = None,
         CgP1_E_Eo: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         surfaceNormal_E: None | np.ndarray | Sequence[float | int] = None,
         surfacePoint_E_Eo: None | np.ndarray | Sequence[float | int] = None,
-        externalFX_W: float | int = 0.0,
+        externalFX_W: float | int | _Unset = _UNSET,
         nu: float | int = 15.06e-6,
         g_E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         omegas_BP1__E: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
@@ -179,7 +180,9 @@ class OperatingPoint:
             internally to a float. The units are in Newtons. The default is 0.0. The
             free-flight solver never applies externalFX_W and raises if it is non-zero;
             model thrust there with FreeFlightUnsteadyProblem's external_loads_fn
-            instead.
+            instead. externalFX_W is deprecated: passing it issues a DeprecationWarning,
+            and it will be removed in v6.0.0 in favor of a more general external_loads
+            parameter.
         :param nu: The fluid's kinematic viscosity. The units are in meters squared per
             second. This parameter is only used in the unsteady ring vortex lattice
             method's vortex core growth model. It must be a positive number and will be
@@ -213,7 +216,7 @@ class OperatingPoint:
         )
         # Resolve the alpha sentinel. Alpha's implicit default is scheduled to change in
         # v6.0.0, so warn users who rely on it.
-        if isinstance(alpha, _AlphaUnset):
+        if isinstance(alpha, _Unset):
             warnings.warn(
                 "OperatingPoint was constructed without an explicit alpha, which "
                 "currently defaults to 5.0. In v6.0.0, the default will change to "
@@ -313,6 +316,18 @@ class OperatingPoint:
             )
         self._surfaceNormal_E = surfaceNormal_E
         self._surfacePoint_E_Eo = surfacePoint_E_Eo
+        # Resolve the externalFX_W sentinel. The parameter is scheduled for removal in
+        # v6.0.0, so warn users who pass it.
+        if isinstance(externalFX_W, _Unset):
+            externalFX_W = 0.0
+        else:
+            warnings.warn(
+                "externalFX_W is deprecated and will be removed in v6.0.0, in favor "
+                "of a more general external_loads parameter. Until then, stop "
+                "passing externalFX_W to silence this warning.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         self._externalFX_W = _parameter_validation.number_in_range_return_float(
             externalFX_W, "externalFX_W"
         )

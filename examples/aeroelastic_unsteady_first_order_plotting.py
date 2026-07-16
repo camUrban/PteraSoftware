@@ -286,7 +286,7 @@ def run_aeroelastic(
     )
 
     example_operating_point = ps.operating_point.OperatingPoint(
-        rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+        rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, nu=15.06e-6
     )
 
     example_operating_point_movement = (

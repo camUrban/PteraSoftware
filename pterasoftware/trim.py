@@ -17,6 +17,7 @@ varying the base operating conditions until the net loads are sufficiently low.
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Sequence
 from typing import Any
 
@@ -101,7 +102,9 @@ def analyze_steady_trim(
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The SteadyProblem's OperatingPoint's initial externalFX_W must be
         within these bounds. Values are converted to floats internally. The units are in
-        Newtons.
+        Newtons. boundsExternalFX_W is deprecated: calling this function issues a
+        DeprecationWarning, and the parameter will be removed in v6.0.0 in favor of a
+        more general external_loads interface.
     :param objective_cut_off: A positive number (int or float) for the trim search's
         convergence threshold. When the objective function falls below this value, the
         search terminates successfully. Lower values result in tighter trim conditions
@@ -116,6 +119,16 @@ def analyze_steady_trim(
         and externalFX_W (in Newtons). If no trim condition was found, it will instead
         return a tuple of four Nones.
     """
+    # Warn unconditionally, since boundsExternalFX_W is a required parameter and its
+    # removal therefore affects every caller.
+    warnings.warn(
+        "The boundsExternalFX_W parameter is deprecated and will be removed in "
+        "v6.0.0, when analyze_steady_trim's thrust search will be rebuilt on a more "
+        "general external_loads interface.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     # Validate the problem parameter.
     if not isinstance(problem, problems.SteadyProblem):
         raise TypeError("problem must be a SteadyProblem.")
@@ -254,21 +267,26 @@ def analyze_steady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
-        trial_operating_point = operating_point_mod.OperatingPoint(
-            rho=base_rho,
-            vCg__E=vCg__E,
-            alpha=alpha,
-            beta=beta,
-            externalFX_W=externalFX_W,
-            nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
-            CgP1_E_Eo=base_CgP1_E_Eo,
-            surfaceNormal_E=base_surfaceNormal_E,
-            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
-            g_E=base_g_E,
-            omegas_BP1__E=base_omegas_BP1__E,
-        )
+        # so we create a new instance rather than mutating the original. Suppress the
+        # externalFX_W deprecation warning: this trial construction is trim's own
+        # machinery, which will migrate when externalFX_W is removed, so the warning is
+        # only meant for the user's own construction sites.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            trial_operating_point = operating_point_mod.OperatingPoint(
+                rho=base_rho,
+                vCg__E=vCg__E,
+                alpha=alpha,
+                beta=beta,
+                externalFX_W=externalFX_W,
+                nu=base_nu,
+                angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+                CgP1_E_Eo=base_CgP1_E_Eo,
+                surfaceNormal_E=base_surfaceNormal_E,
+                surfacePoint_E_Eo=base_surfacePoint_E_Eo,
+                g_E=base_g_E,
+                omegas_BP1__E=base_omegas_BP1__E,
+            )
 
         qInf__E = trial_operating_point.qInf__E
 
@@ -511,6 +529,9 @@ def analyze_unsteady_trim(
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The base OperatingPoint's initial externalFX_W must be within these
         bounds. Values are converted to floats internally. The units are in Newtons.
+        boundsExternalFX_W is deprecated: calling this function issues a
+        DeprecationWarning, and the parameter will be removed in v6.0.0 in favor of a
+        more general external_loads interface.
     :param objective_cut_off: A positive number (int or float) for the trim search's
         convergence threshold. When the objective function falls below this value, the
         search terminates successfully. Lower values result in tighter trim conditions
@@ -534,6 +555,16 @@ def analyze_unsteady_trim(
         and externalFX_W (in Newtons). If no trim condition was found, it will instead
         return a tuple of four Nones.
     """
+    # Warn unconditionally, since boundsExternalFX_W is a required parameter and its
+    # removal therefore affects every caller.
+    warnings.warn(
+        "The boundsExternalFX_W parameter is deprecated and will be removed in "
+        "v6.0.0, when analyze_unsteady_trim's thrust search will be rebuilt on a "
+        "more general external_loads interface.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     # Validate the problem parameter.
     if not isinstance(problem, problems.UnsteadyProblem):
         raise TypeError(
@@ -683,21 +714,26 @@ def analyze_unsteady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
-        trial_operating_point = operating_point_mod.OperatingPoint(
-            rho=base_rho,
-            vCg__E=vCg__E,
-            alpha=alpha,
-            beta=beta,
-            externalFX_W=externalFX_W,
-            nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
-            CgP1_E_Eo=base_CgP1_E_Eo,
-            surfaceNormal_E=base_surfaceNormal_E,
-            surfacePoint_E_Eo=base_surfacePoint_E_Eo,
-            g_E=base_g_E,
-            omegas_BP1__E=base_omegas_BP1__E,
-        )
+        # so we create a new instance rather than mutating the original. Suppress the
+        # externalFX_W deprecation warning: this trial construction is trim's own
+        # machinery, which will migrate when externalFX_W is removed, so the warning is
+        # only meant for the user's own construction sites.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            trial_operating_point = operating_point_mod.OperatingPoint(
+                rho=base_rho,
+                vCg__E=vCg__E,
+                alpha=alpha,
+                beta=beta,
+                externalFX_W=externalFX_W,
+                nu=base_nu,
+                angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
+                CgP1_E_Eo=base_CgP1_E_Eo,
+                surfaceNormal_E=base_surfaceNormal_E,
+                surfacePoint_E_Eo=base_surfacePoint_E_Eo,
+                g_E=base_g_E,
+                omegas_BP1__E=base_omegas_BP1__E,
+            )
 
         qInf__E = trial_operating_point.qInf__E
 

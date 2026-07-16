@@ -1,5 +1,7 @@
 """This module contains functions to create OperatingPoints for use in tests."""
 
+import warnings
+
 import pterasoftware as ps
 
 
@@ -17,7 +19,6 @@ def make_basic_operating_point_fixture() -> ps.operating_point.OperatingPoint:
         alpha=5.0,
         beta=0.0,
         angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -37,7 +38,6 @@ def make_zero_alpha_beta_operating_point_fixture() -> ps.operating_point.Operati
         vCg__E=10.0,
         alpha=0.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -57,7 +57,6 @@ def make_high_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoi
         vCg__E=10.0,
         alpha=45.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -76,7 +75,6 @@ def make_negative_alpha_operating_point_fixture() -> ps.operating_point.Operatin
         vCg__E=10.0,
         alpha=-15.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -95,7 +93,6 @@ def make_nonzero_beta_operating_point_fixture() -> ps.operating_point.OperatingP
         vCg__E=10.0,
         alpha=5.0,
         beta=10.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -114,7 +111,6 @@ def make_high_speed_operating_point_fixture() -> ps.operating_point.OperatingPoi
         vCg__E=100.0,
         alpha=5.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -134,7 +130,6 @@ def make_low_density_operating_point_fixture() -> ps.operating_point.OperatingPo
         vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -150,14 +145,18 @@ def make_with_external_force_operating_point_fixture() -> (
     :return with_external_force_operating_point_fixture: OperatingPoint This is the
         OperatingPoint with non-zero external force to test trim analysis configuration.
     """
-    with_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
-        rho=1.225,
-        vCg__E=10.0,
-        alpha=5.0,
-        beta=0.0,
-        externalFX_W=50.0,
-        nu=15.06e-6,
-    )
+    # Suppress the warning for the deprecated externalFX_W parameter, which this fixture
+    # exists to exercise.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        with_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
+            rho=1.225,
+            vCg__E=10.0,
+            alpha=5.0,
+            beta=0.0,
+            externalFX_W=50.0,
+            nu=15.06e-6,
+        )
 
     return with_external_force_operating_point_fixture
 
@@ -177,7 +176,6 @@ def make_custom_viscosity_operating_point_fixture() -> (
         vCg__E=10.0,
         alpha=5.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=20.0e-6,
     )
 
@@ -197,7 +195,6 @@ def make_boundary_alpha_operating_point_fixture() -> ps.operating_point.Operatin
         vCg__E=10.0,
         alpha=180.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -217,7 +214,6 @@ def make_negative_beta_operating_point_fixture() -> ps.operating_point.Operating
         vCg__E=10.0,
         alpha=5.0,
         beta=-15.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -237,7 +233,6 @@ def make_boundary_beta_operating_point_fixture() -> ps.operating_point.Operating
         vCg__E=10.0,
         alpha=0.0,
         beta=180.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -260,7 +255,6 @@ def make_combined_boundary_angles_operating_point_fixture() -> (
             vCg__E=10.0,
             alpha=180.0,
             beta=180.0,
-            externalFX_W=0.0,
             nu=15.06e-6,
         )
     )
@@ -281,7 +275,6 @@ def make_very_low_speed_operating_point_fixture() -> ps.operating_point.Operatin
         vCg__E=0.01,
         alpha=5.0,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -298,14 +291,18 @@ def make_integer_parameters_operating_point_fixture() -> (
         OperatingPoint initialized with integer values to test internal conversion to
         floats.
     """
-    integer_parameters_operating_point_fixture = ps.operating_point.OperatingPoint(
-        rho=1,
-        vCg__E=10,
-        alpha=5,
-        beta=0,
-        externalFX_W=0,
-        nu=1,
-    )
+    # Suppress the warning for the deprecated externalFX_W parameter, which is passed
+    # here so its integer conversion stays covered.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        integer_parameters_operating_point_fixture = ps.operating_point.OperatingPoint(
+            rho=1,
+            vCg__E=10,
+            alpha=5,
+            beta=0,
+            externalFX_W=0,
+            nu=1,
+        )
 
     return integer_parameters_operating_point_fixture
 
@@ -319,14 +316,20 @@ def make_negative_external_force_operating_point_fixture() -> (
     :return negative_external_force_operating_point_fixture: OperatingPoint This is the
         OperatingPoint with negative external force to test drag simulation.
     """
-    negative_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
-        rho=1.225,
-        vCg__E=10.0,
-        alpha=5.0,
-        beta=0.0,
-        externalFX_W=-25.0,
-        nu=15.06e-6,
-    )
+    # Suppress the warning for the deprecated externalFX_W parameter, which this fixture
+    # exists to exercise.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        negative_external_force_operating_point_fixture = (
+            ps.operating_point.OperatingPoint(
+                rho=1.225,
+                vCg__E=10.0,
+                alpha=5.0,
+                beta=0.0,
+                externalFX_W=-25.0,
+                nu=15.06e-6,
+            )
+        )
 
     return negative_external_force_operating_point_fixture
 
@@ -346,7 +349,6 @@ def make_near_boundary_alpha_operating_point_fixture() -> (
         vCg__E=10.0,
         alpha=-179.999,
         beta=0.0,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -368,7 +370,6 @@ def make_near_boundary_beta_operating_point_fixture() -> (
         vCg__E=10.0,
         alpha=0.0,
         beta=-179.999,
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -391,7 +392,6 @@ def make_with_attitude_angles_operating_point_fixture() -> (
         alpha=5.0,
         beta=0.0,
         angles_E_to_BP1_izyx=(15.0, 10.0, 5.0),
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -414,7 +414,6 @@ def make_with_cg_position_operating_point_fixture() -> (
         alpha=5.0,
         beta=0.0,
         CgP1_E_Eo=(100.0, 0.0, -50.0),
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -441,7 +440,6 @@ def make_with_ground_surface_operating_point_fixture() -> (
         CgP1_E_Eo=(0.0, 0.0, -10.0),
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 
@@ -469,7 +467,6 @@ def make_with_tilted_surface_operating_point_fixture() -> (
         CgP1_E_Eo=(50.0, 0.0, -20.0),
         surfaceNormal_E=(0.0, 0.0, -1.0),
         surfacePoint_E_Eo=(0.0, 0.0, 0.0),
-        externalFX_W=0.0,
         nu=15.06e-6,
     )
 

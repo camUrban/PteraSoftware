@@ -303,18 +303,16 @@ del v_tail_movement
 # Define a new OperatingPoint describing the initial flight condition. The initial body
 # orientation (angles_E_to_BP1_izyx) pitches the airplane nose up by the angle of attack
 # with zero sideslip, which places the initial velocity along the horizontal Earth x
-# axis at the start of free flight. No external thrust is applied (externalFX_W = 0.0).
-# In free flight the dynamics never apply externalFX_W, and propulsion here comes from
-# the flapping motion rather than an external force. Standard gravity is set explicitly
-# via g_E (the default is no gravitational field), while the zero initial body rates
-# (omegas_BP1__E) are left at their default.
+# axis at the start of free flight. No external thrust is applied; propulsion here comes
+# from the flapping motion rather than an external force. Standard gravity is set
+# explicitly via g_E (the default is no gravitational field), while the zero initial
+# body rates (omegas_BP1__E) are left at their default.
 example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225,
     vCg__E=12.9,
     alpha=3.3,
     beta=0.0,
     angles_E_to_BP1_izyx=(0.0, 3.3, 0.0),
-    externalFX_W=0.0,
     nu=15.06e-6,
     g_E=(0.0, 0.0, 9.80665),
 )

@@ -96,7 +96,7 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 # Define a new OperatingPoint, which we'll pass into the SteadyProblem.
 example_operating_point = ps.operating_point.OperatingPoint(
-    rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
+    rho=1.225, vCg__E=10.0, alpha=5.0, beta=0.0, nu=15.06e-6
 )
 
 # Define a new SteadyProblem, which contains the OperatingPoint and a list of one or

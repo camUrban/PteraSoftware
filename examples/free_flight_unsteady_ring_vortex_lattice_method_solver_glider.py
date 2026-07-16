@@ -220,18 +220,17 @@ del wing_movements
 # angle of attack are the trimmed glide found for this airframe. The initial body
 # orientation (angles_E_to_BP1_izyx) pitches the airplane nose up by the angle of attack
 # with zero sideslip, which places the trim velocity along the horizontal Earth x axis
-# at the start of free flight. The glider flies an unpowered glide: externalFX_W must be
-# zero in free flight (the dynamics never apply it), and thrust would instead be modeled
-# with FreeFlightUnsteadyProblem's external_loads_fn. Standard gravity is set explicitly
-# via g_E (the default is no gravitational field), while the zero initial body rates
-# (omegas_BP1__E) are left at their default.
+# at the start of free flight. The glider flies an unpowered glide: no external thrust
+# is applied, and thrust would instead be modeled with FreeFlightUnsteadyProblem's
+# external_loads_fn. Standard gravity is set explicitly via g_E (the default is no
+# gravitational field), while the zero initial body rates (omegas_BP1__E) are left at
+# their default.
 example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225,
     vCg__E=12.9,
     alpha=3.3,
     beta=0.0,
     angles_E_to_BP1_izyx=(0.0, 3.3, 0.0),
-    externalFX_W=0.0,
     nu=15.06e-6,
     g_E=(0.0, 0.0, 9.80665),
 )

@@ -247,7 +247,6 @@ example_operating_point = ps.operating_point.OperatingPoint(
     CgP1_E_Eo=(0.0, 0.0, -5.0),
     surfaceNormal_E=(0.0, 0.0, 1.0),
     surfacePoint_E_Eo=(0.0, 0.0, 0.0),
-    externalFX_W=0.0,
     nu=15.06e-6,
 )
 

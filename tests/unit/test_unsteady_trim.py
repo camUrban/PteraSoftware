@@ -1,6 +1,7 @@
 """This module contains a class to test the analyze_unsteady_trim function."""
 
 import unittest
+import warnings
 from typing import Any
 
 import pterasoftware as ps
@@ -16,6 +17,16 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Set up test fixtures once for all analyze_unsteady_trim tests."""
         cls.problem = problem_fixtures.make_basic_unsteady_problem_fixture()
+
+    def setUp(self) -> None:
+        """Suppress the deprecation warning for each analyze_unsteady_trim test."""
+        # Every analyze_unsteady_trim call issues a DeprecationWarning while it still
+        # uses boundsExternalFX_W, which these validation tests are not about. The
+        # cleanup restores the previous warnings filters after each test.
+        context = warnings.catch_warnings()
+        context.__enter__()
+        self.addCleanup(context.__exit__, None, None, None)
+        warnings.simplefilter("ignore", DeprecationWarning)
 
     def test_problem_validation(self) -> None:
         """Test problem parameter validation."""

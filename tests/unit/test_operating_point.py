@@ -1,6 +1,7 @@
 """This module contains a class to test OperatingPoints."""
 
 import copy
+import math
 import unittest
 import warnings
 from collections.abc import Sequence
@@ -139,14 +140,84 @@ class TestOperatingPoint(unittest.TestCase):
                 op = ps.operating_point.OperatingPoint(alpha=5.0, vCg__E=vCg__E)
                 self.assertEqual(op.vCg__E, float(vCg__E))
 
-        # Test invalid values (negative, zero, non-numeric)
-        invalid_vCg_values: list[Any] = [-10.0, 0.0, -0.1, "invalid", None]
+        # Test invalid values (negative, non-numeric)
+        invalid_vCg_values: list[Any] = [-10.0, -0.1, "invalid", None]
 
         for invalid_vCg in invalid_vCg_values:
             with self.subTest(invalid_vCg=invalid_vCg):
                 # noinspection PyTypeChecker
                 with self.assertRaises((ValueError, TypeError)):
                     ps.operating_point.OperatingPoint(alpha=5.0, vCg__E=invalid_vCg)
+
+    def test_zero_speed_construction(self) -> None:
+        """Test that a zero-speed OperatingPoint constructs with NaN wind-axes
+        quantities."""
+        # At zero speed, None resolves the wind-axes quantities to NaN, and the attitude
+        # must be passed explicitly. An omitted alpha also resolves to NaN, without the
+        # FutureWarning that an omitted alpha issues at positive speeds.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", FutureWarning)
+            op = ps.operating_point.OperatingPoint(
+                vCg__E=0.0,
+                beta=None,
+                angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+            )
+        self.assertEqual(op.vCg__E, 0.0)
+        self.assertTrue(math.isnan(op.alpha))
+        self.assertTrue(math.isnan(op.beta))
+        self.assertTrue(math.isnan(op.externalFX_W))
+
+        # Explicit NaN values are also accepted at zero speed.
+        op_nan = ps.operating_point.OperatingPoint(
+            vCg__E=0.0,
+            alpha=float("nan"),
+            beta=float("nan"),
+            angles_E_to_BP1_izyx=(0.0, 10.0, 0.0),
+        )
+        self.assertTrue(math.isnan(op_nan.alpha))
+
+        # The dynamic pressure is zero, the freestream velocity is the zero vector, and
+        # the freestream direction is undefined (NaN).
+        self.assertEqual(op.qInf__E, 0.0)
+        npt.assert_array_equal(op.vInf_GP1__E, np.zeros(3, dtype=float))
+        self.assertTrue(np.all(np.isnan(op.vInfHat_GP1__E)))
+
+    def test_zero_speed_consistency_validation(self) -> None:
+        """Test the consistency rules between vCg__E and the wind-axes quantities."""
+        # Finite wind-axes values are rejected at zero speed.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                vCg__E=0.0, alpha=5.0, angles_E_to_BP1_izyx=(0.0, 0.0, 0.0)
+            )
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(
+                vCg__E=0.0, beta=0.0, angles_E_to_BP1_izyx=(0.0, 0.0, 0.0)
+            )
+        with warnings.catch_warnings():
+            # Suppress the deprecation warning, which fires before the zero-speed check
+            # rejects the value.
+            warnings.simplefilter("ignore", DeprecationWarning)
+            with self.assertRaises(ValueError):
+                ps.operating_point.OperatingPoint(
+                    vCg__E=0.0,
+                    externalFX_W=0.0,
+                    angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+                )
+
+        # NaN wind-axes values are rejected at positive speeds.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(alpha=float("nan"))
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(alpha=5.0, beta=float("nan"))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            with self.assertRaises(ValueError):
+                ps.operating_point.OperatingPoint(alpha=5.0, externalFX_W=float("nan"))
+
+        # The default attitude is unresolvable at zero speed, so it must be passed
+        # explicitly.
+        with self.assertRaises(ValueError):
+            ps.operating_point.OperatingPoint(vCg__E=0.0)
 
     def test_alpha_parameter_validation(self) -> None:
         """Test alpha parameter validation."""

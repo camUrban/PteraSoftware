@@ -366,3 +366,31 @@ def make_movement_with_multiple_airplanes_fixture() -> ps.movements.movement.Mov
 
     # Return the Movement fixture.
     return movement_with_multiple_airplanes_fixture
+
+
+def make_zero_speed_movement_fixture() -> ps.movements.movement.Movement:
+    """This method makes a fixture that is a Movement with non static motion and a zero-
+    speed base OperatingPoint.
+
+    :return zero_speed_movement_fixture: Movement This is the Movement with flapping
+        motion at a vCg__E of 0.0 for testing zero-speed simulations.
+    """
+    # Initialize the constructing fixtures.
+    airplane_movements = [
+        airplane_movement_fixtures.make_basic_airplane_movement_fixture()
+    ]
+    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=operating_point_fixtures.make_zero_speed_operating_point_fixture()
+    )
+
+    # Create the zero-speed Movement. The delta_time is explicit because the
+    # freestream-based fallback estimate is undefined at zero speed.
+    zero_speed_movement_fixture = ps.movements.movement.Movement(
+        airplane_movements=airplane_movements,
+        operating_point_movement=operating_point_movement,
+        delta_time=0.05,
+        num_cycles=1,
+    )
+
+    # Return the Movement fixture.
+    return zero_speed_movement_fixture

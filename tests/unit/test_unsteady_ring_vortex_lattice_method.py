@@ -58,6 +58,17 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
                 rotating_problem
             )
 
+    def test_run_rejects_prescribed_wake_at_zero_speed(self) -> None:
+        """Test that run raises when prescribed_wake is True and the operating point
+        carries a vCg__E of 0.0, since a prescribed wake convects with the freestream
+        alone."""
+        zero_speed_problem = problem_fixtures.make_zero_speed_unsteady_problem_fixture()
+        solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            zero_speed_problem
+        )
+        with self.assertRaises(ValueError):
+            solver.run(prescribed_wake=True, show_progress=False)
+
     def test_steady_problems_is_read_only(self) -> None:
         """Test that the steady_problems property cannot be reassigned, since it is a
         read-only view of the UnsteadyProblem's SteadyProblems.

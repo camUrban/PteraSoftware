@@ -348,3 +348,46 @@ def make_basic_coupled_unsteady_problem_fixture() -> (
     )
 
     return basic_coupled_unsteady_problem_fixture
+
+
+def make_zero_speed_steady_problem_fixture() -> ps.problems.SteadyProblem:
+    """This method makes a fixture that is a SteadyProblem with a zero-speed
+    OperatingPoint.
+
+    :return zero_speed_steady_problem_fixture: SteadyProblem This is the SteadyProblem
+        with a vCg__E of 0.0, which the steady solvers must reject.
+    """
+    # Create an Airplane.
+    first_airplane = geometry_fixtures.make_first_airplane_fixture()
+
+    # Create a zero-speed OperatingPoint.
+    zero_speed_operating_point = (
+        operating_point_fixtures.make_zero_speed_operating_point_fixture()
+    )
+
+    # Create the SteadyProblem.
+    zero_speed_steady_problem_fixture = ps.problems.SteadyProblem(
+        airplanes=[first_airplane],
+        operating_point=zero_speed_operating_point,
+    )
+
+    return zero_speed_steady_problem_fixture
+
+
+def make_zero_speed_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+    """This method makes a fixture that is an UnsteadyProblem with a zero-speed base
+    OperatingPoint and non static motion.
+
+    :return zero_speed_unsteady_problem_fixture: UnsteadyProblem This is the
+        UnsteadyProblem with flapping motion at a vCg__E of 0.0 for testing zero-speed
+        simulations.
+    """
+    # Create a zero-speed Movement.
+    zero_speed_movement = movement_fixtures.make_zero_speed_movement_fixture()
+
+    # Create the UnsteadyProblem.
+    zero_speed_unsteady_problem_fixture = ps.problems.UnsteadyProblem(
+        movement=zero_speed_movement,
+    )
+
+    return zero_speed_unsteady_problem_fixture

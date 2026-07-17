@@ -433,8 +433,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         :param prescribed_wake: Set this to True to solve using a prescribed wake model.
             Set to False to use a free-wake, which may be more accurate but will make
-            the fun method significantly slower. Can be a bool or a numpy bool and will
-            be converted internally to a bool. The default is True.
+            the run method significantly slower. It must be False when the
+            OperatingPoint's vCg__E is 0.0, since a prescribed wake convects with the
+            freestream alone and would never leave the trailing edge. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is True.
         :param calculate_streamlines: Determines whether to calculate the streamlines
             emanating from the back of the wing after running the solver. Can be a bool
             or a numpy bool and will be converted internally to a bool. The default is
@@ -467,6 +469,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
             )
         self._force_method = force_method
+
+        # A prescribed wake convects with the freestream alone, so at zero speed it
+        # would never leave the trailing edge and its ring vortices would instead pile
+        # up there as coincident, singular geometry. The zero-speed consistency rules on
+        # OperatingPoint force every step to share the base speed, so checking the first
+        # step covers the whole simulation.
+        if self._prescribed_wake and self._operating_point_at(0).vCg__E == 0.0:
+            raise ValueError(
+                "prescribed_wake must be False when the OperatingPoint's vCg__E is "
+                "0.0, since a prescribed wake convects with the freestream alone "
+                "and would never leave the trailing edge."
+            )
 
         # Report the thread dispatch settings this run's kernel launches will operate
         # under, and warn if Numba's threading layer will make them slow.

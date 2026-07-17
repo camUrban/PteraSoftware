@@ -179,6 +179,12 @@ def analyze_steady_convergence(
     # Validate the ref_problem parameter.
     if not isinstance(ref_problem, problems.SteadyProblem):
         raise TypeError("ref_problem must be a SteadyProblem.")
+    if ref_problem.operating_point.vCg__E == 0.0:
+        raise ValueError(
+            "ref_problem's OperatingPoint must have a positive vCg__E, since the "
+            "convergence criteria compare wind-axes load coefficients, which are "
+            "undefined at zero speed."
+        )
 
     # Validate the solver_type parameter.
     if solver_type not in (
@@ -891,6 +897,12 @@ def analyze_unsteady_convergence(
         raise TypeError(
             "ref_problem must be a standard UnsteadyProblem, not a "
             "FreeFlightUnsteadyProblem or an AeroelasticUnsteadyProblem."
+        )
+    if ref_problem.movement.operating_point_movement.base_operating_point.vCg__E == 0.0:
+        raise ValueError(
+            "ref_problem's base OperatingPoint must have a positive vCg__E, since "
+            "the convergence criteria compare wind-axes load coefficients, which "
+            "are undefined at zero speed."
         )
 
     # Validate the wake type parameters.

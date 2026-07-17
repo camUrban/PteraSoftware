@@ -29,6 +29,15 @@ class TestSteadyHorseshoeVortexLatticeMethodSolver(unittest.TestCase):
                 rotating_problem
             )
 
+    def test_initialization_rejects_zero_speed(self) -> None:
+        """Test that initialization raises when the operating point carries a vCg__E of
+        0.0, which a steady flow cannot support."""
+        zero_speed_problem = problem_fixtures.make_zero_speed_steady_problem_fixture()
+        with self.assertRaises(ValueError):
+            ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+                zero_speed_problem
+            )
+
     def test_ran_is_false_before_run(self) -> None:
         """Test that ran is False before run has been called."""
         solver = solver_fixtures.make_steady_horseshoe_solver_fixture()

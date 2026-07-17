@@ -432,6 +432,15 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
                 solver_type="unsteady ring vortex lattice method",
             )
 
+    def test_zero_speed_raises_value_error(self) -> None:
+        """Test that a ref_problem with a zero-speed OperatingPoint raises a
+        ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_steady_convergence(
+                ref_problem=problem_fixtures.make_zero_speed_steady_problem_fixture(),
+                solver_type="steady ring vortex lattice method",
+            )
+
 
 class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
     """This class contains methods for testing the input validation of
@@ -453,6 +462,15 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(
                 ref_problem=bad_ref_problem,
+                num_cycles_bounds=(1, 2),
+            )
+
+    def test_zero_speed_raises_value_error(self) -> None:
+        """Test that a ref_problem with a zero-speed base OperatingPoint raises a
+        ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=problem_fixtures.make_zero_speed_unsteady_problem_fixture(),
                 num_cycles_bounds=(1, 2),
             )
 

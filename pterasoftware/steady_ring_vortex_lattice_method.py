@@ -119,6 +119,13 @@ class SteadyRingVortexLatticeMethodSolver:
                 "operating_point.omegas_BP1__E must be all zeros for the steady ring "
                 "vortex lattice method solver."
             )
+        if self.operating_point.vCg__E == 0.0:
+            raise ValueError(
+                "operating_point.vCg__E must be positive for the steady ring vortex "
+                "lattice method solver, since a steady flow with no freestream has "
+                "no solution. Zero-speed simulations require the unsteady solver "
+                "with prescribed motion and a free wake."
+            )
         self.reynolds_numbers = self._steady_problem.reynolds_numbers
         self.num_airplanes = len(self.airplanes)
         self.num_panels = 0

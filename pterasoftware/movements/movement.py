@@ -171,6 +171,17 @@ class Movement(_core.CoreMovement):
         )
         _static = _max_period == 0
 
+        # A static Movement's flow comes from the freestream alone, so a zero-speed base
+        # OperatingPoint would leave nothing to solve. Reject the combination here,
+        # before the delta_time and num_steps resolutions below, which divide by the
+        # freestream speed on the static paths.
+        if _static and operating_point_movement.base_operating_point.vCg__E == 0.0:
+            raise ValueError(
+                "A static Movement's base OperatingPoint must have a positive "
+                "vCg__E, since a static Movement's flow comes from the freestream "
+                "alone. Zero-speed simulations require prescribed motion."
+            )
+
         _lcm_period: float = 0.0
         if not _static:
             _all_periods: list[float] = []
@@ -1317,7 +1328,12 @@ def _fast_delta_time_estimate(
     if vCg__E == 0.0:
         raise ValueError(
             "The freestream-based delta_time estimate is undefined when the base "
-            "OperatingPoint's vCg__E is 0.0. Pass delta_time explicitly."
+            "OperatingPoint's vCg__E is 0.0. At zero speed, this fallback is only "
+            "reached when the prescribed motion produced no measurable wake "
+            "displacement, so no motion-based estimate exists either. Passing "
+            "delta_time explicitly will get past this error, but with no freestream "
+            "and no motion, there is effectively no flow, so the simulation would "
+            "produce no meaningful loads."
         )
 
     delta_times = []

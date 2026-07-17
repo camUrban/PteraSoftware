@@ -21,7 +21,6 @@ None
 from __future__ import annotations
 
 import copy
-import warnings
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, cast
 
@@ -904,8 +903,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         Derives the speed, angle of attack, sideslip angle, and Earth-to-body Euler
         angles from the rigid body state, and carries the environmental quantities
-        (fluid density, surface geometry, external force, kinematic viscosity, and
-        gravity) across from the reference OperatingPoint unchanged.
+        (fluid density, surface geometry, kinematic viscosity, and gravity) across from
+        the reference OperatingPoint unchanged. The deprecated externalFX_W is omitted,
+        since the free-flight problem validates it to be zero and omission resolves it
+        correctly by speed.
 
         :param state: A MuJoCo state, as returned by MuJoCoModel.get_state.
         :param reference_operating_point: The current OperatingPoint, whose
@@ -986,11 +987,13 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         Derives the speed, angle of attack, and sideslip angle from the velocity and
         attitude, and carries the environmental quantities (fluid density, surface
-        geometry, external force, kinematic viscosity, and gravity) across from the
-        reference OperatingPoint unchanged. The attitude and angular rate are supplied
-        in the form the OperatingPoint expects: the intrinsic zyx Euler angles from
-        Earth axes to the first Airplane's body axes in degrees, and the body angular
-        rate in the first Airplane's body axes in degrees per second.
+        geometry, kinematic viscosity, and gravity) across from the reference
+        OperatingPoint unchanged. The deprecated externalFX_W is omitted, since the
+        free-flight problem validates it to be zero and omission resolves it correctly
+        by speed. The attitude and angular rate are supplied in the form the
+        OperatingPoint expects: the intrinsic zyx Euler angles from Earth axes to the
+        first Airplane's body axes in degrees, and the body angular rate in the first
+        Airplane's body axes in degrees per second.
 
         :param position_E_Eo: A (3,) ndarray of floats representing the first Airplane's
             CG position (in Earth axes, relative to the Earth origin) in meters.
@@ -1020,26 +1023,22 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         )
         alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, vCg__E)
 
-        # Suppress the externalFX_W deprecation warning: this construction only carries
-        # the reference OperatingPoint's value across, which will migrate when
-        # externalFX_W is removed, so the warning is only meant for the user's own
-        # construction sites.
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            return operating_point_mod.OperatingPoint(
-                rho=reference_operating_point.rho,
-                vCg__E=vCg__E,
-                alpha=alpha,
-                beta=beta,
-                angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
-                CgP1_E_Eo=position_E_Eo,
-                surfaceNormal_E=reference_operating_point.surfaceNormal_E,
-                surfacePoint_E_Eo=reference_operating_point.surfacePoint_E_Eo,
-                externalFX_W=reference_operating_point.externalFX_W,
-                nu=reference_operating_point.nu,
-                g_E=reference_operating_point.g_E,
-                omegas_BP1__E=omegas_BP1__E,
-            )
+        # externalFX_W is omitted rather than carried across: the free-flight problem
+        # validates it to be zero, and omission resolves it correctly by speed (0.0 at
+        # positive speeds and NaN at a zero-speed instant).
+        return operating_point_mod.OperatingPoint(
+            rho=reference_operating_point.rho,
+            vCg__E=vCg__E,
+            alpha=alpha,
+            beta=beta,
+            angles_E_to_BP1_izyx=angles_E_to_BP1_izyx,
+            CgP1_E_Eo=position_E_Eo,
+            surfaceNormal_E=reference_operating_point.surfaceNormal_E,
+            surfacePoint_E_Eo=reference_operating_point.surfacePoint_E_Eo,
+            nu=reference_operating_point.nu,
+            g_E=reference_operating_point.g_E,
+            omegas_BP1__E=omegas_BP1__E,
+        )
 
     @staticmethod
     def _state_to_vector(state: _mujoco_model.MuJoCoState) -> np.ndarray:

@@ -185,6 +185,29 @@ class TestMovement(unittest.TestCase):
                 num_cycles=3,
             )
 
+    def test_static_movement_rejects_zero_speed(self) -> None:
+        """Test that a static Movement with a zero-speed base OperatingPoint raises,
+        since its flow would come from the freestream alone."""
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_zero_speed_operating_point_fixture()
+        )
+
+        with self.assertRaises(ValueError):
+            ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_chords=3,
+            )
+
+    def test_non_static_movement_accepts_zero_speed(self) -> None:
+        """Test that a non static Movement with a zero-speed base OperatingPoint and an
+        explicit delta_time constructs."""
+        zero_speed_movement = movement_fixtures.make_zero_speed_movement_fixture()
+        self.assertIsInstance(zero_speed_movement, ps.movements.movement.Movement)
+
     def test_non_static_movement_requires_num_cycles(self) -> None:
         """Test that non static Movement with num_steps=None requires num_cycles."""
         airplane_movements = [
@@ -1265,6 +1288,26 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
 
         # For static movement, should return the freestream-based estimate.
         self.assertEqual(optimized_delta_time, expected_delta_time)
+
+    def test_zero_speed_static_motion_raises_value_error(self) -> None:
+        """Test that _analytically_optimize_delta_time raises for static motion at zero
+        speed, where the freestream-based fallback estimate is undefined."""
+        from pterasoftware.movements.movement import (
+            _analytically_optimize_delta_time,
+        )
+
+        airplane_movements = [
+            airplane_movement_fixtures.make_static_airplane_movement_fixture()
+        ]
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_zero_speed_operating_point_fixture()
+        )
+
+        with self.assertRaises(ValueError):
+            _analytically_optimize_delta_time(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+            )
 
     def test_result_is_reasonable(self) -> None:
         """Test that _analytically_optimize_delta_time produces a reasonable result.

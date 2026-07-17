@@ -507,3 +507,23 @@ def make_with_full_body_rates_operating_point_fixture() -> (
     )
 
     return with_full_body_rates_operating_point_fixture
+
+
+def make_zero_speed_operating_point_fixture() -> ps.operating_point.OperatingPoint:
+    """This method makes a fixture that is an OperatingPoint with zero speed for testing
+    zero-speed simulations.
+
+    :return zero_speed_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with a vCg__E of 0.0, in which alpha and beta resolve to NaN and
+        the attitude is set explicitly, as the zero-speed consistency rules require.
+    """
+    zero_speed_operating_point_fixture = ps.operating_point.OperatingPoint(
+        rho=1.225,
+        vCg__E=0.0,
+        alpha=None,
+        beta=None,
+        angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
+        nu=15.06e-6,
+    )
+
+    return zero_speed_operating_point_fixture

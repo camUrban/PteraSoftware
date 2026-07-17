@@ -12,6 +12,7 @@ None
 
 from __future__ import annotations
 
+import math
 import warnings
 from collections.abc import Sequence
 from typing import Any
@@ -122,23 +123,32 @@ class OperatingPoint:
             vector, and (2) we always assume a still fluid in our simulations, this
             value is equivalent to the freestream speed (the speed of the apparent wind,
             infinitely far away from the Airplane or Airplanes, observed while moving at
-            the same speed as the non accelerating CG or CGs). It must be a positive
+            the same speed as the non accelerating CG or CGs). It must be a non negative
             number (int or float) and will be converted internally to a float. Its units
-            are in meters per second. The default is 10.0.
+            are in meters per second. The default is 10.0. A value of 0.0 describes a
+            zero-speed (hover) condition. At zero speed, wind axes are undefined, so
+            alpha, beta, and externalFX_W must all resolve to NaN, and
+            angles_E_to_BP1_izyx must be passed explicitly.
         :param alpha: The angle of attack for the problem's Airplane(s). For more
             details on the exact interpretation of this value, see the description of
             wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or
             float) in the range (-180.0, 180.0] and will be converted internally to a
-            float. The units are in degrees. None is also accepted and resolves
-            internally to 0.0. If alpha is not passed, it defaults to 5.0 and a
-            FutureWarning is issued, because the default will change to None in v6.0.0.
-            Pass alpha explicitly to silence the warning.
+            float. The units are in degrees. None is also accepted: it resolves
+            internally to 0.0 when vCg__E is positive and to NaN when vCg__E is 0.0,
+            since wind axes are undefined at zero speed. An explicit NaN is accepted
+            only when vCg__E is 0.0. If alpha is not passed and vCg__E is positive, it
+            defaults to 5.0 and a FutureWarning is issued, because the default will
+            change to None in v6.0.0; pass alpha explicitly to silence the warning. If
+            alpha is not passed and vCg__E is 0.0, it resolves to NaN without the
+            warning, since that resolution already matches the future default.
         :param beta: The sideslip angle for the problem's Airplane(s). For more details
             on the exact interpretation of this value, see the description of wind axes
             in docs/AXES_POINTS_AND_FRAMES.md. It must be None or a number (int or
             float) in the range (-180.0, 180.0] and will be converted internally to a
             float. The units are in degrees. The default is None, which resolves
-            internally to 0.0.
+            internally to 0.0 when vCg__E is positive and to NaN when vCg__E is 0.0,
+            since wind axes are undefined at zero speed. An explicit NaN is accepted
+            only when vCg__E is 0.0.
         :param angles_E_to_BP1_izyx: None, or an array-like object of 3 numbers
             representing the angles from Earth axes to the first Airplane's body axes
             using an intrinsic zy'x" sequence. Can be None, a tuple, list, or ndarray.
@@ -154,7 +164,9 @@ class OperatingPoint:
             path relative to Earth. The distinction only affects results when an effect
             anchored to the Earth frame is active (an image surface, a gravitational
             field, or free flight). Pass (0.0, 0.0, 0.0) explicitly to instead align the
-            body axes with the Earth axes regardless of alpha and beta.
+            body axes with the Earth axes regardless of alpha and beta. When vCg__E is
+            0.0, this parameter must be passed explicitly, because the default
+            resolution depends on alpha and beta, which are undefined at zero speed.
         :param CgP1_E_Eo: An array-like object of 3 numbers representing the position of
             the first Airplane's CG (in Earth axes, relative to the Earth origin). Can
             be a tuple, list, or ndarray. Values are converted to floats internally. The
@@ -182,10 +194,12 @@ class OperatingPoint:
             internally to a float. The units are in Newtons. The default is 0.0. The
             free-flight solver never applies externalFX_W and raises if it is non-zero;
             model thrust there with FreeFlightUnsteadyProblem's external_loads_fn
-            instead. None is also accepted and resolves internally to 0.0. externalFX_W
-            is deprecated: passing it (including as None) issues a DeprecationWarning,
-            and the parameter will be removed in v6.0.0 in favor of a more general
-            external_loads parameter.
+            instead. None is also accepted: it resolves internally to 0.0 when vCg__E is
+            positive and to NaN when vCg__E is 0.0, since wind axes are undefined at
+            zero speed. An explicit NaN is accepted only when vCg__E is 0.0.
+            externalFX_W is deprecated: passing it (including as None) issues a
+            DeprecationWarning, and the parameter will be removed in v6.0.0 in favor of
+            a more general external_loads parameter.
         :param nu: The fluid's kinematic viscosity. The units are in meters squared per
             second. This parameter is only used in the unsteady ring vortex lattice
             method's vortex core growth model. It must be a positive number and will be
@@ -213,37 +227,90 @@ class OperatingPoint:
         self._rho = _parameter_validation.number_in_range_return_float(
             rho, "rho", min_val=0.0, min_inclusive=False
         )
-        # TODO: In the future, test what happens with vCg__E = 0.
+        # The lower bound is inclusive so that a vCg__E of 0.0 can describe a zero-speed
+        # (hover) condition.
         self._vCg__E = _parameter_validation.number_in_range_return_float(
-            vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
+            vCg__E, "vCg__E", min_val=0.0, min_inclusive=True
         )
-        # Resolve the alpha sentinel and None. Alpha's implicit default is scheduled to
-        # change in v6.0.0, so warn users who rely on it. None is the explicit request
-        # for the resolved default, so it does not warn.
+        # Resolve the alpha sentinel and None, both by speed: wind axes exist when
+        # vCg__E is positive, so alpha resolves to a number, and they are undefined when
+        # vCg__E is 0.0, so alpha resolves to NaN. Alpha's implicit positive-speed
+        # default is scheduled to change in v6.0.0, so warn users who rely on it. None
+        # is the explicit request for the resolved default, so it does not warn, and an
+        # omitted alpha at zero speed resolves to NaN without the warning because that
+        # resolution already matches the future default.
         if isinstance(alpha, _Unset):
-            warnings.warn(
-                "OperatingPoint was constructed without an explicit alpha, which "
-                "currently defaults to 5.0. In v6.0.0, the default will change to "
-                "None, which will resolve to 0.0 when vCg__E is positive and to NaN "
-                "when vCg__E is 0.0. Pass alpha explicitly to keep the current "
-                "behavior and silence this warning.",
-                FutureWarning,
-                stacklevel=2,
-            )
-            alpha = 5.0
+            if self._vCg__E == 0.0:
+                alpha = float("nan")
+            else:
+                warnings.warn(
+                    "OperatingPoint was constructed without an explicit alpha, which "
+                    "currently defaults to 5.0. In v6.0.0, the default will change "
+                    "to None, which will resolve to 0.0 when vCg__E is positive and "
+                    "to NaN when vCg__E is 0.0. Pass alpha explicitly to keep the "
+                    "current behavior and silence this warning.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
+                alpha = 5.0
         elif alpha is None:
-            alpha = 0.0
-        # Resolve None for beta, which requests the resolved default.
+            if self._vCg__E == 0.0:
+                alpha = float("nan")
+            else:
+                alpha = 0.0
+        # Resolve None for beta by speed, mirroring alpha.
         if beta is None:
-            beta = 0.0
+            if self._vCg__E == 0.0:
+                beta = float("nan")
+            else:
+                beta = 0.0
+        # At zero speed the wind axes are undefined, so alpha and beta must be NaN. At
+        # positive speeds they must be numbers in their valid ranges. NaN skips the
+        # range validation because it isn't a value, but a marker that the quantity is
+        # undefined.
         # TODO: Restrict alpha and beta's range if testing reveals that high absolute
         #  magnitude values break things.
-        self._alpha = _parameter_validation.number_in_range_return_float(
-            alpha, "alpha", -180.0, False, 180.0, True
-        )
-        self._beta = _parameter_validation.number_in_range_return_float(
-            beta, "beta", -180.0, False, 180.0, True
-        )
+        if isinstance(alpha, float) and math.isnan(alpha):
+            if self._vCg__E != 0.0:
+                raise ValueError(
+                    "alpha can only be NaN when vCg__E is 0.0, because wind axes are "
+                    "defined at positive speeds."
+                )
+            self._alpha = float("nan")
+        else:
+            if self._vCg__E == 0.0:
+                raise ValueError(
+                    "alpha must be NaN (or None or omitted, both of which resolve to "
+                    "NaN) when vCg__E is 0.0, because wind axes are undefined at "
+                    "zero speed."
+                )
+            self._alpha = _parameter_validation.number_in_range_return_float(
+                alpha, "alpha", -180.0, False, 180.0, True
+            )
+        if isinstance(beta, float) and math.isnan(beta):
+            if self._vCg__E != 0.0:
+                raise ValueError(
+                    "beta can only be NaN when vCg__E is 0.0, because wind axes are "
+                    "defined at positive speeds."
+                )
+            self._beta = float("nan")
+        else:
+            if self._vCg__E == 0.0:
+                raise ValueError(
+                    "beta must be NaN (or None, which resolves to NaN) when vCg__E "
+                    "is 0.0, because wind axes are undefined at zero speed."
+                )
+            self._beta = _parameter_validation.number_in_range_return_float(
+                beta, "beta", -180.0, False, 180.0, True
+            )
+        # At zero speed the default attitude is unresolvable because it derives from
+        # alpha and beta, which are undefined.
+        if angles_E_to_BP1_izyx is None and self._vCg__E == 0.0:
+            raise ValueError(
+                "angles_E_to_BP1_izyx must be passed explicitly when vCg__E is 0.0, "
+                "because the default attitude resolves from alpha and beta, which "
+                "are undefined at zero speed."
+            )
         if angles_E_to_BP1_izyx is None:
             # Resolve the default attitude to the one that makes wind axes coincide with
             # Earth axes, which places the first Airplane in level flight along Earth +x
@@ -326,11 +393,15 @@ class OperatingPoint:
         self._surfaceNormal_E = surfaceNormal_E
         self._surfacePoint_E_Eo = surfacePoint_E_Eo
         # Resolve the externalFX_W sentinel and None, both of which request the resolved
-        # default. The parameter is scheduled for removal in v6.0.0, so warn users who
-        # pass anything, including None: only the sentinel (an omitted argument) is
-        # silent.
+        # default: 0.0 when vCg__E is positive and NaN when vCg__E is 0.0, since wind
+        # axes are undefined at zero speed. The parameter is scheduled for removal in
+        # v6.0.0, so warn users who pass anything, including None: only the sentinel (an
+        # omitted argument) is silent.
         if isinstance(externalFX_W, _Unset):
-            externalFX_W = 0.0
+            if self._vCg__E == 0.0:
+                externalFX_W = float("nan")
+            else:
+                externalFX_W = 0.0
         else:
             warnings.warn(
                 "externalFX_W is deprecated and will be removed in v6.0.0, in favor "
@@ -340,10 +411,29 @@ class OperatingPoint:
                 stacklevel=2,
             )
             if externalFX_W is None:
-                externalFX_W = 0.0
-        self._externalFX_W = _parameter_validation.number_in_range_return_float(
-            externalFX_W, "externalFX_W"
-        )
+                if self._vCg__E == 0.0:
+                    externalFX_W = float("nan")
+                else:
+                    externalFX_W = 0.0
+        # Mirror alpha and beta's zero-speed handling: externalFX_W is a wind-axes
+        # quantity, so it must be NaN at zero speed and a number at positive speeds.
+        if isinstance(externalFX_W, float) and math.isnan(externalFX_W):
+            if self._vCg__E != 0.0:
+                raise ValueError(
+                    "externalFX_W can only be NaN when vCg__E is 0.0, because wind "
+                    "axes are defined at positive speeds."
+                )
+            self._externalFX_W = float("nan")
+        else:
+            if self._vCg__E == 0.0:
+                raise ValueError(
+                    "externalFX_W must be NaN (or None or omitted, both of which "
+                    "resolve to NaN) when vCg__E is 0.0, because wind axes are "
+                    "undefined at zero speed."
+                )
+            self._externalFX_W = _parameter_validation.number_in_range_return_float(
+                externalFX_W, "externalFX_W"
+            )
         self._nu = _parameter_validation.number_in_range_return_float(
             nu, "nu", min_val=0.0, min_inclusive=False
         )
@@ -912,7 +1002,9 @@ class OperatingPoint:
         See the docstring for vInf_GP1__E for details on how to interpret this property.
 
         :return: The unit vector along the freestream velocity vector (in the first
-            Airplane's geometry axes, observed from the Earth frame).
+            Airplane's geometry axes, observed from the Earth frame). Every component is
+            NaN when vCg__E is 0.0, because the freestream direction derives from alpha
+            and beta, which are undefined at zero speed.
         """
         if self._vInfHat_GP1__E is None:
             vInfHat_W__E = np.array([-1.0, 0.0, 0.0])
@@ -938,9 +1030,16 @@ class OperatingPoint:
         why I'm being specific with the definition.
 
         :return: The freestream velocity vector (in the first Airplane's geometry axes,
-            observed from the Earth frame).
+            observed from the Earth frame). It is the zero vector when vCg__E is 0.0,
+            since there is no freestream at zero speed.
         """
         if self._vInf_GP1__E is None:
-            self._vInf_GP1__E = self.vInfHat_GP1__E * self._vCg__E
+            if self._vCg__E == 0.0:
+                # At zero speed there is no freestream, so return the zero vector
+                # directly. Multiplying vInfHat_GP1__E (which is NaN at zero speed) by
+                # the zero speed would instead produce NaN.
+                self._vInf_GP1__E = np.zeros(3, dtype=float)
+            else:
+                self._vInf_GP1__E = self.vInfHat_GP1__E * self._vCg__E
             self._vInf_GP1__E.flags.writeable = False
         return self._vInf_GP1__E

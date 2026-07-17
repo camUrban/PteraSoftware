@@ -97,7 +97,9 @@ Requires Python 3.11, but active development is done in 3.13
         - `operating_point_movement.py`: OperatingPointMovement class
         - `wing_cross_section_movement.py`: WingCrossSectionMovement class
         - `wing_movement.py`: WingMovement class
+    - `_colormap_data/`: Directory containing data files with the vendored color map and color palette colors, along with their licenses
     - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_colormaps.py`: Color maps and color palettes used by the visualization functions
     - `_convergence_cache.py`: JSON solve and memo cache for convergence analysis
     - `_convergence_meshing.py`: Mesh building and refinement for convergence iterations
     - `_core.py`: Core classes for the movement and problem hierarchies
@@ -192,6 +194,7 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_airfoil.py`
         - `test_airplane.py`
         - `test_airplane_movement.py`
+        - `test_colormaps.py`
         - `test_convergence.py`
         - `test_convergence_cache.py`
         - `test_convergence_meshing.py`
@@ -244,6 +247,20 @@ Requires Python 3.11, but active development is done in 3.13
 - `requirements_dev.txt`: Full list of development dependencies with version constraints
 - `requirements_min.txt`: Minimum-version runtime dependencies
 - `setup.cfg`: Setup configuration file
+
+## Git Command Permissions
+
+The project's `.claude/settings.json` restricts which shell commands Claude Code may run. For git specifically, the subcommands fall into three tiers:
+
+- Denied (cannot run at all): `git am`, `git apply`, `git bisect`, `git branch`, `git cherry-pick`, `git clean`, `git clone`, `git config`, `git fetch`, `git init`, `git lfs`, `git merge`, `git mv`, `git pull`, `git push`, `git rebase`, `git remote`, `git reset`, `git revert`, `git rm`, `git sparse-checkout`, `git stash`, `git submodule`, `git switch`, `git tag`, and `git worktree`.
+- Ask (prompt for approval each time): `git add`, `git checkout`, `git commit`, and `git restore`.
+- Allowed (run without a prompt): `git diff`, `git grep`, `git log`, `git ls-files`, `git show`, and `git status`.
+
+The practical consequences are worth internalizing before planning any git workflow:
+
+- `git push` is denied, so Claude cannot push. When a workflow needs the branch on the remote (for example, before opening a pull request), the user must push it manually.
+- `git branch` is denied even for read-only listing, so use `git status` or `git log` to determine the current branch instead.
+- A compound command fails if any single part is denied. For example, `git branch --show-current && git status` is rejected because `git branch` is denied, even though `git status` on its own is allowed. Split such commands into separately allowed invocations.
 
 ## Common Mistakes
 

@@ -12,7 +12,6 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 # This is safe because the documented functions only use stdlib types in their
 # signatures.
 autodoc_mock_imports = [
-    "cmocean",
     "matplotlib",
     "mujoco",
     "numba",

@@ -97,7 +97,9 @@ Requires Python 3.11, but active development is done in 3.13
         - `operating_point_movement.py`: OperatingPointMovement class
         - `wing_cross_section_movement.py`: WingCrossSectionMovement class
         - `wing_movement.py`: WingMovement class
+    - `_colormap_data/`: Directory containing data files with the vendored color map and color palette colors, along with their licenses
     - `_aerodynamics_functions.py`: Induced velocity functions
+    - `_colormaps.py`: Color maps and color palettes used by the visualization functions
     - `_convergence_cache.py`: JSON solve and memo cache for convergence analysis
     - `_convergence_meshing.py`: Mesh building and refinement for convergence iterations
     - `_core.py`: Core classes for the movement and problem hierarchies

@@ -33,6 +33,7 @@ import pyvista as pv
 import webp
 
 from . import (
+    _colormaps,
     _logging,
     _parameter_validation,
     _transformations,
@@ -49,9 +50,8 @@ from .movements import free_flight_movement as free_flight_movement_mod
 
 _logger = _logging.get_logger("output")
 
-# Define the color and colormaps used by the visualization functions.
-_sequential_color_map = "speed"
-_diverging_color_map = "delta"
+# Define the colors used by the visualization functions. The color maps and color
+# palettes live in the _colormaps module.
 _wake_vortex_color = "white"
 _panel_color = "chartreuse"
 _streamline_color = "orchid"
@@ -73,22 +73,6 @@ _text_color_surface = (220, 220, 220)
 _quality = 75.0
 _window_size = [1024, 768]
 
-# For the figure lines, use the "Prism" qualitative color map from
-# carto.com/carto-colors.
-_prism = [
-    "#5F4690",
-    "#1D6996",
-    "#38A6A5",
-    "#0F8554",
-    "#73AF48",
-    "#EDAD08",
-    "#E17C05",
-    "#CC503E",
-    "#94346E",
-    "#6F4070",
-    "#994E95",
-    "#666666",
-]
 [
     _alpha_color,
     _beta_color,
@@ -98,7 +82,7 @@ _prism = [
     _angular_x_color,
     _angular_y_color,
     _angular_z_color,
-] = _prism[1:9]
+] = _colormaps.prism[1:9]
 
 # Set constants for the color maps, scalar bars, and text boxes.
 _color_map_num_sig = 3
@@ -309,7 +293,7 @@ def draw(
         # have the same sign (sequential color map) or if they have different signs
         # (diverging color map).
         if np.sign(np.min(these_scalars)) == np.sign(np.max(these_scalars)):
-            color_map = _sequential_color_map
+            color_map = _colormaps.sequential_color_map
             c_min = max(
                 float(np.mean(these_scalars))
                 - _color_map_num_sig * float(np.std(these_scalars)),
@@ -321,7 +305,7 @@ def draw(
                 float(np.max(these_scalars)),
             )
         else:
-            color_map = _diverging_color_map
+            color_map = _colormaps.diverging_color_map
             c_min = -_color_map_num_sig * float(np.std(these_scalars))
             c_max = _color_map_num_sig * float(np.std(these_scalars))
 
@@ -684,7 +668,7 @@ def animate(
     # Initialize values to hold the color map choice and its limits.
     c_min = 0.0
     c_max = 0.0
-    color_map: str = ""
+    color_map: matplotlib.colors.Colormap | None = None
 
     # Initialize variables to hold the SteadyProblems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=float)
@@ -706,7 +690,7 @@ def animate(
         # across all time steps have the same sign (sequential color map) or if they
         # have different signs (diverging color map).
         if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
-            color_map = _sequential_color_map
+            color_map = _colormaps.sequential_color_map
             c_min = max(
                 float(np.mean(all_scalars))
                 - _color_map_num_sig * float(np.std(all_scalars)),
@@ -718,7 +702,7 @@ def animate(
                 float(np.max(all_scalars)),
             )
         else:
-            color_map = _diverging_color_map
+            color_map = _colormaps.diverging_color_map
             c_min = -_color_map_num_sig * float(np.std(all_scalars))
             c_max = _color_map_num_sig * float(np.std(all_scalars))
 
@@ -888,6 +872,7 @@ def animate(
             unsteady_solver.steady_problems[0].operating_point.qInf__E,
         )
 
+        assert color_map is not None
         _plot_scalars(
             plotter,
             these_scalars,
@@ -919,7 +904,7 @@ def animate(
         muted_edge_color = _mute_color("black", mute)
         muted_panel_color = _mute_color(_panel_color, mute)
         muted_wake_color = _mute_color(_wake_vortex_color, mute)
-        if color_map:
+        if color_map is not None:
             muted_color_map = _mute_colormap(color_map, mute)
         else:
             muted_color_map = None
@@ -1089,6 +1074,7 @@ def animate(
                 unsteady_solver.steady_problems[current_step].operating_point.qInf__E,
             )
 
+            assert color_map is not None
             _plot_scalars(
                 plotter,
                 these_scalars,
@@ -2473,20 +2459,16 @@ def _mute_color(
 
 
 def _mute_colormap(
-    cmap_name: str,
+    cmap: matplotlib.colors.Colormap,
     factor: float,
 ) -> matplotlib.colors.ListedColormap:
-    """Returns a muted version of a named colormap by linearly interpolating each color
-    toward middle gray.
+    """Returns a muted version of a colormap by linearly interpolating each color toward
+    middle gray.
 
-    :param cmap_name: The name of a Matplotlib or cmocean colormap.
+    :param cmap: The colormap to mute.
     :param factor: The muting factor in [0, 1]. 0 means no change, 1 means fully gray.
     :return: A ListedColormap with muted colors.
     """
-    try:
-        cmap = plt.get_cmap(cmap_name)
-    except ValueError:
-        cmap = plt.get_cmap("cmo." + cmap_name)
     colors = cmap(np.linspace(0, 1, 256))
     gray = 0.5
     colors[:, :3] = colors[:, :3] + factor * (gray - colors[:, :3])
@@ -2614,7 +2596,7 @@ def _plot_scalars(
     scalar_type: str,
     min_scalar: float,
     max_scalar: float,
-    color_map: str,
+    color_map: matplotlib.colors.Colormap,
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
@@ -2630,8 +2612,7 @@ def _plot_scalars(
         "induced drag", "side force", or "lift".
     :param min_scalar: Minimum scalar value, which is displayed as text on the Plotter.
     :param max_scalar: Maximum scalar value, which is displayed as text on the Plotter.
-    :param color_map: Name of the color map to use for scalar visualization. Check the
-        pyvista.add_mesh documentation for the list of acceptable values.
+    :param color_map: The color map to use for scalar visualization.
     :param c_min: Lower bound for the color map scaling.
     :param c_max: Upper bound for the color map scaling.
     :param panel_surfaces: PolyData representing the Panels' surfaces.
@@ -2653,7 +2634,7 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
-        cmap=color_map,  # type: ignore[arg-type]
+        cmap=color_map,
         clim=[c_min, c_max],
         scalars=these_scalars,
         smooth_shading=False,

@@ -1,6 +1,8 @@
 """This module contains classes to test the convergence meshing functions."""
 
+import inspect
 import unittest
+from typing import Any
 
 import numpy as np
 
@@ -286,13 +288,45 @@ class TestMemosComplete(unittest.TestCase):
 
 class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     """This class contains methods for testing that
-    _convergence_meshing.build_unsteady_problem's WingMovement copies carry every one of
-    the reference WingMovement's motion parameters.
+    _convergence_meshing.build_unsteady_problem's AirplaneMovement, WingMovement, and
+    WingCrossSectionMovement copies each carry every one of their reference's motion
+    parameters.
+
+    build_unsteady_problem rebuilds each of these movement classes by naming their
+    parameters one by one, so a parameter that a construction site forgets to pass
+    silently falls back to its default and every convergence iteration then solves motion
+    that the reference problem never described. That is not hypothetical: it is what
+    happened to WingMovement's rotationPointOffset_Gs_Ler, which changed a flapping
+    case's mean thrust by 47 percent before it was caught.
+
+    These tests therefore exist to fail whenever a motion parameter is added to one of
+    those classes without also being passed at every one of build_unsteady_problem's
+    construction sites for it. Making a failure here go away means adding the parameter
+    to that function, not only to this class.
     """
 
-    # Every motion parameter differs from its default, so a copy that dropped one would
-    # fall back to that default and fail the comparison.
-    motion_parameters = {
+    # Each dict names every motion parameter of one movement class, and gives it a value
+    # that differs from its default so that a copy that dropped it would fall back to
+    # that default and fail the comparison. A value equal to the parameter's default
+    # would make these tests pass while the copy silently drops it, so the difference is
+    # what gives them their teeth.
+    #
+    # A test below checks each dict against its class's signature. If one of those tests
+    # fails because a parameter was added to a movement class, adding it here is only
+    # half of the fix: it must also be passed wherever
+    # _convergence_meshing.build_unsteady_problem constructs that class, or the
+    # convergence analysis will quietly ignore it.
+    #
+    # Each dict's values are annotated as Any because they hold both float tuples and
+    # spacing string tuples, so a narrower type could not be unpacked into any one
+    # parameter.
+    airplane_motion_parameters: dict[str, Any] = {
+        "ampCg_GP1_CgP1": (0.1, 0.2, 0.3),
+        "periodCg_GP1_CgP1": (1.0, 2.0, 3.0),
+        "spacingCg_GP1_CgP1": ("uniform", "sine", "sine"),
+        "phaseCg_GP1_CgP1": (10.0, 20.0, 30.0),
+    }
+    wing_motion_parameters: dict[str, Any] = {
         "ampLer_Gs_Cgs": (0.1, 0.2, 0.3),
         "periodLer_Gs_Cgs": (1.0, 2.0, 3.0),
         "spacingLer_Gs_Cgs": ("uniform", "sine", "sine"),
@@ -303,11 +337,21 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         "phaseAngles_Gs_to_Wn_ixyz": (40.0, 50.0, 60.0),
         "rotationPointOffset_Gs_Ler": (0.01, 0.02, 0.03),
     }
+    wing_cross_section_motion_parameters: dict[str, Any] = {
+        "ampLp_Wcsp_Lpp": (0.01, 0.02, 0.03),
+        "periodLp_Wcsp_Lpp": (1.0, 2.0, 3.0),
+        "spacingLp_Wcsp_Lpp": ("uniform", "sine", "sine"),
+        "phaseLp_Wcsp_Lpp": (10.0, 20.0, 30.0),
+        "ampAngles_Wcsp_to_Wcs_ixyz": (1.0, 2.0, 3.0),
+        "periodAngles_Wcsp_to_Wcs_ixyz": (1.0, 2.0, 3.0),
+        "spacingAngles_Wcsp_to_Wcs_ixyz": ("sine", "uniform", "sine"),
+        "phaseAngles_Wcsp_to_Wcs_ixyz": (40.0, 50.0, 60.0),
+    }
 
     def setUp(self) -> None:
         """Set up a reference UnsteadyProblem whose Airplanes hold a trapezoidal Wing and
-        an edge-defined Wing, each wrapped in a WingMovement carrying every motion
-        parameter.
+        an edge-defined Wing, each wrapped in an AirplaneMovement and a WingMovement
+        carrying every motion parameter.
 
         :return: None
         """
@@ -326,27 +370,47 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             num_chordwise_panels=4,
         )
 
-        # An edge-defined Wing's WingCrossSectionMovements must all be static, so every
-        # WingCrossSection's motion is left at its default and only the WingMovements
-        # carry motion.
-        airplane_movements = [
-            ps.movements.airplane_movement.AirplaneMovement(
-                base_airplane=ps.geometry.airplane.Airplane(wings=[wing]),
-                wing_movements=[
-                    ps.movements.wing_movement.WingMovement(
-                        base_wing=wing,
-                        wing_cross_section_movements=[
-                            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                                base_wing_cross_section=wing_cross_section
-                            )
-                            for wing_cross_section in wing.wing_cross_sections
-                        ],
-                        **self.motion_parameters,
-                    )
-                ],
+        # Each motion is carried by the one Airplane that can hold it, and the copies of
+        # each are checked separately below. An edge-defined Wing's
+        # WingCrossSectionMovements must all be static, because resampling changes the
+        # WingCrossSection count and so cannot preserve per WingCrossSection motion, so
+        # only the trapezoidal Wing's carry motion. The first Airplane in a simulation
+        # must keep a zero Cg_GP1_CgP1, so only the second Airplane's AirplaneMovement
+        # carries motion. Both Airplanes' WingMovements carry motion.
+        airplane_movements = []
+        for wing, wing_cross_section_motion, airplane_motion in (
+            (trapezoidal_wing, self.wing_cross_section_motion_parameters, {}),
+            (edge_defined_wing, {}, self.airplane_motion_parameters),
+        ):
+            airplane_movements.append(
+                ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=ps.geometry.airplane.Airplane(wings=[wing]),
+                    wing_movements=[
+                        ps.movements.wing_movement.WingMovement(
+                            base_wing=wing,
+                            wing_cross_section_movements=[
+                                ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                                    base_wing_cross_section=wing_cross_section,
+                                    # A root WingCrossSection must keep a zero
+                                    # Lp_Wcsp_Lpp and zero angles_Wcsp_to_Wcs_ixyz, so
+                                    # only the WingCrossSections outboard of it can
+                                    # carry motion.
+                                    **(
+                                        {}
+                                        if wing_cross_section_id == 0
+                                        else wing_cross_section_motion
+                                    ),
+                                )
+                                for wing_cross_section_id, wing_cross_section in (
+                                    enumerate(wing.wing_cross_sections)
+                                )
+                            ],
+                            **self.wing_motion_parameters,
+                        )
+                    ],
+                    **airplane_motion,
+                )
             )
-            for wing in (trapezoidal_wing, edge_defined_wing)
-        ]
 
         operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
@@ -360,9 +424,10 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             )
         )
 
-    def _built_wing_movements(self) -> list:
-        """Builds the UnsteadyProblem for the first mesh and returns its WingMovements,
-        one per reference Airplane.
+    def _built_airplane_movements(self) -> list:
+        """Builds the UnsteadyProblem for the first mesh and returns its
+        AirplaneMovements, one per reference Airplane, with the trapezoidal Wing's first
+        and the edge-defined Wing's second.
 
         The delta_time cache is seeded so that the build reuses a time step instead of
         running Movement's iterative optimizer.
@@ -378,10 +443,105 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             num_wing_cross_sections_cache={},
             delta_time_cache={(0, 0): 0.01},
         )
+        return list(this_problem.movement.airplane_movements)
+
+    def _built_wing_movements(self) -> list:
+        """Builds the UnsteadyProblem for the first mesh and returns its WingMovements,
+        one per reference Airplane.
+        """
         return [
             this_airplane_movement.wing_movements[0]
-            for this_airplane_movement in this_problem.movement.airplane_movements
+            for this_airplane_movement in self._built_airplane_movements()
         ]
+
+    @staticmethod
+    def _coverage_failure_message(class_name) -> str:
+        """Builds the message shown when a movement class's motion parameters are no
+        longer the set that this class tests.
+        """
+        return (
+            f"This class's motion parameters no longer match {class_name}'s. If a "
+            f"parameter was added to {class_name}, listing it here is only half of the "
+            f"fix: _convergence_meshing.build_unsteady_problem rebuilds each "
+            f"{class_name} by naming its parameters one by one, so the new parameter "
+            f"must also be passed at every site where that function constructs "
+            f"{class_name}. Otherwise it falls back to its default and every "
+            f"convergence iteration silently solves motion that the reference problem "
+            f"never described. Give it a value here that differs from its default, so "
+            f"that the copy tests below would catch that."
+        )
+
+    def _assert_parameters_match(self, actual_movement, expected_parameters) -> None:
+        """Asserts that a copied movement class carries each expected motion parameter.
+
+        The spacing parameters hold strings rather than numbers, so they are compared for
+        equality while the rest are compared for closeness.
+        """
+        for name, expected in expected_parameters.items():
+            message = (
+                f"build_unsteady_problem's copy of "
+                f"{type(actual_movement).__name__} did not carry {name}, so a "
+                f"convergence analysis would solve motion that its reference problem "
+                f"never described. Pass {name} at every site where "
+                f"build_unsteady_problem constructs "
+                f"{type(actual_movement).__name__}."
+            )
+            actual = getattr(actual_movement, name)
+            if "spacing" in name:
+                self.assertEqual(tuple(actual), expected, msg=message)
+            else:
+                np.testing.assert_allclose(actual, expected, err_msg=message)
+
+    def test_airplane_motion_parameters_covers_every_constructor_parameter(
+        self,
+    ) -> None:
+        """Test that airplane_motion_parameters names every AirplaneMovement constructor
+        parameter except the two that the build is meant to change, so that a parameter
+        added to AirplaneMovement later fails here until it is covered by the tests
+        below.
+        """
+        parameters = inspect.signature(
+            ps.movements.airplane_movement.AirplaneMovement.__init__
+        ).parameters
+
+        self.assertEqual(
+            set(self.airplane_motion_parameters),
+            set(parameters) - {"self", "base_airplane", "wing_movements"},
+            msg=self._coverage_failure_message("AirplaneMovement"),
+        )
+
+    def test_wing_motion_parameters_covers_every_constructor_parameter(self) -> None:
+        """Test that wing_motion_parameters names every WingMovement constructor
+        parameter except the two that the build is meant to change, so that a parameter
+        added to WingMovement later fails here until it is covered by the tests below.
+        """
+        parameters = inspect.signature(
+            ps.movements.wing_movement.WingMovement.__init__
+        ).parameters
+
+        self.assertEqual(
+            set(self.wing_motion_parameters),
+            set(parameters) - {"self", "base_wing", "wing_cross_section_movements"},
+            msg=self._coverage_failure_message("WingMovement"),
+        )
+
+    def test_wing_cross_section_motion_parameters_covers_every_constructor_parameter(
+        self,
+    ) -> None:
+        """Test that wing_cross_section_motion_parameters names every
+        WingCrossSectionMovement constructor parameter except the one that the build is
+        meant to change, so that a parameter added to WingCrossSectionMovement later
+        fails here until it is covered by the tests below.
+        """
+        parameters = inspect.signature(
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement.__init__
+        ).parameters
+
+        self.assertEqual(
+            set(self.wing_cross_section_motion_parameters),
+            set(parameters) - {"self", "base_wing_cross_section"},
+            msg=self._coverage_failure_message("WingCrossSectionMovement"),
+        )
 
     def test_rotation_point_offset_is_copied(self) -> None:
         """Test that both the trapezoidal and the edge-defined branch copy the reference
@@ -391,17 +551,48 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         for this_wing_movement in self._built_wing_movements():
             np.testing.assert_allclose(
                 this_wing_movement.rotationPointOffset_Gs_Ler,
-                self.motion_parameters["rotationPointOffset_Gs_Ler"],
+                self.wing_motion_parameters["rotationPointOffset_Gs_Ler"],
             )
 
-    def test_every_motion_parameter_is_copied(self) -> None:
+    def test_every_airplane_motion_parameter_is_copied(self) -> None:
+        """Test that an AirplaneMovement copy carries every one of its reference's motion
+        parameters, so that a parameter added later cannot be silently dropped.
+
+        Only the second Airplane is checked, because the first Airplane in a simulation
+        must keep a zero Cg_GP1_CgP1 and so cannot carry this motion. The build copies
+        every AirplaneMovement with the same code, so the second covers it.
+        """
+        self._assert_parameters_match(
+            self._built_airplane_movements()[1], self.airplane_motion_parameters
+        )
+
+    def test_every_wing_cross_section_motion_parameter_is_copied(self) -> None:
+        """Test that the trapezoidal branch's WingCrossSectionMovement copies carry every
+        one of their reference's motion parameters, so that a parameter added later
+        cannot be silently dropped.
+
+        Only the trapezoidal branch is checked, because the edge-defined branch resamples
+        its WingCrossSections and so deliberately builds motion free
+        WingCrossSectionMovements. The root WingCrossSectionMovement is skipped because a
+        root WingCrossSection cannot move.
+        """
+        trapezoidal_wing_movement = self._built_wing_movements()[0]
+        these_wing_cross_section_movements = (
+            trapezoidal_wing_movement.wing_cross_section_movements[1:]
+        )
+
+        self.assertEqual(len(these_wing_cross_section_movements), 2)
+        for this_wing_cross_section_movement in these_wing_cross_section_movements:
+            self._assert_parameters_match(
+                this_wing_cross_section_movement,
+                self.wing_cross_section_motion_parameters,
+            )
+
+    def test_every_wing_motion_parameter_is_copied(self) -> None:
         """Test that both branches copy every one of the WingMovement's motion
         parameters, so that a parameter added later cannot be silently dropped.
         """
         for this_wing_movement in self._built_wing_movements():
-            for name, expected in self.motion_parameters.items():
-                actual = getattr(this_wing_movement, name)
-                if "spacing" in name:
-                    self.assertEqual(tuple(actual), expected, msg=name)
-                else:
-                    np.testing.assert_allclose(actual, expected, err_msg=name)
+            self._assert_parameters_match(
+                this_wing_movement, self.wing_motion_parameters
+            )

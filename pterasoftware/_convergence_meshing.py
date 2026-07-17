@@ -381,6 +381,9 @@ def build_unsteady_problem(
                     phaseAngles_Gs_to_Wn_ixyz=(
                         ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz
                     ),
+                    rotationPointOffset_Gs_Ler=(
+                        ref_wing_movement.rotationPointOffset_Gs_Ler
+                    ),
                     # These values change.
                     base_wing=this_base_wing,
                     wing_cross_section_movements=these_wing_cross_section_movements,
@@ -517,6 +520,7 @@ def build_unsteady_problem(
                 periodAngles_Gs_to_Wn_ixyz=ref_wing_movement.periodAngles_Gs_to_Wn_ixyz,
                 spacingAngles_Gs_to_Wn_ixyz=ref_wing_movement.spacingAngles_Gs_to_Wn_ixyz,
                 phaseAngles_Gs_to_Wn_ixyz=ref_wing_movement.phaseAngles_Gs_to_Wn_ixyz,
+                rotationPointOffset_Gs_Ler=ref_wing_movement.rotationPointOffset_Gs_Ler,
                 # These values change.
                 base_wing=this_base_wing,
                 wing_cross_section_movements=these_wing_cross_section_movements,

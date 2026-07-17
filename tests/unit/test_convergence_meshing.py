@@ -8,7 +8,7 @@ import pterasoftware as ps
 
 # noinspection PyProtectedMember
 from pterasoftware import _convergence_meshing
-from tests.unit.fixtures import geometry_fixtures
+from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 
 
 class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
@@ -282,3 +282,126 @@ class TestMemosComplete(unittest.TestCase):
         self.assertTrue(self._memos_complete(delta_time_cache=None))
         self.assertFalse(self._memos_complete(delta_time_cache={}))
         self.assertTrue(self._memos_complete(delta_time_cache={(0, 0): 0.01}))
+
+
+class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
+    """This class contains methods for testing that
+    _convergence_meshing.build_unsteady_problem's WingMovement copies carry every one of
+    the reference WingMovement's motion parameters.
+    """
+
+    # Every motion parameter differs from its default, so a copy that dropped one would
+    # fall back to that default and fail the comparison.
+    motion_parameters = {
+        "ampLer_Gs_Cgs": (0.1, 0.2, 0.3),
+        "periodLer_Gs_Cgs": (1.0, 2.0, 3.0),
+        "spacingLer_Gs_Cgs": ("uniform", "sine", "sine"),
+        "phaseLer_Gs_Cgs": (10.0, 20.0, 30.0),
+        "ampAngles_Gs_to_Wn_ixyz": (1.0, 2.0, 3.0),
+        "periodAngles_Gs_to_Wn_ixyz": (1.0, 2.0, 3.0),
+        "spacingAngles_Gs_to_Wn_ixyz": ("sine", "uniform", "sine"),
+        "phaseAngles_Gs_to_Wn_ixyz": (40.0, 50.0, 60.0),
+        "rotationPointOffset_Gs_Ler": (0.01, 0.02, 0.03),
+    }
+
+    def setUp(self) -> None:
+        """Set up a reference UnsteadyProblem whose Airplanes hold a trapezoidal Wing and
+        an edge-defined Wing, each wrapped in a WingMovement carrying every motion
+        parameter.
+
+        :return: None
+        """
+        trapezoidal_wing = geometry_fixtures.make_three_section_wing_fixture()
+
+        ys = np.linspace(0.0, 2.0, 20)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.25 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            name="Edge Wing",
+            num_chordwise_panels=4,
+        )
+
+        # An edge-defined Wing's WingCrossSectionMovements must all be static, so every
+        # WingCrossSection's motion is left at its default and only the WingMovements
+        # carry motion.
+        airplane_movements = [
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=ps.geometry.airplane.Airplane(wings=[wing]),
+                wing_movements=[
+                    ps.movements.wing_movement.WingMovement(
+                        base_wing=wing,
+                        wing_cross_section_movements=[
+                            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                                base_wing_cross_section=wing_cross_section
+                            )
+                            for wing_cross_section in wing.wing_cross_sections
+                        ],
+                        **self.motion_parameters,
+                    )
+                ],
+            )
+            for wing in (trapezoidal_wing, edge_defined_wing)
+        ]
+
+        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        )
+
+        self.ref_problem = ps.problems.UnsteadyProblem(
+            movement=ps.movements.movement.Movement(
+                airplane_movements=airplane_movements,
+                operating_point_movement=operating_point_movement,
+                num_cycles=1,
+            )
+        )
+
+    def _built_wing_movements(self) -> list:
+        """Builds the UnsteadyProblem for the first mesh and returns its WingMovements,
+        one per reference Airplane.
+
+        The delta_time cache is seeded so that the build reuses a time step instead of
+        running Movement's iterative optimizer.
+        """
+        this_problem = _convergence_meshing.build_unsteady_problem(
+            ar_id=0,
+            chord_id=0,
+            panel_aspect_ratio=4,
+            num_chordwise_panels=4,
+            wake_length=1,
+            ref_problem=self.ref_problem,
+            num_spanwise_panels_cache={},
+            num_wing_cross_sections_cache={},
+            delta_time_cache={(0, 0): 0.01},
+        )
+        return [
+            this_airplane_movement.wing_movements[0]
+            for this_airplane_movement in this_problem.movement.airplane_movements
+        ]
+
+    def test_rotation_point_offset_is_copied(self) -> None:
+        """Test that both the trapezoidal and the edge-defined branch copy the reference
+        WingMovement's rotationPointOffset_Gs_Ler rather than defaulting it to the Wing
+        root leading edge.
+        """
+        for this_wing_movement in self._built_wing_movements():
+            np.testing.assert_allclose(
+                this_wing_movement.rotationPointOffset_Gs_Ler,
+                self.motion_parameters["rotationPointOffset_Gs_Ler"],
+            )
+
+    def test_every_motion_parameter_is_copied(self) -> None:
+        """Test that both branches copy every one of the WingMovement's motion
+        parameters, so that a parameter added later cannot be silently dropped.
+        """
+        for this_wing_movement in self._built_wing_movements():
+            for name, expected in self.motion_parameters.items():
+                actual = getattr(this_wing_movement, name)
+                if "spacing" in name:
+                    self.assertEqual(tuple(actual), expected, msg=name)
+                else:
+                    np.testing.assert_allclose(actual, expected, err_msg=name)

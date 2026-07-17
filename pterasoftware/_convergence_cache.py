@@ -22,11 +22,7 @@ _logger = _logging.get_logger("_convergence_cache")
 # This is independent of the serialization format version that hash_object folds into
 # each key, which guards against changes to the reference problem's serialized
 # structure.
-#
-# Version 4 discards caches written before convergence meshing copied a WingMovement's
-# rotationPointOffset_Gs_Ler, whose loss converged the wrong kinematics and so stored
-# both incorrect load coefficients and incorrect delta_time memos.
-_SOLVE_CACHE_VERSION = 4
+_SOLVE_CACHE_VERSION = 5
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:

@@ -135,14 +135,16 @@ def build_steady_problem(
                         control_surface_hinge_point=ref_wing_cross_section.control_surface_hinge_point,
                         control_surface_deflection=ref_wing_cross_section.control_surface_deflection,
                         spanwise_spacing=ref_wing_cross_section.spanwise_spacing,
+                        # Refining a mesh changes nothing about an Airfoil, so the
+                        # reference's is shared rather than rebuilt, which is safe
+                        # because Airfoils are immutable. Rebuilding one would
+                        # revalidate and renormalize an outline that is already valid
+                        # and normalized, which perturbs it by a small amount rather
+                        # than reproducing it. _build_edge_defined_wing shares its
+                        # reference's Airfoil for the same reason.
+                        airfoil=ref_wing_cross_section.airfoil,
                         # These values change.
                         num_spanwise_panels=this_num_spanwise_panels,
-                        airfoil=geometry.airfoil.Airfoil(
-                            name=ref_wing_cross_section.airfoil.name,
-                            outline_A_lp=ref_wing_cross_section.airfoil.outline_A_lp,
-                            resample=ref_wing_cross_section.airfoil.resample,
-                            n_points_per_side=ref_wing_cross_section.airfoil.n_points_per_side,
-                        ),
                     )
                 )
 
@@ -463,14 +465,16 @@ def build_unsteady_problem(
                     control_surface_hinge_point=ref_base_wing_cross_section.control_surface_hinge_point,
                     control_surface_deflection=ref_base_wing_cross_section.control_surface_deflection,
                     spanwise_spacing=ref_base_wing_cross_section.spanwise_spacing,
+                    # Refining a mesh changes nothing about an Airfoil, so the
+                    # reference's is shared rather than rebuilt, which is safe because
+                    # Airfoils are immutable. Rebuilding one would revalidate and
+                    # renormalize an outline that is already valid and normalized, which
+                    # perturbs it by a small amount rather than reproducing it.
+                    # _build_edge_defined_wing shares its reference's Airfoil for the
+                    # same reason.
+                    airfoil=ref_base_wing_cross_section.airfoil,
                     # These values change.
                     num_spanwise_panels=this_num_spanwise_panels,
-                    airfoil=geometry.airfoil.Airfoil(
-                        name=ref_base_wing_cross_section.airfoil.name,
-                        outline_A_lp=ref_base_wing_cross_section.airfoil.outline_A_lp,
-                        resample=ref_base_wing_cross_section.airfoil.resample,
-                        n_points_per_side=ref_base_wing_cross_section.airfoil.n_points_per_side,
-                    ),
                 )
 
                 # 5.5.4. Create a copy of the WingCrossSectionMovement.
@@ -857,23 +861,18 @@ def _get_wing_section_average_panel_aspect_ratio(
             geometry.wing.Wing(
                 wing_cross_sections=[
                     geometry.wing_cross_section.WingCrossSection(
-                        airfoil=geometry.airfoil.Airfoil(
-                            name=ref_root_wing_cross_section.airfoil.name,
-                            outline_A_lp=ref_root_wing_cross_section.airfoil.outline_A_lp,
-                            resample=ref_root_wing_cross_section.airfoil.resample,
-                            n_points_per_side=ref_root_wing_cross_section.airfoil.n_points_per_side,
-                        ),
+                        # Each reference Airfoil is shared rather than rebuilt, which is
+                        # safe because Airfoils are immutable. This Wing only exists to
+                        # be meshed and measured, so rebuilding one would revalidate,
+                        # renormalize, and resample an outline for every candidate
+                        # number of spanwise Panels that the search tries.
+                        airfoil=ref_root_wing_cross_section.airfoil,
                         num_spanwise_panels=num_spanwise_panels,
                         chord=ref_root_wing_cross_section.chord,
                         spanwise_spacing=ref_root_wing_cross_section.spanwise_spacing,
                     ),
                     geometry.wing_cross_section.WingCrossSection(
-                        airfoil=geometry.airfoil.Airfoil(
-                            name=ref_tip_wing_cross_section.airfoil.name,
-                            outline_A_lp=ref_tip_wing_cross_section.airfoil.outline_A_lp,
-                            resample=ref_tip_wing_cross_section.airfoil.resample,
-                            n_points_per_side=ref_tip_wing_cross_section.airfoil.n_points_per_side,
-                        ),
+                        airfoil=ref_tip_wing_cross_section.airfoil,
                         num_spanwise_panels=None,
                         chord=ref_tip_wing_cross_section.chord,
                         Lp_Wcsp_Lpp=ref_tip_wing_cross_section.Lp_Wcsp_Lpp,

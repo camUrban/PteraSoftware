@@ -12,6 +12,78 @@ import pterasoftware as ps
 from pterasoftware import _convergence_meshing
 from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 
+# Both convergence builders rebuild each Airplane, Wing, and WingCrossSection by naming
+# its parameters one by one, so these sets partition each class's public constructor
+# parameters into the ones a build copies from its reference, the ones a build
+# deliberately changes, and the ones a build deliberately omits.
+# TestGeometryCopyParameterCoverage asserts that each partition covers every public
+# parameter, so a parameter added to one of these classes fails there until it is
+# classified here and passed at every site that constructs the class. Airfoil needs no
+# partition, because a build shares each reference Airfoil rather than rebuilding one.
+_AIRPLANE_COPIED_PARAMETERS = frozenset({"name", "Cg_GP1_CgP1", "weight"})
+
+# A build gives each Airplane copy this iteration's Wings, and passes None for the
+# reference dimensions so that the copy recalculates them for its own refined geometry.
+_AIRPLANE_CHANGED_PARAMETERS = frozenset({"wings", "s_ref", "c_ref", "b_ref"})
+_AIRPLANE_OMITTED_PARAMETERS: frozenset[str] = frozenset()
+
+_WING_COPIED_PARAMETERS = frozenset(
+    {
+        "name",
+        "Ler_Gs_Cgs",
+        "angles_Gs_to_Wn_ixyz",
+        "symmetric",
+        "mirror_only",
+        "symmetryNormal_G",
+        "symmetryPoint_G_Cg",
+        "chordwise_spacing",
+    }
+)
+_WING_CHANGED_PARAMETERS = frozenset({"wing_cross_sections", "num_chordwise_panels"})
+
+# A Wing never stores explode_into_strips, recording only its effect on spanwise_mesh,
+# so a copy could not carry it even if a build tried. Omitting it is safe only because
+# both analysis functions in convergence.py reject a Wing whose spanwise mesh is neither
+# trapezoidal nor edge-defined, which leaves False as the only value a Wing reaching a
+# build can have been built with.
+_WING_OMITTED_PARAMETERS = frozenset({"explode_into_strips"})
+
+# A build shares each reference WingCrossSection's Airfoil rather than rebuilding one,
+# because refining a mesh changes nothing about an Airfoil.
+_WING_CROSS_SECTION_COPIED_PARAMETERS = frozenset(
+    {
+        "chord",
+        "Lp_Wcsp_Lpp",
+        "angles_Wcsp_to_Wcs_ixyz",
+        "control_surface_symmetry_type",
+        "control_surface_hinge_point",
+        "control_surface_deflection",
+        "spanwise_spacing",
+        "airfoil",
+    }
+)
+
+# A build resolves each WingCrossSection copy's number of spanwise Panels for this
+# iteration's mesh.
+_WING_CROSS_SECTION_CHANGED_PARAMETERS = frozenset({"num_spanwise_panels"})
+_WING_CROSS_SECTION_OMITTED_PARAMETERS: frozenset[str] = frozenset()
+
+
+def _public_constructor_parameters(this_class) -> set[str]:
+    """Returns the names of a class's public constructor parameters.
+
+    A private parameter is internal machinery rather than part of the class's public
+    construction contract, so it is excluded along with self.
+
+    :param this_class: The class whose initialization method is read.
+    :return: The set of the class's public constructor parameter names.
+    """
+    return {
+        name
+        for name in inspect.signature(this_class.__init__).parameters
+        if name != "self" and not name.startswith("_")
+    }
+
 
 class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     """This class contains methods for testing
@@ -286,6 +358,108 @@ class TestMemosComplete(unittest.TestCase):
         self.assertTrue(self._memos_complete(delta_time_cache={(0, 0): 0.01}))
 
 
+class TestGeometryCopyParameterCoverage(unittest.TestCase):
+    """This class contains methods for testing that this module's partitions of each
+    geometry class's public constructor parameters stay complete.
+
+    _convergence_meshing.build_steady_problem and
+    _convergence_meshing.build_unsteady_problem each rebuild every Airplane, Wing,
+    WingCrossSection, and Airfoil by naming its parameters one by one, so a parameter that
+    a construction site forgets to pass silently falls back to its default and the
+    analysis refines geometry that its reference problem never described. That is not
+    hypothetical: it is what happened to WingMovement's rotationPointOffset_Gs_Ler, and
+    these classes gain parameters at a similar rate. Wing alone has gained mirror_only,
+    symmetryNormal_G, explode_into_strips, and tip_trim_fraction.
+
+    These tests therefore fail whenever one of those classes gains a public constructor
+    parameter that this module has not classified as copied, changed, or omitted. Making
+    a failure here go away means passing the new parameter wherever both builders
+    construct the class, not only classifying it here.
+    """
+
+    @staticmethod
+    def _coverage_failure_message(class_name) -> str:
+        """Builds the message shown when a geometry class's public constructor parameters
+        are no longer the ones this module classifies.
+        """
+        return (
+            f"This module's partition of {class_name}'s public constructor parameters "
+            f"is no longer complete. If a parameter was added to {class_name}, "
+            f"classifying it here is only half of the fix: "
+            f"_convergence_meshing.build_steady_problem and "
+            f"_convergence_meshing.build_unsteady_problem each rebuild {class_name} by "
+            f"naming its parameters one by one, so a copied parameter must also be "
+            f"passed at every site where either function constructs {class_name}. "
+            f"Otherwise it falls back to its default and every convergence iteration "
+            f"silently refines geometry that the reference problem never described. "
+            f"Classify it as copied only if a build should carry it from the reference, "
+            f"and add it to the copy tests below so that a build that drops it fails."
+        )
+
+    def test_airplane_parameters_are_classified(self) -> None:
+        """Test that every one of Airplane's public constructor parameters is classified
+        as copied, changed, or omitted.
+        """
+        self.assertEqual(
+            _AIRPLANE_COPIED_PARAMETERS
+            | _AIRPLANE_CHANGED_PARAMETERS
+            | _AIRPLANE_OMITTED_PARAMETERS,
+            _public_constructor_parameters(ps.geometry.airplane.Airplane),
+            msg=self._coverage_failure_message("Airplane"),
+        )
+
+    def test_wing_parameters_are_classified(self) -> None:
+        """Test that every one of Wing's public constructor parameters is classified as
+        copied, changed, or omitted.
+        """
+        self.assertEqual(
+            _WING_COPIED_PARAMETERS
+            | _WING_CHANGED_PARAMETERS
+            | _WING_OMITTED_PARAMETERS,
+            _public_constructor_parameters(ps.geometry.wing.Wing),
+            msg=self._coverage_failure_message("Wing"),
+        )
+
+    def test_wing_cross_section_parameters_are_classified(self) -> None:
+        """Test that every one of WingCrossSection's public constructor parameters is
+        classified as copied, changed, or omitted.
+        """
+        self.assertEqual(
+            _WING_CROSS_SECTION_COPIED_PARAMETERS
+            | _WING_CROSS_SECTION_CHANGED_PARAMETERS
+            | _WING_CROSS_SECTION_OMITTED_PARAMETERS,
+            _public_constructor_parameters(
+                ps.geometry.wing_cross_section.WingCrossSection
+            ),
+            msg=self._coverage_failure_message("WingCrossSection"),
+        )
+
+    def test_partitions_do_not_overlap(self) -> None:
+        """Test that no parameter is classified twice, since a parameter that a build both
+        copies and changes would describe two different behaviors.
+        """
+        for copied, changed, omitted in (
+            (
+                _AIRPLANE_COPIED_PARAMETERS,
+                _AIRPLANE_CHANGED_PARAMETERS,
+                _AIRPLANE_OMITTED_PARAMETERS,
+            ),
+            (
+                _WING_COPIED_PARAMETERS,
+                _WING_CHANGED_PARAMETERS,
+                _WING_OMITTED_PARAMETERS,
+            ),
+            (
+                _WING_CROSS_SECTION_COPIED_PARAMETERS,
+                _WING_CROSS_SECTION_CHANGED_PARAMETERS,
+                _WING_CROSS_SECTION_OMITTED_PARAMETERS,
+            ),
+        ):
+            self.assertEqual(len(copied & changed), 0)
+            self.assertEqual(len(copied & omitted), 0)
+            self.assertEqual(len(changed & omitted), 0)
+
+
 class TestBuildSteadyProblem(unittest.TestCase):
     """This class contains methods for testing
     _convergence_meshing.build_steady_problem, the builder that copies a reference
@@ -471,16 +645,37 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
         self.assertEqual(len(this_wing.wing_cross_sections), 3)
 
-    def test_airplane_parameters_are_copied(self) -> None:
-        """Test that each Airplane copy carries its reference's name, center of gravity,
-        and weight.
-        """
-        this_airplane = self._build().airplanes[self.edge_defined_airplane_id]
-        ref_airplane = self.ref_problem.airplanes[self.edge_defined_airplane_id]
+    def _assert_copied(self, this_object, ref_object, parameter_names) -> None:
+        """Asserts that a copied geometry object carries each named parameter from its
+        reference.
 
-        self.assertEqual(this_airplane.name, ref_airplane.name)
-        np.testing.assert_allclose(this_airplane.Cg_GP1_CgP1, ref_airplane.Cg_GP1_CgP1)
-        self.assertEqual(this_airplane.weight, ref_airplane.weight)
+        A parameter's value can be an array, a string, a bool, a number, or None, so array
+        values are compared for closeness and the rest for equality.
+        """
+        for name in sorted(parameter_names):
+            this_value = getattr(this_object, name)
+            ref_value = getattr(ref_object, name)
+            message = (
+                f"The build's copy of {type(ref_object).__name__} did not carry {name}, "
+                f"so a convergence analysis would refine geometry that its reference "
+                f"problem never described. Pass {name} at every site where "
+                f"build_steady_problem and build_unsteady_problem construct "
+                f"{type(ref_object).__name__}."
+            )
+            if isinstance(ref_value, np.ndarray):
+                np.testing.assert_allclose(this_value, ref_value, err_msg=message)
+            else:
+                self.assertEqual(this_value, ref_value, msg=message)
+
+    def test_airplane_parameters_are_copied(self) -> None:
+        """Test that an Airplane copy carries every one of its reference's copied
+        parameters.
+        """
+        self._assert_copied(
+            self._build().airplanes[self.edge_defined_airplane_id],
+            self.ref_problem.airplanes[self.edge_defined_airplane_id],
+            _AIRPLANE_COPIED_PARAMETERS,
+        )
 
     def test_airplane_reference_values_are_recalculated(self) -> None:
         """Test that each Airplane copy calculates its own reference dimensions, because
@@ -493,28 +688,18 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.assertIsNotNone(this_airplane.b_ref)
 
     def test_wing_parameters_are_copied(self) -> None:
-        """Test that a trapezoidal Wing's copy carries its reference's name, position,
-        orientation, symmetry, and chordwise spacing.
+        """Test that a trapezoidal Wing's copy carries every one of its reference's copied
+        parameters.
         """
-        this_wing = self._build().airplanes[self.trapezoidal_airplane_id].wings[0]
-
-        self.assertEqual(this_wing.name, self.trapezoidal_wing.name)
-        np.testing.assert_allclose(
-            this_wing.Ler_Gs_Cgs, self.trapezoidal_wing.Ler_Gs_Cgs
-        )
-        np.testing.assert_allclose(
-            this_wing.angles_Gs_to_Wn_ixyz, self.trapezoidal_wing.angles_Gs_to_Wn_ixyz
-        )
-        self.assertEqual(this_wing.symmetric, self.trapezoidal_wing.symmetric)
-        self.assertEqual(this_wing.mirror_only, self.trapezoidal_wing.mirror_only)
-        self.assertEqual(
-            this_wing.chordwise_spacing, self.trapezoidal_wing.chordwise_spacing
+        self._assert_copied(
+            self._build().airplanes[self.trapezoidal_airplane_id].wings[0],
+            self.trapezoidal_wing,
+            _WING_COPIED_PARAMETERS,
         )
 
     def test_wing_cross_section_parameters_are_copied(self) -> None:
-        """Test that a trapezoidal Wing's copied WingCrossSections carry their
-        references' chord, position, orientation, control surface, spanwise spacing, and
-        Airfoil.
+        """Test that a trapezoidal Wing's copied WingCrossSections each carry every one of
+        their reference's copied parameters.
         """
         these_wing_cross_sections = (
             self._build()
@@ -528,36 +713,38 @@ class TestBuildSteadyProblem(unittest.TestCase):
         for this_wing_cross_section, ref_wing_cross_section in zip(
             these_wing_cross_sections, ref_wing_cross_sections
         ):
-            self.assertEqual(
-                this_wing_cross_section.chord, ref_wing_cross_section.chord
+            self._assert_copied(
+                this_wing_cross_section,
+                ref_wing_cross_section,
+                _WING_CROSS_SECTION_COPIED_PARAMETERS,
             )
-            np.testing.assert_allclose(
-                this_wing_cross_section.Lp_Wcsp_Lpp,
-                ref_wing_cross_section.Lp_Wcsp_Lpp,
+
+    def test_airfoil_is_shared_rather_than_rebuilt(self) -> None:
+        """Test that each copied WingCrossSection holds its reference's own Airfoil, so
+        that its outline is reproduced exactly.
+
+        Rebuilding an Airfoil from a reference's outline revalidates and renormalizes it,
+        which perturbs a cambered outline by a small amount rather than reproducing it, so
+        each copy must share the reference's Airfoil instead. Sharing is safe because
+        Airfoils are immutable.
+        """
+        these_wing_cross_sections = (
+            self._build()
+            .airplanes[self.trapezoidal_airplane_id]
+            .wings[0]
+            .wing_cross_sections
+        )
+        ref_wing_cross_sections = self.trapezoidal_wing.wing_cross_sections
+
+        for this_wing_cross_section, ref_wing_cross_section in zip(
+            these_wing_cross_sections, ref_wing_cross_sections
+        ):
+            self.assertIs(
+                this_wing_cross_section.airfoil, ref_wing_cross_section.airfoil
             )
-            np.testing.assert_allclose(
-                this_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-                ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
-            )
-            self.assertEqual(
-                this_wing_cross_section.control_surface_symmetry_type,
-                ref_wing_cross_section.control_surface_symmetry_type,
-            )
-            self.assertEqual(
-                this_wing_cross_section.control_surface_hinge_point,
-                ref_wing_cross_section.control_surface_hinge_point,
-            )
-            self.assertEqual(
-                this_wing_cross_section.control_surface_deflection,
-                ref_wing_cross_section.control_surface_deflection,
-            )
-            self.assertEqual(
-                this_wing_cross_section.spanwise_spacing,
-                ref_wing_cross_section.spanwise_spacing,
-            )
-            self.assertEqual(
-                this_wing_cross_section.airfoil.name,
-                ref_wing_cross_section.airfoil.name,
+            np.testing.assert_array_equal(
+                this_wing_cross_section.airfoil.outline_A_lp,
+                ref_wing_cross_section.airfoil.outline_A_lp,
             )
 
 

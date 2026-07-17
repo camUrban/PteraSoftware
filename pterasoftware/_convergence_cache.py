@@ -14,13 +14,15 @@ from . import _logging
 
 _logger = _logging.get_logger("_convergence_cache")
 
-# The schema version of the JSON solve cache. It is bumped only when the on-disk
-# structure of the cache file changes, for example how the load coefficients are stored
-# or the addition of the memo section. A cache file whose version does not match is
-# ignored and rebuilt from scratch. This is independent of the serialization format
-# version that hash_object folds into each key, which guards against changes to the
-# reference problem's serialized structure.
-_SOLVE_CACHE_VERSION = 3
+# The schema version of the JSON solve cache. It is bumped when the on-disk structure of
+# the cache file changes, for example how the load coefficients are stored or the
+# addition of the memo section, and also when a fix changes the value a given key should
+# map to, which would otherwise leave incorrect entries readable under their original
+# keys. A cache file whose version does not match is ignored and rebuilt from scratch.
+# This is independent of the serialization format version that hash_object folds into
+# each key, which guards against changes to the reference problem's serialized
+# structure.
+_SOLVE_CACHE_VERSION = 5
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:

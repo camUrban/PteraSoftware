@@ -1,7 +1,8 @@
 INFO    |movements.movement                          |Starting analytical delta_time optimization
-INFO    |movements.movement                          |Returning the initial delta_time estimate because all motion is static
+INFO    |movements.movement                          |All motion is static
+INFO    |movements.movement                          |Returning the initial delta_time estimate
 INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8403389 bytes)
+INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8401469 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -9,17 +10,17 @@ INFO    |_serialization                              |Loaded UnsteadyRingVortexL
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:             -10.9 N     Drag:                   10.9 N
-INFO    |output                                      |    fY_W:         -1.64E-13 N     Side Force:        -1.64E-13 N
+INFO    |output                                      |    fY_W:         -9.35E-14 N     Side Force:        -9.35E-14 N
 INFO    |output                                      |    fZ_W:             -389. N     Lift:                   389. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    mX_W_CgP1:    -2.40E-12 Nm    Rolling Moment:    -2.40E-12 Nm
+INFO    |output                                      |    mX_W_CgP1:    -1.30E-12 Nm    Rolling Moment:    -1.30E-12 Nm
 INFO    |output                                      |    mY_W_CgP1:         21.4 Nm    Pitching Moment:        21.4 Nm
-INFO    |output                                      |    mZ_W_CgP1:     4.28E-13 Nm    Yawing Moment:      4.28E-13 Nm
+INFO    |output                                      |    mZ_W_CgP1:     3.01E-13 Nm    Yawing Moment:      3.01E-13 Nm
 INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:         -0.00913       CDi:                 0.00913
-INFO    |output                                      |    cFY_W:        -1.38E-16       CY:                -1.38E-16
+INFO    |output                                      |    cFY_W:        -7.84E-17       CY:                -7.84E-17
 INFO    |output                                      |    cFZ_W:           -0.326       CL:                    0.326
 INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    cMX_W_CgP1:   -1.67E-16       Cl:                -1.67E-16
+INFO    |output                                      |    cMX_W_CgP1:   -9.08E-17       Cl:                -9.08E-17
 INFO    |output                                      |    cMY_W_CgP1:      0.0110       Cm:                   0.0110
-INFO    |output                                      |    cMZ_W_CgP1:    2.99E-17       Cn:                 2.99E-17
+INFO    |output                                      |    cMZ_W_CgP1:    2.11E-17       Cn:                 2.11E-17

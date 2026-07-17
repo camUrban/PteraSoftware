@@ -329,28 +329,14 @@ def analyze_steady_trim(
 
         objective = (netForceCoefficient_W + netMomentCoefficient_W_CgP1) / 2
 
-        v_str = f"{vCg__E:#.3G}"
-        a_str = f"{alpha:#.3G}"
-        b_str = f"{beta:#.3G}"
-        f_str = f"{externalFX_W:#.3G}"
-        o_str = f"{objective:#.3G}"
-
-        state_msg = (
-            _logging.indent(1)
-            + "State: vCg__E = "
-            + v_str
-            + " m/s, alpha = "
-            + a_str
-            + " deg, beta = "
-            + b_str
-            + " deg, externalFX_W = "
-            + f_str
-            + " N"
+        _logger.info(_logging.indent(1) + "State:")
+        _logger.info(_logging.indent(2) + "vCg__E: " + f"{vCg__E:#.3G}" + " m/s")
+        _logger.info(_logging.indent(2) + "alpha: " + f"{alpha:#.3G}" + " deg")
+        _logger.info(_logging.indent(2) + "beta: " + f"{beta:#.3G}" + " deg")
+        _logger.info(
+            _logging.indent(2) + "externalFX_W: " + f"{externalFX_W:#.3G}" + " N"
         )
-        obj_msg = _logging.indent(2) + "Objective: " + o_str
-
-        _logger.info(state_msg)
-        _logger.info(obj_msg)
+        _logger.info(_logging.indent(1) + "Objective: " + f"{objective:#.3G}")
 
         if objective < objective_cut_off:
             raise StopIteration
@@ -369,6 +355,44 @@ def analyze_steady_trim(
         (beta_bounds[0], beta_bounds[1]),
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
+
+    _logger.info(_logging.indent() + "Beginning trim analysis")
+
+    # Report which variables this analysis searches and their bounds. The state messages
+    # report each trial's values, but the bounds are otherwise invisible in the log.
+    _logger.info(_logging.indent(1) + "Searching:")
+    _logger.info(
+        _logging.indent(2)
+        + "vCg__E: "
+        + f"{boundsVCg__E[0]:#.3G}"
+        + " to "
+        + f"{boundsVCg__E[1]:#.3G}"
+        + " m/s"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "alpha: "
+        + f"{alpha_bounds[0]:#.3G}"
+        + " to "
+        + f"{alpha_bounds[1]:#.3G}"
+        + " deg"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "beta: "
+        + f"{beta_bounds[0]:#.3G}"
+        + " to "
+        + f"{beta_bounds[1]:#.3G}"
+        + " deg"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "externalFX_W: "
+        + f"{boundsExternalFX_W[0]:#.3G}"
+        + " to "
+        + f"{boundsExternalFX_W[1]:#.3G}"
+        + " N"
+    )
 
     _logger.info(_logging.indent() + "Starting local search")
     try:
@@ -390,8 +414,7 @@ def analyze_steady_trim(
         )
 
     _logger.warning(
-        _logging.indent()
-        + "No acceptable value reached with local search, so starting global search"
+        _logging.indent() + "No acceptable value reached, starting global search"
     )
     try:
         global_options: Any = {"maxfun": num_calls, "eps": 0.01}
@@ -418,8 +441,7 @@ def analyze_steady_trim(
 
     _logger.critical(
         _logging.indent()
-        + "No trim condition found, so try increasing the bounds and the maximum "
-        "number of iterations"
+        + "No trim condition found, increase bounds or maximum iterations"
     )
     return None, None, None, None
 
@@ -719,28 +741,14 @@ def analyze_unsteady_trim(
 
         objective = (netForceCoefficients_W + netMomentCoefficients_W_Cg) / 2
 
-        v_str = f"{vCg__E:#.3G}"
-        a_str = f"{alpha:#.3G}"
-        b_str = f"{beta:#.3G}"
-        f_str = f"{externalFX_W:#.3G}"
-        o_str = f"{objective:#.3G}"
-
-        state_msg = (
-            _logging.indent(1)
-            + "State: vCg__E = "
-            + v_str
-            + " m/s, alpha = "
-            + a_str
-            + " deg, beta = "
-            + b_str
-            + " deg, externalFX_W = "
-            + f_str
-            + " N"
+        _logger.info(_logging.indent(1) + "State:")
+        _logger.info(_logging.indent(2) + "vCg__E: " + f"{vCg__E:#.3G}" + " m/s")
+        _logger.info(_logging.indent(2) + "alpha: " + f"{alpha:#.3G}" + " deg")
+        _logger.info(_logging.indent(2) + "beta: " + f"{beta:#.3G}" + " deg")
+        _logger.info(
+            _logging.indent(2) + "externalFX_W: " + f"{externalFX_W:#.3G}" + " N"
         )
-        obj_msg = _logging.indent(2) + "Objective: " + o_str
-
-        _logger.info(state_msg)
-        _logger.info(obj_msg)
+        _logger.info(_logging.indent(1) + "Objective: " + f"{objective:#.3G}")
 
         if objective < objective_cut_off:
             raise StopIteration
@@ -759,6 +767,44 @@ def analyze_unsteady_trim(
         (beta_bounds[0], beta_bounds[1]),
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
+
+    _logger.info(_logging.indent() + "Beginning trim analysis")
+
+    # Report which variables this analysis searches and their bounds. The state messages
+    # report each trial's values, but the bounds are otherwise invisible in the log.
+    _logger.info(_logging.indent(1) + "Searching:")
+    _logger.info(
+        _logging.indent(2)
+        + "vCg__E: "
+        + f"{boundsVCg__E[0]:#.3G}"
+        + " to "
+        + f"{boundsVCg__E[1]:#.3G}"
+        + " m/s"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "alpha: "
+        + f"{alpha_bounds[0]:#.3G}"
+        + " to "
+        + f"{alpha_bounds[1]:#.3G}"
+        + " deg"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "beta: "
+        + f"{beta_bounds[0]:#.3G}"
+        + " to "
+        + f"{beta_bounds[1]:#.3G}"
+        + " deg"
+    )
+    _logger.info(
+        _logging.indent(2)
+        + "externalFX_W: "
+        + f"{boundsExternalFX_W[0]:#.3G}"
+        + " to "
+        + f"{boundsExternalFX_W[1]:#.3G}"
+        + " N"
+    )
 
     _logger.info(_logging.indent() + "Starting local search")
     try:
@@ -780,8 +826,7 @@ def analyze_unsteady_trim(
         )
 
     _logger.warning(
-        _logging.indent()
-        + "No acceptable value reached with local search, so starting global search"
+        _logging.indent() + "No acceptable value reached, starting global search"
     )
     try:
         global_options: Any = {"maxfun": num_calls, "eps": 0.01}
@@ -808,7 +853,6 @@ def analyze_unsteady_trim(
 
     _logger.critical(
         _logging.indent()
-        + "No trim condition found, so try increasing the bounds and the maximum "
-        "number of iterations"
+        + "No trim condition found, increase bounds or maximum iterations"
     )
     return None, None, None, None

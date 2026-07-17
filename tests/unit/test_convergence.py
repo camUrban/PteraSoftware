@@ -136,39 +136,41 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         self.atol = 0.001
 
     def test_identical_coefficients_converge(self) -> None:
-        """Test that identical coefficients converge with a perfect metric."""
+        """Test that identical coefficients converge with perfect metrics."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
-        converged, metric, _ = convergence._check_coefficient_convergence(
+        converged, metrics = convergence._check_coefficient_convergence(
             these, these.copy(), self.rtol, self.atol, self.mask
         )
         self.assertTrue(converged)
-        self.assertEqual(metric, 100.0)
+        np.testing.assert_array_equal(metrics, np.full(6, 100.0))
 
     def test_large_relative_change_does_not_converge(self) -> None:
         """Test that a coefficient changing by more than the relative tolerance does not
-        converge and is reported as the limiting coefficient.
+        converge and is reported with a degraded metric while the others stay perfect.
         """
         coarser = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         these = coarser.copy()
         these[0, 2] = 2.5
-        converged, _, limiting_id = convergence._check_coefficient_convergence(
+        converged, metrics = convergence._check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertFalse(converged)
-        self.assertEqual(limiting_id, 2)
+        self.assertLess(metrics[2], 100.0)
+        np.testing.assert_array_equal(np.delete(metrics, 2), np.full(5, 100.0))
 
     def test_masked_out_coefficient_is_ignored(self) -> None:
         """Test that masking out the only offending coefficient makes the check
-        converge.
+        converge, while its metric is still reported.
         """
         coarser = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         these = coarser.copy()
         these[0, 2] = 2.5
         mask = np.array([True, True, False, True, True, True], dtype=bool)
-        converged, _, _ = convergence._check_coefficient_convergence(
+        converged, metrics = convergence._check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, mask
         )
         self.assertTrue(converged)
+        self.assertLess(metrics[2], 100.0)
 
     def test_absolute_tolerance_floors_near_zero(self) -> None:
         """Test that a coefficient near zero converges via the absolute tolerance floor
@@ -177,14 +179,14 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         these = np.zeros((1, 6), dtype=float)
         coarser = np.zeros((1, 6), dtype=float)
         coarser[0, 0] = 0.5 * self.atol
-        converged, _, _ = convergence._check_coefficient_convergence(
+        converged, _ = convergence._check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertTrue(converged)
 
     def test_all_airplanes_must_converge(self) -> None:
         """Test that the check fails when any one Airplane has an unconverged
-        coefficient.
+        coefficient, whose metric is the minimum across the Airplanes.
         """
         coarser = np.array(
             [
@@ -194,21 +196,22 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
         )
         these = coarser.copy()
         these[1, 0] = 2.0
-        converged, _, limiting_id = convergence._check_coefficient_convergence(
+        converged, metrics = convergence._check_coefficient_convergence(
             these, coarser, self.rtol, self.atol, self.mask
         )
         self.assertFalse(converged)
-        self.assertEqual(limiting_id, 0)
+        self.assertLess(metrics[0], 100.0)
 
-    def test_returns_bool_float_int(self) -> None:
-        """Test that the result is a bool, a float, and an int."""
+    def test_returns_bool_and_metrics_array(self) -> None:
+        """Test that the result is a bool and a (6,) ndarray of floats."""
         these = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
-        converged, metric, limiting_id = convergence._check_coefficient_convergence(
+        converged, metrics = convergence._check_coefficient_convergence(
             these, these.copy(), self.rtol, self.atol, self.mask
         )
         self.assertIsInstance(converged, bool)
-        self.assertIsInstance(metric, float)
-        self.assertIsInstance(limiting_id, int)
+        self.assertIsInstance(metrics, np.ndarray)
+        self.assertEqual(metrics.shape, (6,))
+        self.assertEqual(metrics.dtype, np.dtype(float))
 
 
 class TestValidatePanelAspectRatioBounds(unittest.TestCase):
@@ -482,6 +485,69 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
                 ref_problem=self.variable_problem,
                 prescribed_wake=False,
                 free_wake=False,
+            )
+
+    def test_max_wake_cycles_raises_value_error(self) -> None:
+        """Test that a variable-geometry ref_problem whose wake is truncated by
+        max_wake_cycles raises a ValueError.
+        """
+        ref_movement = movement_fixtures.make_basic_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_cycles=1,
+            max_wake_cycles=1,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_cycles_bounds=(1, 2),
+            )
+
+    def test_max_wake_chords_raises_value_error(self) -> None:
+        """Test that a static-geometry ref_problem whose wake is truncated by
+        max_wake_chords raises a ValueError.
+        """
+        ref_movement = movement_fixtures.make_static_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_chords=3,
+            max_wake_chords=1,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_chords_bounds=(1, 2),
+            )
+
+    def test_max_wake_rows_raises_value_error(self) -> None:
+        """Test that a ref_problem whose wake is truncated by max_wake_rows raises a
+        ValueError.
+        """
+        ref_movement = movement_fixtures.make_basic_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_cycles=1,
+            max_wake_rows=10,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_cycles_bounds=(1, 2),
             )
 
     def test_static_geometry_rejects_num_cycles_bounds(self) -> None:

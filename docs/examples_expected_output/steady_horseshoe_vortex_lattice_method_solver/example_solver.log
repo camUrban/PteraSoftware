@@ -2,22 +2,22 @@ INFO    |output                                      |Airplane "Example Airplane
 INFO    |output                                      |  Reynolds Number: 1.08E+06
 INFO    |output                                      |  Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:             -41.0 N     Drag:                   41.0 N
-INFO    |output                                      |    fY_W:          2.14E-14 N     Side Force:         2.14E-14 N
+INFO    |output                                      |    fY_W:          3.53E-14 N     Side Force:         3.53E-14 N
 INFO    |output                                      |    fZ_W:         -1.06E+03 N     Lift:               1.06E+03 N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    mX_W_CgP1:     3.75E-13 Nm    Rolling Moment:     3.75E-13 Nm
+INFO    |output                                      |    mX_W_CgP1:     4.23E-13 Nm    Rolling Moment:     4.23E-13 Nm
 INFO    |output                                      |    mY_W_CgP1:    -2.04E+03 Nm    Pitching Moment:   -2.04E+03 Nm
-INFO    |output                                      |    mZ_W_CgP1:    -9.66E-14 Nm    Yawing Moment:     -9.66E-14 Nm
+INFO    |output                                      |    mZ_W_CgP1:    -1.45E-13 Nm    Yawing Moment:     -1.45E-13 Nm
 INFO    |output                                      |  Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:          -0.0344       CDi:                  0.0344
-INFO    |output                                      |    cFY_W:         1.79E-17       CY:                 1.79E-17
+INFO    |output                                      |    cFY_W:         2.96E-17       CY:                 2.96E-17
 INFO    |output                                      |    cFZ_W:           -0.886       CL:                    0.886
 INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    cMX_W_CgP1:    2.62E-17       Cl:                 2.62E-17
+INFO    |output                                      |    cMX_W_CgP1:    2.96E-17       Cl:                 2.96E-17
 INFO    |output                                      |    cMY_W_CgP1:       -1.05       Cm:                    -1.05
-INFO    |output                                      |    cMZ_W_CgP1:   -6.75E-18       Cn:                -6.75E-18
+INFO    |output                                      |    cMZ_W_CgP1:   -1.01E-17       Cn:                -1.01E-17
 INFO    |_serialization                              |Saving SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz (491938 bytes)
+INFO    |_serialization                              |Saved SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz (491969 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes

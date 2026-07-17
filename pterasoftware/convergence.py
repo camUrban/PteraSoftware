@@ -789,7 +789,9 @@ def analyze_unsteady_convergence(
 
     :param ref_problem: The UnsteadyProblem whose converged parameters will be found.
         This must be a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
-        AeroelasticUnsteadyProblem, neither of which is supported.
+        AeroelasticUnsteadyProblem, neither of which is supported. Its Movement must not
+        truncate its wake, because this analysis sweeps the wake's length, so its
+        max_wake_rows, max_wake_chords, and max_wake_cycles parameters must all be None.
     :param prescribed_wake: Determines if a prescribed wake state should be analyzed. If
         this parameter is False, then the ``free_wake`` parameter must be set to True.
         Can be a bool or a numpy bool and will be converted to a bool internally. The
@@ -889,6 +891,20 @@ def analyze_unsteady_convergence(
     # Validate the wake length bounds parameters.
     ref_movement: movements.movement.Movement = ref_problem.movement
     static = ref_movement.static
+
+    # Reject a reference Movement that truncates its wake. This analysis sweeps the
+    # wake's length by varying the simulation's duration, so a truncated wake would stop
+    # growing once the sweep passed the truncation length. Every longer wake length
+    # would then share one capped wake and report convergence at the truncation length
+    # rather than at the length the problem needs. Both max_wake_chords and
+    # max_wake_cycles resolve to max_wake_rows, so this covers all three parameters.
+    if ref_movement.max_wake_rows is not None:
+        raise ValueError(
+            "ref_problem's Movement must not truncate its wake, as this analysis "
+            "sweeps the wake's length. Its max_wake_rows, max_wake_chords, and "
+            "max_wake_cycles parameters must all be None."
+        )
+
     if static:
         if not num_cycles_bounds is None:
             raise ValueError(

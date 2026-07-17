@@ -484,6 +484,60 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
                 free_wake=False,
             )
 
+    def test_max_wake_cycles_raises_value_error(self) -> None:
+        """Test that a variable-geometry ref_problem whose wake is truncated by
+        max_wake_cycles raises a ValueError.
+        """
+        ref_movement = movement_fixtures.make_basic_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_cycles=1,
+            max_wake_cycles=1,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_cycles_bounds=(1, 2),
+            )
+
+    def test_max_wake_chords_raises_value_error(self) -> None:
+        """Test that a static-geometry ref_problem whose wake is truncated by
+        max_wake_chords raises a ValueError.
+        """
+        ref_movement = movement_fixtures.make_static_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_chords=3,
+            max_wake_chords=1,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_chords_bounds=(1, 2),
+            )
+
+    def test_max_wake_rows_raises_value_error(self) -> None:
+        """Test that a ref_problem whose wake is truncated by max_wake_rows raises a
+        ValueError.
+        """
+        ref_movement = movement_fixtures.make_basic_movement_fixture()
+        truncated_movement = ps.movements.movement.Movement(
+            airplane_movements=list(ref_movement.airplane_movements),
+            operating_point_movement=ref_movement.operating_point_movement,
+            num_cycles=1,
+            max_wake_rows=10,
+        )
+
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=ps.problems.UnsteadyProblem(movement=truncated_movement),
+                num_cycles_bounds=(1, 2),
+            )
+
     def test_static_geometry_rejects_num_cycles_bounds(self) -> None:
         """Test that supplying num_cycles_bounds for a static-geometry problem raises a
         ValueError.

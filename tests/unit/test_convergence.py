@@ -497,6 +497,9 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
             operating_point_movement=ref_movement.operating_point_movement,
             num_cycles=1,
             max_wake_cycles=1,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
         )
 
         with self.assertRaises(ValueError):
@@ -515,6 +518,9 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
             operating_point_movement=ref_movement.operating_point_movement,
             num_chords=3,
             max_wake_chords=1,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
         )
 
         with self.assertRaises(ValueError):
@@ -533,6 +539,9 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
             operating_point_movement=ref_movement.operating_point_movement,
             num_cycles=1,
             max_wake_rows=10,
+            # Reusing the fixture's already-resolved time step skips a second run of
+            # Movement's delta_time optimizer.
+            delta_time=ref_movement.delta_time,
         )
 
         with self.assertRaises(ValueError):

@@ -2019,11 +2019,11 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
 
         # Verify the warning was issued.
         warning_found = any(
-            "time steps per minimum period" in msg for msg in log_context.output
+            "time steps per minimum motion period" in msg for msg in log_context.output
         )
         self.assertTrue(
             warning_found,
-            "Expected warning about time steps per minimum period not found.",
+            "Expected warning about time steps per minimum motion period not found.",
         )
 
 

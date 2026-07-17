@@ -883,6 +883,12 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
                 airplane_movements=airplane_movements,
                 operating_point_movement=operating_point_movement,
                 num_cycles=1,
+                # An explicit, coarse time step matters here even though these tests
+                # never solve anything: Movement generates its meshed geometry at every
+                # time step during construction, and without this it first runs its
+                # delta_time optimizer, which resolves a step over a thousand times
+                # finer. This setUp runs once per test in this class.
+                delta_time=0.5,
             )
         )
 
@@ -892,7 +898,8 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         and the edge-defined Wing's second.
 
         The delta_time cache is seeded so that the build reuses a time step instead of
-        running Movement's iterative optimizer.
+        running Movement's iterative optimizer, and the seeded value is coarse so that
+        the built Movement generates only a handful of time steps of geometry.
         """
         this_problem = _convergence_meshing.build_unsteady_problem(
             ar_id=0,
@@ -903,7 +910,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             ref_problem=self.ref_problem,
             num_spanwise_panels_cache={},
             num_wing_cross_sections_cache={},
-            delta_time_cache={(0, 0): 0.01},
+            delta_time_cache={(0, 0): 0.5},
         )
         return list(this_problem.movement.airplane_movements)
 

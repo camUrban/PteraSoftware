@@ -7,6 +7,11 @@ from collections.abc import Callable
 import numpy as np
 import scipy.signal as sp_sig
 
+# The number of points used to sample a custom spacing function when validating its
+# shape. The grid spans two full periods, and the count is odd so that one point lies
+# exactly on 2.0 * pi.
+_NUM_SPACING_VALIDATION_SAMPLES_PER_TWO_PERIODS = 201
+
 
 def oscillating_sin_at_time(
     amp: float,
@@ -191,9 +196,10 @@ def _validate_custom_spacing_function(
     :param custom_function: The custom spacing function to validate.
     :return: None
     """
-    # Test the function over two full periods. Use an odd number of points so that one
-    # point lies exactly on 2.0 * pi.
-    test_times = np.linspace(0.0, 4.0 * np.pi, 201, dtype=float)
+    # Test the function over two full periods.
+    test_times = np.linspace(
+        0.0, 4.0 * np.pi, _NUM_SPACING_VALIDATION_SAMPLES_PER_TWO_PERIODS, dtype=float
+    )
 
     test_output = np.zeros_like(test_times)
     try:

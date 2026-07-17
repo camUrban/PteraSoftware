@@ -47,11 +47,12 @@ class OperatingPointMovement(_core.CoreOperatingPointMovement):
             OperatingPoint at each time step will be created.
         :param ampVCg__E: The amplitude of the OperatingPointMovement's changes in its
             OperatingPoints' vCg__E parameters. Must be a non negative number (int or
-            float), and is converted to a float internally. The amplitude must be low
-            enough that it doesn't drive its base value out of the range of valid
-            values. Otherwise, this OperatingPointMovement will try to create
-            OperatingPoints with invalid parameter values. The units are in meters per
-            second. The default is 0.0.
+            float), and is converted to a float internally. The oscillation must keep
+            vCg__E positive at every time step: for the "sine" and "uniform" spacings,
+            ampVCg__E must be less than the base OperatingPoint's vCg__E, and for a
+            custom spacing function, the minimum of the scaled and shifted function,
+            sampled over one period, must be positive. Construction raises a ValueError
+            otherwise. The units are in meters per second. The default is 0.0.
         :param periodVCg__E: The period of the OperatingPointMovement's changes in its
             OperatingPoints' vCg__E parameter. Must be a non negative number (int or
             float), and is converted to a float internally. It must be 0.0 if ampVCg__E

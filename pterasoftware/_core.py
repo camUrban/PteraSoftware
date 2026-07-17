@@ -16,6 +16,13 @@ from . import operating_point as operating_point_mod
 if TYPE_CHECKING:
     from . import problems
 
+# The number of points used to sample a custom vCg__E spacing function over one period
+# when checking that an oscillation's minimum speed stays positive. It equals
+# _oscillation's _NUM_SPACING_VALIDATION_SAMPLES_PER_TWO_PERIODS, whose grid spans two
+# periods, so the guard samples at double the per-period density of the shape
+# validation.
+_NUM_OSCILLATION_GUARD_SAMPLES_PER_PERIOD = 201
+
 
 def lcm(a: float, b: float) -> float:
     """Calculates the least common multiple of two numbers.
@@ -127,6 +134,44 @@ class CoreOperatingPointMovement:
         if self._ampVCg__E == 0 and phaseVCg__E != 0:
             raise ValueError("If ampVCg__E is 0.0, then phaseVCg__E must also be 0.0.")
         self._phaseVCg__E = phaseVCg__E
+
+        # When vCg__E oscillates, require the lowest speed over one period to stay
+        # positive. The per-step OperatingPoints carry the base OperatingPoint's alpha
+        # and beta, which the zero-speed consistency rules reject at a speed of 0.0, so
+        # an oscillation that reaches 0.0 would otherwise fail one step at a time with
+        # errors that never name the oscillation as the cause. For the "sine" and
+        # "uniform" spacings, the lowest speed is exactly the base value minus the
+        # amplitude. A custom spacing function is only required to have an amplitude of
+        # 1.0 and may have a nonzero mean, so its lowest speed comes from sampling the
+        # scaled and shifted function over one period instead.
+        if self._ampVCg__E > 0.0:
+            base_vCg__E = self._base_operating_point.vCg__E
+            if callable(self._spacingVCg__E):
+                minVCg__E = min(
+                    _oscillation.oscillating_custom_at_time(
+                        amp=self._ampVCg__E,
+                        period=2.0 * np.pi,
+                        phase=self._phaseVCg__E,
+                        base=base_vCg__E,
+                        time=sample_time,
+                        custom_function=self._spacingVCg__E,
+                    )
+                    for sample_time in np.linspace(
+                        0.0, 2.0 * np.pi, _NUM_OSCILLATION_GUARD_SAMPLES_PER_PERIOD
+                    )
+                )
+            else:
+                minVCg__E = base_vCg__E - self._ampVCg__E
+            if minVCg__E <= 0.0:
+                raise ValueError(
+                    f"The vCg__E oscillation must keep vCg__E positive at every "
+                    f"time step, but its minimum value over one period is "
+                    f"{minVCg__E:#.3G} m/s. The wind axes are undefined at zero "
+                    f"speed, and the per-step OperatingPoints carry the base "
+                    f"OperatingPoint's alpha and beta, so a speed that reaches 0.0 "
+                    f"has no consistent representation. Reduce ampVCg__E or raise "
+                    f"the base OperatingPoint's vCg__E."
+                )
 
         # Initialize the cache for the property derived from the immutable attributes.
         self._max_period: float | None = None

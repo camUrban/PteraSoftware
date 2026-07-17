@@ -112,8 +112,8 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         """Test ampVCg__E parameter validation."""
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
-        # Test valid non-negative values.
-        valid_amps = [0.0, 1.0, 5.0, 100.0]
+        # Test valid non-negative values below the base vCg__E of 10.0.
+        valid_amps = [0.0, 1.0, 5.0, 9.0]
         for amp in valid_amps:
             with self.subTest(amp=amp):
                 core_op_movement = ps._core.CoreOperatingPointMovement(
@@ -589,27 +589,112 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_unsafe_amplitude_causes_error(self) -> None:
-        """Test that amplitude too high for base vCg__E causes error during
-        generation."""
-        # Use low-speed operating point with vCg__E = 10.0.
+        """Test that an amplitude too high for the base vCg__E causes an error at
+        construction."""
+        # Use an operating point with vCg__E = 10.0.
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 
-        # Create CoreOperatingPointMovement with amplitude that will drive vCg__E
-        # negative.
+        # Constructing a CoreOperatingPointMovement with an amplitude that would drive
+        # vCg__E negative should raise a ValueError.
+        with self.assertRaises(ValueError) as context:
+            ps._core.CoreOperatingPointMovement(
+                base_operating_point=base_op,
+                ampVCg__E=15.0,
+                periodVCg__E=1.0,
+                spacingVCg__E="sine",
+                phaseVCg__E=-90.0,
+            )
+
+        # Verify the error message is about vCg__E validation.
+        self.assertIn("vCg__E", str(context.exception))
+
+    def test_oscillation_reaching_zero_speed_raises(self) -> None:
+        """Test that an oscillation whose minimum speed reaches 0.0 raises at
+        construction, for both the "sine" and "uniform" spacings and for a zero-speed
+        base."""
+        base_op = operating_point_fixtures.make_basic_operating_point_fixture()
+
+        # An amplitude equal to the base vCg__E of 10.0 touches zero speed exactly.
+        for spacing in ["sine", "uniform"]:
+            with self.subTest(spacing=spacing):
+                with self.assertRaises(ValueError):
+                    ps._core.CoreOperatingPointMovement(
+                        base_operating_point=base_op,
+                        ampVCg__E=10.0,
+                        periodVCg__E=1.0,
+                        spacingVCg__E=spacing,
+                    )
+
+        # A zero-speed base cannot oscillate at all.
+        zero_speed_op = (
+            operating_point_fixtures.make_zero_speed_operating_point_fixture()
+        )
+        with self.assertRaises(ValueError):
+            ps._core.CoreOperatingPointMovement(
+                base_operating_point=zero_speed_op,
+                ampVCg__E=1.0,
+                periodVCg__E=1.0,
+                spacingVCg__E="sine",
+            )
+
+    def test_custom_oscillation_uses_sampled_minimum(self) -> None:
+        """Test that a custom spacing function's oscillation bound comes from its
+        sampled minimum rather than from its amplitude, since custom functions may have
+        a nonzero mean."""
+        base_op = operating_point_fixtures.make_basic_operating_point_fixture()
+
+        def non_negative_wave(x: float) -> float:
+            """A valid spacing function with range [0.0, 2.0], which never dips below
+            the base value.
+
+            :param x: The input angle in radians.
+            :return: The output value.
+            """
+            return float(1.0 - np.cos(x))
+
+        def non_positive_wave(x: float) -> float:
+            """A valid spacing function with range [-2.0, 0.0], which dips below the
+            base value by twice the amplitude.
+
+            :param x: The input angle in radians.
+            :return: The output value.
+            """
+            return float(np.cos(x) - 1.0)
+
+        # The non negative wave never drops below the base vCg__E of 10.0, so an
+        # amplitude larger than the base is still valid.
         core_op_movement = ps._core.CoreOperatingPointMovement(
             base_operating_point=base_op,
             ampVCg__E=15.0,
             periodVCg__E=1.0,
-            spacingVCg__E="sine",
-            phaseVCg__E=-90.0,
+            spacingVCg__E=non_negative_wave,
         )
+        self.assertEqual(core_op_movement.ampVCg__E, 15.0)
 
-        # Generating OperatingPoints should raise ValueError when vCg__E goes negative.
-        with self.assertRaises(ValueError) as context:
-            core_op_movement.generate_operating_points(num_steps=100, delta_time=0.01)
+        # The non positive wave dips to the base vCg__E of 10.0 minus twice the
+        # amplitude, so an amplitude smaller than the base can still reach zero speed.
+        with self.assertRaises(ValueError):
+            ps._core.CoreOperatingPointMovement(
+                base_operating_point=base_op,
+                ampVCg__E=6.0,
+                periodVCg__E=1.0,
+                spacingVCg__E=non_positive_wave,
+            )
 
-        # Verify the error message is about vCg__E validation.
-        self.assertIn("vCg__E", str(context.exception))
+    def test_guard_samples_at_double_the_validation_density(self) -> None:
+        """Test that the oscillation guard's sampling grid is twice as dense per period
+        as the custom spacing function shape validation's grid.
+
+        The guard's grid spans one period while the validation's spans two, so the
+        doubled density shows up as equal point counts.
+        """
+        guard_spacing = (2.0 * np.pi) / (
+            ps._core._NUM_OSCILLATION_GUARD_SAMPLES_PER_PERIOD - 1
+        )
+        validation_spacing = (4.0 * np.pi) / (
+            ps._oscillation._NUM_SPACING_VALIDATION_SAMPLES_PER_TWO_PERIODS - 1
+        )
+        self.assertEqual(guard_spacing, validation_spacing / 2.0)
 
     def test_large_amplitude_movement(self) -> None:
         """Test CoreOperatingPointMovement with large amplitude."""

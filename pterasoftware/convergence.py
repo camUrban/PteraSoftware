@@ -230,6 +230,15 @@ def analyze_steady_convergence(
     run_start_time = time.time()
     _logger.info(_logging.indent() + "Beginning convergence analysis")
 
+    # Report which load coefficients this analysis requires to converge. The swept
+    # parameters are reported by the loops below as they are reached, but the mask is
+    # otherwise invisible, which leaves a log ambiguous as to whether a case converged
+    # against all six coefficients or a subset.
+    _logger.info(_logging.indent(1) + "Converging:")
+    for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
+        if masked_in:
+            _logger.info(_logging.indent(2) + label)
+
     ref_airplanes = ref_problem.airplanes
 
     # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal
@@ -439,7 +448,11 @@ def analyze_steady_convergence(
             iter_times[ar_id, chord_id] = this_iter_time
 
             if cached:
-                _logger.info(_logging.indent(3) + "Loaded cached solution")
+                _logger.info(
+                    _logging.indent(3)
+                    + "Cache hit: was solved in "
+                    + _functions.format_duration(this_iter_time)
+                )
             else:
                 _logger.info(
                     _logging.indent(3)
@@ -457,55 +470,46 @@ def analyze_steady_convergence(
             # If this isn't the first Panel aspect ratio, check convergence in the Panel
             # aspect ratio direction.
             if ar_id > 0:
-                ar_converged, ar_metric, ar_limiting_id = (
-                    _check_coefficient_convergence(
-                        these_coefficients,
-                        coefficients[ar_id - 1, chord_id, :, :],
-                        rtol,
-                        atol,
-                        coefficient_mask_array,
-                    )
+                ar_converged, ar_metrics = _check_coefficient_convergence(
+                    these_coefficients,
+                    coefficients[ar_id - 1, chord_id, :, :],
+                    rtol,
+                    atol,
+                    coefficient_mask_array,
                 )
 
-                _logger.info(
-                    _logging.indent(3)
-                    + "Panel aspect ratio convergence: "
-                    + f"{ar_metric:#.4G}"
-                    + "% (limiting: "
-                    + _COEFFICIENT_LABELS[ar_limiting_id]
-                    + ")"
+                _log_coefficient_metrics(
+                    "Panel aspect ratio convergence:",
+                    ar_metrics,
+                    coefficient_mask_array,
+                    3,
                 )
             else:
                 _logger.info(
-                    _logging.indent(3)
-                    + "Panel aspect ratio convergence: not yet checked"
+                    _logging.indent(3) + "Panel aspect ratio convergence: not checked"
                 )
 
             # If this isn't the first number of chordwise Panels, check convergence in
             # the number of chordwise Panels direction.
             if chord_id > 0:
-                chord_converged, chord_metric, chord_limiting_id = (
-                    _check_coefficient_convergence(
-                        these_coefficients,
-                        coefficients[ar_id, chord_id - 1, :, :],
-                        rtol,
-                        atol,
-                        coefficient_mask_array,
-                    )
+                chord_converged, chord_metrics = _check_coefficient_convergence(
+                    these_coefficients,
+                    coefficients[ar_id, chord_id - 1, :, :],
+                    rtol,
+                    atol,
+                    coefficient_mask_array,
                 )
 
-                _logger.info(
-                    _logging.indent(3)
-                    + "Number of chordwise Panels convergence: "
-                    + f"{chord_metric:#.4G}"
-                    + "% (limiting: "
-                    + _COEFFICIENT_LABELS[chord_limiting_id]
-                    + ")"
+                _log_coefficient_metrics(
+                    "Number of chordwise Panels convergence:",
+                    chord_metrics,
+                    coefficient_mask_array,
+                    3,
                 )
             else:
                 _logger.info(
                     _logging.indent(3)
-                    + "Number of chordwise Panels convergence: not yet checked"
+                    + "Number of chordwise Panels convergence: not checked"
                 )
 
             # Consider the Panel aspect ratio value to be saturated if it is equal to
@@ -686,7 +690,7 @@ def analyze_steady_convergence(
     # values of None for the converged parameters.
     _logger.info(
         _logging.indent()
-        + "The analysis did not find a converged case within the given bounds"
+        + "The analysis did not find a converged case within the bounds"
     )
     _logger.info(
         _logging.indent()
@@ -988,6 +992,15 @@ def analyze_unsteady_convergence(
     run_start_time = time.time()
     _logger.info(_logging.indent() + "Beginning convergence analysis")
 
+    # Report which load coefficients this analysis requires to converge. The swept
+    # parameters are reported by the loops below as they are reached, but the mask is
+    # otherwise invisible, which leaves a log ambiguous as to whether a case converged
+    # against all six coefficients or a subset.
+    _logger.info(_logging.indent(1) + "Converging:")
+    for label, masked_in in zip(_COEFFICIENT_LABELS, coefficient_mask_array):
+        if masked_in:
+            _logger.info(_logging.indent(2) + label)
+
     ref_airplane_movements = ref_movement.airplane_movements
     ref_base_airplanes = tuple(
         ref_airplane_movement.base_airplane
@@ -1280,7 +1293,11 @@ def analyze_unsteady_convergence(
                     iter_times[wake_id, length_id, ar_id, chord_id] = this_iter_time
 
                     if cached:
-                        _logger.info(_logging.indent(5) + "Loaded cached solution")
+                        _logger.info(
+                            _logging.indent(5)
+                            + "Cache hit: was solved in "
+                            + _functions.format_duration(this_iter_time)
+                        )
                     else:
                         _logger.info(
                             _logging.indent(5)
@@ -1300,36 +1317,31 @@ def analyze_unsteady_convergence(
                     # If this isn't the first wake state, check convergence in the wake
                     # state direction.
                     if wake_id > 0:
-                        wake_converged, wake_metric, wake_limiting_id = (
-                            _check_coefficient_convergence(
-                                these_final_coefficients,
-                                final_coefficients[
-                                    wake_id - 1, length_id, ar_id, chord_id, :, :
-                                ],
-                                rtol,
-                                atol,
-                                coefficient_mask_array,
-                            )
+                        wake_converged, wake_metrics = _check_coefficient_convergence(
+                            these_final_coefficients,
+                            final_coefficients[
+                                wake_id - 1, length_id, ar_id, chord_id, :, :
+                            ],
+                            rtol,
+                            atol,
+                            coefficient_mask_array,
                         )
 
-                        _logger.info(
-                            _logging.indent(5)
-                            + "Wake type convergence: "
-                            + f"{wake_metric:#.4G}"
-                            + "% (limiting: "
-                            + _COEFFICIENT_LABELS[wake_limiting_id]
-                            + ")"
+                        _log_coefficient_metrics(
+                            "Wake type convergence:",
+                            wake_metrics,
+                            coefficient_mask_array,
+                            5,
                         )
                     else:
                         _logger.info(
-                            _logging.indent(5)
-                            + "Wake type convergence: not yet checked"
+                            _logging.indent(5) + "Wake type convergence: not checked"
                         )
 
                     # If this isn't the first wake length, check convergence in the wake
                     # length direction.
                     if length_id > 0:
-                        length_converged, length_metric, length_limiting_id = (
+                        length_converged, length_metrics = (
                             _check_coefficient_convergence(
                                 these_final_coefficients,
                                 final_coefficients[
@@ -1341,77 +1353,65 @@ def analyze_unsteady_convergence(
                             )
                         )
 
-                        _logger.info(
-                            _logging.indent(5)
-                            + "Wake length convergence: "
-                            + f"{length_metric:#.4G}"
-                            + "% (limiting: "
-                            + _COEFFICIENT_LABELS[length_limiting_id]
-                            + ")"
+                        _log_coefficient_metrics(
+                            "Wake length convergence:",
+                            length_metrics,
+                            coefficient_mask_array,
+                            5,
                         )
                     else:
                         _logger.info(
-                            _logging.indent(5)
-                            + "Wake length convergence: not yet checked"
+                            _logging.indent(5) + "Wake length convergence: not checked"
                         )
 
                     # If this isn't the first Panel aspect ratio, check convergence in
                     # the Panel aspect ratio direction.
                     if ar_id > 0:
-                        ar_converged, ar_metric, ar_limiting_id = (
-                            _check_coefficient_convergence(
-                                these_final_coefficients,
-                                final_coefficients[
-                                    wake_id, length_id, ar_id - 1, chord_id, :, :
-                                ],
-                                rtol,
-                                atol,
-                                coefficient_mask_array,
-                            )
+                        ar_converged, ar_metrics = _check_coefficient_convergence(
+                            these_final_coefficients,
+                            final_coefficients[
+                                wake_id, length_id, ar_id - 1, chord_id, :, :
+                            ],
+                            rtol,
+                            atol,
+                            coefficient_mask_array,
                         )
 
-                        _logger.info(
-                            _logging.indent(5)
-                            + "Panel aspect ratio convergence: "
-                            + f"{ar_metric:#.4G}"
-                            + "% (limiting: "
-                            + _COEFFICIENT_LABELS[ar_limiting_id]
-                            + ")"
+                        _log_coefficient_metrics(
+                            "Panel aspect ratio convergence:",
+                            ar_metrics,
+                            coefficient_mask_array,
+                            5,
                         )
                     else:
                         _logger.info(
                             _logging.indent(5)
-                            + "Panel aspect ratio convergence: not yet checked"
+                            + "Panel aspect ratio convergence: not checked"
                         )
 
                     # If this isn't the first number of chordwise Panels, check
                     # convergence in the number of chordwise Panels direction.
                     if chord_id > 0:
-                        chord_converged, chord_metric, chord_limiting_id = (
-                            _check_coefficient_convergence(
-                                these_final_coefficients,
-                                final_coefficients[
-                                    wake_id, length_id, ar_id, chord_id - 1, :, :
-                                ],
-                                rtol,
-                                atol,
-                                coefficient_mask_array,
-                            )
+                        chord_converged, chord_metrics = _check_coefficient_convergence(
+                            these_final_coefficients,
+                            final_coefficients[
+                                wake_id, length_id, ar_id, chord_id - 1, :, :
+                            ],
+                            rtol,
+                            atol,
+                            coefficient_mask_array,
                         )
 
-                        _logger.info(
-                            _logging.indent(5)
-                            + "Number of chordwise Panels convergence: "
-                            + f"{chord_metric:#.4G}"
-                            + "% (limiting: "
-                            + _COEFFICIENT_LABELS[chord_limiting_id]
-                            + ")"
+                        _log_coefficient_metrics(
+                            "Number of chordwise Panels convergence:",
+                            chord_metrics,
+                            coefficient_mask_array,
+                            5,
                         )
                     else:
                         _logger.info(
                             _logging.indent(5)
-                            + "Number of chordwise Panels convergence: not yet "
-                            "checked"
+                            + "Number of chordwise Panels convergence: not checked"
                         )
 
                     # Consider the Panel aspect ratio value to be saturated if it is
@@ -1662,7 +1662,7 @@ def analyze_unsteady_convergence(
     # values of None for the converged parameters.
     _logger.info(
         _logging.indent()
-        + "The analysis did not find a converged case within the given bounds"
+        + "The analysis did not find a converged case within the bounds"
     )
     _logger.info(
         _logging.indent()
@@ -1788,7 +1788,7 @@ def _check_coefficient_convergence(
     rtol: float,
     atol: float,
     coefficient_mask: np.ndarray,
-) -> tuple[bool, float, int]:
+) -> tuple[bool, np.ndarray]:
     """Checks per-coefficient convergence between an iteration's load coefficients and
     those of an incrementally coarser iteration.
 
@@ -1801,9 +1801,9 @@ def _check_coefficient_convergence(
 
     A convergence metric accompanies the result for logging. It is a percentage that is
     100.0 when a coefficient has converged and falls toward 0.0 as its error grows past
-    its tolerance, so a lower metric means a coefficient is further from converging. The
-    minimum metric across the unmasked coefficients of all Airplanes and the index of
-    the coefficient that attains it are returned to identify the limiting coefficient.
+    its tolerance, so a lower metric means a coefficient is further from converging.
+    Each coefficient's metric is minimized across the Airplanes, so a multi-Airplane
+    study reports each coefficient's furthest-from-converged value.
 
     :param these_coefficients: A (M,6) ndarray of floats, where M is the number of
         Airplanes, of this iteration's six load coefficients for each Airplane: the
@@ -1817,11 +1817,11 @@ def _check_coefficient_convergence(
         positive float.
     :param coefficient_mask: A (6,) ndarray of bools that determines which of the six
         load coefficients must converge. At least one element is True.
-    :return: A tuple of a bool, a float, and an int. In order, whether every unmasked
-        coefficient of every Airplane has converged, the minimum convergence metric
-        (percentage) across the unmasked coefficients of all Airplanes, and the index
-        within the six coefficients of the limiting coefficient (the one attaining that
-        minimum metric).
+    :return: A tuple of a bool and a (6,) ndarray of floats. In order, whether every
+        unmasked coefficient of every Airplane has converged, and each of the six load
+        coefficients' convergence metrics (percentages), minimized across the Airplanes.
+        The metrics of every coefficient are returned, including the masked-out ones,
+        which do not gate convergence.
     """
     errors = np.abs(these_coefficients - coarser_coefficients)
     tolerances = atol + rtol * np.maximum(
@@ -1840,14 +1840,43 @@ def _check_coefficient_convergence(
             100.0 * np.minimum(1.0, tolerances / errors),
         )
 
-    # Exclude the masked-out coefficients from the limiting-coefficient search by
-    # setting their metrics to infinity. The mask has shape (6,) and broadcasts across
-    # Airplanes.
-    masked_metrics = np.where(coefficient_mask, metrics, np.inf)
-    min_metric = float(np.min(masked_metrics))
-    limiting_coefficient_id = int(np.argmin(masked_metrics) % 6)
+    # Aggregate each coefficient's metric across the Airplanes by its minimum, so a
+    # multi-Airplane study reports each coefficient's furthest-from-converged value.
+    coefficient_metrics = np.min(metrics, axis=0)
 
-    return all_converged, min_metric, limiting_coefficient_id
+    return all_converged, coefficient_metrics
+
+
+def _log_coefficient_metrics(
+    header: str,
+    coefficient_metrics: np.ndarray,
+    coefficient_mask: np.ndarray,
+    levels: int,
+) -> None:
+    """Logs one convergence direction's per-coefficient convergence metrics.
+
+    The header is logged first, then each unmasked load coefficient's metric on its own
+    line, one level deeper. The masked-out coefficients do not gate convergence, so they
+    are skipped.
+
+    :param header: The message introducing the direction, for example "Panel aspect
+        ratio convergence:".
+    :param coefficient_metrics: A (6,) ndarray of floats of each load coefficient's
+        convergence metric (percentage), as returned by _check_coefficient_convergence.
+    :param coefficient_mask: A (6,) ndarray of bools that determines which of the six
+        load coefficients must converge.
+    :param levels: The number of levels to indent the header beyond the current nesting
+        level. It must be a non negative int.
+    :return: None
+    """
+    _logger.info(_logging.indent(levels) + header)
+    for label, metric, masked_in in zip(
+        _COEFFICIENT_LABELS, coefficient_metrics, coefficient_mask
+    ):
+        if masked_in:
+            _logger.info(
+                _logging.indent(levels + 1) + label + ": " + f"{metric:#.4G}" + "%"
+            )
 
 
 def _converged_parameter_id(

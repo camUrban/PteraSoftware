@@ -286,6 +286,281 @@ class TestMemosComplete(unittest.TestCase):
         self.assertTrue(self._memos_complete(delta_time_cache={(0, 0): 0.01}))
 
 
+class TestBuildSteadyProblem(unittest.TestCase):
+    """This class contains methods for testing
+    _convergence_meshing.build_steady_problem, the builder that copies a reference
+    SteadyProblem's Airplanes at one mesh.
+
+    The reference holds two Airplanes so that one build covers both refinement branches:
+    the first Airplane's Wing is trapezoidal, which is refined by resolving each non tip
+    WingCrossSection's number of spanwise Panels, and the second Airplane's Wing is
+    edge-defined, which is refined by resampling its stored edge curves into a new number
+    of WingCrossSections.
+    """
+
+    # The reference Airplanes' indices within the reference SteadyProblem, which are
+    # also the indices their copies take and part of each cache key.
+    trapezoidal_airplane_id = 0
+    edge_defined_airplane_id = 1
+
+    def setUp(self) -> None:
+        """Set up a reference SteadyProblem holding a trapezoidal Wing and an
+        edge-defined Wing, and the empty caches that a build fills.
+
+        :return: None
+        """
+        self.trapezoidal_wing = geometry_fixtures.make_three_section_wing_fixture()
+
+        ys = np.linspace(0.0, 2.0, 20)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((0.25 * ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        self.edge_defined_wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            name="Edge Wing",
+            num_chordwise_panels=4,
+        )
+
+        # The first Airplane in a simulation must keep a zero Cg_GP1_CgP1, so only the
+        # second carries the nonzero value that the copy is checked for.
+        self.ref_problem = ps.problems.SteadyProblem(
+            airplanes=[
+                ps.geometry.airplane.Airplane(
+                    wings=[self.trapezoidal_wing],
+                    name="Trapezoidal Airplane",
+                    weight=10.0,
+                ),
+                ps.geometry.airplane.Airplane(
+                    wings=[self.edge_defined_wing],
+                    name="Edge Airplane",
+                    Cg_GP1_CgP1=(1.0, 2.0, 3.0),
+                    weight=20.0,
+                ),
+            ],
+            operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
+        )
+
+        self.num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
+        self.num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
+
+    def _build(self, num_chordwise_panels=4) -> ps.problems.SteadyProblem:
+        """Builds the SteadyProblem for the first mesh against the reference problem and
+        the caches.
+        """
+        return _convergence_meshing.build_steady_problem(
+            ar_id=0,
+            chord_id=0,
+            panel_aspect_ratio=4,
+            num_chordwise_panels=num_chordwise_panels,
+            ref_problem=self.ref_problem,
+            num_spanwise_panels_cache=self.num_spanwise_panels_cache,
+            num_wing_cross_sections_cache=self.num_wing_cross_sections_cache,
+        )
+
+    def test_returns_steady_problem(self) -> None:
+        """Test that the build returns a SteadyProblem holding one copy of each reference
+        Airplane.
+        """
+        this_problem = self._build()
+
+        self.assertIsInstance(this_problem, ps.problems.SteadyProblem)
+        self.assertEqual(len(this_problem.airplanes), 2)
+
+    def test_operating_point_is_deep_copied(self) -> None:
+        """Test that the built problem holds its own equal OperatingPoint rather than the
+        reference's, so that solving it cannot populate the reference OperatingPoint's
+        lazy caches and change the reference problem's content hash.
+        """
+        this_operating_point = self._build().operating_point
+        ref_operating_point = self.ref_problem.operating_point
+
+        self.assertIsNot(this_operating_point, ref_operating_point)
+        self.assertEqual(this_operating_point.rho, ref_operating_point.rho)
+        self.assertEqual(this_operating_point.vCg__E, ref_operating_point.vCg__E)
+        self.assertEqual(this_operating_point.alpha, ref_operating_point.alpha)
+        self.assertEqual(this_operating_point.beta, ref_operating_point.beta)
+
+    def test_reference_problem_is_not_modified(self) -> None:
+        """Test that the build leaves the reference problem's Wings at their own mesh, so
+        that a later iteration still refines from the reference rather than from a
+        previous iteration's result.
+        """
+        self._build(num_chordwise_panels=4)
+
+        self.assertEqual(self.trapezoidal_wing.num_chordwise_panels, 8)
+        self.assertEqual(len(self.edge_defined_wing.wing_cross_sections), 5)
+
+    def test_num_chordwise_panels_is_applied_to_every_wing(self) -> None:
+        """Test that every copied Wing takes this iteration's number of chordwise Panels
+        rather than its reference's.
+        """
+        this_problem = self._build(num_chordwise_panels=6)
+
+        for this_airplane in this_problem.airplanes:
+            for this_wing in this_airplane.wings:
+                self.assertEqual(this_wing.num_chordwise_panels, 6)
+
+    def test_spanwise_mesh_types_are_preserved(self) -> None:
+        """Test that a trapezoidal Wing's copy stays trapezoidal and an edge-defined
+        Wing's copy stays edge-defined, so that a later iteration refines each by the same
+        branch.
+        """
+        this_problem = self._build()
+
+        self.assertEqual(
+            this_problem.airplanes[self.trapezoidal_airplane_id].wings[0].spanwise_mesh,
+            "trapezoidal",
+        )
+        self.assertEqual(
+            this_problem.airplanes[self.edge_defined_airplane_id]
+            .wings[0]
+            .spanwise_mesh,
+            "edge_defined",
+        )
+
+    def test_trapezoidal_wing_records_a_memo_per_non_tip_wing_cross_section(
+        self,
+    ) -> None:
+        """Test that refining the trapezoidal Wing records one number of spanwise Panels
+        memo for each of its non tip WingCrossSections, keyed by the mesh, Airplane, Wing,
+        and WingCrossSection indices.
+        """
+        self._build()
+
+        self.assertEqual(
+            set(self.num_spanwise_panels_cache),
+            {
+                (0, 0, self.trapezoidal_airplane_id, 0, 0),
+                (0, 0, self.trapezoidal_airplane_id, 0, 1),
+            },
+        )
+
+    def test_edge_defined_wing_records_one_memo(self) -> None:
+        """Test that refining the edge-defined Wing records one number of
+        WingCrossSections memo, keyed by the mesh, Airplane, and Wing indices.
+        """
+        self._build()
+
+        self.assertEqual(
+            set(self.num_wing_cross_sections_cache),
+            {(0, 0, self.edge_defined_airplane_id, 0)},
+        )
+
+    def test_cached_num_spanwise_panels_is_reused(self) -> None:
+        """Test that a cached number of spanwise Panels is used as is rather than
+        resolved again, so that one mesh's Wing sections resolve only once across a
+        sweep.
+        """
+        self.num_spanwise_panels_cache[(0, 0, self.trapezoidal_airplane_id, 0, 0)] = 7
+
+        this_wing = self._build().airplanes[self.trapezoidal_airplane_id].wings[0]
+
+        self.assertEqual(this_wing.wing_cross_sections[0].num_spanwise_panels, 7)
+
+    def test_cached_num_wing_cross_sections_is_reused(self) -> None:
+        """Test that a cached number of WingCrossSections is used as is rather than
+        resolved again, so that one mesh's edge-defined Wing resamples only once across a
+        sweep.
+        """
+        self.num_wing_cross_sections_cache[(0, 0, self.edge_defined_airplane_id, 0)] = 3
+
+        this_wing = self._build().airplanes[self.edge_defined_airplane_id].wings[0]
+
+        self.assertEqual(len(this_wing.wing_cross_sections), 3)
+
+    def test_airplane_parameters_are_copied(self) -> None:
+        """Test that each Airplane copy carries its reference's name, center of gravity,
+        and weight.
+        """
+        this_airplane = self._build().airplanes[self.edge_defined_airplane_id]
+        ref_airplane = self.ref_problem.airplanes[self.edge_defined_airplane_id]
+
+        self.assertEqual(this_airplane.name, ref_airplane.name)
+        np.testing.assert_allclose(this_airplane.Cg_GP1_CgP1, ref_airplane.Cg_GP1_CgP1)
+        self.assertEqual(this_airplane.weight, ref_airplane.weight)
+
+    def test_airplane_reference_values_are_recalculated(self) -> None:
+        """Test that each Airplane copy calculates its own reference dimensions, because
+        refining the mesh changes the geometry they describe.
+        """
+        this_airplane = self._build().airplanes[self.trapezoidal_airplane_id]
+
+        self.assertIsNotNone(this_airplane.s_ref)
+        self.assertIsNotNone(this_airplane.c_ref)
+        self.assertIsNotNone(this_airplane.b_ref)
+
+    def test_wing_parameters_are_copied(self) -> None:
+        """Test that a trapezoidal Wing's copy carries its reference's name, position,
+        orientation, symmetry, and chordwise spacing.
+        """
+        this_wing = self._build().airplanes[self.trapezoidal_airplane_id].wings[0]
+
+        self.assertEqual(this_wing.name, self.trapezoidal_wing.name)
+        np.testing.assert_allclose(
+            this_wing.Ler_Gs_Cgs, self.trapezoidal_wing.Ler_Gs_Cgs
+        )
+        np.testing.assert_allclose(
+            this_wing.angles_Gs_to_Wn_ixyz, self.trapezoidal_wing.angles_Gs_to_Wn_ixyz
+        )
+        self.assertEqual(this_wing.symmetric, self.trapezoidal_wing.symmetric)
+        self.assertEqual(this_wing.mirror_only, self.trapezoidal_wing.mirror_only)
+        self.assertEqual(
+            this_wing.chordwise_spacing, self.trapezoidal_wing.chordwise_spacing
+        )
+
+    def test_wing_cross_section_parameters_are_copied(self) -> None:
+        """Test that a trapezoidal Wing's copied WingCrossSections carry their
+        references' chord, position, orientation, control surface, spanwise spacing, and
+        Airfoil.
+        """
+        these_wing_cross_sections = (
+            self._build()
+            .airplanes[self.trapezoidal_airplane_id]
+            .wings[0]
+            .wing_cross_sections
+        )
+        ref_wing_cross_sections = self.trapezoidal_wing.wing_cross_sections
+
+        self.assertEqual(len(these_wing_cross_sections), len(ref_wing_cross_sections))
+        for this_wing_cross_section, ref_wing_cross_section in zip(
+            these_wing_cross_sections, ref_wing_cross_sections
+        ):
+            self.assertEqual(
+                this_wing_cross_section.chord, ref_wing_cross_section.chord
+            )
+            np.testing.assert_allclose(
+                this_wing_cross_section.Lp_Wcsp_Lpp,
+                ref_wing_cross_section.Lp_Wcsp_Lpp,
+            )
+            np.testing.assert_allclose(
+                this_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                ref_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+            )
+            self.assertEqual(
+                this_wing_cross_section.control_surface_symmetry_type,
+                ref_wing_cross_section.control_surface_symmetry_type,
+            )
+            self.assertEqual(
+                this_wing_cross_section.control_surface_hinge_point,
+                ref_wing_cross_section.control_surface_hinge_point,
+            )
+            self.assertEqual(
+                this_wing_cross_section.control_surface_deflection,
+                ref_wing_cross_section.control_surface_deflection,
+            )
+            self.assertEqual(
+                this_wing_cross_section.spanwise_spacing,
+                ref_wing_cross_section.spanwise_spacing,
+            )
+            self.assertEqual(
+                this_wing_cross_section.airfoil.name,
+                ref_wing_cross_section.airfoil.name,
+            )
+
+
 class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     """This class contains methods for testing that
     _convergence_meshing.build_unsteady_problem's AirplaneMovement, WingMovement, and

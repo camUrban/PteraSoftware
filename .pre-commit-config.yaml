@@ -86,7 +86,7 @@ repos:
     hooks:
       - id: octowrap
         name: checker  octowrap
-        entry: "bash -c 'output=$(octowrap --check \"$@\" 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"$output\" | grep -v -e \"would be reformatted\" -e \"^$\"; echo; echo \"Run: octowrap -i .\"; exit 1; fi' --"
+        entry: "bash -c 'output=$(octowrap --check \"$@\" 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"$output\" | grep -v -e \"would be reformatted\" -e \"^$\"; echo; echo \"Run: octowrap -i . (if no TTY access, first run octowrap --diff . to review the proposed changes, then octowrap . to apply them)\"; exit 1; fi' --"
         language: python
         additional_dependencies: [octowrap==0.6.2]
         types: [python]

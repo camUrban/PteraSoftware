@@ -194,6 +194,7 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_airfoil.py`
         - `test_airplane.py`
         - `test_airplane_movement.py`
+        - `test_colormaps.py`
         - `test_convergence.py`
         - `test_convergence_cache.py`
         - `test_convergence_meshing.py`

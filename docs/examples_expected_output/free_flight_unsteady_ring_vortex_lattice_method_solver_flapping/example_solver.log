@@ -1,5 +1,5 @@
 INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (291224432 bytes)
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (291430917 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -7,20 +7,20 @@ INFO    |_serialization                              |Loaded FreeFlightUnsteadyR
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Cycle-Averaged Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:              166. N     Drag:                  -166. N
-INFO    |output                                      |    fY_W:          0.000151 N     Side Force:         0.000151 N
+INFO    |output                                      |    fY_W:          0.000425 N     Side Force:         0.000425 N
 INFO    |output                                      |    fZ_W:             -475. N     Lift:                   475. N
 INFO    |output                                      |  Final Cycle-Averaged Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    mX_W_CgP1:      0.00614 Nm    Rolling Moment:      0.00614 Nm
+INFO    |output                                      |    mX_W_CgP1:      0.00824 Nm    Rolling Moment:      0.00824 Nm
 INFO    |output                                      |    mY_W_CgP1:         8.90 Nm    Pitching Moment:        8.90 Nm
-INFO    |output                                      |    mZ_W_CgP1:    -0.000357 Nm    Yawing Moment:     -0.000357 Nm
+INFO    |output                                      |    mZ_W_CgP1:     -0.00158 Nm    Yawing Moment:      -0.00158 Nm
 INFO    |output                                      |  Final Cycle-Averaged Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:           0.0995       CDi:                 -0.0995
-INFO    |output                                      |    cFY_W:         8.78E-08       CY:                 8.78E-08
+INFO    |output                                      |    cFY_W:         2.49E-07       CY:                 2.49E-07
 INFO    |output                                      |    cFZ_W:           -0.293       CL:                    0.293
 INFO    |output                                      |  Final Cycle-Averaged Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    cMX_W_CgP1:    6.28E-07       Cl:                 6.28E-07
+INFO    |output                                      |    cMX_W_CgP1:    8.24E-07       Cl:                 8.24E-07
 INFO    |output                                      |    cMY_W_CgP1:     0.00731       Cm:                  0.00731
-INFO    |output                                      |    cMZ_W_CgP1:   -3.44E-08       Cn:                -3.44E-08
+INFO    |output                                      |    cMZ_W_CgP1:   -1.54E-07       Cn:                -1.54E-07
 INFO    |output                                      |The First Airplane's Free Flight State History:
 INFO    |output                                      |  Initial State (at t = 0.00 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
@@ -44,19 +44,19 @@ INFO    |output                                      |    Sideslip Angle (beta):
 INFO    |output                                      |  Final State (at t = 3.86 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):
 INFO    |output                                      |      cgP1X_E_Eo:                    56.5 m
-INFO    |output                                      |      cgP1Y_E_Eo:               -3.11E-05 m
+INFO    |output                                      |      cgP1Y_E_Eo:                3.74E-05 m
 INFO    |output                                      |      cgP1Z_E_Eo:                   -18.5 m
 INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes, Intrinsic zy'x" Sequence):
-INFO    |output                                      |      angleX_E_to_BP1_izyx:     -7.02E-05 deg
+INFO    |output                                      |      angleX_E_to_BP1_izyx:     -3.97E-06 deg
 INFO    |output                                      |      angleY_E_to_BP1_izyx:          35.0 deg
-INFO    |output                                      |      angleZ_E_to_BP1_izyx:     -6.04E-05 deg
+INFO    |output                                      |      angleZ_E_to_BP1_izyx:      5.72E-05 deg
 INFO    |output                                      |    Velocity (of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame):
 INFO    |output                                      |      vCgP1X_E__E:                   13.2 m/s
-INFO    |output                                      |      vCgP1Y_E__E:              -2.16E-05 m/s
+INFO    |output                                      |      vCgP1Y_E__E:               2.50E-05 m/s
 INFO    |output                                      |      vCgP1Z_E__E:                  -9.06 m/s
 INFO    |output                                      |    Angular Velocity (in the First Airplane's Body Axes, Observed from the Earth Frame):
-INFO    |output                                      |      omegaX_BP1__E:            -9.76E-05 deg/s
+INFO    |output                                      |      omegaX_BP1__E:            -6.09E-05 deg/s
 INFO    |output                                      |      omegaY_BP1__E:                 22.4 deg/s
-INFO    |output                                      |      omegaZ_BP1__E:            -2.40E-05 deg/s
+INFO    |output                                      |      omegaZ_BP1__E:            -1.79E-05 deg/s
 INFO    |output                                      |    Angle of Attack (alpha):       0.497 deg
-INFO    |output                                      |    Sideslip Angle (beta):     -2.84E-05 deg
+INFO    |output                                      |    Sideslip Angle (beta):      4.26E-05 deg

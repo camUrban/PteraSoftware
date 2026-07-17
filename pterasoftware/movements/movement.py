@@ -1251,9 +1251,10 @@ def _optimize_delta_time_non_static(
     min_num_steps = max(1, int(initial_num_steps / 2))
     max_num_steps = int(initial_num_steps * 2) + 1
 
+    _logger.info(_logging.indent(1) + "Searching:")
     _logger.info(
-        _logging.indent(1)
-        + "Searching num_steps_per_lcm_cycle from "
+        _logging.indent(2)
+        + "num_steps_per_lcm_cycle: "
         + str(min_num_steps)
         + " to "
         + str(max_num_steps)
@@ -1276,49 +1277,34 @@ def _optimize_delta_time_non_static(
     for num_steps in candidates:
         mismatch = cached_mismatches[num_steps]
         delta_time = lcm_period / num_steps
-        _logger.info(
-            _logging.indent(1)
-            + "num_steps_per_lcm_cycle = "
-            + str(num_steps)
-            + ", delta_time = "
-            + f"{delta_time:#.3G}"
-            + " s, mismatch = "
-            + f"{mismatch:#.3G}"
-        )
+        _logger.info(_logging.indent(1) + "num_steps_per_lcm_cycle: " + str(num_steps))
+        _logger.info(_logging.indent(2) + "delta_time: " + f"{delta_time:#.3G}" + " s")
+        _logger.info(_logging.indent(2) + "Mismatch: " + f"{mismatch:#.3G}")
         if mismatch < best_mismatch:
             best_mismatch = mismatch
             best_num_steps = num_steps
 
     optimized_delta_time = lcm_period / best_num_steps
 
+    _logger.info(_logging.indent() + "Best:")
+    _logger.info(_logging.indent(1) + "num_steps_per_lcm_cycle: " + str(best_num_steps))
     _logger.info(
-        _logging.indent()
-        + "Best: num_steps_per_lcm_cycle = "
-        + str(best_num_steps)
-        + ", delta_time = "
-        + f"{optimized_delta_time:#.3G}"
-        + " s, mismatch = "
-        + f"{best_mismatch:#.3G}"
+        _logging.indent(1) + "delta_time: " + f"{optimized_delta_time:#.3G}" + " s"
     )
+    _logger.info(_logging.indent(1) + "Mismatch: " + f"{best_mismatch:#.3G}")
     _logger.info(_logging.indent() + "Optimization complete")
 
     # Warn if the optimized value is at one of the bounds.
     if best_num_steps == min_num_steps:
         _logger.warning(
-            _logging.indent()
-            + "Optimized num_steps_per_lcm_cycle is at the lower bound ("
-            + str(min_num_steps)
-            + ")"
+            _logging.indent() + "num_steps_per_lcm_cycle is at the lower bound"
         )
         _logger.warning(
             _logging.indent() + "A better value may exist below the search range"
         )
     elif best_num_steps == max_num_steps:
         _logger.warning(
-            _logging.indent()
-            + "Optimized num_steps_per_lcm_cycle is at the upper bound ("
-            + str(max_num_steps)
-            + ")"
+            _logging.indent() + "num_steps_per_lcm_cycle is at the upper bound"
         )
         _logger.warning(
             _logging.indent() + "A better value may exist above the search range"
@@ -1370,11 +1356,8 @@ def _analytically_optimize_delta_time(
 
     # If there is no motion, fall back to the initial estimate.
     if not non_zero_periods:
-        _logger.info(
-            _logging.indent()
-            + "Returning the initial delta_time estimate because all motion is "
-            "static"
-        )
+        _logger.info(_logging.indent() + "All motion is static")
+        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
         return initial_delta_time
 
     min_period = min(non_zero_periods)
@@ -1390,11 +1373,11 @@ def _analytically_optimize_delta_time(
     if preliminary_num_steps > max_preliminary_steps:
         _logger.warning(
             _logging.indent()
-            + "Capping preliminary num_steps ("
-            + str(preliminary_num_steps)
-            + ") at "
+            + "Capping preliminary num_steps at "
             + str(max_preliminary_steps)
-            + " to prevent excessive computation"
+            + " (was "
+            + str(preliminary_num_steps)
+            + ")"
         )
         preliminary_num_steps = max_preliminary_steps
     if preliminary_num_steps < 1:
@@ -1531,11 +1514,8 @@ def _analytically_optimize_delta_time(
 
     # Step 4: Compute the weighted average of num_steps across all Wings.
     if not wing_num_steps_values:
-        _logger.info(
-            _logging.indent()
-            + "Returning the initial delta_time estimate because there is no "
-            "valid wake displacement data"
-        )
+        _logger.info(_logging.indent() + "No valid wake displacement data")
+        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
         return initial_delta_time
 
     total_weight = sum(wing_num_spanwise_panels_values)
@@ -1548,11 +1528,8 @@ def _analytically_optimize_delta_time(
     )
 
     if weighted_num_steps <= 0.0:
-        _logger.info(
-            _logging.indent()
-            + "Returning the initial delta_time estimate because the computed "
-            "num_steps is non positive"
-        )
+        _logger.info(_logging.indent() + "Computed num_steps is non positive")
+        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
         return initial_delta_time
 
     # Round to an integer number of steps that fits the LCM period.
@@ -1561,15 +1538,11 @@ def _analytically_optimize_delta_time(
         final_num_steps = 1
     optimized_delta_time = lcm_period / final_num_steps
 
-    dt_str = f"{optimized_delta_time:#.3G}"
+    _logger.info(_logging.indent(1) + "Result:")
     _logger.info(
-        _logging.indent(1)
-        + "Result: delta_time = "
-        + dt_str
-        + " s ("
-        + str(final_num_steps)
-        + " steps per LCM period)"
+        _logging.indent(2) + "delta_time: " + f"{optimized_delta_time:#.3G}" + " s"
     )
+    _logger.info(_logging.indent(2) + "Steps per LCM period: " + str(final_num_steps))
 
     # Warn if the result implies fewer than 20 time steps per minimum period of motion.
     # This indicates the trailing edge Panels are large relative to the motion, so
@@ -1583,14 +1556,12 @@ def _analytically_optimize_delta_time(
     if steps_per_min_period < 20:
         _logger.warning(
             _logging.indent()
-            + "Analytical optimization implies only "
+            + "Only "
             + f"{steps_per_min_period:#.3G}"
-            + " time steps per minimum period of motion"
+            + " time steps per minimum motion period"
         )
         _logger.warning(
-            _logging.indent()
-            + "Consider more chordwise Panels or cosine chordwise spacing to allow "
-            "finer time steps"
+            _logging.indent() + "Consider more chordwise Panels or cosine spacing"
         )
 
     _logger.info(_logging.indent() + "Analytical optimization complete")

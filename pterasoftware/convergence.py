@@ -233,7 +233,10 @@ def analyze_steady_convergence(
     ref_airplanes = ref_problem.airplanes
 
     # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal
-    # or edge-defined).
+    # or edge-defined). This also protects _convergence_meshing.build_steady_problem's
+    # Wing copies, which omit explode_into_strips and so would silently un-explode an
+    # exploded Wing. Relaxing this guard to admit an exploded Wing means teaching those
+    # copies to carry the parameter.
     _reject_unrefinable_wings(ref_airplanes, "analyze_steady_convergence")
 
     # Create lists containing each Panel aspect ratio and each number of chordwise
@@ -992,7 +995,10 @@ def analyze_unsteady_convergence(
     )
 
     # Reject any Wing that cannot be refined (any spanwise mesh other than trapezoidal
-    # or edge-defined).
+    # or edge-defined). This also protects _convergence_meshing.build_unsteady_problem's
+    # Wing copies, which omit explode_into_strips and so would silently un-explode an
+    # exploded Wing. Relaxing this guard to admit an exploded Wing means teaching those
+    # copies to carry the parameter.
     _reject_unrefinable_wings(ref_base_airplanes, "analyze_unsteady_convergence")
 
     # Create the list of wake states to iterate over.

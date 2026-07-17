@@ -147,6 +147,12 @@ def build_steady_problem(
                 )
 
             these_wings.append(
+                # This omits explode_into_strips, which would otherwise default to False
+                # and silently un-explode an exploded Wing. That is safe only because
+                # convergence.analyze_steady_convergence rejects a Wing whose spanwise
+                # mesh is neither trapezoidal nor edge-defined before it reaches here,
+                # so every Wing that arrives was built with explode_into_strips as
+                # False.
                 geometry.wing.Wing(
                     # These values are copied from the reference Wing.
                     name=ref_wing.name,
@@ -493,7 +499,12 @@ def build_unsteady_problem(
                     this_wing_cross_section_movement
                 )
 
-            # 5.6. Create a copy of base Wing.
+            # 5.6. Create a copy of base Wing. This omits explode_into_strips, which
+            # would otherwise default to False and silently un-explode an exploded Wing.
+            # That is safe only because convergence.analyze_unsteady_convergence rejects
+            # a Wing whose spanwise mesh is neither trapezoidal nor edge-defined before
+            # it reaches here, so every Wing that arrives was built with
+            # explode_into_strips as False.
             this_base_wing = geometry.wing.Wing(
                 # These values are copied from the reference Wing.
                 name=ref_base_wing.name,

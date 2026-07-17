@@ -1227,20 +1227,17 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
-
         optimized_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
         )
 
         self.assertIsInstance(optimized_delta_time, float)
         self.assertGreater(optimized_delta_time, 0.0)
 
-    def test_returns_initial_for_static_movement(self) -> None:
-        """Test that _analytically_optimize_delta_time returns initial_delta_time for
-        static Movement."""
+    def test_returns_freestream_estimate_for_static_movement(self) -> None:
+        """Test that _analytically_optimize_delta_time returns the freestream-based
+        estimate for static Movement."""
         from pterasoftware.movements.movement import (
             _analytically_optimize_delta_time,
         )
@@ -1252,16 +1249,22 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
+        # Calculate the expected freestream-based estimate.
+        c_ref = airplane_movements[0].base_airplane.c_ref
+        assert c_ref is not None
+        expected_delta_time = (
+            c_ref
+            / airplane_movements[0].base_airplane.wings[0].num_chordwise_panels
+            / operating_point_movement.base_operating_point.vCg__E
+        )
 
         optimized_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
         )
 
-        # For static movement, should return the initial estimate.
-        self.assertEqual(optimized_delta_time, initial_delta_time)
+        # For static movement, should return the freestream-based estimate.
+        self.assertEqual(optimized_delta_time, expected_delta_time)
 
     def test_result_is_reasonable(self) -> None:
         """Test that _analytically_optimize_delta_time produces a reasonable result.
@@ -1280,17 +1283,23 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
+        # Calculate the freestream-based estimate to use as a reference scale.
+        c_ref = airplane_movements[0].base_airplane.c_ref
+        assert c_ref is not None
+        reference_delta_time = (
+            c_ref
+            / airplane_movements[0].base_airplane.wings[0].num_chordwise_panels
+            / operating_point_movement.base_operating_point.vCg__E
+        )
 
         optimized_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
         )
 
-        # The result should be within two orders of magnitude of the initial estimate.
-        self.assertGreater(optimized_delta_time, initial_delta_time / 100.0)
-        self.assertLess(optimized_delta_time, initial_delta_time * 100.0)
+        # The result should be within two orders of magnitude of the reference.
+        self.assertGreater(optimized_delta_time, reference_delta_time / 100.0)
+        self.assertLess(optimized_delta_time, reference_delta_time * 100.0)
 
 
 class TestComputeWakeAreaMismatch(unittest.TestCase):
@@ -1459,13 +1468,10 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         lcm_period = lcm_multiple(all_periods)
 
         # Seed with the analytical result so the brute force bracket is centered near
-        # the true optimum, mirroring real usage. The analytical's initial_delta_time is
-        # only used as a fallback for fully static Movements, so any positive
-        # placeholder works here.
+        # the true optimum, mirroring real usage.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=1.0,
         )
 
         optimized_delta_time = _optimize_delta_time_non_static(
@@ -1501,13 +1507,10 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         lcm_period = lcm_multiple(all_periods)
 
         # Seed with the analytical result so the brute force bracket is centered near
-        # the true optimum, mirroring real usage. The analytical's initial_delta_time is
-        # only used as a fallback for fully static Movements, so any positive
-        # placeholder works here.
+        # the true optimum, mirroring real usage.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=1.0,
         )
 
         optimized_delta_time = _optimize_delta_time_non_static(
@@ -1543,14 +1546,10 @@ class TestOptimizeDeltaTime(unittest.TestCase):
 
         # Seed the iterative optimizer with the analytical result. This keeps the brute
         # force bracket centered near the true optimum so the search does not hit either
-        # bound, mirroring real usage. The initial_delta_time passed to
-        # _analytically_optimize_delta_time is only used as a fallback for fully static
-        # Movements, so any positive placeholder works here since the fixture has
-        # motion.
+        # bound, mirroring real usage.
         initial_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=1.0,
         )
 
         # For non static movements, brute force search is used (mismatch_cutoff is
@@ -1909,12 +1908,9 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
-
         optimized_delta_time = _analytically_optimize_delta_time(
             airplane_movements=airplane_movements,
             operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
         )
 
         self.assertIsInstance(optimized_delta_time, float)
@@ -1973,12 +1969,9 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
-
         optimized_delta_time = _analytically_optimize_delta_time(
             airplane_movements=[airplane_movement],
             operating_point_movement=operating_point_movement,
-            initial_delta_time=initial_delta_time,
         )
 
         self.assertIsInstance(optimized_delta_time, float)
@@ -2033,8 +2026,6 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
         )
 
-        initial_delta_time = 0.01
-
         # Capture warnings.
         with self.assertLogs(
             "pterasoftware.movements.movement", level=logging.WARNING
@@ -2042,7 +2033,6 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             _analytically_optimize_delta_time(
                 airplane_movements=[airplane_movement],
                 operating_point_movement=operating_point_movement,
-                initial_delta_time=initial_delta_time,
             )
 
         # Verify the warning was issued.

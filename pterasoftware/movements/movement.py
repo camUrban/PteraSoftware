@@ -197,27 +197,12 @@ class Movement(_core.CoreMovement):
                 delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
-            # Calculate a fast initial delta_time estimate based on freestream velocity.
-            # This is used as a fallback for static Movements and as a starting point
-            # for the analytical optimization.
-            delta_times = []
-            for airplane_movement in airplane_movements:
-                # TODO: Consider making this also average across each Airplane's Wings.
-                c_ref = airplane_movement.base_airplane.c_ref
-                assert c_ref is not None
-                delta_times.append(
-                    c_ref
-                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                    / operating_point_movement.base_operating_point.vCg__E
-                )
-            fast_estimate = sum(delta_times) / len(delta_times)
-
-            # Run analytical optimization to get a better delta_time that accounts for
-            # both freestream and geometry motion velocities.
+            # Run analytical optimization to get a delta_time that accounts for both
+            # freestream and geometry motion velocities. For static Movements and
+            # degenerate cases, it falls back to a fast freestream-based estimate.
             delta_time = _analytically_optimize_delta_time(
                 airplane_movements=list(airplane_movements),
                 operating_point_movement=operating_point_movement,
-                initial_delta_time=fast_estimate,
             )
 
             # Clamp the estimate so that there are at least
@@ -1313,17 +1298,53 @@ def _optimize_delta_time_non_static(
     return optimized_delta_time
 
 
+def _fast_delta_time_estimate(
+    airplane_movements: list[airplane_movement_mod.AirplaneMovement],
+    operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
+) -> float:
+    """Estimates delta_time from the freestream velocity alone.
+
+    The estimate gives each wake ring vortex roughly the same chord as a trailing edge
+    Panel in pure freestream flow. It ignores geometry motion, so it only suits static
+    Movements and degenerate cases where the wake displacement measurement is
+    unavailable.
+
+    :param airplane_movements: The AirplaneMovements defining the motion.
+    :param operating_point_movement: The OperatingPointMovement.
+    :return: The estimated delta_time value. Its units are in seconds.
+    """
+    vCg__E = operating_point_movement.base_operating_point.vCg__E
+    if vCg__E == 0.0:
+        raise ValueError(
+            "The freestream-based delta_time estimate is undefined when the base "
+            "OperatingPoint's vCg__E is 0.0. Pass delta_time explicitly."
+        )
+
+    delta_times = []
+    for airplane_movement in airplane_movements:
+        # TODO: Consider making this also average across each Airplane's Wings.
+        c_ref = airplane_movement.base_airplane.c_ref
+        assert c_ref is not None
+        delta_times.append(
+            c_ref
+            / airplane_movement.base_airplane.wings[0].num_chordwise_panels
+            / vCg__E
+        )
+    return sum(delta_times) / len(delta_times)
+
+
 def _analytically_optimize_delta_time(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
-    initial_delta_time: float,
 ) -> float:
     """Analytically estimates the optimal delta_time from wake displacement.
 
     Estimates the delta_time that produces wake ring vortices with roughly the same
     chord length as the bound trailing edge ring vortices, accounting for both
     freestream and geometry motion velocities. This is faster than _optimize_delta_time
-    but may be slightly less accurate.
+    but may be slightly less accurate. For static Movements and degenerate cases where
+    the wake displacement measurement is unavailable, it falls back to the freestream-
+    based estimate from _fast_delta_time_estimate.
 
     The algorithm works by: (1) computing a very small preliminary delta_time as the
     minimum motion period divided by 100 (capped by a maximum of 1000 total time steps
@@ -1338,9 +1359,6 @@ def _analytically_optimize_delta_time(
 
     :param airplane_movements: The AirplaneMovements defining the motion.
     :param operating_point_movement: The OperatingPointMovement.
-    :param initial_delta_time: The initial estimate from the chord-based seed. It must
-        be a positive float. Its units are in seconds. Used as a fallback for static
-        Movements or degenerate cases.
     :return: The analytically optimized delta_time value. Its units are in seconds.
     """
     _logger.info(_logging.indent() + "Starting analytical delta_time optimization")
@@ -1354,11 +1372,14 @@ def _analytically_optimize_delta_time(
         all_periods.append(op_period)
     non_zero_periods = [p for p in all_periods if p != 0.0]
 
-    # If there is no motion, fall back to the initial estimate.
+    # If there is no motion, fall back to the freestream-based estimate.
     if not non_zero_periods:
         _logger.info(_logging.indent() + "All motion is static")
-        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
-        return initial_delta_time
+        _logger.info(_logging.indent() + "Returning the freestream delta_time estimate")
+        return _fast_delta_time_estimate(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
 
     min_period = min(non_zero_periods)
 
@@ -1515,8 +1536,11 @@ def _analytically_optimize_delta_time(
     # Step 4: Compute the weighted average of num_steps across all Wings.
     if not wing_num_steps_values:
         _logger.info(_logging.indent() + "No valid wake displacement data")
-        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
-        return initial_delta_time
+        _logger.info(_logging.indent() + "Returning the freestream delta_time estimate")
+        return _fast_delta_time_estimate(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
 
     total_weight = sum(wing_num_spanwise_panels_values)
     weighted_num_steps = (
@@ -1529,8 +1553,11 @@ def _analytically_optimize_delta_time(
 
     if weighted_num_steps <= 0.0:
         _logger.info(_logging.indent() + "Computed num_steps is non positive")
-        _logger.info(_logging.indent() + "Returning the initial delta_time estimate")
-        return initial_delta_time
+        _logger.info(_logging.indent() + "Returning the freestream delta_time estimate")
+        return _fast_delta_time_estimate(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+        )
 
     # Round to an integer number of steps that fits the LCM period.
     final_num_steps = round(weighted_num_steps)

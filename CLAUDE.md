@@ -226,12 +226,14 @@ Requires Python 3.11, but active development is done in 3.13
         - `test_slots.py`
         - `test_steady_horseshoe_vortex_lattice_method.py`
         - `test_steady_ring_vortex_lattice_method.py`
+        - `test_test_environment.py`
         - `test_transformations.py`
         - `test_unsteady_ring_vortex_lattice_method.py`
         - `test_wing.py`
         - `test_wing_cross_section.py`
         - `test_wing_cross_section_movement.py`
         - `test_wing_movement.py`
+    - `_test_environment.py`: Configures the test process to quiet known sources of test run noise (the serialization dirty-tree warnings, tqdm progress bars, and the headless-Linux VTK warning). It is imported as the first line of `tests/__init__.py` so the suppressions are in place before any pterasoftware, pyvista, or tqdm module loads
 - `.codespell-ignore.txt`: File listing words to ignore in spell checking
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file

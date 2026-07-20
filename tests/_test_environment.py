@@ -27,14 +27,12 @@ import logging
 import os
 import sys
 
-_SUPPRESSED_SERIALIZATION_MESSAGES = frozenset(
-    {
-        "The current working tree has uncommitted changes.",
-        (
-            "The file was saved with uncommitted changes (_dirty=true). The "
-            "_commit hash may not fully represent the code state at save time."
-        ),
-    }
+# The messages are matched by prefix on the indent-stripped text, so neither the
+# indentation that pterasoftware._logging prepends nor rewording after the prefix can
+# quietly defeat the suppression.
+_SUPPRESSED_SERIALIZATION_MESSAGE_PREFIXES = (
+    "The current working tree has uncommitted changes",
+    "The file was saved with uncommitted changes",
 )
 
 
@@ -42,7 +40,8 @@ class _SuppressDirtyProvenanceWarnings(logging.Filter):
     """Drops the two known pterasoftware._serialization dirty tree warnings."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage() not in _SUPPRESSED_SERIALIZATION_MESSAGES
+        message = record.getMessage().lstrip()
+        return not message.startswith(_SUPPRESSED_SERIALIZATION_MESSAGE_PREFIXES)
 
 
 def _install_serialization_log_filter() -> None:

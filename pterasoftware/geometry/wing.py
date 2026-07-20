@@ -433,14 +433,14 @@ class Wing:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
         self._chordwise_spacing = chordwise_spacing
 
-        # Set once attributes: will be initialized or populated once this Wing's parent
-        # Airplane calls generate_mesh.
+        # These are the set once attributes. They will be initialized or populated once
+        # this Wing's parent Airplane calls generate_mesh.
         self._symmetry_type: int | None = None
         self._num_spanwise_panels: int | None = None
         self._num_panels: int | None = None
         self._panels: np.ndarray | None = None
 
-        # Mutable wake state.
+        # This attribute holds mutable wake state.
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
 
         # Caches for properties derived from immutable attributes. These are populated
@@ -592,10 +592,11 @@ class Wing:
         )
 
         # Stage 2: resample both curves at a common set of points spaced uniformly in
-        # the spanwise (y) direction, from the root (y of 0) to the trimmed tip. Without
-        # trimming the trimmed tip is the shared maximum y. The tip_trim_fraction pulls
-        # it inboard so a planform that tapers to a point at the tip ends at a finite
-        # chord. The z component is zero at every point in this planar version.
+        # the spanwise (y) direction, from the root (y of 0.0) to the trimmed tip.
+        # Without trimming the trimmed tip is the shared maximum y. The
+        # tip_trim_fraction pulls it inboard so a planform that tapers to a point at the
+        # tip ends at a finite chord. The z component is zero at every point in this
+        # planar version.
         yTip_Wn_Ler = float(leadingEdgePoints_Wn_Ler[-1, 1])
         yTrimmedTip_Wn_Ler = (1.0 - tip_trim_fraction) * yTip_Wn_Ler
         ys_Wn_Ler = np.linspace(0.0, yTrimmedTip_Wn_Ler, num_wing_cross_sections)
@@ -1306,7 +1307,7 @@ class Wing:
 
         projected_area = 0.0
 
-        # Get the wing Z-axis once before iterating.
+        # Get the wing z axis once before iterating.
         WnZ_G = self.WnZ_G
         assert WnZ_G is not None
 
@@ -1346,7 +1347,7 @@ class Wing:
 
         wetted_area = 0.0
 
-        # Iterate through the chordwise and spanwise indices of the panels and add their
+        # Iterate through the chordwise and spanwise indices of the Panels and add their
         # area to the total wetted area.
         assert self._num_spanwise_panels is not None
         for chordwise_location in range(self._num_chordwise_panels):
@@ -1434,7 +1435,7 @@ class Wing:
 
         span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
 
-        # If the wing is symmetric and continuous, multiply the span by two.
+        # If the Wing is symmetric and continuous, multiply the span by two.
         if self._symmetry_type == 4:
             span *= 2
 
@@ -1554,7 +1555,7 @@ class Wing:
         assert _projected_area is not None
 
         # Multiply the integral's value by the coefficients from the cited equation.
-        # Double if the wing is symmetric and continuous.
+        # Double if the Wing is symmetric and continuous.
         if self.symmetry_type == 4:
             self._mean_aerodynamic_chord = 2 * integral / _projected_area
         else:
@@ -1601,7 +1602,7 @@ class Wing:
             computed_num_spanwise_panels *= 2
         self.num_spanwise_panels = computed_num_spanwise_panels
 
-        # Calculate the number of panels on this wing.
+        # Calculate the number of Panels on this Wing.
         self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize an empty array to hold this Wing's wake ring vortex points.
@@ -1609,7 +1610,7 @@ class Wing:
             (0, computed_num_spanwise_panels + 1, 3), dtype=float
         )
 
-        # Generate the wing's mesh, which populates the Panels attribute.
+        # Generate the Wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
 
     def get_plottable_data(

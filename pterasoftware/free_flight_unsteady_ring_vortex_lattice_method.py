@@ -87,14 +87,14 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
                 "free_flight_unsteady_problem must be a FreeFlightUnsteadyProblem."
             )
 
-        # Transient working state for the strongly coupled sub-iteration, established by
-        # freeze_substep and cleared by restore_substep. Each is None between substeps.
-        # The next step and its transient SteadyProblem and trial OperatingPoint
-        # redirect the inherited geometry and wake reads to a scratch copy of the next
-        # Airplane and the current trial state, since the canonical next-step
-        # SteadyProblem is not committed until the solve accepts. The frozen induced
-        # velocities are the iterate-independent part of the wake transport. The two
-        # strength snapshots are the current and previous steps' solved bound ring
+        # This is transient working state for the strongly coupled sub-iteration,
+        # established by freeze_substep and cleared by restore_substep. Each is None
+        # between substeps. The next step and its transient SteadyProblem and trial
+        # OperatingPoint redirect the inherited geometry and wake reads to a scratch
+        # copy of the next Airplane and the current trial state, since the canonical
+        # next-step SteadyProblem is not committed until the solve accepts. The frozen
+        # induced velocities are the iterate-independent part of the wake transport. The
+        # two strength snapshots are the current and previous steps' solved bound ring
         # vortex strengths. These are initialized before the inherited constructor runs,
         # because it calls _get_steady_problem_at, which this solver's override consults
         # for the substep state.

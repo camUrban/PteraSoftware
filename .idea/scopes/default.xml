@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="default" pattern="file[PteraSoftware]:pterasoftware//*||file[PteraSoftware]:examples//*||file[PteraSoftware]:docs/hero_graphics//*||file:docs/ANGLE_VECTORS_AND_TRANSFORMATIONS.md||file:docs/AXES_POINTS_AND_FRAMES.md||file:docs/CLASSES_AND_IMMUTABILITY.md||file:docs/CODE_STYLE.md||file:docs/MUJOCO_CONVENTIONS.md||file:docs/RUNNING_TESTS_AND_TYPE_CHECKS.md||file:docs/STRONG_COUPLING.md||file:docs/TYPE_HINT_AND_DOCSTRING_STYLE.md||file:docs/WRITING_STYLE.md||file[PteraSoftware]:scripts//*||file[PteraSoftware]:tests//*||file[PteraSoftware]:validation//*||file:CLAUDE.md||file:CODE_OF_CONDUCT.md||file:CONTRIBUTING.md||file:LICENSE.md||file:README.md||file:SECURITY.md" />
+</component>

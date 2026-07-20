@@ -1,11 +1,11 @@
 ---
-description: Check and fix block comments in specified files against the writing style guidelines
+description: Check and fix block and inline comments in specified files against the writing style guidelines
 argument-hint: <file paths>
 ---
 
 # Check Comment Style
 
-Check and fix block comments in `$ARGUMENTS` against `docs/WRITING_STYLE.md`. This command runs three focused agent passes over each file, one per rule group, applying fixes and flagging uncertain cases with `# FIXME:` markers for manual review.
+Check and fix block and inline comments in `$ARGUMENTS` against `docs/WRITING_STYLE.md`. A block comment is a line whose first non-whitespace character is `#`. An inline comment is a `#` comment trailing code on the same line. This command runs three focused agent passes over each file, one per rule group, applying fixes and flagging uncertain cases with `# FIXME:` markers for manual review.
 
 ## Scope
 
@@ -26,7 +26,7 @@ This command checks comment prose style only. It does not check:
 
 ## Steps
 
-1. If `$ARGUMENTS` is empty, stop and ask the user which files to check. Otherwise, confirm each file exists and contains block comments by running `grep -c '^\s*#' <file>` on each. Do not read the files yourself; the agents will read them. Skip (and later report) any file with no block comments.
+1. If `$ARGUMENTS` is empty, stop and ask the user which files to check. Otherwise, confirm each file exists and contains comments by running `grep -c '#' <file>` on each. This count can include `#` characters inside string literals, which is acceptable for a presence check because the agents read the files themselves and ignore non-comment hashes. Do not read the files yourself; the agents will read them. Skip (and later report) any file with no comments.
 
 2. Read `docs/WRITING_STYLE.md` in full. Extract the following sections verbatim (heading through last bullet, no summarizing or paraphrasing) for use in agent prompts:
    - The "Sentence Structure" section and the "How to Handle Each Forbidden Case" subsection (for pass 1)
@@ -92,9 +92,10 @@ Open every agent prompt with this, filling in the bracketed parts for the pass b
 Include these verbatim in every agent prompt, after the rule sections:
 
 - Read the file before editing.
-- Edit block comments only: lines whose first non-whitespace character is `#`. Never edit docstrings, string literals, or code.
+- Edit comments only, both kinds: block comments (lines whose first non-whitespace character is `#`) and inline comments (a `#` comment trailing code on the same line). Never edit docstrings, string literals, or code. A `#` inside a string literal is not a comment; leave it alone.
+- When editing an inline comment, change only the text after the `#`. Never move the comment to its own line, and never touch the code before it.
 - Do not change line wrapping, and do not worry about line length. Leave your edits unwrapped even if they overrun the line width.
 - Do not run pre-commit, octowrap, black, docformatter, or any other formatter or linter. The orchestrator runs these once after all three passes finish. Running them yourself corrupts the line numbers the later passes work from.
 - Only fix comments with clear, obvious violations of the rules you were given. Do not go on a fishing expedition.
-- If a comment looks structurally broken (mid-sentence truncation, dangling preposition, sentence that does not parse) but you are not confident in the fix, insert `# FIXME: Manually review this comment.` on its own line above it and leave the comment unchanged. Do not insert a marker if one is already present above that comment.
+- If a comment looks structurally broken (mid-sentence truncation, dangling preposition, sentence that does not parse) but you are not confident in the fix, insert `# FIXME: Manually review this comment.` on its own line above it and leave the comment unchanged. For an inline comment, the marker goes on its own line above the code line that carries the comment. Do not insert a marker if one is already present above that comment.
 - In your final report, list each change with the comment's original text, the rule violated, and your reasoning. Also list each FIXME marker you inserted and why you were unsure.

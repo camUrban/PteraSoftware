@@ -13,7 +13,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for WingCrossSection tests."""
-        # Create fixtures using geometry_fixtures module
+        # Create fixtures using geometry_fixtures module.
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
             geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
@@ -27,7 +27,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_initialization_valid_parameters(self):
         """Test WingCrossSection initialization with valid parameters."""
-        # Test that basic WingCrossSection initializes correctly
+        # Test that basic WingCrossSection initializes correctly.
         self.assertIsInstance(
             self.basic_wing_cross_section,
             ps.geometry.wing_cross_section.WingCrossSection,
@@ -73,7 +73,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_airfoil_parameter_validation(self):
         """Test that airfoil parameter is properly validated."""
-        # Test with invalid airfoil type
+        # Test with invalid airfoil type.
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing_cross_section.WingCrossSection(
@@ -83,21 +83,21 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_num_spanwise_panels_validation(self):
         """Test num_spanwise_panels parameter validation."""
-        # Test with valid positive integer
+        # Test with valid positive integer.
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=15,
         )
         self.assertEqual(wing_cross_section.num_spanwise_panels, 15)
 
-        # Test with None (valid for tip cross sections)
+        # Test with None (valid for tip WingCrossSections).
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=None,
         )
         self.assertIsNone(wing_cross_section.num_spanwise_panels)
 
-        # Test with invalid values
+        # Test with invalid values.
         invalid_values = [0, -5, 2.5, "eight"]
         for invalid_value in invalid_values:
             # noinspection PyUnresolvedReferences
@@ -111,7 +111,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_chord_validation(self):
         """Test chord parameter validation."""
-        # Test with valid positive values
+        # Test with valid positive values.
         valid_chords = [0.1, 1.0, 2.5, 10.0]
         for chord in valid_chords:
             with self.subTest(chord=chord):
@@ -122,7 +122,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
                 self.assertEqual(wing_cross_section.chord, chord)
 
-        # Test with invalid values
+        # Test with invalid values.
         invalid_chords = [0.0, -1.0, -0.5, "one"]
         for invalid_chord in invalid_chords:
             with self.subTest(invalid_chord=invalid_chord):
@@ -136,13 +136,13 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_Lp_Wcsp_Lpp_validation(self):
         """Test Lp_Wcsp_Lpp parameter validation."""
-        # Test with valid array-like inputs
+        # Test with valid array-like inputs.
         valid_vectors = [
-            np.array([0.0, 0.0, 0.0]),  # numpy array of floats
-            [1.0, 2.0, 0.5],  # list of floats
-            [1, 2, 0],  # list of ints
-            (-0.5, 1.0, -0.2),  # tuple of floats
-            np.array([1, 2, 0]),  # numpy array of ints
+            np.array([0.0, 0.0, 0.0]),  # This is a numpy array of floats.
+            [1.0, 2.0, 0.5],  # This is a list of floats.
+            [1, 2, 0],  # This is a list of ints.
+            (-0.5, 1.0, -0.2),  # This is a tuple of floats.
+            np.array([1, 2, 0]),  # This is a numpy array of ints.
         ]
         for vector in valid_vectors:
             # noinspection PyUnresolvedReferences
@@ -154,19 +154,21 @@ class TestWingCrossSection(unittest.TestCase):
                 )
                 np.testing.assert_array_equal(wing_cross_section.Lp_Wcsp_Lpp, vector)
 
-        # Test that second component must be non-negative
+        # Test that second component must be non-negative.
         with self.assertRaises(ValueError):
             ps.geometry.wing_cross_section.WingCrossSection(
                 airfoil=self.test_airfoil,
                 num_spanwise_panels=8,
-                Lp_Wcsp_Lpp=np.array([1.0, -0.5, 0.0]),  # Negative y-component
+                Lp_Wcsp_Lpp=np.array(
+                    [1.0, -0.5, 0.0]
+                ),  # This is a negative y component.
             )
 
-        # Test with invalid shapes/types
+        # Test with invalid shapes/types.
         invalid_vectors = [
-            np.array([1.0, 2.0]),  # Wrong size
-            np.array([1.0, 2.0, 3.0, 4.0]),  # Wrong size
-            "not_a_vector",  # String
+            np.array([1.0, 2.0]),  # This is the wrong size.
+            np.array([1.0, 2.0, 3.0, 4.0]),  # This is the wrong size.
+            "not_a_vector",  # This is a string.
         ]
         for invalid_vector in invalid_vectors:
             with self.subTest(invalid_vector=invalid_vector):
@@ -180,15 +182,15 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_angles_Wcsp_to_Wcs_ixyz_validation(self):
         """Test angles_Wcsp_to_Wcs_ixyz parameter validation."""
-        # Test with valid array-like angles (within [-90, 90] range)
+        # Test with valid array-like angles (within [-90.0, 90.0] range).
         valid_angles = [
-            np.array([0.0, 0.0, 0.0]),  # numpy array of floats
-            [45.0, -30.0, 60.0],  # list of floats
-            [45, -30, 60],  # list of ints
-            (89.9, -89.9, 0.0),  # tuple of floats
-            np.array([30, -15, 45]),  # numpy array of ints
-            [90.0, -90.0, 0.0],  # boundary values (list)
-            np.array([90.0, 0.0, -90.0]),  # boundary values (array)
+            np.array([0.0, 0.0, 0.0]),  # This is a numpy array of floats.
+            [45.0, -30.0, 60.0],  # This is a list of floats.
+            [45, -30, 60],  # This is a list of ints.
+            (89.9, -89.9, 0.0),  # This is a tuple of floats.
+            np.array([30, -15, 45]),  # This is a numpy array of ints.
+            [90.0, -90.0, 0.0],  # This is a list of boundary values.
+            np.array([90.0, 0.0, -90.0]),  # This is an array of boundary values.
         ]
         for angles in valid_angles:
             with self.subTest(angles=angles):
@@ -201,12 +203,14 @@ class TestWingCrossSection(unittest.TestCase):
                     wing_cross_section.angles_Wcsp_to_Wcs_ixyz, angles
                 )
 
-        # Test with angles outside valid range (using various array-like formats)
+        # Test with angles outside valid range (using various array-like formats).
         invalid_angles = [
-            [90.1, 0.0, 0.0],  # Greater than 90 (list)
-            np.array([0.0, -90.1, 0.0]),  # Less than -90 (array)
-            [95, 0, 0],  # Greater than 90 (list of ints)
-            (0.0, -100.0, 0.0),  # Less than -90 (tuple)
+            [90.1, 0.0, 0.0],  # This is a list with a value greater than 90.0.
+            np.array(
+                [0.0, -90.1, 0.0]
+            ),  # This is an array with a value less than -90.0.
+            [95, 0, 0],  # This is a list of ints with a value greater than 90.0.
+            (0.0, -100.0, 0.0),  # This is a tuple with a value less than -90.0.
         ]
         for invalid_angle in invalid_angles:
             with self.subTest(invalid_angle=invalid_angle):
@@ -219,7 +223,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_control_surface_symmetry_type_validation(self):
         """Test control_surface_symmetry_type parameter validation."""
-        # Test with valid types
+        # Test with valid types.
         valid_types = ["symmetric", "asymmetric"]
         for control_type in valid_types:
             with self.subTest(control_type=control_type):
@@ -232,7 +236,7 @@ class TestWingCrossSection(unittest.TestCase):
                     wing_cross_section.control_surface_symmetry_type, control_type
                 )
 
-        # Test with invalid types
+        # Test with invalid types.
         invalid_types = ["invalid", "flap", "", 123]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
@@ -246,7 +250,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_control_surface_hinge_point_validation(self):
         """Test control_surface_hinge_point parameter validation."""
-        # Test with valid values (in range 0 < x < 1)
+        # Test with valid values (in range 0.0 < x < 1.0).
         valid_hinge_points = [0.1, 0.5, 0.75, 0.9, 0.999]
         for hinge_point in valid_hinge_points:
             with self.subTest(hinge_point=hinge_point):
@@ -259,7 +263,7 @@ class TestWingCrossSection(unittest.TestCase):
                     wing_cross_section.control_surface_hinge_point, hinge_point
                 )
 
-        # Test with invalid values (outside range or edge values)
+        # Test with invalid values (outside range or edge values).
         invalid_hinge_points = [0.0, 1.0, -0.1, 1.1, "point"]
         for invalid_hinge_point in invalid_hinge_points:
             with self.subTest(invalid_hinge_point=invalid_hinge_point):
@@ -273,7 +277,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_control_surface_deflection_validation(self):
         """Test control_surface_deflection parameter validation."""
-        # Test with valid values (in range -5 <= x <= 5)
+        # Test with valid values (in range -5.0 <= x <= 5.0).
         valid_deflections = [0.0, 1.0, -5.0, 5.0, -4.1, 4]
         for deflection in valid_deflections:
             with self.subTest(deflection=deflection):
@@ -286,7 +290,7 @@ class TestWingCrossSection(unittest.TestCase):
                     wing_cross_section.control_surface_deflection, deflection
                 )
 
-        # Test with invalid values (outside range or edge values)
+        # Test with invalid values (outside range or edge values).
         invalid_deflections = [-90.0, 90.0, -100.0, 120.0, "deflection"]
         for invalid_deflection in invalid_deflections:
             with self.subTest(invalid_deflection=invalid_deflection):
@@ -300,7 +304,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_spanwise_spacing_validation(self):
         """Test spanwise_spacing parameter validation."""
-        # Test with valid values
+        # Test with valid values.
         valid_spacings = ["cosine", "uniform", None]
         for spacing in valid_spacings:
             with self.subTest(spacing=spacing):
@@ -311,7 +315,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
                 self.assertEqual(wing_cross_section.spanwise_spacing, spacing)
 
-        # Test with invalid values
+        # Test with invalid values.
         invalid_spacings = ["linear", "exponential", "", 123]
         for invalid_spacing in invalid_spacings:
             with self.subTest(invalid_spacing=invalid_spacing):
@@ -325,20 +329,20 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_validate_root_constraints(self):
         """Test validate_root_constraints method."""
-        # Test that root WingCrossSection passes validation
+        # Test that root WingCrossSection passes validation.
         try:
             self.root_wing_cross_section.validate_root_constraints()
         except Exception as e:
             self.fail(f"Root WingCrossSection validation failed unexpectedly: {e}")
 
-        # Test that non-root WingCrossSections fail validation
+        # Test that non-root WingCrossSections fail validation.
         with self.assertRaises(ValueError):
             self.basic_wing_cross_section.validate_root_constraints()
 
         with self.assertRaises(ValueError):
             self.tip_wing_cross_section.validate_root_constraints()
 
-        # Test that root WingCrossSection with num_spanwise_panels=None fails
+        # Test that root WingCrossSection with num_spanwise_panels=None fails.
         invalid_root_wing_cross_section = (
             geometry_fixtures.make_invalid_root_wing_cross_section_fixture()
         )
@@ -347,13 +351,13 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_validate_tip_constraints(self):
         """Test validate_tip_constraints method."""
-        # Test that tip WingCrossSection passes validation
+        # Test that tip WingCrossSection passes validation.
         try:
             self.tip_wing_cross_section.validate_tip_constraints()
         except Exception as e:
             self.fail(f"Tip WingCrossSection validation failed unexpectedly: {e}")
 
-        # Test that non-tip WingCrossSections fail validation
+        # Test that non-tip WingCrossSections fail validation.
         with self.assertRaises(ValueError):
             self.basic_wing_cross_section.validate_tip_constraints()
 
@@ -362,7 +366,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_validate_mid_constraints(self):
         """Test validate_mid_constraints method."""
-        # Test that valid middle WingCrossSection passes validation
+        # Test that valid middle WingCrossSection passes validation.
         middle_wing_cross_section = (
             geometry_fixtures.make_middle_wing_cross_section_fixture()
         )
@@ -371,7 +375,7 @@ class TestWingCrossSection(unittest.TestCase):
         except Exception as e:
             self.fail(f"Middle WingCrossSection validation failed unexpectedly: {e}")
 
-        # Test that basic WingCrossSection (has num_spanwise_panels) passes validation
+        # Test that basic WingCrossSection (has num_spanwise_panels) passes validation.
         try:
             self.basic_wing_cross_section.validate_mid_constraints()
         except Exception as e:
@@ -379,14 +383,14 @@ class TestWingCrossSection(unittest.TestCase):
                 f"Basic WingCrossSection validation as middle failed unexpectedly: {e}"
             )
 
-        # Test that middle WingCrossSection with num_spanwise_panels=None fails
+        # Test that middle WingCrossSection with num_spanwise_panels=None fails.
         invalid_middle_wing_cross_section = (
             geometry_fixtures.make_invalid_middle_wing_cross_section_fixture()
         )
         with self.assertRaises(ValueError):
             invalid_middle_wing_cross_section.validate_mid_constraints()
 
-        # Test that tip WingCrossSection (has num_spanwise_panels=None) fails
+        # Test that tip WingCrossSection (has num_spanwise_panels=None) fails.
         with self.assertRaises(ValueError):
             self.tip_wing_cross_section.validate_mid_constraints()
 
@@ -420,16 +424,16 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_transformation_matrices_not_validated(self):
         """Test that transformation matrices return None when not validated."""
-        # Test with unvalidated WingCrossSection
+        # Test with unvalidated WingCrossSection.
         self.assertIsNone(self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
         self.assertIsNone(self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp)
 
     def test_transformation_matrices_validated(self):
         """Test that transformation matrices work correctly when validated."""
-        # Manually set validated flag to True
+        # Manually set validated flag to True.
         self.basic_wing_cross_section.validated = True
 
-        # Test that matrices are returned
+        # Test that matrices are returned.
         T_forward = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T_inverse = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
 
@@ -438,12 +442,12 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(T_forward.shape, (4, 4))
         self.assertEqual(T_inverse.shape, (4, 4))
 
-        # Test that they are inverses of each other
+        # Test that they are inverses of each other.
         identity = T_forward @ T_inverse
         expected_identity = np.eye(4)
         np.testing.assert_allclose(identity, expected_identity, rtol=1e-10, atol=1e-14)
 
-        # Test with root WingCrossSection (should be identity matrices)
+        # Test with root WingCrossSection (should be identity matrices).
         self.root_wing_cross_section.validated = True
         T_root_forward = self.root_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T_root_inverse = self.root_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
@@ -453,21 +457,21 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_comprehensive_initialization_edge_cases(self):
         """Test edge cases in initialization that combine multiple parameters."""
-        # Test with minimal valid parameters
+        # Test with minimal valid parameters.
         minimal_wing_cross_section = (
             geometry_fixtures.make_minimal_wing_cross_section_fixture()
         )
         self.assertEqual(minimal_wing_cross_section.num_spanwise_panels, 1)
 
-        # Test with maximum reasonable values
+        # Test with maximum reasonable values.
         max_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=100,
             chord=50.0,
             Lp_Wcsp_Lpp=np.array([10.0, 20.0, 5.0]),
             angles_Wcsp_to_Wcs_ixyz=np.array([90.0, -90.0, 90.0]),
-            control_surface_hinge_point=0.001,  # Very small but valid
-            control_surface_deflection=5.0,  # Maximum valid deflection
+            control_surface_hinge_point=0.001,  # This is very small but valid.
+            control_surface_deflection=5.0,  # This is the maximum valid deflection.
         )
         self.assertEqual(max_wing_cross_section.num_spanwise_panels, 100)
         self.assertEqual(max_wing_cross_section.chord, 50.0)
@@ -538,7 +542,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
 
     def test_mutable_control_surface_symmetry_type(self):
         """Test that control_surface_symmetry_type remains mutable."""
-        # This attribute must remain mutable for type 5 symmetry processing
+        # This attribute must remain mutable for type 5 symmetry processing.
         self.basic_wing_cross_section.control_surface_symmetry_type = "asymmetric"
         self.assertEqual(
             self.basic_wing_cross_section.control_surface_symmetry_type, "asymmetric"
@@ -549,23 +553,23 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
 
     def test_set_once_validated_property(self):
         """Test that validated can only be set once."""
-        # First set should succeed
+        # First set should succeed.
         self.assertFalse(self.basic_wing_cross_section.validated)
         self.basic_wing_cross_section.validated = True
         self.assertTrue(self.basic_wing_cross_section.validated)
 
-        # Second set should raise AttributeError
+        # Second set should raise AttributeError.
         with self.assertRaises(AttributeError):
             self.basic_wing_cross_section.validated = True
 
     def test_set_once_symmetry_type_property(self):
         """Test that symmetry_type can only be set once."""
-        # First set should succeed
+        # First set should succeed.
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
         self.basic_wing_cross_section.symmetry_type = 4
         self.assertEqual(self.basic_wing_cross_section.symmetry_type, 4)
 
-        # Second set should raise AttributeError
+        # Second set should raise AttributeError.
         with self.assertRaises(AttributeError):
             self.basic_wing_cross_section.symmetry_type = 3
 
@@ -682,11 +686,11 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         original = self.basic_wing_cross_section
         copied = copy.deepcopy(original)
 
-        # Verify that immutable properties cannot be set
+        # Verify that immutable properties cannot be set.
         with self.assertRaises(AttributeError):
             copied.chord = 999.0
 
-        # Verify that numpy arrays are read only
+        # Verify that numpy arrays are read only.
         with self.assertRaises(ValueError):
             copied.Lp_Wcsp_Lpp[0] = 100.0
 
@@ -697,15 +701,15 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         original = self.basic_wing_cross_section
         copied = copy.deepcopy(original)
 
-        # Verify that immutable properties cannot be set on the original
+        # Verify that immutable properties cannot be set on the original.
         with self.assertRaises(AttributeError):
             original.chord = 999.0
 
-        # Verify that numpy arrays are read only on the original
+        # Verify that numpy arrays are read only on the original.
         with self.assertRaises(ValueError):
             original.Lp_Wcsp_Lpp[0] = 100.0
 
-        # Verify that the copy still has the original values
+        # Verify that the copy still has the original values.
         self.assertEqual(copied.chord, original.chord)
         np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, original.Lp_Wcsp_Lpp)
 
@@ -755,17 +759,17 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         original = self.basic_wing_cross_section
         copied = copy.deepcopy(original)
 
-        # Verify that the Airfoil is a separate instance
+        # Verify that the Airfoil is a separate instance.
         self.assertIsNot(copied.airfoil, original.airfoil)
 
-        # Verify that the Airfoil's name is immutable (no setter)
+        # Verify that the Airfoil's name is immutable (no setter).
         with self.assertRaises(AttributeError):
             copied.airfoil.name = "modified_name"
 
-        # Verify that the Airfoil arrays are independent and read only
-        self.assertIsNot(copied.airfoil.outline_A_lp, original.airfoil.outline_A_lp)
+        # Verify that the Airfoil arrays are independent and read only.
+        self.assertIsNot(copied.airfoil.outline_A_Lp, original.airfoil.outline_A_Lp)
         with self.assertRaises(ValueError):
-            copied.airfoil.outline_A_lp[0, 0] = 999.0
+            copied.airfoil.outline_A_Lp[0, 0] = 999.0
 
     def test_deepcopy_cached_transformation_matrices_read_only(self):
         """Test that deepcopied cached transformation matrices are read only."""
@@ -915,7 +919,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
         outline = result[0]
 
-        # The x range should be approximately [0, chord].
+        # The x range should be approximately [0.0, chord].
         x_min = np.min(outline[:, 0])
         x_max = np.max(outline[:, 0])
 
@@ -927,7 +931,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
-        # Call without show parameter, should return data (not None).
+        # Calling without the show parameter should return data (not None).
         result = self.basic_wing_cross_section.get_plottable_data()
 
         self.assertIsNotNone(result)
@@ -963,7 +967,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 2)
 
-        # For root cross section, chord is 2.0.
+        # For root WingCrossSection, chord is 2.0.
         chord = self.root_wing_cross_section.chord
         outline = result[0]
         x_max = np.max(outline[:, 0])
@@ -985,7 +989,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertIsNotNone(result)
         outline = result[0]
 
-        # With chord=1.0, the x range should be [0, 1].
+        # With chord=1.0, the x range should be [0.0, 1.0].
         x_min = np.min(outline[:, 0])
         x_max = np.max(outline[:, 0])
 

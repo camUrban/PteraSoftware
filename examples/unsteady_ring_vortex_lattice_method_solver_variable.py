@@ -26,7 +26,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -42,7 +42,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -71,7 +71,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -87,7 +87,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -112,7 +112,7 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# Now define the main wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the main Wing's root and tip WingCrossSections' WingCrossSectionMovements.
 main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
@@ -143,10 +143,10 @@ main_wing_tip_wing_cross_section_movement = (
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
 # symmetry plane offset non coincident with the Wing's axes yz plane. Therefore, that
 # Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the second
-# Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected main
-# wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry types). Therefore, it was actually split into two Wings, with the second Wing
+# being a reflected version of the first. Therefore, we need to define a WingMovement
+# for this reflected Wing. To start, we'll first define the reflected main Wing's root
+# and tip WingCrossSections' WingCrossSectionMovements.
 reflected_main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -202,7 +202,7 @@ v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the main wing's WingMovement, the reflected main wing's WingMovement and
+# Now define the main Wing's WingMovement, the reflected main Wing's WingMovement and
 # the V-tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
@@ -260,7 +260,7 @@ del reflected_main_wing_tip_wing_cross_section_movement
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the example airplane's AirplaneMovement.
+# Now define the example Airplane's AirplaneMovement.
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, reflected_main_wing_movement, v_tail_movement],
@@ -280,7 +280,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=1.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define the operating point's OperatingPointMovement.
+# Define the OperatingPoint's OperatingPointMovement.
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point, periodVCg__E=0.0, spacingVCg__E="sine"
 )

@@ -70,7 +70,7 @@ example_airplane = ps.geometry.airplane.Airplane(
             num_wing_cross_sections=20,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca2412",
-                outline_A_lp=None,
+                outline_A_Lp=None,
                 resample=True,
                 n_points_per_side=400,
             ),

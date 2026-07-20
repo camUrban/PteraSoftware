@@ -472,8 +472,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
     of WingCrossSections.
     """
 
-    # The reference Airplanes' indices within the reference SteadyProblem, which are
-    # also the indices their copies take and part of each cache key.
+    # These are the reference Airplanes' indices within the reference SteadyProblem,
+    # which are also the indices their copies take and part of each cache key.
     trapezoidal_airplane_id = 0
     edge_defined_airplane_id = 1
 
@@ -743,8 +743,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
                 this_wing_cross_section.airfoil, ref_wing_cross_section.airfoil
             )
             np.testing.assert_array_equal(
-                this_wing_cross_section.airfoil.outline_A_lp,
-                ref_wing_cross_section.airfoil.outline_A_lp,
+                this_wing_cross_section.airfoil.outline_A_Lp,
+                ref_wing_cross_section.airfoil.outline_A_Lp,
             )
 
 
@@ -775,7 +775,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     #
     # A test below checks each dict against its class's signature. If one of those tests
     # fails because a parameter was added to a movement class, adding it here is only
-    # half of the fix: it must also be passed wherever
+    # half of the fix: It must also be passed wherever
     # _convergence_meshing.build_unsteady_problem constructs that class, or the
     # convergence analysis will quietly ignore it.
     #

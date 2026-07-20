@@ -35,7 +35,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -51,7 +51,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -80,7 +80,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -96,7 +96,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -121,7 +121,7 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# Now define the main wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the main Wing's root and tip WingCrossSections' WingCrossSectionMovements.
 main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
@@ -217,7 +217,7 @@ del main_wing_tip_wing_cross_section_movement
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the example airplane's AirplaneMovement.
+# Now define the example Airplane's AirplaneMovement.
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[main_wing_movement, v_tail_movement],
@@ -232,11 +232,11 @@ del main_wing_movement
 del v_tail_movement
 
 # Define a new OperatingPoint with surface effects enabled. To model ground effect, we
-# define a horizontal ground plane at z = 0 in Earth axes by specifying its unit normal
-# vector and a point on the plane. We also set CgP1_E_Eo to place the Airplane's CG 5
-# meters above the ground (negative z is up in Earth axes). We leave the body
-# orientation (angles_E_to_BP1_izyx) unset, which resolves to the level-flight default:
-# the airplane is pitched nose up by the angle of attack (with zero sideslip), placing
+# define a horizontal ground plane at z = 0.0 in Earth axes by specifying its unit
+# normal vector and a point on the plane. We also set CgP1_E_Eo to place the Airplane's
+# CG 5.0 meters above the ground (negative z is up in Earth axes). We leave the body
+# orientation (angles_E_to_BP1_izyx) unset, which resolves to the level-flight default.
+# The airplane is pitched nose up by the angle of attack (with zero sideslip), placing
 # its velocity along the horizontal Earth x axis so it flies level over the ground
 # rather than descending into it.
 example_operating_point = ps.operating_point.OperatingPoint(
@@ -251,7 +251,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     nu=15.06e-6,
 )
 
-# Define the operating point's OperatingPointMovement.
+# Define the OperatingPoint's OperatingPointMovement.
 operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
     base_operating_point=example_operating_point,
     ampVCg__E=0.0,

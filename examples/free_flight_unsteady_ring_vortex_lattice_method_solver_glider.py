@@ -47,7 +47,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -63,7 +63,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -92,7 +92,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -108,7 +108,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -137,7 +137,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -153,7 +153,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -180,13 +180,13 @@ example_airplane = ps.geometry.airplane.Airplane(
 
 # Now define each Wing's WingMovements (and the WingCrossSectionMovements they contain).
 # The main Wing was defined with symmetric=True, mirror_only=False, and a symmetry plane
-# coincident with its axes' xz-plane, giving it type 4 symmetry (see the Wing class
+# coincident with its axes' xz plane, giving it type 4 symmetry (see the Wing class
 # documentation for more details on symmetry types), so it stays a single Wing and is
 # not split into a separate reflected Wing. The Airplane therefore has exactly three
 # Wings, and we need one WingMovement per Wing.
 #
 # This is a free flight of a rigid glider, so there is no prescribed flapping or
-# deformation: every prescribed-motion amplitude is left at its zero default. The only
+# deformation. Every prescribed-motion amplitude is left at its zero default. The only
 # motion in the simulation comes from the rigid body dynamics during the free flight
 # phase. We build the movements with a loop, since with all-default (static) motion they
 # are identical in form across the three Wings.
@@ -205,7 +205,7 @@ for wing in example_airplane.wings:
         )
     )
 
-# Now define the example airplane's AirplaneMovement. As with the Wings, the
+# Now define the example Airplane's AirplaneMovement. As with the Wings, the
 # airplane-level prescribed motion is left at its zero defaults.
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
@@ -236,8 +236,8 @@ example_operating_point = ps.operating_point.OperatingPoint(
     g_E=(0.0, 0.0, 9.80665),
 )
 
-# Define the operating point's FreeFlightOperatingPointMovement. It holds only the
-# initial OperatingPoint; the solver populates its operating_points list with the body
+# Define the OperatingPoint's FreeFlightOperatingPointMovement. It holds only the
+# initial OperatingPoint. The solver populates its operating_points list with the body
 # state from the dynamics integration at each time step.
 operating_point_movement = (
     ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
@@ -270,7 +270,7 @@ del operating_point_movement
 # which is at the geometry origin. The off-diagonal terms are the body-axes products of
 # inertia. The mass equals the Airplane's weight (420.0 N) divided by the gravitational
 # acceleration magnitude (9.80665 m/s^2), which keeps the weight, mass, and gravity
-# consistent; the solver applies the gravitational force as mass * g_E. No external
+# consistent. The solver applies the gravitational force as mass * g_E. No external
 # loads are applied (external_loads_fn=None), so the glider flies an unpowered glide
 # driven only by its aerodynamics, gravity, and inertia.
 example_problem = ps.problems.FreeFlightUnsteadyProblem(

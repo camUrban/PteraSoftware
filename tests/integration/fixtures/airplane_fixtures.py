@@ -19,7 +19,7 @@ def make_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -35,7 +35,7 @@ def make_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -233,7 +233,7 @@ def make_multiple_wing_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca23012",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -249,7 +249,7 @@ def make_multiple_wing_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca23012",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -278,7 +278,7 @@ def make_multiple_wing_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -294,7 +294,7 @@ def make_multiple_wing_steady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -343,7 +343,7 @@ def make_symmetric_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -359,7 +359,7 @@ def make_symmetric_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -408,7 +408,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -424,7 +424,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca2412",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -453,7 +453,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -469,7 +469,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -498,7 +498,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -514,7 +514,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -783,7 +783,7 @@ def make_surface_effect_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),
@@ -799,7 +799,7 @@ def make_surface_effect_airplane():
                     ps.geometry.wing_cross_section.WingCrossSection(
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0010",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=50,
                         ),

@@ -769,10 +769,10 @@ def _get_mcs_points(
     T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
     inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,
     outer_wing_cross_section: wing_cross_section_mod.WingCrossSection,
-    inner_mcl_pointsY_Ai_lpAi: np.ndarray,
-    inner_mcl_pointsX_Ai_lpAi: np.ndarray,
-    outer_mcl_pointsY_Ao_lpAo: np.ndarray,
-    outer_mcl_pointsX_Ao_lpAo: np.ndarray,
+    inner_mcl_pointsY_Ai_LpAi: np.ndarray,
+    inner_mcl_pointsX_Ai_LpAi: np.ndarray,
+    outer_mcl_pointsY_Ao_LpAo: np.ndarray,
+    outer_mcl_pointsX_Ao_LpAo: np.ndarray,
     spanwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
     """Calculates the points on a wing section's mean camber surface (MCS) (in wing
@@ -788,7 +788,7 @@ def _get_mcs_points(
         the leading edge root point.
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
-    :param inner_mcl_pointsY_Ai_lpAi: A (M,1) ndarray of floats, where M is the
+    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the
         number of chordwise points in the mesh. Each element represents the y-component
         of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
         inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
@@ -807,7 +807,7 @@ def _get_mcs_points(
 def __init__(
     self,
     name: str = "NACA0012",
-    outline_A_lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
+    outline_A_Lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
     resample: bool = True,
     n_points_per_side: int = 400,
 ) -> None:
@@ -816,9 +816,9 @@ def __init__(
     :param name: The name of the Airfoil. It should correspond to the name of a file
         the airfoils directory, or to a valid NACA 4-series airfoil (once converted to
         lower-case and stripped of leading and trailing whitespace) unless you are
-        passing in your own array of points using outline_A_lp. Note that NACA0000 isn't
+        passing in your own array of points using outline_A_Lp. Note that NACA0000 isn't
         a valid NACA-series airfoil. The default is "NACA0012".
-    :param outline_A_lp: An array-like object of numbers (int or float) with shape
+    :param outline_A_Lp: An array-like object of numbers (int or float) with shape
         (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
         axes, relative to the leading point). If you wish to load coordinates from the
         airfoils directory, leave this as None, which is the default. Can be a tuple,
@@ -879,7 +879,7 @@ def get_resampled_mcl(
     self, mcl_fractions: np.ndarray | Sequence[float]
 ) -> np.ndarray:
     """Returns a ndarray of points along the mean camber line (MCL), resampled from the
-    mcl_A_outline attribute.
+    mcl_A_Lp attribute.
 
     It is used to discretize the MCL for meshing.
 

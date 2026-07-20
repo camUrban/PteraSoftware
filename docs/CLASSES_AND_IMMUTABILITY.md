@@ -603,12 +603,14 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | Attribute           | Type         | Notes                          |
 |---------------------|--------------|--------------------------------|
 | `name`              | `str`        | Airfoil identifier             |
-| `outline_A_lp`      | `np.ndarray` | Outline coordinates            |
+| `outline_A_Lp`      | `np.ndarray` | Outline coordinates            |
 | `resample`          | `bool`       | Resampling flag                |
 | `n_points_per_side` | `int`        | Points per side for resampling |
-| `mcl_A_lp`          | `np.ndarray` | Mean camber line coordinates   |
+| `mcl_A_Lp`          | `np.ndarray` | Mean camber line coordinates   |
 
 **Note**: The `add_control_surface` method creates and returns a new Airfoil instance rather than modifying the existing one. This is the correct immutable pattern.
+
+**Note**: `outline_A_lp` and `mcl_A_lp` are deprecated read-only aliases for `outline_A_Lp` and `mcl_A_Lp`, and the constructor accepts a deprecated `outline_A_lp` alias for its `outline_A_Lp` parameter. Using any of the aliases emits a DeprecationWarning, and all three will be removed in v6.0.0.
 
 ## Panel Class (`_panel.py`)
 

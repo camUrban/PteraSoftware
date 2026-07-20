@@ -9,8 +9,8 @@ import numpy as np
 
 import pterasoftware as ps
 
-# The element to extract from each entry of the deformation angle time series. The
-# example's Wing has 16 spanwise panels, so index 16 corresponds to the wing-tip
+# This is the element to extract from each entry of the deformation angle time series.
+# The example's Wing has 16 spanwise panels, so index 16 corresponds to the wing-tip
 # WingCrossSection.
 TIP_INDEX = 16
 
@@ -19,14 +19,14 @@ DEFAULT_K_RAD = 1000.0
 DEFAULT_B_RAD = 1000.0
 DEFAULT_DENSITY = 6.0
 
-# The prescribed flapping motion's x-component amplitude (degrees), period (seconds),
-# and phase (degrees). The two aeroelastic wing movements are constructed with these
-# values, and the plotted flap-position overlay is computed from them.
+# These are the prescribed flapping motion's x component amplitude (degrees), period
+# (seconds), and phase (degrees). The two AeroelasticWingMovements are constructed with
+# these values, and the plotted flap-position overlay is computed from them.
 FLAP_AMPLITUDE = 15.0
 FLAP_PERIOD = 1.0
 FLAP_PHASE = 169.0
 
-# Populate exactly ONE of these lists to sweep that parameter while holding the others
+# Populate exactly one of these lists to sweep that parameter while holding the others
 # at their defaults. Leave the other two as empty lists.
 K_VALUES_RAD: list[float] = [100.0, 1000.0, 10000.0, 20000.0]
 B_VALUES_RAD: list[float] = []
@@ -71,7 +71,7 @@ def run_aeroelastic(
                 ),
                 airfoil=ps.geometry.airfoil.Airfoil(
                     name="naca2412",
-                    outline_A_lp=None,
+                    outline_A_Lp=None,
                     resample=True,
                     n_points_per_side=400,
                 ),
@@ -108,7 +108,7 @@ def run_aeroelastic(
                         spanwise_spacing="uniform",
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0012",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=400,
                         ),
@@ -124,7 +124,7 @@ def run_aeroelastic(
                         spanwise_spacing=None,
                         airfoil=ps.geometry.airfoil.Airfoil(
                             name="naca0012",
-                            outline_A_lp=None,
+                            outline_A_Lp=None,
                             resample=True,
                             n_points_per_side=400,
                         ),

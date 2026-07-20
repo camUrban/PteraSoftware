@@ -283,7 +283,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Pre-allocate the per step wake stacks. The number of wake ring vortices at
         # step S is min(S, max_wake_rows) (or S if no truncation) times the total
-        # spanwise panel count summed over all wings.
+        # spanwise panel count summed over all Wings.
         wake_sizes_per_step = []
         for step in range(self.num_steps):
             num_chordwise_wake_rows = step
@@ -467,8 +467,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self._current_step = step
 
                 # Initialize this step's bound ring vortices. The default does an
-                # upfront init for all steps on step 0 and is a no-op thereafter;
-                # coupled subclasses override this hook to init one step at a time.
+                # upfront init for all steps on step 0 and is a no-op thereafter.
+                # Coupled subclasses override this hook to init one step at a time.
                 self._initialize_step_vortices(step)
                 current_problem: problems.SteadyProblem = self._get_steady_problem_at(
                     self._current_step
@@ -489,7 +489,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # calculate the loads for this time step.
                 self._evaluate_step_aerodynamics()
 
-                # Hook: subclasses may inject work between load calculation and wake
+                # Hook: Subclasses may inject work between load calculation and wake
                 # shedding (e.g. coupled problems update the next step's geometry from
                 # this step's solver results).
                 self._update_next_step_hook(step)
@@ -601,7 +601,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.panel_is_left_edge = np.zeros(self.num_panels, dtype=bool)
         self.panel_is_right_edge = np.zeros(self.num_panels, dtype=bool)
 
-        # Hook: subclasses may reinitialize step-specific arrays here.
+        # Hook: Subclasses may reinitialize step-specific arrays here.
         self._reinitialize_step_arrays_hook()
 
         # Get the pre-allocated (but still all zero) arrays of wake information that are
@@ -669,7 +669,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Initialize bound ring vortices. The base solver's hook does an upfront init
-        # for all steps when step is 0 and is a no-op otherwise; coupled subclasses
+        # for all steps when step is 0 and is a no-op otherwise. Coupled subclasses
         # override to initialize only the specified step.
         self._initialize_step_vortices(step)
 
@@ -1159,7 +1159,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
         else:
-            # If this is the first time step, set all the current Wake-wing influence
+            # If this is the first time step, set all the current wake Wing influence
             # coefficients to 0.0 (observed from the Earth frame) because no wake ring
             # vortices have been shed.
             self._currentStackWakeWingInfluences__E = np.zeros(
@@ -1397,7 +1397,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         effective_back_line_vortex_strengths = np.zeros(self.num_panels, dtype=float)
 
         # Iterate through the Airplanes' Wings. Within a Wing, Panels are laid out in
-        # row major (chordwise outer, spanwise inner) order, so neighbouring Panel
+        # row major (chordwise outer, spanwise inner) order, so neighboring Panel
         # strengths can be found at fixed offsets from the current global Panel
         # position: +1 right, -1 left, +num_spanwise_panels back, -num_spanwise_panels
         # front.
@@ -1424,7 +1424,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             this_strength
                         )
                     else:
-                        # Set the effective right line vortex strength to 1/2 the
+                        # Set the effective right line vortex strength to 1 / 2 the
                         # difference between this Panel's bound ring vortex strength and
                         # that of the Panel to the right.
                         effective_right_line_vortex_strengths[global_panel_position] = (
@@ -1439,7 +1439,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             this_strength
                         )
                     else:
-                        # Set the effective front line vortex strength to 1/2 the
+                        # Set the effective front line vortex strength to 1 / 2 the
                         # difference between this Panel's bound ring vortex strength and
                         # that of the Panel in front of it.
                         effective_front_line_vortex_strengths[global_panel_position] = (
@@ -1454,7 +1454,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             this_strength
                         )
                     else:
-                        # Set the effective left line vortex strength to 1/2 the
+                        # Set the effective left line vortex strength to 1 / 2 the
                         # difference between this Panel's bound ring vortex strength and
                         # that of the Panel to the left.
                         effective_left_line_vortex_strengths[global_panel_position] = (
@@ -1473,7 +1473,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 global_panel_position
                             ] = this_strength
                         else:
-                            # The Panel's back line vortex is partially cancelled by the
+                            # The Panel's back line vortex is partially canceled by the
                             # front line vortex of the wake ring vortex immediately to
                             # its rear. That wake ring vortex carries the strength this
                             # Panel's bound ring vortex had last time step, so the
@@ -1488,7 +1488,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                                 ]
                             )
                     else:
-                        # Set the effective back line vortex strength to 1/2 the
+                        # Set the effective back line vortex strength to 1 / 2 the
                         # difference between this Panel's bound ring vortex strength and
                         # that of the Panel to the back.
                         effective_back_line_vortex_strengths[global_panel_position] = (
@@ -1667,11 +1667,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def _load_calculation_moment_processing_hook(
         self,
-        rightLegForces_GP1,
-        frontLegForces_GP1,
-        leftLegForces_GP1,
-        backLegForces_GP1,
-        unsteady_forces_GP1,
+        rightLegForces_GP1: np.ndarray,
+        frontLegForces_GP1: np.ndarray,
+        leftLegForces_GP1: np.ndarray,
+        backLegForces_GP1: np.ndarray,
+        unsteady_forces_GP1: np.ndarray,
     ) -> np.ndarray:
         """A hook method for processing the moments calculated in _calculate_loads.
 
@@ -1824,7 +1824,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # transported with the next time step's freestream and body rate (the
             # interval's end frame) rather than the current step's. For a static
             # OperatingPoint these equal the current step's values, leaving the result
-            # bit-for-bit unchanged; they differ only when the OperatingPoint varies in
+            # bit-for-bit unchanged. They differ only when the OperatingPoint varies in
             # time, as it does every step in free flight. The OperatingPoint is fetched
             # through _operating_point_at so the strongly coupled free-flight solver can
             # supply the trial OperatingPoint for an as-yet-uncommitted next step.
@@ -1836,7 +1836,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             # The induced (Biot-Savart) part of the aged wake grid's transport velocity
             # reads only the current step's bound geometry, strengths, and wake, so it
             # is independent of the next step's body state. When a caller has not
-            # already computed it, compute it once here for all Wings; a strongly
+            # already computed it, compute it once here for all Wings. A strongly
             # coupled free-flight sub-iteration instead precomputes it once per step and
             # passes it in to reuse it unchanged across trials. It is only needed past
             # the first time step, where an aged grid exists, and only for a free wake,
@@ -2158,7 +2158,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     this_num_chordwise_rows * cumulative_prior_spanwise
                 )
 
-                # Trailing edge bound panel global positions for this Wing.
+                # Trailing edge bound Panel global positions for this Wing.
                 te_chordwise = (
                     self._per_wing_num_chordwise_panels[airplane_id][wing_id] - 1
                 )

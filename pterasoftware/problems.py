@@ -326,7 +326,7 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
 
         # Coupled-specific state: a mutable list of SteadyProblems that grows as the
         # solver advances. Subclass initialize_next_problem overrides append to this
-        # list; external code reads through the steady_problems tuple-view property to
+        # list. External code reads through the steady_problems tuple-view property to
         # preserve the read-only contract inherited from UnsteadyProblem. Seed with a
         # SteadyProblem built from the initial geometry so step zero is always ready.
         self._steady_problems: list[SteadyProblem] = [
@@ -546,8 +546,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
 
         # Derive the initial Airplane and OperatingPoint from the FreeFlightMovement's
         # first time step. SteadyProblem mutates each Panel's GP1_CgP1 attributes once,
-        # so the initial Airplane must be a fresh object; generate_airplane_at_time_step
-        # returns one.
+        # so the initial Airplane must be a fresh object, which
+        # generate_airplane_at_time_step returns.
         initial_airplane_movement = movement.airplane_movements[0]
         initial_airplane = initial_airplane_movement.generate_airplane_at_time_step(
             step=0, delta_time=movement.delta_time
@@ -594,7 +594,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 "simulation, leave both g_E and the weight at zero)."
             )
 
-        # The free-flight dynamics never apply externalFX_W: non-aerodynamic loads enter
+        # The free-flight dynamics never apply externalFX_W: Non-aerodynamic loads enter
         # free flight only through external_loads_fn, which is strictly more capable
         # (full force and moment, time varying). A nonzero value would be silently
         # ignored, so raise instead.
@@ -1150,13 +1150,14 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         :param step: The current time step index (zero indexed).
         :return: None
         """
-        # Freeze: snapshot the MuJoCo state and the current step's state 12-vector while
-        # the model is still at it, the solver's frozen step data, and the weighting.
-        # Build the transient next-step SteadyProblem over a scratch copy of the
-        # prescribed next-step Airplane, so the trials evaluate aerodynamics on the copy
-        # and the canonical Airplane's set-once Panel coordinates are reserved for the
-        # official SteadyProblem committed once the solve accepts. Its OperatingPoint is
-        # a placeholder. The trial OperatingPoint is supplied to each trial.
+        # Freeze: while the model is still at it, snapshot the MuJoCo state and the
+        # current step's state 12-vector, the solver's frozen step data, and the
+        # weighting. Build the transient next-step SteadyProblem over a scratch copy of
+        # the prescribed next-step Airplane, so the trials evaluate aerodynamics on the
+        # copy and the canonical Airplane's set-once Panel coordinates are reserved for
+        # the official SteadyProblem committed once the solve accepts. Its
+        # OperatingPoint is a placeholder. The trial OperatingPoint is supplied to each
+        # trial.
         snapshot = self._mujoco_model.save_state()
         snapshot_x = self._state_to_vector(self._mujoco_model.get_state())
         next_airplane = self._free_flight_movement.airplanes[0][step + 1]
@@ -1254,7 +1255,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 residual_norm,
             )
 
-        # Accept: the final dynamics-propagated state, at which the model now sits, is
+        # Accept: The final dynamics-propagated state, at which the model now sits, is
         # the next step's state. Commit its OperatingPoint, then restore the solver's
         # current-step state for the official wake build in the inherited run loop.
         accepted_operating_point = self._operating_point_from_state(
@@ -1301,7 +1302,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                     step,
                 )
             else:
-                # Prescribed phase: the loads are withheld, so the body coasts at its
+                # Prescribed phase: The loads are withheld, so the body coasts at its
                 # trimmed condition while the wake develops. Advance once and commit the
                 # next step's SteadyProblem from the new state.
                 interval_loads_E = self._assemble_interval_loads(
@@ -1425,7 +1426,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         if not isinstance(movement, aeroelastic_movement_mod.AeroelasticMovement):
             raise TypeError("movement must be an AeroelasticMovement.")
 
-        # Generate the initial airplane at step 0 with no deformation.
+        # Generate the initial Airplane at step 0 with no deformation.
         initial_airplane = movement.generate_airplane_at_time_step(
             airplane_movement_index=0, step=0
         )
@@ -1436,7 +1437,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             initial_operating_point=movement.operating_points[0],
         )
 
-        # Tunable Parameters
+        # Tunable parameters
         self._wing_density = wing_density  # per unit height kg/m^2
         self._spring_constant_rad = spring_constant_rad
         self._damping_constant_rad = damping_constant_rad
@@ -1453,7 +1454,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         # component (radians) of the deformation angle vector that perturbs the
         # corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles describing
         # the orientation of the wing cross section axes relative to the wing cross
-        # section parent axes using an intrinsic xy'z" sequence); the perturbations' x
+        # section parent axes using an intrinsic xy'z" sequence). The perturbations' x
         # and z components are structurally zero, so only the y components are stored.
         # The derivative entries are the angle elements' time derivatives (rad/s). They
         # are rates of change of scalar angle components, not angular velocity vector
@@ -1572,19 +1573,19 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
 
         next_step = len(self._steady_problems)
 
-        # _calculate_wing_deformation returns a per-wing list: each element is either
+        # _calculate_wing_deformation returns a per-wing list: Each element is either
         # the deformation ndarray for an aeroelastic wing or None for a standard wing.
         deformationAnglesRad_Wcsp_to_Wcs_ixyz = self._calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
 
-        # The structural model works in radians; the geometry API expects degrees.
+        # The structural model works in radians. The geometry API expects degrees.
         deformationAngles_Wcsp_to_Wcs_ixyz = [
             np.rad2deg(arr) if arr is not None else None
             for arr in deformationAnglesRad_Wcsp_to_Wcs_ixyz
         ]
 
-        # Generate the deformed airplane at this step.
+        # Generate the deformed Airplane at this step.
         airplane = self._aeroelastic_movement.generate_airplane_at_time_step(
             airplane_movement_index=0,
             step=next_step,
@@ -2045,7 +2046,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         """
         t = np.linspace(dt * (step - 1), dt * step, num_steps)
 
-        # Forced numerical integration of the spring-damper ODE
+        # Perform the forced numerical integration of the spring-damper ODE.
         return self._spring_numerical_ode(
             t,
             self.spring_constant_rad,
@@ -2063,7 +2064,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     def _generate_inertial_moment_function(
         flapping_axis_inertia: float,
         wing_movement: aeroelastic_wing_movement_mod.AeroelasticWingMovement,
-    ):
+    ) -> Callable[[float], float]:
         """Generate the prescribed wing motion inertial moment function.
 
         Extracts the prescribed flapping motion from the wing_movement definition and
@@ -2116,7 +2117,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             # derivative whenever the spacing component is a custom callable.
             deriv = wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
             assert deriv is not None
-            # deriv is the second derivative before amplitude scaling; amp is in
+            # deriv is the second derivative before amplitude scaling, and amp is in
             # degrees, so convert to radians to keep the moment in N*m.
             moment_func = (
                 lambda time: np.deg2rad(amp) * deriv(time) * flapping_axis_inertia
@@ -2133,7 +2134,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         theta0_rad: float,
         theta_derivative0_rad: float,
         aero_moment: float,
-        inertial_moment_func,
+        inertial_moment_func: Callable[[float], float],
     ) -> tuple[float, float]:
         """Numerically integrate the torsional spring-damper ODE.
 

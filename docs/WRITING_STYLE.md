@@ -12,7 +12,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
     - BAD: "this wing"
     - GOOD: "update the Wings"
     - BAD: "update the Wing objects" (unnecessary)
-- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section".
+- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section". Exception: a capitalization variant of "WCS" is allowed in a variable name when that name is written in exactly one of the forms required by `AXES_POINTS_AND_FRAMES.md` or `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` (e.g., the axes IDs in `angles_Wcsp_to_Wcs_ixyz` and the point IDs in `Lp_Wcsp_Lpp`). Such names keep their canonical form when referenced in text.
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 - **"strip leading edge point"**: When spelled out in prose, do not capitalize "strip leading edge point" unless it starts a sentence.
 - **"V-tail"**: Always write "V-tail" (capital V, hyphenated) in prose. Never use "v-tail", "v tail", "Vtail", or other variants. Identifier strings keep their canonical form and are not affected: variable names like `v_tail_movement` and string literals like `"V-Tail"` stay as-is.

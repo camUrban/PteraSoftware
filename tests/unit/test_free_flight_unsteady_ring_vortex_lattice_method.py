@@ -142,7 +142,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
                 "_substep_next_step",
                 "_substep_next_steady_problem",
                 "_substep_next_operating_point",
-                "_substep_stackVIndGridWrvp_GP1__E",
+                "_substepStackVIndGridWrvp_GP1__E",
                 "_substep_gamma_n",
                 "_substep_gamma_n_minus_1",
             ),
@@ -252,7 +252,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
 
         self.solver.freeze_substep(MagicMock())
 
-        self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
+        self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
 
     def test_restore_substep_clears_transient_state(self):
         """Test that restore_substep re-evaluates the current step and clears every
@@ -266,7 +266,7 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.solver._substep_next_step = 1
         self.solver._substep_next_steady_problem = MagicMock()
         self.solver._substep_next_operating_point = MagicMock()
-        self.solver._substep_stackVIndGridWrvp_GP1__E = [[np.zeros(3, dtype=float)]]
+        self.solver._substepStackVIndGridWrvp_GP1__E = [[np.zeros(3, dtype=float)]]
         self.solver._substep_gamma_n = np.ones(3, dtype=float)
         self.solver._substep_gamma_n_minus_1 = np.zeros(3, dtype=float)
 
@@ -280,6 +280,6 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         self.assertIsNone(self.solver._substep_next_step)
         self.assertIsNone(self.solver._substep_next_steady_problem)
         self.assertIsNone(self.solver._substep_next_operating_point)
-        self.assertIsNone(self.solver._substep_stackVIndGridWrvp_GP1__E)
+        self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
         self.assertIsNone(self.solver._substep_gamma_n)
         self.assertIsNone(self.solver._substep_gamma_n_minus_1)

@@ -14,8 +14,9 @@ def make_basic_aeroelastic_movement_fixture():
     # Create a shared airfoil for both wing cross sections.
     airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
 
-    # Create the root WCS. The first WCS of a Wing must have Lp_Wcsp_Lpp=(0,0,0).
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    # Create the root WingCrossSection. The first WingCrossSection of a Wing must have
+    # Lp_Wcsp_Lpp=(0,0,0).
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=1,
         chord=1.0,
@@ -24,8 +25,8 @@ def make_basic_aeroelastic_movement_fixture():
         spanwise_spacing="uniform",
     )
 
-    # Create the tip WCS.
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    # Create the tip WingCrossSection.
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=airfoil,
         num_spanwise_panels=None,
         chord=0.5,
@@ -36,7 +37,7 @@ def make_basic_aeroelastic_movement_fixture():
 
     # Create the wing.
     wing = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Test Wing",
         Ler_Gs_Cgs=(0.0, 0.0, 0.0),
         angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -55,11 +56,11 @@ def make_basic_aeroelastic_movement_fixture():
         weight=0.0,
     )
 
-    # Create WCS movements using the airplane's WCS objects.
-    root_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+    # Create WingCrossSectionMovements using the airplane's WingCrossSections.
+    root_wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=airplane.wings[0].wing_cross_sections[0],
     )
-    tip_wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+    tip_wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
         base_wing_cross_section=airplane.wings[0].wing_cross_sections[1],
     )
 
@@ -67,7 +68,10 @@ def make_basic_aeroelastic_movement_fixture():
     # _generate_inertial_moment_function when spacing is "sine").
     wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
         base_wing=airplane.wings[0],
-        wing_cross_section_movements=[root_wcs_movement, tip_wcs_movement],
+        wing_cross_section_movements=[
+            root_wing_cross_section_movement,
+            tip_wing_cross_section_movement,
+        ],
         ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),

@@ -90,9 +90,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     python3 -m venv .venv # On Windows use python instead of python3
     source .venv/bin/activate # On Windows use .venv\Scripts\activate
     python3 -m pip install --upgrade pip # On Windows use python instead of python3
-    pip install -r requirements.txt # Install dependencies for running simulations
-    pip install -r requirements_dev.txt # Install dependencies for development (e.g. black, codespell, etc.)
-    pip install -e . # Install the package in editable mode
+    pip install -r requirements.txt -r requirements_dev.txt -e . # Install the runtime and development dependencies and the package in editable mode
     pre-commit install # Install git hooks for automatic code formatting checks
     deactivate
     ```
@@ -217,6 +215,8 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     - Use a hanging indent
     ```
    Once you are satisfied with your commit message, enter Ctrl+O and Ctrl+X to save and exit, which will trigger the commit. Alternatively, with an empty commit message, enter Ctrl+X to exit and abort the commit.
+
+   If you use Claude Code, the repository's `/commit` slash command automates this step: it analyzes your staged changes, generates a commit message that follows these conventions, and shows you the proposed message. If you approve it, it proceeds with the commit.
 6. **Push your changes and open a PR**
     - Push your branch to your fork:
     ```shell
@@ -224,6 +224,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     ```
     - Open a PR from your branch to the main branch of the upstream repository.
         - You can open the PR as a **Draft** to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
+        - Give the PR a title of 42 characters or fewer, written in the same imperative style as a commit summary.
         - In the PR description, follow the PR template, and link any related issues.
 
 7. **Keeping your branch up to date**

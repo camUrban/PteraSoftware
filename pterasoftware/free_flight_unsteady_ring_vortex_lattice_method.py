@@ -64,7 +64,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         "_substep_next_step",
         "_substep_next_steady_problem",
         "_substep_next_operating_point",
-        "_substep_stackVIndGridWrvp_GP1__E",
+        "_substepStackVIndGridWrvp_GP1__E",
         "_substep_gamma_n",
         "_substep_gamma_n_minus_1",
     )
@@ -87,21 +87,21 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
                 "free_flight_unsteady_problem must be a FreeFlightUnsteadyProblem."
             )
 
-        # Transient working state for the strongly coupled sub-iteration, established by
-        # freeze_substep and cleared by restore_substep. Each is None between substeps.
-        # The next step and its transient SteadyProblem and trial OperatingPoint
-        # redirect the inherited geometry and wake reads to a scratch copy of the next
-        # Airplane and the current trial state, since the canonical next-step
-        # SteadyProblem is not committed until the solve accepts. The frozen induced
-        # velocities are the iterate-independent part of the wake transport. The two
-        # strength snapshots are the current and previous steps' solved bound ring
+        # This is transient working state for the strongly coupled sub-iteration,
+        # established by freeze_substep and cleared by restore_substep. Each is None
+        # between substeps. The next step and its transient SteadyProblem and trial
+        # OperatingPoint redirect the inherited geometry and wake reads to a scratch
+        # copy of the next Airplane and the current trial state, since the canonical
+        # next-step SteadyProblem is not committed until the solve accepts. The frozen
+        # induced velocities are the iterate-independent part of the wake transport. The
+        # two strength snapshots are the current and previous steps' solved bound ring
         # vortex strengths. These are initialized before the inherited constructor runs,
         # because it calls _get_steady_problem_at, which this solver's override consults
         # for the substep state.
         self._substep_next_step: int | None = None
         self._substep_next_steady_problem: problems.SteadyProblem | None = None
         self._substep_next_operating_point: operating_point.OperatingPoint | None = None
-        self._substep_stackVIndGridWrvp_GP1__E: list[list[np.ndarray]] | None = None
+        self._substepStackVIndGridWrvp_GP1__E: list[list[np.ndarray]] | None = None
         self._substep_gamma_n: np.ndarray | None = None
         self._substep_gamma_n_minus_1: np.ndarray | None = None
 
@@ -226,11 +226,11 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._substep_next_operating_point = None
 
         if self._prescribed_wake:
-            self._substep_stackVIndGridWrvp_GP1__E = None
+            self._substepStackVIndGridWrvp_GP1__E = None
         else:
             bound_singularity_counts = np.zeros(4, dtype=np.int64)
             wake_singularity_counts = np.zeros(4, dtype=np.int64)
-            self._substep_stackVIndGridWrvp_GP1__E = (
+            self._substepStackVIndGridWrvp_GP1__E = (
                 self._calculate_wake_grid_induced_velocities(
                     bound_singularity_counts, wake_singularity_counts
                 )
@@ -291,7 +291,7 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._currentVInf_GP1__E = self.current_operating_point.vInf_GP1__E
         self._current_bound_vortex_strengths = self._substep_gamma_n
         self._populate_next_airplanes_wake_vortex_points(
-            self._substep_stackVIndGridWrvp_GP1__E
+            self._substepStackVIndGridWrvp_GP1__E
         )
         self._populate_next_airplanes_wake_vortices()
 
@@ -337,6 +337,6 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         self._substep_next_step = None
         self._substep_next_steady_problem = None
         self._substep_next_operating_point = None
-        self._substep_stackVIndGridWrvp_GP1__E = None
+        self._substepStackVIndGridWrvp_GP1__E = None
         self._substep_gamma_n = None
         self._substep_gamma_n_minus_1 = None

@@ -288,12 +288,12 @@ def make_origin_wing_fixture():
         This is the Wing positioned at the origin for movement testing.
     """
     # Create WingCrossSections for the wing.
-    root_wcs = make_root_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create wing at origin (for movement testing).
     origin_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Origin Wing",
         Ler_Gs_Cgs=[0.0, 0.0, 0.0],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -316,12 +316,12 @@ def make_type_1_wing_fixture():
         This is the Wing configured for type 1 symmetry testing.
     """
     # Create WingCrossSections for the wing
-    root_wcs = make_root_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create type 1 wing (no symmetry, no mirroring)
     type_1_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Type 1 Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
@@ -344,12 +344,12 @@ def make_type_2_wing_fixture():
         This is the Wing configured for type 2 symmetry testing.
     """
     # Create WingCrossSections for the wing
-    root_wcs = make_root_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create type 2 wing (mirror_only=True, coincident xz-plane symmetry)
     type_2_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Type 2 Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -372,12 +372,12 @@ def make_type_3_wing_fixture():
         This is the Wing configured for type 3 symmetry testing.
     """
     # Create WingCrossSections for the wing
-    root_wcs = make_root_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create type 3 wing (mirror_only=True, non-coincident symmetry plane)
     type_3_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Type 3 Test Wing",
         Ler_Gs_Cgs=[0.0, 0.0, 0.0],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -400,15 +400,15 @@ def make_type_4_wing_fixture():
         This is the Wing configured for type 4 symmetry testing.
     """
     # Create WingCrossSections for the wing with symmetric control surfaces
-    root_wcs = make_root_wing_cross_section_fixture()
-    root_wcs.control_surface_symmetry_type = "symmetric"
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    root_wing_cross_section.control_surface_symmetry_type = "symmetric"
 
     # Use the tip fixture with control surface parameters already set
-    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 4 wing (symmetric=True, coincident xz-plane symmetry)
     type_4_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Type 4 Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -480,15 +480,15 @@ def make_type_5_wing_fixture():
         This is the Wing configured for type 5 symmetry testing.
     """
     # Create WingCrossSections for the wing with symmetric control surfaces
-    root_wcs = make_root_wing_cross_section_fixture()
-    root_wcs.control_surface_symmetry_type = "symmetric"
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    root_wing_cross_section.control_surface_symmetry_type = "symmetric"
 
     # Use the tip fixture with control surface parameters already set
-    tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_with_control_surface_fixture()
 
     # Create type 5 wing (symmetric=True, non-coincident symmetry plane)
     type_5_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Type 5 Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 5.0, 0.0],
@@ -511,13 +511,17 @@ def make_three_section_wing_fixture():
         This is the Wing with 3 WingCrossSections.
     """
     # Create WingCrossSections for the wing.
-    root_wcs = make_root_wing_cross_section_fixture()
-    middle_wcs = make_middle_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    middle_wing_cross_section = make_middle_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create Wing with 3 WingCrossSections.
     three_section_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        wing_cross_sections=[
+            root_wing_cross_section,
+            middle_wing_cross_section,
+            tip_wing_cross_section,
+        ],
         name="Three Section Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -540,12 +544,12 @@ def make_four_section_wing_fixture():
         This is the Wing with 4 WingCrossSections.
     """
     # Create WingCrossSections for the wing.
-    root_wcs = make_root_wing_cross_section_fixture()
-    middle_wcs_1 = make_middle_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    middle_wing_cross_section_1 = make_middle_wing_cross_section_fixture()
 
     # Create second middle WingCrossSection with different parameters.
     test_airfoil = make_test_airfoil_fixture()
-    middle_wcs_2 = ps.geometry.wing_cross_section.WingCrossSection(
+    middle_wing_cross_section_2 = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=10,
         chord=1.0,
@@ -554,11 +558,16 @@ def make_four_section_wing_fixture():
         spanwise_spacing="cosine",
     )
 
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create Wing with 4 WingCrossSections.
     four_section_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, middle_wcs_1, middle_wcs_2, tip_wcs],
+        wing_cross_sections=[
+            root_wing_cross_section,
+            middle_wing_cross_section_1,
+            middle_wing_cross_section_2,
+            tip_wing_cross_section,
+        ],
         name="Four Section Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -581,13 +590,17 @@ def make_invalid_three_section_wing_fixture():
         This is the invalid Wing with a bad middle WingCrossSection.
     """
     # Create WingCrossSections for the wing.
-    root_wcs = make_root_wing_cross_section_fixture()
-    invalid_middle_wcs = make_invalid_middle_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    root_wing_cross_section = make_root_wing_cross_section_fixture()
+    invalid_middle_wing_cross_section = make_invalid_middle_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create invalid Wing (middle has num_spanwise_panels=None).
     invalid_three_section_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, invalid_middle_wcs, tip_wcs],
+        wing_cross_sections=[
+            root_wing_cross_section,
+            invalid_middle_wing_cross_section,
+            tip_wing_cross_section,
+        ],
         name="Invalid Three Section Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -610,12 +623,12 @@ def make_invalid_root_wing_fixture():
         This is the invalid Wing with a bad root WingCrossSection.
     """
     # Create WingCrossSections for the Wing.
-    invalid_root_wcs = make_invalid_root_wing_cross_section_fixture()
-    tip_wcs = make_tip_wing_cross_section_fixture()
+    invalid_root_wing_cross_section = make_invalid_root_wing_cross_section_fixture()
+    tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create invalid Wing (root has num_spanwise_panels=None).
     invalid_root_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[invalid_root_wcs, tip_wcs],
+        wing_cross_sections=[invalid_root_wing_cross_section, tip_wing_cross_section],
         name="Invalid Root Test Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -680,13 +693,15 @@ def make_multi_wing_airplane_fixture():
         This is the Airplane with multiple Wings.
     """
     # Create WingCrossSections for the main wing with symmetric control surfaces.
-    main_root_wcs = make_root_wing_cross_section_fixture()
-    main_root_wcs.control_surface_symmetry_type = "symmetric"
-    main_tip_wcs = make_tip_wing_cross_section_with_control_surface_fixture()
+    main_root_wing_cross_section = make_root_wing_cross_section_fixture()
+    main_root_wing_cross_section.control_surface_symmetry_type = "symmetric"
+    main_tip_wing_cross_section = (
+        make_tip_wing_cross_section_with_control_surface_fixture()
+    )
 
     # Create main wing (type 4: symmetric=True, coincident xz-plane symmetry).
     main_wing = ps.geometry.wing.Wing(
-        wing_cross_sections=[main_root_wcs, main_tip_wcs],
+        wing_cross_sections=[main_root_wing_cross_section, main_tip_wing_cross_section],
         name="Main Wing",
         Ler_Gs_Cgs=[1.0, 0.0, 0.5],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -699,12 +714,12 @@ def make_multi_wing_airplane_fixture():
     )
 
     # Create WingCrossSections for the tail wing.
-    tail_root_wcs = make_root_wing_cross_section_fixture()
-    tail_tip_wcs = make_tip_wing_cross_section_fixture()
+    tail_root_wing_cross_section = make_root_wing_cross_section_fixture()
+    tail_tip_wing_cross_section = make_tip_wing_cross_section_fixture()
 
     # Create tail wing (type 2: mirror_only=True, coincident symmetry plane).
     tail_wing = ps.geometry.wing.Wing(
-        wing_cross_sections=[tail_root_wcs, tail_tip_wcs],
+        wing_cross_sections=[tail_root_wing_cross_section, tail_tip_wing_cross_section],
         name="Tail Wing",
         Ler_Gs_Cgs=[0.0, 0.0, 5.0],
         angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
@@ -903,7 +918,7 @@ def make_simple_rectangular_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=8,
         chord=1.0,
@@ -913,7 +928,7 @@ def make_simple_rectangular_wing_fixture():
     )
 
     # Tip WingCrossSection at y=2.0, same chord
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -924,7 +939,7 @@ def make_simple_rectangular_wing_fixture():
 
     # Create simple rectangular Wing
     simple_rectangular_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Simple Rectangular Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -959,7 +974,7 @@ def make_simple_tapered_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin with chord=2.0
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=12,
         chord=2.0,
@@ -969,7 +984,7 @@ def make_simple_tapered_wing_fixture():
     )
 
     # Tip WingCrossSection at y=3.0 with chord=1.0
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -980,7 +995,7 @@ def make_simple_tapered_wing_fixture():
 
     # Create simple tapered Wing
     simple_tapered_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Simple Tapered Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1015,7 +1030,7 @@ def make_symmetric_continuous_rectangular_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin with chord=1.5
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=10,
         chord=1.5,
@@ -1026,7 +1041,7 @@ def make_symmetric_continuous_rectangular_wing_fixture():
     )
 
     # Tip WingCrossSection at y=2.5 with chord=1.5
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.5,
@@ -1038,7 +1053,7 @@ def make_symmetric_continuous_rectangular_wing_fixture():
 
     # Create symmetric continuous rectangular Wing
     symmetric_continuous_rectangular_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Symmetric Continuous Rectangular Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1074,7 +1089,7 @@ def make_three_section_tapered_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin with chord=3.0
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=8,
         chord=3.0,
@@ -1084,7 +1099,7 @@ def make_three_section_tapered_wing_fixture():
     )
 
     # Middle WingCrossSection at y=2.0 with chord=2.0
-    middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    middle_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=8,
         chord=2.0,
@@ -1094,7 +1109,7 @@ def make_three_section_tapered_wing_fixture():
     )
 
     # Tip WingCrossSection at y=4.0 with chord=1.0
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1105,7 +1120,11 @@ def make_three_section_tapered_wing_fixture():
 
     # Create three section tapered Wing
     three_section_tapered_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        wing_cross_sections=[
+            root_wing_cross_section,
+            middle_wing_cross_section,
+            tip_wing_cross_section,
+        ],
         name="Three Section Tapered Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1138,7 +1157,7 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=8,
         chord=1.0,
@@ -1148,7 +1167,7 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
     )
 
     # Tip WingCrossSection at y=2.0, same chord
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1159,7 +1178,7 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
 
     # Create rotated rectangular Wing
     rotated_rectangular_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Rotated Rectangular Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array(angles_Gs_to_Wn_ixyz),
@@ -1192,7 +1211,7 @@ def make_wing_with_rotated_cross_sections_fixture():
     # Create WingCrossSections for the wing.
     test_airfoil = make_test_airfoil_fixture()
 
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=10,
         chord=2.0,
@@ -1201,7 +1220,7 @@ def make_wing_with_rotated_cross_sections_fixture():
         spanwise_spacing="uniform",
     )
 
-    middle_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    middle_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=8,
         chord=1.5,
@@ -1210,7 +1229,7 @@ def make_wing_with_rotated_cross_sections_fixture():
         spanwise_spacing="uniform",
     )
 
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1220,7 +1239,11 @@ def make_wing_with_rotated_cross_sections_fixture():
     )
 
     wing_with_rotated_cross_sections_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, middle_wcs, tip_wcs],
+        wing_cross_sections=[
+            root_wing_cross_section,
+            middle_wing_cross_section,
+            tip_wing_cross_section,
+        ],
         name="Wing with Rotated Cross Sections Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1252,7 +1275,7 @@ def make_swept_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin with chord=2.0
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=12,
         chord=2.0,
@@ -1262,7 +1285,7 @@ def make_swept_wing_fixture():
     )
 
     # Tip WingCrossSection swept back by 1.5 m at y=3.0
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1273,7 +1296,7 @@ def make_swept_wing_fixture():
 
     # Create swept Wing
     swept_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Swept Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1305,7 +1328,7 @@ def make_dihedral_wing_fixture():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection at origin with chord=2.0
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=10,
         chord=2.0,
@@ -1315,7 +1338,7 @@ def make_dihedral_wing_fixture():
     )
 
     # Tip WingCrossSection with dihedral (y=3.0, z=0.5)
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1326,7 +1349,7 @@ def make_dihedral_wing_fixture():
 
     # Create Wing with dihedral
     dihedral_wing_fixture = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Dihedral Test Wing",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1352,7 +1375,7 @@ def make_wing_with_2_chordwise_panels():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=4,
         chord=1.0,
@@ -1362,7 +1385,7 @@ def make_wing_with_2_chordwise_panels():
     )
 
     # Tip WingCrossSection
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1373,7 +1396,7 @@ def make_wing_with_2_chordwise_panels():
 
     # Create Wing with 2 chordwise panels
     wing_with_2_chordwise_panels = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Wing with 2 Chordwise Panels",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),
@@ -1402,7 +1425,7 @@ def make_wing_with_3_chordwise_panels():
     test_airfoil = make_test_airfoil_fixture()
 
     # Root WingCrossSection
-    root_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=4,
         chord=1.0,
@@ -1412,7 +1435,7 @@ def make_wing_with_3_chordwise_panels():
     )
 
     # Tip WingCrossSection
-    tip_wcs = ps.geometry.wing_cross_section.WingCrossSection(
+    tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
         airfoil=test_airfoil,
         num_spanwise_panels=None,
         chord=1.0,
@@ -1423,7 +1446,7 @@ def make_wing_with_3_chordwise_panels():
 
     # Create Wing with 3 chordwise panels
     wing_with_3_chordwise_panels = ps.geometry.wing.Wing(
-        wing_cross_sections=[root_wcs, tip_wcs],
+        wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
         name="Wing with 3 Chordwise Panels",
         Ler_Gs_Cgs=np.array([0.0, 0.0, 0.0]),
         angles_Gs_to_Wn_ixyz=np.array([0.0, 0.0, 0.0]),

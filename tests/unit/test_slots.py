@@ -916,7 +916,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for CoreWingCrossSectionMovement slots tests."""
-        self.cwcsm = (
+        self.core_wing_cross_section_movement = (
             core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture()
         )
 
@@ -926,81 +926,113 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_no_instance_dict(self):
         """Test that CoreWingCrossSectionMovement instances have no __dict__."""
-        self.assertFalse(hasattr(self.cwcsm, "__dict__"))
+        self.assertFalse(hasattr(self.core_wing_cross_section_movement, "__dict__"))
 
     def test_dynamic_attribute_raises(self):
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.cwcsm.nonexistent_attribute = 42
+            self.core_wing_cross_section_movement.nonexistent_attribute = 42
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
         # Immutable properties.
         self.assertIsInstance(
-            self.cwcsm.base_wing_cross_section,
+            self.core_wing_cross_section_movement.base_wing_cross_section,
             ps.geometry.wing_cross_section.WingCrossSection,
         )
-        self.assertEqual(self.cwcsm.ampLp_Wcsp_Lpp.shape, (3,))
-        self.assertEqual(self.cwcsm.periodLp_Wcsp_Lpp.shape, (3,))
-        self.assertIsInstance(self.cwcsm.spacingLp_Wcsp_Lpp, tuple)
-        self.assertEqual(self.cwcsm.phaseLp_Wcsp_Lpp.shape, (3,))
-        self.assertEqual(self.cwcsm.ampAngles_Wcsp_to_Wcs_ixyz.shape, (3,))
-        self.assertEqual(self.cwcsm.periodAngles_Wcsp_to_Wcs_ixyz.shape, (3,))
-        self.assertIsInstance(self.cwcsm.spacingAngles_Wcsp_to_Wcs_ixyz, tuple)
-        self.assertEqual(self.cwcsm.phaseAngles_Wcsp_to_Wcs_ixyz.shape, (3,))
+        self.assertEqual(
+            self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp.shape, (3,)
+        )
+        self.assertEqual(
+            self.core_wing_cross_section_movement.periodLp_Wcsp_Lpp.shape, (3,)
+        )
+        self.assertIsInstance(
+            self.core_wing_cross_section_movement.spacingLp_Wcsp_Lpp, tuple
+        )
+        self.assertEqual(
+            self.core_wing_cross_section_movement.phaseLp_Wcsp_Lpp.shape, (3,)
+        )
+        self.assertEqual(
+            self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz.shape, (3,)
+        )
+        self.assertEqual(
+            self.core_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz.shape,
+            (3,),
+        )
+        self.assertIsInstance(
+            self.core_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz, tuple
+        )
+        self.assertEqual(
+            self.core_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz.shape,
+            (3,),
+        )
 
         # Cached computed properties.
-        self.assertIsInstance(self.cwcsm.all_periods, tuple)
-        self.assertIsInstance(self.cwcsm.max_period, float)
+        self.assertIsInstance(self.core_wing_cross_section_movement.all_periods, tuple)
+        self.assertIsInstance(self.core_wing_cross_section_movement.max_period, float)
 
     def test_deepcopy_method(self):
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
-        _ = self.cwcsm.all_periods
-        _ = self.cwcsm.max_period
+        _ = self.core_wing_cross_section_movement.all_periods
+        _ = self.core_wing_cross_section_movement.max_period
 
-        copied = copy.deepcopy(self.cwcsm)
+        copied = copy.deepcopy(self.core_wing_cross_section_movement)
 
         # Verify the copy is a separate instance.
-        self.assertIsNot(copied, self.cwcsm)
+        self.assertIsNot(copied, self.core_wing_cross_section_movement)
 
         # Verify property values match.
-        npt.assert_array_equal(copied.ampLp_Wcsp_Lpp, self.cwcsm.ampLp_Wcsp_Lpp)
-        npt.assert_array_equal(copied.periodLp_Wcsp_Lpp, self.cwcsm.periodLp_Wcsp_Lpp)
-        npt.assert_array_equal(copied.phaseLp_Wcsp_Lpp, self.cwcsm.phaseLp_Wcsp_Lpp)
+        npt.assert_array_equal(
+            copied.ampLp_Wcsp_Lpp, self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp
+        )
+        npt.assert_array_equal(
+            copied.periodLp_Wcsp_Lpp,
+            self.core_wing_cross_section_movement.periodLp_Wcsp_Lpp,
+        )
+        npt.assert_array_equal(
+            copied.phaseLp_Wcsp_Lpp,
+            self.core_wing_cross_section_movement.phaseLp_Wcsp_Lpp,
+        )
         npt.assert_array_equal(
             copied.ampAngles_Wcsp_to_Wcs_ixyz,
-            self.cwcsm.ampAngles_Wcsp_to_Wcs_ixyz,
+            self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
         )
         npt.assert_array_equal(
             copied.periodAngles_Wcsp_to_Wcs_ixyz,
-            self.cwcsm.periodAngles_Wcsp_to_Wcs_ixyz,
+            self.core_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz,
         )
         npt.assert_array_equal(
             copied.phaseAngles_Wcsp_to_Wcs_ixyz,
-            self.cwcsm.phaseAngles_Wcsp_to_Wcs_ixyz,
+            self.core_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz,
         )
-        self.assertEqual(copied.spacingLp_Wcsp_Lpp, self.cwcsm.spacingLp_Wcsp_Lpp)
+        self.assertEqual(
+            copied.spacingLp_Wcsp_Lpp,
+            self.core_wing_cross_section_movement.spacingLp_Wcsp_Lpp,
+        )
         self.assertEqual(
             copied.spacingAngles_Wcsp_to_Wcs_ixyz,
-            self.cwcsm.spacingAngles_Wcsp_to_Wcs_ixyz,
+            self.core_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz,
         )
 
         # Verify base WingCrossSection is independent.
         self.assertIsNot(
-            copied.base_wing_cross_section, self.cwcsm.base_wing_cross_section
+            copied.base_wing_cross_section,
+            self.core_wing_cross_section_movement.base_wing_cross_section,
         )
 
         # Verify arrays are independent.
-        self.assertIsNot(copied.ampLp_Wcsp_Lpp, self.cwcsm.ampLp_Wcsp_Lpp)
+        self.assertIsNot(
+            copied.ampLp_Wcsp_Lpp, self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp
+        )
         self.assertIsNot(
             copied.ampAngles_Wcsp_to_Wcs_ixyz,
-            self.cwcsm.ampAngles_Wcsp_to_Wcs_ixyz,
+            self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
         )
 
     def test_deepcopy_no_dict(self):
         """Test that a deep copied CoreWingCrossSectionMovement has no __dict__."""
-        copied = copy.deepcopy(self.cwcsm)
+        copied = copy.deepcopy(self.core_wing_cross_section_movement)
         self.assertFalse(hasattr(copied, "__dict__"))
 
 
@@ -1356,7 +1388,7 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for WingCrossSectionMovement slots tests."""
-        self.wcsm = (
+        self.wing_cross_section_movement = (
             wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture()
         )
 
@@ -1371,18 +1403,20 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_no_instance_dict(self):
         """Test that WingCrossSectionMovement instances have no __dict__."""
-        self.assertFalse(hasattr(self.wcsm, "__dict__"))
+        self.assertFalse(hasattr(self.wing_cross_section_movement, "__dict__"))
 
     def test_dynamic_attribute_raises(self):
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.wcsm.nonexistent_attribute = 42
+            self.wing_cross_section_movement.nonexistent_attribute = 42
 
     def test_subclass(self):
         """Test that WingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
-        self.assertIsInstance(self.wcsm, _core.CoreWingCrossSectionMovement)
+        self.assertIsInstance(
+            self.wing_cross_section_movement, _core.CoreWingCrossSectionMovement
+        )
 
 
 class TestWingMovementSlots(unittest.TestCase):
@@ -1780,7 +1814,7 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for AeroelasticWingCrossSectionMovement slots tests."""
-        self.awcsm = (
+        self.aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
 
@@ -1795,18 +1829,23 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_no_instance_dict(self):
         """Test that AeroelasticWingCrossSectionMovement instances have no __dict__."""
-        self.assertFalse(hasattr(self.awcsm, "__dict__"))
+        self.assertFalse(
+            hasattr(self.aeroelastic_wing_cross_section_movement, "__dict__")
+        )
 
     def test_dynamic_attribute_raises(self):
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.awcsm.nonexistent_attribute = 42
+            self.aeroelastic_wing_cross_section_movement.nonexistent_attribute = 42
 
     def test_subclass(self):
         """Test that AeroelasticWingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
-        self.assertIsInstance(self.awcsm, _core.CoreWingCrossSectionMovement)
+        self.assertIsInstance(
+            self.aeroelastic_wing_cross_section_movement,
+            _core.CoreWingCrossSectionMovement,
+        )
 
 
 class TestAeroelasticWingMovementSlots(unittest.TestCase):

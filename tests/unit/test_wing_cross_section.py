@@ -339,11 +339,11 @@ class TestWingCrossSection(unittest.TestCase):
             self.tip_wing_cross_section.validate_root_constraints()
 
         # Test that root WingCrossSection with num_spanwise_panels=None fails
-        invalid_root_wcs = (
+        invalid_root_wing_cross_section = (
             geometry_fixtures.make_invalid_root_wing_cross_section_fixture()
         )
         with self.assertRaises(ValueError):
-            invalid_root_wcs.validate_root_constraints()
+            invalid_root_wing_cross_section.validate_root_constraints()
 
     def test_validate_tip_constraints(self):
         """Test validate_tip_constraints method."""
@@ -363,9 +363,11 @@ class TestWingCrossSection(unittest.TestCase):
     def test_validate_mid_constraints(self):
         """Test validate_mid_constraints method."""
         # Test that valid middle WingCrossSection passes validation
-        middle_wcs = geometry_fixtures.make_middle_wing_cross_section_fixture()
+        middle_wing_cross_section = (
+            geometry_fixtures.make_middle_wing_cross_section_fixture()
+        )
         try:
-            middle_wcs.validate_mid_constraints()
+            middle_wing_cross_section.validate_mid_constraints()
         except Exception as e:
             self.fail(f"Middle WingCrossSection validation failed unexpectedly: {e}")
 
@@ -378,11 +380,11 @@ class TestWingCrossSection(unittest.TestCase):
             )
 
         # Test that middle WingCrossSection with num_spanwise_panels=None fails
-        invalid_middle_wcs = (
+        invalid_middle_wing_cross_section = (
             geometry_fixtures.make_invalid_middle_wing_cross_section_fixture()
         )
         with self.assertRaises(ValueError):
-            invalid_middle_wcs.validate_mid_constraints()
+            invalid_middle_wing_cross_section.validate_mid_constraints()
 
         # Test that tip WingCrossSection (has num_spanwise_panels=None) fails
         with self.assertRaises(ValueError):
@@ -711,8 +713,8 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         """Test that deepcopy handles None values correctly."""
         import copy
 
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
-        copied = copy.deepcopy(tip_wcs)
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        copied = copy.deepcopy(tip_wing_cross_section)
 
         self.assertIsNone(copied.num_spanwise_panels)
         self.assertIsNone(copied.spanwise_spacing)

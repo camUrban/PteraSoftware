@@ -12,7 +12,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
     - BAD: "this wing"
     - GOOD: "update the Wings"
     - BAD: "update the Wing objects" (unnecessary)
-- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section".
+- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section". Exception: a capitalization variant of "WCS" is allowed in a variable name when that name is written in exactly one of the forms required by `AXES_POINTS_AND_FRAMES.md` or `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` (e.g., the axes IDs in `angles_Wcsp_to_Wcs_ixyz` and the point IDs in `Lp_Wcsp_Lpp`). Such names keep their canonical form when referenced in text.
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 - **"strip leading edge point"**: When spelled out in prose, do not capitalize "strip leading edge point" unless it starts a sentence.
 - **"V-tail"**: Always write "V-tail" (capital V, hyphenated) in prose. Never use "v-tail", "v tail", "Vtail", or other variants. Identifier strings keep their canonical form and are not affected: variable names like `v_tail_movement` and string literals like `"V-Tail"` stay as-is.
@@ -27,7 +27,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 - Preserve existing comment structure and detail level.
 - Prefer comments on their own line above the code they describe.
 - Avoid semicolons in prose. Replace them with commas, colons, or sentence breaks.
-- Capitalize the first word after a colon only if what follows is a complete sentence. Keep it lowercase for fragments, lists, or continuations.
+- Capitalize the first word after a colon only if what follows is a complete sentence. Keep it lowercase for fragments, lists, or continuations. When the capitalized word reads as awkward or looks like a typo, split the two clauses into separate sentences instead. The colon is not required, and two plain sentences are usually clearer than a colon followed by a capital.
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
 - Do not use asterisks for bold or italics, and do not capitalize or use all caps for emphasis in comments.
 - Never use doubled hyphens (`--`) as an em dash substitute. Restructure the sentence instead: split it into two sentences, use a comma, use a colon, or place the clause in parentheses. See [How to Handle Each Forbidden Case](#how-to-handle-each-forbidden-case) for the full em dash and en dash rules.

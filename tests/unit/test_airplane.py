@@ -403,15 +403,15 @@ class TestAirplane(unittest.TestCase):
         """Test type 5 Wing processing with different control surface deflections."""
         # Create the asymmetric control surface WingCrossSections. Use the root fixture
         # with an asymmetric control surface already configured.
-        root_wcs = (
+        root_wing_cross_section = (
             geometry_fixtures.make_root_asymmetric_control_surface_wing_cross_section_fixture()
         )
-        tip_wcs = (
+        tip_wing_cross_section = (
             geometry_fixtures.make_asymmetric_control_surface_wing_cross_section_fixture()
         )
 
         # Create type 5 Wing with asymmetric control surfaces
-        wing_cross_sections = [root_wcs, tip_wcs]
+        wing_cross_sections = [root_wing_cross_section, tip_wing_cross_section]
 
         wing = ps.geometry.wing.Wing(
             wing_cross_sections=wing_cross_sections,
@@ -432,10 +432,12 @@ class TestAirplane(unittest.TestCase):
         reflected_wing = result[1]
 
         # Find corresponding WingCrossSections with asymmetric control surfaces
-        for i, wcs in enumerate(original_wing.wing_cross_sections):
-            reflected_wcs = reflected_wing.wing_cross_sections[i]
+        for i, wing_cross_section in enumerate(original_wing.wing_cross_sections):
+            reflected_wing_cross_section = reflected_wing.wing_cross_sections[i]
             # Reflected Wing should have None-type control surface symmetry
-            self.assertEqual(reflected_wcs.control_surface_symmetry_type, None)
+            self.assertEqual(
+                reflected_wing_cross_section.control_surface_symmetry_type, None
+            )
 
     def test_process_wing_symmetry_type_4_asymmetric_root_raises(self):
         """A type 4 Wing whose root cross section (on the coincident symmetry plane)
@@ -444,14 +446,14 @@ class TestAirplane(unittest.TestCase):
         The original and mirrored halves would deflect that shared cross section in
         opposite directions, tearing the mesh at the centerline seam.
         """
-        root_wcs = (
+        root_wing_cross_section = (
             geometry_fixtures.make_root_asymmetric_control_surface_wing_cross_section_fixture()
         )
-        tip_wcs = (
+        tip_wing_cross_section = (
             geometry_fixtures.make_tip_wing_cross_section_with_control_surface_fixture()
         )
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[root_wcs, tip_wcs],
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             Ler_Gs_Cgs=[1.0, 0.0, 0.5],
             angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
             symmetric=True,
@@ -469,13 +471,15 @@ class TestAirplane(unittest.TestCase):
         section (an outboard aileron), since only the shared root cross section tears
         the mesh. The guard must reject the root case without over-restricting this one.
         """
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        root_wcs.control_surface_symmetry_type = "symmetric"
-        tip_wcs = (
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        root_wing_cross_section.control_surface_symmetry_type = "symmetric"
+        tip_wing_cross_section = (
             geometry_fixtures.make_asymmetric_control_surface_wing_cross_section_fixture()
         )
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[root_wcs, tip_wcs],
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             Ler_Gs_Cgs=[1.0, 0.0, 0.5],
             angles_Gs_to_Wn_ixyz=[0.0, 0.0, 0.0],
             symmetric=True,

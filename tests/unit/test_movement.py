@@ -481,9 +481,9 @@ class TestMovement(unittest.TestCase):
         processed_wing = base_airplane.wings[0]
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
-        wcs_movements = [
+        wing_cross_section_movements = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
@@ -493,14 +493,14 @@ class TestMovement(unittest.TestCase):
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
                 phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
             )
-            for wcs in processed_wing.wing_cross_sections
+            for wing_cross_section in processed_wing.wing_cross_sections
         ]
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 4->5 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         )
@@ -544,9 +544,9 @@ class TestMovement(unittest.TestCase):
         processed_wing = base_airplane.wings[0]
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
-        wcs_movements = [
+        wing_cross_section_movements = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
@@ -556,14 +556,14 @@ class TestMovement(unittest.TestCase):
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
                 phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
             )
-            for wcs in processed_wing.wing_cross_sections
+            for wing_cross_section in processed_wing.wing_cross_sections
         ]
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become coincident (type 3->2 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             ampLer_Gs_Cgs=(0.0, 0.5, 0.0),
             periodLer_Gs_Cgs=(0.0, 1.0, 0.0),
         )
@@ -608,9 +608,9 @@ class TestMovement(unittest.TestCase):
         processed_wing = base_airplane.wings[0]
 
         # Create WingCrossSectionMovements using the actual WingCrossSections.
-        wcs_movements = [
+        wing_cross_section_movements = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
@@ -620,14 +620,14 @@ class TestMovement(unittest.TestCase):
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
                 phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
             )
-            for wcs in processed_wing.wing_cross_sections
+            for wing_cross_section in processed_wing.wing_cross_sections
         ]
 
         # Create a WingMovement with rotation that will cause the symmetry plane to
         # become non-coincident (type 2->3 transition).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         )
@@ -670,9 +670,9 @@ class TestMovement(unittest.TestCase):
         processed_wing = base_airplane.wings[0]
 
         # Create static WingCrossSectionMovements using the actual WingCrossSections.
-        wcs_movements = [
+        wing_cross_section_movements = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
@@ -682,13 +682,13 @@ class TestMovement(unittest.TestCase):
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
                 phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
             )
-            for wcs in processed_wing.wing_cross_sections
+            for wing_cross_section in processed_wing.wing_cross_sections
         ]
 
         # Create a static WingMovement (no rotation or translation).
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=processed_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
         )
 
         # Create a static AirplaneMovement.
@@ -1913,16 +1913,16 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         # Create WingMovements for each Wing in the processed Airplane.
         wing_movements = []
         for wing in base_airplane.wings:
-            wcs_movements = [
+            wing_cross_section_movements = [
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wcs,
+                    base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 )
-                for wcs in wing.wing_cross_sections
+                for wing_cross_section in wing.wing_cross_sections
             ]
             # Set non zero amplitude on tip for motion.
-            wcs_movements[-1] = (
+            wing_cross_section_movements[-1] = (
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=wing.wing_cross_sections[-1],
                     periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
@@ -1932,7 +1932,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
             wing_movements.append(
                 ps.movements.wing_movement.WingMovement(
                     base_wing=wing,
-                    wing_cross_section_movements=wcs_movements,
+                    wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 
@@ -1974,16 +1974,16 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
         base_airplane = geometry_fixtures.make_2_chordwise_panels_airplane_fixture()
         wing = base_airplane.wings[0]
 
-        wcs_movements = [
+        wing_cross_section_movements = [
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             )
-            for wcs in wing.wing_cross_sections
+            for wing_cross_section in wing.wing_cross_sections
         ]
         # Add fast motion with short period to tip.
-        wcs_movements[-1] = (
+        wing_cross_section_movements[-1] = (
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                 base_wing_cross_section=wing.wing_cross_sections[-1],
                 periodLp_Wcsp_Lpp=(0.1, 0.0, 0.0),
@@ -1993,7 +1993,7 @@ class TestAnalyticallyOptimizeDeltaTimeEdgeCases(unittest.TestCase):
 
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
         )
 
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -2077,15 +2077,15 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         # Create WingMovements for each Wing.
         wing_movements = []
         for wing in base_airplane.wings:
-            wcs_movements = [
+            wing_cross_section_movements = [
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                    base_wing_cross_section=wcs,
+                    base_wing_cross_section=wing_cross_section,
                     periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                     ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 )
-                for wcs in wing.wing_cross_sections
+                for wing_cross_section in wing.wing_cross_sections
             ]
-            wcs_movements[-1] = (
+            wing_cross_section_movements[-1] = (
                 ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
                     base_wing_cross_section=wing.wing_cross_sections[-1],
                     periodLp_Wcsp_Lpp=(2.0, 0.0, 0.0),
@@ -2095,7 +2095,7 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
             wing_movements.append(
                 ps.movements.wing_movement.WingMovement(
                     base_wing=wing,
-                    wing_cross_section_movements=wcs_movements,
+                    wing_cross_section_movements=wing_cross_section_movements,
                 )
             )
 

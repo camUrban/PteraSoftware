@@ -223,19 +223,19 @@ def make_basic_free_flight_unsteady_problem_fixture(
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
     base_wing = base_airplane.wings[0]
 
-    # Create WingCrossSectionMovements (one per WCS in the Wing).
-    wcs_movements = []
-    for wcs in base_wing.wing_cross_sections:
-        wcs_movements.append(
+    # Create WingCrossSectionMovements (one per WingCrossSection in the Wing).
+    wing_cross_section_movements = []
+    for wing_cross_section in base_wing.wing_cross_sections:
+        wing_cross_section_movements.append(
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-                base_wing_cross_section=wcs,
+                base_wing_cross_section=wing_cross_section,
             )
         )
 
     # Create the WingMovement.
     wing_movement = ps.movements.wing_movement.WingMovement(
         base_wing=base_wing,
-        wing_cross_section_movements=wcs_movements,
+        wing_cross_section_movements=wing_cross_section_movements,
     )
 
     # Create the AirplaneMovement.

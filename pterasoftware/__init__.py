@@ -50,6 +50,8 @@ set_up_logging: Configures logging for the pterasoftware package that is compati
 TQDM progress bars.
 """
 
+from typing import Any
+
 # Eager imports: core modules always needed to define simulations.
 import pterasoftware.geometry
 import pterasoftware.movements
@@ -76,7 +78,7 @@ _LAZY_CALLABLES = {
 }
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     if name in _LAZY_MODULES:
         import importlib
 
@@ -94,7 +96,7 @@ def __getattr__(name: str):
     raise AttributeError(f"module 'pterasoftware' has no attribute {name!r}")
 
 
-def __dir__():
+def __dir__() -> list[str]:
     # Include lazy modules in dir() for discoverability.
     return (
         list(globals().keys())

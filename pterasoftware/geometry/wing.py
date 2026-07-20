@@ -433,14 +433,14 @@ class Wing:
             raise ValueError('chordwise_spacing must be "cosine" or "uniform".')
         self._chordwise_spacing = chordwise_spacing
 
-        # Set once attributes: will be initialized or populated once this Wing's parent
-        # Airplane calls generate_mesh.
+        # These are the set once attributes. They will be initialized or populated once
+        # this Wing's parent Airplane calls generate_mesh.
         self._symmetry_type: int | None = None
         self._num_spanwise_panels: int | None = None
         self._num_panels: int | None = None
         self._panels: np.ndarray | None = None
 
-        # Mutable wake state.
+        # This attribute holds mutable wake state.
         self.gridWrvp_GP1_CgP1: np.ndarray | None = None
 
         # Caches for properties derived from immutable attributes. These are populated
@@ -592,10 +592,11 @@ class Wing:
         )
 
         # Stage 2: resample both curves at a common set of points spaced uniformly in
-        # the spanwise (y) direction, from the root (y of 0) to the trimmed tip. Without
-        # trimming the trimmed tip is the shared maximum y. The tip_trim_fraction pulls
-        # it inboard so a planform that tapers to a point at the tip ends at a finite
-        # chord. The z component is zero at every point in this planar version.
+        # the spanwise (y) direction, from the root (y of 0.0) to the trimmed tip.
+        # Without trimming the trimmed tip is the shared maximum y. The
+        # tip_trim_fraction pulls it inboard so a planform that tapers to a point at the
+        # tip ends at a finite chord. The z component is zero at every point in this
+        # planar version.
         yTip_Wn_Ler = float(leadingEdgePoints_Wn_Ler[-1, 1])
         yTrimmedTip_Wn_Ler = (1.0 - tip_trim_fraction) * yTip_Wn_Ler
         ys_Wn_Ler = np.linspace(0.0, yTrimmedTip_Wn_Ler, num_wing_cross_sections)
@@ -965,11 +966,11 @@ class Wing:
         if self._T_pas_G_Cg_to_Wn_Ler is not None:
             return self._T_pas_G_Cg_to_Wn_Ler
 
-        # Step 1: Create T_reflect_pas_G_Cg_to_Gs_Cgs, which maps from which maps in
-        # homogeneous coordinates from geometry axes relative to the CG to reflected
-        # geometry axes (after accounting for symmetry) relative to the CG (after
-        # accounting for symmetry). This is the reflection step. Only apply reflection
-        # for mirror-only Wings (types 2 and 3), not for symmetric Wings (type 4).
+        # Step 1: Create T_reflect_pas_G_Cg_to_Gs_Cgs, which maps in homogeneous
+        # coordinates from geometry axes relative to the CG to reflected geometry axes
+        # (after accounting for symmetry) relative to the CG (after accounting for
+        # symmetry). This is the reflection step. Only apply reflection for mirror-only
+        # Wings (types 2 and 3), not for symmetric Wings (type 4).
         if self.symmetry_type in (2, 3):
             assert self.symmetryPoint_G_Cg is not None
             assert self.symmetryNormal_G is not None
@@ -1306,7 +1307,7 @@ class Wing:
 
         projected_area = 0.0
 
-        # Get the wing Z-axis once before iterating.
+        # Get the wing z axis once before iterating.
         WnZ_G = self.WnZ_G
         assert WnZ_G is not None
 
@@ -1346,7 +1347,7 @@ class Wing:
 
         wetted_area = 0.0
 
-        # Iterate through the chordwise and spanwise indices of the panels and add their
+        # Iterate through the chordwise and spanwise indices of the Panels and add their
         # area to the total wetted area.
         assert self._num_spanwise_panels is not None
         for chordwise_location in range(self._num_chordwise_panels):
@@ -1427,14 +1428,14 @@ class Wing:
             tip_T_pas_Wcsp_Lpp_to_Wn_Ler, tipLp_Wcsp_Lpp, is_position=True
         )
 
-        # Project the tip position onto the wing axes' y direction (spanwise direction)
+        # Project the tip position onto the wing axes' y direction (spanwise direction).
         projectedTipLp_Wn_Ler = np.dot(
             tipLp_Wn_Ler, np.array([0.0, 1.0, 0.0])
         ) * np.array([0.0, 1.0, 0.0])
 
         span = float(np.linalg.norm(projectedTipLp_Wn_Ler))
 
-        # If the wing is symmetric and continuous, multiply the span by two.
+        # If the Wing is symmetric and continuous, multiply the span by two.
         if self._symmetry_type == 4:
             span *= 2
 
@@ -1511,7 +1512,7 @@ class Wing:
             # Find this section's span by calculating the positions of both
             # WingCrossSections in wing axes, then finding the distance between them.
 
-            # Calculate current WingCrossSection's position in wing axes
+            # Calculate current WingCrossSection's position in wing axes.
             Lp_Wcs_Lp = np.array([0.0, 0.0, 0.0])
 
             T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
@@ -1522,7 +1523,7 @@ class Wing:
                 T_pas_Wcs_Lp_to_Wn_Ler, Lp_Wcs_Lp, is_position=True
             )
 
-            # Calculate next WingCrossSection's position in wing axes
+            # Calculate next WingCrossSection's position in wing axes.
             nextLp_nextWcs_nextLp = np.array([0.0, 0.0, 0.0])
 
             T_pas_nextWcs_nextLp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
@@ -1534,7 +1535,7 @@ class Wing:
             )
 
             # Find the section vector and project it onto spanwise direction (wing axes
-            # y direction)
+            # y direction).
             nextLp_Wn_Lp = nextLp_Wn_Ler - Lp_Wn_Ler
 
             nextLpProj_Wn_Lp = np.dot(
@@ -1554,7 +1555,7 @@ class Wing:
         assert _projected_area is not None
 
         # Multiply the integral's value by the coefficients from the cited equation.
-        # Double if the wing is symmetric and continuous.
+        # Double if the Wing is symmetric and continuous.
         if self.symmetry_type == 4:
             self._mean_aerodynamic_chord = 2 * integral / _projected_area
         else:
@@ -1601,7 +1602,7 @@ class Wing:
             computed_num_spanwise_panels *= 2
         self.num_spanwise_panels = computed_num_spanwise_panels
 
-        # Calculate the number of panels on this wing.
+        # Calculate the number of Panels on this Wing.
         self.num_panels = computed_num_spanwise_panels * self.num_chordwise_panels
 
         # Initialize an empty array to hold this Wing's wake ring vortex points.
@@ -1609,7 +1610,7 @@ class Wing:
             (0, computed_num_spanwise_panels + 1, 3), dtype=float
         )
 
-        # Generate the wing's mesh, which populates the Panels attribute.
+        # Generate the Wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
 
     def get_plottable_data(
@@ -1958,40 +1959,49 @@ class Wing:
 
     @staticmethod
     def _interpolate_between_wing_cross_sections(
-        wcs1: wing_cross_section_mod.WingCrossSection,
-        wcs2: wing_cross_section_mod.WingCrossSection,
+        first_wing_cross_section: wing_cross_section_mod.WingCrossSection,
+        second_wing_cross_section: wing_cross_section_mod.WingCrossSection,
     ) -> list[wing_cross_section_mod.WingCrossSection]:
-        """Build the single-panel WingCrossSections spanning from just past wcs1 through
-        wcs2.
+        """Build the single-panel WingCrossSections spanning from just past
+        first_wing_cross_section through second_wing_cross_section.
 
         When exploding a wing to 1 spanwise panel per cross section, we need to
         interpolate the intermediate cross sections. This returns the N sections
-        downstream of wcs1, where N is wcs1's spanwise panel count. The section at wcs1
-        itself is seeded once by _explode_wing, so it is not repeated here.
+        downstream of first_wing_cross_section, where N is first_wing_cross_section's
+        spanwise panel count. The section at first_wing_cross_section itself is seeded
+        once by _explode_wing, so it is not repeated here.
 
-        :param wcs1: The first WingCrossSection.
-        :param wcs2: The second WingCrossSection.
+        :param first_wing_cross_section: The first WingCrossSection.
+        :param second_wing_cross_section: The second WingCrossSection.
         :return: A list of WingCrossSections representing the interpolated cross
             sections
         """
         interpolated = []
 
-        N = wcs1.num_spanwise_panels
-        assert N is not None, "wcs1.num_spanwise_panels must not be None"
+        N = first_wing_cross_section.num_spanwise_panels
+        assert (
+            N is not None
+        ), "first_wing_cross_section.num_spanwise_panels must not be None"
 
         for i in range(N):
             t = (i + 1) / N  # interpolation parameter between 0 and 1
 
-            chord = (1 - t) * wcs1.chord + t * wcs2.chord
+            chord = (
+                1 - t
+            ) * first_wing_cross_section.chord + t * second_wing_cross_section.chord
             # Lp_Wcsp_Lpp and angles_Wcsp_to_Wcs_ixyz are parent-relative deltas (see
             # WingCrossSection's constructor docstring), so each of the N intermediates
             # carries 1.0 / N of the second WingCrossSection's delta and the chain
             # composes back to the second WingCrossSection's offset and twist. This is
             # exact only when the intermediates are uniformly spaced, which
             # _explode_wing enforces by validating the input.
-            Lp_Wcsp_Lpp = tuple(np.array(wcs2.Lp_Wcsp_Lpp) / N)
-            angles_Wcsp_to_Wcs_ixyz = wcs2.angles_Wcsp_to_Wcs_ixyz / N
-            is_final_section = wcs2.num_spanwise_panels is None and i == N - 1
+            Lp_Wcsp_Lpp = tuple(np.array(second_wing_cross_section.Lp_Wcsp_Lpp) / N)
+            angles_Wcsp_to_Wcs_ixyz = (
+                second_wing_cross_section.angles_Wcsp_to_Wcs_ixyz / N
+            )
+            is_final_section = (
+                second_wing_cross_section.num_spanwise_panels is None and i == N - 1
+            )
 
             interpolated.append(
                 wing_cross_section_mod.WingCrossSection(
@@ -1999,11 +2009,11 @@ class Wing:
                     chord=chord,
                     Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
                     angles_Wcsp_to_Wcs_ixyz=angles_Wcsp_to_Wcs_ixyz,
-                    control_surface_symmetry_type=wcs1.control_surface_symmetry_type,
-                    control_surface_hinge_point=wcs1.control_surface_hinge_point,
-                    control_surface_deflection=wcs1.control_surface_deflection,
+                    control_surface_symmetry_type=first_wing_cross_section.control_surface_symmetry_type,
+                    control_surface_hinge_point=first_wing_cross_section.control_surface_hinge_point,
+                    control_surface_deflection=first_wing_cross_section.control_surface_deflection,
                     spanwise_spacing=None if is_final_section else "uniform",
-                    airfoil=wcs1.airfoil,
+                    airfoil=first_wing_cross_section.airfoil,
                 )
             )
         return interpolated

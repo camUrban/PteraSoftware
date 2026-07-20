@@ -23,7 +23,9 @@ class TestWing(unittest.TestCase):
         self.type_5_wing = geometry_fixtures.make_type_5_wing_fixture()
 
         # Create additional test fixtures
-        self.root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        self.root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
 
     def test_initialization_valid_parameters(self):
         """Test Wing initialization with valid parameters for all types."""
@@ -62,21 +64,28 @@ class TestWing(unittest.TestCase):
 
         # Test single WingCrossSection raises error (need at least 2)
         with self.assertRaises(ValueError):
-            ps.geometry.wing.Wing(wing_cross_sections=[self.root_wcs])
+            ps.geometry.wing.Wing(wing_cross_sections=[self.root_wing_cross_section])
 
         # Test non-WingCrossSection objects raise error
         with self.assertRaises(TypeError):
-            ps.geometry.wing.Wing(wing_cross_sections=[self.root_wcs, "not a wcs"])
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    self.root_wing_cross_section,
+                    "not a wing_cross_section",
+                ]
+            )
 
     def test_symmetry_parameter_validation(self):
         """Test symmetry parameter validation logic."""
         # Test that symmetric and mirror_only cannot both be True. Create fresh fixtures
         # since WingCrossSections can only be validated once.
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=True,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
@@ -84,22 +93,26 @@ class TestWing(unittest.TestCase):
             )
 
         # Test that symmetry parameters must be None when no symmetry
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=False,
                 mirror_only=False,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
             )
 
         # Test that symmetry parameters must be provided when symmetric=True
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=False,
                 symmetryNormal_G=None,
@@ -150,8 +163,10 @@ class TestWing(unittest.TestCase):
         npt.assert_array_equal(wing.symmetryPoint_G_Cg, np.array([1.0, 0.0, 0.5]))
 
         # Test that WingCrossSections have control surface symmetry types
-        for wcs in wing.wing_cross_sections:
-            self.assertEqual(wcs.control_surface_symmetry_type, "symmetric")
+        for wing_cross_section in wing.wing_cross_sections:
+            self.assertEqual(
+                wing_cross_section.control_surface_symmetry_type, "symmetric"
+            )
 
     def test_wing_type_5_properties(self):
         """Test type 5 wing (symmetric=True, non-coincident symmetry plane)
@@ -308,14 +323,22 @@ class TestWing(unittest.TestCase):
         wing.generate_mesh(1)
 
         # Should have transformation lists for each WingCrossSection
-        num_wcs = len(wing.wing_cross_sections)
-        self.assertEqual(len(wing.children_T_pas_Wn_Ler_to_Wcs_Lp), num_wcs)
-        self.assertEqual(len(wing.children_T_pas_Wcs_Lp_to_Wn_Ler), num_wcs)
-        self.assertEqual(len(wing.children_T_pas_G_Cg_to_Wcs_Lp), num_wcs)
-        self.assertEqual(len(wing.children_T_pas_Wcs_Lp_to_G_Cg), num_wcs)
+        num_wing_cross_sections = len(wing.wing_cross_sections)
+        self.assertEqual(
+            len(wing.children_T_pas_Wn_Ler_to_Wcs_Lp), num_wing_cross_sections
+        )
+        self.assertEqual(
+            len(wing.children_T_pas_Wcs_Lp_to_Wn_Ler), num_wing_cross_sections
+        )
+        self.assertEqual(
+            len(wing.children_T_pas_G_Cg_to_Wcs_Lp), num_wing_cross_sections
+        )
+        self.assertEqual(
+            len(wing.children_T_pas_Wcs_Lp_to_G_Cg), num_wing_cross_sections
+        )
 
         # Each transformation should be a 4x4 matrix
-        for i in range(num_wcs):
+        for i in range(num_wing_cross_sections):
             self.assertEqual(wing.children_T_pas_Wn_Ler_to_Wcs_Lp[i].shape, (4, 4))
             self.assertEqual(wing.children_T_pas_Wcs_Lp_to_Wn_Ler[i].shape, (4, 4))
             self.assertEqual(wing.children_T_pas_G_Cg_to_Wcs_Lp[i].shape, (4, 4))
@@ -361,10 +384,17 @@ class TestWing(unittest.TestCase):
             with self.subTest(spacing=spacing):
                 # Create fresh fixtures for each iteration since WingCrossSections can
                 # only be validated once.
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[root_wcs, tip_wcs],
+                    wing_cross_sections=[
+                        root_wing_cross_section,
+                        tip_wing_cross_section,
+                    ],
                     chordwise_spacing=spacing,
                 )
                 self.assertEqual(wing.chordwise_spacing, spacing)
@@ -377,10 +407,17 @@ class TestWing(unittest.TestCase):
             with self.subTest(count=count):
                 # Create fresh fixtures for each iteration since WingCrossSections can
                 # only be validated once.
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[root_wcs, tip_wcs],
+                    wing_cross_sections=[
+                        root_wing_cross_section,
+                        tip_wing_cross_section,
+                    ],
                     num_chordwise_panels=count,
                 )
                 self.assertEqual(wing.num_chordwise_panels, count)
@@ -389,96 +426,124 @@ class TestWing(unittest.TestCase):
         """Test parameter validation for Wing initialization."""
         # Test invalid Ler position. Create fresh fixtures since WingCrossSections can
         # only be validated once.
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs], Ler_Gs_Cgs="invalid"
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+                Ler_Gs_Cgs="invalid",
             )
 
         # Test invalid angles
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 angles_Gs_to_Wn_ixyz="invalid",
             )
 
         # Test invalid num_chordwise_panels
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # noinspection PyTypeChecker
         with self.assertRaises((ValueError, TypeError)):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 num_chordwise_panels=0,
             )
 
         # Test invalid chordwise_spacing
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 chordwise_spacing="invalid_spacing",
             )
 
         # Test invalid symmetric
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs], symmetric="invalid"
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+                symmetric="invalid",
             )
 
         # Test invalid mirror_only
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs], mirror_only="invalid"
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+                mirror_only="invalid",
             )
 
         # Test invalid explode_into_strips
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs], explode_into_strips="invalid"
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+                explode_into_strips="invalid",
             )
 
     def test_wing_name_validation(self):
         """Test Wing name parameter validation."""
         # Test valid string name. Create fresh fixtures since WingCrossSections can only
         # be validated once.
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[root_wcs, tip_wcs], name="Test Wing Name"
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+            name="Test Wing Name",
         )
         self.assertEqual(wing.name, "Test Wing Name")
 
         # Test invalid name type
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.wing.Wing(wing_cross_sections=[root_wcs, tip_wcs], name=123)
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+                name=123,
+            )
 
     def test_symmetry_normal_normalization(self):
         """Test that symmetry normal vectors are properly normalized."""
         # Create fresh fixtures since WingCrossSections can only be validated once
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         # Create Wing with non-unit normal vector
         wing = ps.geometry.wing.Wing(
-            wing_cross_sections=[root_wcs, tip_wcs],
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             symmetric=False,
             mirror_only=True,
             symmetryNormal_G=[0.0, 5.0, 0.0],
@@ -499,8 +564,8 @@ class TestWing(unittest.TestCase):
         self.assertEqual(len(wing.wing_cross_sections), 3)
 
         # Verify all WingCrossSections are validated
-        for wcs in wing.wing_cross_sections:
-            self.assertTrue(wcs.validated)
+        for wing_cross_section in wing.wing_cross_sections:
+            self.assertTrue(wing_cross_section.validated)
 
     def test_four_section_wing_validation(self):
         """Test Wing with 4 WingCrossSections validates correctly."""
@@ -510,8 +575,8 @@ class TestWing(unittest.TestCase):
         self.assertEqual(len(wing.wing_cross_sections), 4)
 
         # Verify all WingCrossSections are validated
-        for wcs in wing.wing_cross_sections:
-            self.assertTrue(wcs.validated)
+        for wing_cross_section in wing.wing_cross_sections:
+            self.assertTrue(wing_cross_section.validated)
 
     def test_invalid_middle_wing_cross_section_raises_error(self):
         """Test that Wing with invalid middle WingCrossSection raises ValueError."""
@@ -529,11 +594,13 @@ class TestWing(unittest.TestCase):
 
     def test_symmetry_point_none_when_symmetric_raises_value_error(self):
         """Test that symmetryPoint_G_Cg=None with symmetric=True raises ValueError."""
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=True,
                 mirror_only=False,
                 symmetryNormal_G=[0.0, 1.0, 0.0],
@@ -542,11 +609,13 @@ class TestWing(unittest.TestCase):
 
     def test_symmetry_point_not_none_when_no_symmetry_raises_value_error(self):
         """Test that symmetryPoint_G_Cg not None with no symmetry raises ValueError."""
-        root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-        tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+        root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
+        tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(
-                wing_cross_sections=[root_wcs, tip_wcs],
+                wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
                 symmetric=False,
                 mirror_only=False,
                 symmetryNormal_G=None,
@@ -998,10 +1067,17 @@ class TestWing(unittest.TestCase):
 
         for angles in valid_angles_sets:
             with self.subTest(angles=angles):
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[root_wcs, tip_wcs],
+                    wing_cross_sections=[
+                        root_wing_cross_section,
+                        tip_wing_cross_section,
+                    ],
                     angles_Gs_to_Wn_ixyz=angles,
                 )
                 npt.assert_array_equal(wing.angles_Gs_to_Wn_ixyz, np.array(angles))
@@ -1022,11 +1098,18 @@ class TestWing(unittest.TestCase):
 
         for angles in invalid_angles_sets:
             with self.subTest(angles=angles):
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 with self.assertRaises(ValueError):
                     ps.geometry.wing.Wing(
-                        wing_cross_sections=[root_wcs, tip_wcs],
+                        wing_cross_sections=[
+                            root_wing_cross_section,
+                            tip_wing_cross_section,
+                        ],
                         angles_Gs_to_Wn_ixyz=angles,
                     )
 
@@ -1042,10 +1125,17 @@ class TestWing(unittest.TestCase):
 
         for input_val in input_formats:
             with self.subTest(input_format=type(input_val).__name__):
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[root_wcs, tip_wcs],
+                    wing_cross_sections=[
+                        root_wing_cross_section,
+                        tip_wing_cross_section,
+                    ],
                     Ler_Gs_Cgs=input_val,
                 )
                 expected = np.array([1.0, 2.0, 3.0])
@@ -1063,10 +1153,17 @@ class TestWing(unittest.TestCase):
 
         for input_val in input_formats:
             with self.subTest(input_format=type(input_val).__name__):
-                root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
-                tip_wcs = geometry_fixtures.make_tip_wing_cross_section_fixture()
+                root_wing_cross_section = (
+                    geometry_fixtures.make_root_wing_cross_section_fixture()
+                )
+                tip_wing_cross_section = (
+                    geometry_fixtures.make_tip_wing_cross_section_fixture()
+                )
                 wing = ps.geometry.wing.Wing(
-                    wing_cross_sections=[root_wcs, tip_wcs],
+                    wing_cross_sections=[
+                        root_wing_cross_section,
+                        tip_wing_cross_section,
+                    ],
                     angles_Gs_to_Wn_ixyz=input_val,
                 )
                 expected = np.array([10.0, 20.0, 30.0])
@@ -1080,7 +1177,9 @@ class TestWingDeepCopy(unittest.TestCase):
         """Set up test fixtures for deepcopy tests."""
         self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
         self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
-        self.root_wcs = geometry_fixtures.make_root_wing_cross_section_fixture()
+        self.root_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
 
     def test_deepcopy_creates_new_instance(self):
         """Test that deepcopy creates a new Wing instance."""
@@ -1121,11 +1220,13 @@ class TestWingDeepCopy(unittest.TestCase):
         self.assertEqual(
             len(copied.wing_cross_sections), len(original.wing_cross_sections)
         )
-        for orig_wcs, copied_wcs in zip(
+        for orig_wing_cross_section, copied_wing_cross_section in zip(
             original.wing_cross_sections, copied.wing_cross_sections
         ):
-            self.assertIsNot(orig_wcs, copied_wcs)
-            self.assertEqual(copied_wcs.chord, orig_wcs.chord)
+            self.assertIsNot(orig_wing_cross_section, copied_wing_cross_section)
+            self.assertEqual(
+                copied_wing_cross_section.chord, orig_wing_cross_section.chord
+            )
 
     def test_deepcopy_preserves_symmetry_attributes(self):
         """Test that deepcopy preserves symmetry attributes correctly."""
@@ -1287,7 +1388,7 @@ class TestWingDeepCopy(unittest.TestCase):
         # Attempting to call append should raise AttributeError.
         with self.assertRaises(AttributeError):
             # noinspection PyUnresolvedReferences
-            wing.wing_cross_sections.append(self.root_wcs)
+            wing.wing_cross_sections.append(self.root_wing_cross_section)
 
     def test_deepcopy_preserves_geometric_properties(self):
         """Test that deepcopy preserves geometric property calculations."""
@@ -1348,8 +1449,8 @@ class TestWingDeepCopy(unittest.TestCase):
         _wn_x = original.WnX_G
         _wn_y = original.WnY_G
         _wn_z = original.WnZ_G
-        _children_to_wcs = original.children_T_pas_Wn_Ler_to_Wcs_Lp
-        _children_from_wcs = original.children_T_pas_Wcs_Lp_to_Wn_Ler
+        _children_to_wing_cross_section = original.children_T_pas_Wn_Ler_to_Wcs_Lp
+        _children_from_wing_cross_section = original.children_T_pas_Wcs_Lp_to_Wn_Ler
 
         copied = copy.deepcopy(original)
 
@@ -1417,12 +1518,12 @@ class TestWingGetPlottableData(unittest.TestCase):
 
         result = wing.get_plottable_data(show=False)
 
-        num_wcs = len(wing.wing_cross_sections)
+        num_wing_cross_sections = len(wing.wing_cross_sections)
 
         # Should have one outline array per WingCrossSection.
-        self.assertEqual(len(result[0]), num_wcs)
+        self.assertEqual(len(result[0]), num_wing_cross_sections)
         # Should have one MCL array per WingCrossSection.
-        self.assertEqual(len(result[1]), num_wcs)
+        self.assertEqual(len(result[1]), num_wing_cross_sections)
 
         for outline in result[0]:
             self.assertIsInstance(outline, np.ndarray)
@@ -1647,8 +1748,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
     parameter."""
 
     @staticmethod
-    def _make_wcs_3span():
-        """Create a root WCS with num_spanwise_panels=3."""
+    def _make_root_wing_cross_section():
+        """Create a root WingCrossSection with num_spanwise_panels=3."""
         return ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
             num_spanwise_panels=3,
@@ -1659,8 +1760,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         )
 
     @staticmethod
-    def _make_tip_wcs():
-        """Create a tip WCS with num_spanwise_panels=None."""
+    def _make_tip_wing_cross_section():
+        """Create a tip WingCrossSection with num_spanwise_panels=None."""
         return ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=ps.geometry.airfoil.Airfoil(name="naca2412"),
             num_spanwise_panels=None,
@@ -1671,9 +1772,12 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         )
 
     def _make_plain_wing(self, explode_into_strips=False):
-        """Create a minimal 2-WCS wing."""
+        """Create a minimal two-WingCrossSection wing."""
         return ps.geometry.wing.Wing(
-            wing_cross_sections=[self._make_wcs_3span(), self._make_tip_wcs()],
+            wing_cross_sections=[
+                self._make_root_wing_cross_section(),
+                self._make_tip_wing_cross_section(),
+            ],
             name="Test Wing",
             Ler_Gs_Cgs=(0.0, 0.0, 0.0),
             angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
@@ -1684,54 +1788,54 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
             chordwise_spacing="uniform",
         )
 
-    def test_explode_into_strips_false_wcs_count_unchanged(self):
-        """Test that explode_into_strips=False keeps the original two WCS."""
+    def test_explode_into_strips_false_wing_cross_section_count_unchanged(self):
+        """Test that explode_into_strips=False keeps the original two WingCrossSections."""
         wing = self._make_plain_wing(explode_into_strips=False)
         self.assertEqual(len(wing.wing_cross_sections), 2)
 
-    def test_explode_into_strips_true_correct_wcs_count(self):
-        """Test that explode_into_strips=True with root num_spanwise=3 produces 4 WCS
+    def test_explode_into_strips_true_correct_wing_cross_section_count(self):
+        """Test that explode_into_strips=True with root num_spanwise=3 produces 4 WingCrossSections
         (root copy plus 3 interpolated including the tip)."""
         wing = self._make_plain_wing(explode_into_strips=True)
         self.assertEqual(len(wing.wing_cross_sections), 4)
 
     def test_explode_into_strips_true_non_tip_have_num_spanwise_one(self):
-        """Test that all non-tip WCS have num_spanwise_panels=1 after explode."""
+        """Test that all non-tip WingCrossSections have num_spanwise_panels=1 after explode."""
         wing = self._make_plain_wing(explode_into_strips=True)
-        for wcs in wing.wing_cross_sections[:-1]:
-            with self.subTest(wcs=wcs):
-                self.assertEqual(wcs.num_spanwise_panels, 1)
+        for wing_cross_section in wing.wing_cross_sections[:-1]:
+            with self.subTest(wing_cross_section=wing_cross_section):
+                self.assertEqual(wing_cross_section.num_spanwise_panels, 1)
 
     def test_explode_into_strips_true_tip_has_none_spanwise(self):
-        """Test that the last WCS (tip) has num_spanwise_panels=None after explode."""
+        """Test that the last WingCrossSection (tip) has num_spanwise_panels=None after explode."""
         wing = self._make_plain_wing(explode_into_strips=True)
         self.assertIsNone(wing.wing_cross_sections[-1].num_spanwise_panels)
 
     def test_interpolate_returns_n_sections(self):
-        """Test that _interpolate_between_wing_cross_sections returns N WCS (the
-        sections downstream of wcs1, with no root copy), where N is wcs1's spanwise
+        """Test that _interpolate_between_wing_cross_sections returns N WingCrossSections (the
+        sections downstream of first_wing_cross_section, with no root copy), where N is first_wing_cross_section's spanwise
         panel count."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
-            self._make_wcs_3span(), self._make_tip_wcs()
+            self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
         # N=3 => 3 interpolated sections
         self.assertEqual(len(result), 3)
 
     def test_interpolate_last_section_has_tip_chord(self):
-        """Test that the last WCS in the result has the tip chord."""
+        """Test that the last WingCrossSection in the result has the tip chord."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
-            self._make_wcs_3span(), self._make_tip_wcs()
+            self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
         self.assertAlmostEqual(result[-1].chord, 0.5)
 
     def test_interpolate_first_section_chord_linearly_interpolated(self):
-        """Test that the first interpolated WCS chord is linearly interpolated
+        """Test that the first interpolated WingCrossSection chord is linearly interpolated
         between root (1.0) and tip (0.5)."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
-            self._make_wcs_3span(), self._make_tip_wcs()
+            self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
         # N=3: the first section is at t=1/3
         # chord at t=1/3: (1 - 1/3)*1.0 + (1/3)*0.5 = 5/6
@@ -1739,52 +1843,60 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertAlmostEqual(result[0].chord, expected_first_interp, places=10)
 
     def test_interpolate_lp_y_divided_by_n(self):
-        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WCS is
+        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WingCrossSection is
         tip_Lp_y / N."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
-            self._make_wcs_3span(), self._make_tip_wcs()
+            self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
         # tip has Lp_y = 0.5; N=3 => each section Lp_y = 0.5/3
         expected_lp_y = 0.5 / 3.0
-        for wcs in result:
-            with self.subTest(wcs=wcs):
+        for wing_cross_section in result:
+            with self.subTest(wing_cross_section=wing_cross_section):
                 self.assertAlmostEqual(
-                    float(wcs.Lp_Wcsp_Lpp[1]), expected_lp_y, places=10
+                    float(wing_cross_section.Lp_Wcsp_Lpp[1]), expected_lp_y, places=10
                 )
 
-    def test_explode_wing_with_two_wcs_returns_correct_count(self):
-        """Test that _explode_wing with a 2-WCS input (root: num=3, tip) returns 4
-        WCS."""
+    def test_explode_wing_with_two_wing_cross_sections_returns_correct_count(self):
+        """Test that _explode_wing with a two-WingCrossSection input (root: num=3, tip) returns 4
+        WingCrossSections."""
         wing = self._make_plain_wing(explode_into_strips=False)
-        result = wing._explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        result = wing._explode_wing(
+            [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
+        )
         self.assertEqual(len(result), 4)
 
-    def test_explode_wing_first_wcs_is_root(self):
-        """Test that _explode_wing seeds the result with the root WCS (root chord, a
+    def test_explode_wing_first_wing_cross_section_is_root(self):
+        """Test that _explode_wing seeds the result with the root WingCrossSection (root chord, a
         single spanwise panel)."""
         wing = self._make_plain_wing(explode_into_strips=False)
-        result = wing._explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        result = wing._explode_wing(
+            [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
+        )
         self.assertAlmostEqual(result[0].chord, 1.0)
         self.assertEqual(result[0].num_spanwise_panels, 1)
 
     def test_explode_wing_all_non_tip_have_num_spanwise_one(self):
-        """Test that _explode_wing produces WCS where every non-tip entry has
+        """Test that _explode_wing produces WingCrossSections where every non-tip entry has
         num_spanwise_panels=1."""
         wing = self._make_plain_wing(explode_into_strips=False)
-        result = wing._explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
-        for wcs in result[:-1]:
-            with self.subTest(wcs=wcs):
-                self.assertEqual(wcs.num_spanwise_panels, 1)
+        result = wing._explode_wing(
+            [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
+        )
+        for wing_cross_section in result[:-1]:
+            with self.subTest(wing_cross_section=wing_cross_section):
+                self.assertEqual(wing_cross_section.num_spanwise_panels, 1)
 
-    def test_explode_wing_last_wcs_is_tip(self):
-        """Test that _explode_wing produces a final WCS with num_spanwise_panels=None."""
+    def test_explode_wing_last_wing_cross_section_is_tip(self):
+        """Test that _explode_wing produces a final WingCrossSection with num_spanwise_panels=None."""
         wing = self._make_plain_wing(explode_into_strips=False)
-        result = wing._explode_wing([self._make_wcs_3span(), self._make_tip_wcs()])
+        result = wing._explode_wing(
+            [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
+        )
         self.assertIsNone(result[-1].num_spanwise_panels)
 
     def test_explode_wing_rejects_non_uniform_spanwise_spacing(self):
-        """Test that _explode_wing raises ValueError when a non tip WCS uses cosine
+        """Test that _explode_wing raises ValueError when a non tip WingCrossSection uses cosine
         spanwise spacing, since the explosion assumes uniformly distributed
         intermediates."""
         wing = self._make_plain_wing(explode_into_strips=False)
@@ -1797,7 +1909,7 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
             spanwise_spacing="cosine",
         )
         with self.assertRaises(ValueError):
-            wing._explode_wing([cosine_root, self._make_tip_wcs()])
+            wing._explode_wing([cosine_root, self._make_tip_wing_cross_section()])
 
     def test_spanwise_mesh_default_is_trapezoidal(self):
         """Test that a Wing built without explode_into_strips has a trapezoidal spanwise

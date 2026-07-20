@@ -350,14 +350,14 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_with_valid_parameters(self):
         """Test CoreWingMovement initialization with valid parameters."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
 
         wing_movement = ps._core.CoreWingMovement(
             base_wing=base_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             ampLer_Gs_Cgs=(0.1, 0.05, 0.02),
             periodLer_Gs_Cgs=(1.0, 1.0, 1.0),
             spacingLer_Gs_Cgs=("sine", "uniform", "sine"),
@@ -398,14 +398,14 @@ class TestCoreWingMovement(unittest.TestCase):
 
     def test_initialization_invalid_base_wing(self):
         """Test that CoreWingMovement initialization fails with invalid base_wing."""
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
         ]
 
         with self.assertRaises(TypeError):
             ps._core.CoreWingMovement(
                 base_wing="not_a_wing",
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
             )
 
     def test_initialization_invalid_wing_cross_section_movements_type(self):
@@ -423,20 +423,20 @@ class TestCoreWingMovement(unittest.TestCase):
         """Test that CoreWingMovement initialization fails when
         wing_cross_section_movements length doesn't match base_wing."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
         ]
 
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
             )
 
     def test_initialization_ampLer_Gs_Cgs_validation(self):
         """Test ampLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -445,7 +445,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(-0.1, 0.0, 0.0),
                 periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
@@ -453,7 +453,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_periodLer_Gs_Cgs_validation(self):
         """Test periodLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -462,7 +462,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
                 periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
@@ -470,7 +470,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_phaseLer_Gs_Cgs_validation(self):
         """Test phaseLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -479,7 +479,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.1, 0.0, 0.0),
                 periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
                 phaseLer_Gs_Cgs=(181.0, 0.0, 0.0),
@@ -489,7 +489,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
                 periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
                 phaseLer_Gs_Cgs=(45.0, 0.0, 0.0),
@@ -498,7 +498,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_ampAngles_Gs_to_Wn_ixyz_validation(self):
         """Test ampAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -507,7 +507,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(180.1, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
@@ -516,7 +516,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(-10.0, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
@@ -524,7 +524,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_periodAngles_Gs_to_Wn_ixyz_validation(self):
         """Test periodAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -533,7 +533,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
@@ -541,7 +541,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_initialization_phaseAngles_Gs_to_Wn_ixyz_validation(self):
         """Test phaseAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -550,7 +550,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
                 phaseAngles_Gs_to_Wn_ixyz=(181.0, 0.0, 0.0),
@@ -560,7 +560,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 ampAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
                 periodAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
                 phaseAngles_Gs_to_Wn_ixyz=(45.0, 0.0, 0.0),
@@ -624,14 +624,14 @@ class TestCoreWingMovement(unittest.TestCase):
 
         # Create two CoreWingMovements: one with explicit zero offset, one without.
         base_wing = geometry_fixtures.make_origin_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
             core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
         ]
 
         movement_default = ps._core.CoreWingMovement(
             base_wing=base_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         )
@@ -719,14 +719,14 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_rotation_point_offset_initialization(self):
         """Test that rotationPointOffset_Gs_Ler is correctly initialized."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
 
         wing_movement = ps._core.CoreWingMovement(
             base_wing=base_wing,
-            wing_cross_section_movements=wcs_movements,
+            wing_cross_section_movements=wing_cross_section_movements,
             rotationPointOffset_Gs_Ler=(0.25, 0.1, -0.05),
         )
 
@@ -737,7 +737,7 @@ class TestCoreWingMovement(unittest.TestCase):
     def test_rotation_point_offset_validation_wrong_size(self):
         """Test that invalid rotationPointOffset_Gs_Ler size raises error."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -745,14 +745,14 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 rotationPointOffset_Gs_Ler=(0.1, 0.2),
             )
 
     def test_rotation_point_offset_validation_non_numeric(self):
         """Test that non numeric rotationPointOffset_Gs_Ler raises error."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
-        wcs_movements = [
+        wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
             for _ in base_wing.wing_cross_sections
         ]
@@ -760,7 +760,7 @@ class TestCoreWingMovement(unittest.TestCase):
         with self.assertRaises(TypeError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements=wcs_movements,
+                wing_cross_section_movements=wing_cross_section_movements,
                 rotationPointOffset_Gs_Ler=("a", "b", "c"),
             )
 

@@ -150,10 +150,10 @@ period_z = 0.0
 amplitude_z = 0.0
 
 # Create a list of WingCrossSectionMovements for the main Wing.
-main_wcs_movements_list = []
+main_wing_cross_section_movements_list = []
 
 # Create a list of WingCrossSectionMovements for the reflected Wing.
-reflected_wcs_movements_list = []
+reflected_wing_cross_section_movements_list = []
 
 # Define the movement for the main Wing and its reflected counterpart's
 # WingCrossSections. Each WingCrossSection has its own
@@ -161,14 +161,14 @@ reflected_wcs_movements_list = []
 # angles at each time step based on the aerodynamic loads.
 for i in range(len(example_airplane.wings[0].wing_cross_sections)):
     if i == 0:
-        wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+        wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[i],
         )
-        main_wcs_movements_list.append(wcs_movement)
-        reflected_wcs_movements_list.append(wcs_movement)
+        main_wing_cross_section_movements_list.append(wing_cross_section_movement)
+        reflected_wing_cross_section_movements_list.append(wing_cross_section_movement)
 
     else:
-        wcs_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+        wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[i],
             ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -179,15 +179,15 @@ for i in range(len(example_airplane.wings[0].wing_cross_sections)):
             spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
             phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
         )
-        main_wcs_movements_list.append(wcs_movement)
-        reflected_wcs_movements_list.append(wcs_movement)
+        main_wing_cross_section_movements_list.append(wing_cross_section_movement)
+        reflected_wing_cross_section_movements_list.append(wing_cross_section_movement)
 
 
 # Now define the V-tail's root and tip WingCrossSections' WingCrossSectionMovements. The
 # V-tail is not an aeroelastic surface, so we use standard WingCrossSectionMovements and
 # a standard WingMovement. This keeps the V-tail mesh consistent across all time steps
 # without applying any structural deformation.
-v_tail_root_wcs_movement = (
+v_tail_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[0],
         ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -200,7 +200,7 @@ v_tail_root_wcs_movement = (
         phaseAngles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
     )
 )
-v_tail_tip_wcs_movement = (
+v_tail_tip_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[2].wing_cross_sections[1],
         ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
@@ -223,7 +223,7 @@ dephase = 169.0
 # AeroelasticWingMovement, and the V-tail's AeroelasticWingMovement.
 main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
     base_wing=example_airplane.wings[0],
-    wing_cross_section_movements=main_wcs_movements_list,
+    wing_cross_section_movements=main_wing_cross_section_movements_list,
     ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
     periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
     spacingLer_Gs_Cgs=("sine", "sine", "sine"),
@@ -237,7 +237,7 @@ main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovem
 reflected_main_wing_movement = (
     ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
         base_wing=example_airplane.wings[1],
-        wing_cross_section_movements=reflected_wcs_movements_list,
+        wing_cross_section_movements=reflected_wing_cross_section_movements_list,
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
         spacingLer_Gs_Cgs=("sine", "sine", "sine"),
@@ -252,8 +252,8 @@ reflected_main_wing_movement = (
 v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[2],
     wing_cross_section_movements=[
-        v_tail_root_wcs_movement,
-        v_tail_tip_wcs_movement,
+        v_tail_root_wing_cross_section_movement,
+        v_tail_tip_wing_cross_section_movement,
     ],
     ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
     periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -268,8 +268,8 @@ v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
 # Delete the extraneous pointers to the WingCrossSectionMovements, as these are now
 # contained within the WingMovements. This is optional, but it can make debugging
 # easier.
-del v_tail_root_wcs_movement
-del v_tail_tip_wcs_movement
+del v_tail_root_wing_cross_section_movement
+del v_tail_tip_wing_cross_section_movement
 
 # Now define the example airplane's AeroelasticAirplaneMovement.
 example_airplane_movement = (

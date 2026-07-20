@@ -100,9 +100,9 @@ def _all_slots(cls: type) -> list[str]:
     return slots
 
 
-# Default maximum decompressed size in bytes when reading gzip files. Prevents gzip
-# bombs from exhausting memory. Users can override this via the max_size parameter on
-# load().
+# This is the default maximum decompressed size in bytes when reading gzip files.
+# Prevents gzip bombs from exhausting memory. Users can override this via the max_size
+# parameter on load().
 _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
 
 # Maps class names to their types for deserialization dispatch.
@@ -136,10 +136,10 @@ _CLASS_REGISTRY: dict[str, type] = {
     "MuJoCoModel": MuJoCoModel,
 }
 
-# Classes that can be saved and loaded as top level objects via save() and load().
-# Internal classes (e.g., Panel) are excluded because they are not part of the public
-# API and their structure may change without a format version bump. They are still
-# serializable as nested objects within public classes.
+# These are the classes that can be saved and loaded as top level objects via save() and
+# load(). Internal classes (e.g., Panel) are excluded because they are not part of the
+# public API and their structure may change without a format version bump. They are
+# still serializable as nested objects within public classes.
 _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
     {
         "Airfoil",
@@ -170,25 +170,26 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
     }
 )
 
-# Slots on steady solvers that are aliases into the SteadyProblem graph.
+# These are the slots on steady solvers that are aliases into the SteadyProblem graph.
 _STEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
     {"airplanes", "operating_point", "reynolds_numbers", "vInf_GP1__E", "panels"}
 )
 
-# Slots on the unsteady solver that are aliases into the UnsteadyProblem graph.
+# These are the slots on the unsteady solver that are aliases into the UnsteadyProblem
+# graph.
 _UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
     {"current_airplanes", "current_operating_point", "panels"}
 )
 
-# Slots on Movement that are redundant when serialized inside an UnsteadyProblem. The
-# canonical data lives in the SteadyProblem objects; these are reconstructed on
-# deserialization to preserve object identity.
+# These are the slots on Movement that are redundant when serialized inside an
+# UnsteadyProblem. The canonical data lives in the SteadyProblems. These are
+# reconstructed on deserialization to preserve object identity.
 _MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
 
-# Slots on MuJoCoModel that are serialized as null. _model and _data wrap native MuJoCo
-# state and are rebuilt from the serialized XML string on deserialization via
-# MuJoCoModel._rebuild_engine. _mujoco_assets holds raw bytes and is only ever falsy
-# when serialization succeeds, because a model with assets raises on save.
+# These are the slots on MuJoCoModel that are serialized as null. _model and _data wrap
+# native MuJoCo state and are rebuilt from the serialized XML string on deserialization
+# via MuJoCoModel._rebuild_engine. _mujoco_assets holds raw bytes and is only ever falsy
+# when serialization succeeds, because a MuJoCoModel with assets raises on save.
 _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset(
     {"_model", "_data", "_mujoco_assets"}
 )
@@ -306,7 +307,7 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     # Check format version compatibility. A file loads only when its stored format
     # version matches the running code's, and there is no migration path, so a mismatch
     # is unrecoverable under the running code. The error reports both format versions
-    # only. It names no package version to install: the gate keys on the format integer,
+    # only. It names no package version to install. The gate keys on the format integer,
     # not the package version, and the stored _pterasoftware_version is provenance that
     # does not reliably identify a build at the file's format version.
     file_version = data.get("_format_version")
@@ -477,14 +478,14 @@ def _object_to_dict(
     elif isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
         _skip_slots = _skip_slots | _UNSTEADY_SOLVER_SKIP_SLOTS
 
-    # The MuJoCoModel's native model and data objects cannot be serialized; they are
+    # The MuJoCoModel's native model and data objects cannot be serialized. They are
     # rebuilt from the XML string on deserialization.
     if isinstance(obj, MuJoCoModel):
-        # An asset-based model cannot survive that rebuild: the engine is recreated from
-        # the stored XML alone, whose asset references would be unresolvable. Refuse to
-        # save rather than produce a file that fails on load. This module is inherently
-        # coupled to class internals, so reading a private attribute directly is
-        # acceptable here.
+        # An asset-based MuJoCoModel cannot survive that rebuild. The engine is
+        # recreated from the stored XML alone, whose asset references would be
+        # unresolvable. Refuse to save rather than produce a file that fails on load.
+        # This module is inherently coupled to class internals, so reading a private
+        # attribute directly is acceptable here.
         # noinspection PyProtectedMember
         if obj._mujoco_assets:
             raise ValueError(

@@ -27,7 +27,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 - Preserve existing comment structure and detail level.
 - Prefer comments on their own line above the code they describe.
 - Avoid semicolons in prose. Replace them with commas, colons, or sentence breaks.
-- Capitalize the first word after a colon only if what follows is a complete sentence. Keep it lowercase for fragments, lists, or continuations.
+- Capitalize the first word after a colon only if what follows is a complete sentence. Keep it lowercase for fragments, lists, or continuations. When the capitalized word reads as awkward or looks like a typo, split the two clauses into separate sentences instead. The colon is not required, and two plain sentences are usually clearer than a colon followed by a capital.
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
 - Do not use asterisks for bold or italics, and do not capitalize or use all caps for emphasis in comments.
 - Never use doubled hyphens (`--`) as an em dash substitute. Restructure the sentence instead: split it into two sentences, use a comma, use a colon, or place the clause in parentheses. See [How to Handle Each Forbidden Case](#how-to-handle-each-forbidden-case) for the full em dash and en dash rules.

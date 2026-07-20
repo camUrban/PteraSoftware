@@ -80,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 19
+_FORMAT_VERSION = 20
 
 
 def _all_slots(cls: type) -> list[str]:

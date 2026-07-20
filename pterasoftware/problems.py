@@ -380,23 +380,23 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         raise NotImplementedError("Subclasses must implement initialize_next_problem.")
 
 
-# The permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml injection-point
-# dict. Each maps to an XML fragment that MuJoCoModel injects into the generated model
-# XML at the matching location.
+# These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
+# injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
+# generated model XML at the matching location.
 _EXTRA_XML_INJECTION_POINTS = frozenset(
     {"default", "asset", "visual", "worldbody", "body"}
 )
 
-# The permitted values for FreeFlightUnsteadyProblem's integrator parameter. Each names
-# a MuJoCo numerical integrator that MuJoCoModel sets in the generated model XML's
-# option element.
+# These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
+# Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
+# XML's option element.
 _MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
 
-# Strongly coupled free-flight sub-iteration tunables. The relative and absolute
-# tolerances form the mixed convergence test on the nondimensionalized state residual.
-# The divergence tolerance guards the Aitken relaxation factor against a collapsing
-# denominator. The initial relaxation factor under-relaxes the first update before the
-# Aitken formula takes over.
+# These are the strongly coupled free-flight sub-iteration tunables. The relative and
+# absolute tolerances form the mixed convergence test on the nondimensionalized state
+# residual. The divergence tolerance guards the Aitken relaxation factor against a
+# collapsing denominator. The initial relaxation factor under-relaxes the first update
+# before the Aitken formula takes over.
 _SUBITERATION_RELATIVE_TOLERANCE = 1e-6
 _SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
 _SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
@@ -615,9 +615,10 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         # step.
         self._external_loads_validated = False
 
-        # The cap on the strongly coupled sub-iteration count per free-flight time step.
-        # The remaining sub-iteration tunables stay module constants by design (they are
-        # universal dimensionless constants), so the cap is the only one exposed.
+        # This is the cap on the strongly coupled sub-iteration count per free-flight
+        # time step. The remaining sub-iteration tunables stay module constants by
+        # design (they are universal dimensionless constants), so the cap is the only
+        # one exposed.
         self._k_max = _parameter_validation.int_in_range_return_int(
             k_max,
             "k_max",
@@ -1315,14 +1316,14 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
-# Tolerances for the torsional spring-damper ODE integration in _spring_numerical_ode.
-# They are a few orders of magnitude stricter than scipy's defaults because the
-# integration is re-seeded from the previous state at every outer time step, so its
-# local errors compound across a simulation, and because a loose absolute tolerance
-# would swamp small torsional responses. The absolute tolerance bounds both state
-# components, the torsional angle (radians) and its time derivative (rad/s). Loosen
-# these only for local debugging (for example, a nearly massless wing makes the ODE
-# stiff and the strict tolerances expensive).
+# These are tolerances for the torsional spring-damper ODE integration in
+# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# defaults because the integration is re-seeded from the previous state at every outer
+# time step, so its local errors compound across a simulation, and because a loose
+# absolute tolerance would swamp small torsional responses. The absolute tolerance
+# bounds both state components, the torsional angle (radians) and its time derivative
+# (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
+# makes the ODE stiff and the strict tolerances expensive).
 _SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
 _SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
@@ -1437,30 +1438,29 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
             initial_operating_point=movement.operating_points[0],
         )
 
-        # Tunable parameters
-        self._wing_density = wing_density  # per unit height kg/m^2
+        # These are the tunable parameters.
+        self._wing_density = wing_density  # This is per unit height, in kg/m^2.
         self._spring_constant_rad = spring_constant_rad
         self._damping_constant_rad = damping_constant_rad
 
-        # Permanent parameters
-        self._step_discards = (
-            step_discards  # number of initial steps to discard for numerical stability
-        )
+        # These are the permanent parameters.
+        self._step_discards = step_discards
 
-        # Per-wing time series of the cumulative torsional deformation state. Indexed as
-        # [wing_idx][entry], where entry 0 is the zero-valued initial state and every
-        # generated next step appends one entry, so the last entry is always the state.
-        # Each entry is a (num_spanwise_panels + 1,) ndarray whose element n is the y
-        # component (radians) of the deformation angle vector that perturbs the
-        # corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles describing
-        # the orientation of the wing cross section axes relative to the wing cross
-        # section parent axes using an intrinsic xy'z" sequence). The perturbations' x
-        # and z components are structurally zero, so only the y components are stored.
-        # The derivative entries are the angle elements' time derivatives (rad/s). They
-        # are rates of change of scalar angle components, not angular velocity vector
-        # components, and they carry no reference frame ID because differentiating a
-        # scalar coordinate involves no rotating basis (see the Angle Component Time
-        # Derivatives section of ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
+        # This is the per-wing time series of the cumulative torsional deformation
+        # state, indexed as [wing_idx][entry], where entry 0 is the zero-valued initial
+        # state and every generated next step appends one entry, so the last entry is
+        # always the state. Each entry is a (num_spanwise_panels + 1,) ndarray whose
+        # element n is the y component (radians) of the deformation angle vector that
+        # perturbs the corresponding WingCrossSection's angles_Wcsp_to_Wcs_ixyz (angles
+        # describing the orientation of the wing cross section axes relative to the wing
+        # cross section parent axes using an intrinsic xy'z" sequence). The
+        # perturbations' x and z components are structurally zero, so only the y
+        # components are stored. The derivative entries are the angle elements' time
+        # derivatives (rad/s). They are rates of change of scalar angle components, not
+        # angular velocity vector components, and they carry no reference frame ID
+        # because differentiating a scalar coordinate involves no rotating basis (see
+        # the Angle Component Time Derivatives section of
+        # ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
         self.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz: list[list[np.ndarray]] = []
         self._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz: list[
             list[np.ndarray]
@@ -1474,7 +1474,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     def _aeroelastic_movement(
         self,
     ) -> aeroelastic_movement_mod.AeroelasticMovement:
-        # The parent stores the movement as a CoreMovement in _movement. The constructor
+        # The parent stores the Movement as a CoreMovement in _movement. The constructor
         # guarantees it is an AeroelasticMovement, so the cast here is safe.
         return cast(
             aeroelastic_movement_mod.AeroelasticMovement,
@@ -1574,7 +1574,7 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         next_step = len(self._steady_problems)
 
         # _calculate_wing_deformation returns a per-wing list: Each element is either
-        # the deformation ndarray for an aeroelastic wing or None for a standard wing.
+        # the deformation ndarray for an aeroelastic Wing or None for a standard Wing.
         deformationAnglesRad_Wcsp_to_Wcs_ixyz = self._calculate_wing_deformation(
             aeroelastic_solver, next_step
         )
@@ -1963,8 +1963,8 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         torsional_inertias = np.zeros(num_spanwise_panels, dtype=float)
         flapping_axis_inertias = np.zeros(num_spanwise_panels, dtype=float)
         assert wing.panels is not None
-        # The distance from the flapping axis to the strip's centroid, accumulated in
-        # half-span-width increments.
+        # This is the distance from the flapping axis to the strip's centroid,
+        # accumulated in half-span-width increments.
         d = 0.0
         for span_panel in range(num_spanwise_panels):
             mass = mass_matrix[:, span_panel, :].sum()

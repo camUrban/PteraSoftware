@@ -25,7 +25,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     :param wing: The Wing to be meshed.
     :return: None
     """
-    # Gather this Wing's attributes
+    # Gather this Wing's attributes.
     wing_cross_sections = wing.wing_cross_sections
     symmetry_type = wing.symmetry_type
     symmetryNormal_G = wing.symmetryNormal_G
@@ -53,7 +53,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
     # 0 columns and M rows, where M is the number of the Wing's chordwise Panels.
     wing_panels: np.ndarray = np.empty((num_chordwise_panels, 0), dtype=object)
 
-    # The type 4 mirrored half is reflected about the wing's symmetry plane. Re-express
+    # The type 4 mirrored half is reflected about the Wing's symmetry plane. Re-express
     # that plane in wing axes (its point relative to the leading edge root point) once,
     # so each section's reflection is built in the same axes as the vectors it is
     # applied to.
@@ -107,10 +107,10 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
 
         # Get the MCL point components for the inner and outer Airfoils.
         [
-            inner_mcl_pointsY_Ai_lpAi,
-            inner_mcl_pointsX_Ai_lpAi,
-            outer_mcl_pointsY_Ao_lpAo,
-            outer_mcl_pointsX_Ao_lpAo,
+            inner_mcl_pointsY_Ai_LpAi,
+            inner_mcl_pointsX_Ai_LpAi,
+            outer_mcl_pointsY_Ao_LpAo,
+            outer_mcl_pointsX_Ao_LpAo,
         ] = _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
 
         # Define number of spanwise points and Panels. This is based on the inner
@@ -137,10 +137,10 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             T_pas_Wcso_Lpo_to_Wn_Ler,
             inner_wing_cross_section,
             outer_wing_cross_section,
-            inner_mcl_pointsY_Ai_lpAi,
-            inner_mcl_pointsX_Ai_lpAi,
-            outer_mcl_pointsY_Ao_lpAo,
-            outer_mcl_pointsX_Ao_lpAo,
+            inner_mcl_pointsY_Ai_LpAi,
+            inner_mcl_pointsX_Ai_LpAi,
+            outer_mcl_pointsY_Ao_LpAo,
+            outer_mcl_pointsX_Ao_LpAo,
             spanwise_coordinates,
         )
 
@@ -159,7 +159,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             T_pas_Wn_Ler_to_G_Cg, Bopp_Wn_Ler, is_position=True
         )
 
-        # Compute a matrix that is (M,N), where M and N are the number of chordwise and
+        # Compute a matrix that is (M, N), where M and N are the number of chordwise and
         # spanwise Panels. The values are either 1 if the Panel at that location is a
         # trailing edge, or 0 if not.
         wing_section_is_trailing_edge = np.vstack(
@@ -169,7 +169,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             ]
         )
 
-        # Compute a matrix that is (M,N), where M and N are the number of chordwise and
+        # Compute a matrix that is (M, N), where M and N are the number of chordwise and
         # spanwise Panels. The values are either 1 if the Panel at that location is a
         # leading edge, or 0 if not.
         wing_section_is_leading_edge = np.vstack(
@@ -241,10 +241,10 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
 
             # Get the MCL point components for the inner and outer Airfoils.
             [
-                inner_mcl_pointsY_Ai_lpAi,
-                inner_mcl_pointsX_Ai_lpAi,
-                outer_mcl_pointsY_Ao_lpAo,
-                outer_mcl_pointsX_Ao_lpAo,
+                inner_mcl_pointsY_Ai_LpAi,
+                inner_mcl_pointsX_Ai_LpAi,
+                outer_mcl_pointsY_Ao_LpAo,
+                outer_mcl_pointsX_Ao_LpAo,
             ] = _get_mcl_points(inner_airfoil, outer_airfoil, chordwise_coordinates)
 
             # Get this wing section's preliminary panel points.
@@ -258,14 +258,14 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 T_pas_Wcso_Lpo_to_Wn_Ler,
                 inner_wing_cross_section,
                 outer_wing_cross_section,
-                inner_mcl_pointsY_Ai_lpAi,
-                inner_mcl_pointsX_Ai_lpAi,
-                outer_mcl_pointsY_Ao_lpAo,
-                outer_mcl_pointsX_Ao_lpAo,
+                inner_mcl_pointsY_Ai_LpAi,
+                inner_mcl_pointsX_Ai_LpAi,
+                outer_mcl_pointsY_Ao_LpAo,
+                outer_mcl_pointsX_Ao_LpAo,
                 spanwise_coordinates,
             )
 
-            # Compute a matrix that is (M,N), where M and N are the number of chordwise
+            # Compute a matrix that is (M, N), where M and N are the number of chordwise
             # and spanwise Panels. The values are either 1 if the Panel at that location
             # is a trailing edge, or 0 if not.
             wing_section_is_trailing_edge = np.vstack(
@@ -277,7 +277,7 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 ]
             )
 
-            # Compute a matrix that is (M,N), where M and N are the number of chordwise
+            # Compute a matrix that is (M, N), where M and N are the number of chordwise
             # and spanwise Panels. The values are either 1 if the Panel at that location
             # is a leading edge, or 0 if not.
             wing_section_is_leading_edge = np.vstack(
@@ -289,14 +289,13 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
                 ]
             )
 
-            # Mirroring this wing section across the airplane's plane of symmetry.
+            # Mirror this wing section across the airplane's plane of symmetry.
 
-            # Why an active transformation is required here, and not just a passive
-            # change of reference frame: Expressed in their own local wing axes,
-            # relative to their own leading-edge root points, a wing and its mirror
-            # image do have identical coordinates. That is exactly what "mirror image"
-            # means, and it's why a symmetric wing only needs to be defined once with a
-            # symmetric flag.
+            # An active transformation is required here, not just a passive change of
+            # reference frame. Expressed in their own local wing axes, relative to their
+            # own leading-edge root points, a wing and its mirror image do have
+            # identical coordinates. That is exactly what "mirror image" means, and it's
+            # why a symmetric wing only needs to be defined once with a symmetric flag.
 
             # But the two wings do not exist in isolation. They must be placed together
             # into one shared geometry axis system relative to the airplane's CG so the
@@ -304,9 +303,9 @@ def mesh_wing(wing: wing_mod.Wing) -> None:
             # leading-edge root point and orientation are derived from the original
             # wing's attributes.
 
-            # A reflection is an improper transformation (determinant -1) that flips
+            # A reflection is an improper transformation (determinant -1.0) that flips
             # handedness/chirality. A rotation or translation is a proper transformation
-            # (determinant +1) that preserves handedness. If we derived the mirrored
+            # (determinant +1.0) that preserves handedness. If we derived the mirrored
             # wing's points using only a passive transformation, we would get a
             # right-handed copy of the original wing just relocated. That means camber
             # would carry the wrong geometric sign on the opposite side. Reflection is
@@ -405,34 +404,34 @@ def _get_mcl_points(
     # Make the MCLs for each Airfoil. First index is point number, second index is the
     # coordinates of that point on the MCL (in each Airfoil's axes, relative to each
     # Airfoil's leading point).
-    inner_mcl_points_Ai_lpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
-    outer_mcl_points_Ao_lpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
+    inner_mcl_points_Ai_LpAi = inner_airfoil.get_resampled_mcl(chordwise_coordinates)
+    outer_mcl_points_Ao_LpAo = outer_airfoil.get_resampled_mcl(chordwise_coordinates)
 
     # Extract the y components of the inner Airfoil's MCL points (in the inner Airfoil's
     # axes, relative to the inner Airfoil's leading point) and put them in a column
     # vector.
-    inner_mcl_pointsY_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 1], 1)
+    inner_mcl_pointsY_Ai_LpAi = np.expand_dims(inner_mcl_points_Ai_LpAi[:, 1], 1)
 
     # Extract the x components of the inner Airfoil's MCL points (in the inner Airfoil's
     # axes, relative to the inner Airfoil's leading point) and put them in a column
     # vector.
-    inner_mcl_pointsX_Ai_lpAi = np.expand_dims(inner_mcl_points_Ai_lpAi[:, 0], 1)
+    inner_mcl_pointsX_Ai_LpAi = np.expand_dims(inner_mcl_points_Ai_LpAi[:, 0], 1)
 
     # Extract the y components of the outer Airfoil's MCL points (in the outer Airfoil's
     # axes, relative to the outer Airfoil's leading point) and put them in a column
     # vector.
-    outer_mcl_pointsY_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 1], 1)
+    outer_mcl_pointsY_Ao_LpAo = np.expand_dims(outer_mcl_points_Ao_LpAo[:, 1], 1)
 
     # Extract the x components of the outer Airfoil's MCL points (in the outer Airfoil's
     # axes, relative to the outer Airfoil's leading point) and put them in a column
     # vector.
-    outer_mcl_pointsX_Ao_lpAo = np.expand_dims(outer_mcl_points_Ao_lpAo[:, 0], 1)
+    outer_mcl_pointsX_Ao_LpAo = np.expand_dims(outer_mcl_points_Ao_LpAo[:, 0], 1)
 
     return [
-        inner_mcl_pointsY_Ai_lpAi,
-        inner_mcl_pointsX_Ai_lpAi,
-        outer_mcl_pointsY_Ao_lpAo,
-        outer_mcl_pointsX_Ao_lpAo,
+        inner_mcl_pointsY_Ai_LpAi,
+        inner_mcl_pointsX_Ai_LpAi,
+        outer_mcl_pointsY_Ao_LpAo,
+        outer_mcl_pointsX_Ao_LpAo,
     ]
 
 
@@ -441,10 +440,10 @@ def _get_mcs_points(
     T_pas_Wcso_Lpo_Wn_Ler: np.ndarray,
     inner_wing_cross_section: wing_cross_section_mod.WingCrossSection,
     outer_wing_cross_section: wing_cross_section_mod.WingCrossSection,
-    inner_mcl_pointsY_Ai_lpAi: np.ndarray,
-    inner_mcl_pointsX_Ai_lpAi: np.ndarray,
-    outer_mcl_pointsY_Ao_lpAo: np.ndarray,
-    outer_mcl_pointsX_Ao_lpAo: np.ndarray,
+    inner_mcl_pointsY_Ai_LpAi: np.ndarray,
+    inner_mcl_pointsX_Ai_LpAi: np.ndarray,
+    outer_mcl_pointsY_Ao_LpAo: np.ndarray,
+    outer_mcl_pointsX_Ao_LpAo: np.ndarray,
     spanwise_coordinates: np.ndarray,
 ) -> list[np.ndarray]:
     """Calculates the points on a wing section's mean camber surface (MCS) (in wing
@@ -460,22 +459,22 @@ def _get_mcs_points(
         the leading edge root point.
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
-    :param inner_mcl_pointsY_Ai_lpAi: A (M,1) ndarray of floats, where M is the number
+    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
         of chordwise points in the mesh. Each element represents the y component of the
         inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
-    :param inner_mcl_pointsX_Ai_lpAi: A (M,1) ndarray of floats, where M is the number
+    :param inner_mcl_pointsX_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
         of chordwise points in the mesh. Each element represents the x component of the
         inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
-    :param outer_mcl_pointsY_Ao_lpAo: A (M,1) ndarray of floats, where M is the number
+    :param outer_mcl_pointsY_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
         of chordwise points in the mesh. Each element represents the y component of the
         outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
         unitless.
-    :param outer_mcl_pointsX_Ao_lpAo: A (M,1) ndarray of floats, where M is the number
+    :param outer_mcl_pointsX_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
         of chordwise points in the mesh. Each element represents the x component of the
         outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
         Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
@@ -490,19 +489,19 @@ def _get_mcs_points(
         the leading edge root point). The units are in meters.
     """
     inner_mcl_pointsX_Wcsi_Lpi = (
-        inner_wing_cross_section.chord * inner_mcl_pointsX_Ai_lpAi
+        inner_wing_cross_section.chord * inner_mcl_pointsX_Ai_LpAi
     )
 
     inner_mcl_pointsZ_Wcsi_Lpi = (
-        inner_wing_cross_section.chord * inner_mcl_pointsY_Ai_lpAi
+        inner_wing_cross_section.chord * inner_mcl_pointsY_Ai_LpAi
     )
 
     outer_mcl_pointsX_Wcso_Lpo = (
-        outer_wing_cross_section.chord * outer_mcl_pointsX_Ao_lpAo
+        outer_wing_cross_section.chord * outer_mcl_pointsX_Ao_LpAo
     )
 
     outer_mcl_pointsZ_Wcso_Lpo = (
-        outer_wing_cross_section.chord * outer_mcl_pointsY_Ao_lpAo
+        outer_wing_cross_section.chord * outer_mcl_pointsY_Ao_LpAo
     )
 
     inner_mcl_points_Wcsi_Lpi = np.hstack(
@@ -528,9 +527,8 @@ def _get_mcs_points(
     )
 
     # Find the vertices of the points on this wing section's (MCS) (in wing axes,
-    # relative to the leading edge root point) with interpolation. This returns an
-    # (M,N,3) array, where M and N are the number of chordwise points and spanwise
-    # points.
+    # relative to the leading edge root point) with interpolation. This returns an (M,
+    # N, 3) array, where M and N are the number of chordwise points and spanwise points.
     wing_section_mcl_vertices = _functions.interp_between_points(
         inner_mcl_points_Wn_Ler, outer_mcl_points_Wn_Ler, spanwise_coordinates
     )
@@ -586,7 +584,7 @@ def _get_panels(
     num_spanwise_panels = Flpp_G_Cg.shape[1]
 
     # Initialize an empty ndarray to hold the wing section's Panels. The ndarray is size
-    # (M,N), where M and N are the number of chordwise and spanwise Panels.
+    # (M, N), where M and N are the number of chordwise and spanwise Panels.
     panels = np.empty((num_chordwise_panels, num_spanwise_panels), dtype=object)
 
     # Loop through the empty Panels array and create a new Panel in each position.

@@ -1984,7 +1984,7 @@ class Wing:
         ), "first_wing_cross_section.num_spanwise_panels must not be None"
 
         for i in range(N):
-            t = (i + 1) / N  # interpolation parameter between 0 and 1
+            t = (i + 1) / N  # This is the interpolation parameter between 0.0 and 1.0.
 
             chord = (
                 1 - t

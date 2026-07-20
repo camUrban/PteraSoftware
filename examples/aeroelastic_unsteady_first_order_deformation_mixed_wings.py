@@ -18,7 +18,7 @@ cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
 wing_cross_sections = []
 
 # Define WingCrossSections with a variable set of chords. All WingCrossSections for the
-# deformation simulation have num_spanwise_panels=1 (except the wing tip, which is
+# deformation simulation have num_spanwise_panels = 2 (except the wing tip, which is
 # always None). This is because each strip of WingCrossSection deforms independently as
 # a torsional spring, and that model only works well if the strips are thin. To go
 # thinner for the same base definition, increase the number of spanwise panels and set
@@ -39,7 +39,7 @@ for i in range(len(cross_section_chords)):
             spanwise_spacing="uniform" if i < len(cross_section_chords) - 1 else None,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca2412",
-                outline_A_lp=None,
+                outline_A_Lp=None,
                 resample=True,
                 n_points_per_side=400,
             ),
@@ -63,12 +63,12 @@ wing_1 = ps.geometry.wing.Wing(
     chordwise_spacing="uniform",
 )
 
-# Actually generate the airplane. The V-tail is added as a second lifting surface but is
+# Actually generate the Airplane. The V-tail is added as a second lifting surface but is
 # not split into deformation strips, because it follows prescribed rigid motion rather
-# than deforming. The solver deforms each wing from its own aerodynamic loads, but only
-# wings backed by an AeroelasticWingMovement. Wings backed by a standard WingMovement
+# than deforming. The solver deforms each Wing from its own aerodynamic loads, but only
+# Wings backed by an AeroelasticWingMovement. Wings backed by a standard WingMovement
 # stay rigid. Leaving the tail rigid also keeps its movement definition simpler, since
-# it then needs no per-strip wing cross sections.
+# it then needs no per-strip WingCrossSections.
 example_airplane = ps.geometry.airplane.Airplane(
     wings=[
         wing_1,
@@ -85,7 +85,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -101,7 +101,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -129,10 +129,10 @@ example_airplane = ps.geometry.airplane.Airplane(
 # The main Wing was defined to have symmetric=True, mirror_only=False, and with a
 # symmetry plane offset non-coincident with the Wing's axes yz plane. Therefore, that
 # Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the second
-# Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected main
-# wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry types). Therefore, it was actually split into two Wings, with the second Wing
+# being a reflected version of the first. Therefore, we need to define a WingMovement
+# for this reflected Wing. To start, we'll first define the reflected main wing's root
+# and tip WingCrossSections' WingCrossSectionMovements.
 
 # Define the WingCrossSectionMovement parameters.
 dephase_x = 0.0
@@ -268,8 +268,8 @@ main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovem
     phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
 )
 
-# The reflected wing uses a standard WingMovement so it follows the same prescribed
-# flapping motion as the main wing but receives no structural deformation from the
+# The reflected Wing uses a standard WingMovement so it follows the same prescribed
+# flapping motion as the main Wing but receives no structural deformation from the
 # aeroelastic solver.
 reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[1],
@@ -306,7 +306,7 @@ v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the example airplane's AeroelasticAirplaneMovement.
+# Now define the example Airplane's AeroelasticAirplaneMovement.
 example_airplane_movement = (
     ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
         base_airplane=example_airplane,
@@ -331,7 +331,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define the operating point's OperatingPointMovement.
+# Define the OperatingPoint's OperatingPointMovement.
 example_operating_point_movement = (
     ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=example_operating_point,

@@ -20,7 +20,7 @@ cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
 wing_cross_sections = []
 
 # Define WingCrossSections with a variable set of chords. All WingCrossSections for the
-# deformation simulation have num_spanwise_panels=1 (except the wing tip, which is
+# deformation simulation have num_spanwise_panels = 2 (except the wing tip, which is
 # always None). This is because each strip of WingCrossSection deforms independently as
 # a torsional spring, and that model only works well if the strips are thin. To go
 # thinner for the same base definition, increase the number of spanwise panels and set
@@ -41,7 +41,7 @@ for i in range(len(cross_section_chords)):
             spanwise_spacing="uniform" if i < len(cross_section_chords) - 1 else None,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca2412",
-                outline_A_lp=None,
+                outline_A_Lp=None,
                 resample=True,
                 n_points_per_side=400,
             ),
@@ -87,7 +87,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -103,7 +103,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -128,13 +128,13 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# The main Wing was defined to have symmetric=True, mirror_only=False, and with a
+# The main Wing was defined to have symmetric = True, mirror_only = False, and with a
 # symmetry plane offset non-coincident with the Wing's axes yz plane. Therefore, that
 # Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the second
-# Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected main
-# wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry types). Therefore, it was actually split into two Wings, with the second Wing
+# being a reflected version of the first. Therefore, we need to define a WingMovement
+# for this reflected Wing. To start, we'll first define the reflected main Wing's root
+# and tip WingCrossSections' WingCrossSectionMovements.
 
 # Define the WingCrossSectionMovement parameters.
 dephase_x = 0.0
@@ -219,7 +219,7 @@ v_tail_tip_wing_cross_section_movement = (
 # This dephase parameter is used to make the Wing start in a flat position.
 dephase = 169.0
 
-# Now define the main wing's AeroelasticWingMovement, the reflected main wing's
+# Now define the main Wing's AeroelasticWingMovement, the reflected main Wing's
 # AeroelasticWingMovement, and the V-tail's AeroelasticWingMovement.
 main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
     base_wing=example_airplane.wings[0],
@@ -271,7 +271,7 @@ v_tail_wing_movement = ps.movements.wing_movement.WingMovement(
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the example airplane's AeroelasticAirplaneMovement.
+# Now define the example Airplane's AeroelasticAirplaneMovement.
 example_airplane_movement = (
     ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
         base_airplane=example_airplane,
@@ -296,7 +296,7 @@ example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225, vCg__E=10.0, alpha=0.0, beta=0.0, externalFX_W=0.0, nu=15.06e-6
 )
 
-# Define the operating point's OperatingPointMovement.
+# Define the OperatingPoint's OperatingPointMovement.
 example_operating_point_movement = (
     ps.movements.operating_point_movement.OperatingPointMovement(
         base_operating_point=example_operating_point,

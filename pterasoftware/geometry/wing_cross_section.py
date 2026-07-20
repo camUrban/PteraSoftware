@@ -526,20 +526,20 @@ class WingCrossSection:
 
         plottable_data = self.airfoil.get_plottable_data(show=False)
         assert plottable_data is not None
-        [airfoilOutline_A_lp, airfoilMcl_A_lp] = plottable_data
+        [airfoilOutline_A_Lp, airfoilMcl_A_Lp] = plottable_data
 
         airfoilNonScaledOutline_Wcs_lp = np.column_stack(
             [
-                airfoilOutline_A_lp[:, 0],
-                np.zeros_like(airfoilOutline_A_lp[:, 0]),
-                airfoilOutline_A_lp[:, 1],
+                airfoilOutline_A_Lp[:, 0],
+                np.zeros_like(airfoilOutline_A_Lp[:, 0]),
+                airfoilOutline_A_Lp[:, 1],
             ]
         )
         airfoilNonScaledMcl_Wcs_lp = np.column_stack(
             [
-                airfoilMcl_A_lp[:, 0],
-                np.zeros_like(airfoilMcl_A_lp[:, 0]),
-                airfoilMcl_A_lp[:, 1],
+                airfoilMcl_A_Lp[:, 0],
+                np.zeros_like(airfoilMcl_A_Lp[:, 0]),
+                airfoilMcl_A_Lp[:, 1],
             ]
         )
 

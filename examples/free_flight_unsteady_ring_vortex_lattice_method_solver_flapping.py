@@ -27,7 +27,7 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"
 # apply to the other classes, methods, and functions I call in this script.
 #
 # This is a flapping-wing demonstration airframe: a cambered main wing that flaps
-# symmetrically (defined further below, a 15 degree amplitude at 1 Hz) plus a tail.
+# symmetrically (defined further below, a 15.0 degree amplitude at 1.0 Hz) plus a tail.
 # Unlike the glider example, this airframe is not tuned for static stability or trim. It
 # exists to exercise the strongly coupled free-flight solver under the large,
 # oscillatory loads that flapping produces, so the trajectory is a driven flapping
@@ -47,7 +47,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="cosine",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -63,7 +63,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca2412",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -92,7 +92,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing="uniform",
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -108,7 +108,7 @@ example_airplane = ps.geometry.airplane.Airplane(
                     spanwise_spacing=None,
                     airfoil=ps.geometry.airfoil.Airfoil(
                         name="naca0012",
-                        outline_A_lp=None,
+                        outline_A_Lp=None,
                         resample=True,
                         n_points_per_side=400,
                     ),
@@ -133,7 +133,7 @@ example_airplane = ps.geometry.airplane.Airplane(
     b_ref=None,
 )
 
-# Now define the main wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# Now define the main Wing's root and tip WingCrossSections' WingCrossSectionMovements.
 main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[0],
@@ -161,13 +161,13 @@ main_wing_tip_wing_cross_section_movement = (
     )
 )
 
-# The main Wing was defined to have symmetric=True, mirror_only=False, and with a
+# The main Wing was defined to have symmetric = True, mirror_only = False, and with a
 # symmetry plane offset non coincident with the Wing's axes yz plane. Therefore, that
 # Wing had type 5 symmetry (see the Wing class documentation for more details on
-# symmetry types). Therefore, it was actually split into two Wings, the with the second
-# Wing being a reflected version of the first. Therefore, we need to define a
-# WingMovement for this reflected Wing. To start, we'll first define the reflected main
-# wing's root and tip WingCrossSections' WingCrossSectionMovements.
+# symmetry types). Therefore, it was actually split into two Wings, with the second Wing
+# being a reflected version of the first. Therefore, we need to define a WingMovement
+# for this reflected Wing. To start, we'll first define the reflected main Wing's root
+# and tip WingCrossSections' WingCrossSectionMovements.
 reflected_main_wing_root_wing_cross_section_movement = (
     ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
         base_wing_cross_section=example_airplane.wings[1].wing_cross_sections[0],
@@ -223,7 +223,7 @@ v_tail_tip_wing_cross_section_movement = (
     )
 )
 
-# Now define the main wing's WingMovement, the reflected main wing's WingMovement and
+# Now define the main Wing's WingMovement, the reflected main Wing's WingMovement and
 # the V-tail's WingMovement.
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=example_airplane.wings[0],
@@ -281,7 +281,7 @@ del reflected_main_wing_tip_wing_cross_section_movement
 del v_tail_root_wing_cross_section_movement
 del v_tail_tip_wing_cross_section_movement
 
-# Now define the example airplane's AirplaneMovement.
+# Now define the example Airplane's AirplaneMovement.
 airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     base_airplane=example_airplane,
     wing_movements=[
@@ -303,10 +303,10 @@ del v_tail_movement
 # Define a new OperatingPoint describing the initial flight condition. The initial body
 # orientation (angles_E_to_BP1_izyx) pitches the airplane nose up by the angle of attack
 # with zero sideslip, which places the initial velocity along the horizontal Earth x
-# axis at the start of free flight. No external thrust is applied (externalFX_W=0.0); in
-# free flight the dynamics never apply externalFX_W, and propulsion here comes from the
-# flapping motion rather than an external force. Standard gravity is set explicitly via
-# g_E (the default is no gravitational field), while the zero initial body rates
+# axis at the start of free flight. No external thrust is applied (externalFX_W = 0.0).
+# In free flight the dynamics never apply externalFX_W, and propulsion here comes from
+# the flapping motion rather than an external force. Standard gravity is set explicitly
+# via g_E (the default is no gravitational field), while the zero initial body rates
 # (omegas_BP1__E) are left at their default.
 example_operating_point = ps.operating_point.OperatingPoint(
     rho=1.225,
@@ -319,8 +319,8 @@ example_operating_point = ps.operating_point.OperatingPoint(
     g_E=(0.0, 0.0, 9.80665),
 )
 
-# Define the operating point's FreeFlightOperatingPointMovement. It holds only the
-# initial OperatingPoint; the solver populates its operating_points list with the body
+# Define the OperatingPoint's FreeFlightOperatingPointMovement. It holds only the
+# initial OperatingPoint. The solver populates its operating_points list with the body
 # state from the dynamics integration at each time step.
 operating_point_movement = (
     ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
@@ -332,7 +332,7 @@ operating_point_movement = (
 del example_operating_point
 
 # Define the FreeFlightMovement. This contains the AirplaneMovement and the
-# FreeFlightOperatingPointMovement. The airplane first holds its initial flight
+# FreeFlightOperatingPointMovement. The Airplane first holds its initial flight
 # condition for prescribed_num_steps time steps so the wake can develop, then the solver
 # releases the rigid body dynamics for the remaining free_num_steps time steps.
 movement = ps.movements.free_flight_movement.FreeFlightMovement(
@@ -348,14 +348,14 @@ del airplane_movement
 del operating_point_movement
 
 # Define the FreeFlightUnsteadyProblem. The inertia matrix holds representative mass
-# properties reused from the glider example; this airframe is a coupling demonstration
+# properties reused from the glider example. This airframe is a coupling demonstration
 # and is not separately tuned or verified for static stability. It is expressed in the
 # first Airplane's body axes relative to the first Airplane's center of gravity, which
 # is at the geometry origin. The off-diagonal terms are the body-axes products of
 # inertia. The mass equals the Airplane's weight (420.0 N) divided by the gravitational
 # acceleration magnitude (9.80665 m/s^2), which keeps the weight, mass, and gravity
-# consistent; the solver applies the gravitational force as mass * g_E. No external
-# loads are applied (external_loads_fn=None), so the airplane is driven only by its
+# consistent. The solver applies the gravitational force as mass * g_E. No external
+# loads are applied (external_loads_fn = None), so the Airplane is driven only by its
 # flapping aerodynamics, gravity, and inertia.
 example_problem = ps.problems.FreeFlightUnsteadyProblem(
     movement=movement,
@@ -401,7 +401,7 @@ loaded_solver = ps.load("example_solver.json.gz")
 ps.output.log_results(solver=loaded_solver)
 
 # Call the draw function on the loaded solver. For a free flight solver, the geometry is
-# drawn in Earth axes at the final time step's true flight pose, so the airplane appears
+# drawn in Earth axes at the final time step's true flight pose, so the Airplane appears
 # where and how it ended up after the final time step. Press any key to close the
 # plotter after it draws the output.
 ps.output.draw(
@@ -413,7 +413,7 @@ ps.output.draw(
 )
 
 # Call the animate function on the loaded solver. For a free flight solver, this flies
-# the airplane through the scene along its computed trajectory, producing a GIF saved in
+# the Airplane through the scene along its computed trajectory, producing a GIF saved in
 # the same directory as this script. Press any key, after orienting the view, to begin
 # the animation.
 ps.output.animate(

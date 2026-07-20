@@ -80,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 20
+_FORMAT_VERSION = 21
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -597,8 +597,8 @@ def _reconstruct_shared_references(obj: object) -> None:
         )
         object.__setattr__(movement, "_airplanes", airplanes)
 
-        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...]. Indexed by
-        # time step.
+        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...]. It is
+        # indexed by time step.
         operating_points = tuple(
             steady_problems[step].operating_point for step in range(num_steps)
         )

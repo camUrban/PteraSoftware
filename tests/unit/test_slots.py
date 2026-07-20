@@ -60,10 +60,10 @@ class TestAirfoilSlots(unittest.TestCase):
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
         self.assertEqual(self.airfoil.name, "naca0012")
-        self.assertIsInstance(self.airfoil.outline_A_lp, np.ndarray)
+        self.assertIsInstance(self.airfoil.outline_A_Lp, np.ndarray)
         self.assertIsInstance(self.airfoil.resample, bool)
         self.assertIsInstance(self.airfoil.n_points_per_side, int)
-        self.assertIsNotNone(self.airfoil.mcl_A_lp)
+        self.assertIsNotNone(self.airfoil.mcl_A_Lp)
 
     def test_deepcopy_method(self):
         """Test that __deepcopy__ produces a correct independent copy."""
@@ -74,14 +74,14 @@ class TestAirfoilSlots(unittest.TestCase):
 
         # Verify all property values match.
         self.assertEqual(copied.name, self.airfoil.name)
-        npt.assert_array_equal(copied.outline_A_lp, self.airfoil.outline_A_lp)
+        npt.assert_array_equal(copied.outline_A_Lp, self.airfoil.outline_A_Lp)
         self.assertEqual(copied.resample, self.airfoil.resample)
         self.assertEqual(copied.n_points_per_side, self.airfoil.n_points_per_side)
-        npt.assert_array_equal(copied.mcl_A_lp, self.airfoil.mcl_A_lp)
+        npt.assert_array_equal(copied.mcl_A_Lp, self.airfoil.mcl_A_Lp)
 
         # Verify arrays are independent (not shared references).
-        self.assertIsNot(copied.outline_A_lp, self.airfoil.outline_A_lp)
-        self.assertIsNot(copied.mcl_A_lp, self.airfoil.mcl_A_lp)
+        self.assertIsNot(copied.outline_A_Lp, self.airfoil.outline_A_Lp)
+        self.assertIsNot(copied.mcl_A_Lp, self.airfoil.mcl_A_Lp)
 
     def test_deepcopy_no_dict(self):
         """Test that a deep copied Airfoil has no __dict__."""
@@ -133,10 +133,10 @@ class TestOperatingPointSlots(unittest.TestCase):
 
     def test_property_access_cached(self):
         """Test that cached computed properties are accessible."""
-        # Scalar cached property.
+        # This is a scalar cached property.
         self.assertIsInstance(self.basic_op.qInf__E, float)
 
-        # Transformation matrix cached properties.
+        # These are transformation matrix cached properties.
         self.assertEqual(self.basic_op.T_pas_GP1_CgP1_to_BP1_CgP1.shape, (4, 4))
         self.assertEqual(self.basic_op.T_pas_BP1_CgP1_to_GP1_CgP1.shape, (4, 4))
         self.assertEqual(self.basic_op.T_pas_BP1_CgP1_to_W_CgP1.shape, (4, 4))
@@ -150,7 +150,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertEqual(self.basic_op.T_pas_W_CgP1_to_E_CgP1.shape, (4, 4))
         self.assertEqual(self.basic_op.T_pas_E_CgP1_to_W_CgP1.shape, (4, 4))
 
-        # Freestream cached properties.
+        # These are freestream cached properties.
         self.assertEqual(self.basic_op.vInfHat_GP1__E.shape, (3,))
         self.assertEqual(self.basic_op.vInf_GP1__E.shape, (3,))
 
@@ -270,7 +270,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(
             self.wing_cross_section.airfoil, ps.geometry.airfoil.Airfoil
         )
@@ -288,12 +288,12 @@ class TestWingCrossSectionSlots(unittest.TestCase):
         self.assertEqual(self.wing_cross_section.control_surface_deflection, 5.0)
         self.assertEqual(self.wing_cross_section.spanwise_spacing, "cosine")
 
-        # Mutable attribute.
+        # This is a mutable attribute.
         self.assertEqual(
             self.wing_cross_section.control_surface_symmetry_type, "symmetric"
         )
 
-        # Set once attributes (not yet set by a parent Wing).
+        # These are set once attributes that have not yet been set by a parent Wing.
         self.assertFalse(self.wing_cross_section.validated)
         self.assertIsNone(self.wing_cross_section.symmetry_type)
 
@@ -704,7 +704,7 @@ class TestSteadyProblemSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(self.steady_problem.airplanes, tuple)
         self.assertGreaterEqual(len(self.steady_problem.airplanes), 1)
         self.assertIsInstance(
@@ -712,7 +712,7 @@ class TestSteadyProblemSlots(unittest.TestCase):
             ps.operating_point.OperatingPoint,
         )
 
-        # Cached computed property.
+        # This is a cached computed property.
         self.assertIsInstance(self.steady_problem.reynolds_numbers, tuple)
         self.assertEqual(
             len(self.steady_problem.reynolds_numbers),
@@ -870,7 +870,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties on sine fixture.
+        # These are immutable properties on the sine fixture.
         self.assertIsInstance(
             self.sine_copm.base_operating_point,
             ps.operating_point.OperatingPoint,
@@ -880,7 +880,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
         self.assertEqual(self.sine_copm.spacingVCg__E, "sine")
         self.assertEqual(self.sine_copm.phaseVCg__E, 0.0)
 
-        # Cached computed property.
+        # This is a cached computed property.
         self.assertEqual(self.sine_copm.max_period, 1.0)
 
         # Static fixture has zero max_period.
@@ -935,7 +935,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(
             self.core_wing_cross_section_movement.base_wing_cross_section,
             ps.geometry.wing_cross_section.WingCrossSection,
@@ -967,7 +967,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
             (3,),
         )
 
-        # Cached computed properties.
+        # These are cached computed properties.
         self.assertIsInstance(self.core_wing_cross_section_movement.all_periods, tuple)
         self.assertIsInstance(self.core_wing_cross_section_movement.max_period, float)
 
@@ -1062,7 +1062,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(self.core_wing_movement.base_wing, ps.geometry.wing.Wing)
         self.assertIsInstance(
             self.core_wing_movement.wing_cross_section_movements, tuple
@@ -1079,7 +1079,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
         self.assertEqual(self.core_wing_movement.phaseAngles_Gs_to_Wn_ixyz.shape, (3,))
         self.assertEqual(self.core_wing_movement.rotationPointOffset_Gs_Ler.shape, (3,))
 
-        # Cached computed properties.
+        # These are cached computed properties.
         self.assertIsInstance(self.core_wing_movement.all_periods, tuple)
         self.assertIsInstance(self.core_wing_movement.max_period, float)
 
@@ -1165,7 +1165,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(
             self.core_airplane_movement.base_airplane,
             ps.geometry.airplane.Airplane,
@@ -1176,7 +1176,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.core_airplane_movement.spacingCg_GP1_CgP1, tuple)
         self.assertEqual(self.core_airplane_movement.phaseCg_GP1_CgP1.shape, (3,))
 
-        # Cached computed properties.
+        # These are cached computed properties.
         self.assertIsInstance(self.core_airplane_movement.all_periods, tuple)
         self.assertIsInstance(self.core_airplane_movement.max_period, float)
 
@@ -1256,7 +1256,7 @@ class TestCoreMovementSlots(unittest.TestCase):
 
     def test_property_access_static(self):
         """Test that all properties are accessible on a static CoreMovement."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(self.static_core_movement.airplane_movements, tuple)
         self.assertIsInstance(
             self.static_core_movement.operating_point_movement,
@@ -1265,7 +1265,7 @@ class TestCoreMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.static_core_movement.delta_time, float)
         self.assertIsInstance(self.static_core_movement.num_steps, int)
 
-        # Cached computed properties.
+        # These are cached computed properties.
         self.assertTrue(self.static_core_movement.static)
         self.assertEqual(self.static_core_movement.max_period, 0.0)
         self.assertEqual(self.static_core_movement.lcm_period, 0.0)
@@ -1309,14 +1309,14 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties remain accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(self.core_unsteady_problem.only_final_results, bool)
         self.assertIsInstance(self.core_unsteady_problem.num_steps, int)
         self.assertIsInstance(self.core_unsteady_problem.delta_time, float)
         self.assertIsInstance(self.core_unsteady_problem.first_averaging_step, int)
         self.assertIsInstance(self.core_unsteady_problem.first_results_step, int)
 
-        # Mutable list attributes (initialized empty).
+        # These are mutable list attributes, initialized empty.
         self.assertIsInstance(self.core_unsteady_problem.finalForces_W, list)
         self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_W, list)
         self.assertIsInstance(self.core_unsteady_problem.finalMoments_W_CgP1, list)
@@ -1567,7 +1567,7 @@ class TestMuJoCoModelSlots(unittest.TestCase):
 
     def test_property_access(self):
         """Test that all properties are accessible after adding __slots__."""
-        # Immutable properties.
+        # These properties are immutable.
         self.assertIsInstance(self.mujoco_model.xml_str, str)
         self.assertIsInstance(self.mujoco_model.body_id, int)
         self.assertIsInstance(self.mujoco_model.initial_key_frame_id, int)
@@ -2066,7 +2066,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         self.assertEqual(copied.spring_constant_rad, self.problem.spring_constant_rad)
         self.assertEqual(copied.damping_constant_rad, self.problem.damping_constant_rad)
 
-        # Verify the movement is independent.
+        # Verify the AeroelasticMovement is independent.
         self.assertIsNot(copied.movement, self.problem.movement)
 
 

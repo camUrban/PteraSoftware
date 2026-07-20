@@ -1010,7 +1010,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(airfoil))
         assert isinstance(result, Airfoil)
         self.assertEqual(result.name, "NACA0012")
-        npt.assert_array_equal(result.outline_A_lp, airfoil.outline_A_lp)
+        npt.assert_array_equal(result.outline_A_Lp, airfoil.outline_A_Lp)
         self.assertEqual(result.resample, airfoil.resample)
         self.assertEqual(result.n_points_per_side, airfoil.n_points_per_side)
 
@@ -1022,9 +1022,9 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         airfoil = Airfoil(name="NACA2412")
         result = _deserialize_value(_serialize_value(airfoil))
         assert isinstance(result, Airfoil)
-        assert result.mcl_A_lp is not None
-        assert airfoil.mcl_A_lp is not None
-        npt.assert_array_equal(result.mcl_A_lp, airfoil.mcl_A_lp)
+        assert result.mcl_A_Lp is not None
+        assert airfoil.mcl_A_Lp is not None
+        npt.assert_array_equal(result.mcl_A_Lp, airfoil.mcl_A_Lp)
 
     def test_writeable_flags(self):
         """Tests that deserialized Airfoil arrays preserve their writeable flags.
@@ -1034,7 +1034,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         airfoil = Airfoil(name="NACA0012")
         result = _deserialize_value(_serialize_value(airfoil))
         assert isinstance(result, Airfoil)
-        self.assertFalse(result.outline_A_lp.flags.writeable)
+        self.assertFalse(result.outline_A_Lp.flags.writeable)
 
     def test_save_load_round_trip(self):
         """Tests that an Airfoil survives a save/load round trip.
@@ -1048,7 +1048,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
             result = load(path)
         assert isinstance(result, Airfoil)
         self.assertEqual(result.name, "NACA0012")
-        npt.assert_array_equal(result.outline_A_lp, airfoil.outline_A_lp)
+        npt.assert_array_equal(result.outline_A_Lp, airfoil.outline_A_Lp)
 
 
 class TestOperatingPointRoundTrip(unittest.TestCase):
@@ -1175,7 +1175,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
         )
         result = _deserialize_value(_serialize_value(wing_cross_section))
         assert isinstance(result, WingCrossSection)
-        npt.assert_array_equal(result.airfoil.outline_A_lp, airfoil.outline_A_lp)
+        npt.assert_array_equal(result.airfoil.outline_A_Lp, airfoil.outline_A_Lp)
 
     def test_save_load_round_trip(self):
         """Tests that a WingCrossSection survives a save/load round trip.
@@ -1837,7 +1837,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyProblem)
         self.assertEqual(len(result.movement.airplane_movements), 2)
 
-        # Verify DAG identity for both airplanes across all time steps.
+        # Verify DAG identity for both Airplanes across all time steps.
         for step in range(result.num_steps):
             for airplane_movement_index in range(2):
                 self.assertIs(

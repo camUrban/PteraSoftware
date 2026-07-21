@@ -69,6 +69,36 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         with self.assertRaises(AttributeError):
             setattr(solver, "steady_problems", ())
 
+    def test_force_method_defaults_to_joukowski(self) -> None:
+        """Test that force_method defaults to "joukowski"."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        self.assertEqual(solver._force_method, "joukowski")
+
+    def test_run_rejects_invalid_force_method_strings(self) -> None:
+        """Test that run raises ValueError for invalid force_method strings."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        invalid_values = ["invalid", "JOUKOWSKI", "Katz", "both", ""]
+        for invalid in invalid_values:
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError):
+                    solver.run(force_method=invalid, show_progress=False)
+
+    def test_run_rejects_non_string_force_methods(self) -> None:
+        """Test that run raises TypeError for non-string force_method values."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        invalid_types: list[Any] = [
+            123,
+            1.0,
+            None,
+            True,
+            ["joukowski"],
+            {"method": "joukowski"},
+        ]
+        for invalid in invalid_types:
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(TypeError):
+                    solver.run(force_method=invalid, show_progress=False)
+
 
 class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
     """Tests for the default implementations of the three solver extension hooks added

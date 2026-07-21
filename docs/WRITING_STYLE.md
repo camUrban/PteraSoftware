@@ -31,12 +31,13 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 - Use American English spelling (e.g., "color" not "colour", "center" not "centre").
 - Do not use asterisks for bold or italics, and do not capitalize or use all caps for emphasis in comments.
 - Never use doubled hyphens (`--`) as an em dash substitute. Restructure the sentence instead: split it into two sentences, use a comma, use a colon, or place the clause in parentheses. See [How to Handle Each Forbidden Case](#how-to-handle-each-forbidden-case) for the full em dash and en dash rules.
+- Use "and" instead of "&".
 
 ## Math and Numbers
 
 - For subtraction, use a hyphen surrounded by spaces (e.g., "a - b").
 - For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N*m", "kg*m^2", and "N*m*s/rad").
-- For division, use a slash surrounded by spaces (e.g., "a / b").
+- For division, use a slash surrounded by spaces (e.g., "a / b"). Derivative notation is exempt: write it without spaces (e.g., "d(theta)/dt", "d^2(theta)/dt^2", and "dGamma/dt").
 - For equals signs in inline equations and value descriptions, surround with spaces (e.g., "area = 0.5", not "area=0.5").
 - For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
 - When writing tuples or vectors in prose, include a space after each comma (e.g., "(1.0, 2.0, 3.0)", not "(1.0,2.0,3.0)").

@@ -34,7 +34,7 @@ Requires Python 3.11, but active development is done in 3.13
 
 ### Relevant Directories, Packages, and Files
 
-- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (one per pre-commit hook or hook group, plus `label-sync.yml`, `publish.yml`, and `tests.yml`)
+- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (one per pre-commit hook or hook group, except the local-only pinned-versions hook, plus `label-sync.yml`, `publish.yml`, and `tests.yml`)
 - `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
 - `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
@@ -110,6 +110,7 @@ Requires Python 3.11, but active development is done in 3.13
         - `load_and_visualize_hero.py`: Loads the saved hero simulation and generates preview graphics
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
+    - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
     - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests

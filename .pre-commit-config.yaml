@@ -84,11 +84,20 @@ repos:
         exclude: ^docs/_static/benchmarks/.*\.html$
   - repo: local
     hooks:
+      # The hooks in this repo run with language: system, so pre-commit executes
+      # whatever tool versions the active environment holds instead of managing pinned
+      # copies itself. This check runs first and fails when those versions have drifted
+      # from the exact pins in requirements_dev.txt.
+      - id: pinned-versions
+        name: checker  pinned-versions
+        entry: python scripts/check_pinned_versions.py
+        language: system
+        always_run: true
+        pass_filenames: false
       - id: octowrap
         name: checker  octowrap
         entry: "bash -c 'output=$(octowrap --check \"$@\" 2>&1); rc=$?; if [ $rc -ne 0 ]; then echo \"$output\" | grep -v -e \"would be reformatted\" -e \"^$\"; echo; echo \"Run: octowrap -i . (if no TTY access, first run octowrap --diff . to review the proposed changes, then octowrap . to apply them)\"; exit 1; fi' --"
-        language: python
-        additional_dependencies: [octowrap==0.6.2]
+        language: system
         types: [python]
         # Pre-commit batches the passed filenames to parallelize hook invocations, and
         # each failing batch would print the hint line independently. Serializing

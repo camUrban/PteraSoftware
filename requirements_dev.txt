@@ -5,8 +5,9 @@ codespell
 coverage
 docformatter
 isort
-mypy
+mypy == 2.3.0
 octowrap == 0.6.2
 pre-commit
-scipy-stubs
+pyvista == 0.48.4
+scipy-stubs == 1.18.0.1
 twine

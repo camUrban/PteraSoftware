@@ -1,6 +1,7 @@
 """This module contains classes to test the convergence analysis functions."""
 
 import unittest
+from typing import Any
 
 import numpy as np
 
@@ -14,9 +15,7 @@ from tests.unit.fixtures import (
 
 
 class TestConvergedParameterId(unittest.TestCase):
-    """This class contains methods for testing
-    convergence._converged_parameter_id.
-    """
+    """This class contains methods for testing convergence._converged_parameter_id."""
 
     def test_single_returns_this_id(self) -> None:
         """Test that a single tested value returns this iteration's own index."""
@@ -28,18 +27,15 @@ class TestConvergedParameterId(unittest.TestCase):
         )
 
     def test_single_takes_precedence_over_converged(self) -> None:
-        """Test that a single tested value returns this iteration's own index even
-        when the converged flag is set.
-        """
+        """Test that a single tested value returns this iteration's own index even when
+        the converged flag is set."""
         self.assertEqual(
             convergence._converged_parameter_id(this_id=3, single=True, converged=True),
             3,
         )
 
     def test_converged_returns_coarser_id(self) -> None:
-        """Test that a converged iteration returns the incrementally coarser
-        index.
-        """
+        """Test that a converged iteration returns the incrementally coarser index."""
         self.assertEqual(
             convergence._converged_parameter_id(
                 this_id=4, single=False, converged=True
@@ -49,8 +45,7 @@ class TestConvergedParameterId(unittest.TestCase):
 
     def test_saturated_returns_this_id(self) -> None:
         """Test that an iteration that passed without converging returns this
-        iteration's own index.
-        """
+        iteration's own index."""
         self.assertEqual(
             convergence._converged_parameter_id(
                 this_id=5, single=False, converged=False
@@ -59,9 +54,8 @@ class TestConvergedParameterId(unittest.TestCase):
         )
 
     def test_converged_id_depends_on_this_id(self) -> None:
-        """Test that the coarser index tracks this iteration's index rather than a
-        fixed value.
-        """
+        """Test that the coarser index tracks this iteration's index rather than a fixed
+        value."""
         self.assertEqual(
             convergence._converged_parameter_id(
                 this_id=7, single=False, converged=True
@@ -79,8 +73,7 @@ class TestConvergedParameterId(unittest.TestCase):
 
 class TestValidateCoefficientMask(unittest.TestCase):
     """This class contains methods for testing
-    convergence._validate_coefficient_mask.
-    """
+    convergence._validate_coefficient_mask."""
 
     def test_none_returns_all_true(self) -> None:
         """Test that None returns a (6,) mask of all True."""
@@ -123,8 +116,7 @@ class TestValidateCoefficientMask(unittest.TestCase):
 
 class TestCheckCoefficientConvergence(unittest.TestCase):
     """This class contains methods for testing
-    convergence._check_coefficient_convergence.
-    """
+    convergence._check_coefficient_convergence."""
 
     def setUp(self) -> None:
         """Set up a full mask and the tolerances used across the tests.
@@ -146,8 +138,8 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
     def test_large_relative_change_does_not_converge(self) -> None:
         """Test that a coefficient changing by more than the relative tolerance does not
-        converge and is reported with a degraded metric while the others stay perfect.
-        """
+        converge and is reported with a degraded metric while the others stay
+        perfect."""
         coarser = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         these = coarser.copy()
         these[0, 2] = 2.5
@@ -160,8 +152,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
     def test_masked_out_coefficient_is_ignored(self) -> None:
         """Test that masking out the only offending coefficient makes the check
-        converge, while its metric is still reported.
-        """
+        converge, while its metric is still reported."""
         coarser = np.array([[1.0, 0.0, 2.0, 0.1, 0.0, 0.05]])
         these = coarser.copy()
         these[0, 2] = 2.5
@@ -174,8 +165,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
     def test_absolute_tolerance_floors_near_zero(self) -> None:
         """Test that a coefficient near zero converges via the absolute tolerance floor
-        even though its relative change is large.
-        """
+        even though its relative change is large."""
         these = np.zeros((1, 6), dtype=float)
         coarser = np.zeros((1, 6), dtype=float)
         coarser[0, 0] = 0.5 * self.atol
@@ -186,8 +176,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
     def test_all_airplanes_must_converge(self) -> None:
         """Test that the check fails when any one Airplane has an unconverged
-        coefficient, whose metric is the minimum across the Airplanes.
-        """
+        coefficient, whose metric is the minimum across the Airplanes."""
         coarser = np.array(
             [
                 [1.0, 0.0, 2.0, 0.1, 0.0, 0.05],
@@ -216,8 +205,7 @@ class TestCheckCoefficientConvergence(unittest.TestCase):
 
 class TestValidatePanelAspectRatioBounds(unittest.TestCase):
     """This class contains methods for testing
-    convergence._validate_panel_aspect_ratio_bounds.
-    """
+    convergence._validate_panel_aspect_ratio_bounds."""
 
     def test_valid_descending_bounds_pass(self) -> None:
         """Test that a valid descending tuple of ints is accepted without raising."""
@@ -226,8 +214,7 @@ class TestValidatePanelAspectRatioBounds(unittest.TestCase):
 
     def test_equal_bounds_pass(self) -> None:
         """Test that equal bounds, a single Panel aspect ratio, are accepted without
-        raising.
-        """
+        raising."""
         # Equal bounds, a single Panel aspect ratio, do not raise.
         convergence._validate_panel_aspect_ratio_bounds((2, 2))
 
@@ -248,8 +235,7 @@ class TestValidatePanelAspectRatioBounds(unittest.TestCase):
 
     def test_ascending_bounds_raise_value_error(self) -> None:
         """Test that a tuple whose first value is less than its second raises a
-        ValueError.
-        """
+        ValueError."""
         with self.assertRaises(ValueError):
             convergence._validate_panel_aspect_ratio_bounds((1, 4))
 
@@ -261,8 +247,7 @@ class TestValidatePanelAspectRatioBounds(unittest.TestCase):
 
 class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
     """This class contains methods for testing
-    convergence._validate_num_chordwise_panels_bounds.
-    """
+    convergence._validate_num_chordwise_panels_bounds."""
 
     def test_valid_ascending_bounds_pass(self) -> None:
         """Test that a valid ascending tuple of ints is accepted without raising."""
@@ -271,8 +256,7 @@ class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
 
     def test_equal_bounds_pass(self) -> None:
         """Test that equal bounds, a single number of chordwise Panels, are accepted
-        without raising.
-        """
+        without raising."""
         # Equal bounds, a single number of chordwise Panels, do not raise.
         convergence._validate_num_chordwise_panels_bounds((5, 5))
 
@@ -293,8 +277,7 @@ class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
 
     def test_descending_bounds_raise_value_error(self) -> None:
         """Test that a tuple whose second value is less than its first raises a
-        ValueError.
-        """
+        ValueError."""
         with self.assertRaises(ValueError):
             convergence._validate_num_chordwise_panels_bounds((12, 3))
 
@@ -305,9 +288,7 @@ class TestValidateNumChordwisePanelsBounds(unittest.TestCase):
 
 
 class TestRejectUnrefinableWings(unittest.TestCase):
-    """This class contains methods for testing
-    convergence._reject_unrefinable_wings.
-    """
+    """This class contains methods for testing convergence._reject_unrefinable_wings."""
 
     @staticmethod
     def _make_edge_defined_airplane() -> ps.geometry.airplane.Airplane:
@@ -389,8 +370,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
 
     def test_exploded_wing_raises_value_error(self) -> None:
         """Test that an exploded Wing, which carries no edge curves, raises a
-        ValueError.
-        """
+        ValueError."""
         with self.assertRaises(ValueError):
             convergence._reject_unrefinable_wings(
                 (self._make_exploded_airplane(),), "analyze_steady_convergence"
@@ -398,8 +378,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
 
     def test_error_message_names_wing_and_function(self) -> None:
         """Test that the error message names the offending Wing and the calling
-        function.
-        """
+        function."""
         with self.assertRaisesRegex(ValueError, "Exploded Wing"):
             convergence._reject_unrefinable_wings(
                 (self._make_exploded_airplane(),), "analyze_steady_convergence"
@@ -410,7 +389,8 @@ class TestRejectUnrefinableWings(unittest.TestCase):
             )
 
     def test_rejects_when_any_airplane_has_unrefinable_wing(self) -> None:
-        """Test that a refinable Airplane paired with an unrefinable one still raises."""
+        """Test that a refinable Airplane paired with an unrefinable one still
+        raises."""
         trapezoidal_airplane = geometry_fixtures.make_first_airplane_fixture()
         with self.assertRaises(ValueError):
             convergence._reject_unrefinable_wings(
@@ -426,8 +406,7 @@ class TestRejectUnrefinableWings(unittest.TestCase):
 
 class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
     """This class contains methods for testing the input validation of
-    convergence.analyze_steady_convergence that raises before any solving.
-    """
+    convergence.analyze_steady_convergence that raises before any solving."""
 
     def setUp(self) -> None:
         """Set up a valid SteadyProblem shared by the tests.
@@ -438,9 +417,10 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
 
     def test_non_steady_problem_raises_type_error(self) -> None:
         """Test that a ref_problem that is not a SteadyProblem raises a TypeError."""
+        bad_ref_problem: Any = problem_fixtures.make_basic_unsteady_problem_fixture()
         with self.assertRaises(TypeError):
             convergence.analyze_steady_convergence(
-                ref_problem=problem_fixtures.make_basic_unsteady_problem_fixture(),
+                ref_problem=bad_ref_problem,
                 solver_type="steady ring vortex lattice method",
             )
 
@@ -455,8 +435,7 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
 
 class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
     """This class contains methods for testing the input validation of
-    convergence.analyze_unsteady_convergence that raises before any solving.
-    """
+    convergence.analyze_unsteady_convergence that raises before any solving."""
 
     def setUp(self) -> None:
         """Set up a static and a variable UnsteadyProblem shared by the tests.
@@ -470,16 +449,16 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_non_unsteady_problem_raises_type_error(self) -> None:
         """Test that a ref_problem that is not an UnsteadyProblem raises a TypeError."""
+        bad_ref_problem: Any = problem_fixtures.make_basic_steady_problem_fixture()
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(
-                ref_problem=problem_fixtures.make_basic_steady_problem_fixture(),
+                ref_problem=bad_ref_problem,
                 num_cycles_bounds=(1, 2),
             )
 
     def test_no_wake_state_raises_value_error(self) -> None:
         """Test that setting both prescribed_wake and free_wake to False raises a
-        ValueError.
-        """
+        ValueError."""
         with self.assertRaises(ValueError):
             convergence.analyze_unsteady_convergence(
                 ref_problem=self.variable_problem,
@@ -489,8 +468,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_max_wake_cycles_raises_value_error(self) -> None:
         """Test that a variable-geometry ref_problem whose wake is truncated by
-        max_wake_cycles raises a ValueError.
-        """
+        max_wake_cycles raises a ValueError."""
         ref_movement = movement_fixtures.make_basic_movement_fixture()
         truncated_movement = ps.movements.movement.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
@@ -510,8 +488,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_max_wake_chords_raises_value_error(self) -> None:
         """Test that a static-geometry ref_problem whose wake is truncated by
-        max_wake_chords raises a ValueError.
-        """
+        max_wake_chords raises a ValueError."""
         ref_movement = movement_fixtures.make_static_movement_fixture()
         truncated_movement = ps.movements.movement.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
@@ -531,8 +508,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_max_wake_rows_raises_value_error(self) -> None:
         """Test that a ref_problem whose wake is truncated by max_wake_rows raises a
-        ValueError.
-        """
+        ValueError."""
         ref_movement = movement_fixtures.make_basic_movement_fixture()
         truncated_movement = ps.movements.movement.Movement(
             airplane_movements=list(ref_movement.airplane_movements),
@@ -552,8 +528,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_static_geometry_rejects_num_cycles_bounds(self) -> None:
         """Test that supplying num_cycles_bounds for a static-geometry problem raises a
-        ValueError.
-        """
+        ValueError."""
         with self.assertRaises(ValueError):
             convergence.analyze_unsteady_convergence(
                 ref_problem=self.static_problem,
@@ -562,15 +537,13 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_static_geometry_requires_num_chords_bounds(self) -> None:
         """Test that omitting num_chords_bounds for a static-geometry problem raises a
-        TypeError.
-        """
+        TypeError."""
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(ref_problem=self.static_problem)
 
     def test_num_chords_bounds_wrong_length_raises_type_error(self) -> None:
         """Test that a num_chords_bounds without exactly two elements raises a
-        TypeError.
-        """
+        TypeError."""
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(
                 ref_problem=self.static_problem,
@@ -602,9 +575,8 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
             )
 
     def test_variable_geometry_rejects_num_chords_bounds(self) -> None:
-        """Test that supplying num_chords_bounds for a variable-geometry problem raises a
-        ValueError.
-        """
+        """Test that supplying num_chords_bounds for a variable-geometry problem raises
+        a ValueError."""
         with self.assertRaises(ValueError):
             convergence.analyze_unsteady_convergence(
                 ref_problem=self.variable_problem,
@@ -613,8 +585,7 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_variable_geometry_requires_num_cycles_bounds(self) -> None:
         """Test that omitting num_cycles_bounds for a variable-geometry problem raises a
-        TypeError.
-        """
+        TypeError."""
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(ref_problem=self.variable_problem)
 

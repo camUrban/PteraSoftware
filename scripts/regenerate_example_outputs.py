@@ -17,7 +17,9 @@ import os
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES_DIR = PROJECT_ROOT / "examples"
@@ -127,6 +129,8 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
         original_bytes = webp_path.stat().st_size
         name = webp_path.name
 
+        render_func: Callable[..., None]
+        render_kwargs: dict[str, Any]
         if name == "draw.webp" and draw_kwargs is not None:
             render_func = ps.output.draw
             render_kwargs = {**draw_kwargs, "solver": loaded_solver}

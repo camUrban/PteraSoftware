@@ -20,11 +20,13 @@ jobs:
         with:
           python-version: "3.13"
           cache: 'pip'
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            requirements_dev.txt
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt mypy scipy-stubs
+          pip install -r requirements.txt -r requirements_dev.txt
       - name: Run mypy type checking
         run: |
-          mypy pterasoftware examples scripts
+          mypy pterasoftware examples scripts tests validation docs/website

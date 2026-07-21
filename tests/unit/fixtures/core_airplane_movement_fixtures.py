@@ -8,12 +8,12 @@ from pterasoftware._core import CoreAirplaneMovement
 from . import core_wing_movement_fixtures, geometry_fixtures
 
 
-def make_static_core_airplane_movement_fixture():
+def make_static_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with all parameters
     zero (no movement).
 
-    :return static_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with no movement.
+    :return static_core_airplane_movement_fixture: CoreAirplaneMovement This is the
+        CoreAirplaneMovement with no movement.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -35,12 +35,12 @@ def make_static_core_airplane_movement_fixture():
     return static_core_airplane_movement_fixture
 
 
-def make_basic_core_airplane_movement_fixture():
+def make_basic_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with general-purpose
     moderate values.
 
-    :return basic_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with general-purpose values.
+    :return basic_core_airplane_movement_fixture: CoreAirplaneMovement This is the
+        CoreAirplaneMovement with general-purpose values.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -62,12 +62,12 @@ def make_basic_core_airplane_movement_fixture():
     return basic_core_airplane_movement_fixture
 
 
-def make_sine_spacing_Cg_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement with sine spacing
-    for Cg_GP1_CgP1.
+def make_sine_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
+    """This method makes a fixture that is an CoreAirplaneMovement with sine spacing for
+    Cg_GP1_CgP1.
 
-    :return sine_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with sine spacing for Cg_GP1_CgP1.
+    :return sine_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is
+        the CoreAirplaneMovement with sine spacing for Cg_GP1_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -89,12 +89,12 @@ def make_sine_spacing_Cg_core_airplane_movement_fixture():
     return sine_spacing_Cg_core_airplane_movement_fixture
 
 
-def make_uniform_spacing_Cg_core_airplane_movement_fixture():
+def make_uniform_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with uniform spacing
     for Cg_GP1_CgP1.
 
-    :return uniform_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with uniform spacing for Cg_GP1_CgP1.
+    :return uniform_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
+        is the CoreAirplaneMovement with uniform spacing for Cg_GP1_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -116,12 +116,12 @@ def make_uniform_spacing_Cg_core_airplane_movement_fixture():
     return uniform_spacing_Cg_core_airplane_movement_fixture
 
 
-def make_mixed_spacing_Cg_core_airplane_movement_fixture():
+def make_mixed_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with mixed spacing
     for Cg_GP1_CgP1.
 
-    :return mixed_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with mixed spacing for Cg_GP1_CgP1.
+    :return mixed_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
+        is the CoreAirplaneMovement with mixed spacing for Cg_GP1_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -143,11 +143,12 @@ def make_mixed_spacing_Cg_core_airplane_movement_fixture():
     return mixed_spacing_Cg_core_airplane_movement_fixture
 
 
-def make_Cg_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement where Cg_GP1_CgP1 moves.
+def make_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
+    """This method makes a fixture that is an CoreAirplaneMovement where Cg_GP1_CgP1
+    moves.
 
-    :return Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with Cg_GP1_CgP1 movement.
+    :return Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is the
+        CoreAirplaneMovement with Cg_GP1_CgP1 movement.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -169,12 +170,12 @@ def make_Cg_core_airplane_movement_fixture():
     return Cg_core_airplane_movement_fixture
 
 
-def make_phase_offset_Cg_core_airplane_movement_fixture():
+def make_phase_offset_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with non-zero phase
     offset for Cg_GP1_CgP1.
 
-    :return phase_offset_Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with phase offset for Cg_GP1_CgP1.
+    :return phase_offset_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is
+        the CoreAirplaneMovement with phase offset for Cg_GP1_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -196,12 +197,12 @@ def make_phase_offset_Cg_core_airplane_movement_fixture():
     return phase_offset_Cg_core_airplane_movement_fixture
 
 
-def make_multiple_periods_core_airplane_movement_fixture():
+def make_multiple_periods_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with different
     periods for different dimensions.
 
-    :return multiple_periods_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with different periods.
+    :return multiple_periods_core_airplane_movement_fixture: CoreAirplaneMovement This
+        is the CoreAirplaneMovement with different periods.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -223,12 +224,12 @@ def make_multiple_periods_core_airplane_movement_fixture():
     return multiple_periods_core_airplane_movement_fixture
 
 
-def make_custom_spacing_Cg_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement with a custom
-    spacing function for Cg_GP1_CgP1.
+def make_custom_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
+    """This method makes a fixture that is an CoreAirplaneMovement with a custom spacing
+    function for Cg_GP1_CgP1.
 
-    :return custom_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with custom spacing for Cg_GP1_CgP1.
+    :return custom_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
+        is the CoreAirplaneMovement with custom spacing for Cg_GP1_CgP1.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -237,20 +238,17 @@ def make_custom_spacing_Cg_core_airplane_movement_fixture():
     ]
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        This function satisfies all requirements: starts at 0, returns to 0 at
-        2*pi, has zero mean, has amplitude of 1, and is periodic.
+        This function satisfies all requirements: starts at 0, returns to 0 at 2*pi, has
+        zero mean, has amplitude of 1, and is periodic.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
-
-        :return: (N,) ndarray of floats
-            The output values.
+        :param x: A float representing the input angle in radians.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the custom spacing CoreAirplaneMovement.
@@ -267,12 +265,15 @@ def make_custom_spacing_Cg_core_airplane_movement_fixture():
     return custom_spacing_Cg_core_airplane_movement_fixture
 
 
-def make_mixed_custom_and_standard_spacing_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement with mixed custom
-    and standard spacing functions.
+def make_mixed_custom_and_standard_spacing_core_airplane_movement_fixture() -> (
+    CoreAirplaneMovement
+):
+    """This method makes a fixture that is an CoreAirplaneMovement with mixed custom and
+    standard spacing functions.
 
-    :return mixed_custom_and_standard_spacing_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with mixed custom and standard spacing.
+    :return mixed_custom_and_standard_spacing_core_airplane_movement_fixture:
+        CoreAirplaneMovement This is the CoreAirplaneMovement with mixed custom and
+        standard spacing.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -281,17 +282,14 @@ def make_mixed_custom_and_standard_spacing_core_airplane_movement_fixture():
     ]
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
-
-        :return: (N,) ndarray of floats
-            The output values.
+        :param x: A float representing the input angle in radians.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the mixed-spacing CoreAirplaneMovement.
@@ -310,15 +308,15 @@ def make_mixed_custom_and_standard_spacing_core_airplane_movement_fixture():
     return mixed_custom_and_standard_spacing_core_airplane_movement_fixture
 
 
-def make_periodic_geometry_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement with periodic geometry
-    motion suitable for testing the variable geometry optimization.
+def make_periodic_geometry_core_airplane_movement_fixture() -> CoreAirplaneMovement:
+    """This method makes a fixture that is an CoreAirplaneMovement with periodic
+    geometry motion suitable for testing the variable geometry optimization.
 
-    The fixture uses a 0.1s period which aligns well with common delta_time values
-    like 0.01s (10 steps per period) and 0.02s (5 steps per period).
+    The fixture uses a 0.1s period which aligns well with common delta_time values like
+    0.01s (10 steps per period) and 0.02s (5 steps per period).
 
-    :return periodic_geometry_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with periodic geometry motion.
+    :return periodic_geometry_core_airplane_movement_fixture: CoreAirplaneMovement This
+        is the CoreAirplaneMovement with periodic geometry motion.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -340,15 +338,15 @@ def make_periodic_geometry_core_airplane_movement_fixture():
     return periodic_geometry_core_airplane_movement_fixture
 
 
-def make_angles_only_core_airplane_movement_fixture():
-    """This method makes a fixture that is an CoreAirplaneMovement where only Wing angles
-    move (no position movement).
+def make_angles_only_core_airplane_movement_fixture() -> CoreAirplaneMovement:
+    """This method makes a fixture that is an CoreAirplaneMovement where only Wing
+    angles move (no position movement).
 
     This is useful for testing geometry matching code that compares Wing angles
     separately from Wing positions.
 
-    :return angles_only_core_airplane_movement_fixture: CoreAirplaneMovement
-        This is the CoreAirplaneMovement with only Wing angle movement.
+    :return angles_only_core_airplane_movement_fixture: CoreAirplaneMovement This is the
+        CoreAirplaneMovement with only Wing angle movement.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -370,7 +368,7 @@ def make_angles_only_core_airplane_movement_fixture():
     return angles_only_core_airplane_movement_fixture
 
 
-def make_2_chordwise_panels_core_airplane_movement_fixture():
+def make_2_chordwise_panels_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with a Wing that has
     2 chordwise panels.
 
@@ -397,7 +395,7 @@ def make_2_chordwise_panels_core_airplane_movement_fixture():
     return fixture
 
 
-def make_3_chordwise_panels_core_airplane_movement_fixture():
+def make_3_chordwise_panels_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     """This method makes a fixture that is an CoreAirplaneMovement with a Wing that has
     3 chordwise panels.
 

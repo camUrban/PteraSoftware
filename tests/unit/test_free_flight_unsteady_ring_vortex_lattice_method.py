@@ -2,6 +2,7 @@
 FreeFlightUnsteadyRingVortexLatticeMethodSolver class."""
 
 import unittest
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -19,14 +20,13 @@ from tests.unit.fixtures import (
 
 class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
     """This is a class with functions to test
-    FreeFlightUnsteadyRingVortexLatticeMethodSolvers.
-    """
+    FreeFlightUnsteadyRingVortexLatticeMethodSolvers."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh solver for each test."""
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
-    def test_initialization_accepts_free_flight_unsteady_problem(self):
+    def test_initialization_accepts_free_flight_unsteady_problem(self) -> None:
         """Test that initialization accepts a FreeFlightUnsteadyProblem."""
         self.assertIsInstance(
             self.solver, FreeFlightUnsteadyRingVortexLatticeMethodSolver
@@ -39,26 +39,34 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             self.solver.unsteady_problem, ps.problems.FreeFlightUnsteadyProblem
         )
 
-    def test_initialization_rejects_non_free_flight_problem(self):
+    def test_initialization_rejects_non_free_flight_problem(self) -> None:
         """Test that initialization raises TypeError for a coupled problem that is not a
-        FreeFlightUnsteadyProblem.
-        """
-        coupled_problem = problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        FreeFlightUnsteadyProblem."""
+        coupled_problem: Any = (
+            problem_fixtures.make_basic_coupled_unsteady_problem_fixture()
+        )
         with self.assertRaises(TypeError):
             FreeFlightUnsteadyRingVortexLatticeMethodSolver(coupled_problem)
 
-    def test_initialization_rejects_non_problem_types(self):
+    def test_initialization_rejects_non_problem_types(self) -> None:
         """Test that initialization raises TypeError for non-problem inputs."""
-        invalid_inputs = [None, "not_a_problem", 123, [1, 2, 3], {"key": "value"}]
+        invalid_inputs: list[Any] = [
+            None,
+            "not_a_problem",
+            123,
+            [1, 2, 3],
+            {"key": "value"},
+        ]
         for invalid in invalid_inputs:
             with self.subTest(invalid=invalid):
                 with self.assertRaises(TypeError):
                     FreeFlightUnsteadyRingVortexLatticeMethodSolver(invalid)
 
-    def test_free_flight_unsteady_problem_property_narrows_unsteady_problem(self):
+    def test_free_flight_unsteady_problem_property_narrows_unsteady_problem(
+        self,
+    ) -> None:
         """Test that the _free_flight_unsteady_problem property returns the same object
-        as unsteady_problem, narrowed to FreeFlightUnsteadyProblem.
-        """
+        as unsteady_problem, narrowed to FreeFlightUnsteadyProblem."""
         self.assertIs(
             self.solver._free_flight_unsteady_problem, self.solver.unsteady_problem
         )
@@ -67,31 +75,28 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             ps.problems.FreeFlightUnsteadyProblem,
         )
 
-    def test_models_body_rates_is_true(self):
+    def test_models_body_rates_is_true(self) -> None:
         """Test that the free-flight solver declares that it models body rates, so the
-        inherited constructor permits a non zero omegas_BP1__E.
-        """
+        inherited constructor permits a non zero omegas_BP1__E."""
         self.assertTrue(self.solver._models_body_rates)
 
-    def test_permits_non_zero_body_rates(self):
+    def test_permits_non_zero_body_rates(self) -> None:
         """Test that the free-flight solver constructs from a problem whose initial
         OperatingPoint carries a non zero body angular velocity, which the base solver
-        would reject.
-        """
+        would reject."""
         rotating_problem = (
             problem_fixtures.make_with_body_rates_free_flight_unsteady_problem_fixture()
         )
         solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(rotating_problem)
         self.assertIsInstance(solver, FreeFlightUnsteadyRingVortexLatticeMethodSolver)
 
-    def test_current_omegas_without_rotation_is_zero(self):
+    def test_current_omegas_without_rotation_is_zero(self) -> None:
         """Test that _currentOmegasRad_GP1__E returns a zero vector when the current
-        OperatingPoint carries no body rotation.
-        """
+        OperatingPoint carries no body rotation."""
         omegasRad_GP1__E = self.solver._currentOmegasRad_GP1__E()
         np.testing.assert_array_equal(omegasRad_GP1__E, np.zeros(3))
 
-    def test_current_omegas_transforms_body_rate(self):
+    def test_current_omegas_transforms_body_rate(self) -> None:
         """Test that _currentOmegasRad_GP1__E transforms the current OperatingPoint's
         body rate from the body axes in degrees per second to the geometry axes in
         radians per second.
@@ -111,7 +116,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         expected_omegasRad_GP1__E = np.deg2rad(np.array([0.0, 0.0, -1.0]))
         np.testing.assert_allclose(omegasRad_GP1__E, expected_omegasRad_GP1__E)
 
-    def test_current_omegas_negates_x_and_z_preserves_y(self):
+    def test_current_omegas_negates_x_and_z_preserves_y(self) -> None:
         """Test that _currentOmegasRad_GP1__E negates the x and z components and
         preserves the y component when transforming the body rate from the body axes to
         the geometry axes.
@@ -131,11 +136,10 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         expected_omegasRad_GP1__E = np.deg2rad(np.array([-1.0, 2.0, -3.0]))
         np.testing.assert_allclose(omegasRad_GP1__E, expected_omegasRad_GP1__E)
 
-    def test_declares_substep_slots(self):
+    def test_declares_substep_slots(self) -> None:
         """Test that the subclass declares exactly the strongly coupled sub-iteration's
         transient slots and so does not gain an instance __dict__ that would defeat the
-        parent's __slots__.
-        """
+        parent's __slots__."""
         self.assertEqual(
             FreeFlightUnsteadyRingVortexLatticeMethodSolver.__slots__,
             (
@@ -148,21 +152,20 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
             ),
         )
         with self.assertRaises(AttributeError):
-            self.solver.not_a_real_attribute = 42
+            setattr(self.solver, "not_a_real_attribute", 42)
 
 
 class TestFreeFlightSolverSubstepDispatch(unittest.TestCase):
     """Tests for the substep-aware geometry and operating point dispatch overrides."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh solver for each dispatch test."""
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
-    def test_get_steady_problem_at_dispatches_on_substep_state(self):
-        """Test that _get_steady_problem_at returns the transient next-step SteadyProblem
-        only for the next step during a sub-iteration, and otherwise defers to the
-        committed accessor.
-        """
+    def test_get_steady_problem_at_dispatches_on_substep_state(self) -> None:
+        """Test that _get_steady_problem_at returns the transient next-step
+        SteadyProblem only for the next step during a sub-iteration, and otherwise
+        defers to the committed accessor."""
         committed = self.solver._get_steady_problem_at(0)
         transient = MagicMock()
 
@@ -178,10 +181,10 @@ class TestFreeFlightSolverSubstepDispatch(unittest.TestCase):
         self.solver._substep_next_steady_problem = None
         self.assertIs(self.solver._get_steady_problem_at(0), committed)
 
-    def test_operating_point_at_dispatches_on_substep_state(self):
+    def test_operating_point_at_dispatches_on_substep_state(self) -> None:
         """Test that _operating_point_at returns the trial OperatingPoint only for the
-        next step during a sub-iteration, and otherwise defers to the committed accessor.
-        """
+        next step during a sub-iteration, and otherwise defers to the committed
+        accessor."""
         committed_operating_point = self.solver._operating_point_at(0)
         trial_operating_point = MagicMock()
 
@@ -199,13 +202,14 @@ class TestFreeFlightSolverSubstepDispatch(unittest.TestCase):
 
 
 class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
-    """Tests for the transient working state freeze_substep and restore_substep manage."""
+    """Tests for the transient working state freeze_substep and restore_substep
+    manage."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh solver for each lifecycle test."""
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
-    def test_freeze_substep_snapshots_strengths_as_copies(self):
+    def test_freeze_substep_snapshots_strengths_as_copies(self) -> None:
         """Test that freeze_substep records the next step, stores the transient
         SteadyProblem, and snapshots the current and previous bound vortex strengths as
         independent copies.
@@ -238,13 +242,14 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
         # Mutating the source strengths must not change the snapshots.
         self.solver._current_bound_vortex_strengths[0] = 999.0
         self.solver._last_bound_vortex_strengths[0] = 999.0
+        assert self.solver._substep_gamma_n is not None
+        assert self.solver._substep_gamma_n_minus_1 is not None
         self.assertEqual(self.solver._substep_gamma_n[0], 1.0)
         self.assertEqual(self.solver._substep_gamma_n_minus_1[0], 4.0)
 
-    def test_freeze_substep_skips_induced_precompute_for_prescribed_wake(self):
-        """Test that freeze_substep leaves the frozen wake induced velocities unset for a
-        prescribed wake, which has no induced transport to precompute.
-        """
+    def test_freeze_substep_skips_induced_precompute_for_prescribed_wake(self) -> None:
+        """Test that freeze_substep leaves the frozen wake induced velocities unset for
+        a prescribed wake, which has no induced transport to precompute."""
         self.solver._prescribed_wake = True
         self.solver._current_step = 0
         self.solver._current_bound_vortex_strengths = np.ones(3, dtype=float)
@@ -254,13 +259,13 @@ class TestFreeFlightSolverSubstepLifecycle(unittest.TestCase):
 
         self.assertIsNone(self.solver._substepStackVIndGridWrvp_GP1__E)
 
-    def test_restore_substep_clears_transient_state(self):
+    def test_restore_substep_clears_transient_state(self) -> None:
         """Test that restore_substep re-evaluates the current step and clears every
         transient sub-iteration slot.
 
         A leftover non-None slot would redirect the next step's geometry and wake reads
-        to a stale scratch copy, so the clearing is a correctness contract. The
-        re-evaluation of the current step's aerodynamics is stubbed, since reconstructing
+        to a stale scratch copy, so the clearing is a correctness contract. The re-
+        evaluation of the current step's aerodynamics is stubbed, since reconstructing
         it is the inherited solver's behavior, not this method's.
         """
         self.solver._substep_next_step = 1

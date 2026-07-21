@@ -25,8 +25,8 @@ def make_basic_panel_fixture() -> Panel:
     """This method makes a fixture that is a Panel with basic configuration for
     serialization testing.
 
-    :return basic_panel_fixture: Panel
-        This is a unit square Panel that is a leading edge Panel.
+    :return basic_panel_fixture: Panel This is a unit square Panel that is a leading
+        edge Panel.
     """
     return Panel(
         Frpp_G_Cg=np.array([1.0, 0.0, 0.0]),
@@ -41,8 +41,8 @@ def make_basic_panel_fixture() -> Panel:
 def make_meshed_airplane_fixture() -> Airplane:
     """This method makes a fixture that is a meshed Airplane for serialization testing.
 
-    :return meshed_airplane_fixture: Airplane
-        This is a meshed Airplane with one Wing containing 2 x 2 Panels.
+    :return meshed_airplane_fixture: Airplane This is a meshed Airplane with one Wing
+        containing 2 x 2 Panels.
     """
     wing = Wing(
         wing_cross_sections=[
@@ -70,8 +70,8 @@ def make_meshed_airplane_fixture() -> Airplane:
 def make_steady_problem_fixture() -> SteadyProblem:
     """This method makes a fixture that is a SteadyProblem for serialization testing.
 
-    :return steady_problem_fixture: SteadyProblem
-        This is a SteadyProblem with one meshed Airplane and 2 x 2 Panels.
+    :return steady_problem_fixture: SteadyProblem This is a SteadyProblem with one
+        meshed Airplane and 2 x 2 Panels.
     """
     wing = Wing(
         wing_cross_sections=[
@@ -98,8 +98,7 @@ def make_steady_problem_fixture() -> SteadyProblem:
 def _make_two_airplane_wing() -> Wing:
     """This method makes a Wing for use in multi Airplane fixture functions.
 
-    :return two_airplane_wing: Wing
-        This is an unmeshed Wing with 2 x 2 Panels.
+    :return two_airplane_wing: Wing This is an unmeshed Wing with 2 x 2 Panels.
     """
     return Wing(
         wing_cross_sections=[
@@ -124,8 +123,8 @@ def make_formation_steady_problem_fixture() -> SteadyProblem:
     """This method makes a fixture that is a SteadyProblem with two Airplanes for
     formation flight serialization testing.
 
-    :return formation_steady_problem_fixture: SteadyProblem
-        This is a SteadyProblem with two meshed Airplanes.
+    :return formation_steady_problem_fixture: SteadyProblem This is a SteadyProblem with
+        two meshed Airplanes.
     """
     airplane1 = Airplane(wings=[_make_two_airplane_wing()])
     airplane2 = Airplane(
@@ -141,8 +140,8 @@ def make_formation_steady_problem_fixture() -> SteadyProblem:
 def make_unsteady_problem_fixture() -> UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem for serialization testing.
 
-    :return unsteady_problem_fixture: UnsteadyProblem
-        This is an UnsteadyProblem with a static Movement and 2 x 2 Panels.
+    :return unsteady_problem_fixture: UnsteadyProblem This is an UnsteadyProblem with a
+        static Movement and 2 x 2 Panels.
     """
     wing_cross_section_movement_root = WingCrossSectionMovement(
         base_wing_cross_section=WingCrossSection(
@@ -192,9 +191,8 @@ def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with two Airplanes for
     formation flight serialization testing.
 
-    :return formation_unsteady_problem_fixture: UnsteadyProblem
-        This is an UnsteadyProblem with two Airplanes, 3 time steps, and 2 x 2 Panels
-        per Wing.
+    :return formation_unsteady_problem_fixture: UnsteadyProblem This is an
+        UnsteadyProblem with two Airplanes, 3 time steps, and 2 x 2 Panels per Wing.
     """
     wing_cross_section_movements = [
         WingCrossSectionMovement(

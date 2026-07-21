@@ -12,7 +12,10 @@ import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures, operating_point_fixtures
 
 
-def _make_static_movement_components():
+def _make_static_movement_components() -> tuple[
+    ps.movements.airplane_movement.AirplaneMovement,
+    ps.movements.operating_point_movement.OperatingPointMovement,
+]:
     """Creates the shared AirplaneMovement and OperatingPointMovement components for the
     wake truncation tests.
 
@@ -59,8 +62,16 @@ class TestWakeTruncation(unittest.TestCase):
     """This is a class for testing wake truncation in the
     UnsteadyRingVortexLatticeMethodSolver."""
 
+    non_truncated_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+    truncated_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+    max_wake_rows: int
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up both truncated and non truncated solvers."""
         airplane_movement, operating_point_movement = _make_static_movement_components()
 
@@ -101,27 +112,30 @@ class TestWakeTruncation(unittest.TestCase):
             show_progress=False,
         )
 
-        cls.max_wake_rows = truncated_movement.max_wake_rows
+        max_wake_rows = truncated_movement.max_wake_rows
+        assert max_wake_rows is not None
+        cls.max_wake_rows = max_wake_rows
 
-    def test_wake_size_is_capped(self):
+    def test_wake_size_is_capped(self) -> None:
         """Test that the truncated simulation's wake has exactly max_wake_rows chordwise
         rows at the final time step."""
         solver = self.truncated_solver
         final_step = solver.num_steps - 1
 
         # Total spanwise panel count summed over all wings of all airplanes.
-        total_spanwise_panels = sum(
-            wing.num_spanwise_panels
-            for airplane in solver.current_airplanes
-            for wing in airplane.wings
-        )
+        total_spanwise_panels = 0
+        for airplane in solver.current_airplanes:
+            for wing in airplane.wings:
+                num_spanwise_panels = wing.num_spanwise_panels
+                assert num_spanwise_panels is not None
+                total_spanwise_panels += num_spanwise_panels
         expected_num_wake_vortices = self.max_wake_rows * total_spanwise_panels
 
         self.assertEqual(
             solver.list_num_wake_vortices[final_step], expected_num_wake_vortices
         )
 
-    def test_non_truncated_wake_is_larger(self):
+    def test_non_truncated_wake_is_larger(self) -> None:
         """Test that the non truncated simulation's wake has more chordwise rows than
         the truncated simulation's wake at the final time step."""
         non_truncated_final_step = self.non_truncated_solver.num_steps - 1
@@ -136,13 +150,15 @@ class TestWakeTruncation(unittest.TestCase):
 
         self.assertGreater(non_truncated_num_wake_vortices, truncated_num_wake_vortices)
 
-    def test_truncated_loads_close_to_non_truncated(self):
+    def test_truncated_loads_close_to_non_truncated(self) -> None:
         """Test that the truncated simulation's loads are close to the non truncated
         simulation's loads."""
         non_truncated_airplane = self.non_truncated_solver.current_airplanes[0]
         truncated_airplane = self.truncated_solver.current_airplanes[0]
 
         # Compare lift coefficients (CL = -forceCoefficients_W[2]).
+        assert non_truncated_airplane.forceCoefficients_W is not None
+        assert truncated_airplane.forceCoefficients_W is not None
         non_truncated_cl = -non_truncated_airplane.forceCoefficients_W[2]
         truncated_cl = -truncated_airplane.forceCoefficients_W[2]
 
@@ -150,7 +166,7 @@ class TestWakeTruncation(unittest.TestCase):
         cl_error = abs(truncated_cl - non_truncated_cl) / abs(non_truncated_cl)
         self.assertLess(cl_error, 0.10)
 
-    def test_pre_allocated_wake_arrays_capped(self):
+    def test_pre_allocated_wake_arrays_capped(self) -> None:
         """Test that the truncated solver's pre-allocated wake arrays are correctly
         sized with truncation."""
         num_steps = self.truncated_solver.num_steps
@@ -163,7 +179,7 @@ class TestWakeTruncation(unittest.TestCase):
                 self.truncated_solver.list_num_wake_vortices[self.max_wake_rows],
             )
 
-    def test_wake_point_grid_is_capped(self):
+    def test_wake_point_grid_is_capped(self) -> None:
         """Test that the truncated simulation's wake point grid has the correct number
         of rows."""
         final_airplane = self.truncated_solver.current_airplanes[0]
@@ -171,6 +187,7 @@ class TestWakeTruncation(unittest.TestCase):
         for wing in final_airplane.wings:
             grid = wing.gridWrvp_GP1_CgP1
             self.assertIsNotNone(grid)
+            assert grid is not None
 
             # The point grid has one more row than the vortex grid.
             self.assertEqual(grid.shape[0], self.max_wake_rows + 1)

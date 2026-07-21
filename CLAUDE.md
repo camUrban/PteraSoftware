@@ -34,7 +34,7 @@ Requires Python 3.11, but active development is done in 3.13
 
 ### Relevant Directories, Packages, and Files
 
-- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (one per pre-commit hook or hook group, plus `label-sync.yml`, `publish.yml`, and `tests.yml`)
+- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (one per pre-commit hook or hook group, except the local-only pinned-versions hook, plus `label-sync.yml`, `publish.yml`, and `tests.yml`)
 - `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
 - `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
@@ -110,12 +110,14 @@ Requires Python 3.11, but active development is done in 3.13
         - `load_and_visualize_hero.py`: Loads the saved hero simulation and generates preview graphics
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
+    - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
     - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests
     - `integration/`: Integration tests for combined functionality, with shared fixtures in a `fixtures/` subpackage. There is one test module per solver configuration worth exercising end-to-end (each solver, plus its surface-effect, wake-truncation, multiple-wing, and variable-geometry variants), along with modules for convergence, trim, output, and serialized output
     - `unit/`: Unit tests for individual classes and functions, with shared fixtures in a `fixtures/` subpackage. The test modules mirror the package's modules one-to-one (for example, `test_wing.py` tests `geometry/wing.py`), plus a few suite-level modules such as `test_package_init.py`, `test_slots.py`, and `test_test_environment.py`. Fixture modules are named after the test modules they serve
     - `_test_environment.py`: Configures the test process to quiet known sources of test run noise (the serialization dirty-tree warnings, tqdm progress bars, and the headless-Linux VTK warning). It is imported as the first line of `tests/__init__.py` so the suppressions are in place before any pterasoftware, pyvista, or tqdm module loads
+- `validation/`: Directory with the experimental validation study: `validation_study.py` simulates a flapping test stand from Yeo et al., 2011 and compares the UVLM results against the paper's published pressure measurements, which are stored alongside it as CSV files extracted from the paper, along with the accompanying report (`validation_paper.pdf`)
 - `.codespell-ignore.txt`: File listing words to ignore in spell checking
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file

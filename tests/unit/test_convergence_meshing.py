@@ -69,7 +69,7 @@ _WING_CROSS_SECTION_CHANGED_PARAMETERS = frozenset({"num_spanwise_panels"})
 _WING_CROSS_SECTION_OMITTED_PARAMETERS: frozenset[str] = frozenset()
 
 
-def _public_constructor_parameters(this_class) -> set[str]:
+def _public_constructor_parameters(this_class: type) -> set[str]:
     """Returns the names of a class's public constructor parameters.
 
     A private parameter is internal machinery rather than part of the class's public
@@ -80,7 +80,7 @@ def _public_constructor_parameters(this_class) -> set[str]:
     """
     return {
         name
-        for name in inspect.signature(this_class.__init__).parameters
+        for name in inspect.signature(getattr(this_class, "__init__")).parameters
         if name != "self" and not name.startswith("_")
     }
 
@@ -88,8 +88,7 @@ def _public_constructor_parameters(this_class) -> set[str]:
 class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     """This class contains methods for testing
     _convergence_meshing._get_wing_section_num_spanwise_panels, the search that picks a
-    non-edge-defined Wing section's number of spanwise Panels.
-    """
+    non-edge-defined Wing section's number of spanwise Panels."""
 
     def setUp(self) -> None:
         """Set up a root and tip WingCrossSection defining one wing section.
@@ -105,10 +104,9 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
         self.num_chordwise_panels = 4
         self.chordwise_spacing = "uniform"
 
-    def _average_panel_aspect_ratio(self, num_spanwise_panels) -> float:
-        """Meshes the wing section at a number of spanwise Panels and returns its average
-        Panel aspect ratio.
-        """
+    def _average_panel_aspect_ratio(self, num_spanwise_panels: int) -> float:
+        """Meshes the wing section at a number of spanwise Panels and returns its
+        average Panel aspect ratio."""
         return _convergence_meshing._get_wing_section_average_panel_aspect_ratio(
             self.num_chordwise_panels,
             self.chordwise_spacing,
@@ -117,10 +115,9 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             num_spanwise_panels,
         )
 
-    def _num_spanwise_panels_for(self, target) -> int:
+    def _num_spanwise_panels_for(self, target: int) -> int:
         """Searches for the number of spanwise Panels that hits a target average Panel
-        aspect ratio, starting from the smallest valid count.
-        """
+        aspect ratio, starting from the smallest valid count."""
         return _convergence_meshing._get_wing_section_num_spanwise_panels(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
@@ -136,8 +133,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
 
     def test_result_is_closest_to_target(self) -> None:
         """Test that the chosen number of spanwise Panels gives an average Panel aspect
-        ratio at least as close to the target as either neighboring count.
-        """
+        ratio at least as close to the target as either neighboring count."""
         target = 4
         result = self._num_spanwise_panels_for(target)
 
@@ -154,9 +150,8 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             self.assertLessEqual(chosen_difference, lower_difference)
 
     def test_smaller_target_needs_at_least_as_many_panels(self) -> None:
-        """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least as
-        many spanwise Panels as a larger one.
-        """
+        """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least
+        as many spanwise Panels as a larger one."""
         self.assertGreaterEqual(
             self._num_spanwise_panels_for(2), self._num_spanwise_panels_for(4)
         )
@@ -164,9 +159,8 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
 
 class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
     """This class contains methods for testing
-    _convergence_meshing._get_num_wing_cross_sections_for_panel_ar, the search that picks an
-    edge-defined Wing's number of WingCrossSections.
-    """
+    _convergence_meshing._get_num_wing_cross_sections_for_panel_ar, the search that
+    picks an edge-defined Wing's number of WingCrossSections."""
 
     @staticmethod
     def _tapered_edge_points() -> tuple[np.ndarray, np.ndarray]:
@@ -182,7 +176,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
         return leading, trailing
 
-    def _make_edge_wing(self, symmetric=False) -> ps.geometry.wing.Wing:
+    def _make_edge_wing(self, symmetric: bool = False) -> ps.geometry.wing.Wing:
         """Builds an edge-defined Wing from the tapered edge curves."""
         leading, trailing = self._tapered_edge_points()
         return ps.geometry.wing.Wing.from_edge_points(
@@ -205,10 +199,9 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         self.ref_wing = self._make_edge_wing()
         self.num_chordwise_panels = 4
 
-    def _average_panel_aspect_ratio(self, num_wing_cross_sections) -> float:
-        """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections and
-        returns its average Panel aspect ratio.
-        """
+    def _average_panel_aspect_ratio(self, num_wing_cross_sections: int) -> float:
+        """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections
+        and returns its average Panel aspect ratio."""
         refined_wing = _convergence_meshing._build_edge_defined_wing(
             self.ref_wing, self.num_chordwise_panels, num_wing_cross_sections
         )
@@ -217,10 +210,11 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         assert average_panel_aspect_ratio is not None
         return average_panel_aspect_ratio
 
-    def _num_wing_cross_sections_for(self, target, ref_wing=None) -> int:
+    def _num_wing_cross_sections_for(
+        self, target: int, ref_wing: ps.geometry.wing.Wing | None = None
+    ) -> int:
         """Searches for the number of WingCrossSections that hits a target average Panel
-        aspect ratio, starting from the smallest valid count.
-        """
+        aspect ratio, starting from the smallest valid count."""
         return _convergence_meshing._get_num_wing_cross_sections_for_panel_ar(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
@@ -233,9 +227,8 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         self.assertIsInstance(self._num_wing_cross_sections_for(4), int)
 
     def test_result_is_closest_to_target(self) -> None:
-        """Test that the chosen number of WingCrossSections gives an average Panel aspect
-        ratio at least as close to the target as either neighboring count.
-        """
+        """Test that the chosen number of WingCrossSections gives an average Panel
+        aspect ratio at least as close to the target as either neighboring count."""
         target = 4
         result = self._num_wing_cross_sections_for(target)
 
@@ -252,17 +245,15 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
             self.assertLessEqual(chosen_difference, lower_difference)
 
     def test_smaller_target_needs_at_least_as_many_wing_cross_sections(self) -> None:
-        """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least as
-        many WingCrossSections as a larger one.
-        """
+        """Test that a smaller target Panel aspect ratio, a finer mesh, needs at least
+        as many WingCrossSections as a larger one."""
         self.assertGreaterEqual(
             self._num_wing_cross_sections_for(2), self._num_wing_cross_sections_for(4)
         )
 
     def test_symmetric_matches_asymmetric(self) -> None:
         """Test that the count is measured on the half span, so a symmetric Wing and an
-        asymmetric Wing built from the same half-span curves need the same count.
-        """
+        asymmetric Wing built from the same half-span curves need the same count."""
         asymmetric_result = self._num_wing_cross_sections_for(
             4, ref_wing=self._make_edge_wing(symmetric=False)
         )
@@ -275,13 +266,12 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
 class TestMemosComplete(unittest.TestCase):
     """This class contains methods for testing _convergence_meshing.memos_complete, the
     check that reports whether one mesh's build would only re-record already cached
-    memos.
-    """
+    memos."""
 
     def setUp(self) -> None:
-        """Set up reference Airplanes (one with a trapezoidal Wing and one with an
-        edge-defined Wing) and memo caches holding every memo their build would record
-        at the first mesh.
+        """Set up reference Airplanes (one with a trapezoidal Wing and one with an edge-
+        defined Wing) and memo caches holding every memo their build would record at the
+        first mesh.
 
         :return: None
         """
@@ -314,7 +304,12 @@ class TestMemosComplete(unittest.TestCase):
         }
         self.num_wing_cross_sections_cache = {(0, 0, 1, 0): 5}
 
-    def _memos_complete(self, ar_id=0, chord_id=0, delta_time_cache=None) -> bool:
+    def _memos_complete(
+        self,
+        ar_id: int = 0,
+        chord_id: int = 0,
+        delta_time_cache: dict[tuple[int, int], float] | None = None,
+    ) -> bool:
         """Calls memos_complete against the reference Airplanes and memo caches."""
         return _convergence_meshing.memos_complete(
             ar_id,
@@ -327,21 +322,18 @@ class TestMemosComplete(unittest.TestCase):
 
     def test_true_when_all_memos_cached(self) -> None:
         """Test that the check passes when every memo the build would record is
-        cached.
-        """
+        cached."""
         self.assertTrue(self._memos_complete())
 
     def test_false_when_spanwise_panels_memo_missing(self) -> None:
-        """Test that the check fails when a trapezoidal Wing's number of spanwise
-        Panels memo is missing.
-        """
+        """Test that the check fails when a trapezoidal Wing's number of spanwise Panels
+        memo is missing."""
         del self.num_spanwise_panels_cache[(0, 0, 0, 0, 1)]
         self.assertFalse(self._memos_complete())
 
     def test_false_when_wing_cross_sections_memo_missing(self) -> None:
         """Test that the check fails when an edge-defined Wing's number of
-        WingCrossSections memo is missing.
-        """
+        WingCrossSections memo is missing."""
         del self.num_wing_cross_sections_cache[(0, 0, 1, 0)]
         self.assertFalse(self._memos_complete())
 
@@ -351,8 +343,7 @@ class TestMemosComplete(unittest.TestCase):
 
     def test_delta_time_checked_only_when_cache_given(self) -> None:
         """Test that the delta_time memo is required when a delta_time cache is given
-        and ignored when it is None.
-        """
+        and ignored when it is None."""
         self.assertTrue(self._memos_complete(delta_time_cache=None))
         self.assertFalse(self._memos_complete(delta_time_cache={}))
         self.assertTrue(self._memos_complete(delta_time_cache={(0, 0): 0.01}))
@@ -364,8 +355,8 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
 
     _convergence_meshing.build_steady_problem and
     _convergence_meshing.build_unsteady_problem each rebuild every Airplane, Wing,
-    WingCrossSection, and Airfoil by naming its parameters one by one, so a parameter that
-    a construction site forgets to pass silently falls back to its default and the
+    WingCrossSection, and Airfoil by naming its parameters one by one, so a parameter
+    that a construction site forgets to pass silently falls back to its default and the
     analysis refines geometry that its reference problem never described. That is not
     hypothetical: it is what happened to WingMovement's rotationPointOffset_Gs_Ler, and
     these classes gain parameters at a similar rate. Wing alone has gained mirror_only,
@@ -378,10 +369,9 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
     """
 
     @staticmethod
-    def _coverage_failure_message(class_name) -> str:
-        """Builds the message shown when a geometry class's public constructor parameters
-        are no longer the ones this module classifies.
-        """
+    def _coverage_failure_message(class_name: str) -> str:
+        """Builds the message shown when a geometry class's public constructor
+        parameters are no longer the ones this module classifies."""
         return (
             f"This module's partition of {class_name}'s public constructor parameters "
             f"is no longer complete. If a parameter was added to {class_name}, "
@@ -398,8 +388,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
 
     def test_airplane_parameters_are_classified(self) -> None:
         """Test that every one of Airplane's public constructor parameters is classified
-        as copied, changed, or omitted.
-        """
+        as copied, changed, or omitted."""
         self.assertEqual(
             _AIRPLANE_COPIED_PARAMETERS
             | _AIRPLANE_CHANGED_PARAMETERS
@@ -410,8 +399,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
 
     def test_wing_parameters_are_classified(self) -> None:
         """Test that every one of Wing's public constructor parameters is classified as
-        copied, changed, or omitted.
-        """
+        copied, changed, or omitted."""
         self.assertEqual(
             _WING_COPIED_PARAMETERS
             | _WING_CHANGED_PARAMETERS
@@ -422,8 +410,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
 
     def test_wing_cross_section_parameters_are_classified(self) -> None:
         """Test that every one of WingCrossSection's public constructor parameters is
-        classified as copied, changed, or omitted.
-        """
+        classified as copied, changed, or omitted."""
         self.assertEqual(
             _WING_CROSS_SECTION_COPIED_PARAMETERS
             | _WING_CROSS_SECTION_CHANGED_PARAMETERS
@@ -435,9 +422,8 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
         )
 
     def test_partitions_do_not_overlap(self) -> None:
-        """Test that no parameter is classified twice, since a parameter that a build both
-        copies and changes would describe two different behaviors.
-        """
+        """Test that no parameter is classified twice, since a parameter that a build
+        both copies and changes would describe two different behaviors."""
         for copied, changed, omitted in (
             (
                 _AIRPLANE_COPIED_PARAMETERS,
@@ -468,8 +454,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
     The reference holds two Airplanes so that one build covers both refinement branches:
     the first Airplane's Wing is trapezoidal, which is refined by resolving each non tip
     WingCrossSection's number of spanwise Panels, and the second Airplane's Wing is
-    edge-defined, which is refined by resampling its stored edge curves into a new number
-    of WingCrossSections.
+    edge-defined, which is refined by resampling its stored edge curves into a new
+    number of WingCrossSections.
     """
 
     # These are the reference Airplanes' indices within the reference SteadyProblem,
@@ -478,8 +464,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
     edge_defined_airplane_id = 1
 
     def setUp(self) -> None:
-        """Set up a reference SteadyProblem holding a trapezoidal Wing and an
-        edge-defined Wing, and the empty caches that a build fills.
+        """Set up a reference SteadyProblem holding a trapezoidal Wing and an edge-
+        defined Wing, and the empty caches that a build fills.
 
         :return: None
         """
@@ -520,10 +506,9 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
         self.num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
 
-    def _build(self, num_chordwise_panels=4) -> ps.problems.SteadyProblem:
+    def _build(self, num_chordwise_panels: int = 4) -> ps.problems.SteadyProblem:
         """Builds the SteadyProblem for the first mesh against the reference problem and
-        the caches.
-        """
+        the caches."""
         return _convergence_meshing.build_steady_problem(
             ar_id=0,
             chord_id=0,
@@ -535,19 +520,17 @@ class TestBuildSteadyProblem(unittest.TestCase):
         )
 
     def test_returns_steady_problem(self) -> None:
-        """Test that the build returns a SteadyProblem holding one copy of each reference
-        Airplane.
-        """
+        """Test that the build returns a SteadyProblem holding one copy of each
+        reference Airplane."""
         this_problem = self._build()
 
         self.assertIsInstance(this_problem, ps.problems.SteadyProblem)
         self.assertEqual(len(this_problem.airplanes), 2)
 
     def test_operating_point_is_deep_copied(self) -> None:
-        """Test that the built problem holds its own equal OperatingPoint rather than the
-        reference's, so that solving it cannot populate the reference OperatingPoint's
-        lazy caches and change the reference problem's content hash.
-        """
+        """Test that the built problem holds its own equal OperatingPoint rather than
+        the reference's, so that solving it cannot populate the reference
+        OperatingPoint's lazy caches and change the reference problem's content hash."""
         this_operating_point = self._build().operating_point
         ref_operating_point = self.ref_problem.operating_point
 
@@ -558,10 +541,9 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.assertEqual(this_operating_point.beta, ref_operating_point.beta)
 
     def test_reference_problem_is_not_modified(self) -> None:
-        """Test that the build leaves the reference problem's Wings at their own mesh, so
-        that a later iteration still refines from the reference rather than from a
-        previous iteration's result.
-        """
+        """Test that the build leaves the reference problem's Wings at their own mesh,
+        so that a later iteration still refines from the reference rather than from a
+        previous iteration's result."""
         self._build(num_chordwise_panels=4)
 
         self.assertEqual(self.trapezoidal_wing.num_chordwise_panels, 8)
@@ -569,8 +551,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_num_chordwise_panels_is_applied_to_every_wing(self) -> None:
         """Test that every copied Wing takes this iteration's number of chordwise Panels
-        rather than its reference's.
-        """
+        rather than its reference's."""
         this_problem = self._build(num_chordwise_panels=6)
 
         for this_airplane in this_problem.airplanes:
@@ -579,9 +560,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_spanwise_mesh_types_are_preserved(self) -> None:
         """Test that a trapezoidal Wing's copy stays trapezoidal and an edge-defined
-        Wing's copy stays edge-defined, so that a later iteration refines each by the same
-        branch.
-        """
+        Wing's copy stays edge-defined, so that a later iteration refines each by the
+        same branch."""
         this_problem = self._build()
 
         self.assertEqual(
@@ -599,9 +579,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self,
     ) -> None:
         """Test that refining the trapezoidal Wing records one number of spanwise Panels
-        memo for each of its non tip WingCrossSections, keyed by the mesh, Airplane, Wing,
-        and WingCrossSection indices.
-        """
+        memo for each of its non tip WingCrossSections, keyed by the mesh, Airplane,
+        Wing, and WingCrossSection indices."""
         self._build()
 
         self.assertEqual(
@@ -614,8 +593,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_edge_defined_wing_records_one_memo(self) -> None:
         """Test that refining the edge-defined Wing records one number of
-        WingCrossSections memo, keyed by the mesh, Airplane, and Wing indices.
-        """
+        WingCrossSections memo, keyed by the mesh, Airplane, and Wing indices."""
         self._build()
 
         self.assertEqual(
@@ -626,8 +604,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
     def test_cached_num_spanwise_panels_is_reused(self) -> None:
         """Test that a cached number of spanwise Panels is used as is rather than
         resolved again, so that one mesh's Wing sections resolve only once across a
-        sweep.
-        """
+        sweep."""
         self.num_spanwise_panels_cache[(0, 0, self.trapezoidal_airplane_id, 0, 0)] = 7
 
         this_wing = self._build().airplanes[self.trapezoidal_airplane_id].wings[0]
@@ -636,21 +613,25 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_cached_num_wing_cross_sections_is_reused(self) -> None:
         """Test that a cached number of WingCrossSections is used as is rather than
-        resolved again, so that one mesh's edge-defined Wing resamples only once across a
-        sweep.
-        """
+        resolved again, so that one mesh's edge-defined Wing resamples only once across
+        a sweep."""
         self.num_wing_cross_sections_cache[(0, 0, self.edge_defined_airplane_id, 0)] = 3
 
         this_wing = self._build().airplanes[self.edge_defined_airplane_id].wings[0]
 
         self.assertEqual(len(this_wing.wing_cross_sections), 3)
 
-    def _assert_copied(self, this_object, ref_object, parameter_names) -> None:
+    def _assert_copied(
+        self,
+        this_object: object,
+        ref_object: object,
+        parameter_names: frozenset[str],
+    ) -> None:
         """Asserts that a copied geometry object carries each named parameter from its
         reference.
 
-        A parameter's value can be an array, a string, a bool, a number, or None, so array
-        values are compared for closeness and the rest for equality.
+        A parameter's value can be an array, a string, a bool, a number, or None, so
+        array values are compared for closeness and the rest for equality.
         """
         for name in sorted(parameter_names):
             this_value = getattr(this_object, name)
@@ -669,8 +650,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_airplane_parameters_are_copied(self) -> None:
         """Test that an Airplane copy carries every one of its reference's copied
-        parameters.
-        """
+        parameters."""
         self._assert_copied(
             self._build().airplanes[self.edge_defined_airplane_id],
             self.ref_problem.airplanes[self.edge_defined_airplane_id],
@@ -679,8 +659,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
     def test_airplane_reference_values_are_recalculated(self) -> None:
         """Test that each Airplane copy calculates its own reference dimensions, because
-        refining the mesh changes the geometry they describe.
-        """
+        refining the mesh changes the geometry they describe."""
         this_airplane = self._build().airplanes[self.trapezoidal_airplane_id]
 
         self.assertIsNotNone(this_airplane.s_ref)
@@ -688,9 +667,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.assertIsNotNone(this_airplane.b_ref)
 
     def test_wing_parameters_are_copied(self) -> None:
-        """Test that a trapezoidal Wing's copy carries every one of its reference's copied
-        parameters.
-        """
+        """Test that a trapezoidal Wing's copy carries every one of its reference's
+        copied parameters."""
         self._assert_copied(
             self._build().airplanes[self.trapezoidal_airplane_id].wings[0],
             self.trapezoidal_wing,
@@ -698,9 +676,8 @@ class TestBuildSteadyProblem(unittest.TestCase):
         )
 
     def test_wing_cross_section_parameters_are_copied(self) -> None:
-        """Test that a trapezoidal Wing's copied WingCrossSections each carry every one of
-        their reference's copied parameters.
-        """
+        """Test that a trapezoidal Wing's copied WingCrossSections each carry every one
+        of their reference's copied parameters."""
         these_wing_cross_sections = (
             self._build()
             .airplanes[self.trapezoidal_airplane_id]
@@ -723,10 +700,10 @@ class TestBuildSteadyProblem(unittest.TestCase):
         """Test that each copied WingCrossSection holds its reference's own Airfoil, so
         that its outline is reproduced exactly.
 
-        Rebuilding an Airfoil from a reference's outline revalidates and renormalizes it,
-        which perturbs a cambered outline by a small amount rather than reproducing it, so
-        each copy must share the reference's Airfoil instead. Sharing is safe because
-        Airfoils are immutable.
+        Rebuilding an Airfoil from a reference's outline revalidates and renormalizes
+        it, which perturbs a cambered outline by a small amount rather than reproducing
+        it, so each copy must share the reference's Airfoil instead. Sharing is safe
+        because Airfoils are immutable.
         """
         these_wing_cross_sections = (
             self._build()
@@ -756,9 +733,9 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
 
     build_unsteady_problem rebuilds each of these movement classes by naming their
     parameters one by one, so a parameter that a construction site forgets to pass
-    silently falls back to its default and every convergence iteration then solves motion
-    that the reference problem never described. That is not hypothetical: it is what
-    happened to WingMovement's rotationPointOffset_Gs_Ler, which changed a flapping
+    silently falls back to its default and every convergence iteration then solves
+    motion that the reference problem never described. That is not hypothetical: it is
+    what happened to WingMovement's rotationPointOffset_Gs_Ler, which changed a flapping
     case's mean thrust by 47 percent before it was caught.
 
     These tests therefore exist to fail whenever a motion parameter is added to one of
@@ -811,8 +788,8 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     }
 
     def setUp(self) -> None:
-        """Set up a reference UnsteadyProblem whose Airplanes hold a trapezoidal Wing and
-        an edge-defined Wing, each wrapped in an AirplaneMovement and a WingMovement
+        """Set up a reference UnsteadyProblem whose Airplanes hold a trapezoidal Wing
+        and an edge-defined Wing, each wrapped in an AirplaneMovement and a WingMovement
         carrying every motion parameter.
 
         :return: None
@@ -916,18 +893,16 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
 
     def _built_wing_movements(self) -> list:
         """Builds the UnsteadyProblem for the first mesh and returns its WingMovements,
-        one per reference Airplane.
-        """
+        one per reference Airplane."""
         return [
             this_airplane_movement.wing_movements[0]
             for this_airplane_movement in self._built_airplane_movements()
         ]
 
     @staticmethod
-    def _coverage_failure_message(class_name) -> str:
+    def _coverage_failure_message(class_name: str) -> str:
         """Builds the message shown when a movement class's motion parameters are no
-        longer the set that this class tests.
-        """
+        longer the set that this class tests."""
         return (
             f"This class's motion parameters no longer match {class_name}'s. If a "
             f"parameter was added to {class_name}, listing it here is only half of the "
@@ -940,11 +915,15 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             f"that the copy tests below would catch that."
         )
 
-    def _assert_parameters_match(self, actual_movement, expected_parameters) -> None:
+    def _assert_parameters_match(
+        self,
+        actual_movement: object,
+        expected_parameters: dict[str, Any],
+    ) -> None:
         """Asserts that a copied movement class carries each expected motion parameter.
 
-        The spacing parameters hold strings rather than numbers, so they are compared for
-        equality while the rest are compared for closeness.
+        The spacing parameters hold strings rather than numbers, so they are compared
+        for equality while the rest are compared for closeness.
         """
         for name, expected in expected_parameters.items():
             message = (
@@ -967,8 +946,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         """Test that airplane_motion_parameters names every AirplaneMovement constructor
         parameter except the two that the build is meant to change, so that a parameter
         added to AirplaneMovement later fails here until it is covered by the tests
-        below.
-        """
+        below."""
         parameters = inspect.signature(
             ps.movements.airplane_movement.AirplaneMovement.__init__
         ).parameters
@@ -982,8 +960,8 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     def test_wing_motion_parameters_covers_every_constructor_parameter(self) -> None:
         """Test that wing_motion_parameters names every WingMovement constructor
         parameter except the two that the build is meant to change, so that a parameter
-        added to WingMovement later fails here until it is covered by the tests below.
-        """
+        added to WingMovement later fails here until it is covered by the tests
+        below."""
         parameters = inspect.signature(
             ps.movements.wing_movement.WingMovement.__init__
         ).parameters
@@ -1000,8 +978,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         """Test that wing_cross_section_motion_parameters names every
         WingCrossSectionMovement constructor parameter except the one that the build is
         meant to change, so that a parameter added to WingCrossSectionMovement later
-        fails here until it is covered by the tests below.
-        """
+        fails here until it is covered by the tests below."""
         parameters = inspect.signature(
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement.__init__
         ).parameters
@@ -1015,8 +992,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
     def test_rotation_point_offset_is_copied(self) -> None:
         """Test that both the trapezoidal and the edge-defined branch copy the reference
         WingMovement's rotationPointOffset_Gs_Ler rather than defaulting it to the Wing
-        root leading edge.
-        """
+        root leading edge."""
         for this_wing_movement in self._built_wing_movements():
             np.testing.assert_allclose(
                 this_wing_movement.rotationPointOffset_Gs_Ler,
@@ -1024,8 +1000,8 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             )
 
     def test_every_airplane_motion_parameter_is_copied(self) -> None:
-        """Test that an AirplaneMovement copy carries every one of its reference's motion
-        parameters, so that a parameter added later cannot be silently dropped.
+        """Test that an AirplaneMovement copy carries every one of its reference's
+        motion parameters, so that a parameter added later cannot be silently dropped.
 
         Only the second Airplane is checked, because the first Airplane in a simulation
         must keep a zero Cg_GP1_CgP1 and so cannot carry this motion. The build copies
@@ -1036,14 +1012,14 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         )
 
     def test_every_wing_cross_section_motion_parameter_is_copied(self) -> None:
-        """Test that the trapezoidal branch's WingCrossSectionMovement copies carry every
-        one of their reference's motion parameters, so that a parameter added later
-        cannot be silently dropped.
+        """Test that the trapezoidal branch's WingCrossSectionMovement copies carry
+        every one of their reference's motion parameters, so that a parameter added
+        later cannot be silently dropped.
 
-        Only the trapezoidal branch is checked, because the edge-defined branch resamples
-        its WingCrossSections and so deliberately builds motion free
-        WingCrossSectionMovements. The root WingCrossSectionMovement is skipped because a
-        root WingCrossSection cannot move.
+        Only the trapezoidal branch is checked, because the edge-defined branch
+        resamples its WingCrossSections and so deliberately builds motion free
+        WingCrossSectionMovements. The root WingCrossSectionMovement is skipped because
+        a root WingCrossSection cannot move.
         """
         trapezoidal_wing_movement = self._built_wing_movements()[0]
         these_wing_cross_section_movements = (
@@ -1059,8 +1035,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
 
     def test_every_wing_motion_parameter_is_copied(self) -> None:
         """Test that both branches copy every one of the WingMovement's motion
-        parameters, so that a parameter added later cannot be silently dropped.
-        """
+        parameters, so that a parameter added later cannot be silently dropped."""
         for this_wing_movement in self._built_wing_movements():
             self._assert_parameters_match(
                 this_wing_movement, self.wing_motion_parameters

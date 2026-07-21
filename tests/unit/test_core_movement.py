@@ -15,8 +15,11 @@ from tests.unit.fixtures import (
 class TestCoreMovement(unittest.TestCase):
     """This is a class with functions to test CoreMovements."""
 
+    static_core_movement: ps._core.CoreMovement
+    basic_core_movement: ps._core.CoreMovement
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all CoreMovement tests."""
         cls.static_core_movement = (
             core_movement_fixtures.make_static_core_movement_fixture()
@@ -25,39 +28,39 @@ class TestCoreMovement(unittest.TestCase):
             core_movement_fixtures.make_basic_core_movement_fixture()
         )
 
-    def test_static_property_for_static_core_movement(self):
+    def test_static_property_for_static_core_movement(self) -> None:
         """Test that static property returns True for static CoreMovement."""
         self.assertTrue(self.static_core_movement.static)
 
-    def test_static_property_for_non_static_core_movement(self):
+    def test_static_property_for_non_static_core_movement(self) -> None:
         """Test that static property returns False for non static CoreMovement."""
         self.assertFalse(self.basic_core_movement.static)
 
-    def test_max_period_for_static_core_movement(self):
+    def test_max_period_for_static_core_movement(self) -> None:
         """Test that max_period returns 0.0 for static CoreMovement."""
         self.assertEqual(self.static_core_movement.max_period, 0.0)
 
-    def test_max_period_for_non_static_core_movement(self):
+    def test_max_period_for_non_static_core_movement(self) -> None:
         """Test that max_period returns correct value for non static CoreMovement."""
         # The basic_core_movement has period of 2.0 for all motion.
         self.assertEqual(self.basic_core_movement.max_period, 2.0)
 
-    def test_lcm_period_for_static_core_movement(self):
+    def test_lcm_period_for_static_core_movement(self) -> None:
         """Test that lcm_period returns 0.0 for static CoreMovement."""
         self.assertEqual(self.static_core_movement.lcm_period, 0.0)
 
-    def test_lcm_period_for_single_period_core_movement(self):
+    def test_lcm_period_for_single_period_core_movement(self) -> None:
         """Test that lcm_period returns correct value when all periods are the same."""
         # The basic_core_movement has period of 2.0 for all motion. LCM of identical
         # periods should equal that period.
         self.assertEqual(self.basic_core_movement.lcm_period, 2.0)
 
-    def test_lcm_period_with_multiple_wings_same_airplane(self):
+    def test_lcm_period_with_multiple_wings_same_airplane(self) -> None:
         """Test that lcm_period collects all periods, not just max from each
         CoreAirplaneMovement.
 
-        This test creates a single Airplane with two Wings having different periods
-        (3.0 s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
+        This test creates a single Airplane with two Wings having different periods (3.0
+        s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
         max_period from the CoreAirplaneMovement, lcm_period would incorrectly return
         4.0 s instead of 12.0 s.
         """
@@ -137,9 +140,8 @@ class TestCoreMovement(unittest.TestCase):
         # collecting all individual periods.
         self.assertEqual(core_movement.lcm_period, 12.0)
 
-    def test_lcm_period_with_multiple_cross_sections_same_wing(self):
-        """Test that lcm_period collects all periods from
-        CoreWingCrossSectionMovements.
+    def test_lcm_period_with_multiple_cross_sections_same_wing(self) -> None:
+        """Test that lcm_period collects all periods from CoreWingCrossSectionMovements.
 
         This test creates a single Wing with three WingCrossSections having different
         periods (root static, middle 3.0 s, tip 4.0 s). The correct LCM is 12.0 s. If
@@ -241,7 +243,7 @@ class TestCoreMovement(unittest.TestCase):
         # collecting all individual periods from CoreWingCrossSectionMovements.
         self.assertEqual(core_movement.lcm_period, 12.0)
 
-    def test_lcm_period_with_multiple_airplanes(self):
+    def test_lcm_period_with_multiple_airplanes(self) -> None:
         """Test that lcm_period calculates LCM correctly with multiple periods."""
         # Create CoreAirplaneMovements with different periods.
 
@@ -336,7 +338,7 @@ class TestCoreMovement(unittest.TestCase):
         # The max_period should still be 3.0.
         self.assertEqual(core_movement.max_period, 3.0)
 
-    def test_max_period_with_multiple_airplanes(self):
+    def test_max_period_with_multiple_airplanes(self) -> None:
         """Test that max_period returns maximum across all CoreAirplaneMovements."""
         # Create a static and a basic CoreAirplaneMovement.
         static_airplane_movement = (
@@ -365,46 +367,52 @@ class TestCoreMovement(unittest.TestCase):
 class TestCoreMovementImmutability(unittest.TestCase):
     """Tests for CoreMovement attribute immutability."""
 
+    basic_core_movement: ps._core.CoreMovement
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all immutability tests."""
         cls.basic_core_movement = (
             core_movement_fixtures.make_basic_core_movement_fixture()
         )
 
-    def test_immutable_airplane_movements_property(self):
+    def test_immutable_airplane_movements_property(self) -> None:
         """Test that airplane_movements property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_core_movement.airplane_movements = []
+            setattr(self.basic_core_movement, "airplane_movements", [])
 
-    def test_immutable_airplane_movements_tuple(self):
+    def test_immutable_airplane_movements_tuple(self) -> None:
         """Test that airplane_movements returns a tuple (immutable sequence)."""
         airplane_movements = self.basic_core_movement.airplane_movements
         self.assertIsInstance(airplane_movements, tuple)
 
-    def test_immutable_operating_point_movement_property(self):
+    def test_immutable_operating_point_movement_property(self) -> None:
         """Test that operating_point_movement property is read only."""
         operating_point_movement = (
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
         )
         with self.assertRaises(AttributeError):
-            self.basic_core_movement.operating_point_movement = operating_point_movement
+            setattr(
+                self.basic_core_movement,
+                "operating_point_movement",
+                operating_point_movement,
+            )
 
-    def test_immutable_delta_time_property(self):
+    def test_immutable_delta_time_property(self) -> None:
         """Test that delta_time property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_core_movement.delta_time = 0.05
+            setattr(self.basic_core_movement, "delta_time", 0.05)
 
-    def test_immutable_num_steps_property(self):
+    def test_immutable_num_steps_property(self) -> None:
         """Test that num_steps property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_core_movement.num_steps = 100
+            setattr(self.basic_core_movement, "num_steps", 100)
 
 
 class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
     """Tests for CoreMovement when CoreOperatingPointMovement has non zero period."""
 
-    def test_lcm_period_includes_operating_point_movement_period(self):
+    def test_lcm_period_includes_operating_point_movement_period(self) -> None:
         """Test that lcm_period includes the CoreOperatingPointMovement period."""
         # Create a static CoreAirplaneMovement.
         airplane_movements = [
@@ -433,7 +441,7 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         # CoreAirplaneMovement is static (period 0.0), the only period is 3.0.
         self.assertEqual(core_movement.lcm_period, 3.0)
 
-    def test_lcm_period_combines_airplane_and_operating_point_periods(self):
+    def test_lcm_period_combines_airplane_and_operating_point_periods(self) -> None:
         """Test that lcm_period combines periods from CoreAirplaneMovement and
         CoreOperatingPointMovement."""
         # Create a non static CoreAirplaneMovement with period 2.0.
@@ -461,7 +469,7 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         # The lcm_period should be LCM(2.0, 3.0) = 6.0.
         self.assertEqual(core_movement.lcm_period, 6.0)
 
-    def test_min_period_includes_operating_point_movement_period(self):
+    def test_min_period_includes_operating_point_movement_period(self) -> None:
         """Test that min_period includes the CoreOperatingPointMovement period."""
         # Create a non static CoreAirplaneMovement with period 2.0.
         airplane_movements = [
@@ -489,7 +497,7 @@ class TestCoreMovementWithOperatingPointMovementPeriod(unittest.TestCase):
         # 2.0).
         self.assertEqual(core_movement.min_period, 1.5)
 
-    def test_max_period_includes_operating_point_movement_period(self):
+    def test_max_period_includes_operating_point_movement_period(self) -> None:
         """Test that max_period includes the CoreOperatingPointMovement period."""
         # Create a non static CoreAirplaneMovement with period 2.0.
         airplane_movements = [

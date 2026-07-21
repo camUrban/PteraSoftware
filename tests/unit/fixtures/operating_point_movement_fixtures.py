@@ -1,17 +1,18 @@
-"""This module contains functions to create OperatingPointMovements for use in
-tests."""
+"""This module contains functions to create OperatingPointMovements for use in tests."""
 
 import pterasoftware as ps
 
 from . import operating_point_fixtures
 
 
-def make_static_operating_point_movement_fixture():
-    """This method makes a fixture that is an OperatingPointMovement with all
-    parameters zero (no movement).
+def make_static_operating_point_movement_fixture() -> (
+    ps.movements.operating_point_movement.OperatingPointMovement
+):
+    """This method makes a fixture that is an OperatingPointMovement with all parameters
+    zero (no movement).
 
-    :return static_operating_point_movement_fixture: OperatingPointMovement
-        This is the OperatingPointMovement with no movement.
+    :return static_operating_point_movement_fixture: OperatingPointMovement This is the
+        OperatingPointMovement with no movement.
     """
     # Initialize the constructing fixture.
     base_operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
@@ -31,12 +32,14 @@ def make_static_operating_point_movement_fixture():
     return static_operating_point_movement_fixture
 
 
-def make_sine_spacing_operating_point_movement_fixture():
-    """This method makes a fixture that is an OperatingPointMovement with sine
-    spacing for vCg__E.
+def make_sine_spacing_operating_point_movement_fixture() -> (
+    ps.movements.operating_point_movement.OperatingPointMovement
+):
+    """This method makes a fixture that is an OperatingPointMovement with sine spacing
+    for vCg__E.
 
-    :return sine_spacing_operating_point_movement_fixture: OperatingPointMovement
-        This is the OperatingPointMovement with sine spacing for vCg__E.
+    :return sine_spacing_operating_point_movement_fixture: OperatingPointMovement This
+        is the OperatingPointMovement with sine spacing for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (

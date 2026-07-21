@@ -1,6 +1,7 @@
 """This module contains classes to test FreeFlightMovements."""
 
 import unittest
+from typing import Any
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -15,8 +16,14 @@ from tests.unit.fixtures import (
 class TestFreeFlightMovement(unittest.TestCase):
     """This is a class with functions to test FreeFlightMovements."""
 
+    basic_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
+    static_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
+    free_flight_movement_with_multiple_airplanes: (
+        ps.movements.free_flight_movement.FreeFlightMovement
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all FreeFlightMovement tests."""
         cls.basic_free_flight_movement = (
             free_flight_movement_fixtures.make_basic_free_flight_movement_fixture()
@@ -28,7 +35,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_movement_fixtures.make_free_flight_movement_with_multiple_airplanes_fixture()
         )
 
-    def test_is_subclass_of_core_movement(self):
+    def test_is_subclass_of_core_movement(self) -> None:
         """Test that FreeFlightMovement is a subclass of CoreMovement."""
         self.assertTrue(
             issubclass(
@@ -37,39 +44,40 @@ class TestFreeFlightMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that FreeFlightMovement instantiation returns a FreeFlightMovement."""
         self.assertIsInstance(
             self.basic_free_flight_movement,
             ps.movements.free_flight_movement.FreeFlightMovement,
         )
 
-    def test_rejects_non_airplane_movement_children(self):
+    def test_rejects_non_airplane_movement_children(self) -> None:
         """Test that FreeFlightMovement rejects children that are not
-        AirplaneMovements.
-        """
+        AirplaneMovements."""
         operating_point_movement = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
+        bad_airplane_movements: Any = ["not an AirplaneMovement"]
         with self.assertRaises(TypeError):
             ps.movements.free_flight_movement.FreeFlightMovement(
-                airplane_movements=["not an AirplaneMovement"],
+                airplane_movements=bad_airplane_movements,
                 operating_point_movement=operating_point_movement,
                 delta_time=0.1,
                 prescribed_num_steps=2,
                 free_num_steps=3,
             )
 
-    def test_rejects_non_free_flight_operating_point_movement(self):
+    def test_rejects_non_free_flight_operating_point_movement(self) -> None:
         """Test that FreeFlightMovement rejects OperatingPointMovement instances that
-        are not FreeFlightOperatingPointMovements.
-        """
+        are not FreeFlightOperatingPointMovements."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
-        operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
-            base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+        operating_point_movement: Any = (
+            ps.movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture()
+            )
         )
 
         with self.assertRaises(TypeError):
@@ -81,7 +89,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                 free_num_steps=3,
             )
 
-    def test_prescribed_num_steps_validation(self):
+    def test_prescribed_num_steps_validation(self) -> None:
         """Test prescribed_num_steps parameter validation."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -90,7 +98,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-        invalid_values = [0, -5, 2.5, "three"]
+        invalid_values: list[Any] = [0, -5, 2.5, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
@@ -103,7 +111,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                         free_num_steps=3,
                     )
 
-    def test_free_num_steps_validation(self):
+    def test_free_num_steps_validation(self) -> None:
         """Test free_num_steps parameter validation."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -112,7 +120,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-        invalid_values = [0, -5, 2.5, "three"]
+        invalid_values: list[Any] = [0, -5, 2.5, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
@@ -125,7 +133,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                         free_num_steps=invalid_value,
                     )
 
-    def test_delta_time_validation(self):
+    def test_delta_time_validation(self) -> None:
         """Test that delta_time must be a positive number."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -134,7 +142,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-        invalid_values = [0.0, -0.01, "three"]
+        invalid_values: list[Any] = [0.0, -0.01, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
@@ -147,7 +155,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                         free_num_steps=3,
                     )
 
-    def test_num_steps_equals_sum_of_prescribed_and_free(self):
+    def test_num_steps_equals_sum_of_prescribed_and_free(self) -> None:
         """Test that num_steps equals prescribed_num_steps plus free_num_steps."""
         self.assertEqual(self.basic_free_flight_movement.num_steps, 5)
         self.assertEqual(
@@ -156,15 +164,15 @@ class TestFreeFlightMovement(unittest.TestCase):
             + self.basic_free_flight_movement.free_num_steps,
         )
 
-    def test_prescribed_num_steps_property(self):
+    def test_prescribed_num_steps_property(self) -> None:
         """Test that prescribed_num_steps is stored and accessible via the property."""
         self.assertEqual(self.basic_free_flight_movement.prescribed_num_steps, 2)
 
-    def test_free_num_steps_property(self):
+    def test_free_num_steps_property(self) -> None:
         """Test that free_num_steps is stored and accessible via the property."""
         self.assertEqual(self.basic_free_flight_movement.free_num_steps, 3)
 
-    def test_airplane_movements_returns_tuple_of_airplane_movements(self):
+    def test_airplane_movements_returns_tuple_of_airplane_movements(self) -> None:
         """Test that airplane_movements returns a tuple of AirplaneMovements."""
         airplane_movements = self.basic_free_flight_movement.airplane_movements
         self.assertIsInstance(airplane_movements, tuple)
@@ -176,19 +184,17 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_operating_point_movement_returns_free_flight_operating_point_movement(
         self,
-    ):
+    ) -> None:
         """Test that operating_point_movement returns a
-        FreeFlightOperatingPointMovement.
-        """
+        FreeFlightOperatingPointMovement."""
         self.assertIsInstance(
             self.basic_free_flight_movement.operating_point_movement,
             ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
         )
 
-    def test_airplanes_structure(self):
+    def test_airplanes_structure(self) -> None:
         """Test that airplanes is a tuple of tuples of Airplanes with the correct
-        dimensions.
-        """
+        dimensions."""
         airplanes = self.basic_free_flight_movement.airplanes
         self.assertIsInstance(airplanes, tuple)
 
@@ -207,7 +213,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             for airplane in airplane_list:
                 self.assertIsInstance(airplane, ps.geometry.airplane.Airplane)
 
-    def test_airplanes_structure_with_multiple_airplanes(self):
+    def test_airplanes_structure_with_multiple_airplanes(self) -> None:
         """Test that airplanes has one inner tuple per AirplaneMovement."""
         airplanes = self.free_flight_movement_with_multiple_airplanes.airplanes
         self.assertEqual(len(airplanes), 2)
@@ -217,45 +223,42 @@ class TestFreeFlightMovement(unittest.TestCase):
                 self.free_flight_movement_with_multiple_airplanes.num_steps,
             )
 
-    def test_static_property_for_static_free_flight_movement(self):
+    def test_static_property_for_static_free_flight_movement(self) -> None:
         """Test that static returns True for a static FreeFlightMovement."""
         self.assertTrue(self.static_free_flight_movement.static)
 
-    def test_static_property_for_non_static_free_flight_movement(self):
+    def test_static_property_for_non_static_free_flight_movement(self) -> None:
         """Test that static returns False for a non static FreeFlightMovement."""
         self.assertFalse(self.basic_free_flight_movement.static)
 
-    def test_max_period_for_static_free_flight_movement(self):
+    def test_max_period_for_static_free_flight_movement(self) -> None:
         """Test that max_period returns 0.0 for a static FreeFlightMovement."""
         self.assertEqual(self.static_free_flight_movement.max_period, 0.0)
 
-    def test_max_period_for_non_static_free_flight_movement(self):
+    def test_max_period_for_non_static_free_flight_movement(self) -> None:
         """Test that max_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
         self.assertEqual(self.basic_free_flight_movement.max_period, 2.0)
 
-    def test_min_period_for_non_static_free_flight_movement(self):
+    def test_min_period_for_non_static_free_flight_movement(self) -> None:
         """Test that min_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
         self.assertEqual(self.basic_free_flight_movement.min_period, 2.0)
 
-    def test_lcm_period_for_non_static_free_flight_movement(self):
+    def test_lcm_period_for_non_static_free_flight_movement(self) -> None:
         """Test that lcm_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0, so the
         # LCM of its identical periods is that period.
         self.assertEqual(self.basic_free_flight_movement.lcm_period, 2.0)
 
-    def test_max_wake_rows_default_none(self):
+    def test_max_wake_rows_default_none(self) -> None:
         """Test that max_wake_rows defaults to None."""
         self.assertIsNone(self.basic_free_flight_movement.max_wake_rows)
 
-    def test_max_wake_rows_stored_and_accessible(self):
+    def test_max_wake_rows_stored_and_accessible(self) -> None:
         """Test that max_wake_rows is stored and accessible via the property."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -274,7 +277,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         )
         self.assertEqual(free_flight_movement.max_wake_rows, 5)
 
-    def test_max_wake_rows_validation(self):
+    def test_max_wake_rows_validation(self) -> None:
         """Test that max_wake_rows must be a positive int."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -283,7 +286,7 @@ class TestFreeFlightMovement(unittest.TestCase):
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-        invalid_values = [0, -1, 2.5, "three"]
+        invalid_values: list[Any] = [0, -1, 2.5, "three"]
         for invalid_value in invalid_values:
             with self.subTest(invalid_value=invalid_value):
                 # noinspection PyTypeChecker
@@ -297,7 +300,7 @@ class TestFreeFlightMovement(unittest.TestCase):
                         max_wake_rows=invalid_value,
                     )
 
-    def test_symmetry_change_raises_error(self):
+    def test_symmetry_change_raises_error(self) -> None:
         """Test that a Wing transitioning between symmetry types raises an error."""
         # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
@@ -354,10 +357,9 @@ class TestFreeFlightMovement(unittest.TestCase):
         # Verify the error message mentions symmetry.
         self.assertIn("symmetry", str(context.exception).lower())
 
-    def test_static_motion_with_symmetric_wing_succeeds(self):
+    def test_static_motion_with_symmetric_wing_succeeds(self) -> None:
         """Test that a FreeFlightMovement with a symmetric Wing but no motion
-        succeeds.
-        """
+        succeeds."""
         # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
@@ -412,29 +414,31 @@ class TestFreeFlightMovement(unittest.TestCase):
 class TestFreeFlightMovementImmutability(unittest.TestCase):
     """Tests for FreeFlightMovement attribute immutability."""
 
+    basic_free_flight_movement: ps.movements.free_flight_movement.FreeFlightMovement
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all immutability tests."""
         cls.basic_free_flight_movement = (
             free_flight_movement_fixtures.make_basic_free_flight_movement_fixture()
         )
 
-    def test_immutable_prescribed_num_steps_property(self):
+    def test_immutable_prescribed_num_steps_property(self) -> None:
         """Test that prescribed_num_steps property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_free_flight_movement.prescribed_num_steps = 100
+            setattr(self.basic_free_flight_movement, "prescribed_num_steps", 100)
 
-    def test_immutable_free_num_steps_property(self):
+    def test_immutable_free_num_steps_property(self) -> None:
         """Test that free_num_steps property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_free_flight_movement.free_num_steps = 100
+            setattr(self.basic_free_flight_movement, "free_num_steps", 100)
 
-    def test_immutable_airplanes_property(self):
+    def test_immutable_airplanes_property(self) -> None:
         """Test that airplanes property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_free_flight_movement.airplanes = ()
+            setattr(self.basic_free_flight_movement, "airplanes", ())
 
-    def test_immutable_airplane_movements_property(self):
+    def test_immutable_airplane_movements_property(self) -> None:
         """Test that airplane_movements property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_free_flight_movement.airplane_movements = ()
+            setattr(self.basic_free_flight_movement, "airplane_movements", ())

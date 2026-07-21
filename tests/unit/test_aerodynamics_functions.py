@@ -3,6 +3,7 @@
 import math
 import unittest
 import warnings
+from typing import Any
 from unittest.mock import patch
 
 import numba
@@ -17,7 +18,7 @@ from tests.unit.fixtures import aerodynamics_functions_fixtures
 class TestAerodynamicsFunctions(unittest.TestCase):
     """This is a class with functions to test aerodynamics functions."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for aerodynamics function tests."""
         # Evaluation point fixtures.
         self.single_point = aerodynamics_functions_fixtures.make_single_point_fixture()
@@ -85,7 +86,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             aerodynamics_functions_fixtures.make_kinematic_viscosity_fixture()
         )
 
-    def test_collapsed_velocities_from_ring_vortices_single_point(self):
+    def test_collapsed_velocities_from_ring_vortices_single_point(self) -> None:
         """Test collapsed_velocities_from_ring_vortices with single evaluation point."""
         # Call the function.
         velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
@@ -108,7 +109,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         if np.all(self.simple_ring_strengths != 0):
             self.assertFalse(np.allclose(velocities, 0.0))
 
-    def test_collapsed_velocities_from_ring_vortices_multiple_points(self):
+    def test_collapsed_velocities_from_ring_vortices_multiple_points(self) -> None:
         """Test collapsed_velocities_from_ring_vortices with multiple evaluation
         points."""
         # Call the function.
@@ -128,7 +129,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities.shape, (25, 3))
 
-    def test_collapsed_velocities_from_ring_vortices_multiple_vortices(self):
+    def test_collapsed_velocities_from_ring_vortices_multiple_vortices(self) -> None:
         """Test collapsed_velocities_from_ring_vortices with multiple ring vortices."""
         # Call the function.
         velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
@@ -147,7 +148,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities.shape, (1, 3))
 
-    def test_collapsed_velocities_from_ring_vortices_with_ages(self):
+    def test_collapsed_velocities_from_ring_vortices_with_ages(self) -> None:
         """Test collapsed_velocities_from_ring_vortices with age parameters."""
         # Call the function with ages.
         velocities_with_ages = (
@@ -168,9 +169,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities_with_ages.shape, (1, 3))
 
-    def test_collapsed_velocities_from_ring_vortices_zero_strength(self):
-        """Test collapsed_velocities_from_ring_vortices with zero strength
-        ring vortices."""
+    def test_collapsed_velocities_from_ring_vortices_zero_strength(self) -> None:
+        """Test collapsed_velocities_from_ring_vortices with zero strength ring
+        vortices."""
         # Create zero strength array.
         zero_strengths = np.zeros_like(self.simple_ring_strengths)
 
@@ -193,7 +194,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
     def test_collapsed_velocities_from_ring_vortices_chordwise_segments_single_point(
         self,
-    ):
+    ) -> None:
         """Test collapsed_velocities_from_ring_vortices_chordwise_segments with single
         evaluation point."""
         # Call the function.
@@ -215,7 +216,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
     def test_collapsed_velocities_from_ring_vortices_chordwise_segments_multiple_points(
         self,
-    ):
+    ) -> None:
         """Test collapsed_velocities_from_ring_vortices_chordwise_segments with multiple
         evaluation points."""
         # Call the function.
@@ -235,7 +236,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities.shape, (10, 3))
 
-    def test_expanded_velocities_from_ring_vortices_single_point(self):
+    def test_expanded_velocities_from_ring_vortices_single_point(self) -> None:
         """Test expanded_velocities_from_ring_vortices with single evaluation point."""
         # Call the function.
         velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
@@ -254,7 +255,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape (1 evaluation point, 1 vortex).
         self.assertEqual(velocities.shape, (1, 1, 3))
 
-    def test_expanded_velocities_from_ring_vortices_multiple_vortices(self):
+    def test_expanded_velocities_from_ring_vortices_multiple_vortices(self) -> None:
         """Test expanded_velocities_from_ring_vortices with multiple ring vortices."""
         # Call the function.
         velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
@@ -273,7 +274,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape (1 evaluation point, 3 vortices).
         self.assertEqual(velocities.shape, (1, 3, 3))
 
-    def test_expanded_velocities_from_ring_vortices_multiple_points(self):
+    def test_expanded_velocities_from_ring_vortices_multiple_points(self) -> None:
         """Test expanded_velocities_from_ring_vortices with multiple evaluation
         points."""
         # Call the function.
@@ -293,7 +294,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape (10 evaluation points, 1 vortex).
         self.assertEqual(velocities.shape, (10, 1, 3))
 
-    def test_expanded_and_collapsed_ring_vortices_consistency(self):
+    def test_expanded_and_collapsed_ring_vortices_consistency(self) -> None:
         """Test that expanded and collapsed ring vortex functions are consistent."""
         # Get expanded velocities.
         expanded_velocities = (
@@ -333,7 +334,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify that summed expanded equals collapsed.
         npt.assert_array_almost_equal(summed_expanded, collapsed_velocities, decimal=10)
 
-    def test_collapsed_velocities_from_horseshoe_vortices_single_point(self):
+    def test_collapsed_velocities_from_horseshoe_vortices_single_point(self) -> None:
         """Test collapsed_velocities_from_horseshoe_vortices with single evaluation
         point."""
         # Call the function.
@@ -357,7 +358,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         if np.all(self.simple_horseshoe_strengths != 0):
             self.assertFalse(np.allclose(velocities, 0.0))
 
-    def test_collapsed_velocities_from_horseshoe_vortices_multiple_points(self):
+    def test_collapsed_velocities_from_horseshoe_vortices_multiple_points(self) -> None:
         """Test collapsed_velocities_from_horseshoe_vortices with multiple evaluation
         points."""
         # Call the function.
@@ -377,9 +378,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities.shape, (25, 3))
 
-    def test_collapsed_velocities_from_horseshoe_vortices_multiple_vortices(self):
-        """Test collapsed_velocities_from_horseshoe_vortices with multiple
-        horseshoe vortices."""
+    def test_collapsed_velocities_from_horseshoe_vortices_multiple_vortices(
+        self,
+    ) -> None:
+        """Test collapsed_velocities_from_horseshoe_vortices with multiple horseshoe
+        vortices."""
         # Call the function.
         velocities = (
             _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
@@ -397,7 +400,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape.
         self.assertEqual(velocities.shape, (1, 3))
 
-    def test_collapsed_velocities_from_horseshoe_vortices_zero_strength(self):
+    def test_collapsed_velocities_from_horseshoe_vortices_zero_strength(self) -> None:
         """Test collapsed_velocities_from_horseshoe_vortices with zero strength
         horseshoe vortices."""
         # Create zero strength array.
@@ -420,7 +423,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output is zero.
         npt.assert_array_almost_equal(velocities, np.zeros((1, 3), dtype=float))
 
-    def test_expanded_velocities_from_horseshoe_vortices_single_point(self):
+    def test_expanded_velocities_from_horseshoe_vortices_single_point(self) -> None:
         """Test expanded_velocities_from_horseshoe_vortices with single evaluation
         point."""
         # Call the function.
@@ -440,9 +443,11 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape (1 evaluation point, 1 vortex).
         self.assertEqual(velocities.shape, (1, 1, 3))
 
-    def test_expanded_velocities_from_horseshoe_vortices_multiple_vortices(self):
-        """Test expanded_velocities_from_horseshoe_vortices with multiple
-        horseshoe vortices."""
+    def test_expanded_velocities_from_horseshoe_vortices_multiple_vortices(
+        self,
+    ) -> None:
+        """Test expanded_velocities_from_horseshoe_vortices with multiple horseshoe
+        vortices."""
         # Call the function.
         velocities = (
             _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
@@ -460,7 +465,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify output shape (1 evaluation point, 2 vortices).
         self.assertEqual(velocities.shape, (1, 2, 3))
 
-    def test_expanded_velocities_from_horseshoe_vortices_multiple_points(self):
+    def test_expanded_velocities_from_horseshoe_vortices_multiple_points(self) -> None:
         """Test expanded_velocities_from_horseshoe_vortices with multiple evaluation
         points."""
         # Call the function.
@@ -480,7 +485,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify the output shape (10 evaluation points, 1 vortex).
         self.assertEqual(velocities.shape, (10, 1, 3))
 
-    def test_expanded_and_collapsed_horseshoe_vortices_consistency(self):
+    def test_expanded_and_collapsed_horseshoe_vortices_consistency(self) -> None:
         """Test that expanded and collapsed horseshoe vortex functions are
         consistent."""
         # Get the expanded velocities.
@@ -517,7 +522,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify that summed expanded equals collapsed.
         npt.assert_array_almost_equal(summed_expanded, collapsed_velocities, decimal=10)
 
-    def test_velocity_functions_with_random_points(self):
+    def test_velocity_functions_with_random_points(self) -> None:
         """Test velocity functions with random evaluation points."""
         # Test ring vortex function.
         ring_velocities = (
@@ -556,7 +561,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         self.assertEqual(horseshoe_velocities.shape, (20, 3))
 
     @staticmethod
-    def ref_calculate_biot_savart_velocity(S_A_a, E_A_a, P_A_a, gamma):
+    def ref_calculate_biot_savart_velocity(
+        S_A_a: np.ndarray, E_A_a: np.ndarray, P_A_a: np.ndarray, gamma: float
+    ) -> np.ndarray:
         """Calculate induced velocity using Biot-Savart formula for a conceptual,
         coreless line vortex.
 
@@ -626,7 +633,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         r2Hat_A = r2_A / r2_norm
 
         # Biot-Savart formula.
-        v_A__I = (
+        v_A__I: np.ndarray = (
             (gamma / (4.0 * np.pi))
             * (r3_A / r3_norm_sq)
             * np.dot(r0_A, r1Hat_A - r2Hat_A)
@@ -634,9 +641,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         return v_A__I
 
-    def test_ref_biot_savart_single_line_vortex_along_axis(self):
-        """Test reference Biot-Savart implementation for a conceptual line vortex
-        along z-axis with a perpendicular evaluation point."""
+    def test_ref_biot_savart_single_line_vortex_along_axis(self) -> None:
+        """Test reference Biot-Savart implementation for a conceptual line vortex along
+        z-axis with a perpendicular evaluation point."""
         A_A_a = np.array([0.0, 0.0, 0.0], dtype=float)
         B_A_a = np.array([0.0, 0.0, 1.0], dtype=float)
         gamma = 2.0
@@ -653,7 +660,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         self.assertAlmostEqual(float(v_A__I[0]), 0.0, places=10)
         self.assertAlmostEqual(float(v_A__I[2]), 0.0, places=10)
 
-    def test_ref_biot_savart_symmetric_configuration(self):
+    def test_ref_biot_savart_symmetric_configuration(self) -> None:
         """Test reference Biot-Savart implementation for symmetric vortex
         configuration."""
         # Two line vortices forming a V-shape, symmetric about xz-plane (in A axes).
@@ -681,9 +688,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         self.assertAlmostEqual(v_A__I[1], 0.0, places=10)
         self.assertGreater(np.linalg.norm(v_A__I), 0.0)
 
-    def test_ref_biot_savart_point_on_vortex_returns_zero(self):
-        """Test that the reference Biot-Savart implementation returns zero velocity
-        for an evaluation point on a conceptual line vortex."""
+    def test_ref_biot_savart_point_on_vortex_returns_zero(self) -> None:
+        """Test that the reference Biot-Savart implementation returns zero velocity for
+        an evaluation point on a conceptual line vortex."""
         # Line vortex from origin to (1, 0, 0).
         A = np.array([0.0, 0.0, 0.0], dtype=float)
         B = np.array([1.0, 0.0, 0.0], dtype=float)
@@ -700,7 +707,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify velocity is zero.
         npt.assert_array_almost_equal(velocity, np.zeros(3, dtype=float), decimal=10)
 
-    def test_ref_biot_savart_point_at_vortex_endpoint_returns_zero(self):
+    def test_ref_biot_savart_point_at_vortex_endpoint_returns_zero(self) -> None:
         """Test that, using the reference Biot-Savart implementation, an evaluation
         point at a conceptual line vortex endpoint returns zero velocity."""
         # Line vortex from origin to (1, 0, 0).
@@ -728,9 +735,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             velocity_end, np.zeros(3, dtype=float), decimal=10
         )
 
-    def test_ref_biot_savart_far_field_falloff(self):
-        """Test that, using the reference Biot-Savart implementation, induced
-        velocity decreases with distance from a conceptual line vortex."""
+    def test_ref_biot_savart_far_field_falloff(self) -> None:
+        """Test that, using the reference Biot-Savart implementation, induced velocity
+        decreases with distance from a conceptual line vortex."""
         # Line vortex from (0, -0.5, 0) to (0, 0.5, 0).
         A = np.array([0.0, -0.5, 0.0], dtype=float)
         B = np.array([0.0, 0.5, 0.0], dtype=float)
@@ -751,7 +758,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         for i in range(len(velocities) - 1):
             self.assertGreater(velocities[i], velocities[i + 1])
 
-    def test_ref_biot_savart_opposite_strength_cancellation(self):
+    def test_ref_biot_savart_opposite_strength_cancellation(self) -> None:
         """Test that, using the reference Biot-Savart implementation, two conceptual
         line vortices with opposite strengths produce opposite velocities."""
         # Line vortex from origin to (1, 0, 0).
@@ -770,7 +777,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Verify velocities are opposite.
         npt.assert_array_almost_equal(v_positive, -v_negative, decimal=10)
 
-    def test_ring_vortex_decomposition_against_ref_biot_savart(self):
+    def test_ring_vortex_decomposition_against_ref_biot_savart(self) -> None:
         """Test that a ring vortex induces the same velocity as four conceptual line
         vortices."""
         # Create a unit square in the xy-plane (in geometry axes, relative to the CG).
@@ -831,7 +838,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
         npt.assert_array_almost_equal(vRing_G__E, vLines_G__E, decimal=10)
 
-    def test_horseshoe_vortex_decomposition_against_ref_biot_savart(self):
+    def test_horseshoe_vortex_decomposition_against_ref_biot_savart(self) -> None:
         """Test that a horseshoe vortex induces the same velocity as three conceptual
         line vortices."""
         # Create horseshoe vortex with finite leg along y-axis and infinite legs along
@@ -885,10 +892,10 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
 
 class TestSingularityGuards(unittest.TestCase):
-    """This is a class with functions to test the scale invariant singularity
-    guards in the Biot-Savart kernels."""
+    """This is a class with functions to test the scale invariant singularity guards in
+    the Biot-Savart kernels."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up fixtures for singularity guard tests."""
         # Degenerate ring vortex fixture (all corners at the origin).
         (
@@ -940,9 +947,9 @@ class TestSingularityGuards(unittest.TestCase):
 
     # ---- Degenerate filament tests (r0 < eps) ----
 
-    def test_collapsed_ring_vortex_degenerate_filament_returns_zero(self):
-        """Test that collapsed_velocities_from_ring_vortices returns zero
-        velocity for a degenerate ring vortex where all corners coincide."""
+    def test_collapsed_ring_vortex_degenerate_filament_returns_zero(self) -> None:
+        """Test that collapsed_velocities_from_ring_vortices returns zero velocity for a
+        degenerate ring vortex where all corners coincide."""
         # Evaluate at a point away from the degenerate vortex.
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
@@ -961,9 +968,9 @@ class TestSingularityGuards(unittest.TestCase):
         # Verify all velocities are zero.
         npt.assert_array_almost_equal(velocities, np.zeros((1, 3), dtype=float))
 
-    def test_expanded_ring_vortex_degenerate_filament_returns_zero(self):
-        """Test that expanded_velocities_from_ring_vortices returns zero
-        velocity for a degenerate ring vortex where all corners coincide."""
+    def test_expanded_ring_vortex_degenerate_filament_returns_zero(self) -> None:
+        """Test that expanded_velocities_from_ring_vortices returns zero velocity for a
+        degenerate ring vortex where all corners coincide."""
         # Evaluate at a point away from the degenerate vortex.
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
@@ -982,9 +989,9 @@ class TestSingularityGuards(unittest.TestCase):
         # Verify all velocities are zero.
         npt.assert_array_almost_equal(velocities, np.zeros((1, 1, 3), dtype=float))
 
-    def test_collapsed_horseshoe_vortex_degenerate_filament_returns_zero(self):
-        """Test that collapsed_velocities_from_horseshoe_vortices returns zero
-        velocity for a degenerate horseshoe vortex where all points coincide."""
+    def test_collapsed_horseshoe_vortex_degenerate_filament_returns_zero(self) -> None:
+        """Test that collapsed_velocities_from_horseshoe_vortices returns zero velocity
+        for a degenerate horseshoe vortex where all points coincide."""
         # Evaluate at a point away from the degenerate vortex.
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
@@ -1005,9 +1012,9 @@ class TestSingularityGuards(unittest.TestCase):
         # Verify all velocities are zero.
         npt.assert_array_almost_equal(velocities, np.zeros((1, 3), dtype=float))
 
-    def test_expanded_horseshoe_vortex_degenerate_filament_returns_zero(self):
-        """Test that expanded_velocities_from_horseshoe_vortices returns zero
-        velocity for a degenerate horseshoe vortex where all points coincide."""
+    def test_expanded_horseshoe_vortex_degenerate_filament_returns_zero(self) -> None:
+        """Test that expanded_velocities_from_horseshoe_vortices returns zero velocity
+        for a degenerate horseshoe vortex where all points coincide."""
         # Evaluate at a point away from the degenerate vortex.
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
@@ -1030,14 +1037,16 @@ class TestSingularityGuards(unittest.TestCase):
 
     # ---- Vertex proximity tests (r1/r0 < tol or r2/r0 < tol) ----
 
-    def test_collapsed_ring_vortex_point_at_corner_matches_non_singular_legs(self):
-        """Test that collapsed_velocities_from_ring_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is at a ring vortex corner.
+    def test_collapsed_ring_vortex_point_at_corner_matches_non_singular_legs(
+        self,
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices returns the contribution
+        from only the non singular legs when the evaluation point is at a ring vortex
+        corner.
 
-        The evaluation point is placed at the front right corner. The right leg
-        (Br to Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl)
-        hits the r1/r0 < tol guard. The left and back legs are non singular.
+        The evaluation point is placed at the front right corner. The right leg (Br to
+        Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl) hits the r1/r0 <
+        tol guard. The left and back legs are non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
@@ -1066,14 +1075,16 @@ class TestSingularityGuards(unittest.TestCase):
         # Verify the kernel result matches the non singular legs' contribution.
         npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
 
-    def test_expanded_ring_vortex_point_at_corner_matches_non_singular_legs(self):
-        """Test that expanded_velocities_from_ring_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is at a ring vortex corner.
+    def test_expanded_ring_vortex_point_at_corner_matches_non_singular_legs(
+        self,
+    ) -> None:
+        """Test that expanded_velocities_from_ring_vortices returns the contribution
+        from only the non singular legs when the evaluation point is at a ring vortex
+        corner.
 
-        The evaluation point is placed at the front right corner. The right leg
-        (Br to Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl)
-        hits the r1/r0 < tol guard. The left and back legs are non singular.
+        The evaluation point is placed at the front right corner. The right leg (Br to
+        Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl) hits the r1/r0 <
+        tol guard. The left and back legs are non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
@@ -1104,14 +1115,14 @@ class TestSingularityGuards(unittest.TestCase):
 
     def test_collapsed_horseshoe_vortex_point_at_corner_matches_non_singular_legs(
         self,
-    ):
+    ) -> None:
         """Test that collapsed_velocities_from_horseshoe_vortices returns the
-        contribution from only the non singular leg when the evaluation point is
-        at a horseshoe vortex corner.
+        contribution from only the non singular leg when the evaluation point is at a
+        horseshoe vortex corner.
 
-        The evaluation point is placed at the front right corner. The right leg
-        (Br to Fr) hits the r2/r0 < tol guard, and the finite leg (Fr to Fl)
-        hits the r1/r0 < tol guard. Only the left leg is non singular.
+        The evaluation point is placed at the front right corner. The right leg (Br to
+        Fr) hits the r2/r0 < tol guard, and the finite leg (Fr to Fl) hits the r1/r0 <
+        tol guard. Only the left leg is non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.horseshoe_Frhvp.copy()
@@ -1144,14 +1155,14 @@ class TestSingularityGuards(unittest.TestCase):
 
     def test_collapsed_ring_vortex_point_on_leg_extension_matches_non_singular_legs(
         self,
-    ):
-        """Test that collapsed_velocities_from_ring_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is on the extension of a ring vortex leg.
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices returns the contribution
+        from only the non singular legs when the evaluation point is on the extension of
+        a ring vortex leg.
 
-        The evaluation point is placed at (5, 0.5, 0), which is collinear with
-        the right leg (Br to Fr, both at y=0.5). The right leg hits the
-        r3/(r1*r2) < tol guard. The other three legs are non singular.
+        The evaluation point is placed at (5, 0.5, 0), which is collinear with the right
+        leg (Br to Fr, both at y=0.5). The right leg hits the r3/(r1*r2) < tol guard.
+        The other three legs are non singular.
         """
         # Place the evaluation point on the extension of the right leg.
         point = np.array([[5.0, 0.5, 0.0]], dtype=float)
@@ -1183,14 +1194,14 @@ class TestSingularityGuards(unittest.TestCase):
 
     def test_expanded_ring_vortex_point_on_leg_extension_matches_non_singular_legs(
         self,
-    ):
-        """Test that expanded_velocities_from_ring_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is on the extension of a ring vortex leg.
+    ) -> None:
+        """Test that expanded_velocities_from_ring_vortices returns the contribution
+        from only the non singular legs when the evaluation point is on the extension of
+        a ring vortex leg.
 
-        The evaluation point is placed at (5, 0.5, 0), which is collinear with
-        the right leg (Br to Fr, both at y=0.5). The right leg hits the
-        r3/(r1*r2) < tol guard. The other three legs are non singular.
+        The evaluation point is placed at (5, 0.5, 0), which is collinear with the right
+        leg (Br to Fr, both at y=0.5). The right leg hits the r3/(r1*r2) < tol guard.
+        The other three legs are non singular.
         """
         # Place the evaluation point on the extension of the right leg.
         point = np.array([[5.0, 0.5, 0.0]], dtype=float)
@@ -1222,15 +1233,14 @@ class TestSingularityGuards(unittest.TestCase):
 
     def test_collapsed_ring_vortex_point_on_leg_midpoint_matches_non_singular_legs(
         self,
-    ):
-        """Test that collapsed_velocities_from_ring_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is at the midpoint of a ring vortex leg.
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices returns the contribution
+        from only the non singular legs when the evaluation point is at the midpoint of
+        a ring vortex leg.
 
-        The evaluation point is placed at (0.5, 0.5, 0), which is the midpoint
-        of the right leg (Br to Fr). This triggers the r3/(r1*r2) < tol guard
-        for the right leg due to collinearity. The other three legs are non
-        singular.
+        The evaluation point is placed at (0.5, 0.5, 0), which is the midpoint of the
+        right leg (Br to Fr). This triggers the r3/(r1*r2) < tol guard for the right leg
+        due to collinearity. The other three legs are non singular.
         """
         # Place the evaluation point at the midpoint of the right leg.
         point = np.array([[0.5, 0.5, 0.0]], dtype=float)
@@ -1262,15 +1272,14 @@ class TestSingularityGuards(unittest.TestCase):
 
     def test_collapsed_horseshoe_vortex_point_on_finite_leg_matches_non_singular_legs(
         self,
-    ):
+    ) -> None:
         """Test that collapsed_velocities_from_horseshoe_vortices returns the
-        contribution from only the non singular legs when the evaluation point
-        is on the horseshoe vortex's finite leg.
+        contribution from only the non singular legs when the evaluation point is on the
+        horseshoe vortex's finite leg.
 
-        The evaluation point is placed at (0, 0, 0), which is the midpoint of
-        the finite leg (Fr to Fl, both at x=0). This triggers the
-        r3/(r1*r2) < tol guard for the finite leg due to collinearity. The
-        right and left legs are non singular.
+        The evaluation point is placed at (0, 0, 0), which is the midpoint of the finite
+        leg (Fr to Fl, both at x=0). This triggers the r3/(r1*r2) < tol guard for the
+        finite leg due to collinearity. The right and left legs are non singular.
         """
         # Place the evaluation point at the midpoint of the finite leg.
         point = np.array([[0.0, 0.0, 0.0]], dtype=float)
@@ -1303,10 +1312,10 @@ class TestSingularityGuards(unittest.TestCase):
 
 
 class TestCoreRadiusFormula(unittest.TestCase):
-    """This is a class with functions to test the Ramasamy-Leishman core radius
-    formula and its effect on induced velocities."""
+    """This is a class with functions to test the Ramasamy-Leishman core radius formula
+    and its effect on induced velocities."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up fixtures for core radius formula tests."""
         # Simple ring vortex fixture.
         (
@@ -1321,7 +1330,13 @@ class TestCoreRadiusFormula(unittest.TestCase):
         self.center_point = np.array([[0.5, 0.0, 1.0]], dtype=float)
 
     @staticmethod
-    def ref_calculate_regularized_biot_savart_velocity(S_A_a, E_A_a, P_A_a, gamma, r_c):
+    def ref_calculate_regularized_biot_savart_velocity(
+        S_A_a: np.ndarray,
+        E_A_a: np.ndarray,
+        P_A_a: np.ndarray,
+        gamma: float,
+        r_c: float,
+    ) -> np.ndarray:
         """Calculate induced velocity using the regularized Biot-Savart formula
         for a conceptual line vortex with a finite core radius.
 
@@ -1382,14 +1397,15 @@ class TestCoreRadiusFormula(unittest.TestCase):
         c_2_num = (r1 + r2) * (r1 * r2 - np.dot(r1_A, r2_A))
         c_2_den = r1 * r2 * (r3**2.0 + np.linalg.norm(r2_A - r1_A) ** 2.0 * r_c**2.0)
 
-        v_A__I = c_1 * (c_2_num / c_2_den) * r3_A
+        v_A__I: np.ndarray = c_1 * (c_2_num / c_2_den) * r3_A
 
         return v_A__I
 
-    def _call_collapsed_ring(self, rc0s, ages=None, nu=0.0):
-        """Helper to call collapsed_velocities_from_ring_vortices with the
-        simple ring vortex fixture and the center evaluation point.
-        """
+    def _call_collapsed_ring(
+        self, rc0s: np.ndarray, ages: np.ndarray | None = None, nu: float = 0.0
+    ) -> np.ndarray:
+        """Helper to call collapsed_velocities_from_ring_vortices with the simple ring
+        vortex fixture and the center evaluation point."""
         return _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
             stackP_GP1_CgP1=self.center_point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1403,11 +1419,9 @@ class TestCoreRadiusFormula(unittest.TestCase):
             nu=nu,
         )
 
-    def _compute_reference_ring_velocity(self, r_c):
-        """Helper to compute the expected ring vortex velocity by summing all
-        four legs' contributions using the regularized reference
-        implementation.
-        """
+    def _compute_reference_ring_velocity(self, r_c: float) -> np.ndarray:
+        """Helper to compute the expected ring vortex velocity by summing all four legs'
+        contributions using the regularized reference implementation."""
         ref = self.ref_calculate_regularized_biot_savart_velocity
         P = self.center_point[0]
         gamma = float(self.ring_strengths[0])
@@ -1421,11 +1435,12 @@ class TestCoreRadiusFormula(unittest.TestCase):
         v_left = ref(Fl, Bl, P, gamma, r_c)
         v_back = ref(Bl, Br, P, gamma, r_c)
 
-        return v_right + v_front + v_left + v_back
+        velocity: np.ndarray = v_right + v_front + v_left + v_back
+        return velocity
 
-    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_rc0(self):
-        """Test that increasing the initial core radius decreases the induced
-        velocity magnitude for a ring vortex."""
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_rc0(self) -> None:
+        """Test that increasing the initial core radius decreases the induced velocity
+        magnitude for a ring vortex."""
         rc0_values = [0.0, 0.01, 0.03, 0.1, 0.5]
         magnitudes = []
 
@@ -1438,9 +1453,9 @@ class TestCoreRadiusFormula(unittest.TestCase):
         for i in range(len(magnitudes) - 1):
             self.assertGreater(magnitudes[i], magnitudes[i + 1])
 
-    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_age(self):
-        """Test that increasing the vortex age decreases the induced velocity
-        magnitude for a ring vortex due to core radius growth."""
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_age(self) -> None:
+        """Test that increasing the vortex age decreases the induced velocity magnitude
+        for a ring vortex due to core radius growth."""
         rc0s = np.array([0.03], dtype=float)
         nu = 1.5e-5
         age_values = [0.0, 0.1, 0.5, 1.0, 5.0]
@@ -1455,10 +1470,11 @@ class TestCoreRadiusFormula(unittest.TestCase):
         for i in range(len(magnitudes) - 1):
             self.assertGreater(magnitudes[i], magnitudes[i + 1])
 
-    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_viscosity(self):
-        """Test that increasing the kinematic viscosity decreases the induced
-        velocity magnitude for an aged ring vortex due to faster core radius
-        growth."""
+    def test_collapsed_ring_vortex_velocity_decreases_with_increasing_viscosity(
+        self,
+    ) -> None:
+        """Test that increasing the kinematic viscosity decreases the induced velocity
+        magnitude for an aged ring vortex due to faster core radius growth."""
         rc0s = np.array([0.03], dtype=float)
         ages = np.array([1.0], dtype=float)
         nu_values = [0.0, 1.0e-5, 1.0e-4, 1.0e-3]
@@ -1472,9 +1488,9 @@ class TestCoreRadiusFormula(unittest.TestCase):
         for i in range(len(magnitudes) - 1):
             self.assertGreater(magnitudes[i], magnitudes[i + 1])
 
-    def test_collapsed_ring_vortex_large_rc0_suppresses_velocity(self):
-        """Test that a very large initial core radius suppresses the induced
-        velocity to near zero."""
+    def test_collapsed_ring_vortex_large_rc0_suppresses_velocity(self) -> None:
+        """Test that a very large initial core radius suppresses the induced velocity to
+        near zero."""
         rc0s = np.array([1000.0], dtype=float)
 
         # Call the function.
@@ -1484,10 +1500,10 @@ class TestCoreRadiusFormula(unittest.TestCase):
         magnitude = np.linalg.norm(velocities[0])
         self.assertLess(magnitude, 1.0e-6)
 
-    def test_collapsed_ring_vortex_regularized_matches_reference(self):
-        """Test that the regularized kernel output matches the regularized
-        reference Biot-Savart implementation for a bound ring vortex with a
-        nonzero initial core radius.
+    def test_collapsed_ring_vortex_regularized_matches_reference(self) -> None:
+        """Test that the regularized kernel output matches the regularized reference
+        Biot-Savart implementation for a bound ring vortex with a nonzero initial core
+        radius.
 
         With ages=None and nu=0.0, the core radius equals r_c0.
         """
@@ -1507,12 +1523,12 @@ class TestCoreRadiusFormula(unittest.TestCase):
         # Verify the kernel result matches the reference.
         npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
 
-    def test_collapsed_ring_vortex_aged_core_radius_matches_reference(self):
-        """Test that the regularized kernel output matches the regularized
-        reference Biot-Savart implementation for an aged ring vortex.
+    def test_collapsed_ring_vortex_aged_core_radius_matches_reference(self) -> None:
+        """Test that the regularized kernel output matches the regularized reference
+        Biot-Savart implementation for an aged ring vortex.
 
-        With age=1.0, nu=1.5e-5, and strength=1.0, the core radius grows from
-        r_c0 according to the Ramasamy-Leishman formula.
+        With age=1.0, nu=1.5e-5, and strength=1.0, the core radius grows from r_c0
+        according to the Ramasamy-Leishman formula.
         """
         r_c0 = 0.03
         age = 1.0
@@ -1542,7 +1558,7 @@ class TestSingularityCounters(unittest.TestCase):
     """This is a class with functions to test that singularity counters increment
     correctly for known singular configurations."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up fixtures for singularity counter tests."""
         # Simple (non degenerate) ring vortex fixture.
         (
@@ -1576,7 +1592,7 @@ class TestSingularityCounters(unittest.TestCase):
         # Zero initial core radii for coreless tests.
         self.zero_rc0s = np.zeros(1, dtype=float)
 
-    def test_degenerate_filament_increments_counter_zero(self):
+    def test_degenerate_filament_increments_counter_zero(self) -> None:
         """Test that a degenerate ring vortex (all corners at origin) increments
         singularity_counts[0] (degenerate filament)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
@@ -1596,10 +1612,10 @@ class TestSingularityCounters(unittest.TestCase):
         # All four legs are degenerate filaments.
         self.assertGreater(singularity_counts[0], 0)
 
-    def test_vertex_proximity_increments_counter_one_and_two(self):
-        """Test that placing the evaluation point at a ring vortex corner
-        increments singularity_counts[1] (vertex start proximity) and
-        singularity_counts[2] (vertex end proximity)."""
+    def test_vertex_proximity_increments_counter_one_and_two(self) -> None:
+        """Test that placing the evaluation point at a ring vortex corner increments
+        singularity_counts[1] (vertex start proximity) and singularity_counts[2] (vertex
+        end proximity)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
@@ -1622,7 +1638,7 @@ class TestSingularityCounters(unittest.TestCase):
         self.assertGreater(singularity_counts[1], 0)
         self.assertGreater(singularity_counts[2], 0)
 
-    def test_on_filament_collinearity_increments_counter_three(self):
+    def test_on_filament_collinearity_increments_counter_three(self) -> None:
         """Test that placing the evaluation point on the a ring vortex leg increments
         singularity_counts[3] (on-filament collinearity)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
@@ -1644,7 +1660,7 @@ class TestSingularityCounters(unittest.TestCase):
         # The right leg (Br to Fr) is collinear with the evaluation point.
         self.assertGreater(singularity_counts[3], 0)
 
-    def test_off_filament_collinearity_does_not_increment_counter(self):
+    def test_off_filament_collinearity_does_not_increment_counter(self) -> None:
         """Test that placing the evaluation point on the extension of a ring vortex leg
         doesn't increment singularity_counts[3] (off-filament collinearity)."""
         singularity_counts = np.zeros(4, dtype=np.int64)
@@ -1667,9 +1683,8 @@ class TestSingularityCounters(unittest.TestCase):
         # (c_3 > 0), so the counter is not incremented.
         self.assertEqual(singularity_counts[3], 0)
 
-    def test_non_singular_configuration_has_zero_counts(self):
-        """Test that a non singular configuration produces zero singularity
-        counts."""
+    def test_non_singular_configuration_has_zero_counts(self) -> None:
+        """Test that a non singular configuration produces zero singularity counts."""
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         # Place the evaluation point well above the ring vortex.
@@ -1689,9 +1704,9 @@ class TestSingularityCounters(unittest.TestCase):
         # No singularity events should have occurred.
         self.assertEqual(singularity_counts.sum(), 0)
 
-    def test_counts_accumulate_across_calls(self):
-        """Test that singularity counts accumulate when the same array is
-        passed to multiple calls."""
+    def test_counts_accumulate_across_calls(self) -> None:
+        """Test that singularity counts accumulate when the same array is passed to
+        multiple calls."""
         singularity_counts = np.zeros(4, dtype=np.int64)
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
@@ -1725,9 +1740,9 @@ class TestSingularityCounters(unittest.TestCase):
         # The total should have at least doubled.
         self.assertGreaterEqual(singularity_counts.sum(), 2 * first_total)
 
-    def test_horseshoe_vortex_counter_increments(self):
-        """Test that singularity counters work correctly for horseshoe vortex
-        wrapper functions."""
+    def test_horseshoe_vortex_counter_increments(self) -> None:
+        """Test that singularity counters work correctly for horseshoe vortex wrapper
+        functions."""
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
@@ -1747,9 +1762,9 @@ class TestSingularityCounters(unittest.TestCase):
         # At least one singularity event should have been recorded.
         self.assertGreater(singularity_counts.sum(), 0)
 
-    def test_expanded_ring_vortex_counter_increments(self):
-        """Test that singularity counters work correctly for the expanded
-        ring vortex wrapper."""
+    def test_expanded_ring_vortex_counter_increments(self) -> None:
+        """Test that singularity counters work correctly for the expanded ring vortex
+        wrapper."""
         singularity_counts = np.zeros(4, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
@@ -1771,12 +1786,11 @@ class TestSingularityCounters(unittest.TestCase):
 
 
 class TestLogSingularityCounts(unittest.TestCase):
-    """This is a class with functions to test the _log_singularity_counts
-    helper function."""
+    """This is a class with functions to test the _log_singularity_counts helper
+    function."""
 
-    def test_zero_counts_does_not_log(self):
-        """Test that _log_singularity_counts does not log when all counts are
-        zero."""
+    def test_zero_counts_does_not_log(self) -> None:
+        """Test that _log_singularity_counts does not log when all counts are zero."""
         import logging
 
         from pterasoftware._functions import log_unexpected_singularity_counts
@@ -1794,9 +1808,8 @@ class TestLogSingularityCounts(unittest.TestCase):
         self.assertEqual(len(cm.output), 1)
         self.assertIn("sentinel", cm.output[0])
 
-    def test_nonzero_counts_logs_message(self):
-        """Test that _log_singularity_counts logs a message when counts are
-        nonzero."""
+    def test_nonzero_counts_logs_message(self) -> None:
+        """Test that _log_singularity_counts logs a message when counts are nonzero."""
         import logging
 
         from pterasoftware._functions import log_unexpected_singularity_counts
@@ -1816,9 +1829,8 @@ class TestLogSingularityCounts(unittest.TestCase):
         self.assertIn("degenerate filament=2", cm.output[0])
         self.assertIn("vertex end proximity=3", cm.output[0])
 
-    def test_log_level_is_respected(self):
-        """Test that _log_singularity_counts uses the specified logging
-        level."""
+    def test_log_level_is_respected(self) -> None:
+        """Test that _log_singularity_counts uses the specified logging level."""
         import logging
 
         from pterasoftware._functions import log_unexpected_singularity_counts
@@ -1839,14 +1851,14 @@ class TestThreadsForLaunch(unittest.TestCase):
     """This is a class with functions to test the _threads_for_launch dispatch
     function."""
 
-    def test_zero_evaluation_launch_clamps_to_one_thread(self):
+    def test_zero_evaluation_launch_clamps_to_one_thread(self) -> None:
         """Test that _threads_for_launch returns 1 thread for a launch with zero
         evaluations."""
         self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 0), 1)
         self.assertEqual(_aerodynamics_functions._threads_for_launch(0, 100), 1)
         self.assertEqual(_aerodynamics_functions._threads_for_launch(100, 0), 1)
 
-    def test_sub_grain_launch_clamps_to_one_thread(self):
+    def test_sub_grain_launch_clamps_to_one_thread(self) -> None:
         """Test that _threads_for_launch returns 1 thread for a launch with fewer
         evaluations than one grain."""
         self.assertEqual(_aerodynamics_functions._threads_for_launch(1, 1), 1)
@@ -1857,9 +1869,9 @@ class TestThreadsForLaunch(unittest.TestCase):
             1,
         )
 
-    def test_single_grain_launch_gets_one_thread(self):
-        """Test that _threads_for_launch returns 1 thread for a launch with exactly
-        one grain of evaluations."""
+    def test_single_grain_launch_gets_one_thread(self) -> None:
+        """Test that _threads_for_launch returns 1 thread for a launch with exactly one
+        grain of evaluations."""
         self.assertEqual(
             _aerodynamics_functions._threads_for_launch(
                 1, _aerodynamics_functions._GRAIN
@@ -1867,7 +1879,7 @@ class TestThreadsForLaunch(unittest.TestCase):
             1,
         )
 
-    def test_whole_grain_launches_scale_linearly(self):
+    def test_whole_grain_launches_scale_linearly(self) -> None:
         """Test that _threads_for_launch returns one thread per whole grain of
         evaluations."""
         for num_grains in (2, 3, 7):
@@ -1879,7 +1891,7 @@ class TestThreadsForLaunch(unittest.TestCase):
                     num_grains,
                 )
 
-    def test_partial_grains_round_down(self):
+    def test_partial_grains_round_down(self) -> None:
         """Test that _threads_for_launch ignores a partial grain of evaluations.
 
         Both launches carry more points than the thread count they justify, so the point
@@ -1901,7 +1913,7 @@ class TestThreadsForLaunch(unittest.TestCase):
             2,
         )
 
-    def test_thread_count_never_exceeds_the_point_count(self):
+    def test_thread_count_never_exceeds_the_point_count(self) -> None:
         """Test that _threads_for_launch never asks for more threads than the launch has
         points.
 
@@ -1933,12 +1945,12 @@ class TestReportThreadSettings(unittest.TestCase):
 
     _LOGGER_NAME = "pterasoftware._aerodynamics_functions"
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Save the ambient Numba thread mask so every test restores it."""
         self.original_num_threads = numba.get_num_threads()
         self.addCleanup(numba.set_num_threads, self.original_num_threads)
 
-    def test_workqueue_layer_raises_a_user_warning(self):
+    def test_workqueue_layer_raises_a_user_warning(self) -> None:
         """Test that report_thread_settings warns when Numba has fallen back to its
         workqueue threading layer.
 
@@ -1957,7 +1969,7 @@ class TestReportThreadSettings(unittest.TestCase):
         self.assertIn("tbb", message)
         self.assertIn("OpenMP", message)
 
-    def test_healthy_threading_layer_does_not_warn(self):
+    def test_healthy_threading_layer_does_not_warn(self) -> None:
         """Test that report_thread_settings stays silent on a threading layer that does
         not charge the workqueue layer's per launch cost."""
         for threading_layer in ("omp", "tbb"):
@@ -1976,7 +1988,7 @@ class TestReportThreadSettings(unittest.TestCase):
                     f"The {threading_layer} layer should not warn about workqueue.",
                 )
 
-    def test_reports_the_thread_mask_and_the_resulting_kernel_thread_cap(self):
+    def test_reports_the_thread_mask_and_the_resulting_kernel_thread_cap(self) -> None:
         """Test that report_thread_settings reports the thread mask it read, the
         ceiling, and the cap those two put on a kernel launch.
 
@@ -2004,10 +2016,10 @@ class TestReportThreadSettings(unittest.TestCase):
 
 
 class TestParallelDispatchWrappers(unittest.TestCase):
-    """This is a class with functions to test the thread mask dispatch wrappers
-    around the parallel Biot-Savart kernels."""
+    """This is a class with functions to test the thread mask dispatch wrappers around
+    the parallel Biot-Savart kernels."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up fixtures and thread mask restoration for dispatch tests."""
         # Save the ambient thread mask, and guarantee it is restored even if a test
         # fails, so these tests can't leak thread settings into other tests.
@@ -2039,9 +2051,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # Create an initial core radius fixture.
         self.simple_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1)
 
-    def _call_collapsed_ring(self):
-        """Helper to call collapsed_velocities_from_ring_vortices with the simple
-        ring vortex fixture and the single evaluation point."""
+    def _call_collapsed_ring(self) -> np.ndarray:
+        """Helper to call collapsed_velocities_from_ring_vortices with the simple ring
+        vortex fixture and the single evaluation point."""
         return _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
             stackP_GP1_CgP1=self.single_point,
             stackBrrvp_GP1_CgP1=self.simple_ring_Brrvp,
@@ -2053,7 +2065,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-    def _call_chordwise_segments(self):
+    def _call_chordwise_segments(self) -> np.ndarray:
         """Helper to call collapsed_velocities_from_ring_vortices_chordwise_segments
         with the simple ring vortex fixture and the single evaluation point."""
         return _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
@@ -2067,7 +2079,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-    def _call_expanded_ring(self):
+    def _call_expanded_ring(self) -> np.ndarray:
         """Helper to call expanded_velocities_from_ring_vortices with the simple ring
         vortex fixture and the single evaluation point."""
         return _aerodynamics_functions.expanded_velocities_from_ring_vortices(
@@ -2081,9 +2093,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-    def _call_collapsed_horseshoe(self):
-        """Helper to call collapsed_velocities_from_horseshoe_vortices with the
-        simple horseshoe vortex fixture and the single evaluation point."""
+    def _call_collapsed_horseshoe(self) -> np.ndarray:
+        """Helper to call collapsed_velocities_from_horseshoe_vortices with the simple
+        horseshoe vortex fixture and the single evaluation point."""
         return _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
             stackP_GP1_CgP1=self.single_point,
             stackBrhvp_GP1_CgP1=self.simple_horseshoe_Brhvp,
@@ -2095,7 +2107,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             singularity_counts=np.zeros(4, dtype=np.int64),
         )
 
-    def _call_expanded_horseshoe(self):
+    def _call_expanded_horseshoe(self) -> np.ndarray:
         """Helper to call expanded_velocities_from_horseshoe_vortices with the simple
         horseshoe vortex fixture and the single evaluation point."""
         return _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
@@ -2111,7 +2123,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     # ---- Thread mask restoration tests (successful kernel calls) ----
 
-    def test_collapsed_velocities_from_ring_vortices_restores_thread_mask(self):
+    def test_collapsed_velocities_from_ring_vortices_restores_thread_mask(self) -> None:
         """Test that collapsed_velocities_from_ring_vortices restores the thread mask
         after its kernel calls."""
         self._call_collapsed_ring()
@@ -2119,25 +2131,29 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_collapsed_velocities_from_ring_vortices_chordwise_segments_restores_thread_mask(
         self,
-    ):
-        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments
-        restores the thread mask after its kernel calls."""
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments restores
+        the thread mask after its kernel calls."""
         self._call_chordwise_segments()
         self.assertEqual(numba.get_num_threads(), self.original_num_threads)
 
-    def test_expanded_velocities_from_ring_vortices_restores_thread_mask(self):
+    def test_expanded_velocities_from_ring_vortices_restores_thread_mask(self) -> None:
         """Test that expanded_velocities_from_ring_vortices restores the thread mask
         after its kernel calls."""
         self._call_expanded_ring()
         self.assertEqual(numba.get_num_threads(), self.original_num_threads)
 
-    def test_collapsed_velocities_from_horseshoe_vortices_restores_thread_mask(self):
+    def test_collapsed_velocities_from_horseshoe_vortices_restores_thread_mask(
+        self,
+    ) -> None:
         """Test that collapsed_velocities_from_horseshoe_vortices restores the thread
         mask after its kernel calls."""
         self._call_collapsed_horseshoe()
         self.assertEqual(numba.get_num_threads(), self.original_num_threads)
 
-    def test_expanded_velocities_from_horseshoe_vortices_restores_thread_mask(self):
+    def test_expanded_velocities_from_horseshoe_vortices_restores_thread_mask(
+        self,
+    ) -> None:
         """Test that expanded_velocities_from_horseshoe_vortices restores the thread
         mask after its kernel calls."""
         self._call_expanded_horseshoe()
@@ -2147,7 +2163,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_collapsed_velocities_from_ring_vortices_restores_thread_mask_on_raise(
         self,
-    ):
+    ) -> None:
         """Test that collapsed_velocities_from_ring_vortices restores the thread mask
         when its kernel raises."""
         with patch.object(
@@ -2161,9 +2177,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_collapsed_velocities_from_ring_vortices_chordwise_segments_restores_thread_mask_on_raise(
         self,
-    ):
-        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments
-        restores the thread mask when its kernel raises."""
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments restores
+        the thread mask when its kernel raises."""
         with patch.object(
             _aerodynamics_functions,
             "_collapsed_velocities_from_line_vortices",
@@ -2175,7 +2191,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_expanded_velocities_from_ring_vortices_restores_thread_mask_on_raise(
         self,
-    ):
+    ) -> None:
         """Test that expanded_velocities_from_ring_vortices restores the thread mask
         when its kernel raises."""
         with patch.object(
@@ -2189,7 +2205,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_collapsed_velocities_from_horseshoe_vortices_restores_thread_mask_on_raise(
         self,
-    ):
+    ) -> None:
         """Test that collapsed_velocities_from_horseshoe_vortices restores the thread
         mask when its kernel raises."""
         with patch.object(
@@ -2203,7 +2219,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     def test_expanded_velocities_from_horseshoe_vortices_restores_thread_mask_on_raise(
         self,
-    ):
+    ) -> None:
         """Test that expanded_velocities_from_horseshoe_vortices restores the thread
         mask when its kernel raises."""
         with patch.object(
@@ -2217,7 +2233,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     # ---- Work-proportional thread count tests ----
 
-    def _record_kernel_thread_counts(self, stackP_GP1_CgP1):
+    def _record_kernel_thread_counts(self, stackP_GP1_CgP1: np.ndarray) -> list[int]:
         """Helper that calls collapsed_velocities_from_ring_vortices with a mocked
         kernel and returns the thread masks recorded during its kernel launches.
 
@@ -2226,7 +2242,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         """
         recorded_thread_counts = []
 
-        def _fake_kernel(**kwargs):
+        def _fake_kernel(**kwargs: Any) -> np.ndarray:
             recorded_thread_counts.append(numba.get_num_threads())
             return np.zeros((kwargs["stackP_GP1_CgP1"].shape[0], 3), dtype=float)
 
@@ -2248,18 +2264,19 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
         return recorded_thread_counts
 
-    def test_sub_grain_launch_runs_kernel_with_one_thread(self):
-        """Test that a launch smaller than one grain runs its kernel with 1
-        thread."""
+    def test_sub_grain_launch_runs_kernel_with_one_thread(self) -> None:
+        """Test that a launch smaller than one grain runs its kernel with 1 thread."""
         recorded_thread_counts = self._record_kernel_thread_counts(self.single_point)
 
         # The ring vortex wrapper launches the kernel once per leg, and each launch
         # spans far less than one grain of evaluations.
         self.assertEqual(recorded_thread_counts, [1, 1, 1, 1])
 
-    def test_multi_grain_launch_runs_kernel_with_work_proportional_threads(self):
-        """Test that a launch spanning multiple grains runs its kernel with a
-        work-proportional thread count, capped by the external thread mask."""
+    def test_multi_grain_launch_runs_kernel_with_work_proportional_threads(
+        self,
+    ) -> None:
+        """Test that a launch spanning multiple grains runs its kernel with a work-
+        proportional thread count, capped by the external thread mask."""
         # With one ring vortex, this stack of points makes each leg's launch span
         # exactly two grains of evaluations.
         stackP_GP1_CgP1 = aerodynamics_functions_fixtures.make_origin_points_fixture(
@@ -2275,7 +2292,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         )
         self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
 
-    def test_external_thread_cap_limits_multi_grain_launch(self):
+    def test_external_thread_cap_limits_multi_grain_launch(self) -> None:
         """Test that an externally set thread mask caps the work-proportional thread
         count and survives the wrapper."""
         # With one ring vortex, this stack of points makes each leg's launch span
@@ -2297,9 +2314,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
 
     # ---- Pool-width ceiling tests ----
 
-    def test_many_grain_launch_is_capped_at_the_ceiling(self):
-        """Test that a launch spanning more grains than the ceiling is capped at
-        three quarters of the pool width."""
+    def test_many_grain_launch_is_capped_at_the_ceiling(self) -> None:
+        """Test that a launch spanning more grains than the ceiling is capped at three
+        quarters of the pool width."""
         # Compute the documented ceiling independently of the module's own derivation:
         # three quarters of the pool width, rounded down, never below 1.
         ceiling = max((3 * numba.config.NUMBA_NUM_THREADS) // 4, 1)
@@ -2318,9 +2335,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         expected_num_threads = min(ceiling, self.original_num_threads)
         self.assertEqual(recorded_thread_counts, [expected_num_threads] * 4)
 
-    def test_mask_below_ceiling_is_honored_exactly(self):
-        """Test that a thread mask set below the ceiling caps the kernel's thread
-        count exactly and survives the wrapper."""
+    def test_mask_below_ceiling_is_honored_exactly(self) -> None:
+        """Test that a thread mask set below the ceiling caps the kernel's thread count
+        exactly and survives the wrapper."""
         if _aerodynamics_functions._ceiling() < 2:
             self.skipTest(
                 "No thread mask can sit below the ceiling on this machine's Numba "
@@ -2345,9 +2362,9 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # The wrapper must restore the user's mask.
         self.assertEqual(numba.get_num_threads(), below_ceiling_mask)
 
-    def test_mask_at_ceiling_runs_kernel_at_the_ceiling(self):
-        """Test that a thread mask set exactly at the ceiling runs the kernel with
-        the ceiling's thread count."""
+    def test_mask_at_ceiling_runs_kernel_at_the_ceiling(self) -> None:
+        """Test that a thread mask set exactly at the ceiling runs the kernel with the
+        ceiling's thread count."""
         # Simulate a user capping the thread count exactly at the ceiling.
         numba.set_num_threads(_aerodynamics_functions._ceiling())
 
@@ -2367,7 +2384,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
         # The wrapper must restore the user's mask.
         self.assertEqual(numba.get_num_threads(), _aerodynamics_functions._ceiling())
 
-    def test_full_width_mask_is_throttled_to_the_ceiling(self):
+    def test_full_width_mask_is_throttled_to_the_ceiling(self) -> None:
         """Test that a thread mask set at the pool's full width is throttled to the
         ceiling, like the untouched default, and survives the wrapper."""
         # A mask at the pool's full width is indistinguishable from the untouched

@@ -50,13 +50,30 @@ set_up_logging: Configures logging for the pterasoftware package that is compati
 TQDM progress bars.
 """
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 # Eager imports: core modules always needed to define simulations.
 import pterasoftware.geometry
 import pterasoftware.movements
 import pterasoftware.operating_point
 import pterasoftware.problems
+
+# Static imports of every lazily loaded name, visible only to type checkers. Without
+# these, any name resolved through __getattr__ is typed as Any, so every use of the lazy
+# modules and callables through the package namespace goes unchecked.
+if TYPE_CHECKING:
+    from pterasoftware import (
+        aeroelastic_unsteady_ring_vortex_lattice_method,
+        convergence,
+        free_flight_unsteady_ring_vortex_lattice_method,
+        output,
+        steady_horseshoe_vortex_lattice_method,
+        steady_ring_vortex_lattice_method,
+        trim,
+        unsteady_ring_vortex_lattice_method,
+    )
+    from pterasoftware._logging import set_up_logging
+    from pterasoftware._serialization import load, save
 
 # Lazy imports configuration: modules loaded on first access.
 _LAZY_MODULES = {

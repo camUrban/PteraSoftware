@@ -1,31 +1,33 @@
 """This module contains functions to create geometry objects for use in tests."""
 
+from collections.abc import Sequence
+
 import numpy as np
 
 import pterasoftware as ps
 
 
-def make_test_airfoil_fixture():
+def make_test_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
     """This method makes a fixture that is an Airfoil for testing purposes.
 
-    :return test_airfoil_fixture: Airfoil
-        This is the Airfoil configured for testing.
+    :return test_airfoil_fixture: Airfoil This is the Airfoil configured for testing.
     """
     test_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
 
     return test_airfoil_fixture
 
 
-def make_basic_wing_cross_section_fixture(airfoil=None):
-    """This method makes a fixture that is a WingCrossSection with typical
-    parameters for general testing.
+def make_basic_wing_cross_section_fixture(
+    airfoil: ps.geometry.airfoil.Airfoil | None = None,
+) -> ps.geometry.wing_cross_section.WingCrossSection:
+    """This method makes a fixture that is a WingCrossSection with typical parameters
+    for general testing.
 
-    :param airfoil: Airfoil, optional
-        This is the Airfoil to use for the WingCrossSection. If None, a new
-        test airfoil fixture will be created. The default is None.
-
-    :return basic_wing_cross_section_fixture: WingCrossSection
-        This is the WingCrossSection configured for general testing.
+    :param airfoil: Airfoil, optional This is the Airfoil to use for the
+        WingCrossSection. If None, a new test airfoil fixture will be created. The
+        default is None.
+    :return basic_wing_cross_section_fixture: WingCrossSection This is the
+        WingCrossSection configured for general testing.
     """
     # Use provided Airfoil or create a new one.
     if airfoil is None:
@@ -50,12 +52,14 @@ def make_basic_wing_cross_section_fixture(airfoil=None):
     return basic_wing_cross_section_fixture
 
 
-def make_root_wing_cross_section_fixture():
-    """This method makes a fixture that is a root WingCrossSection (with
-    zero vectors as required by constraints).
+def make_root_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
+    """This method makes a fixture that is a root WingCrossSection (with zero vectors as
+    required by constraints).
 
-    :return root_wing_cross_section_fixture: WingCrossSection
-        This is the root WingCrossSection.
+    :return root_wing_cross_section_fixture: WingCrossSection This is the root
+        WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -73,12 +77,14 @@ def make_root_wing_cross_section_fixture():
     return root_wing_cross_section_fixture
 
 
-def make_tip_wing_cross_section_fixture():
-    """This method makes a fixture that is a tip WingCrossSection (with
-    None values for spanwise parameters).
+def make_tip_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
+    """This method makes a fixture that is a tip WingCrossSection (with None values for
+    spanwise parameters).
 
-    :return tip_wing_cross_section_fixture: WingCrossSection
-        This is the tip WingCrossSection.
+    :return tip_wing_cross_section_fixture: WingCrossSection This is the tip
+        WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -97,12 +103,14 @@ def make_tip_wing_cross_section_fixture():
     return tip_wing_cross_section_fixture
 
 
-def make_tip_wing_cross_section_with_control_surface_fixture():
-    """This method makes a fixture that is a tip WingCrossSection with control
-    surface parameters for type 4 and type 5 wing testing.
+def make_tip_wing_cross_section_with_control_surface_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
+    """This method makes a fixture that is a tip WingCrossSection with control surface
+    parameters for type 4 and type 5 wing testing.
 
-    :return tip_wing_cross_section_fixture: WingCrossSection
-        This is the tip WingCrossSection with control surface parameters.
+    :return tip_wing_cross_section_fixture: WingCrossSection This is the tip
+        WingCrossSection with control surface parameters.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -124,12 +132,14 @@ def make_tip_wing_cross_section_with_control_surface_fixture():
     return tip_wing_cross_section_fixture
 
 
-def make_minimal_wing_cross_section_fixture():
-    """This method makes a fixture that is a WingCrossSection with minimal
-    valid parameters.
+def make_minimal_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
+    """This method makes a fixture that is a WingCrossSection with minimal valid
+    parameters.
 
-    :return minimal_wing_cross_section_fixture: WingCrossSection
-        This is the minimal WingCrossSection.
+    :return minimal_wing_cross_section_fixture: WingCrossSection This is the minimal
+        WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -146,12 +156,14 @@ def make_minimal_wing_cross_section_fixture():
     return minimal_wing_cross_section_fixture
 
 
-def make_asymmetric_control_surface_wing_cross_section_fixture():
-    """This method makes a fixture that is a WingCrossSection with asymmetric
-    control surface configuration.
+def make_asymmetric_control_surface_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
+    """This method makes a fixture that is a WingCrossSection with asymmetric control
+    surface configuration.
 
-    :return asymmetric_wing_cross_section_fixture: WingCrossSection
-        This is the WingCrossSection with asymmetric control surface.
+    :return asymmetric_wing_cross_section_fixture: WingCrossSection This is the
+        WingCrossSection with asymmetric control surface.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -175,12 +187,14 @@ def make_asymmetric_control_surface_wing_cross_section_fixture():
     return asymmetric_wing_cross_section_fixture
 
 
-def make_root_asymmetric_control_surface_wing_cross_section_fixture():
+def make_root_asymmetric_control_surface_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
     """This method makes a fixture that is a root WingCrossSection with asymmetric
     control surface configuration for type 5 symmetry testing.
 
-    :return root_asymmetric_wing_cross_section_fixture: WingCrossSection
-        This is the root WingCrossSection with asymmetric control surface.
+    :return root_asymmetric_wing_cross_section_fixture: WingCrossSection This is the
+        root WingCrossSection with asymmetric control surface.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -204,12 +218,14 @@ def make_root_asymmetric_control_surface_wing_cross_section_fixture():
     return root_asymmetric_wing_cross_section_fixture
 
 
-def make_middle_wing_cross_section_fixture():
+def make_middle_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
     """This method makes a fixture that is a valid middle WingCrossSection (with
     num_spanwise_panels set to a positive integer).
 
-    :return middle_wing_cross_section_fixture: WingCrossSection
-        This is the middle WingCrossSection.
+    :return middle_wing_cross_section_fixture: WingCrossSection This is the middle
+        WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -228,12 +244,14 @@ def make_middle_wing_cross_section_fixture():
     return middle_wing_cross_section_fixture
 
 
-def make_invalid_middle_wing_cross_section_fixture():
+def make_invalid_middle_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
     """This method makes a fixture that is an invalid middle WingCrossSection (with
     num_spanwise_panels set to None, which violates middle constraints).
 
-    :return invalid_middle_wing_cross_section_fixture: WingCrossSection
-        This is the invalid middle WingCrossSection.
+    :return invalid_middle_wing_cross_section_fixture: WingCrossSection This is the
+        invalid middle WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -254,12 +272,14 @@ def make_invalid_middle_wing_cross_section_fixture():
     return invalid_middle_wing_cross_section_fixture
 
 
-def make_invalid_root_wing_cross_section_fixture():
+def make_invalid_root_wing_cross_section_fixture() -> (
+    ps.geometry.wing_cross_section.WingCrossSection
+):
     """This method makes a fixture that is an invalid root WingCrossSection (with
     num_spanwise_panels set to None, which violates root constraints).
 
-    :return invalid_root_wing_cross_section_fixture: WingCrossSection
-        This is the invalid root WingCrossSection.
+    :return invalid_root_wing_cross_section_fixture: WingCrossSection This is the
+        invalid root WingCrossSection.
     """
     # Initialize the constructing fixture.
     test_airfoil_fixture = make_test_airfoil_fixture()
@@ -280,12 +300,12 @@ def make_invalid_root_wing_cross_section_fixture():
     return invalid_root_wing_cross_section_fixture
 
 
-def make_origin_wing_fixture():
-    """This method makes a fixture that is a Wing positioned at the origin,
-    suitable for movement testing.
+def make_origin_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing positioned at the origin, suitable for
+    movement testing.
 
-    :return origin_wing_fixture: Wing
-        This is the Wing positioned at the origin for movement testing.
+    :return origin_wing_fixture: Wing This is the Wing positioned at the origin for
+        movement testing.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -308,12 +328,12 @@ def make_origin_wing_fixture():
     return origin_wing_fixture
 
 
-def make_type_1_wing_fixture():
-    """This method makes a fixture that is a Wing with type 1 symmetry
-    (symmetric=False, mirror_only=False).
+def make_type_1_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with type 1 symmetry (symmetric=False,
+    mirror_only=False).
 
-    :return type_1_wing_fixture: Wing
-        This is the Wing configured for type 1 symmetry testing.
+    :return type_1_wing_fixture: Wing This is the Wing configured for type 1 symmetry
+        testing.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -336,12 +356,12 @@ def make_type_1_wing_fixture():
     return type_1_wing_fixture
 
 
-def make_type_2_wing_fixture():
-    """This method makes a fixture that is a Wing with type 2 symmetry
-    (symmetric=False, mirror_only=True, coincident_symmetry_plane=True).
+def make_type_2_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with type 2 symmetry (symmetric=False,
+    mirror_only=True, coincident_symmetry_plane=True).
 
-    :return type_2_wing_fixture: Wing
-        This is the Wing configured for type 2 symmetry testing.
+    :return type_2_wing_fixture: Wing This is the Wing configured for type 2 symmetry
+        testing.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -364,12 +384,12 @@ def make_type_2_wing_fixture():
     return type_2_wing_fixture
 
 
-def make_type_3_wing_fixture():
-    """This method makes a fixture that is a Wing with type 3 symmetry
-    (symmetric=False, mirror_only=True, coincident_symmetry_plane=False).
+def make_type_3_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with type 3 symmetry (symmetric=False,
+    mirror_only=True, coincident_symmetry_plane=False).
 
-    :return type_3_wing_fixture: Wing
-        This is the Wing configured for type 3 symmetry testing.
+    :return type_3_wing_fixture: Wing This is the Wing configured for type 3 symmetry
+        testing.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -392,12 +412,12 @@ def make_type_3_wing_fixture():
     return type_3_wing_fixture
 
 
-def make_type_4_wing_fixture():
-    """This method makes a fixture that is a Wing with type 4 symmetry
-    (symmetric=True, coincident_symmetry_plane=True).
+def make_type_4_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with type 4 symmetry (symmetric=True,
+    coincident_symmetry_plane=True).
 
-    :return type_4_wing_fixture: Wing
-        This is the Wing configured for type 4 symmetry testing.
+    :return type_4_wing_fixture: Wing This is the Wing configured for type 4 symmetry
+        testing.
     """
     # Create WingCrossSections for the Wing with symmetric control surfaces.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -423,7 +443,7 @@ def make_type_4_wing_fixture():
     return type_4_wing_fixture
 
 
-def make_symmetric_dihedral_wing_fixture():
+def make_symmetric_dihedral_wing_fixture() -> ps.geometry.wing.Wing:
     """This method makes a fixture that is a simple Wing symmetric about its xz plane
     (the y = 0 plane), with dihedral so that the panel normals carry a non zero spanwise
     (y) component.
@@ -468,16 +488,16 @@ def make_symmetric_dihedral_wing_fixture():
     return symmetric_dihedral_wing_fixture
 
 
-def make_type_5_wing_fixture():
-    """This method makes a fixture that is a Wing with type 5 symmetry
-    (symmetric=True, coincident_symmetry_plane=False).
+def make_type_5_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with type 5 symmetry (symmetric=True,
+    coincident_symmetry_plane=False).
 
     Note: Type 5 wings are automatically processed by Airplane.process_wing_symmetry()
-    into type 1 and type 3 wings, so this fixture represents the initial state
-    before processing.
+    into type 1 and type 3 wings, so this fixture represents the initial state before
+    processing.
 
-    :return type_5_wing_fixture: Wing
-        This is the Wing configured for type 5 symmetry testing.
+    :return type_5_wing_fixture: Wing This is the Wing configured for type 5 symmetry
+        testing.
     """
     # Create WingCrossSections for the Wing with symmetric control surfaces.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -503,12 +523,11 @@ def make_type_5_wing_fixture():
     return type_5_wing_fixture
 
 
-def make_three_section_wing_fixture():
-    """This method makes a fixture that is a Wing with 3 WingCrossSections
-    (root, middle, tip) for testing middle wing cross section validation.
+def make_three_section_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with 3 WingCrossSections (root,
+    middle, tip) for testing middle wing cross section validation.
 
-    :return three_section_wing_fixture: Wing
-        This is the Wing with 3 WingCrossSections.
+    :return three_section_wing_fixture: Wing This is the Wing with 3 WingCrossSections.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -536,12 +555,11 @@ def make_three_section_wing_fixture():
     return three_section_wing_fixture
 
 
-def make_four_section_wing_fixture():
-    """This method makes a fixture that is a Wing with 4 WingCrossSections
-    (root, two middles, tip) for testing multiple middle WingCrossSections.
+def make_four_section_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with 4 WingCrossSections (root, two
+    middles, tip) for testing multiple middle WingCrossSections.
 
-    :return four_section_wing_fixture: Wing
-        This is the Wing with 4 WingCrossSections.
+    :return four_section_wing_fixture: Wing This is the Wing with 4 WingCrossSections.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -582,12 +600,13 @@ def make_four_section_wing_fixture():
     return four_section_wing_fixture
 
 
-def make_invalid_three_section_wing_fixture():
+def make_invalid_three_section_wing_fixture() -> ps.geometry.wing.Wing:
     """This method makes a fixture that is an invalid Wing with 3 WingCrossSections
-    where the middle WingCrossSection has num_spanwise_panels=None (violates constraints).
+    where the middle WingCrossSection has num_spanwise_panels=None (violates
+    constraints).
 
-    :return invalid_three_section_wing_fixture: Wing
-        This is the invalid Wing with a bad middle WingCrossSection.
+    :return invalid_three_section_wing_fixture: Wing This is the invalid Wing with a bad
+        middle WingCrossSection.
     """
     # Create WingCrossSections for the Wing.
     root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -615,12 +634,12 @@ def make_invalid_three_section_wing_fixture():
     return invalid_three_section_wing_fixture
 
 
-def make_invalid_root_wing_fixture():
+def make_invalid_root_wing_fixture() -> ps.geometry.wing.Wing:
     """This method makes a fixture that is an invalid Wing where the root
     WingCrossSection has num_spanwise_panels=None (violates root constraints).
 
-    :return invalid_root_wing_fixture: Wing
-        This is the invalid Wing with a bad root WingCrossSection.
+    :return invalid_root_wing_fixture: Wing This is the invalid Wing with a bad root
+        WingCrossSection.
     """
     # Create WingCrossSections for the Wing.
     invalid_root_wing_cross_section = make_invalid_root_wing_cross_section_fixture()
@@ -643,12 +662,12 @@ def make_invalid_root_wing_fixture():
     return invalid_root_wing_fixture
 
 
-def make_basic_airplane_fixture():
+def make_basic_airplane_fixture() -> ps.geometry.airplane.Airplane:
     """This method makes a fixture that is an Airplane with basic configuration for
     general testing.
 
-    :return basic_airplane_fixture: Airplane
-        This is the Airplane configured for general testing.
+    :return basic_airplane_fixture: Airplane This is the Airplane configured for general
+        testing.
     """
     # Create a basic Wing for the Airplane.
     wing = make_type_1_wing_fixture()
@@ -664,12 +683,12 @@ def make_basic_airplane_fixture():
     return basic_airplane_fixture
 
 
-def make_first_airplane_fixture():
-    """This method makes a fixture that is an Airplane suitable for use
-    as the first Airplane in a simulation (with Cg_GP1_CgP1 set to zeros).
+def make_first_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane suitable for use as the first
+    Airplane in a simulation (with Cg_GP1_CgP1 set to zeros).
 
-    :return first_airplane_fixture: Airplane
-        This is the Airplane configured as the first in a simulation.
+    :return first_airplane_fixture: Airplane This is the Airplane configured as the
+        first in a simulation.
     """
     # Create a Wing for the Airplane.
     wing = make_type_4_wing_fixture()
@@ -685,12 +704,12 @@ def make_first_airplane_fixture():
     return first_airplane_fixture
 
 
-def make_multi_wing_airplane_fixture():
-    """This method makes a fixture that is an Airplane with multiple Wings for
-    testing multi-wing configurations.
+def make_multi_wing_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane with multiple Wings for testing
+    multi-wing configurations.
 
-    :return multi_wing_airplane_fixture: Airplane
-        This is the Airplane with multiple Wings.
+    :return multi_wing_airplane_fixture: Airplane This is the Airplane with multiple
+        Wings.
     """
     # Create WingCrossSections for the main Wing with symmetric control surfaces.
     main_root_wing_cross_section = make_root_wing_cross_section_fixture()
@@ -745,12 +764,12 @@ def make_multi_wing_airplane_fixture():
     return multi_wing_airplane_fixture
 
 
-def make_type_5_wing_airplane_fixture():
-    """This method makes a fixture that is an Airplane with a type 5 Wing to test
-    Wing symmetry processing (type 5 symmetry gets split into two Wings).
+def make_type_5_wing_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane with a type 5 Wing to test Wing
+    symmetry processing (type 5 symmetry gets split into two Wings).
 
-    :return type_5_wing_airplane_fixture: Airplane
-        This is the Airplane with a type 5 Wing that will be processed.
+    :return type_5_wing_airplane_fixture: Airplane This is the Airplane with a type 5
+        Wing that will be processed.
     """
     # Create a type 5 Wing for the Airplane.
     wing = make_type_5_wing_fixture()
@@ -766,12 +785,12 @@ def make_type_5_wing_airplane_fixture():
     return type_5_wing_airplane_fixture
 
 
-def make_custom_reference_airplane_fixture():
-    """This method makes a fixture that is an Airplane with custom reference
-    dimensions set explicitly.
+def make_custom_reference_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane with custom reference dimensions
+    set explicitly.
 
-    :return custom_reference_airplane_fixture: Airplane
-        This is the Airplane with custom reference dimensions.
+    :return custom_reference_airplane_fixture: Airplane This is the Airplane with custom
+        reference dimensions.
     """
     # Create a Wing for the Airplane.
     wing = make_type_1_wing_fixture()
@@ -790,36 +809,36 @@ def make_custom_reference_airplane_fixture():
     return custom_reference_airplane_fixture
 
 
-def make_naca0012_airfoil_fixture():
-    """This method makes a fixture that is a symmetric NACA 0012 Airfoil for
-    testing purposes.
+def make_naca0012_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is a symmetric NACA 0012 Airfoil for testing
+    purposes.
 
-    :return naca0012_airfoil_fixture: Airfoil
-        This is the symmetric NACA 0012 Airfoil configured for testing.
+    :return naca0012_airfoil_fixture: Airfoil This is the symmetric NACA 0012 Airfoil
+        configured for testing.
     """
     naca0012_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0012")
 
     return naca0012_airfoil_fixture
 
 
-def make_naca2412_airfoil_fixture():
-    """This method makes a fixture that is a cambered NACA 2412 Airfoil for
-    testing purposes.
+def make_naca2412_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is a cambered NACA 2412 Airfoil for testing
+    purposes.
 
-    :return naca2412_airfoil_fixture: Airfoil
-        This is the cambered NACA 2412 Airfoil configured for testing.
+    :return naca2412_airfoil_fixture: Airfoil This is the cambered NACA 2412 Airfoil
+        configured for testing.
     """
     naca2412_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca2412")
 
     return naca2412_airfoil_fixture
 
 
-def make_custom_outline_airfoil_fixture():
-    """This method makes a fixture that is an Airfoil with custom outline
-    coordinates for testing purposes.
+def make_custom_outline_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is an Airfoil with custom outline coordinates
+    for testing purposes.
 
-    :return custom_outline_airfoil_fixture: Airfoil
-        This is the Airfoil with custom outline coordinates.
+    :return custom_outline_airfoil_fixture: Airfoil This is the Airfoil with custom
+        outline coordinates.
     """
     custom_outline = np.array(
         [
@@ -845,12 +864,12 @@ def make_custom_outline_airfoil_fixture():
     return custom_outline_airfoil_fixture
 
 
-def make_resampled_airfoil_fixture():
-    """This method makes a fixture that is an Airfoil with resampling enabled
-    for testing purposes.
+def make_resampled_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is an Airfoil with resampling enabled for
+    testing purposes.
 
-    :return resampled_airfoil_fixture: Airfoil
-        This is the Airfoil with resampling enabled.
+    :return resampled_airfoil_fixture: Airfoil This is the Airfoil with resampling
+        enabled.
     """
     resampled_airfoil_fixture = ps.geometry.airfoil.Airfoil(
         name="naca3210",
@@ -861,12 +880,12 @@ def make_resampled_airfoil_fixture():
     return resampled_airfoil_fixture
 
 
-def make_non_resampled_airfoil_fixture():
-    """This method makes a fixture that is an Airfoil with resampling disabled
-    for testing purposes.
+def make_non_resampled_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is an Airfoil with resampling disabled for
+    testing purposes.
 
-    :return non_resampled_airfoil_fixture: Airfoil
-        This is the Airfoil with resampling disabled.
+    :return non_resampled_airfoil_fixture: Airfoil This is the Airfoil with resampling
+        disabled.
     """
     simple_outline = np.array(
         [
@@ -888,31 +907,28 @@ def make_non_resampled_airfoil_fixture():
     return non_resampled_airfoil_fixture
 
 
-def make_named_airfoil_fixture():
-    """This method makes a fixture that is an Airfoil loaded from the _airfoils
-    data directory for testing purposes.
+def make_named_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is an Airfoil loaded from the _airfoils data
+    directory for testing purposes.
 
-    :return named_airfoil_fixture: Airfoil
-        This is the Airfoil loaded from the _airfoils data directory.
+    :return named_airfoil_fixture: Airfoil This is the Airfoil loaded from the _airfoils
+        data directory.
     """
     named_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="a18")
 
     return named_airfoil_fixture
 
 
-def make_simple_rectangular_wing_fixture():
-    """This method makes a fixture that is a simple rectangular Wing with constant
-    chord and no sweep or dihedral for testing geometric property calculations.
+def make_simple_rectangular_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a simple rectangular Wing with constant chord
+    and no sweep or dihedral for testing geometric property calculations.
 
-    This Wing has:
-    - Root and tip at y=0 and y=2, with chord=1.0 at both
-    - No sweep, twist, or dihedral
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 2.0 meters
-    - Expected projected area (when meshed): 2.0 square meters
+    This Wing has: - Root and tip at y=0 and y=2, with chord=1.0 at both - No sweep,
+    twist, or dihedral - Type 1 symmetry (no symmetry) - Expected span: 2.0 meters -
+    Expected projected area (when meshed): 2.0 square meters
 
-    :return simple_rectangular_wing_fixture: Wing
-        This is the simple rectangular Wing for geometric property testing.
+    :return simple_rectangular_wing_fixture: Wing This is the simple rectangular Wing
+        for geometric property testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -954,21 +970,16 @@ def make_simple_rectangular_wing_fixture():
     return simple_rectangular_wing_fixture
 
 
-def make_simple_tapered_wing_fixture():
-    """This method makes a fixture that is a simple tapered Wing with linearly
-    varying chord and no sweep or dihedral for testing geometric property
-    calculations.
+def make_simple_tapered_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a simple tapered Wing with linearly varying
+    chord and no sweep or dihedral for testing geometric property calculations.
 
-    This Wing has:
-    - Root at y=0 with chord=2.0
-    - Tip at y=3.0 with chord=1.0
-    - No sweep, twist, or dihedral
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 3.0 meters
-    - Expected projected area (when meshed): 4.5 square meters (trapezoid area)
+    This Wing has: - Root at y=0 with chord=2.0 - Tip at y=3.0 with chord=1.0 - No
+    sweep, twist, or dihedral - Type 1 symmetry (no symmetry) - Expected span: 3.0
+    meters - Expected projected area (when meshed): 4.5 square meters (trapezoid area)
 
-    :return simple_tapered_wing_fixture: Wing
-        This is the simple tapered Wing for geometric property testing.
+    :return simple_tapered_wing_fixture: Wing This is the simple tapered Wing for
+        geometric property testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1010,21 +1021,17 @@ def make_simple_tapered_wing_fixture():
     return simple_tapered_wing_fixture
 
 
-def make_symmetric_continuous_rectangular_wing_fixture():
-    """This method makes a fixture that is a symmetric and continuous rectangular
-    Wing for testing geometric property calculations with type 4 symmetry.
+def make_symmetric_continuous_rectangular_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a symmetric and continuous rectangular Wing
+    for testing geometric property calculations with type 4 symmetry.
 
-    This Wing has:
-    - Root at y=0 with chord=1.5
-    - Tip at y=2.5 with chord=1.5
-    - No sweep, twist, or dihedral
-    - Type 4 symmetry (symmetric and continuous)
-    - Expected span (after symmetry): 5.0 meters (2 * 2.5)
-    - Expected projected area (when meshed, after symmetry): 7.5 square meters (2 * 3.75)
+    This Wing has: - Root at y=0 with chord=1.5 - Tip at y=2.5 with chord=1.5 - No
+    sweep, twist, or dihedral - Type 4 symmetry (symmetric and continuous) - Expected
+    span (after symmetry): 5.0 meters (2 * 2.5) - Expected projected area (when meshed,
+    after symmetry): 7.5 square meters (2 * 3.75)
 
-    :return symmetric_continuous_rectangular_wing_fixture: Wing
-        This is the symmetric continuous rectangular Wing for geometric property
-        testing.
+    :return symmetric_continuous_rectangular_wing_fixture: Wing This is the symmetric
+        continuous rectangular Wing for geometric property testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1068,22 +1075,17 @@ def make_symmetric_continuous_rectangular_wing_fixture():
     return symmetric_continuous_rectangular_wing_fixture
 
 
-def make_three_section_tapered_wing_fixture():
-    """This method makes a fixture that is a Wing with 3 WingCrossSections
-    (root, middle, tip) with varying chords for testing geometric property
-    calculations.
+def make_three_section_tapered_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with 3 WingCrossSections (root,
+    middle, tip) with varying chords for testing geometric property calculations.
 
-    This Wing has:
-    - Root at y=0 with chord=3.0
-    - Middle at y=2.0 with chord=2.0
-    - Tip at y=4.0 with chord=1.0
-    - No sweep, twist, or dihedral
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 4.0 meters
-    - Expected projected area (when meshed): 8.0 square meters
+    This Wing has: - Root at y=0 with chord=3.0 - Middle at y=2.0 with chord=2.0 - Tip
+    at y=4.0 with chord=1.0 - No sweep, twist, or dihedral - Type 1 symmetry (no
+    symmetry) - Expected span: 4.0 meters - Expected projected area (when meshed): 8.0
+    square meters
 
-    :return three_section_tapered_wing_fixture: Wing
-        This is the three section tapered Wing for geometric property testing.
+    :return three_section_tapered_wing_fixture: Wing This is the three section tapered
+        Wing for geometric property testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1139,19 +1141,21 @@ def make_three_section_tapered_wing_fixture():
     return three_section_tapered_wing_fixture
 
 
-def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
-    """This method makes a fixture that is a simple rectangular Wing rotated
-    relative to geometry axes for testing span calculation invariance under rotation.
+def make_rotated_rectangular_wing_fixture(
+    angles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int],
+) -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a simple rectangular Wing rotated relative to
+    geometry axes for testing span calculation invariance under rotation.
 
     This Wing has the same geometry as make_simple_rectangular_wing_fixture but is
-    rotated by the specified angles. The span should remain 2.0 meters regardless
-    of rotation.
+    rotated by the specified angles. The span should remain 2.0 meters regardless of
+    rotation.
 
     :param angles_Gs_to_Wn_ixyz: (3,) array-like of floats representing the rotation
         angles (in geometry axes, to wing axes, intrinsic xyz sequence). Units are
         degrees.
-    :return rotated_rectangular_wing_fixture: Wing
-        This is the rotated rectangular Wing for span invariance testing.
+    :return rotated_rectangular_wing_fixture: Wing This is the rotated rectangular Wing
+        for span invariance testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1193,20 +1197,18 @@ def make_rotated_rectangular_wing_fixture(angles_Gs_to_Wn_ixyz):
     return rotated_rectangular_wing_fixture
 
 
-def make_wing_with_rotated_cross_sections_fixture():
-    """This method makes a fixture that is a Wing with rotated WingCrossSections
-    for testing that span calculation correctly handles cross section rotations.
+def make_wing_with_rotated_cross_sections_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with rotated WingCrossSections for
+    testing that span calculation correctly handles cross section rotations.
 
-    This Wing has:
-    - Root at y=0 with chord=2.0, no rotation
-    - Middle at y=3.0 with chord=1.5, rotated 15 degrees about the Wing's axes y axis
-    - Tip at y=5.0 with chord=1.0, rotated 30 degrees about Wing's axes y axis
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 5.0 meters (rotation about the Wing's axes y axis does not affect y
-      position)
+    This Wing has: - Root at y=0 with chord=2.0, no rotation - Middle at y=3.0 with
+    chord=1.5, rotated 15 degrees about the Wing's axes y axis - Tip at y=5.0 with
+    chord=1.0, rotated 30 degrees about Wing's axes y axis - Type 1 symmetry (no
+    symmetry) - Expected span: 5.0 meters (rotation about the Wing's axes y axis does
+    not affect y   position)
 
-    :return wing_with_rotated_cross_sections_fixture: Wing
-        This is the Wing with rotated WingCrossSections.
+    :return wing_with_rotated_cross_sections_fixture: Wing This is the Wing with rotated
+        WingCrossSections.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1258,18 +1260,15 @@ def make_wing_with_rotated_cross_sections_fixture():
     return wing_with_rotated_cross_sections_fixture
 
 
-def make_swept_wing_fixture():
-    """This method makes a fixture that is a swept Wing (sweep in xz plane)
-    for testing span calculation with sweep.
+def make_swept_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a swept Wing (sweep in xz plane) for testing
+    span calculation with sweep.
 
-    This Wing has:
-    - Root at y=0 with chord=2.0
-    - Tip at x=1.5, y=3.0, z=0 (swept back 1.5 m) with chord=1.0
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 3.0 meters (sweep does not affect spanwise extent)
+    This Wing has: - Root at y=0 with chord=2.0 - Tip at x=1.5, y=3.0, z=0 (swept back
+    1.5 m) with chord=1.0 - Type 1 symmetry (no symmetry) - Expected span: 3.0 meters
+    (sweep does not affect spanwise extent)
 
-    :return swept_wing_fixture: Wing
-        This is the swept Wing for testing.
+    :return swept_wing_fixture: Wing This is the swept Wing for testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1311,18 +1310,15 @@ def make_swept_wing_fixture():
     return swept_wing_fixture
 
 
-def make_dihedral_wing_fixture():
-    """This method makes a fixture that is a Wing with dihedral (upward angle)
-    for testing span calculation with dihedral.
+def make_dihedral_wing_fixture() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with dihedral (upward angle) for
+    testing span calculation with dihedral.
 
-    This Wing has:
-    - Root at y=0, z=0 with chord=2.0
-    - Tip at y=3.0, z=0.5 (dihedral angle ~ 9.46 deg) with chord=1.0
-    - Type 1 symmetry (no symmetry)
-    - Expected span: 3.0 meters (dihedral does not affect spanwise extent in wing axes)
+    This Wing has: - Root at y=0, z=0 with chord=2.0 - Tip at y=3.0, z=0.5 (dihedral
+    angle ~ 9.46 deg) with chord=1.0 - Type 1 symmetry (no symmetry) - Expected span:
+    3.0 meters (dihedral does not affect spanwise extent in wing axes)
 
-    :return dihedral_wing_fixture: Wing
-        This is the Wing with dihedral for testing.
+    :return dihedral_wing_fixture: Wing This is the Wing with dihedral for testing.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1364,12 +1360,11 @@ def make_dihedral_wing_fixture():
     return dihedral_wing_fixture
 
 
-def make_wing_with_2_chordwise_panels():
-    """This method makes a fixture that is a Wing with 2 chordwise panels for
-    testing panel shape comparison in geometry matching.
+def make_wing_with_2_chordwise_panels() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with 2 chordwise panels for testing
+    panel shape comparison in geometry matching.
 
-    :return wing_with_2_chordwise_panels: Wing
-        This is the Wing with 2 chordwise panels.
+    :return wing_with_2_chordwise_panels: Wing This is the Wing with 2 chordwise panels.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1411,15 +1406,14 @@ def make_wing_with_2_chordwise_panels():
     return wing_with_2_chordwise_panels
 
 
-def make_wing_with_3_chordwise_panels():
-    """This method makes a fixture that is a Wing with 3 chordwise panels for
-    testing panel shape comparison in geometry matching.
+def make_wing_with_3_chordwise_panels() -> ps.geometry.wing.Wing:
+    """This method makes a fixture that is a Wing with 3 chordwise panels for testing
+    panel shape comparison in geometry matching.
 
-    This Wing has the same spanwise panels as make_wing_with_2_chordwise_panels
-    but different chordwise panels, resulting in a different panel grid shape.
+    This Wing has the same spanwise panels as make_wing_with_2_chordwise_panels but
+    different chordwise panels, resulting in a different panel grid shape.
 
-    :return wing_with_3_chordwise_panels: Wing
-        This is the Wing with 3 chordwise panels.
+    :return wing_with_3_chordwise_panels: Wing This is the Wing with 3 chordwise panels.
     """
     # Create WingCrossSections for the Wing.
     test_airfoil = make_test_airfoil_fixture()
@@ -1461,9 +1455,9 @@ def make_wing_with_3_chordwise_panels():
     return wing_with_3_chordwise_panels
 
 
-def make_2_chordwise_panels_airplane_fixture():
-    """This method makes a fixture that is an Airplane with a Wing that has
-    2 chordwise panels.
+def make_2_chordwise_panels_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane with a Wing that has 2 chordwise
+    panels.
 
     :return: Airplane with a Wing that has 2 chordwise panels.
     """
@@ -1479,9 +1473,9 @@ def make_2_chordwise_panels_airplane_fixture():
     return airplane
 
 
-def make_3_chordwise_panels_airplane_fixture():
-    """This method makes a fixture that is an Airplane with a Wing that has
-    3 chordwise panels.
+def make_3_chordwise_panels_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane with a Wing that has 3 chordwise
+    panels.
 
     :return: Airplane with a Wing that has 3 chordwise panels.
     """
@@ -1497,12 +1491,12 @@ def make_3_chordwise_panels_airplane_fixture():
     return airplane
 
 
-def make_minimum_n_points_per_side_airfoil_fixture():
+def make_minimum_n_points_per_side_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
     """This method makes a fixture that is an Airfoil with the minimum valid
     n_points_per_side value (3) for testing purposes.
 
-    :return minimum_n_points_per_side_airfoil_fixture: Airfoil
-        This is the Airfoil with minimum n_points_per_side.
+    :return minimum_n_points_per_side_airfoil_fixture: Airfoil This is the Airfoil with
+        minimum n_points_per_side.
     """
     minimum_n_points_per_side_airfoil_fixture = ps.geometry.airfoil.Airfoil(
         name="naca0012",
@@ -1513,24 +1507,24 @@ def make_minimum_n_points_per_side_airfoil_fixture():
     return minimum_n_points_per_side_airfoil_fixture
 
 
-def make_thick_naca_airfoil_fixture():
-    """This method makes a fixture that is a thick NACA 0030 Airfoil (30%
-    thickness) for testing purposes.
+def make_thick_naca_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is a thick NACA 0030 Airfoil (30% thickness) for
+    testing purposes.
 
-    :return thick_naca_airfoil_fixture: Airfoil
-        This is the thick NACA 0030 Airfoil configured for testing.
+    :return thick_naca_airfoil_fixture: Airfoil This is the thick NACA 0030 Airfoil
+        configured for testing.
     """
     thick_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="naca0030")
 
     return thick_naca_airfoil_fixture
 
 
-def make_blunt_trailing_edge_airfoil_fixture():
-    """This method makes a fixture that is an Airfoil with a blunt (open)
-    trailing edge for testing purposes.
+def make_blunt_trailing_edge_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is an Airfoil with a blunt (open) trailing edge
+    for testing purposes.
 
-    :return blunt_trailing_edge_airfoil_fixture: Airfoil
-        This is the Airfoil with blunt trailing edge.
+    :return blunt_trailing_edge_airfoil_fixture: Airfoil This is the Airfoil with blunt
+        trailing edge.
     """
     blunt_te_outline = np.array(
         [
@@ -1556,28 +1550,27 @@ def make_blunt_trailing_edge_airfoil_fixture():
     return blunt_trailing_edge_airfoil_fixture
 
 
-def make_case_insensitive_naca_airfoil_fixture():
-    """This method makes a fixture that is a NACA 0012 Airfoil using mixed case
-    naming for testing case insensitivity.
+def make_case_insensitive_naca_airfoil_fixture() -> ps.geometry.airfoil.Airfoil:
+    """This method makes a fixture that is a NACA 0012 Airfoil using mixed case naming
+    for testing case insensitivity.
 
-    :return case_insensitive_naca_airfoil_fixture: Airfoil
-        This is the NACA 0012 Airfoil with mixed case name.
+    :return case_insensitive_naca_airfoil_fixture: Airfoil This is the NACA 0012 Airfoil
+        with mixed case name.
     """
     case_insensitive_naca_airfoil_fixture = ps.geometry.airfoil.Airfoil(name="NaCa0012")
 
     return case_insensitive_naca_airfoil_fixture
 
 
-def make_follower_airplane_fixture():
-    """This method makes a fixture that is an Airplane suitable for use as a
-    follower (non first) Airplane in a simulation with a non zero Cg_GP1_CgP1.
+def make_follower_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane suitable for use as a follower
+    (non first) Airplane in a simulation with a non zero Cg_GP1_CgP1.
 
-    This fixture is useful for testing the T_pas_G_Cg_to_GP1_CgP1 transformation
-    matrix which is the identity for the first Airplane but non trivial for
-    follower Airplanes.
+    This fixture is useful for testing the T_pas_G_Cg_to_GP1_CgP1 transformation matrix
+    which is the identity for the first Airplane but non trivial for follower Airplanes.
 
-    :return follower_airplane_fixture: Airplane
-        This is the Airplane configured as a follower in a simulation.
+    :return follower_airplane_fixture: Airplane This is the Airplane configured as a
+        follower in a simulation.
     """
     # Create a Wing for the Airplane.
     wing = make_type_1_wing_fixture()

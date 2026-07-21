@@ -3,29 +3,27 @@
 import numpy as np
 
 
-def make_single_point_fixture():
+def make_single_point_fixture() -> np.ndarray:
     """This method makes a fixture that is a single evaluation point for testing
     velocity calculation functions.
 
-    :return single_point_fixture: (1, 3) ndarray of floats
-
-        This is a single evaluation point at the origin (in the first Airplane's
-        geometry axes, relative to the first Airplane's CG).
+    :return single_point_fixture: (1, 3) ndarray of floats This is a single evaluation
+        point at the origin (in the first Airplane's geometry axes, relative to the
+        first Airplane's CG).
     """
     single_point_fixture = np.array([[0.0, 0.0, 0.0]], dtype=float)
 
     return single_point_fixture
 
 
-def make_grid_of_points_fixture():
+def make_grid_of_points_fixture() -> np.ndarray:
     """This method makes a fixture that is a grid of evaluation points for testing
     velocity calculation functions.
 
-    :return grid_of_points_fixture: (25, 3) ndarray of floats
-
-        This is a 5x5 grid of evaluation points in the xz-plane (in the first
-        Airplane's geometry axes, relative to the first Airplane's CG), spanning from
-        -2 to 2 in both x and z directions.
+    :return grid_of_points_fixture: (25, 3) ndarray of floats This is a 5x5 grid of
+        evaluation points in the xz-plane (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG), spanning from -2 to 2 in both x and z
+        directions.
     """
     x = np.linspace(-2.0, 2.0, 5, dtype=float)
     z = np.linspace(-2.0, 2.0, 5, dtype=float)
@@ -37,15 +35,13 @@ def make_grid_of_points_fixture():
     return grid_of_points_fixture
 
 
-def make_line_of_points_fixture():
+def make_line_of_points_fixture() -> np.ndarray:
     """This method makes a fixture that is a line of evaluation points for testing
     velocity calculation functions.
 
-    :return line_of_points_fixture: (10, 3) ndarray of floats
-
-        This is a line of 10 evaluation points along the x-axis (in the first
-        Airplane's geometry axes, relative to the first Airplane's CG), from x=-5.0
-        to x=5.0.
+    :return line_of_points_fixture: (10, 3) ndarray of floats This is a line of 10
+        evaluation points along the x-axis (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG), from x=-5.0 to x=5.0.
     """
     x = np.linspace(-5.0, 5.0, 10, dtype=float)
     line_of_points_fixture = np.column_stack(
@@ -55,15 +51,13 @@ def make_line_of_points_fixture():
     return line_of_points_fixture
 
 
-def make_random_points_fixture():
-    """This method makes a fixture that is a set of random evaluation points for
-    testing velocity calculation functions.
+def make_random_points_fixture() -> np.ndarray:
+    """This method makes a fixture that is a set of random evaluation points for testing
+    velocity calculation functions.
 
-    :return random_points_fixture: (20, 3) ndarray of floats
-
-        This is a set of 20 random evaluation points (in the first Airplane's
-        geometry axes, relative to the first Airplane's CG) within a cube of side
-        length 10 centered at the origin.
+    :return random_points_fixture: (20, 3) ndarray of floats This is a set of 20 random
+        evaluation points (in the first Airplane's geometry axes, relative to the first
+        Airplane's CG) within a cube of side length 10 centered at the origin.
     """
     np.random.seed(42)
     random_points_fixture = np.random.uniform(-5.0, 5.0, (20, 3)).astype(float)
@@ -71,36 +65,35 @@ def make_random_points_fixture():
     return random_points_fixture
 
 
-def make_origin_points_fixture(num_points):
+def make_origin_points_fixture(num_points: int) -> np.ndarray:
     """This method makes a fixture that is a stack of evaluation points, all at the
     origin, for testing the parallel dispatch wrappers.
 
     The number of points sets the size of the kernel launch that a dispatch wrapper
-    sees, so the dispatch tests use this fixture to build launches with a chosen
-    number of evaluations. Those tests mock out the kernel, so the points' values are
-    never read.
+    sees, so the dispatch tests use this fixture to build launches with a chosen number
+    of evaluations. Those tests mock out the kernel, so the points' values are never
+    read.
 
     :param num_points: An int representing the number of evaluation points.
-    :return origin_points_fixture: (num_points, 3) ndarray of floats
-        This is a stack of num_points evaluation points, all at the origin (in the
-        first Airplane's geometry axes, relative to the first Airplane's CG).
+    :return origin_points_fixture: (num_points, 3) ndarray of floats This is a stack of
+        num_points evaluation points, all at the origin (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
     """
     origin_points_fixture = np.zeros((num_points, 3), dtype=float)
 
     return origin_points_fixture
 
 
-def make_simple_ring_vortex_arrays_fixture():
-    """This method makes a fixture containing arrays describing a single ring vortex
-    for testing velocity calculation functions.
+def make_simple_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """This method makes a fixture containing arrays describing a single ring vortex for
+    testing velocity calculation functions.
 
-    :return tuple of ndarrays
-        This returns a tuple containing:
-        - stackBrrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFrrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFlrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackBlrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - strengths: (1,) ndarray of floats
+    :return tuple of ndarrays This returns a tuple containing: - stackBrrvp_GP1_CgP1:
+        (1, 3) ndarray of floats - stackFrrvp_GP1_CgP1: (1, 3) ndarray of floats -
+        stackFlrvp_GP1_CgP1: (1, 3) ndarray of floats - stackBlrvp_GP1_CgP1: (1, 3)
+        ndarray of floats - strengths: (1,) ndarray of floats
     """
     stackBrrvp_GP1_CgP1 = np.array([[1.0, 0.5, 0.0]], dtype=float)
     stackFrrvp_GP1_CgP1 = np.array([[0.0, 0.5, 0.0]], dtype=float)
@@ -117,17 +110,17 @@ def make_simple_ring_vortex_arrays_fixture():
     )
 
 
-def make_multiple_ring_vortex_arrays_fixture():
+def make_multiple_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """This method makes a fixture containing arrays describing multiple ring vortices
     for testing velocity calculation functions.
 
-    :return tuple of ndarrays
-        This returns a tuple containing arrays for 3 ring vortices:
-        - stackBrrvp_GP1_CgP1: (3, 3) ndarray of floats
-        - stackFrrvp_GP1_CgP1: (3, 3) ndarray of floats
-        - stackFlrvp_GP1_CgP1: (3, 3) ndarray of floats
-        - stackBlrvp_GP1_CgP1: (3, 3) ndarray of floats
-        - strengths: (3,) ndarray of floats
+    :return tuple of ndarrays     This returns a tuple containing arrays for 3 ring
+    vortices:     - stackBrrvp_GP1_CgP1: (3, 3) ndarray of floats     -
+    stackFrrvp_GP1_CgP1: (3, 3) ndarray of floats     - stackFlrvp_GP1_CgP1: (3, 3)
+    ndarray of floats     - stackBlrvp_GP1_CgP1: (3, 3) ndarray of floats     -
+    strengths: (3,) ndarray of floats
     """
     stackBrrvp_GP1_CgP1 = np.array(
         [[1.0, 0.5, 0.0], [2.0, 0.5, 0.0], [3.0, 0.5, 0.0]], dtype=float
@@ -152,17 +145,16 @@ def make_multiple_ring_vortex_arrays_fixture():
     )
 
 
-def make_simple_horseshoe_vortex_arrays_fixture():
-    """This method makes a fixture containing arrays describing a single
-    horseshoe vortex for testing velocity calculation functions.
+def make_simple_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """This method makes a fixture containing arrays describing a single horseshoe
+    vortex for testing velocity calculation functions.
 
-    :return tuple of ndarrays
-        This returns a tuple containing:
-        - stackBrhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFrhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFlhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackBlhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - strengths: (1,) ndarray of floats
+    :return tuple of ndarrays This returns a tuple containing: - stackBrhvp_GP1_CgP1:
+        (1, 3) ndarray of floats - stackFrhvp_GP1_CgP1: (1, 3) ndarray of floats -
+        stackFlhvp_GP1_CgP1: (1, 3) ndarray of floats - stackBlhvp_GP1_CgP1: (1, 3)
+        ndarray of floats - strengths: (1,) ndarray of floats
     """
     stackBrhvp_GP1_CgP1 = np.array([[20.0, 0.5, 0.0]], dtype=float)
     stackFrhvp_GP1_CgP1 = np.array([[0.0, 0.5, 0.0]], dtype=float)
@@ -179,17 +171,17 @@ def make_simple_horseshoe_vortex_arrays_fixture():
     )
 
 
-def make_multiple_horseshoe_vortex_arrays_fixture():
-    """This method makes a fixture containing arrays describing multiple
-    horseshoe vortices for testing velocity calculation functions.
+def make_multiple_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """This method makes a fixture containing arrays describing multiple horseshoe
+    vortices for testing velocity calculation functions.
 
-    :return tuple of ndarrays
-        This returns a tuple containing arrays for 2 horseshoe vortices:
-        - stackBrhvp_GP1_CgP1: (2, 3) ndarray of floats
-        - stackFrhvp_GP1_CgP1: (2, 3) ndarray of floats
-        - stackFlhvp_GP1_CgP1: (2, 3) ndarray of floats
-        - stackBlhvp_GP1_CgP1: (2, 3) ndarray of floats
-        - strengths: (2,) ndarray of floats
+    :return tuple of ndarrays     This returns a tuple containing arrays for 2 horseshoe
+    vortices:     - stackBrhvp_GP1_CgP1: (2, 3) ndarray of floats     -
+    stackFrhvp_GP1_CgP1: (2, 3) ndarray of floats     - stackFlhvp_GP1_CgP1: (2, 3)
+    ndarray of floats     - stackBlhvp_GP1_CgP1: (2, 3) ndarray of floats     -
+    strengths: (2,) ndarray of floats
     """
     stackBrhvp_GP1_CgP1 = np.array([[20.0, 0.5, 0.0], [20.0, 1.5, 0.0]], dtype=float)
     stackFrhvp_GP1_CgP1 = np.array([[0.0, 0.5, 0.0], [0.0, 1.5, 0.0]], dtype=float)
@@ -206,55 +198,53 @@ def make_multiple_horseshoe_vortex_arrays_fixture():
     )
 
 
-def make_ages_fixture():
+def make_ages_fixture() -> np.ndarray:
     """This method makes a fixture that is a ndarray of ages for wake vortices.
 
-    :return ages_fixture: (3,) ndarray of floats
-        This is a ndarray of ages in seconds for 3 vortices.
+    :return ages_fixture: (3,) ndarray of floats This is a ndarray of ages in seconds
+        for 3 vortices.
     """
     ages_fixture = np.array([0.1, 0.5, 1.0], dtype=float)
 
     return ages_fixture
 
 
-def make_kinematic_viscosity_fixture():
+def make_kinematic_viscosity_fixture() -> float:
     """This method makes a fixture that is a kinematic viscosity value for air.
 
-    :return kinematic_viscosity_fixture: float
-        This is the kinematic viscosity of air at standard conditions, approximately
-        1.5e-5 meters squared per second.
+    :return kinematic_viscosity_fixture: float This is the kinematic viscosity of air at
+        standard conditions, approximately 1.5e-5 meters squared per second.
     """
     kinematic_viscosity_fixture = 1.5e-5
 
     return kinematic_viscosity_fixture
 
 
-def make_rc0s_fixture(num_vortices):
-    """This method makes a fixture that is a ndarray of initial core radii for
-    testing velocity calculation functions.
+def make_rc0s_fixture(num_vortices: int) -> np.ndarray:
+    """This method makes a fixture that is a ndarray of initial core radii for testing
+    velocity calculation functions.
 
     :param num_vortices: An int representing the number of vortices.
-    :return rc0s_fixture: (num_vortices,) ndarray of floats
-        This is a ndarray of initial core radii in meters. Each entry is 0.03
-        meters, representing 3% of a 1 meter standard mean chord.
+    :return rc0s_fixture: (num_vortices,) ndarray of floats This is a ndarray of initial
+        core radii in meters. Each entry is 0.03 meters, representing 3% of a 1 meter
+        standard mean chord.
     """
     rc0s_fixture = np.full(num_vortices, 0.03, dtype=float)
 
     return rc0s_fixture
 
 
-def make_degenerate_ring_vortex_arrays_fixture():
-    """Makes a fixture containing arrays describing a degenerate ring vortex with
-    all four corners at the same point for testing the degenerate filament
-    singularity guard.
+def make_degenerate_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture containing arrays describing a degenerate ring vortex with all
+    four corners at the same point for testing the degenerate filament singularity
+    guard.
 
-    :return tuple of ndarrays
-        Returns a tuple containing:
-        - stackBrrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFrrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFlrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackBlrvp_GP1_CgP1: (1, 3) ndarray of floats
-        - strengths: (1,) ndarray of floats
+    :return tuple of ndarrays Returns a tuple containing: - stackBrrvp_GP1_CgP1: (1, 3)
+        ndarray of floats - stackFrrvp_GP1_CgP1: (1, 3) ndarray of floats -
+        stackFlrvp_GP1_CgP1: (1, 3) ndarray of floats - stackBlrvp_GP1_CgP1: (1, 3)
+        ndarray of floats - strengths: (1,) ndarray of floats
     """
     stackBrrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
     stackFrrvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
@@ -271,18 +261,17 @@ def make_degenerate_ring_vortex_arrays_fixture():
     )
 
 
-def make_degenerate_horseshoe_vortex_arrays_fixture():
-    """Makes a fixture containing arrays describing a degenerate horseshoe vortex
-    with all four points at the same location for testing the degenerate filament
-    singularity guard.
+def make_degenerate_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture containing arrays describing a degenerate horseshoe vortex with
+    all four points at the same location for testing the degenerate filament singularity
+    guard.
 
-    :return tuple of ndarrays
-        Returns a tuple containing:
-        - stackBrhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFrhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackFlhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - stackBlhvp_GP1_CgP1: (1, 3) ndarray of floats
-        - strengths: (1,) ndarray of floats
+    :return tuple of ndarrays Returns a tuple containing: - stackBrhvp_GP1_CgP1: (1, 3)
+        ndarray of floats - stackFrhvp_GP1_CgP1: (1, 3) ndarray of floats -
+        stackFlhvp_GP1_CgP1: (1, 3) ndarray of floats - stackBlhvp_GP1_CgP1: (1, 3)
+        ndarray of floats - strengths: (1,) ndarray of floats
     """
     stackBrhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)
     stackFrhvp_GP1_CgP1 = np.array([[0.0, 0.0, 0.0]], dtype=float)

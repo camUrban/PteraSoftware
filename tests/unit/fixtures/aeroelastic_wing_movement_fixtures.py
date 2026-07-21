@@ -6,12 +6,14 @@ import pterasoftware as ps
 from . import geometry_fixtures
 
 
-def make_static_aeroelastic_wing_movement_fixture():
+def make_static_aeroelastic_wing_movement_fixture() -> (
+    ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement
+):
     """This method makes a fixture that is an AeroelasticWingMovement with all
     parameters zero (no prescribed movement).
 
-    :return static_aeroelastic_wing_movement_fixture: AeroelasticWingMovement
-        This is the AeroelasticWingMovement with no prescribed movement. Its
+    :return static_aeroelastic_wing_movement_fixture: AeroelasticWingMovement This is
+        the AeroelasticWingMovement with no prescribed movement. Its
         AeroelasticWingCrossSectionMovements are built from the base Wing's own
         WingCrossSections so that the generated Wings stay valid.
     """
@@ -47,15 +49,17 @@ def make_static_aeroelastic_wing_movement_fixture():
     return static_aeroelastic_wing_movement_fixture
 
 
-def make_basic_aeroelastic_wing_movement_fixture():
-    """This method makes a fixture that is an AeroelasticWingMovement with
-    general-purpose moderate values.
+def make_basic_aeroelastic_wing_movement_fixture() -> (
+    ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement
+):
+    """This method makes a fixture that is an AeroelasticWingMovement with general-
+    purpose moderate values.
 
-    :return basic_aeroelastic_wing_movement_fixture: AeroelasticWingMovement
-        This is the AeroelasticWingMovement with general-purpose values. The root
-        WingCrossSection's movement is static, while the tip WingCrossSection's
-        movement oscillates its angles, so that structural deformation can be tested on
-        top of a prescribed oscillation.
+    :return basic_aeroelastic_wing_movement_fixture: AeroelasticWingMovement This is the
+        AeroelasticWingMovement with general-purpose values. The root WingCrossSection's
+        movement is static, while the tip WingCrossSection's movement oscillates its
+        angles, so that structural deformation can be tested on top of a prescribed
+        oscillation.
     """
     # Initialize the constructing fixtures. The root WingCrossSection's movement stays
     # static (keeping its required zero Lp_Wcsp_Lpp), while the tip's movement
@@ -95,7 +99,9 @@ def make_basic_aeroelastic_wing_movement_fixture():
     return basic_aeroelastic_wing_movement_fixture
 
 
-def make_rotation_offset_aeroelastic_wing_movement_fixture():
+def make_rotation_offset_aeroelastic_wing_movement_fixture() -> (
+    ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement
+):
     """This method makes a fixture that is an AeroelasticWingMovement identical to the
     basic fixture but with a non zero rotationPointOffset_Gs_Ler.
 

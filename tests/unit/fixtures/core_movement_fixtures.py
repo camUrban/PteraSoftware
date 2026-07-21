@@ -6,11 +6,11 @@ from pterasoftware._core import CoreMovement
 from . import core_airplane_movement_fixtures, core_operating_point_movement_fixtures
 
 
-def make_static_core_movement_fixture():
+def make_static_core_movement_fixture() -> CoreMovement:
     """This method makes a fixture that is a CoreMovement with all static components.
 
-    :return static_core_movement_fixture: CoreMovement
-        This is the CoreMovement with no motion.
+    :return static_core_movement_fixture: CoreMovement This is the CoreMovement with no
+        motion.
     """
     # Initialize the constructing fixtures.
     airplane_movements = [
@@ -32,11 +32,11 @@ def make_static_core_movement_fixture():
     return static_core_movement_fixture
 
 
-def make_basic_core_movement_fixture():
+def make_basic_core_movement_fixture() -> CoreMovement:
     """This method makes a fixture that is a CoreMovement with general-purpose values.
 
-    :return basic_core_movement_fixture: CoreMovement
-        This is the CoreMovement with general-purpose values for testing.
+    :return basic_core_movement_fixture: CoreMovement This is the CoreMovement with
+        general-purpose values for testing.
     """
     # Initialize the constructing fixtures.
     airplane_movements = [

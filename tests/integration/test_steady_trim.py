@@ -10,7 +10,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the steady trim function on a
     SteadHorseshoeVortexLatticeMethodSolver."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """This method sets up the test.
 
         :return: None
@@ -43,7 +43,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             operating_point=this_operating_point,
         )
 
-    def test_function(self):
+    def test_function(self) -> None:
         """This method tests that the function finds a pre-known trim condition.
 
         :return: None
@@ -74,6 +74,9 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             num_calls=100,
         )
 
+        assert trim_conditions[0] is not None
+        assert trim_conditions[1] is not None
+        assert trim_conditions[3] is not None
         v_error = (trim_conditions[0] - self.v_x_ans) / self.v_x_ans
         alpha_error = (trim_conditions[1] - self.alpha_ans) / self.alpha_ans
         thrust_error = (trim_conditions[3] - self.thrust_ans) / self.thrust_ans

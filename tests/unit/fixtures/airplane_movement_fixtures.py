@@ -5,12 +5,14 @@ import pterasoftware as ps
 from . import geometry_fixtures, wing_movement_fixtures
 
 
-def make_static_airplane_movement_fixture():
-    """This method makes a fixture that is an AirplaneMovement with all parameters
-    zero (no movement).
+def make_static_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
+    """This method makes a fixture that is an AirplaneMovement with all parameters zero
+    (no movement).
 
-    :return static_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with no movement.
+    :return static_airplane_movement_fixture: AirplaneMovement This is the
+        AirplaneMovement with no movement.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -30,12 +32,14 @@ def make_static_airplane_movement_fixture():
     return static_airplane_movement_fixture
 
 
-def make_basic_airplane_movement_fixture():
+def make_basic_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
     """This method makes a fixture that is an AirplaneMovement with general-purpose
     moderate values.
 
-    :return basic_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with general-purpose values.
+    :return basic_airplane_movement_fixture: AirplaneMovement This is the
+        AirplaneMovement with general-purpose values.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -55,15 +59,17 @@ def make_basic_airplane_movement_fixture():
     return basic_airplane_movement_fixture
 
 
-def make_periodic_geometry_airplane_movement_fixture():
+def make_periodic_geometry_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
     """This method makes a fixture that is an AirplaneMovement with periodic geometry
     motion suitable for testing the variable geometry optimization.
 
-    The fixture uses a 0.1s period which aligns well with common delta_time values
-    like 0.01s (10 steps per period) and 0.02s (5 steps per period).
+    The fixture uses a 0.1s period which aligns well with common delta_time values like
+    0.01s (10 steps per period) and 0.02s (5 steps per period).
 
-    :return periodic_geometry_airplane_movement_fixture: AirplaneMovement
-        This is the AirplaneMovement with periodic geometry motion.
+    :return periodic_geometry_airplane_movement_fixture: AirplaneMovement This is the
+        AirplaneMovement with periodic geometry motion.
     """
     # Initialize the constructing fixtures.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()

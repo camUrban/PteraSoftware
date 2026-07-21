@@ -2,6 +2,8 @@
 
 import copy
 import unittest
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import numpy.testing as npt
@@ -14,8 +16,49 @@ from tests.unit.fixtures import core_wing_cross_section_movement_fixtures
 class TestCoreWingCrossSectionMovement(unittest.TestCase):
     """This is a class with functions to test CoreWingCrossSectionMovements."""
 
+    sine_spacing_Lp_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    uniform_spacing_Lp_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    mixed_spacing_Lp_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    sine_spacing_angles_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    uniform_spacing_angles_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    mixed_spacing_angles_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    static_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
+    basic_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
+    Lp_only_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
+    angles_only_core_wing_cross_section_movement: ps._core.CoreWingCrossSectionMovement
+    phase_offset_Lp_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    phase_offset_angles_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    multiple_periods_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    custom_spacing_Lp_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    custom_spacing_angles_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+    mixed_custom_and_standard_spacing_core_wing_cross_section_movement: (
+        ps._core.CoreWingCrossSectionMovement
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all CoreWingCrossSectionMovement tests."""
         # Spacing test fixtures.
         cls.sine_spacing_Lp_core_wing_cross_section_movement = (
@@ -69,7 +112,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             core_wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture()
         )
 
-    def test_spacing_sine_for_Lp_Wcsp_Lpp(self):
+    def test_spacing_sine_for_Lp_Wcsp_Lpp(self) -> None:
         """Test that sine spacing actually produces sinusoidal motion for
         Lp_Wcsp_Lpp."""
         num_steps = 100
@@ -94,7 +137,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Assert that the generated positions match the expected sine wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_Lp_Wcsp_Lpp(self):
+    def test_spacing_uniform_for_Lp_Wcsp_Lpp(self) -> None:
         """Test that uniform spacing actually produces triangular wave motion for
         Lp_Wcsp_Lpp."""
         num_steps = 100
@@ -119,7 +162,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Assert that the generated positions match the expected triangular wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_Lp_Wcsp_Lpp(self):
+    def test_spacing_mixed_for_Lp_Wcsp_Lpp(self) -> None:
         """Test that mixed spacing types work correctly for Lp_Wcsp_Lpp."""
         num_steps = 100
         delta_time = 0.01
@@ -161,7 +204,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_sine_for_angles_Wcsp_to_Wcs_ixyz(self):
+    def test_spacing_sine_for_angles_Wcsp_to_Wcs_ixyz(self) -> None:
         """Test that sine spacing actually produces sinusoidal motion for
         angles_Wcsp_to_Wcs_ixyz."""
         num_steps = 100
@@ -186,7 +229,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Assert that the generated angles match the expected sine wave.
         npt.assert_allclose(angles_z, expected_angles, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_angles_Wcsp_to_Wcs_ixyz(self):
+    def test_spacing_uniform_for_angles_Wcsp_to_Wcs_ixyz(self) -> None:
         """Test that uniform spacing actually produces triangular wave motion for
         angles_Wcsp_to_Wcs_ixyz."""
         num_steps = 100
@@ -213,7 +256,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Assert that the generated angles match the expected triangular wave.
         npt.assert_allclose(angles_z, expected_angles, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_angles_Wcsp_to_Wcs_ixyz(self):
+    def test_spacing_mixed_for_angles_Wcsp_to_Wcs_ixyz(self) -> None:
         """Test that mixed spacing types work correctly for angles_Wcsp_to_Wcs_ixyz."""
         num_steps = 100
         delta_time = 0.01
@@ -255,7 +298,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         npt.assert_allclose(angles_y, expected_angles_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(angles_x, expected_angles_x, rtol=1e-10, atol=1e-14)
 
-    def test_initialization_valid_parameters(self):
+    def test_initialization_valid_parameters(self) -> None:
         """Test CoreWingCrossSectionMovement initialization with valid parameters."""
         # Test that basic CoreWingCrossSectionMovement initializes correctly.
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
@@ -298,19 +341,23 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             np.array([0.0, 0.0, 0.0]),
         )
 
-    def test_base_wing_cross_section_validation(self):
+    def test_base_wing_cross_section_validation(self) -> None:
         """Test that base_wing_cross_section parameter validation works correctly."""
         from tests.unit.fixtures import geometry_fixtures
 
         # Test non-WingCrossSection raises error.
+        bad_base_wing_cross_section: Any = "not a wing cross section"
         with self.assertRaises(TypeError):
             ps._core.CoreWingCrossSectionMovement(
-                base_wing_cross_section="not a wing cross section"
+                base_wing_cross_section=bad_base_wing_cross_section
             )
 
         # Test None raises error.
+        none_base_wing_cross_section: Any = None
         with self.assertRaises(TypeError):
-            ps._core.CoreWingCrossSectionMovement(base_wing_cross_section=None)
+            ps._core.CoreWingCrossSectionMovement(
+                base_wing_cross_section=none_base_wing_cross_section
+            )
 
         # Test valid WingCrossSection works.
         base_wing_cross_section = (
@@ -324,7 +371,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             base_wing_cross_section,
         )
 
-    def test_ampLp_Wcsp_Lpp_validation(self):
+    def test_ampLp_Wcsp_Lpp_validation(self) -> None:
         """Test ampLp_Wcsp_Lpp parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -333,7 +380,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Test valid values.
-        valid_amps = [
+        valid_amps: list[np.ndarray | Sequence[float]] = [
             (0.0, 0.0, 0.0),
             (1.0, 2.0, 3.0),
             [0.5, 1.5, 2.5],
@@ -359,14 +406,15 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
 
         # Test invalid types raise error.
+        bad_amp: Any = "invalid"
         # noinspection PyTypeChecker
         with self.assertRaises((TypeError, ValueError)):
             ps._core.CoreWingCrossSectionMovement(
                 base_wing_cross_section=base_wing_cross_section,
-                ampLp_Wcsp_Lpp="invalid",
+                ampLp_Wcsp_Lpp=bad_amp,
             )
 
-    def test_periodLp_Wcsp_Lpp_validation(self):
+    def test_periodLp_Wcsp_Lpp_validation(self) -> None:
         """Test periodLp_Wcsp_Lpp parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -399,7 +447,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 periodLp_Wcsp_Lpp=(-1.0, 1.0, 1.0),
             )
 
-    def test_spacingLp_Wcsp_Lpp_validation(self):
+    def test_spacingLp_Wcsp_Lpp_validation(self) -> None:
         """Test spacingLp_Wcsp_Lpp parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -432,7 +480,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 spacingLp_Wcsp_Lpp=("invalid", "sine", "sine"),
             )
 
-    def test_phaseLp_Wcsp_Lpp_validation(self):
+    def test_phaseLp_Wcsp_Lpp_validation(self) -> None:
         """Test phaseLp_Wcsp_Lpp parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -481,7 +529,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 phaseLp_Wcsp_Lpp=(-180.0, 0.0, 0.0),
             )
 
-    def test_ampAngles_Wcsp_to_Wcs_ixyz_validation(self):
+    def test_ampAngles_Wcsp_to_Wcs_ixyz_validation(self) -> None:
         """Test ampAngles_Wcsp_to_Wcs_ixyz parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -522,7 +570,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 ampAngles_Wcsp_to_Wcs_ixyz=(-1.0, 0.0, 0.0),
             )
 
-    def test_periodAngles_Wcsp_to_Wcs_ixyz_validation(self):
+    def test_periodAngles_Wcsp_to_Wcs_ixyz_validation(self) -> None:
         """Test periodAngles_Wcsp_to_Wcs_ixyz parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -555,7 +603,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 periodAngles_Wcsp_to_Wcs_ixyz=(-1.0, 1.0, 1.0),
             )
 
-    def test_spacingAngles_Wcsp_to_Wcs_ixyz_validation(self):
+    def test_spacingAngles_Wcsp_to_Wcs_ixyz_validation(self) -> None:
         """Test spacingAngles_Wcsp_to_Wcs_ixyz parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -589,7 +637,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 spacingAngles_Wcsp_to_Wcs_ixyz=("invalid", "sine", "sine"),
             )
 
-    def test_phaseAngles_Wcsp_to_Wcs_ixyz_validation(self):
+    def test_phaseAngles_Wcsp_to_Wcs_ixyz_validation(self) -> None:
         """Test phaseAngles_Wcsp_to_Wcs_ixyz parameter validation."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -624,7 +672,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 phaseAngles_Wcsp_to_Wcs_ixyz=(180.1, 0.0, 0.0),
             )
 
-    def test_amp_period_relationship_Lp(self):
+    def test_amp_period_relationship_Lp(self) -> None:
         """Test that if ampLp_Wcsp_Lpp element is 0, corresponding period must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -648,7 +696,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 periodLp_Wcsp_Lpp=(1.0, 1.0, 0.0),
             )
 
-    def test_amp_phase_relationship_Lp(self):
+    def test_amp_phase_relationship_Lp(self) -> None:
         """Test that if ampLp_Wcsp_Lpp element is 0, corresponding phase must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -674,8 +722,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 phaseLp_Wcsp_Lpp=(45.0, -90.0, 0.0),
             )
 
-    def test_amp_period_relationship_angles(self):
-        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding period must be 0."""
+    def test_amp_period_relationship_angles(self) -> None:
+        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding period
+        must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
         base_wing_cross_section = (
@@ -698,8 +747,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 periodAngles_Wcsp_to_Wcs_ixyz=(1.0, 1.0, 0.0),
             )
 
-    def test_amp_phase_relationship_angles(self):
-        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding phase must be 0."""
+    def test_amp_phase_relationship_angles(self) -> None:
+        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding phase
+        must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
         base_wing_cross_section = (
@@ -724,18 +774,18 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 phaseAngles_Wcsp_to_Wcs_ixyz=(45.0, -90.0, 0.0),
             )
 
-    def test_max_period_static_movement(self):
+    def test_max_period_static_movement(self) -> None:
         """Test that max_period returns 0.0 for static movement."""
         core_wing_cross_section_movement = self.static_core_wing_cross_section_movement
         self.assertEqual(core_wing_cross_section_movement.max_period, 0.0)
 
-    def test_max_period_Lp_only(self):
+    def test_max_period_Lp_only(self) -> None:
         """Test that max_period returns correct period for Lp-only movement."""
         core_wing_cross_section_movement = self.Lp_only_core_wing_cross_section_movement
         # periodLp_Wcsp_Lpp is (1.5, 1.5, 1.5), so max should be 1.5.
         self.assertEqual(core_wing_cross_section_movement.max_period, 1.5)
 
-    def test_max_period_angles_only(self):
+    def test_max_period_angles_only(self) -> None:
         """Test that max_period returns correct period for angles-only movement."""
         core_wing_cross_section_movement = (
             self.angles_only_core_wing_cross_section_movement
@@ -743,7 +793,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # periodAngles_Wcsp_to_Wcs_ixyz is (1.5, 1.5, 1.5), so max should be 1.5.
         self.assertEqual(core_wing_cross_section_movement.max_period, 1.5)
 
-    def test_max_period_mixed(self):
+    def test_max_period_mixed(self) -> None:
         """Test that max_period returns maximum of all periods for mixed movement."""
         core_wing_cross_section_movement = (
             self.multiple_periods_core_wing_cross_section_movement
@@ -752,19 +802,19 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # 1.5, 2.5). Maximum should be 3.0.
         self.assertEqual(core_wing_cross_section_movement.max_period, 3.0)
 
-    def test_max_period_multiple_dimensions(self):
+    def test_max_period_multiple_dimensions(self) -> None:
         """Test max_period with multiple dimensions having different periods."""
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         # Both periodLp_Wcsp_Lpp and periodAngles_Wcsp_to_Wcs_ixyz are (2.0, 2.0, 2.0).
         # Maximum should be 2.0.
         self.assertEqual(core_wing_cross_section_movement.max_period, 2.0)
 
-    def test_all_periods_static_movement(self):
+    def test_all_periods_static_movement(self) -> None:
         """Test that all_periods returns empty tuple for static movement."""
         wing_cross_section_movement = self.static_core_wing_cross_section_movement
         self.assertEqual(wing_cross_section_movement.all_periods, ())
 
-    def test_all_periods_Lp_only(self):
+    def test_all_periods_Lp_only(self) -> None:
         """Test that all_periods returns correct periods for Lp only movement."""
         wing_cross_section_movement = self.Lp_only_core_wing_cross_section_movement
         # periodLp_Wcsp_Lpp is (1.5, 1.5, 1.5), all non zero.
@@ -772,14 +822,14 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # three 1.5 values.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.5, 1.5, 1.5))
 
-    def test_all_periods_angles_only(self):
+    def test_all_periods_angles_only(self) -> None:
         """Test that all_periods returns correct periods for angles only movement."""
         wing_cross_section_movement = self.angles_only_core_wing_cross_section_movement
         # periodLp_Wcsp_Lpp is (0.0, 0.0, 0.0). periodAngles_Wcsp_to_Wcs_ixyz is (1.5,
         # 1.5, 1.5), all non zero. Should return tuple with three 1.5 values.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.5, 1.5, 1.5))
 
-    def test_all_periods_mixed(self):
+    def test_all_periods_mixed(self) -> None:
         """Test that all_periods returns all non zero periods for mixed movement."""
         wing_cross_section_movement = (
             self.multiple_periods_core_wing_cross_section_movement
@@ -789,17 +839,16 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         expected = (1.0, 2.0, 3.0, 0.5, 1.5, 2.5)
         self.assertEqual(wing_cross_section_movement.all_periods, expected)
 
-    def test_all_periods_contains_duplicates(self):
+    def test_all_periods_contains_duplicates(self) -> None:
         """Test that all_periods contains duplicate periods if they appear multiple
-        times.
-        """
+        times."""
         wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         # Both periodLp_Wcsp_Lpp and periodAngles_Wcsp_to_Wcs_ixyz are (2.0, 2.0, 2.0).
         # Should return tuple with six 2.0 values (not deduplicated).
         expected = (2.0, 2.0, 2.0, 2.0, 2.0, 2.0)
         self.assertEqual(wing_cross_section_movement.all_periods, expected)
 
-    def test_all_periods_partial_movement(self):
+    def test_all_periods_partial_movement(self) -> None:
         """Test all_periods with only some dimensions having non zero periods."""
         wing_cross_section_movement = (
             self.sine_spacing_Lp_core_wing_cross_section_movement
@@ -809,7 +858,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # 1.0 value.
         self.assertEqual(wing_cross_section_movement.all_periods, (1.0,))
 
-    def test_generate_wing_cross_sections_parameter_validation(self):
+    def test_generate_wing_cross_sections_parameter_validation(self) -> None:
         """Test that generate_wing_cross_sections validates num_steps and delta_time."""
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
 
@@ -826,9 +875,10 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=-1, delta_time=0.01
             )
 
+        bad_num_steps: Any = "invalid"
         with self.assertRaises(TypeError):
             core_wing_cross_section_movement.generate_wing_cross_sections(
-                num_steps="invalid", delta_time=0.01
+                num_steps=bad_num_steps, delta_time=0.01
             )
 
         # Test invalid delta_time.
@@ -844,12 +894,13 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=-0.01
             )
 
+        bad_delta_time: Any = "invalid"
         with self.assertRaises(TypeError):
             core_wing_cross_section_movement.generate_wing_cross_sections(
-                num_steps=10, delta_time="invalid"
+                num_steps=10, delta_time=bad_delta_time
             )
 
-    def test_generate_wing_cross_sections_returns_correct_length(self):
+    def test_generate_wing_cross_sections_returns_correct_length(self) -> None:
         """Test that generate_wing_cross_sections returns list of correct length."""
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
 
@@ -863,7 +914,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 )
                 self.assertEqual(len(wing_cross_sections), num_steps)
 
-    def test_generate_wing_cross_sections_returns_correct_types(self):
+    def test_generate_wing_cross_sections_returns_correct_types(self) -> None:
         """Test that generate_wing_cross_sections returns WingCrossSections."""
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         wing_cross_sections = (
@@ -878,7 +929,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 wing_cross_section, ps.geometry.wing_cross_section.WingCrossSection
             )
 
-    def test_generate_wing_cross_sections_preserves_non_changing_attributes(self):
+    def test_generate_wing_cross_sections_preserves_non_changing_attributes(
+        self,
+    ) -> None:
         """Test that generate_wing_cross_sections preserves non-changing attributes."""
         core_wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         base_wing_cross_section = (
@@ -918,7 +971,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 base_wing_cross_section.spanwise_spacing,
             )
 
-    def test_generate_wing_cross_sections_static_movement(self):
+    def test_generate_wing_cross_sections_static_movement(self) -> None:
         """Test that static movement produces constant positions and angles."""
         core_wing_cross_section_movement = self.static_core_wing_cross_section_movement
         base_wing_cross_section = (
@@ -942,7 +995,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
             )
 
-    def test_phase_offset_Lp(self):
+    def test_phase_offset_Lp(self) -> None:
         """Test that phase shifts initial position correctly for Lp_Wcsp_Lpp."""
         core_wing_cross_section_movement = (
             self.phase_offset_Lp_core_wing_cross_section_movement
@@ -979,8 +1032,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertFalse(np.allclose(y_positions[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(z_positions[0], 0.0, atol=1e-10))
 
-    def test_phase_offset_angles(self):
-        """Test that phase shifts initial angles correctly for angles_Wcsp_to_Wcs_ixyz."""
+    def test_phase_offset_angles(self) -> None:
+        """Test that phase shifts initial angles correctly for
+        angles_Wcsp_to_Wcs_ixyz."""
         core_wing_cross_section_movement = (
             self.phase_offset_angles_core_wing_cross_section_movement
         )
@@ -1016,7 +1070,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertFalse(np.allclose(angles_y[0], 0.0, atol=1e-10))
         self.assertFalse(np.allclose(angles_x[0], 0.0, atol=1e-10))
 
-    def test_single_dimension_movement_Lp(self):
+    def test_single_dimension_movement_Lp(self) -> None:
         """Test that only one dimension of Lp_Wcsp_Lpp moves."""
         core_wing_cross_section_movement = (
             self.sine_spacing_Lp_core_wing_cross_section_movement
@@ -1052,7 +1106,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         npt.assert_array_equal(y_positions, y_positions[0])
         npt.assert_array_equal(z_positions, z_positions[0])
 
-    def test_single_dimension_movement_angles(self):
+    def test_single_dimension_movement_angles(self) -> None:
         """Test that only one dimension of angles_Wcsp_to_Wcs_ixyz moves."""
         core_wing_cross_section_movement = (
             self.sine_spacing_angles_core_wing_cross_section_movement
@@ -1088,7 +1142,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         npt.assert_array_equal(angles_y, angles_y[0])
         npt.assert_array_equal(angles_x, angles_x[0])
 
-    def test_boundary_amplitude_angles(self):
+    def test_boundary_amplitude_angles(self) -> None:
         """Test amplitude at boundary value (180.0 degrees)."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1106,7 +1160,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz[0], 180.0
         )
 
-    def test_boundary_phase_values(self):
+    def test_boundary_phase_values(self) -> None:
         """Test phase at boundary values (-179.9, 0.0, and 180.0)."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1141,7 +1195,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
         self.assertEqual(core_wing_cross_section_movement3.phaseLp_Wcsp_Lpp[0], -179.9)
 
-    def test_custom_spacing_function_Lp(self):
+    def test_custom_spacing_function_Lp(self) -> None:
         """Test that custom spacing function works for Lp_Wcsp_Lpp."""
         core_wing_cross_section_movement = (
             self.custom_spacing_Lp_core_wing_cross_section_movement
@@ -1168,7 +1222,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertTrue(np.all(x_positions >= -1.1))
         self.assertTrue(np.all(x_positions <= 1.1))
 
-    def test_custom_spacing_function_angles(self):
+    def test_custom_spacing_function_angles(self) -> None:
         """Test that custom spacing function works for angles_Wcsp_to_Wcs_ixyz."""
         core_wing_cross_section_movement = (
             self.custom_spacing_angles_core_wing_cross_section_movement
@@ -1195,7 +1249,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertTrue(np.all(angles_z >= -11.0))
         self.assertTrue(np.all(angles_z <= 11.0))
 
-    def test_custom_spacing_function_mixed_with_standard(self):
+    def test_custom_spacing_function_mixed_with_standard(self) -> None:
         """Test that custom and standard spacing functions can be mixed."""
         core_wing_cross_section_movement = (
             self.mixed_custom_and_standard_spacing_core_wing_cross_section_movement
@@ -1213,7 +1267,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 wing_cross_section, ps.geometry.wing_cross_section.WingCrossSection
             )
 
-    def test_custom_function_validation_invalid_start_value(self):
+    def test_custom_function_validation_invalid_start_value(self) -> None:
         """Test that custom function with invalid start value raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1222,8 +1276,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function that doesn't start at 0.
-        def invalid_nonzero_start(x):
-            return np.sin(x) + 1.0
+        def invalid_nonzero_start(x: float) -> float:
+            return float(np.sin(x) + 1.0)
 
         # Should raise error during initialization or generation.
         with self.assertRaises(ValueError):
@@ -1237,7 +1291,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_invalid_end_value(self):
+    def test_custom_function_validation_invalid_end_value(self) -> None:
         """Test that custom function with invalid end value raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1246,8 +1300,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function that doesn't return to 0 at 2*pi.
-        def invalid_nonzero_end(x):
-            return np.sin(x) + 0.1
+        def invalid_nonzero_end(x: float) -> float:
+            return float(np.sin(x) + 0.1)
 
         with self.assertRaises(ValueError):
             core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
@@ -1260,7 +1314,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_invalid_mean(self):
+    def test_custom_function_validation_invalid_mean(self) -> None:
         """Test that custom function with invalid mean raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1269,8 +1323,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function with non-zero mean.
-        def invalid_nonzero_mean(x):
-            return np.sin(x) + 0.5
+        def invalid_nonzero_mean(x: float) -> float:
+            return float(np.sin(x) + 0.5)
 
         with self.assertRaises(ValueError):
             core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
@@ -1283,7 +1337,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_invalid_amplitude(self):
+    def test_custom_function_validation_invalid_amplitude(self) -> None:
         """Test that custom function with invalid amplitude raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1292,8 +1346,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function with wrong amplitude.
-        def invalid_wrong_amplitude(x):
-            return 2.0 * np.sin(x)
+        def invalid_wrong_amplitude(x: float) -> float:
+            return float(2.0 * np.sin(x))
 
         with self.assertRaises(ValueError):
             core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
@@ -1306,7 +1360,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_not_periodic(self):
+    def test_custom_function_validation_not_periodic(self) -> None:
         """Test that custom function that is not periodic raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1315,8 +1369,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function that is not periodic.
-        def invalid_not_periodic(x):
-            return np.tanh(x)
+        def invalid_not_periodic(x: float) -> float:
+            return float(np.tanh(x))
 
         with self.assertRaises(ValueError):
             core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
@@ -1329,7 +1383,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_returns_non_finite(self):
+    def test_custom_function_validation_returns_non_finite(self) -> None:
         """Test that custom function returning NaN or Inf raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1338,8 +1392,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function that returns NaN.
-        def invalid_non_finite(x):
-            return np.where(x < np.pi, np.sin(x), np.nan)
+        def invalid_non_finite(x: float) -> float:
+            return float(np.where(x < np.pi, np.sin(x), np.nan))
 
         with self.assertRaises(ValueError):
             core_wing_cross_section_movement = ps._core.CoreWingCrossSectionMovement(
@@ -1352,7 +1406,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_custom_function_validation_wrong_shape(self):
+    def test_custom_function_validation_wrong_shape(self) -> None:
         """Test that custom function returning wrong shape raises error."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1361,7 +1415,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         )
 
         # Define invalid custom function that returns wrong shape.
-        def invalid_wrong_shape(x):
+        def invalid_wrong_shape(x: Any) -> Any:
             return np.sin(x)[: len(x) // 2]
 
         with self.assertRaises(ValueError):
@@ -1375,8 +1429,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
                 num_steps=10, delta_time=0.01
             )
 
-    def test_unsafe_amplitude_causes_error_Lp(self):
-        """Test that amplitude too high for base Lp value causes error during generation."""
+    def test_unsafe_amplitude_causes_error_Lp(self) -> None:
+        """Test that amplitude too high for base Lp value causes error during
+        generation."""
         from tests.unit.fixtures import geometry_fixtures
 
         # Use root fixture with Lp_Wcsp_Lpp = [0.0, 0.0, 0.0].
@@ -1403,8 +1458,9 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         # Verify the error message is about Lp_Wcsp_Lpp validation.
         self.assertIn("Lp_Wcsp_Lpp", str(context.exception))
 
-    def test_unsafe_amplitude_causes_error_angles(self):
-        """Test that amplitude too high for base angle value causes error during generation."""
+    def test_unsafe_amplitude_causes_error_angles(self) -> None:
+        """Test that amplitude too high for base angle value causes error during
+        generation."""
         from tests.unit.fixtures import geometry_fixtures
 
         # Use root fixture with angles = [0.0, 0.0, 0.0].
@@ -1436,13 +1492,13 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 class TestCoreWingCrossSectionMovementImmutability(unittest.TestCase):
     """Tests for CoreWingCrossSectionMovement attribute immutability."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for immutability tests."""
         self.core_wing_cross_section_movement = (
             core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture()
         )
 
-    def test_immutable_base_wing_cross_section_property(self):
+    def test_immutable_base_wing_cross_section_property(self) -> None:
         """Test that base_wing_cross_section property is read only."""
         from tests.unit.fixtures import geometry_fixtures
 
@@ -1450,98 +1506,112 @@ class TestCoreWingCrossSectionMovementImmutability(unittest.TestCase):
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.base_wing_cross_section = (
-                new_wing_cross_section
+            setattr(
+                self.core_wing_cross_section_movement,
+                "base_wing_cross_section",
+                new_wing_cross_section,
             )
 
-    def test_immutable_ampLp_Wcsp_Lpp_property(self):
+    def test_immutable_ampLp_Wcsp_Lpp_property(self) -> None:
         """Test that ampLp_Wcsp_Lpp property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.core_wing_cross_section_movement,
+                "ampLp_Wcsp_Lpp",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_ampLp_Wcsp_Lpp_array_read_only(self):
+    def test_immutable_ampLp_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that ampLp_Wcsp_Lpp array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.ampLp_Wcsp_Lpp[0] = 999.0
 
-    def test_immutable_periodLp_Wcsp_Lpp_property(self):
+    def test_immutable_periodLp_Wcsp_Lpp_property(self) -> None:
         """Test that periodLp_Wcsp_Lpp property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.periodLp_Wcsp_Lpp = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.core_wing_cross_section_movement,
+                "periodLp_Wcsp_Lpp",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_periodLp_Wcsp_Lpp_array_read_only(self):
+    def test_immutable_periodLp_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that periodLp_Wcsp_Lpp array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.periodLp_Wcsp_Lpp[0] = 999.0
 
-    def test_immutable_spacingLp_Wcsp_Lpp_property(self):
+    def test_immutable_spacingLp_Wcsp_Lpp_property(self) -> None:
         """Test that spacingLp_Wcsp_Lpp property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.spacingLp_Wcsp_Lpp = (
-                "uniform",
-                "uniform",
-                "uniform",
+            setattr(
+                self.core_wing_cross_section_movement,
+                "spacingLp_Wcsp_Lpp",
+                ("uniform", "uniform", "uniform"),
             )
 
-    def test_immutable_phaseLp_Wcsp_Lpp_property(self):
+    def test_immutable_phaseLp_Wcsp_Lpp_property(self) -> None:
         """Test that phaseLp_Wcsp_Lpp property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.phaseLp_Wcsp_Lpp = np.array(
-                [45.0, 45.0, 45.0]
+            setattr(
+                self.core_wing_cross_section_movement,
+                "phaseLp_Wcsp_Lpp",
+                np.array([45.0, 45.0, 45.0]),
             )
 
-    def test_immutable_phaseLp_Wcsp_Lpp_array_read_only(self):
+    def test_immutable_phaseLp_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that phaseLp_Wcsp_Lpp array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.phaseLp_Wcsp_Lpp[0] = 999.0
 
-    def test_immutable_ampAngles_Wcsp_to_Wcs_ixyz_property(self):
+    def test_immutable_ampAngles_Wcsp_to_Wcs_ixyz_property(self) -> None:
         """Test that ampAngles_Wcsp_to_Wcs_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.core_wing_cross_section_movement,
+                "ampAngles_Wcsp_to_Wcs_ixyz",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_ampAngles_Wcsp_to_Wcs_ixyz_array_read_only(self):
+    def test_immutable_ampAngles_Wcsp_to_Wcs_ixyz_array_read_only(self) -> None:
         """Test that ampAngles_Wcsp_to_Wcs_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz[0] = 999.0
 
-    def test_immutable_periodAngles_Wcsp_to_Wcs_ixyz_property(self):
+    def test_immutable_periodAngles_Wcsp_to_Wcs_ixyz_property(self) -> None:
         """Test that periodAngles_Wcsp_to_Wcs_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz = (
-                np.array([1.0, 2.0, 3.0])
+            setattr(
+                self.core_wing_cross_section_movement,
+                "periodAngles_Wcsp_to_Wcs_ixyz",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_periodAngles_Wcsp_to_Wcs_ixyz_array_read_only(self):
+    def test_immutable_periodAngles_Wcsp_to_Wcs_ixyz_array_read_only(self) -> None:
         """Test that periodAngles_Wcsp_to_Wcs_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.periodAngles_Wcsp_to_Wcs_ixyz[0] = (
                 999.0
             )
 
-    def test_immutable_spacingAngles_Wcsp_to_Wcs_ixyz_property(self):
+    def test_immutable_spacingAngles_Wcsp_to_Wcs_ixyz_property(self) -> None:
         """Test that spacingAngles_Wcsp_to_Wcs_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.spacingAngles_Wcsp_to_Wcs_ixyz = (
-                "uniform",
-                "uniform",
-                "uniform",
+            setattr(
+                self.core_wing_cross_section_movement,
+                "spacingAngles_Wcsp_to_Wcs_ixyz",
+                ("uniform", "uniform", "uniform"),
             )
 
-    def test_immutable_phaseAngles_Wcsp_to_Wcs_ixyz_property(self):
+    def test_immutable_phaseAngles_Wcsp_to_Wcs_ixyz_property(self) -> None:
         """Test that phaseAngles_Wcsp_to_Wcs_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz = (
-                np.array([45.0, 45.0, 45.0])
+            setattr(
+                self.core_wing_cross_section_movement,
+                "phaseAngles_Wcsp_to_Wcs_ixyz",
+                np.array([45.0, 45.0, 45.0]),
             )
 
-    def test_immutable_phaseAngles_Wcsp_to_Wcs_ixyz_array_read_only(self):
+    def test_immutable_phaseAngles_Wcsp_to_Wcs_ixyz_array_read_only(self) -> None:
         """Test that phaseAngles_Wcsp_to_Wcs_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_cross_section_movement.phaseAngles_Wcsp_to_Wcs_ixyz[0] = (
@@ -1552,19 +1622,19 @@ class TestCoreWingCrossSectionMovementImmutability(unittest.TestCase):
 class TestCoreWingCrossSectionMovementCaching(unittest.TestCase):
     """Tests for CoreWingCrossSectionMovement caching behavior."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for caching tests."""
         self.core_wing_cross_section_movement = (
             core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture()
         )
 
-    def test_all_periods_caching_returns_same_object(self):
+    def test_all_periods_caching_returns_same_object(self) -> None:
         """Test that repeated access to all_periods returns the same cached object."""
         all_periods_1 = self.core_wing_cross_section_movement.all_periods
         all_periods_2 = self.core_wing_cross_section_movement.all_periods
         self.assertIs(all_periods_1, all_periods_2)
 
-    def test_max_period_caching_returns_same_value(self):
+    def test_max_period_caching_returns_same_value(self) -> None:
         """Test that repeated access to max_period returns the same cached value."""
         max_period_1 = self.core_wing_cross_section_movement.max_period
         max_period_2 = self.core_wing_cross_section_movement.max_period
@@ -1575,13 +1645,13 @@ class TestCoreWingCrossSectionMovementCaching(unittest.TestCase):
 class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
     """Tests for CoreWingCrossSectionMovement deepcopy behavior."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for deepcopy tests."""
         self.core_wing_cross_section_movement = (
             core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture()
         )
 
-    def test_deepcopy_returns_new_instance(self):
+    def test_deepcopy_returns_new_instance(self) -> None:
         """Test that deepcopy returns a new CoreWingCrossSectionMovement instance."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
@@ -1589,7 +1659,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         self.assertIsInstance(copied, ps._core.CoreWingCrossSectionMovement)
         self.assertIsNot(original, copied)
 
-    def test_deepcopy_preserves_attribute_values(self):
+    def test_deepcopy_preserves_attribute_values(self) -> None:
         """Test that deepcopy preserves all attribute values."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
@@ -1615,7 +1685,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
             original.spacingAngles_Wcsp_to_Wcs_ixyz,
         )
 
-    def test_deepcopy_numpy_arrays_are_independent(self):
+    def test_deepcopy_numpy_arrays_are_independent(self) -> None:
         """Test that deepcopied numpy arrays are independent objects."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
@@ -1634,8 +1704,9 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
             copied.phaseAngles_Wcsp_to_Wcs_ixyz, original.phaseAngles_Wcsp_to_Wcs_ixyz
         )
 
-    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self):
-        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self) -> None:
+        """Test that deepcopied numpy arrays raise ValueError on in place
+        modification."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
 
@@ -1658,7 +1729,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         with self.assertRaises(ValueError):
             copied.phaseAngles_Wcsp_to_Wcs_ixyz[0] = 999.0
 
-    def test_deepcopy_base_wing_cross_section_is_independent(self):
+    def test_deepcopy_base_wing_cross_section_is_independent(self) -> None:
         """Test that deepcopied base_wing_cross_section is an independent object."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
@@ -1682,7 +1753,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
             original.base_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
         )
 
-    def test_deepcopy_resets_caches_to_none(self):
+    def test_deepcopy_resets_caches_to_none(self) -> None:
         """Test that deepcopy resets cached derived properties to None."""
         original = self.core_wing_cross_section_movement
 
@@ -1701,7 +1772,7 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         self.assertIsNone(copied._all_periods)
         self.assertIsNone(copied._max_period)
 
-    def test_deepcopy_cached_properties_can_be_recomputed(self):
+    def test_deepcopy_cached_properties_can_be_recomputed(self) -> None:
         """Test that cached properties work correctly after deepcopy."""
         original = self.core_wing_cross_section_movement
 
@@ -1716,8 +1787,9 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.all_periods, original_all_periods)
         self.assertEqual(copied.max_period, original_max_period)
 
-    def test_deepcopy_generate_wing_cross_sections_produces_same_results(self):
-        """Test that generate_wing_cross_sections produces same results after deepcopy."""
+    def test_deepcopy_generate_wing_cross_sections_produces_same_results(self) -> None:
+        """Test that generate_wing_cross_sections produces same results after
+        deepcopy."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
 
@@ -1752,10 +1824,11 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
                 copied_wing_cross_section.chord, original_wing_cross_section.chord
             )
 
-    def test_deepcopy_handles_memo_correctly(self):
-        """Test that deepcopy handles the memo dict correctly for circular references."""
+    def test_deepcopy_handles_memo_correctly(self) -> None:
+        """Test that deepcopy handles the memo dict correctly for circular
+        references."""
         original = self.core_wing_cross_section_movement
-        memo = {}
+        memo: dict[int, Any] = {}
 
         # First deepcopy.
         copied1 = copy.deepcopy(original, memo)

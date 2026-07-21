@@ -3,6 +3,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Add project root to sys.path so sphinx.ext.autodoc can import pterasoftware.
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
@@ -58,11 +59,10 @@ myst_heading_anchors = 3
 def _load_benchmark_host_info() -> dict[str, str]:
     """Read docs/_static/benchmarks/host.json into MyST substitutions.
 
-    The benchmark publish workflow at PteraSoftwareBenchmarks drops host.json
-    alongside the chart artifacts under docs/_static/benchmarks/. Fallback
-    strings are returned when the file is absent (fresh checkout before the
-    first benchmark publish has landed) so docs/website/performance.md still
-    builds.
+    The benchmark publish workflow at PteraSoftwareBenchmarks drops host.json alongside
+    the chart artifacts under docs/_static/benchmarks/. Fallback strings are returned
+    when the file is absent (fresh checkout before the first benchmark publish has
+    landed) so docs/website/performance.md still builds.
     """
     import json
 
@@ -209,16 +209,15 @@ html_theme_options = {
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _rewrite_repo_root_links(app, docname, source):
+def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
     """Rewrite relative links in files included from the repo root.
 
     Files like CONTRIBUTING.md live at the repo root and use paths like
-    ``docs/CODE_STYLE.md`` which are correct on GitHub. When Sphinx
-    includes them via ``{include}``, those paths are resolved relative to
-    ``docs/website/`` where the wrapper lives, so ``docs/CODE_STYLE.md``
-    cannot be found. This handler replaces the wrapper's ``{include}``
-    directive with the actual file content, rewriting ``docs/*.md`` paths
-    to ``*.md`` so they resolve correctly in the Sphinx build.
+    ``docs/CODE_STYLE.md`` which are correct on GitHub. When Sphinx includes them via
+    ``{include}``, those paths are resolved relative to ``docs/website/`` where the
+    wrapper lives, so ``docs/CODE_STYLE.md`` cannot be found. This handler replaces the
+    wrapper's ``{include}`` directive with the actual file content, rewriting
+    ``docs/*.md`` paths to ``*.md`` so they resolve correctly in the Sphinx build.
     """
     contributing_path = REPO_ROOT / "CONTRIBUTING.md"
     if docname == "CONTRIBUTING" and contributing_path.exists():
@@ -227,12 +226,12 @@ def _rewrite_repo_root_links(app, docname, source):
         source[0] = text
 
 
-def setup(app):
+def setup(app: Any) -> None:
     app.connect("source-read", _rewrite_repo_root_links)
 
     # Copy extra assets to the site root after build
     # noinspection PyShadowingNames
-    def _copy_extra_assets(app, exception):
+    def _copy_extra_assets(app: Any, exception: Exception | None) -> None:
         if exception is not None:
             return
         outdir = Path(app.outdir)
@@ -350,7 +349,7 @@ def _first_sentence(docstring: str) -> str:
     return text
 
 
-def autoapi_prepare_jinja_env(jinja_env):
+def autoapi_prepare_jinja_env(jinja_env: Any) -> None:
     """Add custom Jinja filters for AutoAPI templates."""
     jinja_env.filters["first_paragraph"] = _first_paragraph
     jinja_env.filters["strip_init_boilerplate"] = _strip_init_boilerplate

@@ -9,11 +9,9 @@ from pterasoftware import _fixed_point_relaxation
 
 
 class TestWeightedNorm(unittest.TestCase):
-    """This class contains methods for testing
-    _fixed_point_relaxation.weighted_norm.
-    """
+    """This class contains methods for testing _fixed_point_relaxation.weighted_norm."""
 
-    def test_unit_weights_equals_euclidean_norm(self):
+    def test_unit_weights_equals_euclidean_norm(self) -> None:
         """Test that unit weights reduce the weighted norm to the Euclidean norm."""
         weights = np.array([1.0, 1.0, 1.0], dtype=float)
         vector = np.array([3.0, 4.0, 0.0], dtype=float)
@@ -21,7 +19,7 @@ class TestWeightedNorm(unittest.TestCase):
             _fixed_point_relaxation.weighted_norm(weights, vector), 5.0, places=12
         )
 
-    def test_weights_scale_each_component(self):
+    def test_weights_scale_each_component(self) -> None:
         """Test that the weights scale each component before the norm is taken."""
         weights = np.array([2.0, 1.0, 1.0], dtype=float)
         vector = np.array([3.0, 4.0, 0.0], dtype=float)
@@ -32,7 +30,7 @@ class TestWeightedNorm(unittest.TestCase):
             places=12,
         )
 
-    def test_zero_vector_has_zero_norm(self):
+    def test_zero_vector_has_zero_norm(self) -> None:
         """Test that the zero vector has a zero weighted norm."""
         weights = np.array([2.0, 5.0, 0.5], dtype=float)
         vector = np.zeros(3, dtype=float)
@@ -40,7 +38,7 @@ class TestWeightedNorm(unittest.TestCase):
             _fixed_point_relaxation.weighted_norm(weights, vector), 0.0, places=12
         )
 
-    def test_returns_python_float(self):
+    def test_returns_python_float(self) -> None:
         """Test that the weighted norm is returned as a Python float."""
         weights = np.array([1.0, 1.0], dtype=float)
         vector = np.array([1.0, 0.0], dtype=float)
@@ -49,11 +47,9 @@ class TestWeightedNorm(unittest.TestCase):
 
 
 class TestIsConverged(unittest.TestCase):
-    """This class contains methods for testing
-    _fixed_point_relaxation.is_converged.
-    """
+    """This class contains methods for testing _fixed_point_relaxation.is_converged."""
 
-    def test_zero_residual_is_converged(self):
+    def test_zero_residual_is_converged(self) -> None:
         """Test that a zero residual is always converged."""
         weights = np.array([1.0, 1.0, 1.0], dtype=float)
         residual = np.zeros(3, dtype=float)
@@ -64,7 +60,7 @@ class TestIsConverged(unittest.TestCase):
             )
         )
 
-    def test_large_residual_is_not_converged(self):
+    def test_large_residual_is_not_converged(self) -> None:
         """Test that a large residual against a zero increment is not converged."""
         weights = np.array([1.0, 1.0, 1.0], dtype=float)
         residual = np.array([1.0, 1.0, 1.0], dtype=float)
@@ -75,7 +71,7 @@ class TestIsConverged(unittest.TestCase):
             )
         )
 
-    def test_absolute_floor_accepts_near_trim_step(self):
+    def test_absolute_floor_accepts_near_trim_step(self) -> None:
         """Test that the absolute floor governs when the increment vanishes.
 
         With a zero increment the relative term is zero, so a residual below the
@@ -96,7 +92,7 @@ class TestIsConverged(unittest.TestCase):
             )
         )
 
-    def test_relative_term_governs_ordinary_step(self):
+    def test_relative_term_governs_ordinary_step(self) -> None:
         """Test that the relative term governs when the increment is appreciable."""
         weights = np.array([1.0, 1.0, 1.0], dtype=float)
         increment = np.array([0.1, 0.0, 0.0], dtype=float)
@@ -113,7 +109,7 @@ class TestIsConverged(unittest.TestCase):
             )
         )
 
-    def test_boundary_is_inclusive(self):
+    def test_boundary_is_inclusive(self) -> None:
         """Test that a residual exactly on the tolerance is accepted."""
         weights = np.array([1.0, 1.0, 1.0], dtype=float)
         increment = np.array([4.0, 0.0, 0.0], dtype=float)
@@ -124,7 +120,7 @@ class TestIsConverged(unittest.TestCase):
             _fixed_point_relaxation.is_converged(weights, residual, increment, 0.5, 0.0)
         )
 
-    def test_weighting_can_change_the_verdict(self):
+    def test_weighting_can_change_the_verdict(self) -> None:
         """Test that the weighting changes the convergence verdict.
 
         The same residual and increment are unconverged under unit weights but converged
@@ -146,7 +142,7 @@ class TestIsConverged(unittest.TestCase):
             )
         )
 
-    def test_returns_python_bool(self):
+    def test_returns_python_bool(self) -> None:
         """Test that the convergence verdict is returned as a Python bool."""
         weights = np.array([1.0, 1.0], dtype=float)
         residual = np.zeros(2, dtype=float)
@@ -159,10 +155,9 @@ class TestIsConverged(unittest.TestCase):
 
 class TestAitkenRelaxationFactor(unittest.TestCase):
     """This class contains methods for testing
-    _fixed_point_relaxation.aitken_relaxation_factor.
-    """
+    _fixed_point_relaxation.aitken_relaxation_factor."""
 
-    def test_matches_hand_computed_value(self):
+    def test_matches_hand_computed_value(self) -> None:
         """Test the factor against a hand computed unit weight case.
 
         With previous residual [1, 0], residual [0.5, 0], and previous factor 0.5, the
@@ -176,7 +171,7 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
         )
         self.assertAlmostEqual(factor, 1.0, places=12)
 
-    def test_weighting_changes_the_factor(self):
+    def test_weighting_changes_the_factor(self) -> None:
         """Test that the weighting enters the Aitken inner products.
 
         With weights [1, 2], previous residual [2, 1], residual [1, -1], and previous
@@ -191,11 +186,11 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
         )
         self.assertAlmostEqual(factor, 5.0 / 17.0, places=12)
 
-    def test_guard_reverts_on_unchanged_residual(self):
+    def test_guard_reverts_on_unchanged_residual(self) -> None:
         """Test that an unchanged residual reverts the factor to the initial factor.
 
-        When the residual does not change between sub-iterations the denominator is zero,
-        so the guard returns the initial factor rather than dividing by zero.
+        When the residual does not change between sub-iterations the denominator is
+        zero, so the guard returns the initial factor rather than dividing by zero.
         """
         weights = np.array([1.0, 1.0], dtype=float)
         previous_residual = np.array([1.0, 2.0], dtype=float)
@@ -205,7 +200,7 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
         )
         self.assertEqual(factor, 0.5)
 
-    def test_guard_reverts_on_negligible_residual_change(self):
+    def test_guard_reverts_on_negligible_residual_change(self) -> None:
         """Test that a negligible residual change reverts to the initial factor.
 
         A residual change tiny relative to the residual collapses the denominator below
@@ -220,7 +215,7 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
         )
         self.assertEqual(factor, 0.7)
 
-    def test_no_guard_when_denominator_is_healthy(self):
+    def test_no_guard_when_denominator_is_healthy(self) -> None:
         """Test that a healthy denominator does not trigger the guard.
 
         With a residual change well above the divergence tolerance the factor is the
@@ -235,7 +230,7 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
         self.assertNotAlmostEqual(factor, 0.25, places=12)
         self.assertAlmostEqual(factor, 1.0, places=12)
 
-    def test_returns_python_float(self):
+    def test_returns_python_float(self) -> None:
         """Test that the relaxation factor is returned as a Python float."""
         weights = np.array([1.0, 1.0], dtype=float)
         previous_residual = np.array([1.0, 0.0], dtype=float)

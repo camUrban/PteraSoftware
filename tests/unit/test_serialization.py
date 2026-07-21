@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import cast
 from unittest import mock
 
 import numpy as np
@@ -89,11 +90,10 @@ from tests.unit.fixtures import (
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
-    """This class contains methods for testing _ndarray_to_dict and
-    _ndarray_from_dict round trips.
-    """
+    """This class contains methods for testing _ndarray_to_dict and _ndarray_from_dict
+    round trips."""
 
-    def test_float64_1d(self):
+    def test_float64_1d(self) -> None:
         """Tests round trip for a 1D float64 array.
 
         :return: None
@@ -103,7 +103,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.float64)
 
-    def test_float64_2d(self):
+    def test_float64_2d(self) -> None:
         """Tests round trip for a 2D float64 array.
 
         :return: None
@@ -113,7 +113,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.shape, (3, 2))
 
-    def test_float64_3d(self):
+    def test_float64_3d(self) -> None:
         """Tests round trip for a 3D float64 array.
 
         :return: None
@@ -123,7 +123,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.shape, (2, 4, 3))
 
-    def test_int64_1d(self):
+    def test_int64_1d(self) -> None:
         """Tests round trip for a 1D int64 array.
 
         :return: None
@@ -133,7 +133,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.int64)
 
-    def test_bool_1d(self):
+    def test_bool_1d(self) -> None:
         """Tests round trip for a 1D bool array.
 
         :return: None
@@ -143,7 +143,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertEqual(result.dtype, np.bool_)
 
-    def test_empty_float64(self):
+    def test_empty_float64(self) -> None:
         """Tests round trip for an empty float64 array.
 
         :return: None
@@ -154,7 +154,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         self.assertEqual(result.shape, (0,))
         self.assertEqual(result.dtype, np.float64)
 
-    def test_empty_2d(self):
+    def test_empty_2d(self) -> None:
         """Tests round trip for an empty 2D array with a non trivial second dimension.
 
         :return: None
@@ -164,7 +164,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         self.assertEqual(result.shape, (0, 3))
         self.assertEqual(result.dtype, np.float64)
 
-    def test_writeable_preserved(self):
+    def test_writeable_preserved(self) -> None:
         """Tests that a writable array remains writable after round trip.
 
         :return: None
@@ -174,7 +174,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         result = _ndarray_from_dict(_ndarray_to_dict(arr))
         self.assertTrue(result.flags.writeable)
 
-    def test_read_only_preserved(self):
+    def test_read_only_preserved(self) -> None:
         """Tests that a read only array remains read only after round trip.
 
         :return: None
@@ -185,7 +185,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result, arr)
         self.assertFalse(result.flags.writeable)
 
-    def test_missing_writeable_defaults_to_writeable(self):
+    def test_missing_writeable_defaults_to_writeable(self) -> None:
         """Tests that a missing writeable field defaults to a writable array.
 
         :return: None
@@ -196,7 +196,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         result = _ndarray_from_dict(serialized_dict)
         self.assertTrue(result.flags.writeable)
 
-    def test_dtype_object_with_none(self):
+    def test_dtype_object_with_none(self) -> None:
         """Tests round trip for a dtype=object array containing None values.
 
         :return: None
@@ -211,7 +211,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         for i in range(3):
             self.assertIsNone(result[i])
 
-    def test_dtype_object_2d_shape(self):
+    def test_dtype_object_2d_shape(self) -> None:
         """Tests that a 2D dtype=object array preserves its shape after round trip.
 
         :return: None
@@ -224,7 +224,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         self.assertEqual(result.shape, (2, 3))
         self.assertEqual(result.dtype, object)
 
-    def test_dtype_object_read_only_preserved(self):
+    def test_dtype_object_read_only_preserved(self) -> None:
         """Tests that a read only dtype=object array remains read only after round trip.
 
         :return: None
@@ -236,7 +236,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
         result = _ndarray_from_dict(_ndarray_to_dict(arr))
         self.assertFalse(result.flags.writeable)
 
-    def test_dtype_object_writeable_preserved(self):
+    def test_dtype_object_writeable_preserved(self) -> None:
         """Tests that a writable dtype=object array remains writable after round trip.
 
         :return: None
@@ -251,7 +251,7 @@ class TestNdarrayRoundTrip(unittest.TestCase):
 class TestNdarrayToDict(unittest.TestCase):
     """This class contains methods for testing _ndarray_to_dict output structure."""
 
-    def test_numeric_dict_keys(self):
+    def test_numeric_dict_keys(self) -> None:
         """Tests that a numeric array produces a dict with the expected keys.
 
         :return: None
@@ -265,7 +265,7 @@ class TestNdarrayToDict(unittest.TestCase):
         self.assertIn("writeable", serialized_dict)
         self.assertNotIn("items", serialized_dict)
 
-    def test_object_dict_keys(self):
+    def test_object_dict_keys(self) -> None:
         """Tests that a dtype=object array produces a dict with the expected keys.
 
         :return: None
@@ -280,7 +280,7 @@ class TestNdarrayToDict(unittest.TestCase):
         self.assertIn("writeable", serialized_dict)
         self.assertNotIn("data", serialized_dict)
 
-    def test_base64_data_is_string(self):
+    def test_base64_data_is_string(self) -> None:
         """Tests that the base64 encoded data is a string.
 
         :return: None
@@ -293,14 +293,14 @@ class TestNdarrayToDict(unittest.TestCase):
 class TestSerializeValue(unittest.TestCase):
     """This class contains methods for testing _serialize_value."""
 
-    def test_none(self):
+    def test_none(self) -> None:
         """Tests that None serializes to None.
 
         :return: None
         """
         self.assertIsNone(_serialize_value(None))
 
-    def test_bool_true(self):
+    def test_bool_true(self) -> None:
         """Tests that True serializes to True.
 
         :return: None
@@ -308,7 +308,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(True)
         self.assertIs(result, True)
 
-    def test_bool_false(self):
+    def test_bool_false(self) -> None:
         """Tests that False serializes to False.
 
         :return: None
@@ -316,7 +316,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(False)
         self.assertIs(result, False)
 
-    def test_np_bool(self):
+    def test_np_bool(self) -> None:
         """Tests that a numpy bool serializes to a Python bool.
 
         :return: None
@@ -325,7 +325,7 @@ class TestSerializeValue(unittest.TestCase):
         self.assertIs(result, True)
         self.assertIsInstance(result, bool)
 
-    def test_bool_not_wrapped_as_int(self):
+    def test_bool_not_wrapped_as_int(self) -> None:
         """Tests that bool values are not wrapped as int dicts.
 
         :return: None
@@ -333,7 +333,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(True)
         self.assertNotIsInstance(result, dict)
 
-    def test_int(self):
+    def test_int(self) -> None:
         """Tests that a Python int serializes to a wrapped dict.
 
         :return: None
@@ -341,7 +341,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(42)
         self.assertEqual(result, {"_type": "int", "value": 42})
 
-    def test_np_int64(self):
+    def test_np_int64(self) -> None:
         """Tests that a numpy int64 serializes to a wrapped dict with a Python int.
 
         :return: None
@@ -351,7 +351,7 @@ class TestSerializeValue(unittest.TestCase):
         assert isinstance(result, dict)
         self.assertIsInstance(result["value"], int)
 
-    def test_float(self):
+    def test_float(self) -> None:
         """Tests that a Python float serializes to a wrapped dict.
 
         :return: None
@@ -359,7 +359,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(3.14)
         self.assertEqual(result, {"_type": "float", "value": 3.14})
 
-    def test_np_float64(self):
+    def test_np_float64(self) -> None:
         """Tests that a numpy float64 serializes to a wrapped dict with a Python float.
 
         :return: None
@@ -369,7 +369,7 @@ class TestSerializeValue(unittest.TestCase):
         assert isinstance(result, dict)
         self.assertIsInstance(result["value"], float)
 
-    def test_float_inf_raises(self):
+    def test_float_inf_raises(self) -> None:
         """Tests that serializing inf raises a ValueError.
 
         :return: None
@@ -377,7 +377,7 @@ class TestSerializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(float("inf"))
 
-    def test_float_negative_inf_raises(self):
+    def test_float_negative_inf_raises(self) -> None:
         """Tests that serializing negative inf raises a ValueError.
 
         :return: None
@@ -385,7 +385,7 @@ class TestSerializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(float("-inf"))
 
-    def test_float_nan_raises(self):
+    def test_float_nan_raises(self) -> None:
         """Tests that serializing NaN raises a ValueError.
 
         :return: None
@@ -393,7 +393,7 @@ class TestSerializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(float("nan"))
 
-    def test_str(self):
+    def test_str(self) -> None:
         """Tests that a string serializes to itself.
 
         :return: None
@@ -401,7 +401,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value("hello")
         self.assertEqual(result, "hello")
 
-    def test_ndarray(self):
+    def test_ndarray(self) -> None:
         """Tests that a numpy array delegates to _ndarray_to_dict.
 
         :return: None
@@ -411,7 +411,7 @@ class TestSerializeValue(unittest.TestCase):
         assert isinstance(result, dict)
         self.assertEqual(result["_type"], "ndarray")
 
-    def test_tuple(self):
+    def test_tuple(self) -> None:
         """Tests that a tuple serializes to a dict with items.
 
         :return: None
@@ -421,7 +421,7 @@ class TestSerializeValue(unittest.TestCase):
         self.assertEqual(result["_type"], "tuple")
         self.assertEqual(len(result["items"]), 3)
 
-    def test_tuple_empty(self):
+    def test_tuple_empty(self) -> None:
         """Tests that an empty tuple serializes correctly.
 
         :return: None
@@ -429,7 +429,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(())
         self.assertEqual(result, {"_type": "tuple", "items": []})
 
-    def test_list(self):
+    def test_list(self) -> None:
         """Tests that a list serializes to a dict with items.
 
         :return: None
@@ -439,7 +439,7 @@ class TestSerializeValue(unittest.TestCase):
         self.assertEqual(result["_type"], "list")
         self.assertEqual(len(result["items"]), 3)
 
-    def test_list_empty(self):
+    def test_list_empty(self) -> None:
         """Tests that an empty list serializes correctly.
 
         :return: None
@@ -447,7 +447,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value([])
         self.assertEqual(result, {"_type": "list", "items": []})
 
-    def test_nested_tuple(self):
+    def test_nested_tuple(self) -> None:
         """Tests that a nested tuple serializes recursively.
 
         :return: None
@@ -460,7 +460,7 @@ class TestSerializeValue(unittest.TestCase):
         self.assertEqual(inner["_type"], "tuple")
         self.assertEqual(len(inner["items"]), 2)
 
-    def test_callable_sine(self):
+    def test_callable_sine(self) -> None:
         """Tests that the oscillating_sin_at_time function serializes by name.
 
         :return: None
@@ -468,7 +468,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(oscillating_sin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "sine"})
 
-    def test_callable_uniform(self):
+    def test_callable_uniform(self) -> None:
         """Tests that the oscillating_lin_at_time function serializes by name.
 
         :return: None
@@ -476,7 +476,7 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(oscillating_lin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "uniform"})
 
-    def test_callable_custom_raises(self):
+    def test_callable_custom_raises(self) -> None:
         """Tests that a custom callable raises a ValueError.
 
         :return: None
@@ -484,7 +484,7 @@ class TestSerializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(lambda x: x)
 
-    def test_unsupported_type_raises(self):
+    def test_unsupported_type_raises(self) -> None:
         """Tests that an unsupported type raises a TypeError.
 
         :return: None
@@ -496,35 +496,35 @@ class TestSerializeValue(unittest.TestCase):
 class TestDeserializeValue(unittest.TestCase):
     """This class contains methods for testing _deserialize_value."""
 
-    def test_none(self):
+    def test_none(self) -> None:
         """Tests that None deserializes to None.
 
         :return: None
         """
         self.assertIsNone(_deserialize_value(None))
 
-    def test_bool_true(self):
+    def test_bool_true(self) -> None:
         """Tests that True deserializes to True.
 
         :return: None
         """
         self.assertIs(_deserialize_value(True), True)
 
-    def test_bool_false(self):
+    def test_bool_false(self) -> None:
         """Tests that False deserializes to False.
 
         :return: None
         """
         self.assertIs(_deserialize_value(False), False)
 
-    def test_str(self):
+    def test_str(self) -> None:
         """Tests that a string deserializes to itself.
 
         :return: None
         """
         self.assertEqual(_deserialize_value("hello"), "hello")
 
-    def test_int(self):
+    def test_int(self) -> None:
         """Tests that a wrapped int dict deserializes to an int.
 
         :return: None
@@ -533,7 +533,7 @@ class TestDeserializeValue(unittest.TestCase):
         self.assertEqual(result, 42)
         self.assertIsInstance(result, int)
 
-    def test_float(self):
+    def test_float(self) -> None:
         """Tests that a wrapped float dict deserializes to a float.
 
         :return: None
@@ -542,7 +542,7 @@ class TestDeserializeValue(unittest.TestCase):
         self.assertEqual(result, 3.14)
         self.assertIsInstance(result, float)
 
-    def test_ndarray(self):
+    def test_ndarray(self) -> None:
         """Tests that an ndarray dict deserializes to a numpy array.
 
         :return: None
@@ -552,7 +552,7 @@ class TestDeserializeValue(unittest.TestCase):
         result = _deserialize_value(serialized_dict)
         npt.assert_array_equal(result, arr)
 
-    def test_tuple(self):
+    def test_tuple(self) -> None:
         """Tests that a tuple dict deserializes to a tuple.
 
         :return: None
@@ -569,7 +569,7 @@ class TestDeserializeValue(unittest.TestCase):
         self.assertEqual(result, (1, 2.0, "three"))
         self.assertIsInstance(result, tuple)
 
-    def test_list(self):
+    def test_list(self) -> None:
         """Tests that a list dict deserializes to a list.
 
         :return: None
@@ -585,7 +585,7 @@ class TestDeserializeValue(unittest.TestCase):
         self.assertEqual(result, [1, 2.0])
         self.assertIsInstance(result, list)
 
-    def test_callable_sine(self):
+    def test_callable_sine(self) -> None:
         """Tests that a callable dict with name "sine" deserializes to
         oscillating_sin_at_time.
 
@@ -594,7 +594,7 @@ class TestDeserializeValue(unittest.TestCase):
         result = _deserialize_value({"_type": "callable", "name": "sine"})
         self.assertIs(result, oscillating_sin_at_time)
 
-    def test_callable_uniform(self):
+    def test_callable_uniform(self) -> None:
         """Tests that a callable dict with name "uniform" deserializes to
         oscillating_lin_at_time.
 
@@ -603,7 +603,7 @@ class TestDeserializeValue(unittest.TestCase):
         result = _deserialize_value({"_type": "callable", "name": "uniform"})
         self.assertIs(result, oscillating_lin_at_time)
 
-    def test_callable_unknown_name_raises(self):
+    def test_callable_unknown_name_raises(self) -> None:
         """Tests that an unknown callable name raises a ValueError.
 
         :return: None
@@ -611,7 +611,7 @@ class TestDeserializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _deserialize_value({"_type": "callable", "name": "unknown"})
 
-    def test_bare_int_raises(self):
+    def test_bare_int_raises(self) -> None:
         """Tests that a bare JSON int raises a ValueError.
 
         :return: None
@@ -619,7 +619,7 @@ class TestDeserializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _deserialize_value(42)
 
-    def test_bare_float_raises(self):
+    def test_bare_float_raises(self) -> None:
         """Tests that a bare JSON float raises a ValueError.
 
         :return: None
@@ -627,7 +627,7 @@ class TestDeserializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _deserialize_value(3.14)
 
-    def test_dict_without_type_raises(self):
+    def test_dict_without_type_raises(self) -> None:
         """Tests that a dict without a _type key raises a ValueError.
 
         :return: None
@@ -635,7 +635,7 @@ class TestDeserializeValue(unittest.TestCase):
         with self.assertRaises(ValueError):
             _deserialize_value({"key": "value"})
 
-    def test_unknown_type_tag_raises(self):
+    def test_unknown_type_tag_raises(self) -> None:
         """Tests that an unknown _type tag raises a TypeError.
 
         :return: None
@@ -646,17 +646,16 @@ class TestDeserializeValue(unittest.TestCase):
 
 class TestValueRoundTrip(unittest.TestCase):
     """This class contains methods for testing _serialize_value and _deserialize_value
-    round trips.
-    """
+    round trips."""
 
-    def test_none(self):
+    def test_none(self) -> None:
         """Tests round trip for None.
 
         :return: None
         """
         self.assertIsNone(_deserialize_value(_serialize_value(None)))
 
-    def test_bool(self):
+    def test_bool(self) -> None:
         """Tests round trip for bool values.
 
         :return: None
@@ -665,7 +664,7 @@ class TestValueRoundTrip(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIs(_deserialize_value(_serialize_value(value)), value)
 
-    def test_int(self):
+    def test_int(self) -> None:
         """Tests round trip for int values.
 
         :return: None
@@ -676,7 +675,7 @@ class TestValueRoundTrip(unittest.TestCase):
                 self.assertEqual(result, value)
                 self.assertIsInstance(result, int)
 
-    def test_np_int64(self):
+    def test_np_int64(self) -> None:
         """Tests round trip for numpy int64 values.
 
         :return: None
@@ -685,7 +684,7 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertEqual(result, 7)
         self.assertIsInstance(result, int)
 
-    def test_float(self):
+    def test_float(self) -> None:
         """Tests round trip for float values.
 
         :return: None
@@ -696,7 +695,7 @@ class TestValueRoundTrip(unittest.TestCase):
                 self.assertEqual(result, value)
                 self.assertIsInstance(result, float)
 
-    def test_np_float64(self):
+    def test_np_float64(self) -> None:
         """Tests round trip for numpy float64 values.
 
         :return: None
@@ -705,7 +704,7 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertEqual(result, 2.718)
         self.assertIsInstance(result, float)
 
-    def test_str(self):
+    def test_str(self) -> None:
         """Tests round trip for string values.
 
         :return: None
@@ -714,7 +713,7 @@ class TestValueRoundTrip(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(_deserialize_value(_serialize_value(value)), value)
 
-    def test_tuple(self):
+    def test_tuple(self) -> None:
         """Tests round trip for a tuple with mixed types.
 
         :return: None
@@ -724,7 +723,7 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertEqual(result, value)
         self.assertIsInstance(result, tuple)
 
-    def test_list(self):
+    def test_list(self) -> None:
         """Tests round trip for a list with mixed types.
 
         :return: None
@@ -734,7 +733,7 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertEqual(result, value)
         self.assertIsInstance(result, list)
 
-    def test_nested_containers(self):
+    def test_nested_containers(self) -> None:
         """Tests round trip for nested tuples and lists.
 
         :return: None
@@ -747,7 +746,7 @@ class TestValueRoundTrip(unittest.TestCase):
         self.assertEqual(result[1], (3.0, "four"))
         self.assertIsInstance(result[1], tuple)
 
-    def test_callable_sine(self):
+    def test_callable_sine(self) -> None:
         """Tests round trip for the oscillating_sin_at_time function.
 
         :return: None
@@ -757,7 +756,7 @@ class TestValueRoundTrip(unittest.TestCase):
             oscillating_sin_at_time,
         )
 
-    def test_callable_uniform(self):
+    def test_callable_uniform(self) -> None:
         """Tests round trip for the oscillating_lin_at_time function.
 
         :return: None
@@ -771,7 +770,7 @@ class TestValueRoundTrip(unittest.TestCase):
 class TestObjectToDict(unittest.TestCase):
     """This class contains methods for testing _object_to_dict."""
 
-    def test_unregistered_class_raises(self):
+    def test_unregistered_class_raises(self) -> None:
         """Tests that an unregistered class raises a TypeError.
 
         :return: None
@@ -783,7 +782,7 @@ class TestObjectToDict(unittest.TestCase):
 class TestObjectFromDict(unittest.TestCase):
     """This class contains methods for testing _object_from_dict."""
 
-    def test_unknown_class_raises(self):
+    def test_unknown_class_raises(self) -> None:
         """Tests that an unknown class name raises a TypeError.
 
         :return: None
@@ -795,7 +794,7 @@ class TestObjectFromDict(unittest.TestCase):
 class TestHashObject(unittest.TestCase):
     """This class contains methods for testing hash_object."""
 
-    def test_returns_hex_string(self):
+    def test_returns_hex_string(self) -> None:
         """Tests that hash_object returns a 64 character lowercase hex string.
 
         :return: None
@@ -805,7 +804,7 @@ class TestHashObject(unittest.TestCase):
         self.assertEqual(len(result), 64)
         self.assertTrue(all(character in "0123456789abcdef" for character in result))
 
-    def test_deterministic_for_same_object(self):
+    def test_deterministic_for_same_object(self) -> None:
         """Tests that hashing the same object twice returns the same digest.
 
         :return: None
@@ -813,7 +812,7 @@ class TestHashObject(unittest.TestCase):
         operating_point = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
         self.assertEqual(hash_object(operating_point), hash_object(operating_point))
 
-    def test_equal_for_distinct_but_equal_objects(self):
+    def test_equal_for_distinct_but_equal_objects(self) -> None:
         """Tests that two distinct objects with equal content hash identically.
 
         :return: None
@@ -823,7 +822,7 @@ class TestHashObject(unittest.TestCase):
         self.assertIsNot(first, second)
         self.assertEqual(hash_object(first), hash_object(second))
 
-    def test_differs_for_different_content(self):
+    def test_differs_for_different_content(self) -> None:
         """Tests that objects differing in one attribute hash differently.
 
         :return: None
@@ -832,7 +831,7 @@ class TestHashObject(unittest.TestCase):
         second = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=6.0)
         self.assertNotEqual(hash_object(first), hash_object(second))
 
-    def test_differs_across_classes(self):
+    def test_differs_across_classes(self) -> None:
         """Tests that objects of different classes hash differently.
 
         :return: None
@@ -842,7 +841,7 @@ class TestHashObject(unittest.TestCase):
             hash_object(Airfoil(name="NACA0012")),
         )
 
-    def test_stable_across_save_load_round_trip(self):
+    def test_stable_across_save_load_round_trip(self) -> None:
         """Tests that a save and load round trip preserves an object's digest.
 
         :return: None
@@ -856,7 +855,7 @@ class TestHashObject(unittest.TestCase):
         assert isinstance(loaded, SteadyProblem)
         self.assertEqual(hash_object(loaded), original_hash)
 
-    def test_folds_in_format_version(self):
+    def test_folds_in_format_version(self) -> None:
         """Tests that changing the format version changes the digest.
 
         :return: None
@@ -869,7 +868,7 @@ class TestHashObject(unittest.TestCase):
             bumped_hash = hash_object(operating_point)
         self.assertNotEqual(base_hash, bumped_hash)
 
-    def test_unregistered_object_raises(self):
+    def test_unregistered_object_raises(self) -> None:
         """Tests that hashing an unregistered object raises a TypeError.
 
         :return: None
@@ -881,7 +880,7 @@ class TestHashObject(unittest.TestCase):
 class TestSaveLoad(unittest.TestCase):
     """This class contains methods for testing save and load."""
 
-    def test_file_contains_format_version(self):
+    def test_file_contains_format_version(self) -> None:
         """Tests that the saved file contains the format version.
 
         :return: None
@@ -894,7 +893,7 @@ class TestSaveLoad(unittest.TestCase):
                 data = json.load(f)
         self.assertEqual(data["_format_version"], _FORMAT_VERSION)
 
-    def test_file_contains_provenance(self):
+    def test_file_contains_provenance(self) -> None:
         """Tests that the saved file contains provenance metadata.
 
         :return: None
@@ -910,7 +909,7 @@ class TestSaveLoad(unittest.TestCase):
         self.assertIn("_commit", data)
         self.assertIn("_dirty", data)
 
-    def test_format_version_mismatch_raises(self):
+    def test_format_version_mismatch_raises(self) -> None:
         """Tests that loading a file with a mismatched format version raises, reporting
         both format versions and naming no package version.
 
@@ -933,7 +932,7 @@ class TestSaveLoad(unittest.TestCase):
         self.assertIn(str(_FORMAT_VERSION), message)
         self.assertNotIn("4.0.0", message)
 
-    def test_save_accepts_string_path(self):
+    def test_save_accepts_string_path(self) -> None:
         """Tests that save accepts a string path in addition to a Path object.
 
         :return: None
@@ -945,7 +944,7 @@ class TestSaveLoad(unittest.TestCase):
             result = load(path)
         assert isinstance(result, OperatingPoint)
 
-    def test_save_invalid_extension_raises(self):
+    def test_save_invalid_extension_raises(self) -> None:
         """Tests that save raises a ValueError for an unsupported file extension.
 
         :return: None
@@ -954,7 +953,7 @@ class TestSaveLoad(unittest.TestCase):
         with self.assertRaises(ValueError):
             save("test.txt", operating_point)
 
-    def test_load_invalid_extension_raises(self):
+    def test_load_invalid_extension_raises(self) -> None:
         """Tests that load raises a ValueError for an unsupported file extension.
 
         :return: None
@@ -962,7 +961,7 @@ class TestSaveLoad(unittest.TestCase):
         with self.assertRaises(ValueError):
             load("test.dat")
 
-    def test_save_directory_raises(self):
+    def test_save_directory_raises(self) -> None:
         """Tests that save raises a ValueError when the path is an existing directory.
 
         :return: None
@@ -974,7 +973,7 @@ class TestSaveLoad(unittest.TestCase):
             with self.assertRaises(ValueError):
                 save(path, operating_point)
 
-    def test_load_directory_raises(self):
+    def test_load_directory_raises(self) -> None:
         """Tests that load raises a ValueError when the path is an existing directory.
 
         :return: None
@@ -985,7 +984,7 @@ class TestSaveLoad(unittest.TestCase):
             with self.assertRaises(ValueError):
                 load(path)
 
-    def test_gzip_bomb_protection(self):
+    def test_gzip_bomb_protection(self) -> None:
         """Tests that the max_size parameter on load controls the size limit.
 
         :return: None
@@ -1001,7 +1000,7 @@ class TestSaveLoad(unittest.TestCase):
 class TestAirfoilRoundTrip(unittest.TestCase):
     """This class contains methods for testing Airfoil serialization round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that an Airfoil survives a full round trip.
 
         :return: None
@@ -1014,7 +1013,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         self.assertEqual(result.resample, airfoil.resample)
         self.assertEqual(result.n_points_per_side, airfoil.n_points_per_side)
 
-    def test_mcl_round_trip(self):
+    def test_mcl_round_trip(self) -> None:
         """Tests that the mean camber line array survives round trip.
 
         :return: None
@@ -1026,7 +1025,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         assert airfoil.mcl_A_Lp is not None
         npt.assert_array_equal(result.mcl_A_Lp, airfoil.mcl_A_Lp)
 
-    def test_writeable_flags(self):
+    def test_writeable_flags(self) -> None:
         """Tests that deserialized Airfoil arrays preserve their writeable flags.
 
         :return: None
@@ -1036,7 +1035,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         assert isinstance(result, Airfoil)
         self.assertFalse(result.outline_A_Lp.flags.writeable)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that an Airfoil survives a save/load round trip.
 
         :return: None
@@ -1053,10 +1052,9 @@ class TestAirfoilRoundTrip(unittest.TestCase):
 
 class TestOperatingPointRoundTrip(unittest.TestCase):
     """This class contains methods for testing OperatingPoint serialization round
-    trips.
-    """
+    trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that an OperatingPoint survives a full round trip.
 
         :return: None
@@ -1069,7 +1067,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         self.assertEqual(result.alpha, 5.0)
         self.assertEqual(result.beta, 0.0)
 
-    def test_with_surface_effect(self):
+    def test_with_surface_effect(self) -> None:
         """Tests that an OperatingPoint with surface effect parameters survives round
         trip.
 
@@ -1090,7 +1088,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
             result.surfacePoint_E_Eo, operating_point.surfacePoint_E_Eo
         )
 
-    def test_none_surface_params(self):
+    def test_none_surface_params(self) -> None:
         """Tests that None surface parameters remain None after round trip.
 
         :return: None
@@ -1101,7 +1099,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         self.assertIsNone(result.surfaceNormal_E)
         self.assertIsNone(result.surfacePoint_E_Eo)
 
-    def test_none_caches_round_trip(self):
+    def test_none_caches_round_trip(self) -> None:
         """Tests that uncomputed caches remain None after round trip.
 
         :return: None
@@ -1113,7 +1111,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         self.assertIsNone(object.__getattribute__(result, "_T_pas_GP1_CgP1_to_W_CgP1"))
         self.assertIsNone(object.__getattribute__(result, "_vInf_GP1__E"))
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that an OperatingPoint survives a save/load round trip.
 
         :return: None
@@ -1130,10 +1128,9 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
 
 class TestWingCrossSectionRoundTrip(unittest.TestCase):
     """This class contains methods for testing WingCrossSection serialization round
-    trips.
-    """
+    trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a WingCrossSection survives a full round trip.
 
         :return: None
@@ -1149,7 +1146,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_spanwise_panels, 8)
         self.assertEqual(result.chord, 1.0)
 
-    def test_tip_wing_cross_section(self):
+    def test_tip_wing_cross_section(self) -> None:
         """Tests that a tip WingCrossSection (num_spanwise_panels=None) survives round
         trip.
 
@@ -1163,7 +1160,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
         assert isinstance(result, WingCrossSection)
         self.assertIsNone(result.num_spanwise_panels)
 
-    def test_nested_airfoil(self):
+    def test_nested_airfoil(self) -> None:
         """Tests that the nested Airfoil object survives round trip.
 
         :return: None
@@ -1177,7 +1174,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
         assert isinstance(result, WingCrossSection)
         npt.assert_array_equal(result.airfoil.outline_A_Lp, airfoil.outline_A_Lp)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a WingCrossSection survives a save/load round trip.
 
         :return: None
@@ -1199,7 +1196,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
 class TestPanelRoundTrip(unittest.TestCase):
     """This class contains methods for testing Panel serialization round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a Panel survives a full round trip.
 
         :return: None
@@ -1212,7 +1209,7 @@ class TestPanelRoundTrip(unittest.TestCase):
         self.assertTrue(result.is_leading_edge)
         self.assertFalse(result.is_trailing_edge)
 
-    def test_none_mutable_attrs(self):
+    def test_none_mutable_attrs(self) -> None:
         """Tests that None mutable attributes remain None after round trip.
 
         :return: None
@@ -1222,7 +1219,7 @@ class TestPanelRoundTrip(unittest.TestCase):
         assert isinstance(result, Panel)
         self.assertIsNone(result.forces_GP1)
 
-    def test_writeable_flags(self):
+    def test_writeable_flags(self) -> None:
         """Tests that deserialized Panel arrays preserve their writeable flags.
 
         :return: None
@@ -1236,7 +1233,7 @@ class TestPanelRoundTrip(unittest.TestCase):
 class TestWingRoundTrip(unittest.TestCase):
     """This class contains methods for testing Wing serialization round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a meshed Wing survives a full round trip.
 
         :return: None
@@ -1250,7 +1247,7 @@ class TestWingRoundTrip(unittest.TestCase):
         self.assertEqual(result.chordwise_spacing, wing.chordwise_spacing)
         self.assertEqual(result.spanwise_mesh, wing.spanwise_mesh)
 
-    def test_exploded_wing_spanwise_mesh_round_trip(self):
+    def test_exploded_wing_spanwise_mesh_round_trip(self) -> None:
         """Tests that an exploded Wing's spanwise mesh marker survives round trip.
 
         :return: None
@@ -1280,7 +1277,7 @@ class TestWingRoundTrip(unittest.TestCase):
         assert isinstance(result, Wing)
         self.assertEqual(result.spanwise_mesh, "exploded")
 
-    def test_edge_defined_wing_round_trip(self):
+    def test_edge_defined_wing_round_trip(self) -> None:
         """Tests that a from_edge_points Wing's marker, edge curves, and tip trim
         fraction survive a round trip.
 
@@ -1308,7 +1305,7 @@ class TestWingRoundTrip(unittest.TestCase):
         self.assertFalse(result.leadingEdgePoints_Wn_Ler.flags.writeable)
         self.assertFalse(result.trailingEdgePoints_Wn_Ler.flags.writeable)
 
-    def test_panels_dtype_object_round_trip(self):
+    def test_panels_dtype_object_round_trip(self) -> None:
         """Tests that the dtype=object _panels array survives round trip with Panel
         objects.
 
@@ -1330,7 +1327,7 @@ class TestWingRoundTrip(unittest.TestCase):
                     wing.panels[i, j].Frpp_G_Cg,
                 )
 
-    def test_wing_cross_sections_tuple_round_trip(self):
+    def test_wing_cross_sections_tuple_round_trip(self) -> None:
         """Tests that the _wing_cross_sections tuple survives round trip.
 
         :return: None
@@ -1344,7 +1341,7 @@ class TestWingRoundTrip(unittest.TestCase):
             assert isinstance(loaded, WingCrossSection)
             self.assertEqual(loaded.chord, orig.chord)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a meshed Wing survives a save/load round trip.
 
         :return: None
@@ -1363,7 +1360,7 @@ class TestWingRoundTrip(unittest.TestCase):
 class TestAirplaneRoundTrip(unittest.TestCase):
     """This class contains methods for testing Airplane serialization round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a meshed Airplane survives a full round trip.
 
         :return: None
@@ -1377,7 +1374,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         self.assertEqual(result.c_ref, airplane.c_ref)
         self.assertEqual(result.b_ref, airplane.b_ref)
 
-    def test_nested_wing_panels(self):
+    def test_nested_wing_panels(self) -> None:
         """Tests that an Airplane's nested Wing Panel arrays survive round trip.
 
         :return: None
@@ -1391,7 +1388,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
             assert orig_wing.panels is not None
             self.assertEqual(loaded_wing.panels.shape, orig_wing.panels.shape)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a meshed Airplane survives a save/load round trip.
 
         :return: None
@@ -1408,10 +1405,9 @@ class TestAirplaneRoundTrip(unittest.TestCase):
 
 class TestSteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyProblem serialization round
-    trips.
-    """
+    trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a SteadyProblem survives a full round trip.
 
         :return: None
@@ -1425,22 +1421,26 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(result.operating_point.rho, 1.225)
         self.assertEqual(result.operating_point.alpha, 5.0)
 
-    def test_panels_have_gp1_coordinates(self):
+    def test_panels_have_gp1_coordinates(self) -> None:
         """Tests that deserialized Panels retain their GP1 coordinates set by the
         SteadyProblem.
 
         :return: None
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
-        orig_panel = problem.airplanes[0].wings[0].panels[0, 0]
+        orig_panels = problem.airplanes[0].wings[0].panels
+        assert orig_panels is not None
+        orig_panel = orig_panels[0, 0]
         result = _deserialize_value(_serialize_value(problem))
         assert isinstance(result, SteadyProblem)
-        loaded_panel = result.airplanes[0].wings[0].panels[0, 0]
+        loaded_panels = result.airplanes[0].wings[0].panels
+        assert loaded_panels is not None
+        loaded_panel = loaded_panels[0, 0]
         assert orig_panel.Frpp_GP1_CgP1 is not None
         assert loaded_panel.Frpp_GP1_CgP1 is not None
         npt.assert_array_equal(loaded_panel.Frpp_GP1_CgP1, orig_panel.Frpp_GP1_CgP1)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a SteadyProblem survives a save/load round trip.
 
         :return: None
@@ -1454,7 +1454,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.airplanes), 1)
         assert isinstance(result.operating_point, OperatingPoint)
 
-    def test_formation_flight_round_trip(self):
+    def test_formation_flight_round_trip(self) -> None:
         """Tests that a SteadyProblem with two Airplanes survives a full round trip.
 
         :return: None
@@ -1467,7 +1467,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
             assert isinstance(result.airplanes[i], Airplane)
             assert result.airplanes[i].wings[0].panels is not None
 
-    def test_formation_flight_gp1_coordinates(self):
+    def test_formation_flight_gp1_coordinates(self) -> None:
         """Tests that both Airplanes' Panels have correct GP1 coordinates after round
         trip in a formation flight SteadyProblem.
 
@@ -1477,8 +1477,12 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(problem))
         assert isinstance(result, SteadyProblem)
         for i in range(2):
-            orig_panel = problem.airplanes[i].wings[0].panels[0, 0]
-            loaded_panel = result.airplanes[i].wings[0].panels[0, 0]
+            orig_panels = problem.airplanes[i].wings[0].panels
+            loaded_panels = result.airplanes[i].wings[0].panels
+            assert orig_panels is not None
+            assert loaded_panels is not None
+            orig_panel = orig_panels[0, 0]
+            loaded_panel = loaded_panels[0, 0]
             assert orig_panel.Frpp_GP1_CgP1 is not None
             assert loaded_panel.Frpp_GP1_CgP1 is not None
             npt.assert_array_equal(loaded_panel.Frpp_GP1_CgP1, orig_panel.Frpp_GP1_CgP1)
@@ -1486,10 +1490,9 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
 
 class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyHorseshoeVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
-    def test_solved_round_trip(self):
+    def test_solved_round_trip(self) -> None:
         """Tests that a solved steady horseshoe solver survives a full round trip.
 
         :return: None
@@ -1506,9 +1509,9 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
             result.airplanes[0].forces_W, solver.airplanes[0].forces_W
         )
 
-    def test_shared_reference_identity(self):
-        """Tests that the solver's shared references point into the SteadyProblem
-        graph after round trip.
+    def test_shared_reference_identity(self) -> None:
+        """Tests that the solver's shared references point into the SteadyProblem graph
+        after round trip.
 
         :return: None
         """
@@ -1520,7 +1523,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         self.assertIs(result.airplanes, result._steady_problem.airplanes)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
-    def test_pre_run_round_trip(self):
+    def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run solver survives round trip.
 
         :return: None
@@ -1531,9 +1534,8 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
-    def test_save_load_round_trip(self):
-        """Tests that a solved steady horseshoe solver survives a save/load round
-        trip.
+    def test_save_load_round_trip(self) -> None:
+        """Tests that a solved steady horseshoe solver survives a save/load round trip.
 
         :return: None
         """
@@ -1550,10 +1552,9 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
 
 class TestSteadyRingSolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyRingVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
-    def test_solved_round_trip(self):
+    def test_solved_round_trip(self) -> None:
         """Tests that a solved steady ring solver survives a full round trip.
 
         :return: None
@@ -1570,9 +1571,9 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
             result.airplanes[0].forces_W, solver.airplanes[0].forces_W
         )
 
-    def test_shared_reference_identity(self):
-        """Tests that the solver's shared references point into the SteadyProblem
-        graph after round trip.
+    def test_shared_reference_identity(self) -> None:
+        """Tests that the solver's shared references point into the SteadyProblem graph
+        after round trip.
 
         :return: None
         """
@@ -1584,7 +1585,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         self.assertIs(result.airplanes, result._steady_problem.airplanes)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
-    def test_pre_run_round_trip(self):
+    def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run solver survives round trip.
 
         :return: None
@@ -1595,7 +1596,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a solved steady ring solver survives a save/load round trip.
 
         :return: None
@@ -1613,10 +1614,9 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
 
 class TestMovementClassesRoundTrip(unittest.TestCase):
     """This class contains methods for testing movement class serialization round
-    trips.
-    """
+    trips."""
 
-    def test_operating_point_movement(self):
+    def test_operating_point_movement(self) -> None:
         """Tests that an OperatingPointMovement survives a full round trip.
 
         :return: None
@@ -1628,7 +1628,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, OperatingPointMovement)
         self.assertEqual(result.base_operating_point.vCg__E, 10.0)
 
-    def test_wing_cross_section_movement(self):
+    def test_wing_cross_section_movement(self) -> None:
         """Tests that a WingCrossSectionMovement survives a full round trip.
 
         :return: None
@@ -1644,7 +1644,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, WingCrossSectionMovement)
         self.assertEqual(result.base_wing_cross_section.chord, 1.0)
 
-    def test_wing_movement(self):
+    def test_wing_movement(self) -> None:
         """Tests that a WingMovement survives a full round trip.
 
         :return: None
@@ -1659,7 +1659,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             len(wing_movement.wing_cross_section_movements),
         )
 
-    def test_airplane_movement(self):
+    def test_airplane_movement(self) -> None:
         """Tests that an AirplaneMovement survives a full round trip.
 
         :return: None
@@ -1672,9 +1672,9 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             result.base_airplane.name, airplane_movement.base_airplane.name
         )
 
-    def test_bare_movement(self):
-        """Tests that a bare Movement (not inside UnsteadyProblem) serializes all
-        slots including _airplanes and _operating_points.
+    def test_bare_movement(self) -> None:
+        """Tests that a bare Movement (not inside UnsteadyProblem) serializes all slots
+        including _airplanes and _operating_points.
 
         :return: None
         """
@@ -1685,7 +1685,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.airplanes), len(movement.airplanes))
         self.assertEqual(len(result.operating_points), len(movement.operating_points))
 
-    def test_save_load_operating_point_movement(self):
+    def test_save_load_operating_point_movement(self) -> None:
         """Tests that an OperatingPointMovement survives a save/load round trip.
 
         :return: None
@@ -1700,7 +1700,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, OperatingPointMovement)
         self.assertEqual(result.base_operating_point.vCg__E, 10.0)
 
-    def test_save_load_wing_cross_section_movement(self):
+    def test_save_load_wing_cross_section_movement(self) -> None:
         """Tests that a WingCrossSectionMovement survives a save/load round trip.
 
         :return: None
@@ -1719,7 +1719,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, WingCrossSectionMovement)
         self.assertEqual(result.base_wing_cross_section.chord, 1.0)
 
-    def test_save_load_wing_movement(self):
+    def test_save_load_wing_movement(self) -> None:
         """Tests that a WingMovement survives a save/load round trip.
 
         :return: None
@@ -1733,7 +1733,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, WingMovement)
         self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
 
-    def test_save_load_airplane_movement(self):
+    def test_save_load_airplane_movement(self) -> None:
         """Tests that an AirplaneMovement survives a save/load round trip.
 
         :return: None
@@ -1749,7 +1749,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             result.base_airplane.name, airplane_movement.base_airplane.name
         )
 
-    def test_save_load_movement(self):
+    def test_save_load_movement(self) -> None:
         """Tests that a bare Movement survives a save/load round trip.
 
         :return: None
@@ -1766,10 +1766,9 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
 
 class TestUnsteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing UnsteadyProblem serialization round
-    trips.
-    """
+    trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that an UnsteadyProblem survives a full round trip.
 
         :return: None
@@ -1780,9 +1779,9 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, problem.num_steps)
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
 
-    def test_movement_airplanes_identity(self):
-        """Tests that Movement._airplanes and SteadyProblem.airplanes point to the
-        same objects after round trip.
+    def test_movement_airplanes_identity(self) -> None:
+        """Tests that Movement._airplanes and SteadyProblem.airplanes point to the same
+        objects after round trip.
 
         :return: None
         """
@@ -1798,9 +1797,9 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
                     result.steady_problems[step].airplanes[airplane_movement_index],
                 )
 
-    def test_movement_operating_points_identity(self):
-        """Tests that Movement._operating_points and SteadyProblem.operating_point
-        point to the same objects after round trip.
+    def test_movement_operating_points_identity(self) -> None:
+        """Tests that Movement._operating_points and SteadyProblem.operating_point point
+        to the same objects after round trip.
 
         :return: None
         """
@@ -1813,7 +1812,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
                 result.steady_problems[step].operating_point,
             )
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that an UnsteadyProblem survives a save/load round trip.
 
         :return: None
@@ -1826,9 +1825,9 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyProblem)
         self.assertEqual(result.num_steps, problem.num_steps)
 
-    def test_formation_flight_round_trip(self):
-        """Tests that an UnsteadyProblem with two Airplanes survives a full round
-        trip with correct DAG identity.
+    def test_formation_flight_round_trip(self) -> None:
+        """Tests that an UnsteadyProblem with two Airplanes survives a full round trip
+        with correct DAG identity.
 
         :return: None
         """
@@ -1852,10 +1851,9 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing UnsteadyRingVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
-    def test_solved_round_trip(self):
+    def test_solved_round_trip(self) -> None:
         """Tests that a solved unsteady solver survives a full round trip.
 
         :return: None
@@ -1868,7 +1866,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         self.assertTrue(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
 
-    def test_shared_reference_identity(self):
+    def test_shared_reference_identity(self) -> None:
         """Tests that the solver's shared references point into the UnsteadyProblem
         graph after round trip.
 
@@ -1881,9 +1879,9 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertIs(result.steady_problems, result.unsteady_problem.steady_problems)
 
-    def test_movement_dag_identity(self):
-        """Tests that the Movement <-> SteadyProblem DAG identity is preserved
-        through the unsteady solver round trip.
+    def test_movement_dag_identity(self) -> None:
+        """Tests that the Movement <-> SteadyProblem DAG identity is preserved through
+        the unsteady solver round trip.
 
         :return: None
         """
@@ -1893,6 +1891,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(solver))
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         unsteady_problem = result.unsteady_problem
+        assert isinstance(unsteady_problem, UnsteadyProblem)
         for step in range(unsteady_problem.num_steps):
             for airplane_movement_index in range(
                 len(unsteady_problem.movement.airplane_movements)
@@ -1904,7 +1903,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
                     ],
                 )
 
-    def test_pre_run_round_trip(self):
+    def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run unsteady solver survives round trip.
 
         :return: None
@@ -1915,7 +1914,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a solved unsteady solver survives a save/load round trip.
 
         :return: None
@@ -1932,11 +1931,10 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
 
 
 class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
-    """This class contains methods for testing aeroelastic movement class
-    serialization round trips.
-    """
+    """This class contains methods for testing aeroelastic movement class serialization
+    round trips."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Build a shared AeroelasticUnsteadyProblem to source the movement graph.
 
         :return: None
@@ -1945,17 +1943,18 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
         )
 
-    def test_aeroelastic_movement(self):
+    def test_aeroelastic_movement(self) -> None:
         """Tests that an AeroelasticMovement survives a full round trip.
 
         :return: None
         """
         movement = self.problem.movement
+        assert isinstance(movement, AeroelasticMovement)
         result = _deserialize_value(_serialize_value(movement))
         assert isinstance(result, AeroelasticMovement)
         self.assertEqual(len(result.operating_points), len(movement.operating_points))
 
-    def test_aeroelastic_airplane_movement(self):
+    def test_aeroelastic_airplane_movement(self) -> None:
         """Tests that an AeroelasticAirplaneMovement survives a full round trip.
 
         :return: None
@@ -1967,13 +1966,14 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             result.base_airplane.name, airplane_movement.base_airplane.name
         )
 
-    def test_aeroelastic_wing_movement(self):
+    def test_aeroelastic_wing_movement(self) -> None:
         """Tests that an AeroelasticWingMovement survives a full round trip, including
         its all-None second-derivative companion.
 
         :return: None
         """
         wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
+        assert isinstance(wing_movement, AeroelasticWingMovement)
         result = _deserialize_value(_serialize_value(wing_movement))
         assert isinstance(result, AeroelasticWingMovement)
         self.assertEqual(result.base_wing.name, wing_movement.base_wing.name)
@@ -1982,9 +1982,8 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             wing_movement.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz,
         )
 
-    def test_aeroelastic_wing_cross_section_movement(self):
-        """Tests that an AeroelasticWingCrossSectionMovement survives a full round
-        trip.
+    def test_aeroelastic_wing_cross_section_movement(self) -> None:
+        """Tests that an AeroelasticWingCrossSectionMovement survives a full round trip.
 
         :return: None
         """
@@ -1996,7 +1995,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(wing_cross_section_movement))
         assert isinstance(result, AeroelasticWingCrossSectionMovement)
 
-    def test_custom_callable_spacing_is_not_serializable(self):
+    def test_custom_callable_spacing_is_not_serializable(self) -> None:
         """Tests that an AeroelasticWingMovement with a custom callable angular spacing
         raises on serialization, matching the standard movement-class behavior.
 
@@ -2005,8 +2004,9 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
         custom_wing_movement = AeroelasticWingMovement(
             base_wing=wing_movement.base_wing,
-            wing_cross_section_movements=list(
-                wing_movement.wing_cross_section_movements
+            wing_cross_section_movements=cast(
+                list[AeroelasticWingCrossSectionMovement],
+                list(wing_movement.wing_cross_section_movements),
             ),
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
@@ -2019,11 +2019,10 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
 
 
 class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
-    """This class contains methods for testing AeroelasticUnsteadyProblem
-    serialization round trips.
-    """
+    """This class contains methods for testing AeroelasticUnsteadyProblem serialization
+    round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that an AeroelasticUnsteadyProblem survives a full round trip.
 
         :return: None
@@ -2038,7 +2037,7 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(result.damping_constant_rad, problem.damping_constant_rad)
         self.assertEqual(result.step_discards, problem.step_discards)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that an AeroelasticUnsteadyProblem survives a save/load round trip.
 
         :return: None
@@ -2054,10 +2053,9 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing
-    AeroelasticUnsteadyRingVortexLatticeMethodSolver serialization round trips.
-    """
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver serialization round trips."""
 
-    def test_pre_run_round_trip(self):
+    def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run aeroelastic solver survives round trip.
 
         :return: None
@@ -2067,7 +2065,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         self.assertFalse(result.ran)
 
-    def test_solved_round_trip(self):
+    def test_solved_round_trip(self) -> None:
         """Tests that a solved aeroelastic solver survives a full round trip.
 
         :return: None
@@ -2079,9 +2077,9 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         self.assertTrue(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
 
-    def test_shared_reference_identity(self):
-        """Tests that the solver's reconstructed steady problems are the same objects
-        as those reachable through its AeroelasticUnsteadyProblem after round trip.
+    def test_shared_reference_identity(self) -> None:
+        """Tests that the solver's reconstructed steady problems are the same objects as
+        those reachable through its AeroelasticUnsteadyProblem after round trip.
 
         :return: None
         """
@@ -2094,12 +2092,12 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         ):
             self.assertIs(reconstructed, problem_side)
 
-    def test_per_wing_state_round_trip(self):
+    def test_per_wing_state_round_trip(self) -> None:
         """Tests that the AeroelasticUnsteadyProblem's per-wing deformation state (both
         the angle and angle derivative time series) survives the solver round trip.
 
-        The spring-damper ODEs are re-seeded from both time series, so both must
-        survive for a reconstructed problem's structural state to be usable.
+        The spring-damper ODEs are re-seeded from both time series, so both must survive
+        for a reconstructed problem's structural state to be usable.
 
         :return: None
         """
@@ -2109,6 +2107,8 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
         original = solver.unsteady_problem
         reconstructed = result.unsteady_problem
+        assert isinstance(original, AeroelasticUnsteadyProblem)
+        assert isinstance(reconstructed, AeroelasticUnsteadyProblem)
         self.assertEqual(
             len(reconstructed.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz),
             len(original.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz),
@@ -2134,7 +2134,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
             original._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz[0][-1],
         )
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a solved aeroelastic solver survives a save/load round trip.
 
         :return: None
@@ -2152,7 +2152,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
 class TestMuJoCoModelRoundTrip(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel serialization round trips."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Build a shared FreeFlightUnsteadyProblem to source a constructed MuJoCoModel.
 
         :return: None
@@ -2161,7 +2161,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a MuJoCoModel survives a round trip, preserving its serializable
         slots.
 
@@ -2175,7 +2175,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.initial_qpos, model.initial_qpos)
         npt.assert_array_equal(result.initial_qvel, model.initial_qvel)
 
-    def test_mujoco_assets_model_is_not_serializable(self):
+    def test_mujoco_assets_model_is_not_serializable(self) -> None:
         """Tests that a MuJoCoModel built with mujoco_assets raises on serialization,
         since the engine rebuilt on load could not resolve the asset references.
 
@@ -2194,7 +2194,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(model)
 
-    def test_rebuilt_engine_is_functional(self):
+    def test_rebuilt_engine_is_functional(self) -> None:
         """Tests that a round-tripped MuJoCoModel can be queried and stepped, confirming
         its native model and data objects were rebuilt from the XML string.
 
@@ -2219,10 +2219,9 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
 class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
     """This class contains methods for testing free flight movement class serialization
-    round trips.
-    """
+    round trips."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Build a shared FreeFlightUnsteadyProblem to source the movement graph.
 
         :return: None
@@ -2231,24 +2230,26 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
 
-    def test_free_flight_movement(self):
+    def test_free_flight_movement(self) -> None:
         """Tests that a FreeFlightMovement survives a full round trip, including its
         pregenerated airplanes.
 
         :return: None
         """
         movement = self.problem.movement
+        assert isinstance(movement, FreeFlightMovement)
         result = _deserialize_value(_serialize_value(movement))
         assert isinstance(result, FreeFlightMovement)
         self.assertEqual(result.num_steps, movement.num_steps)
         self.assertEqual(len(result.airplanes[0]), len(movement.airplanes[0]))
 
-    def test_free_flight_operating_point_movement(self):
+    def test_free_flight_operating_point_movement(self) -> None:
         """Tests that a FreeFlightOperatingPointMovement survives a full round trip.
 
         :return: None
         """
         operating_point_movement = self.problem.movement.operating_point_movement
+        assert isinstance(operating_point_movement, FreeFlightOperatingPointMovement)
         result = _deserialize_value(_serialize_value(operating_point_movement))
         assert isinstance(result, FreeFlightOperatingPointMovement)
         self.assertEqual(
@@ -2259,10 +2260,9 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
 
 class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing FreeFlightUnsteadyProblem serialization
-    round trips.
-    """
+    round trips."""
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem survives a full round trip, with its
         MuJoCoModel rebuilt and functional.
 
@@ -2281,7 +2281,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         # The rebuilt MuJoCoModel is functional.
         result._mujoco_model.step()
 
-    def test_non_default_k_max_round_trip(self):
+    def test_non_default_k_max_round_trip(self) -> None:
         """Tests that a non-default k_max survives a round trip.
 
         :return: None
@@ -2297,7 +2297,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
 
-    def test_custom_external_loads_fn_is_not_serializable(self):
+    def test_custom_external_loads_fn_is_not_serializable(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn raises
         on serialization, matching the custom-callable disposition used elsewhere.
 
@@ -2305,7 +2305,9 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         """
 
         # noinspection PyUnusedLocal
-        def external_loads_fn(operating_point, airplane):
+        def external_loads_fn(
+            operating_point: OperatingPoint, airplane: Airplane
+        ) -> tuple[np.ndarray, np.ndarray]:
             return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
 
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
@@ -2314,7 +2316,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(problem)
 
-    def test_mujoco_assets_problem_is_not_serializable(self):
+    def test_mujoco_assets_problem_is_not_serializable(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem whose MuJoCoModel was built with
         mujoco_assets raises on serialization, matching the external_loads_fn
         disposition.
@@ -2327,7 +2329,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(problem)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem survives a save/load round trip.
 
         :return: None
@@ -2343,10 +2345,9 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver serialization round trips.
-    """
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver serialization round trips."""
 
-    def test_pre_run_round_trip(self):
+    def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run free flight solver survives a round trip.
 
         :return: None
@@ -2357,7 +2358,7 @@ class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
         self.assertFalse(result.ran)
         self.assertEqual(result.num_steps, solver.num_steps)
 
-    def test_shared_reference_identity(self):
+    def test_shared_reference_identity(self) -> None:
         """Tests that the solver's steady problems are the same objects as those
         reachable through its FreeFlightUnsteadyProblem after a round trip.
 
@@ -2371,7 +2372,7 @@ class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
         ):
             self.assertIs(reconstructed, problem_side)
 
-    def test_save_load_round_trip(self):
+    def test_save_load_round_trip(self) -> None:
         """Tests that a free flight solver survives a save/load round trip.
 
         :return: None

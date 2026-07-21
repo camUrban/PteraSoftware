@@ -58,21 +58,20 @@ def _make_aeroelastic_solver(
 
     Uses a symmetric two-strip wing with sinusoidal flapping to produce measurable
     aeroelastic deformation. The same geometry and motion are used for every test
-    condition; only the structural parameters passed here vary. Different physics
-    tests probe different structural regimes, so spring_constant_rad and damping_constant_rad
+    condition; only the structural parameters passed here vary. Different physics tests
+    probe different structural regimes, so spring_constant_rad and damping_constant_rad
     are exposed as parameters rather than hard-coded.
 
     The main wing is declared symmetric so that the reflected Wing is automatically
-    generated. AeroelasticUnsteadyProblem.initialize_next_problem requires at least
-    two WingMovements (wings[0] and wings[1]) for the deformation update.
+    generated. AeroelasticUnsteadyProblem.initialize_next_problem requires at least two
+    WingMovements (wings[0] and wings[1]) for the deformation update.
 
     :param wing_density: The wing mass per unit area (kg/m^2).
     :param spring_constant_rad: The torsional spring stiffness (N*m/rad). The default is
         20.0.
     :param damping_constant_rad: The torsional damping constant (N*m*s/rad). The default
         is 1.0.
-    :return: A configured AeroelasticUnsteadyRingVortexLatticeMethodSolver ready
-        to run.
+    :return: A configured AeroelasticUnsteadyRingVortexLatticeMethodSolver ready to run.
     """
     airfoil = ps.geometry.airfoil.Airfoil(name="naca2412")
 
@@ -214,14 +213,13 @@ def _per_strip_torsional_aero_moments(
     """Derive each strip's torsional aerodynamic moment from the per-step Panels.
 
     For every solved time step, re-references each Panel's stored moment (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG) to be relative to
-    its strip's leading edge point, using the moment transfer relation, then sums the y
-    components over each strip's chordwise Panels.
-    Each strip's leading edge point is the outboard front point of
-    its first-chordwise-row Panel: the front right panel point on a root-to-tip grid,
-    and the front left panel point on a mirror-meshed (tip-to-root) grid. The strip
-    axis is returned in root-to-tip order, so mirror-meshed grids' columns are
-    reversed.
+    Airplane's geometry axes, relative to the first Airplane's CG) to be relative to its
+    strip's leading edge point, using the moment transfer relation, then sums the y
+    components over each strip's chordwise Panels. Each strip's leading edge point is
+    the outboard front point of its first-chordwise-row Panel: the front right panel
+    point on a root-to-tip grid, and the front left panel point on a mirror-meshed (tip-
+    to-root) grid. The strip axis is returned in root-to-tip order, so mirror-meshed
+    grids' columns are reversed.
 
     :param problem: The solved AeroelasticUnsteadyProblem.
     :param wing_idx: Index of the wing in airplane.wings.
@@ -274,8 +272,8 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
 
     def test_solver_completes_and_populates_data(self) -> None:
         """The solver produces an AeroelasticUnsteadyProblem with a populated
-        deformation angle time series (listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz)
-        after a successful run.
+        deformation angle time series (listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz) after
+        a successful run.
 
         The time series is seeded with one initial-state entry at construction.
         initialize_next_problem is invoked on every time step and returns early on the
@@ -299,16 +297,16 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
 class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
     """Verifies physically consistent behavior across wing density values.
 
-    A heavier wing accumulates more inertial moment from the prescribed flapping
-    motion and therefore deforms more than a lighter wing when all other parameters
-    are held constant. The comparison uses an elevated damping constant so the model
-    sits in the damping-limited regime: at low density the light wing's motion is
-    strongly suppressed by damping, while the heavier wing's larger mass-proportional
-    inertial moment overcomes that damping and produces a substantially larger
-    torsional deformation. This separates the density signal cleanly from the
-    aerodynamic forcing, which is independent of wing mass. At the default low damping
-    the density effect is present but small and saturates quickly, so DAMPING_CONSTANT
-    is raised here to make the monotonic mass dependence robust.
+    A heavier wing accumulates more inertial moment from the prescribed flapping motion
+    and therefore deforms more than a lighter wing when all other parameters are held
+    constant. The comparison uses an elevated damping constant so the model sits in the
+    damping-limited regime: at low density the light wing's motion is strongly
+    suppressed by damping, while the heavier wing's larger mass-proportional inertial
+    moment overcomes that damping and produces a substantially larger torsional
+    deformation. This separates the density signal cleanly from the aerodynamic forcing,
+    which is independent of wing mass. At the default low damping the density effect is
+    present but small and saturates quickly, so DAMPING_CONSTANT is raised here to make
+    the monotonic mass dependence robust.
     """
 
     LOW_DENSITY = 0.5
@@ -341,11 +339,10 @@ class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
         """A heavier wing deforms more than a lighter wing under identical conditions.
 
         listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz entries have shape
-        (num_spanwise_panels + 1,) and hold the torsional angles in radians; the
-        last element corresponds to
-        the outermost strip. We compare the peak absolute torsional angle over the
-        full simulation so the result is independent of the sign convention at any
-        particular step.
+        (num_spanwise_panels + 1,) and hold the torsional angles in radians; the last
+        element corresponds to the outermost strip. We compare the peak absolute
+        torsional angle over the full simulation so the result is independent of the
+        sign convention at any particular step.
 
         :return: None
         """
@@ -368,13 +365,12 @@ class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):
 class TestAeroelasticUnsteadySolverSpringStiffness(unittest.TestCase):
     """Verifies physically consistent behavior across torsional spring stiffness.
 
-    At low flapping frequency the torsional response is quasi-static, so the
-    deformation amplitude is approximately M_external / spring_constant_rad. A softer
-    spring
-    therefore yields a larger torsional deformation than a stiffer one when every
-    other parameter is held constant. Low damping is used so the response stays in
-    this stiffness-dominated regime rather than the damping-limited regime exercised
-    by the density test.
+    At low flapping frequency the torsional response is quasi-static, so the deformation
+    amplitude is approximately M_external / spring_constant_rad. A softer spring
+    therefore yields a larger torsional deformation than a stiffer one when every other
+    parameter is held constant. Low damping is used so the response stays in this
+    stiffness-dominated regime rather than the damping-limited regime exercised by the
+    density test.
     """
 
     SOFT_SPRING = 5.0
@@ -413,11 +409,10 @@ class TestAeroelasticUnsteadySolverSpringStiffness(unittest.TestCase):
         conditions.
 
         listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz entries have shape
-        (num_spanwise_panels + 1,) and hold the torsional angles in radians; the
-        last element corresponds to
-        the outermost strip. We compare the peak absolute torsional angle over the
-        full simulation so the result is independent of the sign convention at any
-        particular step.
+        (num_spanwise_panels + 1,) and hold the torsional angles in radians; the last
+        element corresponds to the outermost strip. We compare the peak absolute
+        torsional angle over the full simulation so the result is independent of the
+        sign convention at any particular step.
 
         :return: None
         """
@@ -438,18 +433,17 @@ class TestAeroelasticUnsteadySolverSpringStiffness(unittest.TestCase):
 
 
 class TestAeroelasticUnsteadySolverMirrorSymmetry(unittest.TestCase):
-    """Verifies that a geometrically and kinematically symmetric flapping
-    configuration produces a mirrored aeroelastic response between the main Wing and
-    the reflected Wing the Airplane constructor generates from it.
+    """Verifies that a geometrically and kinematically symmetric flapping configuration
+    produces a mirrored aeroelastic response between the main Wing and the reflected
+    Wing the Airplane constructor generates from it.
 
     The reflected Wing is mirror-meshed, so its panel grid runs tip to root spanwise
     while the structural solve runs root to tip. A correct mapping between the two
-    orderings, in both the strip pairing and the SLEP moment reference points, makes
-    the two halves' per-strip torsional moments and deformation angle histories match
-    to machine
-    precision, so the tolerance is set six orders of magnitude above that floor while
-    remaining six or more below any mispairing's signature (mispaired chords, strip
-    widths, moment arms, or reference corners produce relative asymmetries between
+    orderings, in both the strip pairing and the SLEP moment reference points, makes the
+    two halves' per-strip torsional moments and deformation angle histories match to
+    machine precision, so the tolerance is set six orders of magnitude above that floor
+    while remaining six or more below any mispairing's signature (mispaired chords,
+    strip widths, moment arms, or reference corners produce relative asymmetries between
     about one percent and order one).
     """
 
@@ -478,10 +472,10 @@ class TestAeroelasticUnsteadySolverMirrorSymmetry(unittest.TestCase):
     def test_per_strip_torsional_moments_mirror(self) -> None:
         """The per-strip torsional aerodynamic moments of the two halves match.
 
-        The moments (in the first Airplane's geometry axes) are derived from each
-        solved step's retained Panel loads, re-referenced to each strip's leading edge
-        point and summed chordwise into per-strip torsional forcing in root-to-tip
-        order for both halves, so the arrays must match strip for strip.
+        The moments (in the first Airplane's geometry axes) are derived from each solved
+        step's retained Panel loads, re-referenced to each strip's leading edge point
+        and summed chordwise into per-strip torsional forcing in root-to-tip order for
+        both halves, so the arrays must match strip for strip.
 
         :return: None
         """
@@ -499,8 +493,8 @@ class TestAeroelasticUnsteadySolverMirrorSymmetry(unittest.TestCase):
 
         listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz entries have shape
         (num_spanwise_panels + 1,) in root-to-tip order for both halves, holding the
-        torsional angles in radians, so the time series must match WingCrossSection
-        for WingCrossSection.
+        torsional angles in radians, so the time series must match WingCrossSection for
+        WingCrossSection.
 
         :return: None
         """

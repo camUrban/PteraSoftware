@@ -1,6 +1,7 @@
 """This module contains classes to test CoreWingMovements."""
 
 import unittest
+from typing import Any
 
 import numpy as np
 import numpy.testing as npt
@@ -17,8 +18,25 @@ from tests.unit.fixtures import (
 class TestCoreWingMovement(unittest.TestCase):
     """This is a class with functions to test CoreWingMovements."""
 
+    sine_spacing_Ler_wing_movement: ps._core.CoreWingMovement
+    uniform_spacing_Ler_wing_movement: ps._core.CoreWingMovement
+    mixed_spacing_Ler_wing_movement: ps._core.CoreWingMovement
+    sine_spacing_angles_wing_movement: ps._core.CoreWingMovement
+    uniform_spacing_angles_wing_movement: ps._core.CoreWingMovement
+    mixed_spacing_angles_wing_movement: ps._core.CoreWingMovement
+    static_wing_movement: ps._core.CoreWingMovement
+    basic_wing_movement: ps._core.CoreWingMovement
+    Ler_only_wing_movement: ps._core.CoreWingMovement
+    angles_only_wing_movement: ps._core.CoreWingMovement
+    phase_offset_Ler_wing_movement: ps._core.CoreWingMovement
+    phase_offset_angles_wing_movement: ps._core.CoreWingMovement
+    multiple_periods_wing_movement: ps._core.CoreWingMovement
+    custom_spacing_Ler_wing_movement: ps._core.CoreWingMovement
+    custom_spacing_angles_wing_movement: ps._core.CoreWingMovement
+    rotation_point_offset_wing_movement: ps._core.CoreWingMovement
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all CoreWingMovement tests."""
         # Spacing test fixtures for Ler_Gs_Cgs.
         cls.sine_spacing_Ler_wing_movement = (
@@ -74,9 +92,8 @@ class TestCoreWingMovement(unittest.TestCase):
             core_wing_movement_fixtures.make_rotation_point_offset_core_wing_movement_fixture()
         )
 
-    def test_spacing_sine_for_Ler_Gs_Cgs(self):
-        """Test that sine spacing actually produces sinusoidal motion for
-        Ler_Gs_Cgs."""
+    def test_spacing_sine_for_Ler_Gs_Cgs(self) -> None:
+        """Test that sine spacing actually produces sinusoidal motion for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
         wings = self.sine_spacing_Ler_wing_movement.generate_wings(
@@ -94,7 +111,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated positions match the expected sine wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_Ler_Gs_Cgs(self):
+    def test_spacing_uniform_for_Ler_Gs_Cgs(self) -> None:
         """Test that uniform spacing actually produces triangular wave motion for
         Ler_Gs_Cgs."""
         num_steps = 100
@@ -114,7 +131,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated positions match the expected triangular wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_Ler_Gs_Cgs(self):
+    def test_spacing_mixed_for_Ler_Gs_Cgs(self) -> None:
         """Test that mixed spacing types work correctly for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
@@ -139,7 +156,7 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_sine_for_angles_Gs_to_Wn_ixyz(self):
+    def test_spacing_sine_for_angles_Gs_to_Wn_ixyz(self) -> None:
         """Test that sine spacing actually produces sinusoidal motion for
         angles_Gs_to_Wn_ixyz."""
         num_steps = 100
@@ -159,7 +176,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated angles match the expected sine wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_uniform_for_angles_Gs_to_Wn_ixyz(self):
+    def test_spacing_uniform_for_angles_Gs_to_Wn_ixyz(self) -> None:
         """Test that uniform spacing actually produces triangular wave motion for
         angles_Gs_to_Wn_ixyz."""
         num_steps = 100
@@ -179,9 +196,8 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated angles match the expected triangular wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_spacing_mixed_for_angles_Gs_to_Wn_ixyz(self):
-        """Test that mixed spacing types work correctly for
-        angles_Gs_to_Wn_ixyz."""
+    def test_spacing_mixed_for_angles_Gs_to_Wn_ixyz(self) -> None:
+        """Test that mixed spacing types work correctly for angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
         wings = self.mixed_spacing_angles_wing_movement.generate_wings(
@@ -205,7 +221,7 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(y_angles, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_angles, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_static_wing_movement_produces_constant_wings(self):
+    def test_static_wing_movement_produces_constant_wings(self) -> None:
         """Test that static CoreWingMovement produces Wings with constant parameters."""
         num_steps = 50
         delta_time = 0.02
@@ -232,7 +248,7 @@ class TestCoreWingMovement(unittest.TestCase):
             atol=1e-14,
         )
 
-    def test_generate_wings_returns_correct_number(self):
+    def test_generate_wings_returns_correct_number(self) -> None:
         """Test that generate_wings returns the correct number of Wings."""
         num_steps = 75
         delta_time = 0.015
@@ -243,7 +259,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
         self.assertEqual(len(wings), num_steps)
 
-    def test_generate_wings_preserves_wing_properties(self):
+    def test_generate_wings_preserves_wing_properties(self) -> None:
         """Test that generate_wings preserves non-changing Wing properties."""
         num_steps = 30
         delta_time = 0.02
@@ -268,9 +284,8 @@ class TestCoreWingMovement(unittest.TestCase):
                 len(wing.wing_cross_sections), len(base_wing.wing_cross_sections)
             )
 
-    def test_phase_offset_Ler_produces_shifted_motion(self):
-        """Test that phase offset for Ler_Gs_Cgs produces phase-shifted
-        motion."""
+    def test_phase_offset_Ler_produces_shifted_motion(self) -> None:
+        """Test that phase offset for Ler_Gs_Cgs produces phase-shifted motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.phase_offset_Ler_wing_movement.generate_wings(
@@ -294,9 +309,9 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_phase_offset_angles_produces_shifted_motion(self):
-        """Test that phase offset for angles_Gs_to_Wn_ixyz produces
-        phase-shifted motion."""
+    def test_phase_offset_angles_produces_shifted_motion(self) -> None:
+        """Test that phase offset for angles_Gs_to_Wn_ixyz produces phase-shifted
+        motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.phase_offset_angles_wing_movement.generate_wings(
@@ -320,26 +335,26 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(y_angles, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_angles, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_max_period_static_movement(self):
+    def test_max_period_static_movement(self) -> None:
         """Test that max_period returns 0.0 for static CoreWingMovement."""
         max_period = self.static_wing_movement.max_period
         self.assertEqual(max_period, 0.0)
 
-    def test_max_period_Ler_only_movement(self):
-        """Test that max_period correctly identifies the maximum period for
-        Ler-only CoreWingMovement."""
+    def test_max_period_Ler_only_movement(self) -> None:
+        """Test that max_period correctly identifies the maximum period for Ler-only
+        CoreWingMovement."""
         max_period = self.Ler_only_wing_movement.max_period
         self.assertEqual(max_period, 1.5)
 
-    def test_max_period_angles_only_movement(self):
-        """Test that max_period correctly identifies the maximum period for
-        angles-only CoreWingMovement."""
+    def test_max_period_angles_only_movement(self) -> None:
+        """Test that max_period correctly identifies the maximum period for angles-only
+        CoreWingMovement."""
         max_period = self.angles_only_wing_movement.max_period
         self.assertEqual(max_period, 1.5)
 
-    def test_max_period_multiple_periods_movement(self):
-        """Test that max_period correctly identifies the maximum period when
-        different dimensions have different periods."""
+    def test_max_period_multiple_periods_movement(self) -> None:
+        """Test that max_period correctly identifies the maximum period when different
+        dimensions have different periods."""
         max_period = self.multiple_periods_wing_movement.max_period
 
         # The maximum should be from either the CoreWingMovement's own motion or from
@@ -347,7 +362,7 @@ class TestCoreWingMovement(unittest.TestCase):
         expected_max = max(3.0, 2.5, 2.0)
         self.assertEqual(max_period, expected_max)
 
-    def test_initialization_with_valid_parameters(self):
+    def test_initialization_with_valid_parameters(self) -> None:
         """Test CoreWingMovement initialization with valid parameters."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -396,30 +411,32 @@ class TestCoreWingMovement(unittest.TestCase):
             wing_movement.phaseAngles_Gs_to_Wn_ixyz, np.array([30.0, 0.0, -45.0])
         )
 
-    def test_initialization_invalid_base_wing(self):
+    def test_initialization_invalid_base_wing(self) -> None:
         """Test that CoreWingMovement initialization fails with invalid base_wing."""
         wing_cross_section_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
         ]
 
+        bad_base_wing: Any = "not_a_wing"
         with self.assertRaises(TypeError):
             ps._core.CoreWingMovement(
-                base_wing="not_a_wing",
+                base_wing=bad_base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
             )
 
-    def test_initialization_invalid_wing_cross_section_movements_type(self):
+    def test_initialization_invalid_wing_cross_section_movements_type(self) -> None:
         """Test that CoreWingMovement initialization fails with invalid
         wing_cross_section_movements type."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
 
+        bad_wing_cross_section_movements: Any = "not_a_list"
         with self.assertRaises(TypeError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
-                wing_cross_section_movements="not_a_list",
+                wing_cross_section_movements=bad_wing_cross_section_movements,
             )
 
-    def test_initialization_invalid_wing_cross_section_movements_length(self):
+    def test_initialization_invalid_wing_cross_section_movements_length(self) -> None:
         """Test that CoreWingMovement initialization fails when
         wing_cross_section_movements length doesn't match base_wing."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
@@ -433,7 +450,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wing_cross_section_movements,
             )
 
-    def test_initialization_ampLer_Gs_Cgs_validation(self):
+    def test_initialization_ampLer_Gs_Cgs_validation(self) -> None:
         """Test ampLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -450,7 +467,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_periodLer_Gs_Cgs_validation(self):
+    def test_initialization_periodLer_Gs_Cgs_validation(self) -> None:
         """Test periodLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -467,7 +484,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 periodLer_Gs_Cgs=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_phaseLer_Gs_Cgs_validation(self):
+    def test_initialization_phaseLer_Gs_Cgs_validation(self) -> None:
         """Test phaseLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -495,7 +512,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 phaseLer_Gs_Cgs=(45.0, 0.0, 0.0),
             )
 
-    def test_initialization_ampAngles_Gs_to_Wn_ixyz_validation(self):
+    def test_initialization_ampAngles_Gs_to_Wn_ixyz_validation(self) -> None:
         """Test ampAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -521,7 +538,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_periodAngles_Gs_to_Wn_ixyz_validation(self):
+    def test_initialization_periodAngles_Gs_to_Wn_ixyz_validation(self) -> None:
         """Test periodAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -538,7 +555,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             )
 
-    def test_initialization_phaseAngles_Gs_to_Wn_ixyz_validation(self):
+    def test_initialization_phaseAngles_Gs_to_Wn_ixyz_validation(self) -> None:
         """Test phaseAngles_Gs_to_Wn_ixyz parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -566,9 +583,8 @@ class TestCoreWingMovement(unittest.TestCase):
                 phaseAngles_Gs_to_Wn_ixyz=(45.0, 0.0, 0.0),
             )
 
-    def test_custom_spacing_Ler_produces_expected_motion(self):
-        """Test that custom spacing function for Ler_Gs_Cgs produces
-        expected motion."""
+    def test_custom_spacing_Ler_produces_expected_motion(self) -> None:
+        """Test that custom spacing function for Ler_Gs_Cgs produces expected motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.custom_spacing_Ler_wing_movement.generate_wings(
@@ -591,9 +607,9 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated positions match the expected custom wave.
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_custom_spacing_angles_produces_expected_motion(self):
-        """Test that custom spacing function for angles_Gs_to_Wn_ixyz
-        produces expected motion."""
+    def test_custom_spacing_angles_produces_expected_motion(self) -> None:
+        """Test that custom spacing function for angles_Gs_to_Wn_ixyz produces expected
+        motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.custom_spacing_angles_wing_movement.generate_wings(
@@ -616,7 +632,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that the generated angles match the expected custom wave.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_rotation_point_offset_zero_matches_default(self):
+    def test_rotation_point_offset_zero_matches_default(self) -> None:
         """Test that zero rotation point offset produces identical results to default
         behavior."""
         num_steps = 50
@@ -664,9 +680,9 @@ class TestCoreWingMovement(unittest.TestCase):
                 atol=1e-14,
             )
 
-    def test_rotation_point_offset_produces_position_adjustment(self):
-        """Test that non zero rotation point offset causes position changes when
-        angles oscillate."""
+    def test_rotation_point_offset_produces_position_adjustment(self) -> None:
+        """Test that non zero rotation point offset causes position changes when angles
+        oscillate."""
         num_steps = 100
         delta_time = 0.01
         wings = self.rotation_point_offset_wing_movement.generate_wings(
@@ -697,7 +713,7 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(y_positions, expected_y, rtol=1e-10, atol=1e-14)
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
-    def test_rotation_point_offset_preserves_angles(self):
+    def test_rotation_point_offset_preserves_angles(self) -> None:
         """Test that rotation point offset does not affect the Wing angles."""
         num_steps = 50
         delta_time = 0.02
@@ -716,7 +732,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # Assert that angles are unaffected by rotation point offset.
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
-    def test_rotation_point_offset_initialization(self):
+    def test_rotation_point_offset_initialization(self) -> None:
         """Test that rotationPointOffset_Gs_Ler is correctly initialized."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -734,7 +750,7 @@ class TestCoreWingMovement(unittest.TestCase):
             wing_movement.rotationPointOffset_Gs_Ler, np.array([0.25, 0.1, -0.05])
         )
 
-    def test_rotation_point_offset_validation_wrong_size(self):
+    def test_rotation_point_offset_validation_wrong_size(self) -> None:
         """Test that invalid rotationPointOffset_Gs_Ler size raises error."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -749,7 +765,7 @@ class TestCoreWingMovement(unittest.TestCase):
                 rotationPointOffset_Gs_Ler=(0.1, 0.2),
             )
 
-    def test_rotation_point_offset_validation_non_numeric(self):
+    def test_rotation_point_offset_validation_non_numeric(self) -> None:
         """Test that non numeric rotationPointOffset_Gs_Ler raises error."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()
         wing_cross_section_movements = [
@@ -757,19 +773,20 @@ class TestCoreWingMovement(unittest.TestCase):
             for _ in base_wing.wing_cross_sections
         ]
 
+        bad_rotation_point_offset: Any = ("a", "b", "c")
         with self.assertRaises(TypeError):
             ps._core.CoreWingMovement(
                 base_wing=base_wing,
                 wing_cross_section_movements=wing_cross_section_movements,
-                rotationPointOffset_Gs_Ler=("a", "b", "c"),
+                rotationPointOffset_Gs_Ler=bad_rotation_point_offset,
             )
 
-    def test_all_periods_static_movement(self):
+    def test_all_periods_static_movement(self) -> None:
         """Test that all_periods returns empty tuple for static CoreWingMovement."""
         wing_movement = self.static_wing_movement
         self.assertEqual(wing_movement.all_periods, ())
 
-    def test_all_periods_Ler_only(self):
+    def test_all_periods_Ler_only(self) -> None:
         """Test that all_periods returns correct periods for Ler only movement."""
         wing_movement = self.Ler_only_wing_movement
         # periodLer_Gs_Cgs is (1.5, 1.5, 1.5), all non zero. periodAngles_Gs_to_Wn_ixyz
@@ -777,7 +794,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # property should return a tuple with three 1.5 values.
         self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
 
-    def test_all_periods_angles_only(self):
+    def test_all_periods_angles_only(self) -> None:
         """Test that all_periods returns correct periods for angles only movement."""
         wing_movement = self.angles_only_wing_movement
         # periodLer_Gs_Cgs is (0.0, 0.0, 0.0). periodAngles_Gs_to_Wn_ixyz is (1.5, 1.5,
@@ -785,7 +802,7 @@ class TestCoreWingMovement(unittest.TestCase):
         # property should return a tuple with three 1.5 values.
         self.assertEqual(wing_movement.all_periods, (1.5, 1.5, 1.5))
 
-    def test_all_periods_mixed(self):
+    def test_all_periods_mixed(self) -> None:
         """Test that all_periods returns all non zero periods for mixed movement."""
         wing_movement = self.multiple_periods_wing_movement
         # periodLer_Gs_Cgs is (1.0, 2.0, 3.0). periodAngles_Gs_to_Wn_ixyz is (0.5, 1.5,
@@ -802,10 +819,9 @@ class TestCoreWingMovement(unittest.TestCase):
         self.assertIn(1.5, all_periods)
         self.assertIn(2.5, all_periods)
 
-    def test_all_periods_contains_duplicates(self):
+    def test_all_periods_contains_duplicates(self) -> None:
         """Test that all_periods contains duplicate periods if they appear multiple
-        times.
-        """
+        times."""
         wing_movement = self.basic_wing_movement
         all_periods = wing_movement.all_periods
 
@@ -815,7 +831,7 @@ class TestCoreWingMovement(unittest.TestCase):
         count_2_0 = all_periods.count(2.0)
         self.assertGreaterEqual(count_2_0, 6)
 
-    def test_all_periods_partial_movement(self):
+    def test_all_periods_partial_movement(self) -> None:
         """Test all_periods with only some dimensions having non zero periods."""
         wing_movement = self.sine_spacing_Ler_wing_movement
         # periodLer_Gs_Cgs is (1.0, 0.0, 0.0), only first element is non zero.
@@ -827,116 +843,132 @@ class TestCoreWingMovement(unittest.TestCase):
 class TestCoreWingMovementImmutability(unittest.TestCase):
     """Tests for CoreWingMovement attribute immutability."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for immutability tests."""
         self.core_wing_movement = (
             core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
         )
 
-    def test_immutable_base_wing_property(self):
+    def test_immutable_base_wing_property(self) -> None:
         """Test that base_wing property is read only."""
         new_wing = geometry_fixtures.make_type_1_wing_fixture()
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.base_wing = new_wing
+            setattr(self.core_wing_movement, "base_wing", new_wing)
 
-    def test_immutable_wing_cross_section_movements_property(self):
+    def test_immutable_wing_cross_section_movements_property(self) -> None:
         """Test that wing_cross_section_movements property is read only."""
         new_movements = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture()
         ]
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.wing_cross_section_movements = new_movements
+            setattr(
+                self.core_wing_movement, "wing_cross_section_movements", new_movements
+            )
 
-    def test_immutable_ampLer_Gs_Cgs_property(self):
+    def test_immutable_ampLer_Gs_Cgs_property(self) -> None:
         """Test that ampLer_Gs_Cgs property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.ampLer_Gs_Cgs = np.array([1.0, 2.0, 3.0])
+            setattr(self.core_wing_movement, "ampLer_Gs_Cgs", np.array([1.0, 2.0, 3.0]))
 
-    def test_immutable_ampLer_Gs_Cgs_array_read_only(self):
+    def test_immutable_ampLer_Gs_Cgs_array_read_only(self) -> None:
         """Test that ampLer_Gs_Cgs array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.ampLer_Gs_Cgs[0] = 999.0
 
-    def test_immutable_periodLer_Gs_Cgs_property(self):
+    def test_immutable_periodLer_Gs_Cgs_property(self) -> None:
         """Test that periodLer_Gs_Cgs property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.periodLer_Gs_Cgs = np.array([1.0, 2.0, 3.0])
+            setattr(
+                self.core_wing_movement, "periodLer_Gs_Cgs", np.array([1.0, 2.0, 3.0])
+            )
 
-    def test_immutable_periodLer_Gs_Cgs_array_read_only(self):
+    def test_immutable_periodLer_Gs_Cgs_array_read_only(self) -> None:
         """Test that periodLer_Gs_Cgs array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.periodLer_Gs_Cgs[0] = 999.0
 
-    def test_immutable_spacingLer_Gs_Cgs_property(self):
+    def test_immutable_spacingLer_Gs_Cgs_property(self) -> None:
         """Test that spacingLer_Gs_Cgs property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.spacingLer_Gs_Cgs = (
-                "uniform",
-                "uniform",
-                "uniform",
+            setattr(
+                self.core_wing_movement,
+                "spacingLer_Gs_Cgs",
+                ("uniform", "uniform", "uniform"),
             )
 
-    def test_immutable_phaseLer_Gs_Cgs_property(self):
+    def test_immutable_phaseLer_Gs_Cgs_property(self) -> None:
         """Test that phaseLer_Gs_Cgs property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.phaseLer_Gs_Cgs = np.array([45.0, 45.0, 45.0])
+            setattr(
+                self.core_wing_movement, "phaseLer_Gs_Cgs", np.array([45.0, 45.0, 45.0])
+            )
 
-    def test_immutable_phaseLer_Gs_Cgs_array_read_only(self):
+    def test_immutable_phaseLer_Gs_Cgs_array_read_only(self) -> None:
         """Test that phaseLer_Gs_Cgs array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.phaseLer_Gs_Cgs[0] = 999.0
 
-    def test_immutable_ampAngles_Gs_to_Wn_ixyz_property(self):
+    def test_immutable_ampAngles_Gs_to_Wn_ixyz_property(self) -> None:
         """Test that ampAngles_Gs_to_Wn_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.ampAngles_Gs_to_Wn_ixyz = np.array([1.0, 2.0, 3.0])
+            setattr(
+                self.core_wing_movement,
+                "ampAngles_Gs_to_Wn_ixyz",
+                np.array([1.0, 2.0, 3.0]),
+            )
 
-    def test_immutable_ampAngles_Gs_to_Wn_ixyz_array_read_only(self):
+    def test_immutable_ampAngles_Gs_to_Wn_ixyz_array_read_only(self) -> None:
         """Test that ampAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.ampAngles_Gs_to_Wn_ixyz[0] = 999.0
 
-    def test_immutable_periodAngles_Gs_to_Wn_ixyz_property(self):
+    def test_immutable_periodAngles_Gs_to_Wn_ixyz_property(self) -> None:
         """Test that periodAngles_Gs_to_Wn_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.periodAngles_Gs_to_Wn_ixyz = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.core_wing_movement,
+                "periodAngles_Gs_to_Wn_ixyz",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_periodAngles_Gs_to_Wn_ixyz_array_read_only(self):
+    def test_immutable_periodAngles_Gs_to_Wn_ixyz_array_read_only(self) -> None:
         """Test that periodAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.periodAngles_Gs_to_Wn_ixyz[0] = 999.0
 
-    def test_immutable_spacingAngles_Gs_to_Wn_ixyz_property(self):
+    def test_immutable_spacingAngles_Gs_to_Wn_ixyz_property(self) -> None:
         """Test that spacingAngles_Gs_to_Wn_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.spacingAngles_Gs_to_Wn_ixyz = (
-                "uniform",
-                "uniform",
-                "uniform",
+            setattr(
+                self.core_wing_movement,
+                "spacingAngles_Gs_to_Wn_ixyz",
+                ("uniform", "uniform", "uniform"),
             )
 
-    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_property(self):
+    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_property(self) -> None:
         """Test that phaseAngles_Gs_to_Wn_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.phaseAngles_Gs_to_Wn_ixyz = np.array(
-                [45.0, 45.0, 45.0]
+            setattr(
+                self.core_wing_movement,
+                "phaseAngles_Gs_to_Wn_ixyz",
+                np.array([45.0, 45.0, 45.0]),
             )
 
-    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_array_read_only(self):
+    def test_immutable_phaseAngles_Gs_to_Wn_ixyz_array_read_only(self) -> None:
         """Test that phaseAngles_Gs_to_Wn_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.phaseAngles_Gs_to_Wn_ixyz[0] = 999.0
 
-    def test_immutable_rotationPointOffset_Gs_Ler_property(self):
+    def test_immutable_rotationPointOffset_Gs_Ler_property(self) -> None:
         """Test that rotationPointOffset_Gs_Ler property is read only."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.rotationPointOffset_Gs_Ler = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.core_wing_movement,
+                "rotationPointOffset_Gs_Ler",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_rotationPointOffset_Gs_Ler_array_read_only(self):
+    def test_immutable_rotationPointOffset_Gs_Ler_array_read_only(self) -> None:
         """Test that rotationPointOffset_Gs_Ler array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.core_wing_movement.rotationPointOffset_Gs_Ler[0] = 999.0
@@ -945,19 +977,19 @@ class TestCoreWingMovementImmutability(unittest.TestCase):
 class TestCoreWingMovementCaching(unittest.TestCase):
     """Tests for CoreWingMovement caching behavior."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for caching tests."""
         self.core_wing_movement = (
             core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
         )
 
-    def test_all_periods_caching_returns_same_object(self):
+    def test_all_periods_caching_returns_same_object(self) -> None:
         """Test that repeated access to all_periods returns the same cached object."""
         all_periods_1 = self.core_wing_movement.all_periods
         all_periods_2 = self.core_wing_movement.all_periods
         self.assertIs(all_periods_1, all_periods_2)
 
-    def test_max_period_caching_returns_same_value(self):
+    def test_max_period_caching_returns_same_value(self) -> None:
         """Test that repeated access to max_period returns the same cached value."""
         max_period_1 = self.core_wing_movement.max_period
         max_period_2 = self.core_wing_movement.max_period
@@ -968,13 +1000,13 @@ class TestCoreWingMovementCaching(unittest.TestCase):
 class TestCoreWingMovementDeepcopy(unittest.TestCase):
     """Tests for CoreWingMovement deepcopy behavior."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for deepcopy tests."""
         self.core_wing_movement = (
             core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
         )
 
-    def test_deepcopy_returns_new_instance(self):
+    def test_deepcopy_returns_new_instance(self) -> None:
         """Test that deepcopy returns a new CoreWingMovement instance."""
         import copy
 
@@ -984,7 +1016,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         self.assertIsInstance(copied, ps._core.CoreWingMovement)
         self.assertIsNot(original, copied)
 
-    def test_deepcopy_preserves_attribute_values(self):
+    def test_deepcopy_preserves_attribute_values(self) -> None:
         """Test that deepcopy preserves all attribute values."""
         import copy
 
@@ -1015,7 +1047,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
             original.spacingAngles_Gs_to_Wn_ixyz,
         )
 
-    def test_deepcopy_numpy_arrays_are_independent(self):
+    def test_deepcopy_numpy_arrays_are_independent(self) -> None:
         """Test that deepcopied numpy arrays are independent objects."""
         import copy
 
@@ -1039,8 +1071,9 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
             copied.rotationPointOffset_Gs_Ler, original.rotationPointOffset_Gs_Ler
         )
 
-    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self):
-        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+    def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self) -> None:
+        """Test that deepcopied numpy arrays raise ValueError on in place
+        modification."""
         import copy
 
         original = self.core_wing_movement
@@ -1068,7 +1101,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         with self.assertRaises(ValueError):
             copied.rotationPointOffset_Gs_Ler[0] = 999.0
 
-    def test_deepcopy_base_wing_is_independent(self):
+    def test_deepcopy_base_wing_is_independent(self) -> None:
         """Test that deepcopied base_wing is an independent object."""
         import copy
 
@@ -1088,7 +1121,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
             original.base_wing.angles_Gs_to_Wn_ixyz,
         )
 
-    def test_deepcopy_wing_cross_section_movements_are_independent(self):
+    def test_deepcopy_wing_cross_section_movements_are_independent(self) -> None:
         """Test that deepcopied wing_cross_section_movements are independent objects."""
         import copy
 
@@ -1107,7 +1140,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
                 original.wing_cross_section_movements[i],
             )
 
-    def test_deepcopy_resets_caches_to_none(self):
+    def test_deepcopy_resets_caches_to_none(self) -> None:
         """Test that deepcopy resets cached derived properties to None."""
         import copy
 
@@ -1128,7 +1161,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         self.assertIsNone(copied._all_periods)
         self.assertIsNone(copied._max_period)
 
-    def test_deepcopy_cached_properties_can_be_recomputed(self):
+    def test_deepcopy_cached_properties_can_be_recomputed(self) -> None:
         """Test that cached properties work correctly after deepcopy."""
         import copy
 
@@ -1145,7 +1178,7 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.all_periods, original_all_periods)
         self.assertEqual(copied.max_period, original_max_period)
 
-    def test_deepcopy_generate_wings_produces_same_results(self):
+    def test_deepcopy_generate_wings_produces_same_results(self) -> None:
         """Test that generate_wings produces same results after deepcopy."""
         import copy
 
@@ -1171,12 +1204,13 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
             )
             self.assertEqual(copied_wing.name, original_wing.name)
 
-    def test_deepcopy_handles_memo_correctly(self):
-        """Test that deepcopy handles the memo dict correctly for circular references."""
+    def test_deepcopy_handles_memo_correctly(self) -> None:
+        """Test that deepcopy handles the memo dict correctly for circular
+        references."""
         import copy
 
         original = self.core_wing_movement
-        memo = {}
+        memo: dict[int, Any] = {}
 
         # First deepcopy.
         copied1 = copy.deepcopy(original, memo)

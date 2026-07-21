@@ -5,6 +5,7 @@ This document defines the conventions for type hints and docstrings in the Ptera
 ## Table of Contents
 
 - [Type Hints](#type-hints)
+    - [Type Hints in Tests](#type-hints-in-tests)
 - [Docstring Format](#docstring-format)
     - [Module-Level Docstrings](#module-level-docstrings)
     - [Class Docstrings](#class-docstrings)
@@ -194,6 +195,72 @@ def narrow(value):
 ```
 
 The `TYPE_CHECKING` import gives mypy the symbol for static resolution; the string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
+
+### Type Hints in Tests
+
+The test suite is type-checked with the same mypy configuration as the package, including `disallow_untyped_defs`. Test code has recurring situations that package code does not, and this section defines the pragma-free convention for each of them. The project contains no `type: ignore` pragmas anywhere, and none of these situations justifies adding one.
+
+#### Attributes Assigned in setUpClass
+
+mypy cannot see attributes assigned through `cls` inside `setUpClass`, so every use site reports an attribute error. Declare the attributes with class-level annotations directly below the class docstring, taking the types from the fixture factories' return annotations. Do not wrap the annotations in `ClassVar`, and do not convert `setUpClass` to `setUp` just to satisfy the type checker:
+
+```python
+class TestUnsteadyProblem(unittest.TestCase):
+    """This is a class with functions to test UnsteadyProblems."""
+
+    basic_unsteady_problem: ps.problems.UnsteadyProblem
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the shared test fixtures."""
+        cls.basic_unsteady_problem = (
+            problem_fixtures.make_basic_unsteady_problem_fixture()
+        )
+```
+
+#### Deliberately Invalid Arguments
+
+A rejection test passes a value whose type is intentionally wrong. Route the value through a local annotated as `Any`, and pass the local. The call site then type-checks without a pragma, the invalid value itself stays unchanged, and the annotation marks the invalidity as intentional right at the assignment:
+
+```python
+def test_wings_validation(self) -> None:
+    """Test that non-list wings inputs are rejected."""
+    bad_wings: Any = "not a list"
+    with self.assertRaises(TypeError):
+        ps.geometry.airplane.Airplane(wings=bad_wings)
+```
+
+Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`; annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
+
+#### Read-Only Property Tests
+
+A test that proves a property is read-only assigns through `setattr` inside the `assertRaises` block. A direct assignment to a read-only property is a mypy error, and `setattr` exercises the same descriptor protocol at runtime, so the test still proves that the property rejects assignment:
+
+```python
+def test_chord_is_read_only(self) -> None:
+    """Test that chord cannot be reassigned."""
+    with self.assertRaises(AttributeError):
+        setattr(self.basic_wing_cross_section, "chord", 2.0)
+```
+
+#### Narrowing After assertIsNotNone
+
+mypy does not narrow a type on `self.assertIsNotNone(x)`. Keep the unittest assertion, and add a bare `assert x is not None` after it before the first use that needs the narrowed type:
+
+```python
+self.assertIsNotNone(wing.panels)
+assert wing.panels is not None
+self.assertEqual(wing.panels.shape, (4, 8))
+```
+
+#### Returning Floats from numpy Expressions
+
+With `warn_return_any` enabled, a def annotated `-> float` cannot return a bare numpy expression, because the numpy stubs type many such expressions as `Any`. Wrap the return expression in `float(...)`, which is the same pattern the package uses in `_oscillation.py`:
+
+```python
+def custom_spacing(x: float) -> float:
+    return float(np.sin(x))
+```
 
 ---
 

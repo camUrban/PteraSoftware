@@ -3,6 +3,7 @@
 import importlib.resources
 import unittest
 import warnings
+from typing import Any
 
 import numpy as np
 import numpy.testing as npt
@@ -14,7 +15,7 @@ from tests.unit.fixtures import geometry_fixtures
 class TestAirfoil(unittest.TestCase):
     """This class contains unit tests for the Airfoil class."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Airfoil tests."""
         # Create fixtures for different Airfoil types.
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
@@ -28,7 +29,7 @@ class TestAirfoil(unittest.TestCase):
         )
         self.named_airfoil = geometry_fixtures.make_named_airfoil_fixture()
 
-    def test_initialization_naca_airfoils(self):
+    def test_initialization_naca_airfoils(self) -> None:
         """Test Airfoil initialization with NACA airfoil names."""
         # Test NACA 0012 initialization.
         self.assertEqual(self.naca0012_airfoil.name, "naca0012")
@@ -42,14 +43,14 @@ class TestAirfoil(unittest.TestCase):
         self.assertEqual(self.naca2412_airfoil.n_points_per_side, 400)
         self.assertIsNotNone(self.naca2412_airfoil.outline_A_Lp)
 
-    def test_initialization_custom_outline(self):
+    def test_initialization_custom_outline(self) -> None:
         """Test Airfoil initialization with custom outline."""
         self.assertEqual(self.custom_outline_airfoil.name, "Custom Test Airfoil")
         self.assertFalse(self.custom_outline_airfoil.resample)
         self.assertIsInstance(self.custom_outline_airfoil.n_points_per_side, int)
         self.assertIsNotNone(self.custom_outline_airfoil.outline_A_Lp)
 
-    def test_initialization_resampling_parameters(self):
+    def test_initialization_resampling_parameters(self) -> None:
         """Test Airfoil initialization with different resampling parameters."""
         # Test resampled airfoil.
         self.assertTrue(self.resampled_airfoil.resample)
@@ -59,7 +60,7 @@ class TestAirfoil(unittest.TestCase):
         self.assertFalse(self.non_resampled_airfoil.resample)
         self.assertIsInstance(self.non_resampled_airfoil.n_points_per_side, int)
 
-    def test_outline_shape_and_bounds(self):
+    def test_outline_shape_and_bounds(self) -> None:
         """Test that airfoil outline has correct shape and coordinate bounds."""
         for airfoil in [
             self.naca0012_airfoil,
@@ -80,7 +81,7 @@ class TestAirfoil(unittest.TestCase):
             # Check that outline contains multiple points.
             self.assertGreater(airfoil.outline_A_Lp.shape[0], 3)
 
-    def test_airfoil_closure(self):
+    def test_airfoil_closure(self) -> None:
         """Test that airfoil outlines form approximately closed loops."""
         for airfoil in [
             self.naca0012_airfoil,
@@ -91,7 +92,7 @@ class TestAirfoil(unittest.TestCase):
             # Check that first and last points are close (closed loop).
             npt.assert_allclose(outline[0], outline[-1], rtol=2e-2, atol=2e-2)
 
-    def test_leading_edge_location(self):
+    def test_leading_edge_location(self) -> None:
         """Test that leading edge is properly located at approximately x=0."""
         for airfoil in [
             self.naca0012_airfoil,
@@ -103,7 +104,7 @@ class TestAirfoil(unittest.TestCase):
             # Check that minimum x coordinate is approximately 0.0.
             self.assertAlmostEqual(np.min(x_coords), 0.0, places=2)
 
-    def test_trailing_edge_location(self):
+    def test_trailing_edge_location(self) -> None:
         """Test that trailing edge is properly located at approximately x=1."""
         for airfoil in [
             self.naca0012_airfoil,
@@ -115,7 +116,7 @@ class TestAirfoil(unittest.TestCase):
             # Check that maximum x coordinate is approximately 1.0.
             self.assertAlmostEqual(np.max(x_coords), 1.0, places=2)
 
-    def test_symmetric_airfoil_properties(self):
+    def test_symmetric_airfoil_properties(self) -> None:
         """Test properties specific to symmetric airfoils (NACA 0012)."""
         outline = self.naca0012_airfoil.outline_A_Lp
         y_coords = outline[:, 1]
@@ -126,7 +127,7 @@ class TestAirfoil(unittest.TestCase):
         self.assertGreater(len(positive_y), 0)
         self.assertGreater(len(negative_y), 0)
 
-    def test_mcl_A_Lp_attribute(self):
+    def test_mcl_A_Lp_attribute(self) -> None:
         """Test that mcl_A_Lp attribute is properly set."""
         for airfoil in [
             self.naca0012_airfoil,
@@ -134,6 +135,7 @@ class TestAirfoil(unittest.TestCase):
             self.resampled_airfoil,
         ]:
             self.assertIsNotNone(airfoil.mcl_A_Lp)
+            assert airfoil.mcl_A_Lp is not None
             self.assertEqual(len(airfoil.mcl_A_Lp.shape), 2)
             self.assertEqual(airfoil.mcl_A_Lp.shape[1], 2)
 
@@ -142,7 +144,7 @@ class TestAirfoil(unittest.TestCase):
             self.assertAlmostEqual(np.min(mclX_A_Lp), 0.0, places=2)
             self.assertAlmostEqual(np.max(mclX_A_Lp), 1.0, places=2)
 
-    def test_get_resampled_mcl_method(self):
+    def test_get_resampled_mcl_method(self) -> None:
         """Test the get_resampled_mcl method."""
         num_points = 50
         mcl_fractions = np.linspace(0, 1, num_points)
@@ -154,7 +156,7 @@ class TestAirfoil(unittest.TestCase):
         self.assertAlmostEqual(np.min(mclX_A_Lp), 0.0, places=2)
         self.assertAlmostEqual(np.max(mclX_A_Lp), 1.0, places=2)
 
-    def test_add_control_surface_method(self):
+    def test_add_control_surface_method(self) -> None:
         """Test the add_control_surface method."""
         # Test adding control surface at 75% chord.
         hinge_point = 0.75
@@ -177,21 +179,22 @@ class TestAirfoil(unittest.TestCase):
         modified_outline = modified_airfoil.outline_A_Lp
         self.assertFalse(np.allclose(original_outline, modified_outline))
 
-    def test_add_control_surface_zero_deflection_returns_self(self):
-        """Verify that zero deflection returns the same Airfoil instance (optimization)."""
+    def test_add_control_surface_zero_deflection_returns_self(self) -> None:
+        """Verify that zero deflection returns the same Airfoil instance
+        (optimization)."""
         result = self.naca0012_airfoil.add_control_surface(
             deflection=0.0,
             hinge_point=0.75,
         )
         self.assertIs(result, self.naca0012_airfoil)
 
-    def test_add_control_surface_deflects_trailing_edge_in_z(self):
+    def test_add_control_surface_deflects_trailing_edge_in_z(self) -> None:
         """A positive deflection lowers the trailing edge along wing cross section z,
         and an equal negative deflection raises it by an equal amount.
 
-        The Airfoil's mean camber line is in airfoil axes, whose y-component is the
-        wing cross section z-component: the airfoil embeds in wing cross section axes
-        with the chord along x, the span along y, and the thickness along z. A positive
+        The Airfoil's mean camber line is in airfoil axes, whose y-component is the wing
+        cross section z-component: the airfoil embeds in wing cross section axes with
+        the chord along x, the span along y, and the thickness along z. A positive
         deflection is defined as downward, toward wing cross section -z, so the trailing
         edge's z-component must decrease for a positive deflection and increase by the
         same magnitude for an equal-magnitude negative deflection.
@@ -233,7 +236,7 @@ class TestAirfoil(unittest.TestCase):
             up_trailingZ_A_Lp - undeflected_trailingZ_A_Lp,
         )
 
-    def test_parameter_validation_invalid_inputs(self):
+    def test_parameter_validation_invalid_inputs(self) -> None:
         """Test that invalid parameters raise appropriate errors."""
         # Test outlines with insufficient points in upper portion. These outlines have
         # only 4 points total, and the point ordering places only 1 point in the upper
@@ -251,7 +254,7 @@ class TestAirfoil(unittest.TestCase):
                 name="Invalid2", outline_A_Lp=invalid_outline2, resample=False
             )
 
-    def test_naca_4_series_validation(self):
+    def test_naca_4_series_validation(self) -> None:
         """Test validation of NACA 4 series airfoil parameters."""
         # Test that NACA 4 series airfoils with thickness above 30% raise a ValueError.
         with self.assertRaises(ValueError):
@@ -316,9 +319,9 @@ class TestAirfoil(unittest.TestCase):
         airfoil_boundary_camber_pos = ps.geometry.airfoil.Airfoil(name="NACA2110")
         self.assertIsNotNone(airfoil_boundary_camber_pos.outline_A_Lp)
 
-    def test_naca_airfoil_thickness(self):
-        """Test that the generated NACA0012 and NACA2412 Airfoils have approximately
-        the correct maximum thickness."""
+    def test_naca_airfoil_thickness(self) -> None:
+        """Test that the generated NACA0012 and NACA2412 Airfoils have approximately the
+        correct maximum thickness."""
         for airfoil in [self.naca0012_airfoil, self.naca2412_airfoil]:
             outline_A_Lp = airfoil.outline_A_Lp
             outlineY_A_Lp = outline_A_Lp[:, 1]
@@ -328,7 +331,7 @@ class TestAirfoil(unittest.TestCase):
             max_thickness = np.max(outlineY_A_Lp) - np.min(outlineY_A_Lp)
             self.assertAlmostEqual(max_thickness, 0.12, places=2)
 
-    def test_initialization_named_airfoil(self):
+    def test_initialization_named_airfoil(self) -> None:
         """Test Airfoil initialization with a named airfoil from the _airfoils data
         directory."""
         # Test that the named airfoil loads correctly from the _airfoils directory
@@ -351,10 +354,11 @@ class TestAirfoil(unittest.TestCase):
 
         # Test that the MCL is populated.
         self.assertIsNotNone(self.named_airfoil.mcl_A_Lp)
+        assert self.named_airfoil.mcl_A_Lp is not None
         self.assertEqual(len(self.named_airfoil.mcl_A_Lp.shape), 2)
         self.assertEqual(self.named_airfoil.mcl_A_Lp.shape[1], 2)
 
-    def test_excessive_rotation_rejection(self):
+    def test_excessive_rotation_rejection(self) -> None:
         """Test that outlines with excessive rotation (>15 degrees) are rejected."""
         # Create a valid airfoil outline.
         valid_outline = np.array(
@@ -385,7 +389,7 @@ class TestAirfoil(unittest.TestCase):
             )
         self.assertIn("excessive rotation", str(context.exception).lower())
 
-    def test_minor_rotation_correction(self):
+    def test_minor_rotation_correction(self) -> None:
         """Test that minor rotation offsets (<15 degrees) are auto-corrected."""
         # Create a valid airfoil outline.
         valid_outline = np.array(
@@ -424,7 +428,7 @@ class TestAirfoil(unittest.TestCase):
         self.assertAlmostEqual(airfoil.outline_A_Lp[0, 0], 1.0, places=5)
         self.assertAlmostEqual(airfoil.outline_A_Lp[-1, 0], 1.0, places=5)
 
-    def test_auto_normalization_translation_and_scale(self):
+    def test_auto_normalization_translation_and_scale(self) -> None:
         """Test that outlines are auto-normalized for position and scale."""
         # Create an outline that is translated and scaled (not at origin, chord != 1.0).
         # This is a simple diamond-like airfoil shape scaled by 2x and translated.
@@ -464,7 +468,7 @@ class TestAirfoil(unittest.TestCase):
         self.assertTrue(np.all(airfoil.outline_A_Lp[:, 0] >= 0.0 - 1e-9))
         self.assertTrue(np.all(airfoil.outline_A_Lp[:, 0] <= 1.0 + 1e-9))
 
-    def test_self_intersection_rejection(self):
+    def test_self_intersection_rejection(self) -> None:
         """Test that self-intersecting outlines are rejected."""
         # Create an outline where upper surface crosses below lower surface. This is a
         # "twisted" airfoil that would self-intersect.
@@ -494,7 +498,7 @@ class TestAirfoil(unittest.TestCase):
             "upper" in error_msg or "lower" in error_msg or "intersect" in error_msg
         )
 
-    def test_open_trailing_edge_support(self):
+    def test_open_trailing_edge_support(self) -> None:
         """Test that open (blunt) trailing edges are supported."""
         # Create an outline with an open trailing edge (upper TE y != lower TE y).
         open_te_outline = np.array(
@@ -527,7 +531,7 @@ class TestAirfoil(unittest.TestCase):
         lower_te_y = airfoil.outline_A_Lp[-1, 1]
         self.assertGreaterEqual(upper_te_y, lower_te_y)
 
-    def test_upper_x_non_increasing_validation(self):
+    def test_upper_x_non_increasing_validation(self) -> None:
         """Test that upper outline must have non-increasing x values."""
         # Create an outline where upper portion has increasing x (invalid).
         invalid_upper_outline = np.array(
@@ -555,7 +559,7 @@ class TestAirfoil(unittest.TestCase):
             )
         self.assertIn("upper", str(context.exception).lower())
 
-    def test_lower_x_non_decreasing_validation(self):
+    def test_lower_x_non_decreasing_validation(self) -> None:
         """Test that lower outline must have non-decreasing x values."""
         # Create an outline where lower portion has decreasing x (invalid).
         invalid_lower_outline = np.array(
@@ -583,7 +587,7 @@ class TestAirfoil(unittest.TestCase):
             )
         self.assertIn("lower", str(context.exception).lower())
 
-    def test_minimum_points_validation(self):
+    def test_minimum_points_validation(self) -> None:
         """Test that outline must have at least 5 points."""
         # Create an outline with only 4 points.
         too_few_points = np.array(
@@ -608,15 +612,13 @@ class TestAirfoil(unittest.TestCase):
             "five" in error_msg or "three" in error_msg or "unique" in error_msg
         )
 
-    def test_all_valid_naca4_airfoils_load(self):
+    def test_all_valid_naca4_airfoils_load(self) -> None:
         """Test that all valid NACA 4 series airfoils load without errors.
 
-        NACA 4 series constraints:
-        1. Cannot be "0000" (zero thickness)
-        2. Thickness (last two digits) must be <= 30%
-        3. First two digits must either both be zero (symmetric) or both be
-           non zero (cambered)
-        4. For cambered airfoils: camber_loc >= max_camber + thickness/2
+        NACA 4 series constraints: 1. Cannot be "0000" (zero thickness) 2. Thickness
+        (last two digits) must be <= 30% 3. First two digits must either both be zero
+        (symmetric) or both be    non zero (cambered) 4. For cambered airfoils:
+        camber_loc >= max_camber + thickness/2
         """
         failed_airfoils = []
 
@@ -656,7 +658,7 @@ class TestAirfoil(unittest.TestCase):
                 f"{len(failed_airfoils)} NACA 4 series airfoils failed:\n{failure_msg}"
             )
 
-    def test_all_database_airfoils_load(self):
+    def test_all_database_airfoils_load(self) -> None:
         """Test that all airfoils in the database load without errors."""
         # Get all airfoil names from the database.
         airfoils_dir = importlib.resources.files("pterasoftware.geometry").joinpath(
@@ -692,45 +694,46 @@ class TestAirfoil(unittest.TestCase):
 class TestAirfoilImmutability(unittest.TestCase):
     """Tests for Airfoil attribute immutability."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for immutability tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
 
-    def test_immutable_name_property(self):
+    def test_immutable_name_property(self) -> None:
         """Test that name property is read only."""
         with self.assertRaises(AttributeError):
-            self.naca0012_airfoil.name = "new_name"
+            setattr(self.naca0012_airfoil, "name", "new_name")
 
-    def test_immutable_resample_property(self):
+    def test_immutable_resample_property(self) -> None:
         """Test that resample property is read only."""
         with self.assertRaises(AttributeError):
-            self.naca0012_airfoil.resample = False
+            setattr(self.naca0012_airfoil, "resample", False)
 
-    def test_immutable_n_points_per_side_property(self):
+    def test_immutable_n_points_per_side_property(self) -> None:
         """Test that n_points_per_side property is read only."""
         with self.assertRaises(AttributeError):
-            self.naca0012_airfoil.n_points_per_side = 100
+            setattr(self.naca0012_airfoil, "n_points_per_side", 100)
 
-    def test_immutable_outline_A_Lp_property(self):
+    def test_immutable_outline_A_Lp_property(self) -> None:
         """Test that outline_A_Lp property is read only."""
         new_outline = np.zeros((10, 2))
         with self.assertRaises(AttributeError):
-            self.naca0012_airfoil.outline_A_Lp = new_outline
+            setattr(self.naca0012_airfoil, "outline_A_Lp", new_outline)
 
-    def test_immutable_mcl_A_Lp_property(self):
+    def test_immutable_mcl_A_Lp_property(self) -> None:
         """Test that mcl_A_Lp property is read only."""
         new_mcl = np.zeros((10, 2))
         with self.assertRaises(AttributeError):
-            self.naca0012_airfoil.mcl_A_Lp = new_mcl
+            setattr(self.naca0012_airfoil, "mcl_A_Lp", new_mcl)
 
-    def test_outline_A_Lp_array_read_only(self):
+    def test_outline_A_Lp_array_read_only(self) -> None:
         """Test that outline_A_Lp array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.outline_A_Lp[0, 0] = 999.0
 
-    def test_mcl_A_Lp_array_read_only(self):
+    def test_mcl_A_Lp_array_read_only(self) -> None:
         """Test that mcl_A_Lp array cannot be modified in place."""
         self.assertIsNotNone(self.naca0012_airfoil.mcl_A_Lp)
+        assert self.naca0012_airfoil.mcl_A_Lp is not None
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.mcl_A_Lp[0, 0] = 999.0
 
@@ -738,7 +741,7 @@ class TestAirfoilImmutability(unittest.TestCase):
 class TestAirfoilDeepCopy(unittest.TestCase):
     """Tests for Airfoil.__deepcopy__ method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for deepcopy tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
         self.custom_outline_airfoil = (
@@ -748,7 +751,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
             geometry_fixtures.make_non_resampled_airfoil_fixture()
         )
 
-    def test_deepcopy_creates_new_instance(self):
+    def test_deepcopy_creates_new_instance(self) -> None:
         """Test that deepcopy creates a new Airfoil instance."""
         import copy
 
@@ -758,7 +761,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         self.assertIsInstance(copied, ps.geometry.airfoil.Airfoil)
         self.assertIsNot(original, copied)
 
-    def test_deepcopy_preserves_all_attributes(self):
+    def test_deepcopy_preserves_all_attributes(self) -> None:
         """Test that deepcopy preserves all attribute values."""
         import copy
 
@@ -771,7 +774,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         npt.assert_array_equal(copied.outline_A_Lp, original.outline_A_Lp)
         npt.assert_array_equal(copied.mcl_A_Lp, original.mcl_A_Lp)
 
-    def test_deepcopy_creates_independent_outline_array(self):
+    def test_deepcopy_creates_independent_outline_array(self) -> None:
         """Test that deepcopy creates an independent copy of outline_A_Lp."""
         import copy
 
@@ -781,7 +784,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         self.assertIsNot(copied.outline_A_Lp, original.outline_A_Lp)
         npt.assert_array_equal(copied.outline_A_Lp, original.outline_A_Lp)
 
-    def test_deepcopy_creates_independent_mcl_array(self):
+    def test_deepcopy_creates_independent_mcl_array(self) -> None:
         """Test that deepcopy creates an independent copy of mcl_A_Lp."""
         import copy
 
@@ -793,7 +796,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         self.assertIsNot(copied.mcl_A_Lp, original.mcl_A_Lp)
         npt.assert_array_equal(copied.mcl_A_Lp, original.mcl_A_Lp)
 
-    def test_deepcopy_arrays_remain_read_only(self):
+    def test_deepcopy_arrays_remain_read_only(self) -> None:
         """Test that deepcopied arrays are still read only."""
         import copy
 
@@ -803,10 +806,11 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         with self.assertRaises(ValueError):
             copied.outline_A_Lp[0, 0] = 999.0
 
+        assert copied.mcl_A_Lp is not None
         with self.assertRaises(ValueError):
             copied.mcl_A_Lp[0, 0] = 999.0
 
-    def test_deepcopy_non_resampled_airfoil(self):
+    def test_deepcopy_non_resampled_airfoil(self) -> None:
         """Test that deepcopy works correctly for non-resampled Airfoils."""
         import copy
 
@@ -818,7 +822,7 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         self.assertFalse(copied.resample)
         npt.assert_array_equal(copied.outline_A_Lp, original.outline_A_Lp)
 
-    def test_deepcopy_custom_outline_airfoil(self):
+    def test_deepcopy_custom_outline_airfoil(self) -> None:
         """Test that deepcopy works correctly for custom outline Airfoils."""
         import copy
 
@@ -831,12 +835,12 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         npt.assert_array_equal(copied.outline_A_Lp, original.outline_A_Lp)
         npt.assert_array_equal(copied.mcl_A_Lp, original.mcl_A_Lp)
 
-    def test_deepcopy_handles_memo_correctly(self):
+    def test_deepcopy_handles_memo_correctly(self) -> None:
         """Test that deepcopy uses memo dictionary correctly to prevent duplicates."""
         import copy
 
         original = self.naca0012_airfoil
-        memo = {}
+        memo: dict[int, Any] = {}
         copied1 = copy.deepcopy(original, memo)
         copied2 = copy.deepcopy(original, memo)
 
@@ -847,22 +851,24 @@ class TestAirfoilDeepCopy(unittest.TestCase):
 class TestAirfoilGetPlottableData(unittest.TestCase):
     """Tests for Airfoil.get_plottable_data method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for get_plottable_data tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
         self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
-    def test_get_plottable_data_returns_list_when_show_false(self):
+    def test_get_plottable_data_returns_list_when_show_false(self) -> None:
         """Test that get_plottable_data returns a list when show is False."""
         result = self.naca0012_airfoil.get_plottable_data(show=False)
 
         self.assertIsInstance(result, list)
+        assert result is not None
         self.assertEqual(len(result), 2)
 
-    def test_get_plottable_data_returns_outline_and_mcl(self):
+    def test_get_plottable_data_returns_outline_and_mcl(self) -> None:
         """Test that get_plottable_data returns outline and MCL data."""
         result = self.naca0012_airfoil.get_plottable_data(show=False)
 
+        assert result is not None
         outline_data = result[0]
         mcl_data = result[1]
 
@@ -875,19 +881,21 @@ class TestAirfoilGetPlottableData(unittest.TestCase):
         self.assertEqual(len(mcl_data.shape), 2)
         self.assertEqual(mcl_data.shape[1], 2)
 
-    def test_get_plottable_data_outline_matches_attribute(self):
+    def test_get_plottable_data_outline_matches_attribute(self) -> None:
         """Test that returned outline matches outline_A_Lp attribute."""
         result = self.naca0012_airfoil.get_plottable_data(show=False)
 
+        assert result is not None
         npt.assert_array_equal(result[0], self.naca0012_airfoil.outline_A_Lp)
 
-    def test_get_plottable_data_mcl_matches_attribute(self):
+    def test_get_plottable_data_mcl_matches_attribute(self) -> None:
         """Test that returned MCL matches mcl_A_Lp attribute."""
         result = self.naca0012_airfoil.get_plottable_data(show=False)
 
+        assert result is not None
         npt.assert_array_equal(result[1], self.naca0012_airfoil.mcl_A_Lp)
 
-    def test_get_plottable_data_default_show_is_false(self):
+    def test_get_plottable_data_default_show_is_false(self) -> None:
         """Test that the default value for show parameter is False."""
         # Call without any parameters.
         result = self.naca0012_airfoil.get_plottable_data()
@@ -895,17 +903,18 @@ class TestAirfoilGetPlottableData(unittest.TestCase):
         # Should return a list (not None) when show defaults to False.
         self.assertIsInstance(result, list)
 
-    def test_get_plottable_data_accepts_numpy_bool(self):
+    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
         """Test that get_plottable_data accepts numpy bool for show parameter."""
         result = self.naca0012_airfoil.get_plottable_data(show=np.bool_(False))
 
         self.assertIsInstance(result, list)
 
-    def test_get_plottable_data_cambered_airfoil(self):
+    def test_get_plottable_data_cambered_airfoil(self) -> None:
         """Test get_plottable_data with a cambered airfoil."""
         result = self.naca2412_airfoil.get_plottable_data(show=False)
 
         self.assertIsInstance(result, list)
+        assert result is not None
         self.assertEqual(len(result), 2)
 
         _ = result[0]
@@ -920,12 +929,12 @@ class TestAirfoilGetPlottableData(unittest.TestCase):
 class TestAirfoilAddControlSurface(unittest.TestCase):
     """Additional tests for Airfoil.add_control_surface method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for add_control_surface tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
         self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
-    def test_add_control_surface_positive_deflection(self):
+    def test_add_control_surface_positive_deflection(self) -> None:
         """Test add_control_surface with positive (downward) deflection."""
         modified = self.naca0012_airfoil.add_control_surface(
             deflection=5.0, hinge_point=0.75
@@ -934,7 +943,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
         self.assertIn("flapped", modified.name)
 
-    def test_add_control_surface_negative_deflection(self):
+    def test_add_control_surface_negative_deflection(self) -> None:
         """Test add_control_surface with negative (upward) deflection."""
         modified = self.naca0012_airfoil.add_control_surface(
             deflection=-5.0, hinge_point=0.75
@@ -943,7 +952,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
         self.assertIn("flapped", modified.name)
 
-    def test_add_control_surface_various_hinge_points(self):
+    def test_add_control_surface_various_hinge_points(self) -> None:
         """Test add_control_surface with various hinge point locations."""
         hinge_points = [0.5, 0.6, 0.7, 0.8, 0.9]
         for hinge_point in hinge_points:
@@ -953,7 +962,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
                 )
                 self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
 
-    def test_add_control_surface_invalid_deflection(self):
+    def test_add_control_surface_invalid_deflection(self) -> None:
         """Test that invalid deflection values raise errors."""
         # The deflection is too large.
         with self.assertRaises(ValueError):
@@ -962,7 +971,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.add_control_surface(deflection=-6.0, hinge_point=0.75)
 
-    def test_add_control_surface_invalid_hinge_point(self):
+    def test_add_control_surface_invalid_hinge_point(self) -> None:
         """Test that invalid hinge point values raise errors."""
         # The hinge point is at the edge (exclusive boundaries).
         with self.assertRaises(ValueError):
@@ -978,14 +987,14 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.add_control_surface(deflection=3.0, hinge_point=1.1)
 
-    def test_add_control_surface_accepts_int_parameters(self):
+    def test_add_control_surface_accepts_int_parameters(self) -> None:
         """Test that add_control_surface accepts integer parameters."""
         modified = self.naca0012_airfoil.add_control_surface(
             deflection=3, hinge_point=0.75  # This passes the deflection as an int.
         )
         self.assertIsInstance(modified, ps.geometry.airfoil.Airfoil)
 
-    def test_add_control_surface_preserves_name_base(self):
+    def test_add_control_surface_preserves_name_base(self) -> None:
         """Test that modified Airfoil name includes original name."""
         original_name = self.naca0012_airfoil.name
         modified = self.naca0012_airfoil.add_control_surface(
@@ -993,7 +1002,7 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
         )
         self.assertIn(original_name, modified.name)
 
-    def test_add_control_surface_cambered_airfoil(self):
+    def test_add_control_surface_cambered_airfoil(self) -> None:
         """Test add_control_surface on a cambered airfoil."""
         modified = self.naca2412_airfoil.add_control_surface(
             deflection=4.0, hinge_point=0.8
@@ -1006,18 +1015,18 @@ class TestAirfoilAddControlSurface(unittest.TestCase):
 class TestAirfoilGetResampledMcl(unittest.TestCase):
     """Additional tests for Airfoil.get_resampled_mcl method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for get_resampled_mcl tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
 
-    def test_get_resampled_mcl_returns_correct_shape(self):
+    def test_get_resampled_mcl_returns_correct_shape(self) -> None:
         """Test that get_resampled_mcl returns correct shape."""
         mcl_fractions = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
         result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         self.assertEqual(result.shape, (5, 2))
 
-    def test_get_resampled_mcl_endpoints(self):
+    def test_get_resampled_mcl_endpoints(self) -> None:
         """Test that get_resampled_mcl endpoints are at x=0 and x=1."""
         mcl_fractions = np.array([0.0, 0.5, 1.0])
         result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
@@ -1028,7 +1037,7 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
         # Last point should be at x ~ 1.0.
         self.assertAlmostEqual(result[-1, 0], 1.0, places=4)
 
-    def test_get_resampled_mcl_monotonic_x(self):
+    def test_get_resampled_mcl_monotonic_x(self) -> None:
         """Test that resampled MCL has monotonically increasing x values."""
         mcl_fractions = np.linspace(0, 1, 20)
         result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
@@ -1039,19 +1048,19 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
         # All differences should be positive (monotonically increasing).
         self.assertTrue(np.all(x_diffs >= 0))
 
-    def test_get_resampled_mcl_invalid_first_value(self):
+    def test_get_resampled_mcl_invalid_first_value(self) -> None:
         """Test that invalid first value in mcl_fractions raises error."""
         mcl_fractions = np.array([0.1, 0.5, 1.0])  # The first value is not 0.0.
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
-    def test_get_resampled_mcl_invalid_last_value(self):
+    def test_get_resampled_mcl_invalid_last_value(self) -> None:
         """Test that invalid last value in mcl_fractions raises error."""
         mcl_fractions = np.array([0.0, 0.5, 0.9])  # The last value is not 1.0.
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
-    def test_get_resampled_mcl_values_outside_range(self):
+    def test_get_resampled_mcl_values_outside_range(self) -> None:
         """Test that values outside [0, 1] range raise error."""
         mcl_fractions_low = np.array([-0.1, 0.5, 1.0])
         with self.assertRaises(ValueError):
@@ -1061,32 +1070,32 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions_high)
 
-    def test_get_resampled_mcl_non_ascending_values(self):
+    def test_get_resampled_mcl_non_ascending_values(self) -> None:
         """Test that non-ascending values raise error."""
         mcl_fractions = np.array([0.0, 0.7, 0.5, 1.0])  # 0.7 > 0.5
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
-    def test_get_resampled_mcl_duplicate_values(self):
+    def test_get_resampled_mcl_duplicate_values(self) -> None:
         """Test that duplicate values raise error."""
         mcl_fractions = np.array([0.0, 0.5, 0.5, 1.0])  # The value 0.5 is a duplicate.
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
-    def test_get_resampled_mcl_too_few_values(self):
+    def test_get_resampled_mcl_too_few_values(self) -> None:
         """Test that too few values raise error."""
         mcl_fractions = np.array([0.5])  # There is only one value.
         with self.assertRaises(ValueError):
             self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
-    def test_get_resampled_mcl_accepts_list(self):
+    def test_get_resampled_mcl_accepts_list(self) -> None:
         """Test that get_resampled_mcl accepts list input."""
         mcl_fractions = [0.0, 0.25, 0.5, 0.75, 1.0]
         result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
 
         self.assertEqual(result.shape, (5, 2))
 
-    def test_get_resampled_mcl_accepts_tuple(self):
+    def test_get_resampled_mcl_accepts_tuple(self) -> None:
         """Test that get_resampled_mcl accepts tuple input."""
         mcl_fractions = (0.0, 0.5, 1.0)
         result = self.naca0012_airfoil.get_resampled_mcl(mcl_fractions=mcl_fractions)
@@ -1097,10 +1106,10 @@ class TestAirfoilGetResampledMcl(unittest.TestCase):
 class TestAirfoilEdgeCases(unittest.TestCase):
     """Tests for edge cases and special scenarios in Airfoil."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for edge case tests."""
 
-    def test_minimum_n_points_per_side(self):
+    def test_minimum_n_points_per_side(self) -> None:
         """Test Airfoil with minimum valid n_points_per_side (3)."""
         min_points_airfoil = (
             geometry_fixtures.make_minimum_n_points_per_side_airfoil_fixture()
@@ -1110,7 +1119,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         self.assertIsNotNone(min_points_airfoil.outline_A_Lp)
         self.assertIsNotNone(min_points_airfoil.mcl_A_Lp)
 
-    def test_invalid_n_points_per_side_too_low(self):
+    def test_invalid_n_points_per_side_too_low(self) -> None:
         """Test that n_points_per_side below 3 raises error."""
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="naca0012", n_points_per_side=2)
@@ -1118,7 +1127,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="naca0012", n_points_per_side=1)
 
-    def test_thick_naca_airfoil(self):
+    def test_thick_naca_airfoil(self) -> None:
         """Test a thick NACA airfoil (30% thickness)."""
         thick_airfoil = geometry_fixtures.make_thick_naca_airfoil_fixture()
 
@@ -1131,7 +1140,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         max_thickness = np.max(y_coords) - np.min(y_coords)
         self.assertAlmostEqual(max_thickness, 0.30, places=2)
 
-    def test_blunt_trailing_edge_airfoil(self):
+    def test_blunt_trailing_edge_airfoil(self) -> None:
         """Test an Airfoil with blunt trailing edge."""
         blunt_te_airfoil = geometry_fixtures.make_blunt_trailing_edge_airfoil_fixture()
 
@@ -1143,7 +1152,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         lower_te_y = blunt_te_airfoil.outline_A_Lp[-1, 1]
         self.assertGreater(upper_te_y, lower_te_y)
 
-    def test_case_insensitive_naca_name(self):
+    def test_case_insensitive_naca_name(self) -> None:
         """Test that NACA airfoil names are case insensitive."""
         mixed_case_airfoil = (
             geometry_fixtures.make_case_insensitive_naca_airfoil_fixture()
@@ -1152,37 +1161,42 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         self.assertIsNotNone(mixed_case_airfoil.outline_A_Lp)
         self.assertIsNotNone(mixed_case_airfoil.mcl_A_Lp)
 
-    def test_whitespace_in_name(self):
+    def test_whitespace_in_name(self) -> None:
         """Test that leading and trailing whitespace in name is handled."""
         airfoil = ps.geometry.airfoil.Airfoil(name="  naca0012  ")
 
         self.assertIsNotNone(airfoil.outline_A_Lp)
         self.assertIsNotNone(airfoil.mcl_A_Lp)
 
-    def test_invalid_airfoil_name(self):
+    def test_invalid_airfoil_name(self) -> None:
         """Test that invalid airfoil name raises error."""
         with self.assertRaises(ValueError):
             ps.geometry.airfoil.Airfoil(name="not_a_valid_airfoil_name")
 
-    def test_invalid_name_type(self):
+    def test_invalid_name_type(self) -> None:
         """Test that invalid name type raises error."""
+        bad_name: Any = 12345
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(name=12345)
+            ps.geometry.airfoil.Airfoil(name=bad_name)
 
-    def test_invalid_resample_type(self):
+    def test_invalid_resample_type(self) -> None:
         """Test that invalid resample type raises error."""
+        bad_resample: Any = "yes"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(name="naca0012", resample="yes")
+            ps.geometry.airfoil.Airfoil(name="naca0012", resample=bad_resample)
 
-    def test_invalid_n_points_per_side_type(self):
+    def test_invalid_n_points_per_side_type(self) -> None:
         """Test that invalid n_points_per_side type raises error."""
+        bad_n_points_per_side: Any = 100.5
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            ps.geometry.airfoil.Airfoil(name="naca0012", n_points_per_side=100.5)
+            ps.geometry.airfoil.Airfoil(
+                name="naca0012", n_points_per_side=bad_n_points_per_side
+            )
 
-    def test_outline_with_different_array_types(self):
+    def test_outline_with_different_array_types(self) -> None:
         """Test that outline_A_Lp accepts different array like types."""
         # Test with list of lists.
         outline_list = [
@@ -1208,7 +1222,7 @@ class TestAirfoilEdgeCases(unittest.TestCase):
         )
         self.assertIsNotNone(airfoil_tuple.outline_A_Lp)
 
-    def test_outline_with_int_coordinates(self):
+    def test_outline_with_int_coordinates(self) -> None:
         """Test that outline_A_Lp accepts integer coordinates."""
         outline_int = np.array(
             [
@@ -1228,23 +1242,23 @@ class TestAirfoilEdgeCases(unittest.TestCase):
 class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
     """This class contains unit tests for the deprecated lp-named Airfoil aliases."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for the deprecated alias tests."""
         self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
-    def test_outline_property_alias_warns_and_matches(self):
+    def test_outline_property_alias_warns_and_matches(self) -> None:
         """Test that reading outline_A_lp warns and returns the outline_A_Lp array."""
         with self.assertWarns(DeprecationWarning):
             outline_A_Lp = self.naca2412_airfoil.outline_A_lp
         npt.assert_array_equal(outline_A_Lp, self.naca2412_airfoil.outline_A_Lp)
 
-    def test_mcl_property_alias_warns_and_matches(self):
+    def test_mcl_property_alias_warns_and_matches(self) -> None:
         """Test that reading mcl_A_lp warns and returns the mcl_A_Lp array."""
         with self.assertWarns(DeprecationWarning):
             mcl_A_Lp = self.naca2412_airfoil.mcl_A_lp
         npt.assert_array_equal(mcl_A_Lp, self.naca2412_airfoil.mcl_A_Lp)
 
-    def test_constructor_alias_warns_and_matches(self):
+    def test_constructor_alias_warns_and_matches(self) -> None:
         """Test that passing outline_A_lp warns and builds the same outline as passing
         outline_A_Lp."""
         points = self.naca2412_airfoil.outline_A_Lp.copy()
@@ -1259,7 +1273,7 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
             deprecated_airfoil.outline_A_Lp, canonical_airfoil.outline_A_Lp
         )
 
-    def test_constructor_rejects_both_outline_parameters(self):
+    def test_constructor_rejects_both_outline_parameters(self) -> None:
         """Test that passing both outline_A_Lp and outline_A_lp raises a ValueError."""
         points = self.naca2412_airfoil.outline_A_Lp.copy()
         with self.assertWarns(DeprecationWarning):
@@ -1268,7 +1282,7 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
                     name="both", outline_A_Lp=points, outline_A_lp=points
                 )
 
-    def test_new_names_do_not_warn(self):
+    def test_new_names_do_not_warn(self) -> None:
         """Test that the outline_A_Lp parameter and the Lp-named properties emit no
         DeprecationWarning."""
         points = self.naca2412_airfoil.outline_A_Lp.copy()

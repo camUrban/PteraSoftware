@@ -339,6 +339,14 @@ print("Finished saving the solver.")
 # passed to any output function.
 print("Loading the saved solver...")
 loaded_solver = ps.load("example_solver.json.gz")
+
+# The load function is annotated as returning object because a saved file can hold any
+# Ptera Software object. This assert narrows the type for type checkers and guards
+# against loading the wrong file.
+assert isinstance(
+    loaded_solver,
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+)
 print("Finished loading the saved solver.")
 
 # Call the animate function on the loaded solver. This produces a GIF of the wake being

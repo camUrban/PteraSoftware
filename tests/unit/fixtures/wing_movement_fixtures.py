@@ -5,12 +5,12 @@ import pterasoftware as ps
 from . import geometry_fixtures, wing_cross_section_movement_fixtures
 
 
-def make_static_wing_movement_fixture():
-    """This method makes a fixture that is a WingMovement with all parameters zero
-    (no movement).
+def make_static_wing_movement_fixture() -> ps.movements.wing_movement.WingMovement:
+    """This method makes a fixture that is a WingMovement with all parameters zero (no
+    movement).
 
-    :return static_wing_movement_fixture: WingMovement
-        This is the WingMovement with no movement.
+    :return static_wing_movement_fixture: WingMovement This is the WingMovement with no
+        movement.
     """
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
@@ -37,12 +37,12 @@ def make_static_wing_movement_fixture():
     return static_wing_movement_fixture
 
 
-def make_basic_wing_movement_fixture():
-    """This method makes a fixture that is a WingMovement with general-purpose
-    moderate values.
+def make_basic_wing_movement_fixture() -> ps.movements.wing_movement.WingMovement:
+    """This method makes a fixture that is a WingMovement with general-purpose moderate
+    values.
 
-    :return basic_wing_movement_fixture: WingMovement
-        This is the WingMovement with general-purpose values.
+    :return basic_wing_movement_fixture: WingMovement This is the WingMovement with
+        general-purpose values.
     """
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
@@ -69,14 +69,16 @@ def make_basic_wing_movement_fixture():
     return basic_wing_movement_fixture
 
 
-def make_periodic_geometry_wing_movement_fixture():
-    """This method makes a fixture that is a WingMovement with periodic geometry
-    motion, suitable for testing the variable geometry optimization. The fixture
-    uses a 0.1s period which aligns well with common delta_time values like 0.01s
-    (10 steps per period) and 0.02s (5 steps per period).
+def make_periodic_geometry_wing_movement_fixture() -> (
+    ps.movements.wing_movement.WingMovement
+):
+    """This method makes a fixture that is a WingMovement with periodic geometry motion,
+    suitable for testing the variable geometry optimization. The fixture uses a 0.1s
+    period which aligns well with common delta_time values like 0.01s (10 steps per
+    period) and 0.02s (5 steps per period).
 
-    :return periodic_geometry_wing_movement_fixture: WingMovement
-        This is the WingMovement with periodic geometry motion.
+    :return periodic_geometry_wing_movement_fixture: WingMovement This is the
+        WingMovement with periodic geometry motion.
     """
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()

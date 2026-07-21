@@ -12,10 +12,9 @@ from tests.unit.fixtures import (
 class TestFreeFlightOperatingPointMovement(unittest.TestCase):
     """This is a class with functions to test FreeFlightOperatingPointMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that FreeFlightOperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
+        CoreOperatingPointMovement."""
         self.assertTrue(
             issubclass(
                 ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
@@ -23,10 +22,9 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that FreeFlightOperatingPointMovement instantiation returns a
-        FreeFlightOperatingPointMovement.
-        """
+        FreeFlightOperatingPointMovement."""
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
@@ -38,10 +36,9 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
             ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
         )
 
-    def test_operating_points_initialized_with_base_operating_point(self):
+    def test_operating_points_initialized_with_base_operating_point(self) -> None:
         """Test that operating_points starts as a list holding only the base
-        OperatingPoint.
-        """
+        OperatingPoint."""
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
@@ -54,10 +51,9 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
             base_operating_point,
         )
 
-    def test_operating_points_is_mutable(self):
+    def test_operating_points_is_mutable(self) -> None:
         """Test that operating_points supports the solver appending new
-        OperatingPoints.
-        """
+        OperatingPoints."""
         free_flight_operating_point_movement = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
@@ -73,10 +69,9 @@ class TestFreeFlightOperatingPointMovement(unittest.TestCase):
             new_operating_point,
         )
 
-    def test_generate_operating_points_returns_operating_points(self):
+    def test_generate_operating_points_returns_operating_points(self) -> None:
         """Test that generate_operating_points returns OperatingPoints when called
-        through the public class.
-        """
+        through the public class."""
         free_flight_operating_point_movement = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )

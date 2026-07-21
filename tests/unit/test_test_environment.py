@@ -17,12 +17,12 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
     instead of quietly re-polluting the test output.
     """
 
-    def test_dirty_file_load_warning_is_suppressed(self):
+    def test_dirty_file_load_warning_is_suppressed(self) -> None:
         """Loading provenance flagged _dirty should log no warning."""
         with self.assertNoLogs("pterasoftware._serialization", level="WARNING"):
             _serialization._log_load_warnings({"_dirty": True})
 
-    def test_dirty_working_tree_load_warning_is_suppressed(self):
+    def test_dirty_working_tree_load_warning_is_suppressed(self) -> None:
         """Loading with a dirty working tree should log no warning."""
         # The first check_output call is git rev-parse HEAD, and the second is git
         # status --porcelain. Matching the stored and current commits keeps the
@@ -38,7 +38,7 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
                     {"_dirty": False, "_commit": "abc123"}
                 )
 
-    def test_unrelated_serialization_warnings_still_pass(self):
+    def test_unrelated_serialization_warnings_still_pass(self) -> None:
         """The filter should not suppress other serialization warnings."""
         # The commit-mismatch warning shares the provenance path but is deliberately
         # outside the suppression's scope.

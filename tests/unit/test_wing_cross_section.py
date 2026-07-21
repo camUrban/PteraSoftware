@@ -1,6 +1,8 @@
 """This module contains classes to test WingCrossSections."""
 
 import unittest
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -11,7 +13,7 @@ from tests.unit.fixtures import geometry_fixtures
 class TestWingCrossSection(unittest.TestCase):
     """This is a class with functions to test WingCrossSections."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for WingCrossSection tests."""
         # Create fixtures using geometry_fixtures module.
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
@@ -25,7 +27,7 @@ class TestWingCrossSection(unittest.TestCase):
             geometry_fixtures.make_tip_wing_cross_section_fixture()
         )
 
-    def test_initialization_valid_parameters(self):
+    def test_initialization_valid_parameters(self) -> None:
         """Test WingCrossSection initialization with valid parameters."""
         # Test that basic WingCrossSection initializes correctly.
         self.assertIsInstance(
@@ -52,7 +54,7 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(self.basic_wing_cross_section.spanwise_spacing, "cosine")
         self.assertFalse(self.basic_wing_cross_section.validated)
 
-    def test_initialization_default_parameters(self):
+    def test_initialization_default_parameters(self) -> None:
         """Test WingCrossSection initialization with default parameters."""
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
@@ -71,17 +73,18 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertEqual(wing_cross_section.control_surface_deflection, 0.0)
         self.assertIsNone(wing_cross_section.spanwise_spacing)
 
-    def test_airfoil_parameter_validation(self):
+    def test_airfoil_parameter_validation(self) -> None:
         """Test that airfoil parameter is properly validated."""
         # Test with invalid airfoil type.
+        bad_airfoil: Any = "not_an_airfoil"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing_cross_section.WingCrossSection(
-                airfoil="not_an_airfoil",
+                airfoil=bad_airfoil,
                 num_spanwise_panels=8,
             )
 
-    def test_num_spanwise_panels_validation(self):
+    def test_num_spanwise_panels_validation(self) -> None:
         """Test num_spanwise_panels parameter validation."""
         # Test with valid positive integer.
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -98,7 +101,7 @@ class TestWingCrossSection(unittest.TestCase):
         self.assertIsNone(wing_cross_section.num_spanwise_panels)
 
         # Test with invalid values.
-        invalid_values = [0, -5, 2.5, "eight"]
+        invalid_values: list[Any] = [0, -5, 2.5, "eight"]
         for invalid_value in invalid_values:
             # noinspection PyUnresolvedReferences
             with self.subTest(invalid_value=invalid_value):
@@ -109,7 +112,7 @@ class TestWingCrossSection(unittest.TestCase):
                         num_spanwise_panels=invalid_value,
                     )
 
-    def test_chord_validation(self):
+    def test_chord_validation(self) -> None:
         """Test chord parameter validation."""
         # Test with valid positive values.
         valid_chords = [0.1, 1.0, 2.5, 10.0]
@@ -123,7 +126,7 @@ class TestWingCrossSection(unittest.TestCase):
                 self.assertEqual(wing_cross_section.chord, chord)
 
         # Test with invalid values.
-        invalid_chords = [0.0, -1.0, -0.5, "one"]
+        invalid_chords: list[Any] = [0.0, -1.0, -0.5, "one"]
         for invalid_chord in invalid_chords:
             with self.subTest(invalid_chord=invalid_chord):
                 # noinspection PyTypeChecker
@@ -134,10 +137,10 @@ class TestWingCrossSection(unittest.TestCase):
                         chord=invalid_chord,
                     )
 
-    def test_Lp_Wcsp_Lpp_validation(self):
+    def test_Lp_Wcsp_Lpp_validation(self) -> None:
         """Test Lp_Wcsp_Lpp parameter validation."""
         # Test with valid array-like inputs.
-        valid_vectors = [
+        valid_vectors: list[np.ndarray | Sequence[float]] = [
             np.array([0.0, 0.0, 0.0]),  # This is a numpy array of floats.
             [1.0, 2.0, 0.5],  # This is a list of floats.
             [1, 2, 0],  # This is a list of ints.
@@ -165,7 +168,7 @@ class TestWingCrossSection(unittest.TestCase):
             )
 
         # Test with invalid shapes/types.
-        invalid_vectors = [
+        invalid_vectors: list[Any] = [
             np.array([1.0, 2.0]),  # This is the wrong size.
             np.array([1.0, 2.0, 3.0, 4.0]),  # This is the wrong size.
             "not_a_vector",  # This is a string.
@@ -180,10 +183,10 @@ class TestWingCrossSection(unittest.TestCase):
                         Lp_Wcsp_Lpp=invalid_vector,
                     )
 
-    def test_angles_Wcsp_to_Wcs_ixyz_validation(self):
+    def test_angles_Wcsp_to_Wcs_ixyz_validation(self) -> None:
         """Test angles_Wcsp_to_Wcs_ixyz parameter validation."""
         # Test with valid array-like angles (within [-90.0, 90.0] range).
-        valid_angles = [
+        valid_angles: list[np.ndarray | Sequence[float]] = [
             np.array([0.0, 0.0, 0.0]),  # This is a numpy array of floats.
             [45.0, -30.0, 60.0],  # This is a list of floats.
             [45, -30, 60],  # This is a list of ints.
@@ -204,7 +207,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
 
         # Test with angles outside valid range (using various array-like formats).
-        invalid_angles = [
+        invalid_angles: list[np.ndarray | Sequence[float]] = [
             [90.1, 0.0, 0.0],  # This is a list with a value greater than 90.0.
             np.array(
                 [0.0, -90.1, 0.0]
@@ -221,7 +224,7 @@ class TestWingCrossSection(unittest.TestCase):
                         angles_Wcsp_to_Wcs_ixyz=invalid_angle,
                     )
 
-    def test_control_surface_symmetry_type_validation(self):
+    def test_control_surface_symmetry_type_validation(self) -> None:
         """Test control_surface_symmetry_type parameter validation."""
         # Test with valid types.
         valid_types = ["symmetric", "asymmetric"]
@@ -237,7 +240,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
 
         # Test with invalid types.
-        invalid_types = ["invalid", "flap", "", 123]
+        invalid_types: list[Any] = ["invalid", "flap", "", 123]
         for invalid_type in invalid_types:
             with self.subTest(invalid_type=invalid_type):
                 # noinspection PyTypeChecker
@@ -248,7 +251,7 @@ class TestWingCrossSection(unittest.TestCase):
                         control_surface_symmetry_type=invalid_type,
                     )
 
-    def test_control_surface_hinge_point_validation(self):
+    def test_control_surface_hinge_point_validation(self) -> None:
         """Test control_surface_hinge_point parameter validation."""
         # Test with valid values (in range 0.0 < x < 1.0).
         valid_hinge_points = [0.1, 0.5, 0.75, 0.9, 0.999]
@@ -264,7 +267,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
 
         # Test with invalid values (outside range or edge values).
-        invalid_hinge_points = [0.0, 1.0, -0.1, 1.1, "point"]
+        invalid_hinge_points: list[Any] = [0.0, 1.0, -0.1, 1.1, "point"]
         for invalid_hinge_point in invalid_hinge_points:
             with self.subTest(invalid_hinge_point=invalid_hinge_point):
                 # noinspection PyTypeChecker
@@ -275,7 +278,7 @@ class TestWingCrossSection(unittest.TestCase):
                         control_surface_hinge_point=invalid_hinge_point,
                     )
 
-    def test_control_surface_deflection_validation(self):
+    def test_control_surface_deflection_validation(self) -> None:
         """Test control_surface_deflection parameter validation."""
         # Test with valid values (in range -5.0 <= x <= 5.0).
         valid_deflections = [0.0, 1.0, -5.0, 5.0, -4.1, 4]
@@ -291,7 +294,7 @@ class TestWingCrossSection(unittest.TestCase):
                 )
 
         # Test with invalid values (outside range or edge values).
-        invalid_deflections = [-90.0, 90.0, -100.0, 120.0, "deflection"]
+        invalid_deflections: list[Any] = [-90.0, 90.0, -100.0, 120.0, "deflection"]
         for invalid_deflection in invalid_deflections:
             with self.subTest(invalid_deflection=invalid_deflection):
                 # noinspection PyTypeChecker
@@ -302,7 +305,7 @@ class TestWingCrossSection(unittest.TestCase):
                         control_surface_deflection=invalid_deflection,
                     )
 
-    def test_spanwise_spacing_validation(self):
+    def test_spanwise_spacing_validation(self) -> None:
         """Test spanwise_spacing parameter validation."""
         # Test with valid values.
         valid_spacings = ["cosine", "uniform", None]
@@ -316,7 +319,7 @@ class TestWingCrossSection(unittest.TestCase):
                 self.assertEqual(wing_cross_section.spanwise_spacing, spacing)
 
         # Test with invalid values.
-        invalid_spacings = ["linear", "exponential", "", 123]
+        invalid_spacings: list[Any] = ["linear", "exponential", "", 123]
         for invalid_spacing in invalid_spacings:
             with self.subTest(invalid_spacing=invalid_spacing):
                 # noinspection PyTypeChecker
@@ -327,7 +330,7 @@ class TestWingCrossSection(unittest.TestCase):
                         spanwise_spacing=invalid_spacing,
                     )
 
-    def test_validate_root_constraints(self):
+    def test_validate_root_constraints(self) -> None:
         """Test validate_root_constraints method."""
         # Test that root WingCrossSection passes validation.
         try:
@@ -349,7 +352,7 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             invalid_root_wing_cross_section.validate_root_constraints()
 
-    def test_validate_tip_constraints(self):
+    def test_validate_tip_constraints(self) -> None:
         """Test validate_tip_constraints method."""
         # Test that tip WingCrossSection passes validation.
         try:
@@ -364,7 +367,7 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.root_wing_cross_section.validate_tip_constraints()
 
-    def test_validate_mid_constraints(self):
+    def test_validate_mid_constraints(self) -> None:
         """Test validate_mid_constraints method."""
         # Test that valid middle WingCrossSection passes validation.
         middle_wing_cross_section = (
@@ -394,7 +397,7 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tip_wing_cross_section.validate_mid_constraints()
 
-    def test_validate_mid_constraints_zero_y_offset(self):
+    def test_validate_mid_constraints_zero_y_offset(self) -> None:
         """Test that validate_mid_constraints rejects zero y component of
         Lp_Wcsp_Lpp.
         """
@@ -408,7 +411,7 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             zero_y_wing_cross_section.validate_mid_constraints()
 
-    def test_validate_tip_constraints_zero_y_offset(self):
+    def test_validate_tip_constraints_zero_y_offset(self) -> None:
         """Test that validate_tip_constraints rejects zero y component of
         Lp_Wcsp_Lpp.
         """
@@ -422,13 +425,13 @@ class TestWingCrossSection(unittest.TestCase):
         with self.assertRaises(ValueError):
             zero_y_tip_wing_cross_section.validate_tip_constraints()
 
-    def test_transformation_matrices_not_validated(self):
+    def test_transformation_matrices_not_validated(self) -> None:
         """Test that transformation matrices return None when not validated."""
         # Test with unvalidated WingCrossSection.
         self.assertIsNone(self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
         self.assertIsNone(self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp)
 
-    def test_transformation_matrices_validated(self):
+    def test_transformation_matrices_validated(self) -> None:
         """Test that transformation matrices work correctly when validated."""
         # Manually set validated flag to True.
         self.basic_wing_cross_section.validated = True
@@ -439,6 +442,8 @@ class TestWingCrossSection(unittest.TestCase):
 
         self.assertIsInstance(T_forward, np.ndarray)
         self.assertIsInstance(T_inverse, np.ndarray)
+        assert T_forward is not None
+        assert T_inverse is not None
         self.assertEqual(T_forward.shape, (4, 4))
         self.assertEqual(T_inverse.shape, (4, 4))
 
@@ -452,10 +457,12 @@ class TestWingCrossSection(unittest.TestCase):
         T_root_forward = self.root_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T_root_inverse = self.root_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
 
+        assert T_root_forward is not None
+        assert T_root_inverse is not None
         np.testing.assert_allclose(T_root_forward, np.eye(4), rtol=1e-10, atol=1e-14)
         np.testing.assert_allclose(T_root_inverse, np.eye(4), rtol=1e-10, atol=1e-14)
 
-    def test_comprehensive_initialization_edge_cases(self):
+    def test_comprehensive_initialization_edge_cases(self) -> None:
         """Test edge cases in initialization that combine multiple parameters."""
         # Test with minimal valid parameters.
         minimal_wing_cross_section = (
@@ -480,67 +487,71 @@ class TestWingCrossSection(unittest.TestCase):
 class TestWingCrossSectionImmutability(unittest.TestCase):
     """Tests for WingCrossSection attribute immutability."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for immutability tests."""
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
             geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
         )
 
-    def test_immutable_airfoil_property(self):
+    def test_immutable_airfoil_property(self) -> None:
         """Test that airfoil property is read only."""
         new_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.airfoil = new_airfoil
+            setattr(self.basic_wing_cross_section, "airfoil", new_airfoil)
 
-    def test_immutable_num_spanwise_panels_property(self):
+    def test_immutable_num_spanwise_panels_property(self) -> None:
         """Test that num_spanwise_panels property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.num_spanwise_panels = 20
+            setattr(self.basic_wing_cross_section, "num_spanwise_panels", 20)
 
-    def test_immutable_chord_property(self):
+    def test_immutable_chord_property(self) -> None:
         """Test that chord property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.chord = 2.5
+            setattr(self.basic_wing_cross_section, "chord", 2.5)
 
-    def test_immutable_Lp_Wcsp_Lpp_property(self):
+    def test_immutable_Lp_Wcsp_Lpp_property(self) -> None:
         """Test that Lp_Wcsp_Lpp property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.Lp_Wcsp_Lpp = np.array([1.0, 2.0, 3.0])
+            setattr(
+                self.basic_wing_cross_section, "Lp_Wcsp_Lpp", np.array([1.0, 2.0, 3.0])
+            )
 
-    def test_immutable_Lp_Wcsp_Lpp_array_read_only(self):
+    def test_immutable_Lp_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that Lp_Wcsp_Lpp array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.basic_wing_cross_section.Lp_Wcsp_Lpp[0] = 999.0
 
-    def test_immutable_angles_Wcsp_to_Wcs_ixyz_property(self):
+    def test_immutable_angles_Wcsp_to_Wcs_ixyz_property(self) -> None:
         """Test that angles_Wcsp_to_Wcs_ixyz property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.angles_Wcsp_to_Wcs_ixyz = np.array(
-                [1.0, 2.0, 3.0]
+            setattr(
+                self.basic_wing_cross_section,
+                "angles_Wcsp_to_Wcs_ixyz",
+                np.array([1.0, 2.0, 3.0]),
             )
 
-    def test_immutable_angles_Wcsp_to_Wcs_ixyz_array_read_only(self):
+    def test_immutable_angles_Wcsp_to_Wcs_ixyz_array_read_only(self) -> None:
         """Test that angles_Wcsp_to_Wcs_ixyz array cannot be modified in place."""
         with self.assertRaises(ValueError):
             self.basic_wing_cross_section.angles_Wcsp_to_Wcs_ixyz[0] = 999.0
 
-    def test_immutable_control_surface_hinge_point_property(self):
+    def test_immutable_control_surface_hinge_point_property(self) -> None:
         """Test that control_surface_hinge_point property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.control_surface_hinge_point = 0.5
+            setattr(self.basic_wing_cross_section, "control_surface_hinge_point", 0.5)
 
-    def test_immutable_control_surface_deflection_property(self):
+    def test_immutable_control_surface_deflection_property(self) -> None:
         """Test that control_surface_deflection property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.control_surface_deflection = 2.0
+            setattr(self.basic_wing_cross_section, "control_surface_deflection", 2.0)
 
-    def test_immutable_spanwise_spacing_property(self):
+    def test_immutable_spanwise_spacing_property(self) -> None:
         """Test that spanwise_spacing property is read only."""
         with self.assertRaises(AttributeError):
-            self.basic_wing_cross_section.spanwise_spacing = "uniform"
+            setattr(self.basic_wing_cross_section, "spanwise_spacing", "uniform")
 
-    def test_mutable_control_surface_symmetry_type(self):
+    def test_mutable_control_surface_symmetry_type(self) -> None:
         """Test that control_surface_symmetry_type remains mutable."""
         # This attribute must remain mutable for type 5 symmetry processing.
         self.basic_wing_cross_section.control_surface_symmetry_type = "asymmetric"
@@ -551,7 +562,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         self.basic_wing_cross_section.control_surface_symmetry_type = None
         self.assertIsNone(self.basic_wing_cross_section.control_surface_symmetry_type)
 
-    def test_set_once_validated_property(self):
+    def test_set_once_validated_property(self) -> None:
         """Test that validated can only be set once."""
         # First set should succeed.
         self.assertFalse(self.basic_wing_cross_section.validated)
@@ -562,7 +573,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.basic_wing_cross_section.validated = True
 
-    def test_set_once_symmetry_type_property(self):
+    def test_set_once_symmetry_type_property(self) -> None:
         """Test that symmetry_type can only be set once."""
         # First set should succeed.
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
@@ -573,7 +584,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         with self.assertRaises(AttributeError):
             self.basic_wing_cross_section.symmetry_type = 3
 
-    def test_validated_false_to_false_succeeds(self):
+    def test_validated_false_to_false_succeeds(self) -> None:
         """Test that setting validated from False to False succeeds.
 
         The set once logic only blocks when validated is already True. Setting
@@ -583,23 +594,25 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         self.basic_wing_cross_section.validated = False
         self.assertFalse(self.basic_wing_cross_section.validated)
 
-    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_array_read_only(self):
+    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_array_read_only(self) -> None:
         """Test that T_pas_Wcsp_Lpp_to_Wcs_Lp array cannot be modified in place."""
         self.basic_wing_cross_section.validated = True
         T = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         self.assertIsNotNone(T)
+        assert T is not None
         with self.assertRaises(ValueError):
             T[0, 0] = 999.0
 
-    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_array_read_only(self):
+    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_array_read_only(self) -> None:
         """Test that T_pas_Wcs_Lp_to_Wcsp_Lpp array cannot be modified in place."""
         self.basic_wing_cross_section.validated = True
         T = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
         self.assertIsNotNone(T)
+        assert T is not None
         with self.assertRaises(ValueError):
             T[0, 0] = 999.0
 
-    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_caching_returns_same_object(self):
+    def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_caching_returns_same_object(self) -> None:
         """Test that repeated access to T_pas_Wcsp_Lpp_to_Wcs_Lp returns the same
         cached object.
         """
@@ -608,7 +621,7 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
         T2 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         self.assertIs(T1, T2)
 
-    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_caching_returns_same_object(self):
+    def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_caching_returns_same_object(self) -> None:
         """Test that repeated access to T_pas_Wcs_Lp_to_Wcsp_Lpp returns the same
         cached object.
         """
@@ -621,14 +634,14 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
 class TestWingCrossSectionDeepCopy(unittest.TestCase):
     """Tests for WingCrossSection.__deepcopy__ method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for deepcopy tests."""
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
             geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
         )
 
-    def test_deepcopy_creates_new_instance(self):
+    def test_deepcopy_creates_new_instance(self) -> None:
         """Test that deepcopy creates a new WingCrossSection instance."""
         import copy
 
@@ -638,7 +651,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsInstance(copied, ps.geometry.wing_cross_section.WingCrossSection)
         self.assertIsNot(original, copied)
 
-    def test_deepcopy_preserves_all_attributes(self):
+    def test_deepcopy_preserves_all_attributes(self) -> None:
         """Test that deepcopy preserves all attribute values."""
         import copy
 
@@ -667,7 +680,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertEqual(copied.validated, original.validated)
         self.assertEqual(copied.symmetry_type, original.symmetry_type)
 
-    def test_deepcopy_creates_independent_arrays(self):
+    def test_deepcopy_creates_independent_arrays(self) -> None:
         """Test that deepcopy creates independent copies of numpy arrays."""
         import copy
 
@@ -679,7 +692,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
             copied.angles_Wcsp_to_Wcs_ixyz, original.angles_Wcsp_to_Wcs_ixyz
         )
 
-    def test_deepcopy_independence_modifying_copy(self):
+    def test_deepcopy_independence_modifying_copy(self) -> None:
         """Test that immutable attributes cannot be modified on the copy."""
         import copy
 
@@ -688,13 +701,13 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
 
         # Verify that immutable properties cannot be set.
         with self.assertRaises(AttributeError):
-            copied.chord = 999.0
+            setattr(copied, "chord", 999.0)
 
         # Verify that numpy arrays are read only.
         with self.assertRaises(ValueError):
             copied.Lp_Wcsp_Lpp[0] = 100.0
 
-    def test_deepcopy_independence_modifying_original(self):
+    def test_deepcopy_independence_modifying_original(self) -> None:
         """Test that immutable attributes cannot be modified on the original."""
         import copy
 
@@ -703,7 +716,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
 
         # Verify that immutable properties cannot be set on the original.
         with self.assertRaises(AttributeError):
-            original.chord = 999.0
+            setattr(original, "chord", 999.0)
 
         # Verify that numpy arrays are read only on the original.
         with self.assertRaises(ValueError):
@@ -713,7 +726,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertEqual(copied.chord, original.chord)
         np.testing.assert_array_equal(copied.Lp_Wcsp_Lpp, original.Lp_Wcsp_Lpp)
 
-    def test_deepcopy_with_none_values(self):
+    def test_deepcopy_with_none_values(self) -> None:
         """Test that deepcopy handles None values correctly."""
         import copy
 
@@ -724,7 +737,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.spanwise_spacing)
         self.assertIsNone(copied.symmetry_type)
 
-    def test_deepcopy_preserves_transformation_matrix_behavior(self):
+    def test_deepcopy_preserves_transformation_matrix_behavior(self) -> None:
         """Test that copied WingCrossSection has correct transformation matrix behavior."""
         import copy
 
@@ -738,9 +751,11 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
 
         self.assertIsNotNone(original_T)
         self.assertIsNotNone(copied_T)
+        assert original_T is not None
+        assert copied_T is not None
         np.testing.assert_array_almost_equal(copied_T, original_T)
 
-    def test_deepcopy_unvalidated_cross_section(self):
+    def test_deepcopy_unvalidated_cross_section(self) -> None:
         """Test that deepcopy handles unvalidated WingCrossSections correctly."""
         import copy
 
@@ -752,7 +767,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertFalse(copied.validated)
         self.assertIsNone(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp)
 
-    def test_deepcopy_airfoil_independence(self):
+    def test_deepcopy_airfoil_independence(self) -> None:
         """Test that deepcopied Airfoil is a separate instance with immutable attributes."""
         import copy
 
@@ -764,14 +779,14 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
 
         # Verify that the Airfoil's name is immutable (no setter).
         with self.assertRaises(AttributeError):
-            copied.airfoil.name = "modified_name"
+            setattr(copied.airfoil, "name", "modified_name")
 
         # Verify that the Airfoil arrays are independent and read only.
         self.assertIsNot(copied.airfoil.outline_A_Lp, original.airfoil.outline_A_Lp)
         with self.assertRaises(ValueError):
             copied.airfoil.outline_A_Lp[0, 0] = 999.0
 
-    def test_deepcopy_cached_transformation_matrices_read_only(self):
+    def test_deepcopy_cached_transformation_matrices_read_only(self) -> None:
         """Test that deepcopied cached transformation matrices are read only."""
         import copy
 
@@ -785,13 +800,17 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         copied = copy.deepcopy(original)
 
         # Verify that the copied matrices are read only.
+        copied_T_forward = copied.T_pas_Wcsp_Lpp_to_Wcs_Lp
+        assert copied_T_forward is not None
         with self.assertRaises(ValueError):
-            copied.T_pas_Wcsp_Lpp_to_Wcs_Lp[0, 0] = 999.0
+            copied_T_forward[0, 0] = 999.0
 
+        copied_T_inverse = copied.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        assert copied_T_inverse is not None
         with self.assertRaises(ValueError):
-            copied.T_pas_Wcs_Lp_to_Wcsp_Lpp[0, 0] = 999.0
+            copied_T_inverse[0, 0] = 999.0
 
-    def test_deepcopy_cached_transformation_matrices_are_independent(self):
+    def test_deepcopy_cached_transformation_matrices_are_independent(self) -> None:
         """Test that deepcopied cached transformation matrices are independent copies."""
         import copy
 
@@ -820,7 +839,7 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
 class TestWingCrossSectionGetPlottableData(unittest.TestCase):
     """Tests for WingCrossSection.get_plottable_data method."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for get_plottable_data tests."""
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
@@ -830,7 +849,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
 
-    def test_get_plottable_data_returns_none_when_not_validated(self):
+    def test_get_plottable_data_returns_none_when_not_validated(self) -> None:
         """Test that get_plottable_data returns None when not validated."""
         # Set symmetry_type but not validated.
         self.basic_wing_cross_section.symmetry_type = 1
@@ -840,7 +859,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self):
+    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self) -> None:
         """Test that get_plottable_data returns None when symmetry_type not set."""
         # Set validated but not symmetry_type.
         self.basic_wing_cross_section.validated = True
@@ -850,7 +869,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    def test_get_plottable_data_returns_none_when_neither_set(self):
+    def test_get_plottable_data_returns_none_when_neither_set(self) -> None:
         """Test that get_plottable_data returns None when neither validated nor
         symmetry_type is set.
         """
@@ -861,7 +880,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    def test_get_plottable_data_returns_list_when_valid(self):
+    def test_get_plottable_data_returns_list_when_valid(self) -> None:
         """Test that get_plottable_data returns a list when validated and
         symmetry_type is set.
         """
@@ -871,19 +890,21 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
 
         self.assertIsInstance(result, list)
+        assert result is not None
         self.assertEqual(len(result), 2)
 
-    def test_get_plottable_data_returns_ndarrays(self):
+    def test_get_plottable_data_returns_ndarrays(self) -> None:
         """Test that get_plottable_data returns ndarrays for outline and MCL."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
 
+        assert result is not None
         self.assertIsInstance(result[0], np.ndarray)
         self.assertIsInstance(result[1], np.ndarray)
 
-    def test_get_plottable_data_returns_3d_points(self):
+    def test_get_plottable_data_returns_3d_points(self) -> None:
         """Test that get_plottable_data returns arrays with 3 columns (x, y, z)."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
@@ -891,10 +912,11 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
 
         # Both outline and MCL should have 3 columns (x, y, z).
+        assert result is not None
         self.assertEqual(result[0].shape[1], 3)
         self.assertEqual(result[1].shape[1], 3)
 
-    def test_get_plottable_data_y_components_are_zero(self):
+    def test_get_plottable_data_y_components_are_zero(self) -> None:
         """Test that get_plottable_data returns points with zero y components.
 
         The points are in wing cross section axes relative to the leading point,
@@ -907,16 +929,18 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
 
         # All y components should be zero.
+        assert result is not None
         np.testing.assert_array_equal(result[0][:, 1], 0.0)
         np.testing.assert_array_equal(result[1][:, 1], 0.0)
 
-    def test_get_plottable_data_scaled_by_chord(self):
+    def test_get_plottable_data_scaled_by_chord(self) -> None:
         """Test that get_plottable_data returns points scaled by chord."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
         chord = self.basic_wing_cross_section.chord
 
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        assert result is not None
         outline = result[0]
 
         # The x range should be approximately [0.0, chord].
@@ -926,7 +950,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertAlmostEqual(x_min, 0.0, places=5)
         self.assertAlmostEqual(x_max, chord, places=5)
 
-    def test_get_plottable_data_default_show_is_false(self):
+    def test_get_plottable_data_default_show_is_false(self) -> None:
         """Test that get_plottable_data default for show is False."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
@@ -937,7 +961,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)
 
-    def test_get_plottable_data_accepts_numpy_bool(self):
+    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
         """Test that get_plottable_data accepts numpy bool for show parameter."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
@@ -947,7 +971,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)
 
-    def test_get_plottable_data_with_symmetry_type_1(self):
+    def test_get_plottable_data_with_symmetry_type_1(self) -> None:
         """Test get_plottable_data with symmetry type 1 (no symmetry)."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
@@ -955,9 +979,10 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
 
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(len(result), 2)
 
-    def test_get_plottable_data_with_root_cross_section(self):
+    def test_get_plottable_data_with_root_cross_section(self) -> None:
         """Test get_plottable_data with a root WingCrossSection (identity transform)."""
         self.root_wing_cross_section.validated = True
         self.root_wing_cross_section.symmetry_type = 1
@@ -965,6 +990,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = self.root_wing_cross_section.get_plottable_data(show=False)
 
         self.assertIsNotNone(result)
+        assert result is not None
         self.assertEqual(len(result), 2)
 
         # For root WingCrossSection, chord is 2.0.
@@ -973,7 +999,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         x_max = np.max(outline[:, 0])
         self.assertAlmostEqual(x_max, chord, places=5)
 
-    def test_get_plottable_data_with_unit_chord(self):
+    def test_get_plottable_data_with_unit_chord(self) -> None:
         """Test get_plottable_data with a WingCrossSection with chord=1.0."""
         # Create a WingCrossSection with chord=1.0.
         wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
@@ -987,6 +1013,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         result = wing_cross_section.get_plottable_data(show=False)
 
         self.assertIsNotNone(result)
+        assert result is not None
         outline = result[0]
 
         # With chord=1.0, the x range should be [0.0, 1.0].
@@ -996,12 +1023,13 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertAlmostEqual(x_min, 0.0, places=5)
         self.assertAlmostEqual(x_max, 1.0, places=5)
 
-    def test_get_plottable_data_mcl_within_outline_bounds(self):
+    def test_get_plottable_data_mcl_within_outline_bounds(self) -> None:
         """Test that MCL points are within the outline x bounds."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
         result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        assert result is not None
         outline = result[0]
         mcl = result[1]
 
@@ -1014,11 +1042,12 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertGreaterEqual(mcl_x_min, outline_x_min - 1e-10)
         self.assertLessEqual(mcl_x_max, outline_x_max + 1e-10)
 
-    def test_get_plottable_data_invalid_show_type_raises(self):
+    def test_get_plottable_data_invalid_show_type_raises(self) -> None:
         """Test that get_plottable_data raises error for invalid show type."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
+        bad_show: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            self.basic_wing_cross_section.get_plottable_data(show="invalid")
+            self.basic_wing_cross_section.get_plottable_data(show=bad_show)

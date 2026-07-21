@@ -5,7 +5,9 @@ import pterasoftware as ps
 from . import geometry_fixtures, wing_movement_fixtures
 
 
-def make_static_airplane_movement_fixture():
+def make_static_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
     """This method makes a fixture that is an AirplaneMovement with all parameters
     zero (no movement).
 
@@ -30,7 +32,9 @@ def make_static_airplane_movement_fixture():
     return static_airplane_movement_fixture
 
 
-def make_basic_airplane_movement_fixture():
+def make_basic_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
     """This method makes a fixture that is an AirplaneMovement with general-purpose
     moderate values.
 
@@ -55,7 +59,9 @@ def make_basic_airplane_movement_fixture():
     return basic_airplane_movement_fixture
 
 
-def make_periodic_geometry_airplane_movement_fixture():
+def make_periodic_geometry_airplane_movement_fixture() -> (
+    ps.movements.airplane_movement.AirplaneMovement
+):
     """This method makes a fixture that is an AirplaneMovement with periodic geometry
     motion suitable for testing the variable geometry optimization.
 

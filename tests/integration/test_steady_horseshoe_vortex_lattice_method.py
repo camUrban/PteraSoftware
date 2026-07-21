@@ -25,8 +25,15 @@ from tests.integration.fixtures import solver_fixtures
 class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the SteadyHorseshoeVortexLatticeMethodSolver."""
 
+    steady_horseshoe_vortex_lattice_method_validation_solver: (
+        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+    )
+    steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver: (
+        ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """This method sets up the test.
 
         :return: None
@@ -38,7 +45,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
             solver_fixtures.make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver()
         )
 
-    def test_method(self):
+    def test_method(self) -> None:
         """This method tests the SteadyHorseshoeVortexLatticeMethodSolver's output.
         It also tests that the solver doesn't throw an error when the draw function
         is called using it.
@@ -47,29 +54,23 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         """
         self.steady_horseshoe_vortex_lattice_method_validation_solver.run()
 
+        this_airplane = (
+            self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[0]
+        )
+        assert this_airplane.forceCoefficients_W is not None
+        assert this_airplane.momentCoefficients_W_CgP1 is not None
+
         # Calculate the percent errors of the output.
         c_di_expected = 0.020
-        c_di_calculated = -(
-            self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-                0
-            ].forceCoefficients_W[0]
-        )
+        c_di_calculated = -this_airplane.forceCoefficients_W[0]
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
         c_l_expected = 0.789
-        c_l_calculated = -(
-            self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-                0
-            ].forceCoefficients_W[2]
-        )
+        c_l_calculated = -this_airplane.forceCoefficients_W[2]
         c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
         c_m_expected = -0.685
-        c_m_calculated = (
-            self.steady_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-                0
-            ].momentCoefficients_W_CgP1[1]
-        )
+        c_m_calculated = this_airplane.momentCoefficients_W_CgP1[1]
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
         # Set the allowable percent error.
@@ -88,7 +89,7 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(c_l_error < allowable_error)
         self.assertTrue(c_m_error < allowable_error)
 
-    def test_method_multiple_wings(self):
+    def test_method_multiple_wings(self) -> None:
         """This method tests the SteadyHorseshoeVortexLatticeMethodSolver's output
         with multi-wing geometry. It also tests that the solver doesn't throw an
         error when the draw function is called using it.
@@ -97,29 +98,23 @@ class TestSteadyHorseshoeVortexLatticeMethod(unittest.TestCase):
         """
         self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.run()
 
-        # Calculate the percent errors of the output.
-        c_di_expected = 0.008
-        c_di_calculated = -self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-            0
-        ].forceCoefficients_W[
+        this_airplane = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
             0
         ]
+        assert this_airplane.forceCoefficients_W is not None
+        assert this_airplane.momentCoefficients_W_CgP1 is not None
+
+        # Calculate the percent errors of the output.
+        c_di_expected = 0.008
+        c_di_calculated = -this_airplane.forceCoefficients_W[0]
         c_di_error = abs((c_di_calculated - c_di_expected) / c_di_expected)
 
         c_l_expected = 0.513
-        c_l_calculated = -self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-            0
-        ].forceCoefficients_W[
-            2
-        ]
+        c_l_calculated = -this_airplane.forceCoefficients_W[2]
         c_l_error = abs((c_l_calculated - c_l_expected) / c_l_expected)
 
         c_m_expected = -0.336
-        c_m_calculated = self.steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver.airplanes[
-            0
-        ].momentCoefficients_W_CgP1[
-            1
-        ]
+        c_m_calculated = this_airplane.momentCoefficients_W_CgP1[1]
         c_m_error = abs((c_m_calculated - c_m_expected) / c_m_expected)
 
         # Set the allowable percent error.

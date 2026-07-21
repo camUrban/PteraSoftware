@@ -15,7 +15,7 @@ from tests.unit.fixtures import (
 class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
     """This is a class with functions to test AeroelasticWingCrossSectionMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that AeroelasticWingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
@@ -26,7 +26,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that AeroelasticWingCrossSectionMovement instantiation returns an
         AeroelasticWingCrossSectionMovement.
         """
@@ -41,7 +41,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement,
         )
 
-    def test_generate_wing_cross_sections_returns_wing_cross_sections(self):
+    def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
         """Test that generate_wing_cross_sections returns WingCrossSections when called
         through the public class.
         """
@@ -60,7 +60,9 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
                 ps.geometry.wing_cross_section.WingCrossSection,
             )
 
-    def test_generate_wing_cross_section_at_time_step_returns_wing_cross_section(self):
+    def test_generate_wing_cross_section_at_time_step_returns_wing_cross_section(
+        self,
+    ) -> None:
         """Test that generate_wing_cross_section_at_time_step returns a
         WingCrossSection.
         """
@@ -75,7 +77,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             ps.geometry.wing_cross_section.WingCrossSection,
         )
 
-    def test_no_deformation_matches_static_base(self):
+    def test_no_deformation_matches_static_base(self) -> None:
         """Test that, with no prescribed movement and no deformation, the generated
         WingCrossSection matches the base WingCrossSection.
         """
@@ -103,7 +105,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             atol=1e-14,
         )
 
-    def test_default_deformation_matches_explicit_none(self):
+    def test_default_deformation_matches_explicit_none(self) -> None:
         """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same result as
         explicitly passing None.
         """
@@ -127,7 +129,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             explicit_none_wing_cross_section.Lp_Wcsp_Lpp,
         )
 
-    def test_deformation_adds_to_prescribed_angles(self):
+    def test_deformation_adds_to_prescribed_angles(self) -> None:
         """Test that deformationAngles_Wcsp_to_Wcs_ixyz is added to the prescribed
         angles_Wcsp_to_Wcs_ixyz.
         """
@@ -158,7 +160,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             atol=1e-14,
         )
 
-    def test_deformation_leaves_Lp_unchanged(self):
+    def test_deformation_leaves_Lp_unchanged(self) -> None:
         """Test that deformationAngles_Wcsp_to_Wcs_ixyz does not affect the generated
         Lp_Wcsp_Lpp.
         """
@@ -183,7 +185,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             atol=1e-14,
         )
 
-    def test_zero_deformation_matches_no_deformation(self):
+    def test_zero_deformation_matches_no_deformation(self) -> None:
         """Test that a zero deformation produces the same result as no deformation."""
         aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
@@ -205,7 +207,7 @@ class TestAeroelasticWingCrossSectionMovement(unittest.TestCase):
             atol=1e-14,
         )
 
-    def test_deformation_adds_on_top_of_oscillation(self):
+    def test_deformation_adds_on_top_of_oscillation(self) -> None:
         """Test that deformation is added on top of the oscillating prescribed
         angles.
         """

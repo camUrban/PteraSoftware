@@ -10,7 +10,7 @@ from tests.integration.fixtures import (
 )
 
 
-def make_steady_validation_problem():
+def make_steady_validation_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem to be used as a fixture.
 
     :return steady_validation_problem: SteadyProblem
@@ -29,7 +29,7 @@ def make_steady_validation_problem():
     return steady_validation_problem
 
 
-def make_steady_multiple_wing_validation_problem():
+def make_steady_multiple_wing_validation_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem with multi-wing geometry to be used as a
     fixture.
 
@@ -51,7 +51,7 @@ def make_steady_multiple_wing_validation_problem():
     return steady_validation_problem
 
 
-def make_edge_defined_steady_validation_problem():
+def make_edge_defined_steady_validation_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem with an edge-defined Airplane to be used as
     a fixture.
 
@@ -73,7 +73,7 @@ def make_edge_defined_steady_validation_problem():
     return edge_defined_steady_validation_problem
 
 
-def make_mixed_steady_validation_problem():
+def make_mixed_steady_validation_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem with an Airplane holding both a trapezoidal
     Wing and an edge-defined Wing, to be used as a fixture.
 
@@ -93,7 +93,9 @@ def make_mixed_steady_validation_problem():
     return mixed_steady_validation_problem
 
 
-def make_unsteady_validation_problem_with_static_geometry():
+def make_unsteady_validation_problem_with_static_geometry() -> (
+    ps.problems.UnsteadyProblem
+):
     """This function creates an UnsteadyProblem with static geometry to be used as a
     fixture.
 
@@ -109,7 +111,7 @@ def make_unsteady_validation_problem_with_static_geometry():
     return unsteady_validation_problem
 
 
-def make_edge_defined_unsteady_validation_problem():
+def make_edge_defined_unsteady_validation_problem() -> ps.problems.UnsteadyProblem:
     """This function creates an UnsteadyProblem with an edge-defined Airplane and static
     WingCrossSectionMovements, to be used as a fixture.
 
@@ -127,7 +129,9 @@ def make_edge_defined_unsteady_validation_problem():
     return edge_defined_unsteady_validation_problem
 
 
-def make_edge_defined_non_static_unsteady_validation_problem():
+def make_edge_defined_non_static_unsteady_validation_problem() -> (
+    ps.problems.UnsteadyProblem
+):
     """This function creates an UnsteadyProblem with an edge-defined Airplane whose
     WingCrossSectionMovements are not all static, to be used as a fixture for testing
     that edge-defined convergence rejects it.
@@ -146,7 +150,9 @@ def make_edge_defined_non_static_unsteady_validation_problem():
     return edge_defined_non_static_unsteady_validation_problem
 
 
-def make_unsteady_validation_problem_with_variable_geometry():
+def make_unsteady_validation_problem_with_variable_geometry() -> (
+    ps.problems.UnsteadyProblem
+):
     """This function creates an UnsteadyProblem with variable geometry to be used as
     a fixture.
 
@@ -162,7 +168,9 @@ def make_unsteady_validation_problem_with_variable_geometry():
     return unsteady_validation_problem
 
 
-def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
+def make_unsteady_validation_problem_with_multiple_wing_static_geometry() -> (
+    ps.problems.UnsteadyProblem
+):
     """This function creates an UnsteadyProblem with multi-wing, static geometry to
     be used as a fixture.
 
@@ -180,7 +188,9 @@ def make_unsteady_validation_problem_with_multiple_wing_static_geometry():
     return unsteady_validation_problem
 
 
-def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
+def make_unsteady_validation_problem_with_multiple_wing_variable_geometry() -> (
+    ps.problems.UnsteadyProblem
+):
     """This function creates an UnsteadyProblem with multi-wing, variable geometry to
     be used as a fixture.
 
@@ -198,7 +208,7 @@ def make_unsteady_validation_problem_with_multiple_wing_variable_geometry():
     return unsteady_validation_problem
 
 
-def make_surface_effect_steady_problem():
+def make_surface_effect_steady_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem with an image surface for surface effect
     testing.
 
@@ -218,7 +228,7 @@ def make_surface_effect_steady_problem():
     return surface_effect_steady_problem
 
 
-def make_surface_effect_free_air_steady_problem():
+def make_surface_effect_free_air_steady_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem without an image surface, for use as a
     free-air baseline in surface effect validation tests.
 
@@ -238,7 +248,7 @@ def make_surface_effect_free_air_steady_problem():
     return free_air_steady_problem
 
 
-def make_surface_effect_unsteady_problem():
+def make_surface_effect_unsteady_problem() -> ps.problems.UnsteadyProblem:
     """This function creates an UnsteadyProblem with an image surface for surface
     effect testing.
 
@@ -254,7 +264,7 @@ def make_surface_effect_unsteady_problem():
     return surface_effect_unsteady_problem
 
 
-def make_surface_effect_free_air_unsteady_problem():
+def make_surface_effect_free_air_unsteady_problem() -> ps.problems.UnsteadyProblem:
     """This function creates an UnsteadyProblem without an image surface, for use as
     a free-air baseline in surface effect validation tests.
 
@@ -268,7 +278,7 @@ def make_surface_effect_free_air_unsteady_problem():
     return free_air_unsteady_problem
 
 
-def make_simple_glider_free_flight_problem():
+def make_simple_glider_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem:
     """This function creates the simple glider's FreeFlightUnsteadyProblem to be used as
     a fixture.
 
@@ -316,7 +326,7 @@ def make_simple_glider_free_flight_problem():
     return simple_glider_free_flight_problem
 
 
-def make_flapping_free_flight_problem():
+def make_flapping_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem:
     """This function creates the flapping-wing FreeFlightUnsteadyProblem to be used as a
     fixture.
 

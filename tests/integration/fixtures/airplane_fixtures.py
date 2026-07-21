@@ -5,7 +5,7 @@ import numpy as np
 import pterasoftware as ps
 
 
-def make_steady_validation_airplane():
+def make_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane to be used as a fixture for testing steady
     solvers.
 
@@ -70,7 +70,7 @@ def make_steady_validation_airplane():
     return steady_validation_airplane
 
 
-def make_exploded_validation_airplane():
+def make_exploded_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane with an exploded Wing to be used as a fixture.
 
     The Wing is built with explode_into_strips=True, so its spanwise mesh marker is
@@ -112,7 +112,7 @@ def make_exploded_validation_airplane():
     return exploded_validation_airplane
 
 
-def make_edge_defined_validation_airplane():
+def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane with an edge-defined Wing to be used as a
     fixture for testing the convergence functions' edge-defined refinement.
 
@@ -149,7 +149,7 @@ def make_edge_defined_validation_airplane():
     return edge_defined_validation_airplane
 
 
-def make_mixed_validation_airplane():
+def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane holding both a trapezoidal Wing and an
     edge-defined Wing, to be used as a fixture for testing that the convergence functions
     refine each Wing by its own spanwise mesh.
@@ -219,7 +219,7 @@ def make_mixed_validation_airplane():
     return mixed_validation_airplane
 
 
-def make_multiple_wing_steady_validation_airplane():
+def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane with multiple Wings to be used as a fixture
     for testing steady solvers.
 
@@ -329,7 +329,7 @@ def make_multiple_wing_steady_validation_airplane():
     return multiple_wing_steady_validation_airplane
 
 
-def make_symmetric_unsteady_validation_airplane():
+def make_symmetric_unsteady_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates a symmetric Airplane to be used as a fixture for testing
     unsteady solvers.
 
@@ -394,7 +394,9 @@ def make_symmetric_unsteady_validation_airplane():
     return symmetric_unsteady_validation_airplane
 
 
-def make_symmetric_multiple_wing_unsteady_validation_airplane():
+def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
+    ps.geometry.airplane.Airplane
+):
     """This function creates a multi-wing, symmetric Airplane to be used as a fixture
     for testing unsteady solvers.
 
@@ -549,7 +551,7 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane():
     return symmetric_multiple_wing_steady_validation_airplane
 
 
-def make_simple_glider_airplane():
+def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates the simple glider Airplane used for free flight testing.
 
     The simple glider is a three-wing aircraft (cambered main wing, symmetric
@@ -669,7 +671,7 @@ def make_simple_glider_airplane():
     return simple_glider_airplane
 
 
-def make_flapping_free_flight_airplane():
+def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates the flapping-wing Airplane used for free flight testing.
 
     This is the same airframe as the flapping-wing free flight example: a cambered main
@@ -768,7 +770,7 @@ def make_flapping_free_flight_airplane():
     return flapping_free_flight_airplane
 
 
-def make_surface_effect_airplane():
+def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates a simple single-wing Airplane for surface effect testing.
 
     The Airplane uses a NACA 0010 symmetric airfoil with zero twist and zero dihedral.

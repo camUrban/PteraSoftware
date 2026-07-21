@@ -19,7 +19,7 @@ from tests.integration.fixtures import (
 class TestSteadyConvergence(unittest.TestCase):
     """This is a class for testing the steady convergence function."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """This method sets up the test.
 
         :return: None
@@ -28,7 +28,7 @@ class TestSteadyConvergence(unittest.TestCase):
             problem_fixtures.make_steady_validation_problem()
         )
 
-    def test_steady_horseshoe_convergence(self):
+    def test_steady_horseshoe_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters
         for a SteadyHorseshoeVortexLatticeMethodSolver.
 
@@ -53,7 +53,7 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[2])
 
-    def test_rejects_exploded_wing(self):
+    def test_rejects_exploded_wing(self) -> None:
         """This method tests that the function rejects a SteadyProblem whose Airplane has
         an exploded Wing, which carries no edge curves and so cannot be refined.
 
@@ -74,7 +74,7 @@ class TestSteadyConvergence(unittest.TestCase):
                 atol=0.001,
             )
 
-    def test_steady_ring_convergence(self):
+    def test_steady_ring_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters
         for a SteadyRingVortexLatticeMethodSolver.
 
@@ -99,7 +99,7 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[2])
 
-    def test_steady_horseshoe_convergence_resolves_solver(self):
+    def test_steady_horseshoe_convergence_resolves_solver(self) -> None:
         """This method tests that the function returns the converged, run solver for a
         SteadyHorseshoeVortexLatticeMethodSolver when resolve_converged_solver is True.
 
@@ -130,7 +130,7 @@ class TestSteadyConvergence(unittest.TestCase):
         )
         self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
 
-    def test_steady_ring_convergence_resolves_solver(self):
+    def test_steady_ring_convergence_resolves_solver(self) -> None:
         """This method tests that the function returns the converged, run solver for a
         SteadyRingVortexLatticeMethodSolver when resolve_converged_solver is True.
 
@@ -161,7 +161,7 @@ class TestSteadyConvergence(unittest.TestCase):
         )
         self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
 
-    def test_edge_defined_steady_convergence(self):
+    def test_edge_defined_steady_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters for
         a SteadyProblem whose Airplane has an edge-defined Wing, refined by resampling
         its stored edge curves.
@@ -344,7 +344,7 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(warm_parameters[0], cold_parameters[0])
         self.assertEqual(warm_parameters[1], cold_parameters[1])
 
-    def test_mixed_airplane_steady_convergence(self):
+    def test_mixed_airplane_steady_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters for
         a SteadyProblem whose Airplane holds both a trapezoidal Wing and an edge-defined
         Wing, refining each Wing by its own spanwise mesh.

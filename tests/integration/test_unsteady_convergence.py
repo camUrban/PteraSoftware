@@ -20,7 +20,7 @@ from tests.integration.fixtures import (
 class TestUnsteadyConvergence(unittest.TestCase):
     """This is a class for testing the unsteady convergence function."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """This method sets up the test.
 
         :return: None
@@ -29,7 +29,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             problem_fixtures.make_unsteady_validation_problem_with_static_geometry()
         )
 
-    def test_unsteady_convergence(self):
+    def test_unsteady_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters
         for an UnsteadyRingVortexLatticeMethodSolver.
 
@@ -345,7 +345,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                     cache_path=cache_path,
                 )
 
-    def test_rejects_exploded_wing(self):
+    def test_rejects_exploded_wing(self) -> None:
         """This method tests that the function rejects an UnsteadyProblem whose Airplane
         has an exploded Wing, which carries no edge curves and so cannot be refined.
 
@@ -395,7 +395,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 show_solver_progress=False,
             )
 
-    def test_edge_defined_unsteady_convergence(self):
+    def test_edge_defined_unsteady_convergence(self) -> None:
         """This method tests that the function finds pre-known convergence parameters for
         an UnsteadyProblem whose Airplane has an edge-defined Wing with static
         WingCrossSectionMovements.
@@ -439,7 +439,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertEqual(converged_num_chordwise, num_chordwise_ans)
         self.assertIsNone(converged_parameters[4])
 
-    def test_rejects_non_static_edge_defined_movement(self):
+    def test_rejects_non_static_edge_defined_movement(self) -> None:
         """This method tests that the function rejects an UnsteadyProblem whose
         edge-defined Wing carries a non-static WingCrossSectionMovement, which resampling
         the Wing cannot preserve.
@@ -466,7 +466,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
                 show_solver_progress=False,
             )
 
-    def test_unsteady_convergence_resolves_solver(self):
+    def test_unsteady_convergence_resolves_solver(self) -> None:
         """This method tests that the function returns the converged, run solver for an
         UnsteadyRingVortexLatticeMethodSolver when resolve_converged_solver is True.
 

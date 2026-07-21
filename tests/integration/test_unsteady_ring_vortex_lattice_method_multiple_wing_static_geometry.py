@@ -11,7 +11,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
     """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
     multi-wing, static geometry."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """This method sets up the test.
 
         :return: None
@@ -20,7 +20,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry()
         )
 
-    def test_method_does_not_throw(self):
+    def test_method_does_not_throw(self) -> None:
         """This method tests that the UnsteadyRingVortexLatticeMethodSolver doesn't
         throw an error when it runs or when the animate function is called using it.
 

@@ -69,7 +69,7 @@ _WING_CROSS_SECTION_CHANGED_PARAMETERS = frozenset({"num_spanwise_panels"})
 _WING_CROSS_SECTION_OMITTED_PARAMETERS: frozenset[str] = frozenset()
 
 
-def _public_constructor_parameters(this_class) -> set[str]:
+def _public_constructor_parameters(this_class: type) -> set[str]:
     """Returns the names of a class's public constructor parameters.
 
     A private parameter is internal machinery rather than part of the class's public
@@ -80,7 +80,7 @@ def _public_constructor_parameters(this_class) -> set[str]:
     """
     return {
         name
-        for name in inspect.signature(this_class.__init__).parameters
+        for name in inspect.signature(getattr(this_class, "__init__")).parameters
         if name != "self" and not name.startswith("_")
     }
 
@@ -105,7 +105,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
         self.num_chordwise_panels = 4
         self.chordwise_spacing = "uniform"
 
-    def _average_panel_aspect_ratio(self, num_spanwise_panels) -> float:
+    def _average_panel_aspect_ratio(self, num_spanwise_panels: int) -> float:
         """Meshes the wing section at a number of spanwise Panels and returns its average
         Panel aspect ratio.
         """
@@ -117,7 +117,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             num_spanwise_panels,
         )
 
-    def _num_spanwise_panels_for(self, target) -> int:
+    def _num_spanwise_panels_for(self, target: int) -> int:
         """Searches for the number of spanwise Panels that hits a target average Panel
         aspect ratio, starting from the smallest valid count.
         """
@@ -182,7 +182,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         trailing = np.column_stack((np.ones_like(ys), ys, zeros))
         return leading, trailing
 
-    def _make_edge_wing(self, symmetric=False) -> ps.geometry.wing.Wing:
+    def _make_edge_wing(self, symmetric: bool = False) -> ps.geometry.wing.Wing:
         """Builds an edge-defined Wing from the tapered edge curves."""
         leading, trailing = self._tapered_edge_points()
         return ps.geometry.wing.Wing.from_edge_points(
@@ -205,7 +205,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         self.ref_wing = self._make_edge_wing()
         self.num_chordwise_panels = 4
 
-    def _average_panel_aspect_ratio(self, num_wing_cross_sections) -> float:
+    def _average_panel_aspect_ratio(self, num_wing_cross_sections: int) -> float:
         """Rebuilds and meshes the edge-defined Wing at a number of WingCrossSections and
         returns its average Panel aspect ratio.
         """
@@ -217,7 +217,9 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         assert average_panel_aspect_ratio is not None
         return average_panel_aspect_ratio
 
-    def _num_wing_cross_sections_for(self, target, ref_wing=None) -> int:
+    def _num_wing_cross_sections_for(
+        self, target: int, ref_wing: ps.geometry.wing.Wing | None = None
+    ) -> int:
         """Searches for the number of WingCrossSections that hits a target average Panel
         aspect ratio, starting from the smallest valid count.
         """
@@ -314,7 +316,12 @@ class TestMemosComplete(unittest.TestCase):
         }
         self.num_wing_cross_sections_cache = {(0, 0, 1, 0): 5}
 
-    def _memos_complete(self, ar_id=0, chord_id=0, delta_time_cache=None) -> bool:
+    def _memos_complete(
+        self,
+        ar_id: int = 0,
+        chord_id: int = 0,
+        delta_time_cache: dict[tuple[int, int], float] | None = None,
+    ) -> bool:
         """Calls memos_complete against the reference Airplanes and memo caches."""
         return _convergence_meshing.memos_complete(
             ar_id,
@@ -378,7 +385,7 @@ class TestGeometryCopyParameterCoverage(unittest.TestCase):
     """
 
     @staticmethod
-    def _coverage_failure_message(class_name) -> str:
+    def _coverage_failure_message(class_name: str) -> str:
         """Builds the message shown when a geometry class's public constructor parameters
         are no longer the ones this module classifies.
         """
@@ -520,7 +527,7 @@ class TestBuildSteadyProblem(unittest.TestCase):
         self.num_spanwise_panels_cache: dict[tuple[int, int, int, int, int], int] = {}
         self.num_wing_cross_sections_cache: dict[tuple[int, int, int, int], int] = {}
 
-    def _build(self, num_chordwise_panels=4) -> ps.problems.SteadyProblem:
+    def _build(self, num_chordwise_panels: int = 4) -> ps.problems.SteadyProblem:
         """Builds the SteadyProblem for the first mesh against the reference problem and
         the caches.
         """
@@ -645,7 +652,12 @@ class TestBuildSteadyProblem(unittest.TestCase):
 
         self.assertEqual(len(this_wing.wing_cross_sections), 3)
 
-    def _assert_copied(self, this_object, ref_object, parameter_names) -> None:
+    def _assert_copied(
+        self,
+        this_object: object,
+        ref_object: object,
+        parameter_names: frozenset[str],
+    ) -> None:
         """Asserts that a copied geometry object carries each named parameter from its
         reference.
 
@@ -924,7 +936,7 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         ]
 
     @staticmethod
-    def _coverage_failure_message(class_name) -> str:
+    def _coverage_failure_message(class_name: str) -> str:
         """Builds the message shown when a movement class's motion parameters are no
         longer the set that this class tests.
         """
@@ -940,7 +952,11 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
             f"that the copy tests below would catch that."
         )
 
-    def _assert_parameters_match(self, actual_movement, expected_parameters) -> None:
+    def _assert_parameters_match(
+        self,
+        actual_movement: object,
+        expected_parameters: dict[str, Any],
+    ) -> None:
         """Asserts that a copied movement class carries each expected motion parameter.
 
         The spacing parameters hold strings rather than numbers, so they are compared for

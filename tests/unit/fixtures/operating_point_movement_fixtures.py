@@ -6,7 +6,9 @@ import pterasoftware as ps
 from . import operating_point_fixtures
 
 
-def make_static_operating_point_movement_fixture():
+def make_static_operating_point_movement_fixture() -> (
+    ps.movements.operating_point_movement.OperatingPointMovement
+):
     """This method makes a fixture that is an OperatingPointMovement with all
     parameters zero (no movement).
 
@@ -31,7 +33,9 @@ def make_static_operating_point_movement_fixture():
     return static_operating_point_movement_fixture
 
 
-def make_sine_spacing_operating_point_movement_fixture():
+def make_sine_spacing_operating_point_movement_fixture() -> (
+    ps.movements.operating_point_movement.OperatingPointMovement
+):
     """This method makes a fixture that is an OperatingPointMovement with sine
     spacing for vCg__E.
 

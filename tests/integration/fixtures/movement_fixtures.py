@@ -4,7 +4,7 @@ import pterasoftware as ps
 from tests.integration.fixtures import airplane_fixtures, operating_point_fixtures
 
 
-def make_static_validation_movement():
+def make_static_validation_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with static geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement
@@ -63,7 +63,7 @@ def make_static_validation_movement():
     return unsteady_validation_movement
 
 
-def make_edge_defined_static_validation_movement():
+def make_edge_defined_static_validation_movement() -> ps.movements.movement.Movement:
     """This function creates a static Movement over an edge-defined Airplane, to be used
     as a fixture for testing the convergence functions' edge-defined refinement.
 
@@ -114,7 +114,9 @@ def make_edge_defined_static_validation_movement():
     return edge_defined_validation_movement
 
 
-def make_edge_defined_non_static_validation_movement():
+def make_edge_defined_non_static_validation_movement() -> (
+    ps.movements.movement.Movement
+):
     """This function creates a Movement over an edge-defined Airplane whose second
     WingCrossSectionMovement pitches, to be used as a fixture for testing that
     edge-defined convergence rejects non-static WingCrossSectionMovements.
@@ -178,7 +180,7 @@ def make_edge_defined_non_static_validation_movement():
     return edge_defined_non_static_validation_movement
 
 
-def make_variable_validation_movement():
+def make_variable_validation_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with variable geometry to be used as a fixture.
 
     :return unsteady_validation_movement: Movement
@@ -247,7 +249,7 @@ def make_variable_validation_movement():
     return unsteady_validation_movement
 
 
-def make_multiple_wing_static_validation_movement():
+def make_multiple_wing_static_validation_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with static, multi-wing geometry to be used
     as a fixture.
 
@@ -360,7 +362,7 @@ def make_multiple_wing_static_validation_movement():
     return unsteady_validation_movement
 
 
-def make_surface_effect_static_movement():
+def make_surface_effect_static_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with static geometry and an image surface for
     surface effect testing.
 
@@ -416,7 +418,7 @@ def make_surface_effect_static_movement():
     return surface_effect_movement
 
 
-def make_surface_effect_free_air_static_movement():
+def make_surface_effect_free_air_static_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with static geometry and no image surface, for
     use as a free-air baseline in surface effect validation tests.
 
@@ -472,7 +474,7 @@ def make_surface_effect_free_air_static_movement():
     return free_air_movement
 
 
-def make_multiple_wing_variable_validation_movement():
+def make_multiple_wing_variable_validation_movement() -> ps.movements.movement.Movement:
     """This function creates a Movement with variable, multi-wing geometry to
     be used as a fixture.
 
@@ -593,7 +595,9 @@ def make_multiple_wing_variable_validation_movement():
     return unsteady_validation_movement
 
 
-def make_simple_glider_free_flight_movement():
+def make_simple_glider_free_flight_movement() -> (
+    ps.movements.free_flight_movement.FreeFlightMovement
+):
     """This function creates the simple glider's FreeFlightMovement to be used as a
     fixture.
 
@@ -649,7 +653,9 @@ def make_simple_glider_free_flight_movement():
     return simple_glider_free_flight_movement
 
 
-def make_flapping_free_flight_movement():
+def make_flapping_free_flight_movement() -> (
+    ps.movements.free_flight_movement.FreeFlightMovement
+):
     """This function creates the flapping-wing FreeFlightMovement to be used as a
     fixture.
 

@@ -12,7 +12,7 @@ from tests.unit.fixtures import (
 class TestOperatingPointMovement(unittest.TestCase):
     """This is a class with functions to test OperatingPointMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that OperatingPointMovement is a subclass of
         CoreOperatingPointMovement.
         """
@@ -23,7 +23,7 @@ class TestOperatingPointMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that OperatingPointMovement instantiation returns an
         OperatingPointMovement.
         """
@@ -40,7 +40,7 @@ class TestOperatingPointMovement(unittest.TestCase):
             ps.movements.operating_point_movement.OperatingPointMovement,
         )
 
-    def test_generate_operating_points_returns_operating_points(self):
+    def test_generate_operating_points_returns_operating_points(self) -> None:
         """Test that generate_operating_points returns OperatingPoints when called
         through the public class.
         """

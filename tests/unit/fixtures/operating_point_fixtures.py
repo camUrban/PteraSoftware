@@ -3,7 +3,7 @@
 import pterasoftware as ps
 
 
-def make_basic_operating_point_fixture():
+def make_basic_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with standard
     atmospheric conditions for general testing.
 
@@ -24,7 +24,7 @@ def make_basic_operating_point_fixture():
     return basic_operating_point_fixture
 
 
-def make_zero_alpha_beta_operating_point_fixture():
+def make_zero_alpha_beta_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with zero alpha and
     beta for aligned flow testing.
 
@@ -44,7 +44,7 @@ def make_zero_alpha_beta_operating_point_fixture():
     return zero_alpha_beta_operating_point_fixture
 
 
-def make_high_alpha_operating_point_fixture():
+def make_high_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with large positive
     alpha for large angle transformation testing.
 
@@ -64,7 +64,7 @@ def make_high_alpha_operating_point_fixture():
     return high_alpha_operating_point_fixture
 
 
-def make_negative_alpha_operating_point_fixture():
+def make_negative_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with negative alpha
     for negative angle handling testing.
 
@@ -84,7 +84,7 @@ def make_negative_alpha_operating_point_fixture():
     return negative_alpha_operating_point_fixture
 
 
-def make_nonzero_beta_operating_point_fixture():
+def make_nonzero_beta_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with non-zero sideslip
     angle for 3D wind axes testing.
 
@@ -104,7 +104,7 @@ def make_nonzero_beta_operating_point_fixture():
     return nonzero_beta_operating_point_fixture
 
 
-def make_high_speed_operating_point_fixture():
+def make_high_speed_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with high velocity for
     dynamic pressure scaling testing.
 
@@ -124,7 +124,7 @@ def make_high_speed_operating_point_fixture():
     return high_speed_operating_point_fixture
 
 
-def make_low_density_operating_point_fixture():
+def make_low_density_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with low density for
     altitude effects testing.
 
@@ -144,7 +144,9 @@ def make_low_density_operating_point_fixture():
     return low_density_operating_point_fixture
 
 
-def make_with_external_force_operating_point_fixture():
+def make_with_external_force_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with non-zero external
     force for trim analysis testing.
 
@@ -164,7 +166,9 @@ def make_with_external_force_operating_point_fixture():
     return with_external_force_operating_point_fixture
 
 
-def make_custom_viscosity_operating_point_fixture():
+def make_custom_viscosity_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with custom kinematic
     viscosity for vortex core growth parameter testing.
 
@@ -184,7 +188,7 @@ def make_custom_viscosity_operating_point_fixture():
     return custom_viscosity_operating_point_fixture
 
 
-def make_boundary_alpha_operating_point_fixture():
+def make_boundary_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with alpha at boundary
     values for angle wrapping edge case testing.
 
@@ -204,7 +208,7 @@ def make_boundary_alpha_operating_point_fixture():
     return boundary_alpha_operating_point_fixture
 
 
-def make_negative_beta_operating_point_fixture():
+def make_negative_beta_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with negative sideslip
     angle for negative angle handling testing.
 
@@ -224,7 +228,7 @@ def make_negative_beta_operating_point_fixture():
     return negative_beta_operating_point_fixture
 
 
-def make_boundary_beta_operating_point_fixture():
+def make_boundary_beta_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with beta at boundary
     values for angle wrapping edge case testing.
 
@@ -244,7 +248,9 @@ def make_boundary_beta_operating_point_fixture():
     return boundary_beta_operating_point_fixture
 
 
-def make_combined_boundary_angles_operating_point_fixture():
+def make_combined_boundary_angles_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with both alpha and
     beta at boundary values for combined boundary edge case testing.
 
@@ -266,7 +272,7 @@ def make_combined_boundary_angles_operating_point_fixture():
     return combined_boundary_angles_operating_point_fixture
 
 
-def make_very_low_speed_operating_point_fixture():
+def make_very_low_speed_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with very low but valid
     velocity for testing numerical stability at low speeds.
 
@@ -286,7 +292,9 @@ def make_very_low_speed_operating_point_fixture():
     return very_low_speed_operating_point_fixture
 
 
-def make_integer_parameters_operating_point_fixture():
+def make_integer_parameters_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint initialized with integer
     values to verify type conversion to floats.
 
@@ -306,7 +314,9 @@ def make_integer_parameters_operating_point_fixture():
     return integer_parameters_operating_point_fixture
 
 
-def make_negative_external_force_operating_point_fixture():
+def make_negative_external_force_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with negative external
     force for drag simulation testing.
 
@@ -326,7 +336,9 @@ def make_negative_external_force_operating_point_fixture():
     return negative_external_force_operating_point_fixture
 
 
-def make_near_boundary_alpha_operating_point_fixture():
+def make_near_boundary_alpha_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with alpha near the
     lower boundary for testing near boundary behavior.
 
@@ -346,7 +358,9 @@ def make_near_boundary_alpha_operating_point_fixture():
     return near_boundary_alpha_operating_point_fixture
 
 
-def make_near_boundary_beta_operating_point_fixture():
+def make_near_boundary_beta_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with beta near the
     lower boundary for testing near boundary behavior.
 
@@ -366,7 +380,9 @@ def make_near_boundary_beta_operating_point_fixture():
     return near_boundary_beta_operating_point_fixture
 
 
-def make_with_attitude_angles_operating_point_fixture():
+def make_with_attitude_angles_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with non zero
     Earth to body attitude angles for testing Earth to geometry coordinate
     transformations.
@@ -388,7 +404,9 @@ def make_with_attitude_angles_operating_point_fixture():
     return with_attitude_angles_operating_point_fixture
 
 
-def make_with_cg_position_operating_point_fixture():
+def make_with_cg_position_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with non zero CG
     position in Earth axes for testing position dependent transformations.
 
@@ -409,7 +427,9 @@ def make_with_cg_position_operating_point_fixture():
     return with_cg_position_operating_point_fixture
 
 
-def make_with_ground_surface_operating_point_fixture():
+def make_with_ground_surface_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with a horizontal
     ground surface defined at z = 0 in Earth axes for testing image surface
     transformations.
@@ -434,7 +454,9 @@ def make_with_ground_surface_operating_point_fixture():
     return with_ground_surface_operating_point_fixture
 
 
-def make_with_tilted_surface_operating_point_fixture():
+def make_with_tilted_surface_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint with a tilted
     image surface, non zero attitude angles, and non zero CG position for
     testing the full image surface transformation pipeline.
@@ -460,7 +482,7 @@ def make_with_tilted_surface_operating_point_fixture():
     return with_tilted_surface_operating_point_fixture
 
 
-def make_with_body_rates_operating_point_fixture():
+def make_with_body_rates_operating_point_fixture() -> ps.operating_point.OperatingPoint:
     """This method makes a fixture that is an OperatingPoint with a non zero
     omegas_BP1__E for testing that non-free-flight solvers reject body rotation.
 
@@ -475,7 +497,9 @@ def make_with_body_rates_operating_point_fixture():
     return with_body_rates_operating_point_fixture
 
 
-def make_with_full_body_rates_operating_point_fixture():
+def make_with_full_body_rates_operating_point_fixture() -> (
+    ps.operating_point.OperatingPoint
+):
     """This method makes a fixture that is an OperatingPoint whose omegas_BP1__E has
     three distinct non zero components, for testing that the free-flight solver's body
     to geometry transformation negates the x and z components while preserving the y

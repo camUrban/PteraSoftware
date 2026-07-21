@@ -24,6 +24,7 @@ import unittest
 
 import numpy as np
 
+import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -31,8 +32,23 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
     """This is a class for testing the
     FreeFlightUnsteadyRingVortexLatticeMethodSolver on a statically stable glider."""
 
+    solver: (
+        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    )
+    speeds: np.ndarray
+    alphas: np.ndarray
+    betas: np.ndarray
+    positions_E_Eo: np.ndarray
+    omegas_BP1__E: np.ndarray
+    lifts: np.ndarray
+    side_forces: np.ndarray
+    weight: float
+    g_E: np.ndarray
+    mass: float
+    inertia_matrix: np.ndarray
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """This method sets up the test by running the simple glider's free flight
         simulation once and extracting its time histories.
 
@@ -42,7 +58,12 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         cls.solver.run(prescribed_wake=True, show_progress=False)
 
         problem = cls.solver.unsteady_problem
-        operating_points = problem.movement.operating_point_movement.operating_points
+        assert isinstance(problem, ps.problems.FreeFlightUnsteadyProblem)
+        movement = problem.movement
+        assert isinstance(
+            movement, ps.movements.free_flight_movement.FreeFlightMovement
+        )
+        operating_points = movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
         # OperatingPoints and each time step's solved Airplane.
@@ -78,7 +99,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         cls.mass = problem.mass
         cls.inertia_matrix = problem.I_BP1_CgP1
 
-    def test_run_produces_finite_full_length_history(self):
+    def test_run_produces_finite_full_length_history(self) -> None:
         """This method tests that the coupled run completed for every time step and
         produced finite state and load histories (no divergence or NaNs).
 
@@ -94,7 +115,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(self.positions_E_Eo)))
         self.assertTrue(np.all(np.isfinite(self.lifts)))
 
-    def test_lift_approximately_balances_weight(self):
+    def test_lift_approximately_balances_weight(self) -> None:
         """This method tests that the mean lift over the glide is close to the glider's
         weight, as it should be near the trimmed condition.
 
@@ -106,7 +127,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertGreater(lift_to_weight_ratio, 0.85)
         self.assertLess(lift_to_weight_ratio, 1.15)
 
-    def test_glider_descends(self):
+    def test_glider_descends(self) -> None:
         """This method tests that the glider loses altitude over the glide. In Earth
         axes, the +z direction points down (gravity acts along +z), so a descending
         glider's z-coordinate increases.
@@ -118,7 +139,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
 
         self.assertGreater(final_z_E, initial_z_E)
 
-    def test_speed_remains_bounded(self):
+    def test_speed_remains_bounded(self) -> None:
         """This method tests that the glide speed stays within a reasonable band of its
         initial value rather than running away.
 
@@ -129,7 +150,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertLess(float(np.max(self.speeds)), 1.2 * initial_speed)
         self.assertGreater(float(np.min(self.speeds)), 0.8 * initial_speed)
 
-    def test_flight_stays_laterally_symmetric(self):
+    def test_flight_stays_laterally_symmetric(self) -> None:
         """This method tests that the glide stays in the longitudinal plane. The glider
         is laterally symmetric and starts with zero sideslip, so the sideslip angle, the
         lateral side force, and the lateral position should all stay negligible.
@@ -140,7 +161,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertLess(float(np.max(np.abs(self.side_forces))), 1.0)
         self.assertLess(float(np.max(np.abs(self.positions_E_Eo[:, 1]))), 1.0e-3)
 
-    def test_angle_of_attack_stays_bounded(self):
+    def test_angle_of_attack_stays_bounded(self) -> None:
         """This method tests that the angle of attack stays in a narrow band about its
         trimmed value rather than diverging. This is the signature of the glider's static
         pitch stability: a stable airframe makes a small restoring oscillation, whereas
@@ -153,7 +174,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertLess(float(np.max(self.alphas)), trimmed_alpha + 3.0)
         self.assertGreater(float(np.min(self.alphas)), trimmed_alpha - 3.0)
 
-    def test_total_mechanical_energy_decreases(self):
+    def test_total_mechanical_energy_decreases(self) -> None:
         """This method tests that the glider's total mechanical energy at the end of the
         glide is less than at the start. With no thrust, drag is the only non-conservative
         load, so it must dissipate mechanical energy over the glide.
@@ -189,10 +210,20 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
     FreeFlightUnsteadyRingVortexLatticeMethodSolver on a flapping-wing airframe whose
     strongly coupled sub-iteration must remain stable under large oscillatory loads."""
 
+    solver: (
+        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    )
+    betas: np.ndarray
+    positions_E_Eo: np.ndarray
+    forces_W: np.ndarray
+    lifts: np.ndarray
+    side_forces: np.ndarray
+    weight: float
+
     _warning_records: list[logging.LogRecord]
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """This method sets up the test by running the flapping-wing free flight
         simulation once and extracting its time histories.
 
@@ -221,7 +252,11 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
             solver_logger.removeHandler(collector)
 
         problem = cls.solver.unsteady_problem
-        operating_points = problem.movement.operating_point_movement.operating_points
+        movement = problem.movement
+        assert isinstance(
+            movement, ps.movements.free_flight_movement.FreeFlightMovement
+        )
+        operating_points = movement.operating_point_movement.operating_points
 
         # Extract per-time-step time histories from the dynamically populated
         # OperatingPoints and each time step's solved Airplane.
@@ -246,7 +281,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
 
         cls.weight = cls.solver.current_airplanes[0].weight
 
-    def test_run_produces_finite_full_length_history(self):
+    def test_run_produces_finite_full_length_history(self) -> None:
         """This method tests that the coupled run completed for every time step and
         produced finite state and load histories. Under loose coupling the flapping case
         diverges; a finite, full-length history is the signature that the strongly
@@ -262,7 +297,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(self.betas)))
         self.assertTrue(np.all(np.isfinite(self.positions_E_Eo)))
 
-    def test_sub_iteration_converges_within_cap(self):
+    def test_sub_iteration_converges_within_cap(self) -> None:
         """This method tests that the strongly coupled sub-iteration converged within its
         iteration cap on every free flight time step. The solver logs a warning when a
         step reaches the cap without converging and accepts the capped iterate anyway, so
@@ -276,7 +311,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
 
         self.assertEqual(cap_warnings, [])
 
-    def test_flapping_excites_oscillatory_loads(self):
+    def test_flapping_excites_oscillatory_loads(self) -> None:
         """This method tests that the flapping genuinely drives large, oscillatory
         aerodynamic loads rather than settling to a near-constant value. The peak-to-peak
         lift over the run should exceed the airframe's weight, confirming that the case
@@ -288,7 +323,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
 
         self.assertGreater(peak_to_peak_lift, self.weight)
 
-    def test_flight_stays_laterally_symmetric(self):
+    def test_flight_stays_laterally_symmetric(self) -> None:
         """This method tests that the flight stays in the longitudinal plane. The main
         wing flaps symmetrically and the airframe starts with zero sideslip, so the
         sideslip angle, the lateral side force, and the lateral position should all stay

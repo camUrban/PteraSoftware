@@ -6,7 +6,9 @@ import pterasoftware as ps
 from . import geometry_fixtures
 
 
-def make_static_aeroelastic_wing_cross_section_movement_fixture():
+def make_static_aeroelastic_wing_cross_section_movement_fixture() -> (
+    ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+):
     """This method makes a fixture that is an AeroelasticWingCrossSectionMovement with
     all parameters zero (no prescribed movement).
 
@@ -36,7 +38,9 @@ def make_static_aeroelastic_wing_cross_section_movement_fixture():
     return static_aeroelastic_wing_cross_section_movement_fixture
 
 
-def make_basic_aeroelastic_wing_cross_section_movement_fixture():
+def make_basic_aeroelastic_wing_cross_section_movement_fixture() -> (
+    ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+):
     """This method makes a fixture that is an AeroelasticWingCrossSectionMovement with
     general-purpose moderate values.
 

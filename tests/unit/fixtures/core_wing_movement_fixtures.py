@@ -8,7 +8,7 @@ from pterasoftware._core import CoreWingMovement
 from . import core_wing_cross_section_movement_fixtures, geometry_fixtures
 
 
-def make_static_core_wing_movement_fixture():
+def make_static_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with all parameters
     zero (no movement).
 
@@ -40,7 +40,7 @@ def make_static_core_wing_movement_fixture():
     return static_core_wing_movement_fixture
 
 
-def make_basic_core_wing_movement_fixture():
+def make_basic_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with general-purpose
     moderate values.
 
@@ -72,7 +72,7 @@ def make_basic_core_wing_movement_fixture():
     return basic_core_wing_movement_fixture
 
 
-def make_sine_spacing_Ler_core_wing_movement_fixture():
+def make_sine_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with sine spacing for
     Ler_Gs_Cgs.
 
@@ -104,7 +104,7 @@ def make_sine_spacing_Ler_core_wing_movement_fixture():
     return sine_spacing_Ler_core_wing_movement_fixture
 
 
-def make_uniform_spacing_Ler_core_wing_movement_fixture():
+def make_uniform_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with uniform spacing for
     Ler_Gs_Cgs.
 
@@ -136,7 +136,7 @@ def make_uniform_spacing_Ler_core_wing_movement_fixture():
     return uniform_spacing_Ler_core_wing_movement_fixture
 
 
-def make_mixed_spacing_Ler_core_wing_movement_fixture():
+def make_mixed_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with mixed spacing for
     Ler_Gs_Cgs.
 
@@ -168,7 +168,7 @@ def make_mixed_spacing_Ler_core_wing_movement_fixture():
     return mixed_spacing_Ler_core_wing_movement_fixture
 
 
-def make_sine_spacing_angles_core_wing_movement_fixture():
+def make_sine_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with sine spacing for
     angles_Gs_to_Wn_ixyz.
 
@@ -200,7 +200,7 @@ def make_sine_spacing_angles_core_wing_movement_fixture():
     return sine_spacing_angles_core_wing_movement_fixture
 
 
-def make_uniform_spacing_angles_core_wing_movement_fixture():
+def make_uniform_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with uniform spacing for
     angles_Gs_to_Wn_ixyz.
 
@@ -232,7 +232,7 @@ def make_uniform_spacing_angles_core_wing_movement_fixture():
     return uniform_spacing_angles_core_wing_movement_fixture
 
 
-def make_mixed_spacing_angles_core_wing_movement_fixture():
+def make_mixed_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with mixed spacing for
     angles_Gs_to_Wn_ixyz.
 
@@ -264,7 +264,7 @@ def make_mixed_spacing_angles_core_wing_movement_fixture():
     return mixed_spacing_angles_core_wing_movement_fixture
 
 
-def make_Ler_only_core_wing_movement_fixture():
+def make_Ler_only_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement where only Ler_Gs_Cgs
     moves.
 
@@ -296,7 +296,7 @@ def make_Ler_only_core_wing_movement_fixture():
     return Ler_only_core_wing_movement_fixture
 
 
-def make_angles_only_core_wing_movement_fixture():
+def make_angles_only_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement where only
     angles_Gs_to_Wn_ixyz moves.
 
@@ -328,7 +328,7 @@ def make_angles_only_core_wing_movement_fixture():
     return angles_only_core_wing_movement_fixture
 
 
-def make_phase_offset_Ler_core_wing_movement_fixture():
+def make_phase_offset_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with non-zero phase offset
     for Ler_Gs_Cgs.
 
@@ -360,7 +360,7 @@ def make_phase_offset_Ler_core_wing_movement_fixture():
     return phase_offset_Ler_core_wing_movement_fixture
 
 
-def make_phase_offset_angles_core_wing_movement_fixture():
+def make_phase_offset_angles_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with non-zero phase offset
     for angles_Gs_to_Wn_ixyz.
 
@@ -392,7 +392,7 @@ def make_phase_offset_angles_core_wing_movement_fixture():
     return phase_offset_angles_core_wing_movement_fixture
 
 
-def make_multiple_periods_core_wing_movement_fixture():
+def make_multiple_periods_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with different periods
     for different dimensions.
 
@@ -424,7 +424,7 @@ def make_multiple_periods_core_wing_movement_fixture():
     return multiple_periods_core_wing_movement_fixture
 
 
-def make_custom_spacing_Ler_core_wing_movement_fixture():
+def make_custom_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a custom spacing
     function for Ler_Gs_Cgs.
 
@@ -439,20 +439,18 @@ def make_custom_spacing_Ler_core_wing_movement_fixture():
     ]
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
         This function satisfies all requirements: starts at 0, returns to 0 at
         2*pi, has zero mean, has amplitude of 1, and is periodic.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the custom-spacing CoreWingMovement.
@@ -473,7 +471,7 @@ def make_custom_spacing_Ler_core_wing_movement_fixture():
     return custom_spacing_Ler_core_wing_movement_fixture
 
 
-def make_custom_spacing_angles_core_wing_movement_fixture():
+def make_custom_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a custom spacing
     function for angles_Gs_to_Wn_ixyz.
 
@@ -488,20 +486,18 @@ def make_custom_spacing_angles_core_wing_movement_fixture():
     ]
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
         This function satisfies all requirements: starts at 0, returns to 0 at
         2*pi, has zero mean, has amplitude of 1, and is periodic.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the custom-spacing CoreWingMovement.
@@ -522,7 +518,9 @@ def make_custom_spacing_angles_core_wing_movement_fixture():
     return custom_spacing_angles_core_wing_movement_fixture
 
 
-def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture():
+def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture() -> (
+    CoreWingMovement
+):
     """This method makes a fixture that is a CoreWingMovement with mixed custom and
     standard spacing functions.
 
@@ -537,17 +535,15 @@ def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture():
     ]
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the mixed-spacing CoreWingMovement.
@@ -568,7 +564,7 @@ def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture():
     return mixed_custom_and_standard_spacing_core_wing_movement_fixture
 
 
-def make_rotation_point_offset_core_wing_movement_fixture():
+def make_rotation_point_offset_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a non zero rotation
     point offset.
 
@@ -603,7 +599,7 @@ def make_rotation_point_offset_core_wing_movement_fixture():
     return rotation_point_offset_core_wing_movement_fixture
 
 
-def make_periodic_geometry_core_wing_movement_fixture():
+def make_periodic_geometry_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with periodic geometry motion
     suitable for testing the variable geometry optimization.
 
@@ -639,7 +635,7 @@ def make_periodic_geometry_core_wing_movement_fixture():
     return periodic_geometry_core_wing_movement_fixture
 
 
-def make_2_chordwise_panels_core_wing_movement_fixture():
+def make_2_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement for a Wing with
     2 chordwise panels.
 
@@ -667,7 +663,7 @@ def make_2_chordwise_panels_core_wing_movement_fixture():
     return fixture
 
 
-def make_3_chordwise_panels_core_wing_movement_fixture():
+def make_3_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement for a Wing with
     3 chordwise panels.
 

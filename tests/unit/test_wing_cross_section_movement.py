@@ -12,7 +12,7 @@ from tests.unit.fixtures import (
 class TestWingCrossSectionMovement(unittest.TestCase):
     """This is a class with functions to test WingCrossSectionMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that WingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
@@ -23,7 +23,7 @@ class TestWingCrossSectionMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that WingCrossSectionMovement instantiation returns a
         WingCrossSectionMovement.
         """
@@ -40,7 +40,7 @@ class TestWingCrossSectionMovement(unittest.TestCase):
             ps.movements.wing_cross_section_movement.WingCrossSectionMovement,
         )
 
-    def test_generate_wing_cross_sections_returns_wing_cross_sections(self):
+    def test_generate_wing_cross_sections_returns_wing_cross_sections(self) -> None:
         """Test that generate_wing_cross_sections returns WingCrossSections when
         called through the public class.
         """

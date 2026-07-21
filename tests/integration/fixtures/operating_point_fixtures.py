@@ -3,7 +3,7 @@
 import pterasoftware as ps
 
 
-def make_validation_operating_point():
+def make_validation_operating_point() -> ps.operating_point.OperatingPoint:
     """This method makes an OperatingPoint for use in tests.
 
     :return operating_point_fixture: OperatingPoint
@@ -15,7 +15,7 @@ def make_validation_operating_point():
     return operating_point_fixture
 
 
-def make_surface_effect_operating_point():
+def make_surface_effect_operating_point() -> ps.operating_point.OperatingPoint:
     """This function creates an OperatingPoint with an image surface for surface effect
     testing.
 
@@ -42,7 +42,7 @@ def make_surface_effect_operating_point():
     return operating_point_fixture
 
 
-def make_surface_effect_free_air_operating_point():
+def make_surface_effect_free_air_operating_point() -> ps.operating_point.OperatingPoint:
     """This function creates an OperatingPoint without an image surface, matching the
     flow conditions of the surface effect operating point, for use as a free-air
     baseline in surface effect validation tests.
@@ -59,7 +59,7 @@ def make_surface_effect_free_air_operating_point():
     return operating_point_fixture
 
 
-def make_simple_glider_operating_point():
+def make_simple_glider_operating_point() -> ps.operating_point.OperatingPoint:
     """This function creates the trimmed OperatingPoint for the simple glider's free
     flight test.
 
@@ -83,7 +83,7 @@ def make_simple_glider_operating_point():
     return operating_point_fixture
 
 
-def make_flapping_free_flight_operating_point():
+def make_flapping_free_flight_operating_point() -> ps.operating_point.OperatingPoint:
     """This function creates the initial OperatingPoint for the flapping-wing free
     flight test.
 

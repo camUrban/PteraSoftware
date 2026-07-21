@@ -1,6 +1,8 @@
 """This module contains classes to test FreeFlightUnsteadyProblems."""
 
 import unittest
+from collections.abc import Callable
+from typing import Any
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -8,11 +10,13 @@ import numpy as np
 import pterasoftware as ps
 
 # noinspection PyProtectedMember
-from pterasoftware import _transformations
+from pterasoftware import _mujoco_model, _transformations
 from tests.unit.fixtures import problem_fixtures
 
 
-def _movement_and_mass():
+def _movement_and_mass() -> (
+    tuple[ps.movements.free_flight_movement.FreeFlightMovement, float]
+):
     """Return a fresh FreeFlightMovement and the mass consistent with its Airplane's
     weight and gravitational field (weight == mass * |g_E|).
 
@@ -29,13 +33,13 @@ def _movement_and_mass():
 class TestFreeFlightUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test FreeFlightUnsteadyProblems."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh FreeFlightUnsteadyProblem for each test."""
         self.problem = (
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
 
-    def test_initialization_valid_parameters(self):
+    def test_initialization_valid_parameters(self) -> None:
         """Test FreeFlightUnsteadyProblem initialization with valid parameters."""
         self.assertIsInstance(
             self.problem,
@@ -50,16 +54,17 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             ps.movements.free_flight_movement.FreeFlightMovement,
         )
 
-    def test_movement_type_validation(self):
+    def test_movement_type_validation(self) -> None:
         """Test that movement must be a FreeFlightMovement."""
+        bad_movement: Any = "not_a_movement"
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
-                movement="not_a_movement",
+                movement=bad_movement,
                 mass=1.0,
                 I_BP1_CgP1=np.eye(3, dtype=float),
             )
 
-    def test_single_airplane_movement_validation(self):
+    def test_single_airplane_movement_validation(self) -> None:
         """Test that the FreeFlightMovement has exactly one AirplaneMovement."""
         movement, mass = _movement_and_mass()
         two_airplane_movement = ps.movements.free_flight_movement.FreeFlightMovement(
@@ -79,7 +84,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=np.eye(3, dtype=float),
             )
 
-    def test_I_BP1_CgP1_symmetry_validation(self):
+    def test_I_BP1_CgP1_symmetry_validation(self) -> None:
         """Test that I_BP1_CgP1 must be symmetric."""
         movement, mass = _movement_and_mass()
         asymmetric_inertia = np.array(
@@ -92,29 +97,31 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=asymmetric_inertia,
             )
 
-    def test_external_loads_fn_validation(self):
+    def test_external_loads_fn_validation(self) -> None:
         """Test that external_loads_fn must be callable or None."""
         movement, mass = _movement_and_mass()
+        bad_external_loads_fn: Any = "not_callable"
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                external_loads_fn="not_callable",
+                external_loads_fn=bad_external_loads_fn,
             )
 
-    def test_extra_xml_type_validation(self):
+    def test_extra_xml_type_validation(self) -> None:
         """Test that extra_xml must be a dict or None."""
         movement, mass = _movement_and_mass()
+        bad_extra_xml: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                extra_xml="invalid",
+                extra_xml=bad_extra_xml,
             )
 
-    def test_extra_xml_key_validation(self):
+    def test_extra_xml_key_validation(self) -> None:
         """Test that an extra_xml key must be a permitted injection point."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
@@ -125,62 +132,67 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 extra_xml={"wordbody": "<geom/>"},
             )
 
-    def test_extra_xml_value_validation(self):
+    def test_extra_xml_value_validation(self) -> None:
         """Test that an extra_xml value must be a str."""
         movement, mass = _movement_and_mass()
+        bad_extra_xml: Any = {"visual": 123}
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                extra_xml={"visual": 123},
+                extra_xml=bad_extra_xml,
             )
 
-    def test_mujoco_assets_type_validation(self):
+    def test_mujoco_assets_type_validation(self) -> None:
         """Test that mujoco_assets must be a dict or None."""
         movement, mass = _movement_and_mass()
+        bad_mujoco_assets: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                mujoco_assets="invalid",
+                mujoco_assets=bad_mujoco_assets,
             )
 
-    def test_mujoco_assets_key_validation(self):
+    def test_mujoco_assets_key_validation(self) -> None:
         """Test that a mujoco_assets key must be a str."""
         movement, mass = _movement_and_mass()
+        bad_mujoco_assets: Any = {123: b"data"}
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                mujoco_assets={123: b"data"},
+                mujoco_assets=bad_mujoco_assets,
             )
 
-    def test_mujoco_assets_value_validation(self):
+    def test_mujoco_assets_value_validation(self) -> None:
         """Test that a mujoco_assets value must be bytes."""
         movement, mass = _movement_and_mass()
+        bad_mujoco_assets: Any = {"dummy.stl": "not bytes"}
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                mujoco_assets={"dummy.stl": "not bytes"},
+                mujoco_assets=bad_mujoco_assets,
             )
 
-    def test_integrator_type_validation(self):
+    def test_integrator_type_validation(self) -> None:
         """Test that integrator must be a str."""
         movement, mass = _movement_and_mass()
+        bad_integrator: Any = 4
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                integrator=4,
+                integrator=bad_integrator,
             )
 
-    def test_integrator_value_validation(self):
+    def test_integrator_value_validation(self) -> None:
         """Test that integrator must be a supported MuJoCo integrator."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
@@ -191,7 +203,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 integrator="rk4",
             )
 
-    def test_externalFX_W_validation(self):
+    def test_externalFX_W_validation(self) -> None:
         """Test that a nonzero externalFX_W on the initial OperatingPoint raises."""
         base_operating_point = ps.operating_point.OperatingPoint(externalFX_W=10.0)
         with self.assertRaises(ValueError):
@@ -199,7 +211,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 base_operating_point=base_operating_point
             )
 
-    def test_integrator_forwarded_to_mujoco_model(self):
+    def test_integrator_forwarded_to_mujoco_model(self) -> None:
         """Test that the integrator choice reaches the generated MuJoCo XML."""
         movement, mass = _movement_and_mass()
         problem = ps.problems.FreeFlightUnsteadyProblem(
@@ -210,18 +222,19 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIn('integrator="implicitfast"', problem._mujoco_model.xml_str)
 
-    def test_k_max_type_validation(self):
+    def test_k_max_type_validation(self) -> None:
         """Test that k_max must be an int."""
         movement, mass = _movement_and_mass()
+        bad_k_max: Any = 20.0
         with self.assertRaises(TypeError):
             ps.problems.FreeFlightUnsteadyProblem(
                 movement=movement,
                 mass=mass,
                 I_BP1_CgP1=np.eye(3, dtype=float),
-                k_max=20.0,
+                k_max=bad_k_max,
             )
 
-    def test_k_max_value_validation(self):
+    def test_k_max_value_validation(self) -> None:
         """Test that k_max must be greater than zero."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
@@ -232,11 +245,11 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 k_max=0,
             )
 
-    def test_k_max_default(self):
+    def test_k_max_default(self) -> None:
         """Test that k_max defaults to 20."""
         self.assertEqual(self.problem.k_max, 20)
 
-    def test_k_max_stored(self):
+    def test_k_max_stored(self) -> None:
         """Test that a valid k_max is stored and returned."""
         movement, mass = _movement_and_mass()
         problem = ps.problems.FreeFlightUnsteadyProblem(
@@ -247,15 +260,18 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertEqual(problem.k_max, 7)
 
-    def test_external_loads_fn_default_none(self):
+    def test_external_loads_fn_default_none(self) -> None:
         """Test that external_loads_fn defaults to None."""
         self.assertIsNone(self.problem.external_loads_fn)
 
-    def test_external_loads_fn_stored_when_callable(self):
+    def test_external_loads_fn_stored_when_callable(self) -> None:
         """Test that a callable external_loads_fn is stored and returned."""
 
         # noinspection PyUnusedLocal
-        def external_loads_fn(operating_point, airplane):
+        def external_loads_fn(
+            operating_point: ps.operating_point.OperatingPoint,
+            airplane: ps.geometry.airplane.Airplane,
+        ) -> tuple[np.ndarray, np.ndarray]:
             return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
 
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
@@ -263,19 +279,19 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         )
         self.assertIs(problem.external_loads_fn, external_loads_fn)
 
-    def test_only_final_results_forced_false(self):
+    def test_only_final_results_forced_false(self) -> None:
         """Test that only_final_results is always False for coupled problems."""
         self.assertFalse(self.problem.only_final_results)
 
-    def test_num_steps_from_movement(self):
+    def test_num_steps_from_movement(self) -> None:
         """Test that num_steps is taken from the movement."""
         self.assertEqual(self.problem.num_steps, self.problem.movement.num_steps)
 
-    def test_delta_time_from_movement(self):
+    def test_delta_time_from_movement(self) -> None:
         """Test that delta_time is taken from the movement."""
         self.assertEqual(self.problem.delta_time, self.problem.movement.delta_time)
 
-    def test_steady_problems_initialization(self):
+    def test_steady_problems_initialization(self) -> None:
         """Test that steady_problems is initialized with one SteadyProblem."""
         self.assertIsInstance(self.problem.steady_problems, tuple)
         self.assertEqual(len(self.problem.steady_problems), 1)
@@ -284,13 +300,13 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             ps.problems.SteadyProblem,
         )
 
-    def test_I_BP1_CgP1_attribute(self):
+    def test_I_BP1_CgP1_attribute(self) -> None:
         """Test that I_BP1_CgP1 is stored correctly."""
         self.assertIsInstance(self.problem.I_BP1_CgP1, np.ndarray)
         self.assertEqual(self.problem.I_BP1_CgP1.shape, (3, 3))
         np.testing.assert_array_equal(self.problem.I_BP1_CgP1, np.diag([1.0, 1.0, 1.0]))
 
-    def test_I_BP1_CgP1_accepts_array_like(self):
+    def test_I_BP1_CgP1_accepts_array_like(self) -> None:
         """Test that I_BP1_CgP1 accepts a nested list and converts it to a float
         ndarray.
         """
@@ -309,7 +325,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         self.assertEqual(problem.I_BP1_CgP1.dtype, np.dtype(float))
         np.testing.assert_array_equal(problem.I_BP1_CgP1, np.diag([2.0, 3.0, 4.0]))
 
-    def test_I_BP1_CgP1_rejects_wrong_shape(self):
+    def test_I_BP1_CgP1_rejects_wrong_shape(self) -> None:
         """Test that I_BP1_CgP1 must have shape (3, 3)."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
@@ -319,7 +335,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=np.eye(2, dtype=float),
             )
 
-    def test_free_flight_movement_property_narrows_movement(self):
+    def test_free_flight_movement_property_narrows_movement(self) -> None:
         """Test that the _free_flight_movement property returns the same object as
         movement, narrowed to FreeFlightMovement.
         """
@@ -329,14 +345,14 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
             ps.movements.free_flight_movement.FreeFlightMovement,
         )
 
-    def test_mujoco_model_attribute(self):
+    def test_mujoco_model_attribute(self) -> None:
         """Test that the MuJoCoModel is constructed during initialization."""
         # noinspection PyProtectedMember
         from pterasoftware import _mujoco_model
 
         self.assertIsInstance(self.problem._mujoco_model, _mujoco_model.MuJoCoModel)
 
-    def test_mass_attribute(self):
+    def test_mass_attribute(self) -> None:
         """Test that mass is stored as a float."""
         movement, mass = _movement_and_mass()
         problem = ps.problems.FreeFlightUnsteadyProblem(
@@ -347,7 +363,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
         self.assertIsInstance(problem.mass, float)
         self.assertAlmostEqual(problem.mass, mass)
 
-    def test_mass_rejects_non_positive(self):
+    def test_mass_rejects_non_positive(self) -> None:
         """Test that mass must be greater than zero."""
         movement, mass = _movement_and_mass()
         for invalid_mass in (0.0, -1.0):
@@ -358,7 +374,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                     I_BP1_CgP1=np.eye(3, dtype=float),
                 )
 
-    def test_weight_mass_gravity_consistency_validation(self):
+    def test_weight_mass_gravity_consistency_validation(self) -> None:
         """Test that the Airplane's weight must equal mass * |g_E| within tolerance."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
@@ -372,7 +388,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
 class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
     """Tests for FreeFlightUnsteadyProblem.initialize_next_problem."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh FreeFlightUnsteadyProblem and a primed mock solver."""
         self.problem = (
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
@@ -397,7 +413,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         self.solver.current_airplanes = [self.current_airplane]
         self.solver.current_operating_point = self.current_operating_point
 
-    def _mock_mujoco_model(self):
+    def _mock_mujoco_model(self) -> MagicMock:
         """Replace the problem's MuJoCoModel with a MagicMock returning a fixed state.
 
         This keeps the rigid body dynamics deterministic and avoids stepping the real
@@ -417,7 +433,12 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         return mock_model
 
     @staticmethod
-    def _primed_problem_and_solver(external_loads_fn):
+    def _primed_problem_and_solver(
+        external_loads_fn: Callable[
+            [ps.operating_point.OperatingPoint, ps.geometry.airplane.Airplane],
+            tuple[np.ndarray, np.ndarray],
+        ],
+    ) -> tuple[ps.problems.FreeFlightUnsteadyProblem, MagicMock]:
         """Build a problem carrying the given external_loads_fn and a primed mock solver.
 
         Mirrors setUp's load priming and _mock_mujoco_model, but for a fresh problem that
@@ -451,7 +472,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         problem._mujoco_model = mock_model
         return problem, solver
 
-    def test_appends_next_steady_problem_on_non_final_step(self):
+    def test_appends_next_steady_problem_on_non_final_step(self) -> None:
         """Test that a new SteadyProblem is appended on a non final step."""
         self._mock_mujoco_model()
         before = len(self.problem.steady_problems)
@@ -463,7 +484,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
             self.problem.steady_problems[-1], ps.problems.SteadyProblem
         )
 
-    def test_appends_next_operating_point_on_non_final_step(self):
+    def test_appends_next_operating_point_on_non_final_step(self) -> None:
         """Test that a new OperatingPoint is appended to the movement on a non final
         step.
         """
@@ -477,7 +498,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         self.assertEqual(len(operating_points), before + 1)
 
-    def test_steps_dynamics_but_withholds_loads_on_prescribed_step(self):
+    def test_steps_dynamics_but_withholds_loads_on_prescribed_step(self) -> None:
         """Test that on a prescribed phase step the MuJoCo model is stepped but no loads
         are applied, so the body coasts at its trimmed condition.
         """
@@ -490,7 +511,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_called_once()
 
-    def test_no_steady_problem_appended_on_final_step(self):
+    def test_no_steady_problem_appended_on_final_step(self) -> None:
         """Test that no SteadyProblem is appended on the final step."""
         before = len(self.problem.steady_problems)
 
@@ -498,7 +519,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         self.assertEqual(len(self.problem.steady_problems), before)
 
-    def test_does_not_step_dynamics_on_final_step(self):
+    def test_does_not_step_dynamics_on_final_step(self) -> None:
         """Test that the MuJoCo model is not stepped on the final step."""
         mock_model = self._mock_mujoco_model()
 
@@ -507,7 +528,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         mock_model.apply_loads.assert_not_called()
         mock_model.step.assert_not_called()
 
-    def test_external_loads_fn_invoked_on_non_final_step(self):
+    def test_external_loads_fn_invoked_on_non_final_step(self) -> None:
         """Test that a set external_loads_fn is invoked with the current OperatingPoint
         and Airplane on a non final step.
         """
@@ -522,7 +543,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         external_loads_fn.assert_called_once_with(operating_point, airplane)
 
-    def test_external_loads_fn_not_invoked_on_later_prescribed_step(self):
+    def test_external_loads_fn_not_invoked_on_later_prescribed_step(self) -> None:
         """Test that the external_loads_fn is not invoked on a prescribed phase step
         after the first, since its loads would be withheld there in any case.
         """
@@ -538,7 +559,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         external_loads_fn.assert_not_called()
 
-    def test_external_loads_fn_valid_return_passes(self):
+    def test_external_loads_fn_valid_return_passes(self) -> None:
         """Test that a well formed external_loads_fn return passes validation and marks
         the return as validated.
         """
@@ -554,7 +575,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
         self.assertTrue(problem._external_loads_validated)
 
-    def test_external_loads_fn_wrong_arity_raises(self):
+    def test_external_loads_fn_wrong_arity_raises(self) -> None:
         """Test that an external_loads_fn returning other than two items raises."""
         external_loads_fn = MagicMock(return_value=(np.zeros(3, dtype=float),))
         problem, solver = self._primed_problem_and_solver(external_loads_fn)
@@ -562,7 +583,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         with self.assertRaises(ValueError):
             problem.initialize_next_problem(solver, step=0)
 
-    def test_external_loads_fn_wrong_shape_raises(self):
+    def test_external_loads_fn_wrong_shape_raises(self) -> None:
         """Test that an external_loads_fn returning a non (3,) component raises."""
         external_loads_fn = MagicMock(
             return_value=(np.zeros(2, dtype=float), np.zeros(3, dtype=float))
@@ -572,7 +593,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
         with self.assertRaises(ValueError):
             problem.initialize_next_problem(solver, step=0)
 
-    def test_external_loads_fn_non_finite_raises(self):
+    def test_external_loads_fn_non_finite_raises(self) -> None:
         """Test that an external_loads_fn returning a non finite value raises."""
         external_loads_fn = MagicMock(
             return_value=(
@@ -589,59 +610,59 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 class TestFreeFlightUnsteadyProblemImmutability(unittest.TestCase):
     """Tests for FreeFlightUnsteadyProblem attribute immutability."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh FreeFlightUnsteadyProblem for each immutability test."""
         self.problem = (
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
 
-    def test_immutable_movement_property(self):
+    def test_immutable_movement_property(self) -> None:
         """Test that the movement property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.movement = None
+            setattr(self.problem, "movement", None)
 
-    def test_immutable_I_BP1_CgP1_property(self):
+    def test_immutable_I_BP1_CgP1_property(self) -> None:
         """Test that the I_BP1_CgP1 property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.I_BP1_CgP1 = np.eye(3, dtype=float)
+            setattr(self.problem, "I_BP1_CgP1", np.eye(3, dtype=float))
 
-    def test_I_BP1_CgP1_array_not_writeable(self):
+    def test_I_BP1_CgP1_array_not_writeable(self) -> None:
         """Test that the I_BP1_CgP1 numpy array is not writeable."""
         with self.assertRaises(ValueError):
             self.problem.I_BP1_CgP1[0, 0] = 999.0
 
-    def test_immutable_mass_property(self):
+    def test_immutable_mass_property(self) -> None:
         """Test that the mass property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.mass = 1.0
+            setattr(self.problem, "mass", 1.0)
 
-    def test_immutable_external_loads_fn_property(self):
+    def test_immutable_external_loads_fn_property(self) -> None:
         """Test that the external_loads_fn property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.external_loads_fn = None
+            setattr(self.problem, "external_loads_fn", None)
 
-    def test_immutable_num_steps_property(self):
+    def test_immutable_num_steps_property(self) -> None:
         """Test that the num_steps property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.num_steps = 100
+            setattr(self.problem, "num_steps", 100)
 
-    def test_immutable_delta_time_property(self):
+    def test_immutable_delta_time_property(self) -> None:
         """Test that the delta_time property is read only."""
         with self.assertRaises(AttributeError):
-            self.problem.delta_time = 0.5
+            setattr(self.problem, "delta_time", 0.5)
 
 
 class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
     """Tests for the rigid body state conversions the sub-iteration relies on."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a fresh FreeFlightUnsteadyProblem and its reference OperatingPoint."""
         self.problem = (
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
         self.reference_operating_point = self.problem.steady_problems[0].operating_point
 
-    def test_state_to_vector_block_layout_and_units(self):
+    def test_state_to_vector_block_layout_and_units(self) -> None:
         """Test that _state_to_vector concatenates the position, attitude, velocity, and
         angular rate blocks in order, with the angular quantities converted to radians.
 
@@ -649,7 +670,7 @@ class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
         rate carries into the Earth frame unchanged, so the only conversion to check is
         degrees per second to radians per second on the angular rate.
         """
-        state = {
+        state: _mujoco_model.MuJoCoState = {
             "position_E_Eo": np.array([1.0, 2.0, 3.0], dtype=float),
             "R_pas_E_to_BP1": np.eye(3, dtype=float),
             "velocity_E__E": np.array([4.0, 5.0, 6.0], dtype=float),
@@ -670,7 +691,7 @@ class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
         self.assertEqual(x.shape, (12,))
         np.testing.assert_allclose(x, expected_x)
 
-    def test_state_vector_round_trips_through_operating_point(self):
+    def test_state_vector_round_trips_through_operating_point(self) -> None:
         """Test that a state converted to the 12-vector and back into an OperatingPoint
         reproduces the position, speed, attitude, and body angular rate.
 
@@ -689,7 +710,7 @@ class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
         position_E_Eo = np.array([1.0, -2.0, 3.0], dtype=float)
         velocity_E__E = np.array([12.0, -3.0, 4.0], dtype=float)
         omegas_BP1__E = np.array([5.0, -6.0, 7.0], dtype=float)
-        state = {
+        state: _mujoco_model.MuJoCoState = {
             "position_E_Eo": position_E_Eo,
             "R_pas_E_to_BP1": R_pas_E_to_BP1,
             "velocity_E__E": velocity_E__E,
@@ -711,7 +732,9 @@ class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
         )
         np.testing.assert_allclose(operating_point.omegas_BP1__E, omegas_BP1__E)
 
-    def test_operating_point_from_vector_carries_environment_from_reference(self):
+    def test_operating_point_from_vector_carries_environment_from_reference(
+        self,
+    ) -> None:
         """Test that _operating_point_from_vector carries the environmental quantities
         across from the reference OperatingPoint unchanged.
 
@@ -741,7 +764,7 @@ class TestFreeFlightUnsteadyProblemStateConversions(unittest.TestCase):
 class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
     """Tests for the sub-iteration weighting matrix diagonal."""
 
-    def test_build_relaxation_weights_matches_formula(self):
+    def test_build_relaxation_weights_matches_formula(self) -> None:
         """Test that _build_relaxation_weights builds the weighting diagonal from the
         reference chord, mass, inertia, and time step per its definition.
 

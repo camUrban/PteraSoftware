@@ -15,38 +15,38 @@ from tests.unit.fixtures import mujoco_model_fixtures
 class TestMuJoCoModelInit(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel initialization."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for MuJoCoModel initialization tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that MuJoCoModel instantiation returns a MuJoCoModel."""
         self.assertIsInstance(self.model, _mujoco_model.MuJoCoModel)
 
-    def test_xml_str_contains_model_name(self):
+    def test_xml_str_contains_model_name(self) -> None:
         """Test that the generated XML contains the Airplane name."""
         name = mujoco_model_fixtures.make_basic_mujoco_model_name_fixture()
         self.assertIn(name, self.model.xml_str)
 
-    def test_xml_str_contains_timestep(self):
+    def test_xml_str_contains_timestep(self) -> None:
         """Test that the generated XML contains the delta_time."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         self.assertIn(str(delta_time), self.model.xml_str)
 
-    def test_xml_str_contains_default_integrator(self):
+    def test_xml_str_contains_default_integrator(self) -> None:
         """Test that the generated XML defaults to the RK4 integrator."""
         self.assertIn('integrator="RK4"', self.model.xml_str)
 
-    def test_accepts_integrator(self):
+    def test_accepts_integrator(self) -> None:
         """Test that MuJoCoModel accepts an integrator, injects it into the XML, and
         the compiled model uses it.
         """
         model = _mujoco_model.MuJoCoModel(
             name="integrator_test",
             mass=1.0,
-            omegas_BP1__E=(0.0, 0.0, 0.0),
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
-            vCg_E__E=(10.0, 0.0, 0.0),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
             I_BP1_CgP1=np.eye(3, dtype=float),
             delta_time=0.01,
             integrator="implicitfast",
@@ -56,41 +56,41 @@ class TestMuJoCoModelInit(unittest.TestCase):
             model._model.opt.integrator, mujoco.mjtIntegrator.mjINT_IMPLICITFAST
         )
 
-    def test_model_is_mj_model(self):
+    def test_model_is_mj_model(self) -> None:
         """Test that the internal model object is an MjModel."""
         self.assertIsInstance(self.model._model, mujoco.MjModel)
 
-    def test_data_is_mj_data(self):
+    def test_data_is_mj_data(self) -> None:
         """Test that the internal data object is an MjData."""
         self.assertIsInstance(self.model._data, mujoco.MjData)
 
-    def test_body_id_is_int(self):
+    def test_body_id_is_int(self) -> None:
         """Test that body_id is an int."""
         self.assertIsInstance(self.model.body_id, int)
 
-    def test_initial_key_frame_id_is_int(self):
+    def test_initial_key_frame_id_is_int(self) -> None:
         """Test that initial_key_frame_id is an int."""
         self.assertIsInstance(self.model.initial_key_frame_id, int)
 
-    def test_initial_qpos_shape(self):
+    def test_initial_qpos_shape(self) -> None:
         """Test that initial_qpos has the correct shape for a free joint."""
         self.assertEqual(self.model.initial_qpos.shape, (7,))
 
-    def test_initial_qvel_shape(self):
+    def test_initial_qvel_shape(self) -> None:
         """Test that initial_qvel has the correct shape for a free joint."""
         self.assertEqual(self.model.initial_qvel.shape, (6,))
 
-    def test_initial_qvel_contains_velocity(self):
+    def test_initial_qvel_contains_velocity(self) -> None:
         """Test that initial_qvel contains the initial velocity."""
         npt.assert_allclose(self.model.initial_qvel[0:3], [10.0, 0.0, 0.0], atol=1e-14)
 
-    def test_initial_qvel_contains_angular_velocity(self):
+    def test_initial_qvel_contains_angular_velocity(self) -> None:
         """Test that initial_qvel contains the initial angular velocity in radians per
         second.
         """
         npt.assert_allclose(self.model.initial_qvel[3:6], [0.0, 0.0, 0.0], atol=1e-14)
 
-    def test_mass_set_on_model(self):
+    def test_mass_set_on_model(self) -> None:
         """Test that the MuJoCo body mass equals the supplied mass."""
         expected_mass = mujoco_model_fixtures.make_basic_mujoco_model_mass_fixture()
 
@@ -98,31 +98,31 @@ class TestMuJoCoModelInit(unittest.TestCase):
         actual_mass = self.model._model.body_mass[body_id]
         self.assertAlmostEqual(actual_mass, expected_mass, places=10)
 
-    def test_timestep_set_on_model(self):
+    def test_timestep_set_on_model(self) -> None:
         """Test that the MuJoCo model timestep matches delta_time."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         self.assertAlmostEqual(self.model._model.opt.timestep, delta_time, places=14)
 
-    def test_gravity_disabled_in_mujoco(self):
+    def test_gravity_disabled_in_mujoco(self) -> None:
         """Test that gravity is set to zero in the MuJoCo model."""
         npt.assert_array_equal(self.model._model.opt.gravity, [0.0, 0.0, 0.0])
 
-    def test_accepts_extra_xml(self):
+    def test_accepts_extra_xml(self) -> None:
         """Test that MuJoCoModel accepts extra_xml and injects it into the XML."""
         extra_xml = {"visual": '<visual><quality shadowsize="2048"/></visual>'}
         model = _mujoco_model.MuJoCoModel(
             name="extra_xml_test",
             mass=1.0,
-            omegas_BP1__E=(0.0, 0.0, 0.0),
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
-            vCg_E__E=(10.0, 0.0, 0.0),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
             I_BP1_CgP1=np.eye(3, dtype=float),
             delta_time=0.01,
             extra_xml=extra_xml,
         )
         self.assertIn("shadowsize", model.xml_str)
 
-    def test_accepts_mujoco_assets(self):
+    def test_accepts_mujoco_assets(self) -> None:
         """Test that MuJoCoModel accepts mujoco_assets without error."""
         header = b"\x00" * 80
         verts = [
@@ -147,9 +147,9 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="assets_test",
             mass=1.0,
-            omegas_BP1__E=(0.0, 0.0, 0.0),
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
-            vCg_E__E=(10.0, 0.0, 0.0),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
             I_BP1_CgP1=np.eye(3, dtype=float),
             delta_time=0.01,
             extra_xml=extra_xml,
@@ -158,11 +158,11 @@ class TestMuJoCoModelInit(unittest.TestCase):
         self.assertIsInstance(model, _mujoco_model.MuJoCoModel)
         self.assertIs(model._mujoco_assets, mujoco_assets)
 
-    def test_mujoco_assets_default_none(self):
+    def test_mujoco_assets_default_none(self) -> None:
         """Test that the retained mujoco_assets defaults to None."""
         self.assertIsNone(self.model._mujoco_assets)
 
-    def test_rotated_initial_orientation(self):
+    def test_rotated_initial_orientation(self) -> None:
         """Test that a rotated initial orientation produces correct initial state."""
         model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
         state = model.get_state()
@@ -173,13 +173,13 @@ class TestMuJoCoModelInit(unittest.TestCase):
         )
         npt.assert_allclose(R, expected_R, atol=1e-10)
 
-    def test_non_zero_initial_angular_velocity(self):
+    def test_non_zero_initial_angular_velocity(self) -> None:
         """Test that non zero initial angular velocity is stored correctly."""
         model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
         state = model.get_state()
         npt.assert_allclose(state["omegas_BP1__E"], [0.0, 0.0, 10.0], atol=1e-10)
 
-    def test_symmetrizes_inertia_matrix(self):
+    def test_symmetrizes_inertia_matrix(self) -> None:
         """Test that an asymmetric inertia matrix is symmetrized."""
         I_asymmetric = np.array(
             [[1.0, 0.2, 0.0], [0.4, 2.0, 0.0], [0.0, 0.0, 3.0]], dtype=float
@@ -187,9 +187,9 @@ class TestMuJoCoModelInit(unittest.TestCase):
         model = _mujoco_model.MuJoCoModel(
             name="sym_test",
             mass=1.0,
-            omegas_BP1__E=(0.0, 0.0, 0.0),
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
             T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
-            vCg_E__E=(10.0, 0.0, 0.0),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
             I_BP1_CgP1=I_asymmetric,
             delta_time=0.01,
         )
@@ -200,41 +200,41 @@ class TestMuJoCoModelInit(unittest.TestCase):
 class TestMuJoCoModelImmutability(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel immutability patterns."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for MuJoCoModel immutability tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_immutable_xml_str_raises_attribute_error(self):
+    def test_immutable_xml_str_raises_attribute_error(self) -> None:
         """Test that setting xml_str raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.model.xml_str = "new xml"
+            setattr(self.model, "xml_str", "new xml")
 
-    def test_immutable_body_id_raises_attribute_error(self):
+    def test_immutable_body_id_raises_attribute_error(self) -> None:
         """Test that setting body_id raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.model.body_id = 99
+            setattr(self.model, "body_id", 99)
 
-    def test_immutable_initial_key_frame_id_raises_attribute_error(self):
+    def test_immutable_initial_key_frame_id_raises_attribute_error(self) -> None:
         """Test that setting initial_key_frame_id raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.model.initial_key_frame_id = 99
+            setattr(self.model, "initial_key_frame_id", 99)
 
-    def test_immutable_initial_qpos_raises_attribute_error(self):
+    def test_immutable_initial_qpos_raises_attribute_error(self) -> None:
         """Test that setting initial_qpos raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.model.initial_qpos = np.zeros(7)
+            setattr(self.model, "initial_qpos", np.zeros(7))
 
-    def test_immutable_initial_qvel_raises_attribute_error(self):
+    def test_immutable_initial_qvel_raises_attribute_error(self) -> None:
         """Test that setting initial_qvel raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.model.initial_qvel = np.zeros(6)
+            setattr(self.model, "initial_qvel", np.zeros(6))
 
-    def test_initial_qpos_is_read_only_array(self):
+    def test_initial_qpos_is_read_only_array(self) -> None:
         """Test that initial_qpos array is not writeable."""
         with self.assertRaises(ValueError):
             self.model.initial_qpos[0] = 999.0
 
-    def test_initial_qvel_is_read_only_array(self):
+    def test_initial_qvel_is_read_only_array(self) -> None:
         """Test that initial_qvel array is not writeable."""
         with self.assertRaises(ValueError):
             self.model.initial_qvel[0] = 999.0
@@ -243,11 +243,11 @@ class TestMuJoCoModelImmutability(unittest.TestCase):
 class TestMuJoCoModelApplyLoads(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.apply_loads."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for apply_loads tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_apply_loads_sets_forces(self):
+    def test_apply_loads_sets_forces(self) -> None:
         """Test that apply_loads sets the force on the body."""
         forces_E = np.array([1.0, 2.0, 3.0])
         moments_E_CgP1 = np.array([0.0, 0.0, 0.0])
@@ -256,7 +256,7 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
         applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[0:3], forces_E, atol=1e-14)
 
-    def test_apply_loads_sets_moments(self):
+    def test_apply_loads_sets_moments(self) -> None:
         """Test that apply_loads sets the moment on the body."""
         forces_E = np.array([0.0, 0.0, 0.0])
         moments_E_CgP1 = np.array([4.0, 5.0, 6.0])
@@ -265,10 +265,10 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
         applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[3:6], moments_E_CgP1, atol=1e-14)
 
-    def test_apply_loads_overwrites_previous(self):
+    def test_apply_loads_overwrites_previous(self) -> None:
         """Test that apply_loads overwrites previously applied loads."""
-        self.model.apply_loads([1.0, 2.0, 3.0], [4.0, 5.0, 6.0])
-        self.model.apply_loads([10.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0]))
+        self.model.apply_loads(np.array([10.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
 
         applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_allclose(applied[0:3], [10.0, 0.0, 0.0], atol=1e-14)
@@ -278,17 +278,17 @@ class TestMuJoCoModelApplyLoads(unittest.TestCase):
 class TestMuJoCoModelStep(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.step."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for step tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_step_advances_time(self):
+    def test_step_advances_time(self) -> None:
         """Test that step advances the simulation time by delta_time."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         self.model.step()
         self.assertAlmostEqual(self.model._data.time, delta_time, places=14)
 
-    def test_multiple_steps_advance_time(self):
+    def test_multiple_steps_advance_time(self) -> None:
         """Test that multiple steps advance time correctly."""
         delta_time = mujoco_model_fixtures.make_basic_mujoco_model_delta_time_fixture()
         num_steps = 10
@@ -296,12 +296,12 @@ class TestMuJoCoModelStep(unittest.TestCase):
             self.model.step()
         self.assertAlmostEqual(self.model._data.time, num_steps * delta_time, places=10)
 
-    def test_step_with_force_changes_velocity(self):
+    def test_step_with_force_changes_velocity(self) -> None:
         """Test that stepping with an applied force changes the velocity."""
         initial_state = self.model.get_state()
         initial_velocity = initial_state["velocity_E__E"].copy()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         self.model.step()
 
         final_state = self.model.get_state()
@@ -313,16 +313,16 @@ class TestMuJoCoModelStep(unittest.TestCase):
 class TestMuJoCoModelGetState(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.get_state."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for get_state tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_get_state_returns_dict(self):
+    def test_get_state_returns_dict(self) -> None:
         """Test that get_state returns a dict."""
         state = self.model.get_state()
         self.assertIsInstance(state, dict)
 
-    def test_get_state_contains_expected_keys(self):
+    def test_get_state_contains_expected_keys(self) -> None:
         """Test that get_state returns all expected keys."""
         state = self.model.get_state()
         expected_keys = {
@@ -334,52 +334,52 @@ class TestMuJoCoModelGetState(unittest.TestCase):
         }
         self.assertEqual(set(state.keys()), expected_keys)
 
-    def test_position_shape(self):
+    def test_position_shape(self) -> None:
         """Test that position_E_Eo has shape (3,)."""
         state = self.model.get_state()
         self.assertEqual(state["position_E_Eo"].shape, (3,))
 
-    def test_rotation_matrix_shape(self):
+    def test_rotation_matrix_shape(self) -> None:
         """Test that R_pas_E_to_BP1 has shape (3,3)."""
         state = self.model.get_state()
         self.assertEqual(state["R_pas_E_to_BP1"].shape, (3, 3))
 
-    def test_velocity_shape(self):
+    def test_velocity_shape(self) -> None:
         """Test that velocity_E__E has shape (3,)."""
         state = self.model.get_state()
         self.assertEqual(state["velocity_E__E"].shape, (3,))
 
-    def test_omegas_shape(self):
+    def test_omegas_shape(self) -> None:
         """Test that omegas_BP1__E has shape (3,)."""
         state = self.model.get_state()
         self.assertEqual(state["omegas_BP1__E"].shape, (3,))
 
-    def test_time_is_float(self):
+    def test_time_is_float(self) -> None:
         """Test that time is a float."""
         state = self.model.get_state()
         self.assertIsInstance(state["time"], float)
 
-    def test_initial_position_at_origin(self):
+    def test_initial_position_at_origin(self) -> None:
         """Test that the initial position is at the origin."""
         state = self.model.get_state()
         npt.assert_allclose(state["position_E_Eo"], [0.0, 0.0, 0.0], atol=1e-14)
 
-    def test_initial_time_is_zero(self):
+    def test_initial_time_is_zero(self) -> None:
         """Test that the initial time is zero."""
         state = self.model.get_state()
         self.assertAlmostEqual(state["time"], 0.0, places=14)
 
-    def test_identity_rotation_at_init(self):
+    def test_identity_rotation_at_init(self) -> None:
         """Test that identity T_pas produces identity R_pas_E_to_BP1."""
         state = self.model.get_state()
         npt.assert_allclose(state["R_pas_E_to_BP1"], np.eye(3), atol=1e-10)
 
-    def test_initial_velocity_matches_input(self):
+    def test_initial_velocity_matches_input(self) -> None:
         """Test that the initial velocity matches the input vCg_E__E."""
         state = self.model.get_state()
         npt.assert_allclose(state["velocity_E__E"], [10.0, 0.0, 0.0], atol=1e-14)
 
-    def test_get_state_returns_copies(self):
+    def test_get_state_returns_copies(self) -> None:
         """Test that get_state returns copies that do not alias internal data."""
         state1 = self.model.get_state()
         state1["position_E_Eo"][0] = 999.0
@@ -390,47 +390,49 @@ class TestMuJoCoModelGetState(unittest.TestCase):
 class TestMuJoCoModelReset(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.reset."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for reset tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_reset_restores_time_to_zero(self):
+    def test_reset_restores_time_to_zero(self) -> None:
         """Test that reset restores time to zero."""
         self.model.step()
         self.model.step()
         self.model.reset()
         self.assertAlmostEqual(self.model._data.time, 0.0, places=14)
 
-    def test_reset_restores_initial_qpos(self):
+    def test_reset_restores_initial_qpos(self) -> None:
         """Test that reset restores initial generalized positions."""
         initial_qpos = self.model.initial_qpos.copy()
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
         self.model.reset()
         npt.assert_allclose(self.model._data.qpos, initial_qpos, atol=1e-14)
 
-    def test_reset_restores_initial_qvel(self):
+    def test_reset_restores_initial_qvel(self) -> None:
         """Test that reset restores initial generalized velocities."""
         initial_qvel = self.model.initial_qvel.copy()
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
         self.model.reset()
         npt.assert_allclose(self.model._data.qvel, initial_qvel, atol=1e-14)
 
-    def test_reset_clears_applied_loads(self):
+    def test_reset_clears_applied_loads(self) -> None:
         """Test that reset clears any applied loads."""
-        self.model.apply_loads([100.0, 200.0, 300.0], [10.0, 20.0, 30.0])
+        self.model.apply_loads(
+            np.array([100.0, 200.0, 300.0]), np.array([10.0, 20.0, 30.0])
+        )
         self.model.reset()
         applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_array_equal(applied, np.zeros(6))
 
-    def test_reset_produces_same_state_as_init(self):
+    def test_reset_produces_same_state_as_init(self) -> None:
         """Test that reset produces the same get_state output as after init."""
         initial_state = self.model.get_state()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 10.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 10.0]))
         for _ in range(20):
             self.model.step()
 
@@ -457,28 +459,28 @@ class TestMuJoCoModelReset(unittest.TestCase):
 class TestMuJoCoModelSaveState(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.save_state."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for save_state tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_save_state_returns_ndarray(self):
+    def test_save_state_returns_ndarray(self) -> None:
         """Test that save_state returns an ndarray."""
         snapshot = self.model.save_state()
         self.assertIsInstance(snapshot, np.ndarray)
 
-    def test_save_state_is_one_dimensional(self):
+    def test_save_state_is_one_dimensional(self) -> None:
         """Test that the saved snapshot is a one dimensional array."""
         snapshot = self.model.save_state()
         self.assertEqual(snapshot.ndim, 1)
 
-    def test_save_state_is_float_array(self):
+    def test_save_state_is_float_array(self) -> None:
         """Test that the saved snapshot is a float array, as MuJoCo's state API
         requires.
         """
         snapshot = self.model.save_state()
         self.assertEqual(snapshot.dtype, np.float64)
 
-    def test_save_state_length_matches_integration_state_size(self):
+    def test_save_state_length_matches_integration_state_size(self) -> None:
         """Test that the snapshot length matches MuJoCo's integration state size.
 
         The size is queried from mj_stateSize at runtime rather than hard coded, since
@@ -490,7 +492,7 @@ class TestMuJoCoModelSaveState(unittest.TestCase):
         )
         self.assertEqual(snapshot.shape, (expected_size,))
 
-    def test_save_state_does_not_alias_internal_data(self):
+    def test_save_state_does_not_alias_internal_data(self) -> None:
         """Test that the snapshot does not alias the model's live data.
 
         Advancing the simulation after saving must leave a previously saved snapshot
@@ -499,17 +501,17 @@ class TestMuJoCoModelSaveState(unittest.TestCase):
         snapshot = self.model.save_state()
         snapshot_before = snapshot.copy()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
 
         npt.assert_array_equal(snapshot, snapshot_before)
 
-    def test_save_state_captures_distinct_states(self):
+    def test_save_state_captures_distinct_states(self) -> None:
         """Test that snapshots taken at different states differ."""
         snapshot_initial = self.model.save_state()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
         snapshot_advanced = self.model.save_state()
@@ -520,16 +522,16 @@ class TestMuJoCoModelSaveState(unittest.TestCase):
 class TestMuJoCoModelRestoreState(unittest.TestCase):
     """This class contains methods for testing MuJoCoModel.restore_state."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for restore_state tests."""
         self.model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_restore_state_restores_position(self):
+    def test_restore_state_restores_position(self) -> None:
         """Test that restore_state restores the position."""
         saved_state = self.model.get_state()
         snapshot = self.model.save_state()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
         self.model.restore_state(snapshot)
@@ -539,12 +541,12 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
             restored_state["position_E_Eo"], saved_state["position_E_Eo"], atol=1e-14
         )
 
-    def test_restore_state_restores_velocity(self):
+    def test_restore_state_restores_velocity(self) -> None:
         """Test that restore_state restores the velocity."""
         saved_state = self.model.get_state()
         snapshot = self.model.save_state()
 
-        self.model.apply_loads([100.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([100.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         for _ in range(10):
             self.model.step()
         self.model.restore_state(snapshot)
@@ -554,7 +556,7 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
             restored_state["velocity_E__E"], saved_state["velocity_E__E"], atol=1e-14
         )
 
-    def test_restore_state_restores_time(self):
+    def test_restore_state_restores_time(self) -> None:
         """Test that restore_state restores the simulation time."""
         for _ in range(5):
             self.model.step()
@@ -568,7 +570,7 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
         restored_state = self.model.get_state()
         self.assertAlmostEqual(restored_state["time"], saved_state["time"], places=14)
 
-    def test_restore_state_restores_orientation_and_angular_velocity(self):
+    def test_restore_state_restores_orientation_and_angular_velocity(self) -> None:
         """Test that restore_state restores the orientation and angular velocity.
 
         Restoring must recompute the derived orientation matrix, so get_state reports the
@@ -581,7 +583,7 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
         saved_state = model.get_state()
         snapshot = model.save_state()
 
-        model.apply_loads([0.0, 0.0, 0.0], [10.0, 20.0, 30.0])
+        model.apply_loads(np.array([0.0, 0.0, 0.0]), np.array([10.0, 20.0, 30.0]))
         for _ in range(10):
             model.step()
         model.restore_state(snapshot)
@@ -594,41 +596,41 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
             restored_state["omegas_BP1__E"], saved_state["omegas_BP1__E"], atol=1e-12
         )
 
-    def test_restore_state_restores_applied_loads(self):
+    def test_restore_state_restores_applied_loads(self) -> None:
         """Test that restore_state restores the applied loads.
 
         The integration state snapshot includes xfrc_applied, where apply_loads persists
         the applied loads, so restoring returns them.
         """
-        self.model.apply_loads([1.0, 2.0, 3.0], [4.0, 5.0, 6.0])
+        self.model.apply_loads(np.array([1.0, 2.0, 3.0]), np.array([4.0, 5.0, 6.0]))
         snapshot = self.model.save_state()
 
-        self.model.apply_loads([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([0.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
         self.model.restore_state(snapshot)
 
         applied = self.model._data.xfrc_applied[self.model.body_id]
         npt.assert_array_equal(applied[0:3], [1.0, 2.0, 3.0])
         npt.assert_array_equal(applied[3:6], [4.0, 5.0, 6.0])
 
-    def test_restore_state_enables_reproducible_restepping(self):
+    def test_restore_state_enables_reproducible_restepping(self) -> None:
         """Test that re-stepping from a restored state reproduces the trajectory.
 
         Saving the state, stepping under a load, then restoring and stepping under the
         same load reproduces the first outcome exactly. This reproducible re-stepping is
         what the strongly coupled sub-iteration relies on.
         """
-        self.model.apply_loads([5.0, 0.0, 0.0], [0.0, 0.0, 1.0])
+        self.model.apply_loads(np.array([5.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]))
         for _ in range(5):
             self.model.step()
         snapshot = self.model.save_state()
 
-        self.model.apply_loads([20.0, 10.0, 0.0], [0.0, 1.0, 0.0])
+        self.model.apply_loads(np.array([20.0, 10.0, 0.0]), np.array([0.0, 1.0, 0.0]))
         self.model.step()
         first_state = self.model.get_state()
 
         self.model.restore_state(snapshot)
 
-        self.model.apply_loads([20.0, 10.0, 0.0], [0.0, 1.0, 0.0])
+        self.model.apply_loads(np.array([20.0, 10.0, 0.0]), np.array([0.0, 1.0, 0.0]))
         self.model.step()
         second_state = self.model.get_state()
 
@@ -660,11 +662,11 @@ class TestMuJoCoModelConventions(unittest.TestCase):
     than exact to stay robust to the integrator's small numerical drift.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up a pitched MuJoCoModel at rest for the convention tests."""
         self.model = mujoco_model_fixtures.make_pitched_mujoco_model_fixture()
 
-    def test_xmat_columns_are_body_axes_in_earth_axes(self):
+    def test_xmat_columns_are_body_axes_in_earth_axes(self) -> None:
         """Test that xmat's columns are the body axes expressed in Earth axes.
 
         With a 90 degree pitch about the y axis, the body's +x direction points along
@@ -675,7 +677,7 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         npt.assert_allclose(xmat[:, 1], [0.0, 1.0, 0.0], atol=1e-10)
         npt.assert_allclose(xmat[:, 2], [1.0, 0.0, 0.0], atol=1e-10)
 
-    def test_angular_velocity_qvel_is_in_body_axes(self):
+    def test_angular_velocity_qvel_is_in_body_axes(self) -> None:
         """Test that qvel[3:6] is interpreted in body axes, not Earth axes.
 
         An angular velocity along the body's +x direction is applied to the pitched
@@ -700,14 +702,14 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         self.assertGreater(abs(omegas_E__E[2]), 10.0 * abs(omegas_E__E[0]))
         self.assertGreater(abs(omegas_E__E[2]), 10.0 * abs(omegas_E__E[1]))
 
-    def test_applied_torque_is_in_earth_axes(self):
+    def test_applied_torque_is_in_earth_axes(self) -> None:
         """Test that an applied torque is in Earth axes, independent of orientation.
 
         A torque about Earth +x is applied to the pitched model. If the torque were in
         body axes it would act about the body's +x direction (Earth -z); because it is in
         Earth axes, the body accelerates about Earth +x regardless of its orientation.
         """
-        self.model.apply_loads([0.0, 0.0, 0.0], [1.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]))
 
         for _ in range(20):
             self.model.step()
@@ -722,14 +724,14 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         self.assertGreater(abs(omegas_E__E[0]), 10.0 * abs(omegas_E__E[1]))
         self.assertGreater(abs(omegas_E__E[0]), 10.0 * abs(omegas_E__E[2]))
 
-    def test_applied_force_is_in_earth_axes(self):
+    def test_applied_force_is_in_earth_axes(self) -> None:
         """Test that an applied force is in Earth axes, independent of orientation.
 
         A force along Earth +x is applied to the pitched model. If the force were in body
         axes it would act along the body's +x direction (Earth -z); because it is in
         Earth axes, the body accelerates along Earth +x regardless of its orientation.
         """
-        self.model.apply_loads([1.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+        self.model.apply_loads(np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
 
         for _ in range(20):
             self.model.step()

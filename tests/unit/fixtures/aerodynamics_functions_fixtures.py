@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def make_single_point_fixture():
+def make_single_point_fixture() -> np.ndarray:
     """This method makes a fixture that is a single evaluation point for testing
     velocity calculation functions.
 
@@ -17,7 +17,7 @@ def make_single_point_fixture():
     return single_point_fixture
 
 
-def make_grid_of_points_fixture():
+def make_grid_of_points_fixture() -> np.ndarray:
     """This method makes a fixture that is a grid of evaluation points for testing
     velocity calculation functions.
 
@@ -37,7 +37,7 @@ def make_grid_of_points_fixture():
     return grid_of_points_fixture
 
 
-def make_line_of_points_fixture():
+def make_line_of_points_fixture() -> np.ndarray:
     """This method makes a fixture that is a line of evaluation points for testing
     velocity calculation functions.
 
@@ -55,7 +55,7 @@ def make_line_of_points_fixture():
     return line_of_points_fixture
 
 
-def make_random_points_fixture():
+def make_random_points_fixture() -> np.ndarray:
     """This method makes a fixture that is a set of random evaluation points for
     testing velocity calculation functions.
 
@@ -71,7 +71,7 @@ def make_random_points_fixture():
     return random_points_fixture
 
 
-def make_origin_points_fixture(num_points):
+def make_origin_points_fixture(num_points: int) -> np.ndarray:
     """This method makes a fixture that is a stack of evaluation points, all at the
     origin, for testing the parallel dispatch wrappers.
 
@@ -90,7 +90,9 @@ def make_origin_points_fixture(num_points):
     return origin_points_fixture
 
 
-def make_simple_ring_vortex_arrays_fixture():
+def make_simple_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """This method makes a fixture containing arrays describing a single ring vortex
     for testing velocity calculation functions.
 
@@ -117,7 +119,9 @@ def make_simple_ring_vortex_arrays_fixture():
     )
 
 
-def make_multiple_ring_vortex_arrays_fixture():
+def make_multiple_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """This method makes a fixture containing arrays describing multiple ring vortices
     for testing velocity calculation functions.
 
@@ -152,7 +156,9 @@ def make_multiple_ring_vortex_arrays_fixture():
     )
 
 
-def make_simple_horseshoe_vortex_arrays_fixture():
+def make_simple_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """This method makes a fixture containing arrays describing a single
     horseshoe vortex for testing velocity calculation functions.
 
@@ -179,7 +185,9 @@ def make_simple_horseshoe_vortex_arrays_fixture():
     )
 
 
-def make_multiple_horseshoe_vortex_arrays_fixture():
+def make_multiple_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """This method makes a fixture containing arrays describing multiple
     horseshoe vortices for testing velocity calculation functions.
 
@@ -206,7 +214,7 @@ def make_multiple_horseshoe_vortex_arrays_fixture():
     )
 
 
-def make_ages_fixture():
+def make_ages_fixture() -> np.ndarray:
     """This method makes a fixture that is a ndarray of ages for wake vortices.
 
     :return ages_fixture: (3,) ndarray of floats
@@ -217,7 +225,7 @@ def make_ages_fixture():
     return ages_fixture
 
 
-def make_kinematic_viscosity_fixture():
+def make_kinematic_viscosity_fixture() -> float:
     """This method makes a fixture that is a kinematic viscosity value for air.
 
     :return kinematic_viscosity_fixture: float
@@ -229,7 +237,7 @@ def make_kinematic_viscosity_fixture():
     return kinematic_viscosity_fixture
 
 
-def make_rc0s_fixture(num_vortices):
+def make_rc0s_fixture(num_vortices: int) -> np.ndarray:
     """This method makes a fixture that is a ndarray of initial core radii for
     testing velocity calculation functions.
 
@@ -243,7 +251,9 @@ def make_rc0s_fixture(num_vortices):
     return rc0s_fixture
 
 
-def make_degenerate_ring_vortex_arrays_fixture():
+def make_degenerate_ring_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """Makes a fixture containing arrays describing a degenerate ring vortex with
     all four corners at the same point for testing the degenerate filament
     singularity guard.
@@ -271,7 +281,9 @@ def make_degenerate_ring_vortex_arrays_fixture():
     )
 
 
-def make_degenerate_horseshoe_vortex_arrays_fixture():
+def make_degenerate_horseshoe_vortex_arrays_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
     """Makes a fixture containing arrays describing a degenerate horseshoe vortex
     with all four points at the same location for testing the degenerate filament
     singularity guard.

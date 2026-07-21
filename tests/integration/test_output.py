@@ -14,8 +14,12 @@ from tests.integration.fixtures import solver_fixtures
 class TestOutput(unittest.TestCase):
     """This is a class with functions to test the output module."""
 
+    unsteady_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all tests in this class.
 
         :return: None
@@ -27,7 +31,7 @@ class TestOutput(unittest.TestCase):
         )
         cls.unsteady_solver.run(show_progress=False)
 
-    def test_plot_results_versus_time_does_not_throw(self):
+    def test_plot_results_versus_time_does_not_throw(self) -> None:
         """This method tests that the plot_results_versus_time method doesn't throw
         any errors.
 
@@ -40,7 +44,7 @@ class TestOutput(unittest.TestCase):
             unsteady_solver=self.unsteady_solver, show=False
         )
 
-    def test_animate_does_not_throw(self):
+    def test_animate_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors.
 
         :return: None
@@ -56,7 +60,7 @@ class TestOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_draw_does_not_throw(self):
+    def test_draw_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors.
 
         :return: None
@@ -76,8 +80,15 @@ class TestOutput(unittest.TestCase):
 class TestLogResults(unittest.TestCase):
     """Tests the log_results() function."""
 
+    steady_solver: (
+        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+    )
+    unsteady_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up solvers for testing log_results().
 
         :return: None
@@ -92,7 +103,7 @@ class TestLogResults(unittest.TestCase):
         )
         cls.unsteady_solver.run(show_progress=False)
 
-    def test_log_results_steady_solver_displays_reynolds_number(self):
+    def test_log_results_steady_solver_displays_reynolds_number(self) -> None:
         """Test that Reynolds number is logged for steady solvers.
 
         :return: None
@@ -109,7 +120,7 @@ class TestLogResults(unittest.TestCase):
         # "1.23E+05" or "1.20E+06"; the alternate form keeps trailing zeros).
         self.assertRegex(output, r"Reynolds Number:\s+\d\.\d{2}E[+-]\d{2}")
 
-    def test_log_results_steady_solver_runs_without_error(self):
+    def test_log_results_steady_solver_runs_without_error(self) -> None:
         """Test that log_results() runs without error for steady solver.
 
         :return: None
@@ -117,7 +128,7 @@ class TestLogResults(unittest.TestCase):
         # This test ensures no exceptions are raised.
         ps.output.log_results(solver=self.steady_solver)
 
-    def test_log_results_unsteady_solver_runs_without_error(self):
+    def test_log_results_unsteady_solver_runs_without_error(self) -> None:
         """Test that log_results() runs without error for unsteady solver.
 
         :return: None
@@ -130,8 +141,12 @@ class TestOutputSurfaceEffect(unittest.TestCase):
     """This is a class with functions to test the output module's surface effect
     visualization, including reflected geometry and the image surface plane."""
 
+    unsteady_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all tests in this class.
 
         :return: None
@@ -141,7 +156,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         )
         cls.unsteady_solver.run(show_progress=False)
 
-    def test_draw_with_surface_effect_does_not_throw(self):
+    def test_draw_with_surface_effect_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors when
         an image surface is defined.
 
@@ -155,7 +170,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
             testing=True,
         )
 
-    def test_draw_with_surface_effect_and_wake_vortices_does_not_throw(self):
+    def test_draw_with_surface_effect_and_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors when
         an image surface is defined and wake vortices are shown.
 
@@ -169,7 +184,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
             testing=True,
         )
 
-    def test_animate_with_surface_effect_does_not_throw(self):
+    def test_animate_with_surface_effect_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors
         when an image surface is defined.
 
@@ -183,7 +198,7 @@ class TestOutputSurfaceEffect(unittest.TestCase):
             testing=True,
         )
 
-    def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self):
+    def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors
         when an image surface is defined and wake vortices are shown.
 
@@ -203,8 +218,12 @@ class TestFreeFlightOutput(unittest.TestCase):
     visualization, which renders each time step's geometry in Earth axes so the body
     flies through the scene."""
 
+    free_flight_solver: (
+        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all tests in this class.
 
         :return: None
@@ -212,7 +231,7 @@ class TestFreeFlightOutput(unittest.TestCase):
         cls.free_flight_solver = solver_fixtures.make_simple_glider_free_flight_solver()
         cls.free_flight_solver.run(show_progress=False)
 
-    def test_draw_does_not_throw(self):
+    def test_draw_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors for a
         free flight solver.
 
@@ -226,7 +245,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_draw_with_wake_vortices_does_not_throw(self):
+    def test_draw_with_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors for a
         free flight solver when wake vortices are shown.
 
@@ -240,7 +259,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_animate_does_not_throw(self):
+    def test_animate_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors for a
         free flight solver.
 
@@ -254,7 +273,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_animate_with_wake_vortices_does_not_throw(self):
+    def test_animate_with_wake_vortices_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors for a
         free flight solver when wake vortices are shown.
 
@@ -268,7 +287,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_plot_results_versus_time_does_not_throw(self):
+    def test_plot_results_versus_time_does_not_throw(self) -> None:
         """This method tests that the plot_results_versus_time function does not throw
         any errors for a free flight solver, which exercises the state-history plots.
 
@@ -278,7 +297,7 @@ class TestFreeFlightOutput(unittest.TestCase):
             unsteady_solver=self.free_flight_solver, show=False
         )
 
-    def test_log_results_logs_state_history(self):
+    def test_log_results_logs_state_history(self) -> None:
         """This method tests that log_results logs the first Airplane's initial and
         final six-degree-of-freedom state for a free flight solver.
 

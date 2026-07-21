@@ -6,7 +6,9 @@ import pterasoftware as ps
 from . import geometry_fixtures
 
 
-def make_static_aeroelastic_airplane_movement_fixture():
+def make_static_aeroelastic_airplane_movement_fixture() -> (
+    ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement
+):
     """This method makes a fixture that is an AeroelasticAirplaneMovement with all
     parameters zero (no prescribed movement).
 
@@ -67,7 +69,9 @@ def make_static_aeroelastic_airplane_movement_fixture():
     return static_aeroelastic_airplane_movement_fixture
 
 
-def make_basic_aeroelastic_airplane_movement_fixture():
+def make_basic_aeroelastic_airplane_movement_fixture() -> (
+    ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement
+):
     """This method makes a fixture that is an AeroelasticAirplaneMovement with
     general-purpose moderate values.
 
@@ -138,7 +142,9 @@ def make_basic_aeroelastic_airplane_movement_fixture():
     return basic_aeroelastic_airplane_movement_fixture
 
 
-def make_mixed_wing_aeroelastic_airplane_movement_fixture():
+def make_mixed_wing_aeroelastic_airplane_movement_fixture() -> (
+    ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement
+):
     """This method makes a fixture that is an AeroelasticAirplaneMovement whose first
     Wing is backed by an AeroelasticWingMovement and whose second Wing is backed by a
     standard WingMovement.

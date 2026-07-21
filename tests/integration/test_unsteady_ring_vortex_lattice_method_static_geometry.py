@@ -22,8 +22,12 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
     """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
     static geometry."""
 
+    unsteady_ring_vortex_lattice_method_validation_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """This method sets up the test.
 
         :return: None
@@ -32,7 +36,7 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
         )
 
-    def test_method(self):
+    def test_method(self) -> None:
         """This method tests the UnsteadyRingVortexLatticeMethodSolver's output. It
         also tests that the solver doesn't throw an error when the animate and
         plot_results_versus_time functions are called using it.
@@ -46,6 +50,8 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
 
         this_solver = self.unsteady_ring_vortex_lattice_method_validation_solver
         this_airplane = this_solver.current_airplanes[0]
+        assert this_airplane.forceCoefficients_W is not None
+        assert this_airplane.momentCoefficients_W_CgP1 is not None
 
         # Calculate the percent errors of the output.
         c_di_expected = 0.015

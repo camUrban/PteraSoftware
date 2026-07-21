@@ -26,6 +26,7 @@ place before any pterasoftware, pyvista, or tqdm module loads.
 import logging
 import os
 import sys
+from typing import Any
 
 # The messages are matched by prefix on the indent-stripped text, so neither the
 # indentation that pterasoftware._logging prepends nor rewording after the prefix can
@@ -69,7 +70,7 @@ def _disable_tqdm_progress_bars() -> None:
 
     original_init = tqdm.tqdm.__init__
 
-    def _silent_init(self, *args, **kwargs):
+    def _silent_init(self: Any, *args: Any, **kwargs: Any) -> Any:
         kwargs["disable"] = True
         return original_init(self, *args, **kwargs)
 

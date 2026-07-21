@@ -9,7 +9,9 @@ from pterasoftware._core import CoreWingCrossSectionMovement
 from . import geometry_fixtures
 
 
-def make_sine_spacing_Lp_core_wing_cross_section_movement_fixture():
+def make_sine_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with sine
     spacing for Lp_Wcsp_Lpp.
 
@@ -34,7 +36,9 @@ def make_sine_spacing_Lp_core_wing_cross_section_movement_fixture():
     return sine_spacing_Lp_core_wing_cross_section_movement_fixture
 
 
-def make_uniform_spacing_Lp_core_wing_cross_section_movement_fixture():
+def make_uniform_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with uniform
     spacing for Lp_Wcsp_Lpp.
 
@@ -60,7 +64,9 @@ def make_uniform_spacing_Lp_core_wing_cross_section_movement_fixture():
     return uniform_spacing_Lp_core_wing_cross_section_movement_fixture
 
 
-def make_mixed_spacing_Lp_core_wing_cross_section_movement_fixture():
+def make_mixed_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     spacing for Lp_Wcsp_Lpp.
 
@@ -86,7 +92,9 @@ def make_mixed_spacing_Lp_core_wing_cross_section_movement_fixture():
     return mixed_spacing_Lp_core_wing_cross_section_movement_fixture
 
 
-def make_sine_spacing_angles_core_wing_cross_section_movement_fixture():
+def make_sine_spacing_angles_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with sine
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
@@ -112,7 +120,9 @@ def make_sine_spacing_angles_core_wing_cross_section_movement_fixture():
     return sine_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_uniform_spacing_angles_core_wing_cross_section_movement_fixture():
+def make_uniform_spacing_angles_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with uniform
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
@@ -138,7 +148,9 @@ def make_uniform_spacing_angles_core_wing_cross_section_movement_fixture():
     return uniform_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture():
+def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
@@ -164,7 +176,9 @@ def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture():
     return mixed_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_static_core_wing_cross_section_movement_fixture():
+def make_static_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement).
 
@@ -191,7 +205,9 @@ def make_static_core_wing_cross_section_movement_fixture():
     return static_core_wing_cross_section_movement_fixture
 
 
-def make_static_tip_core_wing_cross_section_movement_fixture():
+def make_static_tip_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement), using a tip WingCrossSection as the base.
 
@@ -219,7 +235,9 @@ def make_static_tip_core_wing_cross_section_movement_fixture():
     return static_tip_core_wing_cross_section_movement_fixture
 
 
-def make_basic_core_wing_cross_section_movement_fixture():
+def make_basic_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with
     general-purpose moderate values.
 
@@ -247,7 +265,9 @@ def make_basic_core_wing_cross_section_movement_fixture():
     return basic_core_wing_cross_section_movement_fixture
 
 
-def make_Lp_only_core_wing_cross_section_movement_fixture():
+def make_Lp_only_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement where only
     Lp_Wcsp_Lpp moves.
 
@@ -275,7 +295,9 @@ def make_Lp_only_core_wing_cross_section_movement_fixture():
     return Lp_only_core_wing_cross_section_movement_fixture
 
 
-def make_angles_only_core_wing_cross_section_movement_fixture():
+def make_angles_only_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement where only
     angles_Wcsp_to_Wcs_ixyz moves.
 
@@ -303,7 +325,9 @@ def make_angles_only_core_wing_cross_section_movement_fixture():
     return angles_only_core_wing_cross_section_movement_fixture
 
 
-def make_phase_offset_Lp_core_wing_cross_section_movement_fixture():
+def make_phase_offset_Lp_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with
     non-zero phase offset for Lp_Wcsp_Lpp.
 
@@ -333,7 +357,9 @@ def make_phase_offset_Lp_core_wing_cross_section_movement_fixture():
     return phase_offset_Lp_core_wing_cross_section_movement_fixture
 
 
-def make_phase_offset_angles_core_wing_cross_section_movement_fixture():
+def make_phase_offset_angles_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with
     non-zero phase offset for angles_Wcsp_to_Wcs_ixyz.
 
@@ -363,7 +389,9 @@ def make_phase_offset_angles_core_wing_cross_section_movement_fixture():
     return phase_offset_angles_core_wing_cross_section_movement_fixture
 
 
-def make_multiple_periods_core_wing_cross_section_movement_fixture():
+def make_multiple_periods_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with
     different periods for different dimensions.
 
@@ -393,7 +421,9 @@ def make_multiple_periods_core_wing_cross_section_movement_fixture():
     return multiple_periods_core_wing_cross_section_movement_fixture
 
 
-def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture():
+def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with a
     custom spacing function for Lp_Wcsp_Lpp.
 
@@ -405,20 +435,18 @@ def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture():
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
         This function satisfies all requirements: starts at 0, returns to 0 at
         2*pi, has zero mean, has amplitude of 1, and is periodic.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the custom-spacing CoreWingCrossSectionMovement.
@@ -440,7 +468,9 @@ def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture():
     return custom_spacing_Lp_core_wing_cross_section_movement_fixture
 
 
-def make_custom_spacing_angles_core_wing_cross_section_movement_fixture():
+def make_custom_spacing_angles_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with a
     custom spacing function for angles_Wcsp_to_Wcs_ixyz.
 
@@ -452,20 +482,18 @@ def make_custom_spacing_angles_core_wing_cross_section_movement_fixture():
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
         This function satisfies all requirements: starts at 0, returns to 0 at
         2*pi, has zero mean, has amplitude of 1, and is periodic.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the custom-spacing CoreWingCrossSectionMovement.
@@ -487,7 +515,9 @@ def make_custom_spacing_angles_core_wing_cross_section_movement_fixture():
     return custom_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture():
+def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture() -> (
+    CoreWingCrossSectionMovement
+):
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     custom and standard spacing functions.
 
@@ -500,17 +530,15 @@ def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixt
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
 
     # Define a custom harmonic spacing function.
-    def custom_harmonic(x):
+    def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        :param x: (N,) ndarray of floats
-            The input angles in radians.
+        :param x: A float representing the input angle in radians.
 
-        :return: (N,) ndarray of floats
-            The output values.
+        :return: A float representing the output value.
         """
-        return (3.0 / (2.0 * np.sqrt(2.0))) * (
-            np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x)
+        return float(
+            (3.0 / (2.0 * np.sqrt(2.0))) * (np.sin(x) + (1.0 / 3.0) * np.sin(3.0 * x))
         )
 
     # Create the mixed-spacing CoreWingCrossSectionMovement.

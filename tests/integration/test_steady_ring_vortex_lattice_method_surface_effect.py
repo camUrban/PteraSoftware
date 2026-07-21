@@ -9,6 +9,7 @@ images implementation produces these physically correct trends.
 
 import unittest
 
+import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
 
@@ -16,8 +17,15 @@ class TestSteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
     """This is a class for testing the SteadyRingVortexLatticeMethodSolver's surface
     effect implementation."""
 
+    surface_effect_solver: (
+        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+    )
+    free_air_solver: (
+        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """This method sets up the test by creating and running both solvers.
 
         :return: None
@@ -32,7 +40,7 @@ class TestSteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
         cls.surface_effect_solver.run()
         cls.free_air_solver.run()
 
-    def test_surface_effect_increases_lift(self):
+    def test_surface_effect_increases_lift(self) -> None:
         """This method tests that ground effect increases the lift coefficient
         magnitude.
 
@@ -43,14 +51,17 @@ class TestSteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
 
         :return: None
         """
-        c_l_surface_effect = -self.surface_effect_solver.airplanes[
-            0
-        ].forceCoefficients_W[2]
-        c_l_free_air = -self.free_air_solver.airplanes[0].forceCoefficients_W[2]
+        surface_effect_airplane = self.surface_effect_solver.airplanes[0]
+        free_air_airplane = self.free_air_solver.airplanes[0]
+        assert surface_effect_airplane.forceCoefficients_W is not None
+        assert free_air_airplane.forceCoefficients_W is not None
+
+        c_l_surface_effect = -surface_effect_airplane.forceCoefficients_W[2]
+        c_l_free_air = -free_air_airplane.forceCoefficients_W[2]
 
         self.assertGreater(c_l_surface_effect, c_l_free_air)
 
-    def test_surface_effect_decreases_induced_drag(self):
+    def test_surface_effect_decreases_induced_drag(self) -> None:
         """This method tests that ground effect decreases the induced drag coefficient
         magnitude.
 
@@ -61,9 +72,12 @@ class TestSteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
 
         :return: None
         """
-        c_di_surface_effect = -self.surface_effect_solver.airplanes[
-            0
-        ].forceCoefficients_W[0]
-        c_di_free_air = -self.free_air_solver.airplanes[0].forceCoefficients_W[0]
+        surface_effect_airplane = self.surface_effect_solver.airplanes[0]
+        free_air_airplane = self.free_air_solver.airplanes[0]
+        assert surface_effect_airplane.forceCoefficients_W is not None
+        assert free_air_airplane.forceCoefficients_W is not None
+
+        c_di_surface_effect = -surface_effect_airplane.forceCoefficients_W[0]
+        c_di_free_air = -free_air_airplane.forceCoefficients_W[0]
 
         self.assertLess(c_di_surface_effect, c_di_free_air)

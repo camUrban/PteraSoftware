@@ -1,6 +1,7 @@
 """This module contains classes to test AirplaneMovements."""
 
 import unittest
+from typing import Any
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -13,7 +14,7 @@ from tests.unit.fixtures import (
 class TestAirplaneMovement(unittest.TestCase):
     """This is a class with functions to test AirplaneMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that AirplaneMovement is a subclass of CoreAirplaneMovement."""
         self.assertTrue(
             issubclass(
@@ -22,7 +23,7 @@ class TestAirplaneMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that AirplaneMovement instantiation returns an AirplaneMovement."""
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
         wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
@@ -35,12 +36,12 @@ class TestAirplaneMovement(unittest.TestCase):
             ps.movements.airplane_movement.AirplaneMovement,
         )
 
-    def test_rejects_core_wing_movement_children(self):
+    def test_rejects_core_wing_movement_children(self) -> None:
         """Test that AirplaneMovement rejects CoreWingMovement instances."""
         from tests.unit.fixtures import core_wing_movement_fixtures
 
         base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [
+        wing_movements: Any = [
             core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
         ]
         with self.assertRaises(TypeError):
@@ -49,7 +50,7 @@ class TestAirplaneMovement(unittest.TestCase):
                 wing_movements=wing_movements,
             )
 
-    def test_generate_airplanes_returns_airplanes(self):
+    def test_generate_airplanes_returns_airplanes(self) -> None:
         """Test that generate_airplanes returns Airplanes when called through the
         public class.
         """

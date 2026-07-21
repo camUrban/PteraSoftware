@@ -4,7 +4,9 @@ import pterasoftware as ps
 from tests.integration.fixtures import problem_fixtures
 
 
-def make_steady_horseshoe_vortex_lattice_method_validation_solver():
+def make_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
+    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+):
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver to be used as
     a fixture.
 
@@ -21,7 +23,9 @@ def make_steady_horseshoe_vortex_lattice_method_validation_solver():
     return steady_horseshoe_vortex_lattice_method_validation_solver
 
 
-def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver():
+def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver() -> (
+    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+):
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with
     multi-wing geometry to be used as a fixture.
 
@@ -40,7 +44,9 @@ def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver(
     return steady_horseshoe_vortex_lattice_method_validation_solver
 
 
-def make_steady_ring_vortex_lattice_method_validation_solver():
+def make_steady_ring_vortex_lattice_method_validation_solver() -> (
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+):
     """This function creates a SteadyRingVortexLatticeMethodSolver to be used as a
     fixture.
 
@@ -59,7 +65,9 @@ def make_steady_ring_vortex_lattice_method_validation_solver():
     return steady_ring_vortex_lattice_method_validation_solver
 
 
-def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry():
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates a UnsteadyRingVortexLatticeMethodSolver with static
     geometry to be used as a fixture.
 
@@ -80,7 +88,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
     return unsteady_ring_vortex_lattice_method_validation_solver
 
 
-def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry():
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geometry() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates a UnsteadyRingVortexLatticeMethodSolver with variable
     geometry to be used as a fixture.
 
@@ -101,7 +111,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
     return unsteady_ring_vortex_lattice_method_validation_solver
 
 
-def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry():
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_static_geometry() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates a UnsteadyRingVortexLatticeMethodSolver with multi-wing,
     static geometry to be used as a fixture.
 
@@ -122,7 +134,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     return unsteady_ring_vortex_lattice_method_validation_solver
 
 
-def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry():
+def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_wing_variable_geometry() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates a UnsteadyRingVortexLatticeMethodSolver with multi-wing
     variable geometry to be used as a fixture.
 
@@ -143,7 +157,9 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     return unsteady_ring_vortex_lattice_method_validation_solver
 
 
-def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver():
+def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver() -> (
+    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+):
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with an image
     surface for surface effect testing.
 
@@ -159,7 +175,9 @@ def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver():
     return solver
 
 
-def make_steady_horseshoe_vortex_lattice_method_free_air_solver():
+def make_steady_horseshoe_vortex_lattice_method_free_air_solver() -> (
+    ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
+):
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver without an
     image surface, for use as a free-air baseline in surface effect validation tests.
 
@@ -175,7 +193,9 @@ def make_steady_horseshoe_vortex_lattice_method_free_air_solver():
     return solver
 
 
-def make_steady_ring_vortex_lattice_method_surface_effect_solver():
+def make_steady_ring_vortex_lattice_method_surface_effect_solver() -> (
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+):
     """This function creates a SteadyRingVortexLatticeMethodSolver with an image
     surface for surface effect testing.
 
@@ -191,7 +211,9 @@ def make_steady_ring_vortex_lattice_method_surface_effect_solver():
     return solver
 
 
-def make_steady_ring_vortex_lattice_method_free_air_solver():
+def make_steady_ring_vortex_lattice_method_free_air_solver() -> (
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+):
     """This function creates a SteadyRingVortexLatticeMethodSolver without an image
     surface, for use as a free-air baseline in surface effect validation tests.
 
@@ -207,7 +229,9 @@ def make_steady_ring_vortex_lattice_method_free_air_solver():
     return solver
 
 
-def make_unsteady_ring_vortex_lattice_method_surface_effect_solver():
+def make_unsteady_ring_vortex_lattice_method_surface_effect_solver() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates an UnsteadyRingVortexLatticeMethodSolver with an image
     surface for surface effect testing.
 
@@ -225,7 +249,9 @@ def make_unsteady_ring_vortex_lattice_method_surface_effect_solver():
     return solver
 
 
-def make_unsteady_ring_vortex_lattice_method_free_air_solver():
+def make_unsteady_ring_vortex_lattice_method_free_air_solver() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates an UnsteadyRingVortexLatticeMethodSolver without an image
     surface, for use as a free-air baseline in surface effect validation tests.
 
@@ -243,7 +269,9 @@ def make_unsteady_ring_vortex_lattice_method_free_air_solver():
     return solver
 
 
-def make_simple_glider_free_flight_solver():
+def make_simple_glider_free_flight_solver() -> (
+    ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates the simple glider's free flight solver to be used as a
     fixture.
 
@@ -262,7 +290,9 @@ def make_simple_glider_free_flight_solver():
     return simple_glider_free_flight_solver
 
 
-def make_flapping_free_flight_solver():
+def make_flapping_free_flight_solver() -> (
+    ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+):
     """This function creates the flapping-wing free flight solver to be used as a
     fixture.
 

@@ -18,8 +18,13 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
     deserialized SteadyRingVortexLatticeMethodSolver.
     """
 
+    temporary_directory: tempfile.TemporaryDirectory[str]
+    loaded_solver: (
+        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Solve a steady ring solver, save it, and load it back.
 
         :return: None
@@ -32,17 +37,22 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
         cls.temporary_directory = tempfile.TemporaryDirectory()
         path = Path(cls.temporary_directory.name) / "solver.json"
         ps.save(path, solver)
-        cls.loaded_solver = ps.load(path)
+        loaded_solver = ps.load(path)
+        assert isinstance(
+            loaded_solver,
+            ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+        )
+        cls.loaded_solver = loaded_solver
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """Clean up the temporary directory.
 
         :return: None
         """
         cls.temporary_directory.cleanup()
 
-    def test_draw_with_scalar_does_not_throw(self):
+    def test_draw_with_scalar_does_not_throw(self) -> None:
         """Tests that the draw function accepts a deserialized steady solver with a
         scalar type that requires Panel force data.
 
@@ -56,7 +66,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_log_results_does_not_throw(self):
+    def test_log_results_does_not_throw(self) -> None:
         """Tests that the log_results function accepts a deserialized steady solver.
 
         :return: None
@@ -69,8 +79,13 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
     deserialized UnsteadyRingVortexLatticeMethodSolver.
     """
 
+    temporary_directory: tempfile.TemporaryDirectory[str]
+    loaded_solver: (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+    )
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Solve an unsteady solver, save it, and load it back.
 
         :return: None
@@ -83,17 +98,22 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         cls.temporary_directory = tempfile.TemporaryDirectory()
         path = Path(cls.temporary_directory.name) / "solver.json"
         ps.save(path, solver)
-        cls.loaded_solver = ps.load(path)
+        loaded_solver = ps.load(path)
+        assert isinstance(
+            loaded_solver,
+            ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+        )
+        cls.loaded_solver = loaded_solver
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """Clean up the temporary directory.
 
         :return: None
         """
         cls.temporary_directory.cleanup()
 
-    def test_draw_with_scalar_does_not_throw(self):
+    def test_draw_with_scalar_does_not_throw(self) -> None:
         """Tests that the draw function accepts a deserialized unsteady solver with a
         scalar type that requires Panel force data.
 
@@ -107,7 +127,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_animate_with_scalar_does_not_throw(self):
+    def test_animate_with_scalar_does_not_throw(self) -> None:
         """Tests that the animate function accepts a deserialized unsteady solver with
         a scalar type that requires Panel force data.
 
@@ -121,7 +141,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
             testing=True,
         )
 
-    def test_plot_results_versus_time_does_not_throw(self):
+    def test_plot_results_versus_time_does_not_throw(self) -> None:
         """Tests that the plot_results_versus_time function accepts a deserialized
         unsteady solver.
 
@@ -131,7 +151,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
             unsteady_solver=self.loaded_solver, show=False
         )
 
-    def test_log_results_does_not_throw(self):
+    def test_log_results_does_not_throw(self) -> None:
         """Tests that the log_results function accepts a deserialized unsteady solver.
 
         :return: None

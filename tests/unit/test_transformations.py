@@ -14,7 +14,7 @@ from pterasoftware import _transformations
 class TestGenerateRotT(unittest.TestCase):
     """This class contains methods for testing the generate_rot_T function."""
 
-    def test_identity_transformations(self):
+    def test_identity_transformations(self) -> None:
         """Tests that zero angles produce identity matrices for all configurations.
 
         :return: None
@@ -33,7 +33,7 @@ class TestGenerateRotT(unittest.TestCase):
                         )
                         npt.assert_allclose(T, np.eye(4), atol=1e-14)
 
-    def test_transformation_matrix_structure(self):
+    def test_transformation_matrix_structure(self) -> None:
         """Tests that transformation matrices have correct 4x4 structure.
 
         :return: None
@@ -65,7 +65,7 @@ class TestGenerateRotT(unittest.TestCase):
                         det = np.linalg.det(T)
                         self.assertAlmostEqual(det, 1.0, places=14)
 
-    def test_passive_vs_active_relationship(self):
+    def test_passive_vs_active_relationship(self) -> None:
         """Tests that passive and active rotation components are transposes.
 
         :return: None
@@ -88,7 +88,7 @@ class TestGenerateRotT(unittest.TestCase):
 
                     npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
-    def test_intrinsic_vs_extrinsic_relationship(self):
+    def test_intrinsic_vs_extrinsic_relationship(self) -> None:
         """Tests the relationship between intrinsic and extrinsic rotations.
 
         For the same angles, intrinsic rotations with order ABC should equal
@@ -128,7 +128,7 @@ class TestGenerateRotT(unittest.TestCase):
 
                     npt.assert_allclose(R_intrinsic, R_extrinsic, atol=1e-14)
 
-    def test_rotation_matrix_properties(self):
+    def test_rotation_matrix_properties(self) -> None:
         """Tests that rotation components satisfy rotation matrix properties.
 
         Tests: determinant = 1, orthogonality (R.T @ R = I), and proper rotation.
@@ -174,7 +174,7 @@ class TestGenerateRotT(unittest.TestCase):
                             identity_test2 = R @ R.T
                             npt.assert_allclose(identity_test2, np.eye(3), atol=1e-14)
 
-    def test_specific_known_active_rotations(self):
+    def test_specific_known_active_rotations(self) -> None:
         """Tests specific active rotations with analytically known results.
 
         :return: None
@@ -203,7 +203,7 @@ class TestGenerateRotT(unittest.TestCase):
         R_act_z90 = T_act_z90[:3, :3]
         npt.assert_allclose(R_act_z90, R_act_z90_expected, atol=1e-14)
 
-    def test_specific_known_passive_rotations(self):
+    def test_specific_known_passive_rotations(self) -> None:
         """Tests specific passive rotations with analytically known results.
 
         :return: None
@@ -238,7 +238,7 @@ class TestGenerateRotT(unittest.TestCase):
         v_B = R_pas_z90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
-    def test_composition_properties(self):
+    def test_composition_properties(self) -> None:
         """Tests composition properties of rotations.
 
         Tests that applying rotations in sequence equals the composed matrix.
@@ -273,7 +273,7 @@ class TestGenerateRotT(unittest.TestCase):
         )
         npt.assert_allclose(v_rotated_sequential, v_rotated_composed, atol=1e-14)
 
-    def test_large_angle_handling(self):
+    def test_large_angle_handling(self) -> None:
         """Tests handling of large angles beyond +/-180 degrees.
 
         :return: None
@@ -302,7 +302,7 @@ class TestGenerateRotT(unittest.TestCase):
                         # Should produce the same rotation matrix
                         npt.assert_allclose(R_large, R_equivalent, atol=1e-14)
 
-    def test_different_orders(self):
+    def test_different_orders(self) -> None:
         """Tests all valid Tait-Bryan rotation orders.
 
         Ensures all six valid orders produce valid transformation matrices.
@@ -328,7 +328,7 @@ class TestGenerateRotT(unittest.TestCase):
                         identity_test = R.T @ R
                         npt.assert_allclose(identity_test, np.eye(3), atol=1e-14)
 
-    def test_edge_case_angles(self):
+    def test_edge_case_angles(self) -> None:
         """Tests edge case angle values.
 
         :return: None
@@ -356,7 +356,7 @@ class TestGenerateRotT(unittest.TestCase):
                     identity_test = R.T @ R
                     npt.assert_allclose(identity_test, np.eye(3), atol=1e-14)
 
-    def test_homogeneous_coordinate_transformations(self):
+    def test_homogeneous_coordinate_transformations(self) -> None:
         """Tests transformation of homogeneous coordinates.
 
         :return: None
@@ -388,7 +388,7 @@ class TestGenerateRotT(unittest.TestCase):
 class TestGenerate2DRotR(unittest.TestCase):
     """This class contains methods for testing the generate_2D_rot_R function."""
 
-    def test_identity_transformations(self):
+    def test_identity_transformations(self) -> None:
         """Tests that zero angles produce identity matrices for all configurations.
 
         :return: None
@@ -398,7 +398,7 @@ class TestGenerate2DRotR(unittest.TestCase):
                 R = _transformations.generate_2D_rot_R(0.0, passive)
                 npt.assert_allclose(R, np.eye(2), atol=1e-14)
 
-    def test_rotation_matrix_properties(self):
+    def test_rotation_matrix_properties(self) -> None:
         """Tests that rotation components satisfy rotation matrix properties.
 
         Tests: determinant = 1 and orthogonality (R.T @ R = I).
@@ -427,7 +427,7 @@ class TestGenerate2DRotR(unittest.TestCase):
                     identity_test2 = R @ R.T
                     npt.assert_allclose(identity_test2, np.eye(2), atol=1e-14)
 
-    def test_passive_vs_active_relationship(self):
+    def test_passive_vs_active_relationship(self) -> None:
         """Tests that passive and active rotation components are transposes.
 
         :return: None
@@ -441,7 +441,7 @@ class TestGenerate2DRotR(unittest.TestCase):
 
                 npt.assert_allclose(R_passive, R_active.T, atol=1e-14)
 
-    def test_specific_known_rotations(self):
+    def test_specific_known_rotations(self) -> None:
         """Tests specific active and passive rotations with analytically known results.
 
         :return: None
@@ -461,7 +461,7 @@ class TestGenerate2DRotR(unittest.TestCase):
         R_act_180 = _transformations.generate_2D_rot_R(180.0, False)
         npt.assert_allclose(R_act_180, R_act_180_expected, atol=1e-14)
 
-    def test_large_angle_handling(self):
+    def test_large_angle_handling(self) -> None:
         """Tests handling of large angles beyond +/-180 degrees.
 
         :return: None
@@ -476,7 +476,7 @@ class TestGenerate2DRotR(unittest.TestCase):
         R_neg = _transformations.generate_2D_rot_R(-270.0, False)
         npt.assert_allclose(R_neg, R_equivalent, atol=1e-14)
 
-    def test_edge_case_angles(self):
+    def test_edge_case_angles(self) -> None:
         """Tests edge case angle values.
 
         :return: None
@@ -516,7 +516,7 @@ class TestGenerate2DRotR(unittest.TestCase):
 class TestGenerateTransT(unittest.TestCase):
     """This class contains methods for testing the generate_trans_T function."""
 
-    def test_passive_transformations_with_homog_coords(self):
+    def test_passive_transformations_with_homog_coords(self) -> None:
         """Tests passive translation transformations on generated homogeneous
         coordinates.
 
@@ -533,7 +533,7 @@ class TestGenerateTransT(unittest.TestCase):
         expected_c_A_b = c_A_a - b_A_a
         npt.assert_array_equal(c_A_b, expected_c_A_b)
 
-    def test_active_transformation_homog_coords(self):
+    def test_active_transformation_homog_coords(self) -> None:
         """Tests active translation transformations on homogeneous coordinates.
 
         :return: None
@@ -550,7 +550,7 @@ class TestGenerateTransT(unittest.TestCase):
         expected_cPrime_A_a = c_A_a + cPrime_A_c
         npt.assert_array_equal(cPrime_A_a, expected_cPrime_A_a)
 
-    def test_zero_translation(self):
+    def test_zero_translation(self) -> None:
         """Tests with zero translation vector.
 
         :return: None
@@ -565,7 +565,7 @@ class TestGenerateTransT(unittest.TestCase):
         T_active_zero = _transformations.generate_trans_T(zero_translation, False)
         npt.assert_array_equal(T_active_zero, np.eye(4))
 
-    def test_transformation_properties(self):
+    def test_transformation_properties(self) -> None:
         """Tests properties of transformation matrices.
 
         :return: None
@@ -590,7 +590,7 @@ class TestGenerateTransT(unittest.TestCase):
                 det = np.linalg.det(T)
                 self.assertAlmostEqual(det, 1.0, places=14)
 
-    def test_direction_vector_transformations(self):
+    def test_direction_vector_transformations(self) -> None:
         """Tests that direction vectors are unaffected by translation transformations.
 
         :return: None
@@ -619,7 +619,7 @@ class TestGenerateTransT(unittest.TestCase):
 class TestGenerateReflectT(unittest.TestCase):
     """This class contains methods for testing the generate_reflect_T function."""
 
-    def test_reflection_about_origin_planes(self):
+    def test_reflection_about_origin_planes(self) -> None:
         """Tests reflection about planes passing through the origin.
 
         :return: None
@@ -654,7 +654,7 @@ class TestGenerateReflectT(unittest.TestCase):
         expected_reflected_y = np.array([1.0, -2.0, 3.0])
         npt.assert_allclose(reflected_point_y, expected_reflected_y, atol=1e-14)
 
-    def test_reflection_about_offset_planes(self):
+    def test_reflection_about_offset_planes(self) -> None:
         """Tests reflection about planes not passing through the origin.
 
         :return: None
@@ -684,7 +684,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         npt.assert_allclose(reflected_plane_point, plane_test_point, atol=1e-14)
 
-    def test_zero_length_normal_error(self):
+    def test_zero_length_normal_error(self) -> None:
         """Tests error handling for zero length normal vectors.
 
         :return: None
@@ -699,7 +699,7 @@ class TestGenerateReflectT(unittest.TestCase):
             "plane_normal_A must have a non zero length.", str(context.exception)
         )
 
-    def test_transformation_properties(self):
+    def test_transformation_properties(self) -> None:
         """Tests properties of reflection transformation matrices.
 
         :return: None
@@ -728,7 +728,7 @@ class TestGenerateReflectT(unittest.TestCase):
                 reflection_det = np.linalg.det(T[:3, :3])
                 self.assertAlmostEqual(reflection_det, -1.0, places=12)
 
-    def test_symmetric_reflections(self):
+    def test_symmetric_reflections(self) -> None:
         """Tests that double reflections return the original point.
 
         :return: None
@@ -752,7 +752,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         npt.assert_allclose(final_point, test_point, atol=1e-14)
 
-    def test_normal_vector_normalization(self):
+    def test_normal_vector_normalization(self) -> None:
         """Tests that non-unit normal vectors are correctly normalized.
 
         :return: None
@@ -774,7 +774,7 @@ class TestGenerateReflectT(unittest.TestCase):
         expected_reflected = np.array([1.0, 2.0, -3.0])
         npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
 
-    def test_passive_active_equivalence(self):
+    def test_passive_active_equivalence(self) -> None:
         """Tests that passive and active modes produce identical matrices.
 
         :return: None
@@ -796,7 +796,7 @@ class TestGenerateReflectT(unittest.TestCase):
 class TestComposeTPas(unittest.TestCase):
     """This class contains methods for testing the compose_T_pas function."""
 
-    def test_basic_passive_composition(self):
+    def test_basic_passive_composition(self) -> None:
         """Tests basic passive transformation composition.
 
         :return: None
@@ -818,7 +818,7 @@ class TestComposeTPas(unittest.TestCase):
         expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
         npt.assert_array_equal(T_composed[3, :], expected_bottom)
 
-    def test_composition_order(self):
+    def test_composition_order(self) -> None:
         """Tests that composition order matters for non-commuting transformations.
 
         :return: None
@@ -836,7 +836,7 @@ class TestComposeTPas(unittest.TestCase):
         # Should produce different results for non-commuting transformations
         self.assertFalse(np.allclose(T1, T2))
 
-    def test_identity_composition(self):
+    def test_identity_composition(self) -> None:
         """Tests composition with identity matrices.
 
         :return: None
@@ -852,7 +852,7 @@ class TestComposeTPas(unittest.TestCase):
         npt.assert_allclose(T_composed1, T_trans, atol=1e-14)
         npt.assert_allclose(T_composed2, T_trans, atol=1e-14)
 
-    def test_inverse_composition(self):
+    def test_inverse_composition(self) -> None:
         """Tests composition with inverse transformations.
 
         :return: None
@@ -868,7 +868,7 @@ class TestComposeTPas(unittest.TestCase):
         npt.assert_allclose(T_composed1, np.eye(4), atol=1e-14)
         npt.assert_allclose(T_composed2, np.eye(4), atol=1e-14)
 
-    def test_multiple_transformations(self):
+    def test_multiple_transformations(self) -> None:
         """Tests composition of multiple transformations.
 
         :return: None
@@ -890,7 +890,7 @@ class TestComposeTPas(unittest.TestCase):
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, 1.0, places=12)
 
-    def test_rotation_translation_composition(self):
+    def test_rotation_translation_composition(self) -> None:
         """Tests composition of rotation and translation transformations.
 
         :return: None
@@ -917,7 +917,7 @@ class TestComposeTPas(unittest.TestCase):
         # Results should be identical
         npt.assert_allclose(v2, v_composed, atol=1e-14)
 
-    def test_matrix_properties(self):
+    def test_matrix_properties(self) -> None:
         """Tests properties of composed transformation matrices.
 
         :return: None
@@ -944,7 +944,7 @@ class TestComposeTPas(unittest.TestCase):
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, 1.0, places=12)
 
-    def test_empty_chain_raises(self):
+    def test_empty_chain_raises(self) -> None:
         """Tests that passing an empty transformation chain results in a value error.
 
         :return: None
@@ -952,7 +952,7 @@ class TestComposeTPas(unittest.TestCase):
         with self.assertRaises(ValueError):
             _transformations.compose_T_pas()
 
-    def test_specific_known_passive_composition(self):
+    def test_specific_known_passive_composition(self) -> None:
         """Tests specific composition of passive transformations with a known result.
 
         :return: None
@@ -991,7 +991,7 @@ class TestComposeTPas(unittest.TestCase):
 class TestComposeTAct(unittest.TestCase):
     """This class contains methods for testing the compose_T_act function."""
 
-    def test_basic_active_composition(self):
+    def test_basic_active_composition(self) -> None:
         """Tests basic active transformation composition.
 
         :return: None
@@ -1013,7 +1013,7 @@ class TestComposeTAct(unittest.TestCase):
         expected_bottom = np.array([0.0, 0.0, 0.0, 1.0])
         npt.assert_array_equal(T_composed[3, :], expected_bottom)
 
-    def test_composition_vs_manual(self):
+    def test_composition_vs_manual(self) -> None:
         """Tests composition against manual matrix multiplication.
 
         :return: None
@@ -1032,7 +1032,7 @@ class TestComposeTAct(unittest.TestCase):
 
         npt.assert_allclose(T_composed, T_manual, atol=1e-14)
 
-    def test_identity_composition(self):
+    def test_identity_composition(self) -> None:
         """Tests composition with identity matrices.
 
         :return: None
@@ -1048,7 +1048,7 @@ class TestComposeTAct(unittest.TestCase):
         npt.assert_allclose(T_composed1, T_rot, atol=1e-14)
         npt.assert_allclose(T_composed2, T_rot, atol=1e-14)
 
-    def test_inverse_composition(self):
+    def test_inverse_composition(self) -> None:
         """Tests composition with inverse transformations.
 
         :return: None
@@ -1064,7 +1064,7 @@ class TestComposeTAct(unittest.TestCase):
         npt.assert_allclose(T_composed1, np.eye(4), atol=1e-14)
         npt.assert_allclose(T_composed2, np.eye(4), atol=1e-14)
 
-    def test_multiple_transformations(self):
+    def test_multiple_transformations(self) -> None:
         """Tests composition of multiple transformations.
 
         :return: None
@@ -1089,7 +1089,7 @@ class TestComposeTAct(unittest.TestCase):
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, 1.0, places=12)
 
-    def test_matrix_properties(self):
+    def test_matrix_properties(self) -> None:
         """Tests properties of composed transformation matrices.
 
         :return: None
@@ -1116,7 +1116,7 @@ class TestComposeTAct(unittest.TestCase):
         det = np.linalg.det(T_composed)
         self.assertAlmostEqual(det, -1.0, places=12)
 
-    def test_empty_chain_raises(self):
+    def test_empty_chain_raises(self) -> None:
         """Tests that passing an empty transformation chain results in a value error.
 
         :return: None
@@ -1124,7 +1124,7 @@ class TestComposeTAct(unittest.TestCase):
         with self.assertRaises(ValueError):
             _transformations.compose_T_act()
 
-    def test_specific_known_active_composition(self):
+    def test_specific_known_active_composition(self) -> None:
         """Tests specific composition of active transformations with a known result.
 
         :return: None
@@ -1154,7 +1154,7 @@ class TestComposeTAct(unittest.TestCase):
 class TestInvertTPas(unittest.TestCase):
     """This class contains methods for testing the invert_T_pas function."""
 
-    def test_translation_inversion(self):
+    def test_translation_inversion(self) -> None:
         """Tests inversion of pure translation matrices.
 
         :return: None
@@ -1171,7 +1171,7 @@ class TestInvertTPas(unittest.TestCase):
         result2 = T_trans_inv @ T_trans
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_rotation_inversion(self):
+    def test_rotation_inversion(self) -> None:
         """Tests inversion of pure rotation matrices.
 
         :return: None
@@ -1188,7 +1188,7 @@ class TestInvertTPas(unittest.TestCase):
         result2 = T_rot_inv @ T_rot
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_reflection_inversion(self):
+    def test_reflection_inversion(self) -> None:
         """Tests inversion of pure reflection matrices.
 
         :return: None
@@ -1205,7 +1205,7 @@ class TestInvertTPas(unittest.TestCase):
         result = T_reflect @ T_reflect_inv
         npt.assert_allclose(result, np.eye(4), atol=1e-14)
 
-    def test_combined_transformation_inversion(self):
+    def test_combined_transformation_inversion(self) -> None:
         """Tests inversion of combined transformations.
 
         :return: None
@@ -1228,7 +1228,7 @@ class TestInvertTPas(unittest.TestCase):
         result2 = T_combined_inv @ T_combined
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_identity_inversion(self):
+    def test_identity_inversion(self) -> None:
         """Tests inversion of identity matrix.
 
         :return: None
@@ -1239,7 +1239,7 @@ class TestInvertTPas(unittest.TestCase):
         # Inverse of identity should be identity
         npt.assert_allclose(identity_inv, identity, atol=1e-14)
 
-    def test_double_inversion(self):
+    def test_double_inversion(self) -> None:
         """Tests that double inversion returns the original matrix.
 
         :return: None
@@ -1263,7 +1263,7 @@ class TestInvertTPas(unittest.TestCase):
                 # Double inversion should return original
                 npt.assert_allclose(T_inv_inv, T, atol=1e-14)
 
-    def test_inversion_properties(self):
+    def test_inversion_properties(self) -> None:
         """Tests mathematical properties of inverted matrices.
 
         :return: None
@@ -1293,7 +1293,7 @@ class TestInvertTPas(unittest.TestCase):
 class TestInvertTAct(unittest.TestCase):
     """This class contains methods for testing the invert_T_act function."""
 
-    def test_translation_inversion(self):
+    def test_translation_inversion(self) -> None:
         """Tests inversion of pure translation matrices.
 
         :return: None
@@ -1310,7 +1310,7 @@ class TestInvertTAct(unittest.TestCase):
         result2 = T_trans_inv @ T_trans
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_rotation_inversion(self):
+    def test_rotation_inversion(self) -> None:
         """Tests inversion of pure rotation matrices.
 
         :return: None
@@ -1327,7 +1327,7 @@ class TestInvertTAct(unittest.TestCase):
         result2 = T_rot_inv @ T_rot
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_reflection_inversion(self):
+    def test_reflection_inversion(self) -> None:
         """Tests inversion of pure reflection matrices.
 
         :return: None
@@ -1346,7 +1346,7 @@ class TestInvertTAct(unittest.TestCase):
         result = T_reflect @ T_reflect_inv
         npt.assert_allclose(result, np.eye(4), atol=1e-14)
 
-    def test_combined_transformation_inversion(self):
+    def test_combined_transformation_inversion(self) -> None:
         """Tests inversion of combined transformations.
 
         :return: None
@@ -1369,7 +1369,7 @@ class TestInvertTAct(unittest.TestCase):
         result2 = T_combined_inv @ T_combined
         npt.assert_allclose(result2, np.eye(4), atol=1e-14)
 
-    def test_identity_inversion(self):
+    def test_identity_inversion(self) -> None:
         """Tests inversion of identity matrix.
 
         :return: None
@@ -1380,7 +1380,7 @@ class TestInvertTAct(unittest.TestCase):
         # Inverse of identity should be identity
         npt.assert_allclose(identity_inv, identity, atol=1e-14)
 
-    def test_double_inversion(self):
+    def test_double_inversion(self) -> None:
         """Tests that double inversion returns the original matrix.
 
         :return: None
@@ -1404,7 +1404,7 @@ class TestInvertTAct(unittest.TestCase):
                 # Double inversion should return original
                 npt.assert_allclose(T_inv_inv, T, atol=1e-14)
 
-    def test_inversion_properties(self):
+    def test_inversion_properties(self) -> None:
         """Tests mathematical properties of inverted matrices.
 
         :return: None
@@ -1434,7 +1434,7 @@ class TestInvertTAct(unittest.TestCase):
 class TestApplyTToVectors(unittest.TestCase):
     """This class contains methods for testing the apply_T_to_vectors function."""
 
-    def test_position_vector_transformation(self):
+    def test_position_vector_transformation(self) -> None:
         """Tests transformation of position vectors (is_position=True).
 
         :return: None
@@ -1451,7 +1451,7 @@ class TestApplyTToVectors(unittest.TestCase):
         expected = position + translation
         npt.assert_array_equal(transformed_position, expected)
 
-    def test_direction_vector_transformation(self):
+    def test_direction_vector_transformation(self) -> None:
         """Tests transformation of direction vectors (is_position=False).
 
         :return: None
@@ -1468,7 +1468,7 @@ class TestApplyTToVectors(unittest.TestCase):
         expected = np.array([0.0, 1.0, 0.0])
         npt.assert_allclose(transformed_direction, expected, atol=1e-14)
 
-    def test_transformation_consistency(self):
+    def test_transformation_consistency(self) -> None:
         """Tests consistency with manual homogeneous coordinate operations.
 
         :return: None
@@ -1501,7 +1501,7 @@ class TestApplyTToVectors(unittest.TestCase):
 
         npt.assert_allclose(result_direction, manual_result_direction, atol=1e-14)
 
-    def test_various_transformation_types(self):
+    def test_various_transformation_types(self) -> None:
         """Tests with different types of transformations.
 
         :return: None
@@ -1536,7 +1536,7 @@ class TestApplyTToVectors(unittest.TestCase):
         )
         self.assertEqual(len(result_composed), 3)
 
-    def test_vector_types(self):
+    def test_vector_types(self) -> None:
         """Tests with different vector input types and sizes.
 
         :return: None
@@ -1556,7 +1556,7 @@ class TestApplyTToVectors(unittest.TestCase):
         )  # Translation applied to zero position
         npt.assert_array_equal(result_zero, expected_zero)
 
-    def test_single_vector_compatibility(self):
+    def test_single_vector_compatibility(self) -> None:
         """Tests that single vector behavior is as expected.
 
         :return: None
@@ -1579,7 +1579,7 @@ class TestApplyTToVectors(unittest.TestCase):
         self.assertEqual(len(result_position), 3)
         self.assertEqual(len(result_direction), 3)
 
-    def test_array_of_vectors_transformation(self):
+    def test_array_of_vectors_transformation(self) -> None:
         """Tests transformation of arrays of vectors.
 
         :return: None
@@ -1595,7 +1595,7 @@ class TestApplyTToVectors(unittest.TestCase):
         npt.assert_array_equal(result_2d, expected_2d)
         self.assertEqual(result_2d.shape, (3, 3))
 
-    def test_higher_dimensional_arrays(self):
+    def test_higher_dimensional_arrays(self) -> None:
         """Tests transformation of higher dimensional arrays.
 
         :return: None
@@ -1617,7 +1617,7 @@ class TestApplyTToVectors(unittest.TestCase):
         npt.assert_allclose(result_3d, expected_3d, atol=1e-14)
         self.assertEqual(result_3d.shape, (2, 2, 3))
 
-    def test_position_vs_direction_arrays(self):
+    def test_position_vs_direction_arrays(self) -> None:
         """Tests that is_position parameter works correctly with arrays.
 
         :return: None
@@ -1637,7 +1637,7 @@ class TestApplyTToVectors(unittest.TestCase):
         result_directions = _transformations.apply_T_to_vectors(T, vectors, False)
         npt.assert_array_equal(result_directions, vectors)  # No change expected
 
-    def test_array_input_validation(self):
+    def test_array_input_validation(self) -> None:
         """Tests validation of array inputs.
 
         :return: None
@@ -1660,7 +1660,7 @@ class TestApplyTToVectors(unittest.TestCase):
                 self.assertEqual(result.shape, vectors.shape)
                 self.assertEqual(result.shape[-1], 3)
 
-    def test_array_consistency_with_single_applications(self):
+    def test_array_consistency_with_single_applications(self) -> None:
         """Tests that array transformation gives same results as individual
         applications.
 
@@ -1687,11 +1687,11 @@ class TestApplyTToVectors(unittest.TestCase):
         for vector in test_vectors:
             individual_result = _transformations.apply_T_to_vectors(T, vector, True)
             individual_results.append(individual_result)
-        individual_results = np.array(individual_results)
+        individual_results_array = np.array(individual_results)
 
-        npt.assert_allclose(array_result, individual_results, atol=1e-14)
+        npt.assert_allclose(array_result, individual_results_array, atol=1e-14)
 
-    def test_edge_cases_arrays(self):
+    def test_edge_cases_arrays(self) -> None:
         """Tests edge cases with array inputs.
 
         :return: None
@@ -1714,7 +1714,7 @@ class TestApplyTToVectors(unittest.TestCase):
 class TestRToQuatWxyz(unittest.TestCase):
     """This class contains methods for testing the R_to_quat_wxyz function."""
 
-    def test_identity_rotation(self):
+    def test_identity_rotation(self) -> None:
         """Tests that identity rotation matrix produces identity quaternion.
 
         :return: None
@@ -1726,7 +1726,7 @@ class TestRToQuatWxyz(unittest.TestCase):
         expected_q = np.array([1.0, 0.0, 0.0, 0.0])
         npt.assert_allclose(q, expected_q, atol=1e-14)
 
-    def test_90_degree_rotations_about_principal_axes(self):
+    def test_90_degree_rotations_about_principal_axes(self) -> None:
         """Tests 90 degree rotations about x, y, and z axes.
 
         :return: None
@@ -1757,7 +1757,7 @@ class TestRToQuatWxyz(unittest.TestCase):
         expected_q_z90 = np.array([sqrt2_over_2, 0.0, 0.0, sqrt2_over_2])
         npt.assert_allclose(q_z90, expected_q_z90, atol=1e-14)
 
-    def test_180_degree_rotations_about_principal_axes(self):
+    def test_180_degree_rotations_about_principal_axes(self) -> None:
         """Tests 180 degree rotations about x, y, and z axes.
 
         :return: None
@@ -1786,7 +1786,7 @@ class TestRToQuatWxyz(unittest.TestCase):
         expected_q_z180 = np.array([0.0, 0.0, 0.0, 1.0])
         npt.assert_allclose(q_z180, expected_q_z180, atol=1e-14)
 
-    def test_unit_quaternion_output(self):
+    def test_unit_quaternion_output(self) -> None:
         """Tests that output quaternion is always a unit quaternion.
 
         :return: None
@@ -1809,10 +1809,10 @@ class TestRToQuatWxyz(unittest.TestCase):
                 q = _transformations.R_to_quat_wxyz(R)
 
                 # Check that quaternion has unit magnitude
-                q_mag = np.linalg.norm(q)
+                q_mag = float(np.linalg.norm(q))
                 self.assertAlmostEqual(q_mag, 1.0, places=14)
 
-    def test_output_shape_and_type(self):
+    def test_output_shape_and_type(self) -> None:
         """Tests output shape and data type.
 
         :return: None
@@ -1823,7 +1823,7 @@ class TestRToQuatWxyz(unittest.TestCase):
         self.assertEqual(q.shape, (4,))
         self.assertEqual(q.dtype, np.float64)
 
-    def test_roundtrip_with_generate_rot_T(self):
+    def test_roundtrip_with_generate_rot_T(self) -> None:
         """Tests that quaternion correctly represents the rotation by verifying
         rotation of vectors.
 
@@ -1879,7 +1879,7 @@ class TestRToQuatWxyz(unittest.TestCase):
                     v_rotated_original, v_rotated_reconstructed, atol=1e-14
                 )
 
-    def test_negative_90_degree_rotations(self):
+    def test_negative_90_degree_rotations(self) -> None:
         """Tests negative 90 degree rotations about principal axes.
 
         :return: None
@@ -1910,7 +1910,7 @@ class TestRToQuatWxyz(unittest.TestCase):
         expected_q_zn90 = np.array([sqrt2_over_2, 0.0, 0.0, -sqrt2_over_2])
         npt.assert_allclose(q_zn90, expected_q_zn90, atol=1e-14)
 
-    def test_all_rotation_orders(self):
+    def test_all_rotation_orders(self) -> None:
         """Tests conversion for rotation matrices from all Tait Bryan orders.
 
         :return: None
@@ -1925,7 +1925,7 @@ class TestRToQuatWxyz(unittest.TestCase):
                 q = _transformations.R_to_quat_wxyz(R)
 
                 # Verify unit quaternion
-                q_mag = np.linalg.norm(q)
+                q_mag = float(np.linalg.norm(q))
                 self.assertAlmostEqual(q_mag, 1.0, places=14)
 
                 # Verify quaternion correctly represents the rotation
@@ -1956,7 +1956,7 @@ class TestRToQuatWxyz(unittest.TestCase):
 class TestRToAnglesIzyx(unittest.TestCase):
     """This class contains methods for testing the R_to_angles_izyx function."""
 
-    def test_identity_rotation(self):
+    def test_identity_rotation(self) -> None:
         """Tests that the identity rotation matrix yields zero angles.
 
         :return: None
@@ -1967,7 +1967,7 @@ class TestRToAnglesIzyx(unittest.TestCase):
         expected_angles = np.array([0.0, 0.0, 0.0])
         npt.assert_allclose(angles, expected_angles, atol=1e-14)
 
-    def test_90_degree_rotations_about_x_and_z(self):
+    def test_90_degree_rotations_about_x_and_z(self) -> None:
         """Tests +/-90 degree rotations about the x and z axes.
 
         Rotations about the y axis at +/-90 degrees hit the gimbal lock pole and
@@ -1996,7 +1996,7 @@ class TestRToAnglesIzyx(unittest.TestCase):
 
                 npt.assert_allclose(angles, expected_angles, atol=1e-14)
 
-    def test_gimbal_lock_at_positive_pole(self):
+    def test_gimbal_lock_at_positive_pole(self) -> None:
         """Tests behavior at +90 degree pitch (positive gimbal lock pole).
 
         At gimbal lock, the helper assigns the indeterminate rotation to angleZ and
@@ -2017,7 +2017,7 @@ class TestRToAnglesIzyx(unittest.TestCase):
 
         npt.assert_allclose(angles, expected_angles, atol=1e-14)
 
-    def test_gimbal_lock_at_negative_pole(self):
+    def test_gimbal_lock_at_negative_pole(self) -> None:
         """Tests behavior at -90 degree pitch (negative gimbal lock pole).
 
         :return: None
@@ -2035,7 +2035,7 @@ class TestRToAnglesIzyx(unittest.TestCase):
 
         npt.assert_allclose(angles, expected_angles, atol=1e-14)
 
-    def test_round_trip_with_generate_rot_T(self):
+    def test_round_trip_with_generate_rot_T(self) -> None:
         """Tests that R_to_angles_izyx inverts generate_rot_T for a range of angle
         combinations away from gimbal lock.
 
@@ -2069,7 +2069,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
     function.
     """
 
-    def test_straight_and_level(self):
+    def test_straight_and_level(self) -> None:
         """Tests that pure forward freestream yields zero alpha and zero beta.
 
         :return: None
@@ -2082,7 +2082,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         self.assertEqual(alpha, 0.0)
         self.assertEqual(beta, 0.0)
 
-    def test_positive_alpha(self):
+    def test_positive_alpha(self) -> None:
         """Tests that freestream with positive nose up component yields positive
         alpha.
 
@@ -2100,7 +2100,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         npt.assert_allclose(alpha, expected_alpha, atol=1e-14)
         npt.assert_allclose(beta, 0.0, atol=1e-14)
 
-    def test_negative_alpha(self):
+    def test_negative_alpha(self) -> None:
         """Tests that freestream with positive nose down component yields negative
         alpha.
 
@@ -2118,7 +2118,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         npt.assert_allclose(alpha, expected_alpha, atol=1e-14)
         npt.assert_allclose(beta, 0.0, atol=1e-14)
 
-    def test_positive_beta(self):
+    def test_positive_beta(self) -> None:
         """Tests that a freestream with a leftward body-y component (the relative wind
         coming from the right) yields positive beta, per the wind axes convention in
         docs/AXES_POINTS_AND_FRAMES.md.
@@ -2137,7 +2137,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         npt.assert_allclose(alpha, 0.0, atol=1e-14)
         npt.assert_allclose(beta, expected_beta, atol=1e-14)
 
-    def test_negative_beta(self):
+    def test_negative_beta(self) -> None:
         """Tests that a freestream with a rightward body-y component (the relative wind
         coming from the left) yields negative beta.
 
@@ -2155,7 +2155,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         npt.assert_allclose(alpha, 0.0, atol=1e-14)
         npt.assert_allclose(beta, expected_beta, atol=1e-14)
 
-    def test_coupled_alpha_and_beta(self):
+    def test_coupled_alpha_and_beta(self) -> None:
         """Tests recovery when both alpha and beta are nonzero, which the single-angle
         tests do not exercise and where an incorrect decomposition order would cross-
         contaminate the two angles.
@@ -2187,7 +2187,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         npt.assert_allclose(alpha, expected_alpha, atol=1e-13)
         npt.assert_allclose(beta, expected_beta, atol=1e-13)
 
-    def test_round_trip_consistent_with_operating_point(self):
+    def test_round_trip_consistent_with_operating_point(self) -> None:
         """Tests that this function exactly inverts the OperatingPoint's alpha and beta
         to freestream mapping, so the two share a single convention.
 
@@ -2219,7 +2219,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
                 npt.assert_allclose(alpha_out, alpha_in, atol=1e-12)
                 npt.assert_allclose(beta_out, beta_in, atol=1e-12)
 
-    def test_zero_speed_returns_nan(self):
+    def test_zero_speed_returns_nan(self) -> None:
         """Tests that zero speed yields NaN for both alpha and beta.
 
         Alpha and beta are physically undefined at zero speed (no preferred
@@ -2240,7 +2240,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
 class TestComputeOffsetRotationAdjustment(unittest.TestCase):
     """Tests for the compute_offset_rotation_adjustment function."""
 
-    def test_identity_rotation(self):
+    def test_identity_rotation(self) -> None:
         """Identity rotation should produce zero adjustment."""
         R = np.eye(3)
         offset = np.array([1.0, 2.0, 3.0])
@@ -2249,7 +2249,7 @@ class TestComputeOffsetRotationAdjustment(unittest.TestCase):
 
         npt.assert_allclose(adjustment, np.zeros(3), atol=1e-14)
 
-    def test_zero_offset(self):
+    def test_zero_offset(self) -> None:
         """Zero offset should always produce zero adjustment."""
         R = np.eye(3)
         offset = np.zeros(3)
@@ -2258,7 +2258,7 @@ class TestComputeOffsetRotationAdjustment(unittest.TestCase):
 
         npt.assert_allclose(adjustment, np.zeros(3), atol=1e-14)
 
-    def test_known_rotation(self):
+    def test_known_rotation(self) -> None:
         """Test adjustment for a known rotation (90 deg about z-axis)."""
         angles = np.array([0.0, 0.0, 90.0])
 

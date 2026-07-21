@@ -1,6 +1,7 @@
 """This module contains classes to test the convergence analysis functions."""
 
 import unittest
+from typing import Any
 
 import numpy as np
 
@@ -438,9 +439,10 @@ class TestAnalyzeSteadyConvergenceValidation(unittest.TestCase):
 
     def test_non_steady_problem_raises_type_error(self) -> None:
         """Test that a ref_problem that is not a SteadyProblem raises a TypeError."""
+        bad_ref_problem: Any = problem_fixtures.make_basic_unsteady_problem_fixture()
         with self.assertRaises(TypeError):
             convergence.analyze_steady_convergence(
-                ref_problem=problem_fixtures.make_basic_unsteady_problem_fixture(),
+                ref_problem=bad_ref_problem,
                 solver_type="steady ring vortex lattice method",
             )
 
@@ -470,9 +472,10 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
 
     def test_non_unsteady_problem_raises_type_error(self) -> None:
         """Test that a ref_problem that is not an UnsteadyProblem raises a TypeError."""
+        bad_ref_problem: Any = problem_fixtures.make_basic_steady_problem_fixture()
         with self.assertRaises(TypeError):
             convergence.analyze_unsteady_convergence(
-                ref_problem=problem_fixtures.make_basic_steady_problem_fixture(),
+                ref_problem=bad_ref_problem,
                 num_cycles_bounds=(1, 2),
             )
 

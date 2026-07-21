@@ -40,24 +40,24 @@ from tests.unit.fixtures import (
 class TestAirfoilSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on Airfoil."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Airfoil slots tests."""
         self.airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Airfoil."""
         self.assertTrue(hasattr(ps.geometry.airfoil.Airfoil, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that Airfoil instances have no __dict__."""
         self.assertFalse(hasattr(self.airfoil, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.airfoil.nonexistent_attribute = 42
+            setattr(self.airfoil, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         self.assertEqual(self.airfoil.name, "naca0012")
         self.assertIsInstance(self.airfoil.outline_A_Lp, np.ndarray)
@@ -65,7 +65,7 @@ class TestAirfoilSlots(unittest.TestCase):
         self.assertIsInstance(self.airfoil.n_points_per_side, int)
         self.assertIsNotNone(self.airfoil.mcl_A_Lp)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         copied = copy.deepcopy(self.airfoil)
 
@@ -83,7 +83,7 @@ class TestAirfoilSlots(unittest.TestCase):
         self.assertIsNot(copied.outline_A_Lp, self.airfoil.outline_A_Lp)
         self.assertIsNot(copied.mcl_A_Lp, self.airfoil.mcl_A_Lp)
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied Airfoil has no __dict__."""
         copied = copy.deepcopy(self.airfoil)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -92,27 +92,27 @@ class TestAirfoilSlots(unittest.TestCase):
 class TestOperatingPointSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on OperatingPoint."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for OperatingPoint slots tests."""
         self.basic_op = operating_point_fixtures.make_basic_operating_point_fixture()
         self.surface_op = (
             operating_point_fixtures.make_with_ground_surface_operating_point_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on OperatingPoint."""
         self.assertTrue(hasattr(ps.operating_point.OperatingPoint, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that OperatingPoint instances have no __dict__."""
         self.assertFalse(hasattr(self.basic_op, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.basic_op.nonexistent_attribute = 42
+            setattr(self.basic_op, "nonexistent_attribute", 42)
 
-    def test_property_access_basic(self):
+    def test_property_access_basic(self) -> None:
         """Test that immutable properties are accessible on a basic OperatingPoint."""
         self.assertEqual(self.basic_op.rho, 1.225)
         self.assertEqual(self.basic_op.vCg__E, 10.0)
@@ -131,7 +131,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertEqual(self.basic_op.externalFX_W, 0.0)
         self.assertEqual(self.basic_op.nu, 15.06e-6)
 
-    def test_property_access_cached(self):
+    def test_property_access_cached(self) -> None:
         """Test that cached computed properties are accessible."""
         # This is a scalar cached property.
         self.assertIsInstance(self.basic_op.qInf__E, float)
@@ -154,7 +154,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertEqual(self.basic_op.vInfHat_GP1__E.shape, (3,))
         self.assertEqual(self.basic_op.vInf_GP1__E.shape, (3,))
 
-    def test_property_access_surface(self):
+    def test_property_access_surface(self) -> None:
         """Test that surface effect properties are accessible on a surface enabled
         OperatingPoint.
         """
@@ -164,7 +164,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertIsNotNone(self.surface_op.surfacePoint_GP1_CgP1)
         self.assertIsNotNone(self.surface_op.surfaceReflect_T_act_GP1_CgP1)
 
-    def test_property_access_no_surface(self):
+    def test_property_access_no_surface(self) -> None:
         """Test that surface effect properties return None when no surface is
         defined.
         """
@@ -172,7 +172,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         self.assertIsNone(self.basic_op.surfacePoint_GP1_CgP1)
         self.assertIsNone(self.basic_op.surfaceReflect_T_act_GP1_CgP1)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.basic_op.qInf__E
@@ -210,7 +210,7 @@ class TestOperatingPointSlots(unittest.TestCase):
         )
         self.assertIsNot(copied.CgP1_E_Eo, self.basic_op.CgP1_E_Eo)
 
-    def test_deepcopy_with_surface(self):
+    def test_deepcopy_with_surface(self) -> None:
         """Test that copy.deepcopy works correctly on a surface enabled
         OperatingPoint.
         """
@@ -247,28 +247,28 @@ class TestWingCrossSectionSlots(unittest.TestCase):
     WingCrossSection.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for WingCrossSection slots tests."""
         self.wing_cross_section = (
             geometry_fixtures.make_basic_wing_cross_section_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on WingCrossSection."""
         self.assertTrue(
             hasattr(ps.geometry.wing_cross_section.WingCrossSection, "__slots__")
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that WingCrossSection instances have no __dict__."""
         self.assertFalse(hasattr(self.wing_cross_section, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.wing_cross_section.nonexistent_attribute = 42
+            setattr(self.wing_cross_section, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(
@@ -301,7 +301,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
         self.assertIsNone(self.wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp)
         self.assertIsNone(self.wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         copied = copy.deepcopy(self.wing_cross_section)
 
@@ -336,7 +336,7 @@ class TestWingCrossSectionSlots(unittest.TestCase):
             self.wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
         )
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied WingCrossSection has no __dict__."""
         copied = copy.deepcopy(self.wing_cross_section)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -345,27 +345,27 @@ class TestWingCrossSectionSlots(unittest.TestCase):
 class TestPanelSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on Panel."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Panel slots tests."""
         self.panel = panel_fixtures.make_basic_panel_fixture()
         self.fully_configured_panel = (
             panel_fixtures.make_fully_configured_panel_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Panel."""
         self.assertTrue(hasattr(_panel.Panel, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that Panel instances have no __dict__."""
         self.assertFalse(hasattr(self.panel, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.panel.nonexistent_attribute = 42
+            setattr(self.panel, "nonexistent_attribute", 42)
 
-    def test_property_access_immutable(self):
+    def test_property_access_immutable(self) -> None:
         """Test that immutable properties are accessible."""
         self.assertEqual(self.panel.Frpp_G_Cg.shape, (3,))
         self.assertEqual(self.panel.Flpp_G_Cg.shape, (3,))
@@ -374,7 +374,7 @@ class TestPanelSlots(unittest.TestCase):
         self.assertIsInstance(self.panel.is_leading_edge, bool)
         self.assertIsInstance(self.panel.is_trailing_edge, bool)
 
-    def test_property_access_cached(self):
+    def test_property_access_cached(self) -> None:
         """Test that cached computed properties are accessible."""
         self.assertEqual(self.panel.rightLeg_G.shape, (3,))
         self.assertEqual(self.panel.frontLeg_G.shape, (3,))
@@ -387,7 +387,7 @@ class TestPanelSlots(unittest.TestCase):
         self.assertIsInstance(self.panel.area, float)
         self.assertIsInstance(self.panel.aspect_ratio, float)
 
-    def test_property_access_set_once_unset(self):
+    def test_property_access_set_once_unset(self) -> None:
         """Test that set once properties return None when not yet set."""
         self.assertIsNone(self.panel.Frpp_GP1_CgP1)
         self.assertIsNone(self.panel.is_right_edge)
@@ -395,7 +395,7 @@ class TestPanelSlots(unittest.TestCase):
         self.assertIsNone(self.panel.local_chordwise_position)
         self.assertIsNone(self.panel.local_spanwise_position)
 
-    def test_property_access_fully_configured(self):
+    def test_property_access_fully_configured(self) -> None:
         """Test that all properties are accessible on a fully configured Panel."""
         self.assertIsNotNone(self.fully_configured_panel.Frpp_GP1_CgP1)
         self.assertIsNotNone(self.fully_configured_panel.is_right_edge)
@@ -403,14 +403,14 @@ class TestPanelSlots(unittest.TestCase):
         self.assertIsNotNone(self.fully_configured_panel.local_chordwise_position)
         self.assertIsNotNone(self.fully_configured_panel.local_spanwise_position)
 
-    def test_mutable_attributes(self):
+    def test_mutable_attributes(self) -> None:
         """Test that mutable attributes are accessible and default to None."""
         self.assertIsNone(self.panel.forces_GP1)
         self.assertIsNone(self.panel.moments_GP1_CgP1)
         self.assertIsNone(self.panel.forces_W)
         self.assertIsNone(self.panel.moments_W_CgP1)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.panel.rightLeg_G
@@ -442,7 +442,7 @@ class TestPanelSlots(unittest.TestCase):
         # Verify solver state is reset.
         self.assertIsNone(copied.forces_GP1)
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied Panel has no __dict__."""
         copied = copy.deepcopy(self.panel)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -451,7 +451,7 @@ class TestPanelSlots(unittest.TestCase):
 class TestWingSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on Wing."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Wing slots tests."""
         # Use a Wing from an Airplane so it has been meshed (symmetry_type set).
         airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -459,20 +459,20 @@ class TestWingSlots(unittest.TestCase):
         # Also keep an unmeshed Wing for testing pre-mesh state.
         self.unmeshed_wing = geometry_fixtures.make_type_1_wing_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Wing."""
         self.assertTrue(hasattr(ps.geometry.wing.Wing, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that Wing instances have no __dict__."""
         self.assertFalse(hasattr(self.wing, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.wing.nonexistent_attribute = 42
+            setattr(self.wing, "nonexistent_attribute", 42)
 
-    def test_property_access_immutable(self):
+    def test_property_access_immutable(self) -> None:
         """Test that immutable properties are accessible."""
         self.assertIsInstance(self.wing.wing_cross_sections, tuple)
         self.assertIsInstance(self.wing.name, str)
@@ -482,18 +482,18 @@ class TestWingSlots(unittest.TestCase):
         self.assertIsInstance(self.wing.chordwise_spacing, str)
         self.assertIsInstance(self.wing.spanwise_mesh, str)
 
-    def test_property_access_mutable_symmetry(self):
+    def test_property_access_mutable_symmetry(self) -> None:
         """Test that mutable symmetry attributes are accessible."""
         self.assertIsInstance(self.wing.symmetric, bool)
         self.assertIsInstance(self.wing.mirror_only, bool)
 
-    def test_property_access_edge_attributes_none_for_normal_wing(self):
+    def test_property_access_edge_attributes_none_for_normal_wing(self) -> None:
         """Test that the edge curve and tip trim slots are None for a normal Wing."""
         self.assertIsNone(self.wing.leadingEdgePoints_Wn_Ler)
         self.assertIsNone(self.wing.trailingEdgePoints_Wn_Ler)
         self.assertIsNone(self.wing.tip_trim_fraction)
 
-    def test_property_access_edge_attributes_for_edge_defined_wing(self):
+    def test_property_access_edge_attributes_for_edge_defined_wing(self) -> None:
         """Test that the edge curve and tip trim slots are populated for a Wing built
         from edge points."""
         ys = np.linspace(0.0, 1.0, 11)
@@ -508,30 +508,44 @@ class TestWingSlots(unittest.TestCase):
             tip_trim_fraction=0.1,
         )
         self.assertFalse(hasattr(edge_wing, "__dict__"))
-        self.assertEqual(edge_wing.leadingEdgePoints_Wn_Ler.shape, (11, 3))
-        self.assertEqual(edge_wing.trailingEdgePoints_Wn_Ler.shape, (11, 3))
+        leading_edge_points = edge_wing.leadingEdgePoints_Wn_Ler
+        trailing_edge_points = edge_wing.trailingEdgePoints_Wn_Ler
+        assert leading_edge_points is not None
+        assert trailing_edge_points is not None
+        self.assertEqual(leading_edge_points.shape, (11, 3))
+        self.assertEqual(trailing_edge_points.shape, (11, 3))
         self.assertIsInstance(edge_wing.tip_trim_fraction, float)
 
-    def test_property_access_set_once_unset(self):
+    def test_property_access_set_once_unset(self) -> None:
         """Test that set once properties return None when not yet meshed."""
         self.assertIsNone(self.unmeshed_wing.symmetry_type)
         self.assertIsNone(self.unmeshed_wing.num_spanwise_panels)
         self.assertIsNone(self.unmeshed_wing.num_panels)
         self.assertIsNone(self.unmeshed_wing.panels)
 
-    def test_property_access_cached(self):
+    def test_property_access_cached(self) -> None:
         """Test that cached transformation properties are accessible."""
-        self.assertEqual(self.wing.T_pas_G_Cg_to_Wn_Ler.shape, (4, 4))
-        self.assertEqual(self.wing.T_pas_Wn_Ler_to_G_Cg.shape, (4, 4))
-        self.assertEqual(self.wing.WnX_G.shape, (3,))
-        self.assertEqual(self.wing.WnY_G.shape, (3,))
-        self.assertEqual(self.wing.WnZ_G.shape, (3,))
+        T_pas_G_Cg_to_Wn_Ler = self.wing.T_pas_G_Cg_to_Wn_Ler
+        T_pas_Wn_Ler_to_G_Cg = self.wing.T_pas_Wn_Ler_to_G_Cg
+        WnX_G = self.wing.WnX_G
+        WnY_G = self.wing.WnY_G
+        WnZ_G = self.wing.WnZ_G
+        assert T_pas_G_Cg_to_Wn_Ler is not None
+        assert T_pas_Wn_Ler_to_G_Cg is not None
+        assert WnX_G is not None
+        assert WnY_G is not None
+        assert WnZ_G is not None
+        self.assertEqual(T_pas_G_Cg_to_Wn_Ler.shape, (4, 4))
+        self.assertEqual(T_pas_Wn_Ler_to_G_Cg.shape, (4, 4))
+        self.assertEqual(WnX_G.shape, (3,))
+        self.assertEqual(WnY_G.shape, (3,))
+        self.assertEqual(WnZ_G.shape, (3,))
         self.assertIsInstance(self.wing.children_T_pas_Wn_Ler_to_Wcs_Lp, list)
         self.assertIsInstance(self.wing.children_T_pas_Wcs_Lp_to_Wn_Ler, list)
         self.assertIsInstance(self.wing.children_T_pas_G_Cg_to_Wcs_Lp, list)
         self.assertIsInstance(self.wing.children_T_pas_Wcs_Lp_to_G_Cg, list)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         original_T = self.wing.T_pas_G_Cg_to_Wn_Ler
@@ -569,7 +583,7 @@ class TestWingSlots(unittest.TestCase):
         self.assertIsNot(copied.Ler_Gs_Cgs, self.wing.Ler_Gs_Cgs)
         self.assertIsNot(copied.T_pas_G_Cg_to_Wn_Ler, self.wing.T_pas_G_Cg_to_Wn_Ler)
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied Wing has no __dict__."""
         copied = copy.deepcopy(self.wing)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -578,24 +592,24 @@ class TestWingSlots(unittest.TestCase):
 class TestAirplaneSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on Airplane."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Airplane slots tests."""
         self.airplane = geometry_fixtures.make_first_airplane_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Airplane."""
         self.assertTrue(hasattr(ps.geometry.airplane.Airplane, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that Airplane instances have no __dict__."""
         self.assertFalse(hasattr(self.airplane, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.airplane.nonexistent_attribute = 42
+            setattr(self.airplane, "nonexistent_attribute", 42)
 
-    def test_property_access_immutable(self):
+    def test_property_access_immutable(self) -> None:
         """Test that immutable properties are accessible."""
         self.assertIsInstance(self.airplane.wings, tuple)
         self.assertEqual(self.airplane.name, "First Test Airplane")
@@ -605,19 +619,19 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsInstance(self.airplane.c_ref, float)
         self.assertIsInstance(self.airplane.b_ref, float)
 
-    def test_property_access_cached(self):
+    def test_property_access_cached(self) -> None:
         """Test that cached derived properties are accessible."""
         self.assertIsInstance(self.airplane.num_panels, int)
         self.assertEqual(self.airplane.T_pas_G_Cg_to_GP1_CgP1.shape, (4, 4))
 
-    def test_mutable_attributes(self):
+    def test_mutable_attributes(self) -> None:
         """Test that mutable load attributes are accessible and default to None."""
         self.assertIsNone(self.airplane.forces_W)
         self.assertIsNone(self.airplane.forceCoefficients_W)
         self.assertIsNone(self.airplane.moments_W_CgP1)
         self.assertIsNone(self.airplane.momentCoefficients_W_CgP1)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.airplane.num_panels
@@ -659,7 +673,7 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsNone(copied.moments_W_CgP1)
         self.assertIsNone(copied.momentCoefficients_W_CgP1)
 
-    def test_deep_copy_with_cg(self):
+    def test_deep_copy_with_cg(self) -> None:
         """Test that deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
         copied = self.airplane.deep_copy_with_Cg_GP1_CgP1([2.0, 1.0, 0.5])
 
@@ -676,7 +690,7 @@ class TestAirplaneSlots(unittest.TestCase):
         # Verify no __dict__.
         self.assertFalse(hasattr(copied, "__dict__"))
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied Airplane has no __dict__."""
         copied = copy.deepcopy(self.airplane)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -685,24 +699,24 @@ class TestAirplaneSlots(unittest.TestCase):
 class TestSteadyProblemSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on SteadyProblem."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for SteadyProblem slots tests."""
         self.steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on SteadyProblem."""
         self.assertTrue(hasattr(ps.problems.SteadyProblem, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that SteadyProblem instances have no __dict__."""
         self.assertFalse(hasattr(self.steady_problem, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.steady_problem.nonexistent_attribute = 42
+            setattr(self.steady_problem, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(self.steady_problem.airplanes, tuple)
@@ -719,7 +733,7 @@ class TestSteadyProblemSlots(unittest.TestCase):
             len(self.steady_problem.airplanes),
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         # Access cached property before copying.
         _ = self.steady_problem.reynolds_numbers
@@ -748,28 +762,28 @@ class TestUnsteadyProblemSlots(unittest.TestCase):
     UnsteadyProblem-specific slots and deepcopy.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for UnsteadyProblem slots tests."""
         self.unsteady_problem = problem_fixtures.make_basic_unsteady_problem_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on UnsteadyProblem."""
         self.assertTrue(hasattr(ps.problems.UnsteadyProblem, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that UnsteadyProblem instances have no __dict__."""
         self.assertFalse(hasattr(self.unsteady_problem, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.unsteady_problem.nonexistent_attribute = 42
+            setattr(self.unsteady_problem, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that UnsteadyProblem is a subclass of CoreUnsteadyProblem."""
         self.assertIsInstance(self.unsteady_problem, _core.CoreUnsteadyProblem)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that UnsteadyProblem-specific properties are accessible."""
         self.assertIsInstance(
             self.unsteady_problem.movement, ps.movements.movement.Movement
@@ -780,7 +794,7 @@ class TestUnsteadyProblemSlots(unittest.TestCase):
             self.unsteady_problem.num_steps,
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.unsteady_problem)
 
@@ -807,32 +821,32 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     FreeFlightUnsteadyProblem-specific slots.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for FreeFlightUnsteadyProblem slots tests."""
         self.problem = (
             problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on FreeFlightUnsteadyProblem."""
         self.assertTrue(hasattr(ps.problems.FreeFlightUnsteadyProblem, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that FreeFlightUnsteadyProblem instances have no __dict__."""
         self.assertFalse(hasattr(self.problem, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.problem.nonexistent_attribute = 42
+            setattr(self.problem, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
         _CoupledUnsteadyProblem.
         """
         self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that FreeFlightUnsteadyProblem-specific properties are accessible."""
         self.assertIsInstance(self.problem.I_BP1_CgP1, np.ndarray)
         self.assertEqual(self.problem.I_BP1_CgP1.shape, (3, 3))
@@ -846,7 +860,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
     CoreOperatingPointMovement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreOperatingPointMovement slots tests."""
         self.static_copm = (
             core_operating_point_movement_fixtures.make_static_core_operating_point_movement_fixture()
@@ -855,20 +869,20 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
             core_operating_point_movement_fixtures.make_sine_spacing_core_operating_point_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreOperatingPointMovement."""
         self.assertTrue(hasattr(_core.CoreOperatingPointMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreOperatingPointMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.static_copm, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.static_copm.nonexistent_attribute = 42
+            setattr(self.static_copm, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These are immutable properties on the sine fixture.
         self.assertIsInstance(
@@ -886,7 +900,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
         # Static fixture has zero max_period.
         self.assertEqual(self.static_copm.max_period, 0.0)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         # Access cached property before copying.
         _ = self.sine_copm.max_period
@@ -914,26 +928,26 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
     CoreWingCrossSectionMovement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreWingCrossSectionMovement slots tests."""
         self.core_wing_cross_section_movement = (
             core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreWingCrossSectionMovement."""
         self.assertTrue(hasattr(_core.CoreWingCrossSectionMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreWingCrossSectionMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.core_wing_cross_section_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.core_wing_cross_section_movement.nonexistent_attribute = 42
+            setattr(self.core_wing_cross_section_movement, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(
@@ -971,7 +985,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.core_wing_cross_section_movement.all_periods, tuple)
         self.assertIsInstance(self.core_wing_cross_section_movement.max_period, float)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.core_wing_cross_section_movement.all_periods
@@ -1030,7 +1044,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
             self.core_wing_cross_section_movement.ampAngles_Wcsp_to_Wcs_ixyz,
         )
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied CoreWingCrossSectionMovement has no __dict__."""
         copied = copy.deepcopy(self.core_wing_cross_section_movement)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -1041,26 +1055,26 @@ class TestCoreWingMovementSlots(unittest.TestCase):
     CoreWingMovement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreWingMovement slots tests."""
         self.core_wing_movement = (
             core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreWingMovement."""
         self.assertTrue(hasattr(_core.CoreWingMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreWingMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.core_wing_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.core_wing_movement.nonexistent_attribute = 42
+            setattr(self.core_wing_movement, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(self.core_wing_movement.base_wing, ps.geometry.wing.Wing)
@@ -1083,7 +1097,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.core_wing_movement.all_periods, tuple)
         self.assertIsInstance(self.core_wing_movement.max_period, float)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.core_wing_movement.all_periods
@@ -1133,7 +1147,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
         # Verify arrays are independent.
         self.assertIsNot(copied.ampLer_Gs_Cgs, self.core_wing_movement.ampLer_Gs_Cgs)
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied CoreWingMovement has no __dict__."""
         copied = copy.deepcopy(self.core_wing_movement)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -1144,26 +1158,26 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
     CoreAirplaneMovement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreAirplaneMovement slots tests."""
         self.core_airplane_movement = (
             core_airplane_movement_fixtures.make_basic_core_airplane_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreAirplaneMovement."""
         self.assertTrue(hasattr(_core.CoreAirplaneMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreAirplaneMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.core_airplane_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.core_airplane_movement.nonexistent_attribute = 42
+            setattr(self.core_airplane_movement, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(
@@ -1180,7 +1194,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.core_airplane_movement.all_periods, tuple)
         self.assertIsInstance(self.core_airplane_movement.max_period, float)
 
-    def test_deepcopy_method(self):
+    def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
         # Access cached properties before copying.
         _ = self.core_airplane_movement.all_periods
@@ -1223,7 +1237,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
             copied.ampCg_GP1_CgP1, self.core_airplane_movement.ampCg_GP1_CgP1
         )
 
-    def test_deepcopy_no_dict(self):
+    def test_deepcopy_no_dict(self) -> None:
         """Test that a deep copied CoreAirplaneMovement has no __dict__."""
         copied = copy.deepcopy(self.core_airplane_movement)
         self.assertFalse(hasattr(copied, "__dict__"))
@@ -1232,7 +1246,7 @@ class TestCoreAirplaneMovementSlots(unittest.TestCase):
 class TestCoreMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on CoreMovement."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreMovement slots tests."""
         self.static_core_movement = (
             core_movement_fixtures.make_static_core_movement_fixture()
@@ -1241,20 +1255,20 @@ class TestCoreMovementSlots(unittest.TestCase):
             core_movement_fixtures.make_basic_core_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreMovement."""
         self.assertTrue(hasattr(_core.CoreMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.static_core_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.static_core_movement.nonexistent_attribute = 42
+            setattr(self.static_core_movement, "nonexistent_attribute", 42)
 
-    def test_property_access_static(self):
+    def test_property_access_static(self) -> None:
         """Test that all properties are accessible on a static CoreMovement."""
         # These properties are immutable.
         self.assertIsInstance(self.static_core_movement.airplane_movements, tuple)
@@ -1270,7 +1284,7 @@ class TestCoreMovementSlots(unittest.TestCase):
         self.assertEqual(self.static_core_movement.max_period, 0.0)
         self.assertEqual(self.static_core_movement.lcm_period, 0.0)
 
-    def test_property_access_basic(self):
+    def test_property_access_basic(self) -> None:
         """Test that all properties are accessible on a non-static CoreMovement."""
         self.assertFalse(self.basic_core_movement.static)
         self.assertGreater(self.basic_core_movement.max_period, 0.0)
@@ -1283,7 +1297,7 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
     CoreUnsteadyProblem.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for CoreUnsteadyProblem slots tests."""
         self.core_unsteady_problem = _core.CoreUnsteadyProblem(
             only_final_results=False,
@@ -1293,21 +1307,21 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
             lcm_period=2.0,
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on CoreUnsteadyProblem."""
         self.assertTrue(hasattr(_core.CoreUnsteadyProblem, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that CoreUnsteadyProblem instances have no __dict__."""
         self.assertFalse(hasattr(self.core_unsteady_problem, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
             # noinspection PyDunderSlots
-            self.core_unsteady_problem.nonexistent_attribute = 42
+            setattr(self.core_unsteady_problem, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties remain accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(self.core_unsteady_problem.only_final_results, bool)
@@ -1348,13 +1362,13 @@ class TestOperatingPointMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for OperatingPointMovement slots tests."""
         self.opm = (
             operating_point_movement_fixtures.make_static_operating_point_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on OperatingPointMovement."""
         self.assertTrue(
             hasattr(
@@ -1363,16 +1377,16 @@ class TestOperatingPointMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that OperatingPointMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.opm, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.opm.nonexistent_attribute = 42
+            setattr(self.opm, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that OperatingPointMovement is a subclass of
         CoreOperatingPointMovement.
         """
@@ -1386,13 +1400,13 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for WingCrossSectionMovement slots tests."""
         self.wing_cross_section_movement = (
             wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on WingCrossSectionMovement."""
         self.assertTrue(
             hasattr(
@@ -1401,16 +1415,16 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that WingCrossSectionMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.wing_cross_section_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.wing_cross_section_movement.nonexistent_attribute = 42
+            setattr(self.wing_cross_section_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that WingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
@@ -1426,24 +1440,24 @@ class TestWingMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for WingMovement slots tests."""
         self.wing_movement = wing_movement_fixtures.make_basic_wing_movement_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on WingMovement."""
         self.assertTrue(hasattr(ps.movements.wing_movement.WingMovement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that WingMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.wing_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.wing_movement.nonexistent_attribute = 42
+            setattr(self.wing_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that WingMovement is a subclass of CoreWingMovement."""
         self.assertIsInstance(self.wing_movement, _core.CoreWingMovement)
 
@@ -1455,28 +1469,28 @@ class TestAirplaneMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AirplaneMovement slots tests."""
         self.airplane_movement = (
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AirplaneMovement."""
         self.assertTrue(
             hasattr(ps.movements.airplane_movement.AirplaneMovement, "__slots__")
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AirplaneMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.airplane_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.airplane_movement.nonexistent_attribute = 42
+            setattr(self.airplane_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AirplaneMovement is a subclass of CoreAirplaneMovement."""
         self.assertIsInstance(self.airplane_movement, _core.CoreAirplaneMovement)
 
@@ -1488,28 +1502,28 @@ class TestMovementSlots(unittest.TestCase):
     CoreMovement level. This class tests Movement-specific slots and deepcopy.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for Movement slots tests."""
         self.static_movement = movement_fixtures.make_static_movement_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on Movement."""
         self.assertTrue(hasattr(ps.movements.movement.Movement, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that Movement instances have no __dict__."""
         self.assertFalse(hasattr(self.static_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.static_movement.nonexistent_attribute = 42
+            setattr(self.static_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that Movement is a subclass of CoreMovement."""
         self.assertIsInstance(self.static_movement, _core.CoreMovement)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that Movement-specific properties are accessible."""
         self.assertIsInstance(self.static_movement.airplanes, tuple)
         self.assertIsInstance(self.static_movement.operating_points, tuple)
@@ -1518,7 +1532,7 @@ class TestMovementSlots(unittest.TestCase):
             self.static_movement.num_steps,
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.static_movement)
 
@@ -1548,24 +1562,24 @@ class TestMovementSlots(unittest.TestCase):
 class TestMuJoCoModelSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on MuJoCoModel."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for MuJoCoModel slots tests."""
         self.mujoco_model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on MuJoCoModel."""
         self.assertTrue(hasattr(_mujoco_model.MuJoCoModel, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that MuJoCoModel instances have no __dict__."""
         self.assertFalse(hasattr(self.mujoco_model, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.mujoco_model.nonexistent_attribute = 42
+            setattr(self.mujoco_model, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all properties are accessible after adding __slots__."""
         # These properties are immutable.
         self.assertIsInstance(self.mujoco_model.xml_str, str)
@@ -1580,13 +1594,13 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
     SteadyHorseshoeVortexLatticeMethodSolver.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for SteadyHorseshoeVortexLatticeMethodSolver slots
         tests.
         """
         self.solver = solver_fixtures.make_steady_horseshoe_solver_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
         SteadyHorseshoeVortexLatticeMethodSolver.
         """
@@ -1597,18 +1611,18 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that SteadyHorseshoeVortexLatticeMethodSolver instances have no
         __dict__.
         """
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.solver.nonexistent_attribute = 42
+            setattr(self.solver, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all attributes remain accessible after adding __slots__."""
         self.assertIsInstance(self.solver.airplanes, tuple)
         self.assertGreaterEqual(len(self.solver.airplanes), 1)
@@ -1627,7 +1641,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.solver)
 
@@ -1649,11 +1663,11 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
     SteadyRingVortexLatticeMethodSolver.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for SteadyRingVortexLatticeMethodSolver slots tests."""
         self.solver = solver_fixtures.make_steady_ring_solver_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on SteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
@@ -1662,16 +1676,16 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that SteadyRingVortexLatticeMethodSolver instances have no __dict__."""
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.solver.nonexistent_attribute = 42
+            setattr(self.solver, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all attributes remain accessible after adding __slots__."""
         self.assertIsInstance(self.solver.airplanes, tuple)
         self.assertGreaterEqual(len(self.solver.airplanes), 1)
@@ -1700,7 +1714,7 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.solver)
 
@@ -1722,13 +1736,13 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
     UnsteadyRingVortexLatticeMethodSolver.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for UnsteadyRingVortexLatticeMethodSolver slots
         tests.
         """
         self.solver = solver_fixtures.make_unsteady_ring_solver_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
         UnsteadyRingVortexLatticeMethodSolver.
         """
@@ -1739,18 +1753,18 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that UnsteadyRingVortexLatticeMethodSolver instances have no
         __dict__.
         """
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.solver.nonexistent_attribute = 42
+            setattr(self.solver, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that all attributes remain accessible after adding __slots__."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
@@ -1784,7 +1798,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.gridStreamlinePoints_GP1_CgP1, np.ndarray)
         self.assertFalse(self.solver.ran)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.solver)
 
@@ -1812,13 +1826,13 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticWingCrossSectionMovement slots tests."""
         self.aeroelastic_wing_cross_section_movement = (
             aeroelastic_wing_cross_section_movement_fixtures.make_basic_aeroelastic_wing_cross_section_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticWingCrossSectionMovement."""
         self.assertTrue(
             hasattr(
@@ -1827,18 +1841,22 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticWingCrossSectionMovement instances have no __dict__."""
         self.assertFalse(
             hasattr(self.aeroelastic_wing_cross_section_movement, "__dict__")
         )
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.aeroelastic_wing_cross_section_movement.nonexistent_attribute = 42
+            setattr(
+                self.aeroelastic_wing_cross_section_movement,
+                "nonexistent_attribute",
+                42,
+            )
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AeroelasticWingCrossSectionMovement is a subclass of
         CoreWingCrossSectionMovement.
         """
@@ -1856,13 +1874,13 @@ class TestAeroelasticWingMovementSlots(unittest.TestCase):
     __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticWingMovement slots tests."""
         self.aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticWingMovement."""
         self.assertTrue(
             hasattr(
@@ -1871,16 +1889,16 @@ class TestAeroelasticWingMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticWingMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.aeroelastic_wing_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.aeroelastic_wing_movement.nonexistent_attribute = 42
+            setattr(self.aeroelastic_wing_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AeroelasticWingMovement is a subclass of CoreWingMovement."""
         self.assertIsInstance(self.aeroelastic_wing_movement, _core.CoreWingMovement)
 
@@ -1892,13 +1910,13 @@ class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
     __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticAirplaneMovement slots tests."""
         self.aeroelastic_airplane_movement = (
             aeroelastic_airplane_movement_fixtures.make_basic_aeroelastic_airplane_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticAirplaneMovement."""
         self.assertTrue(
             hasattr(
@@ -1907,16 +1925,16 @@ class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticAirplaneMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.aeroelastic_airplane_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.aeroelastic_airplane_movement.nonexistent_attribute = 42
+            setattr(self.aeroelastic_airplane_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AeroelasticAirplaneMovement is a subclass of
         CoreAirplaneMovement.
         """
@@ -1931,32 +1949,32 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
     AeroelasticMovement-specific slots and deepcopy.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticMovement slots tests."""
         self.aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticMovement."""
         self.assertTrue(
             hasattr(ps.movements.aeroelastic_movement.AeroelasticMovement, "__slots__")
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.aeroelastic_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.aeroelastic_movement.nonexistent_attribute = 42
+            setattr(self.aeroelastic_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AeroelasticMovement is a subclass of CoreMovement."""
         self.assertIsInstance(self.aeroelastic_movement, _core.CoreMovement)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that AeroelasticMovement-specific properties are accessible.
 
         AeroelasticMovement pre generates OperatingPoints but not Airplanes, so it
@@ -1968,7 +1986,7 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
             self.aeroelastic_movement.num_steps,
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.aeroelastic_movement)
 
@@ -2001,39 +2019,39 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     slots, properties, and deepcopy.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticUnsteadyProblem slots tests."""
         self.problem = (
             problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on AeroelasticUnsteadyProblem."""
         self.assertTrue(hasattr(ps.problems.AeroelasticUnsteadyProblem, "__slots__"))
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticUnsteadyProblem instances have no __dict__."""
         self.assertFalse(hasattr(self.problem, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.problem.nonexistent_attribute = 42
+            setattr(self.problem, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
         _CoupledUnsteadyProblem.
         """
         self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
 
-    def test_config_property_access(self):
+    def test_config_property_access(self) -> None:
         """Test that the immutable structural config properties are accessible."""
         self.assertIsInstance(self.problem.wing_density, float)
         self.assertIsInstance(self.problem.spring_constant_rad, float)
         self.assertIsInstance(self.problem.damping_constant_rad, float)
         self.assertIsInstance(self.problem.step_discards, int)
 
-    def test_movement_property_access(self):
+    def test_movement_property_access(self) -> None:
         """Test that the movement properties are accessible and correctly typed."""
         self.assertIsInstance(
             self.problem.movement,
@@ -2045,7 +2063,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
         )
         self.assertIsInstance(self.problem.steady_problems, tuple)
 
-    def test_mutable_state_access(self):
+    def test_mutable_state_access(self) -> None:
         """Test that the mutable per-wing solver time series lists are accessible."""
         self.assertIsInstance(
             self.problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz, list
@@ -2054,7 +2072,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
             self.problem._listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz, list
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.problem)
 
@@ -2075,13 +2093,13 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
     AeroelasticUnsteadyRingVortexLatticeMethodSolver.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for AeroelasticUnsteadyRingVortexLatticeMethodSolver
         slots tests.
         """
         self.solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
         AeroelasticUnsteadyRingVortexLatticeMethodSolver.
         """
@@ -2092,18 +2110,18 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that AeroelasticUnsteadyRingVortexLatticeMethodSolver instances have no
         __dict__.
         """
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.solver.nonexistent_attribute = 42
+            setattr(self.solver, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that the SLEP attributes remain accessible after adding __slots__."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
@@ -2118,7 +2136,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver._stackSlep_GP1_CgP1, np.ndarray)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.solver)
 
@@ -2141,13 +2159,13 @@ class TestFreeFlightOperatingPointMovementSlots(unittest.TestCase):
     preserves __slots__ enforcement.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for FreeFlightOperatingPointMovement slots tests."""
         self.fopm = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on FreeFlightOperatingPointMovement."""
         self.assertTrue(
             hasattr(
@@ -2156,16 +2174,16 @@ class TestFreeFlightOperatingPointMovementSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that FreeFlightOperatingPointMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.fopm, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.fopm.nonexistent_attribute = 42
+            setattr(self.fopm, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that FreeFlightOperatingPointMovement is a subclass of
         CoreOperatingPointMovement.
         """
@@ -2178,32 +2196,32 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
     FreeFlightMovement-specific slots and deepcopy.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for FreeFlightMovement slots tests."""
         self.free_flight_movement = (
             free_flight_movement_fixtures.make_basic_free_flight_movement_fixture()
         )
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on FreeFlightMovement."""
         self.assertTrue(
             hasattr(ps.movements.free_flight_movement.FreeFlightMovement, "__slots__")
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that FreeFlightMovement instances have no __dict__."""
         self.assertFalse(hasattr(self.free_flight_movement, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.free_flight_movement.nonexistent_attribute = 42
+            setattr(self.free_flight_movement, "nonexistent_attribute", 42)
 
-    def test_subclass(self):
+    def test_subclass(self) -> None:
         """Test that FreeFlightMovement is a subclass of CoreMovement."""
         self.assertIsInstance(self.free_flight_movement, _core.CoreMovement)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that FreeFlightMovement-specific properties are accessible.
 
         FreeFlightMovement pre generates Airplanes, so it exposes airplanes along with
@@ -2213,7 +2231,7 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
         self.assertIsInstance(self.free_flight_movement.prescribed_num_steps, int)
         self.assertIsInstance(self.free_flight_movement.free_num_steps, int)
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.free_flight_movement)
 
@@ -2247,13 +2265,13 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
     remains accessible.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Set up test fixtures for FreeFlightUnsteadyRingVortexLatticeMethodSolver
         slots tests.
         """
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
-    def test_slots_defined(self):
+    def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
         FreeFlightUnsteadyRingVortexLatticeMethodSolver.
         """
@@ -2264,25 +2282,25 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
             )
         )
 
-    def test_no_instance_dict(self):
+    def test_no_instance_dict(self) -> None:
         """Test that FreeFlightUnsteadyRingVortexLatticeMethodSolver instances have no
         __dict__.
         """
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
-    def test_dynamic_attribute_raises(self):
+    def test_dynamic_attribute_raises(self) -> None:
         """Test that dynamic attribute assignment raises AttributeError."""
         with self.assertRaises(AttributeError):
-            self.solver.nonexistent_attribute = 42
+            setattr(self.solver, "nonexistent_attribute", 42)
 
-    def test_property_access(self):
+    def test_property_access(self) -> None:
         """Test that the inherited unsteady_problem remains accessible."""
         self.assertIsInstance(
             self.solver.unsteady_problem,
             ps.problems.FreeFlightUnsteadyProblem,
         )
 
-    def test_deepcopy(self):
+    def test_deepcopy(self) -> None:
         """Test that copy.deepcopy produces a correct independent copy."""
         copied = copy.deepcopy(self.solver)
 

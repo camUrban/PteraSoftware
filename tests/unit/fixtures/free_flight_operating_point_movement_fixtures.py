@@ -6,7 +6,9 @@ import pterasoftware as ps
 from . import operating_point_fixtures
 
 
-def make_basic_free_flight_operating_point_movement_fixture():
+def make_basic_free_flight_operating_point_movement_fixture() -> (
+    ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement
+):
     """This method makes a fixture that is a FreeFlightOperatingPointMovement for
     general testing.
 

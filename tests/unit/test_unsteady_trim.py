@@ -9,12 +9,14 @@ from tests.unit.fixtures import problem_fixtures
 class TestAnalyzeUnsteadyTrim(unittest.TestCase):
     """A class with functions to test analyze_unsteady_trim."""
 
+    problem: ps.problems.UnsteadyProblem
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all analyze_unsteady_trim tests."""
         cls.problem = problem_fixtures.make_basic_unsteady_problem_fixture()
 
-    def test_problem_validation(self):
+    def test_problem_validation(self) -> None:
         """Test problem parameter validation."""
 
         with self.assertRaises(TypeError):
@@ -26,7 +28,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_multiple_airplane_movements_validation(self):
+    def test_multiple_airplane_movements_validation(self) -> None:
         """Test that only one AirplaneMovement is allowed."""
 
         problem = problem_fixtures.make_multi_airplane_unsteady_problem_fixture()
@@ -40,7 +42,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_boundsVCg__E_validation(self):
+    def test_boundsVCg__E_validation(self) -> None:
         """Test boundsVCg__E parameter validation."""
 
         with self.assertRaises(TypeError):
@@ -88,7 +90,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_alpha_bounds_validation(self):
+    def test_alpha_bounds_validation(self) -> None:
         """Test alpha_bounds parameter validation."""
 
         with self.assertRaises(TypeError):
@@ -127,7 +129,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_beta_bounds_validation(self):
+    def test_beta_bounds_validation(self) -> None:
         """Test beta_bounds parameter validation."""
 
         with self.assertRaises(TypeError):
@@ -166,7 +168,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_boundsExternalFX_W_validation(self):
+    def test_boundsExternalFX_W_validation(self) -> None:
         """Test boundsExternalFX_W parameter validation."""
 
         with self.assertRaises(TypeError):
@@ -205,7 +207,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(10.0, -10.0),
             )
 
-    def test_objective_cut_off_validation(self):
+    def test_objective_cut_off_validation(self) -> None:
         """Test objective_cut_off parameter validation."""
 
         with self.assertRaises(ValueError):
@@ -228,7 +230,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 objective_cut_off=-1.0,
             )
 
-    def test_num_calls_validation(self):
+    def test_num_calls_validation(self) -> None:
         """Test num_calls parameter validation."""
 
         with self.assertRaises(ValueError):
@@ -261,7 +263,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 num_calls=-1,
             )
 
-    def test_base_operating_point_parameter_bounds_validation(self):
+    def test_base_operating_point_parameter_bounds_validation(self) -> None:
         """Test that the base operating point values must lie within the supplied
         bounds.
         """

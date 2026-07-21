@@ -6,7 +6,7 @@ import numpy as np
 from pterasoftware import _panel
 
 
-def make_basic_panel_fixture():
+def make_basic_panel_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel for testing purposes.
 
     The Panel is a simple rectangular panel with 1.0 m chord and 0.5 m span, lying
@@ -26,7 +26,7 @@ def make_basic_panel_fixture():
     return basic_panel_fixture
 
 
-def make_leading_and_trailing_edge_panel_fixture():
+def make_leading_and_trailing_edge_panel_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel at both leading and trailing edges.
 
     This represents a Panel on a single chordwise panel Wing.
@@ -45,7 +45,7 @@ def make_leading_and_trailing_edge_panel_fixture():
     return leading_and_trailing_edge_panel_fixture
 
 
-def make_panel_with_set_once_attributes_fixture():
+def make_panel_with_set_once_attributes_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel with set once attributes populated.
 
     The Panel has is_right_edge, is_left_edge, local_chordwise_position, and
@@ -71,7 +71,7 @@ def make_panel_with_set_once_attributes_fixture():
     return panel_with_set_once_attributes_fixture
 
 
-def make_panel_with_gp1_positions_fixture():
+def make_panel_with_gp1_positions_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel with GP1 positions set.
 
     The GP1 positions are offset from the local positions by [10.0, 20.0, 5.0].
@@ -98,7 +98,7 @@ def make_panel_with_gp1_positions_fixture():
     return panel_with_gp1_positions_fixture
 
 
-def make_fully_configured_panel_fixture():
+def make_fully_configured_panel_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel with all set once attributes set.
 
     This includes mesh position attributes and GP1 positions.
@@ -131,7 +131,7 @@ def make_fully_configured_panel_fixture():
     return fully_configured_panel_fixture
 
 
-def make_panel_with_cached_properties_fixture():
+def make_panel_with_cached_properties_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel with cached properties accessed.
 
     Accessing the cached properties causes them to be computed and stored.

@@ -1,6 +1,7 @@
 """This module contains classes to test WingMovements."""
 
 import unittest
+from typing import Any
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -14,7 +15,7 @@ from tests.unit.fixtures import (
 class TestWingMovement(unittest.TestCase):
     """This is a class with functions to test WingMovements."""
 
-    def test_is_subclass_of_core(self):
+    def test_is_subclass_of_core(self) -> None:
         """Test that WingMovement is a subclass of CoreWingMovement."""
         self.assertTrue(
             issubclass(
@@ -23,7 +24,7 @@ class TestWingMovement(unittest.TestCase):
             )
         )
 
-    def test_instantiation_returns_correct_type(self):
+    def test_instantiation_returns_correct_type(self) -> None:
         """Test that WingMovement instantiation returns a WingMovement."""
         base_wing = geometry_fixtures.make_origin_wing_fixture()
         wing_cross_section_movements = [
@@ -39,10 +40,10 @@ class TestWingMovement(unittest.TestCase):
             ps.movements.wing_movement.WingMovement,
         )
 
-    def test_rejects_core_wing_cross_section_movement_children(self):
+    def test_rejects_core_wing_cross_section_movement_children(self) -> None:
         """Test that WingMovement rejects CoreWingCrossSectionMovement instances."""
         base_wing = geometry_fixtures.make_origin_wing_fixture()
-        wing_cross_section_movements = [
+        wing_cross_section_movements: Any = [
             core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
             core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
         ]
@@ -52,7 +53,7 @@ class TestWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wing_cross_section_movements,
             )
 
-    def test_generate_wings_returns_wings(self):
+    def test_generate_wings_returns_wings(self) -> None:
         """Test that generate_wings returns Wings when called through the public
         class.
         """

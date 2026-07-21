@@ -5,7 +5,9 @@ import pterasoftware as ps
 from . import airplane_movement_fixtures, operating_point_fixtures
 
 
-def make_basic_aeroelastic_movement_fixture():
+def make_basic_aeroelastic_movement_fixture() -> (
+    ps.movements.aeroelastic_movement.AeroelasticMovement
+):
     """This method makes a fixture that is an AeroelasticMovement for testing.
 
     :return basic_aeroelastic_movement_fixture: AeroelasticMovement
@@ -104,7 +106,7 @@ def make_basic_aeroelastic_movement_fixture():
     return basic_aeroelastic_movement_fixture
 
 
-def make_static_movement_fixture():
+def make_static_movement_fixture() -> ps.movements.movement.Movement:
     """This method makes a fixture that is a Movement with all static components.
 
     :return static_movement_fixture: Movement
@@ -129,7 +131,7 @@ def make_static_movement_fixture():
     return static_movement_fixture
 
 
-def make_basic_movement_fixture():
+def make_basic_movement_fixture() -> ps.movements.movement.Movement:
     """This method makes a fixture that is a Movement with general-purpose values.
 
     :return basic_movement_fixture: Movement
@@ -154,7 +156,9 @@ def make_basic_movement_fixture():
     return basic_movement_fixture
 
 
-def make_static_movement_with_explicit_num_steps_fixture():
+def make_static_movement_with_explicit_num_steps_fixture() -> (
+    ps.movements.movement.Movement
+):
     """This method makes a fixture that is a Movement with static motion and
     explicitly set num_steps.
 
@@ -180,7 +184,9 @@ def make_static_movement_with_explicit_num_steps_fixture():
     return static_movement_with_explicit_num_steps_fixture
 
 
-def make_non_static_movement_with_explicit_num_steps_fixture():
+def make_non_static_movement_with_explicit_num_steps_fixture() -> (
+    ps.movements.movement.Movement
+):
     """This method makes a fixture that is a Movement with non static motion and
     explicitly set num_steps.
 
@@ -208,7 +214,7 @@ def make_non_static_movement_with_explicit_num_steps_fixture():
     return non_static_movement_with_explicit_num_steps_fixture
 
 
-def make_movement_with_custom_delta_time_fixture():
+def make_movement_with_custom_delta_time_fixture() -> ps.movements.movement.Movement:
     """This method makes a fixture that is a Movement with custom delta_time.
 
     :return movement_with_custom_delta_time_fixture: Movement
@@ -234,7 +240,9 @@ def make_movement_with_custom_delta_time_fixture():
     return movement_with_custom_delta_time_fixture
 
 
-def make_aeroelastic_movement_with_standard_wing_fixture():
+def make_aeroelastic_movement_with_standard_wing_fixture() -> (
+    ps.movements.aeroelastic_movement.AeroelasticMovement
+):
     """This method makes a fixture that is an AeroelasticMovement whose
     AeroelasticAirplaneMovement holds a standard WingMovement instead of an
     AeroelasticWingMovement.
@@ -335,7 +343,7 @@ def make_aeroelastic_movement_with_standard_wing_fixture():
     )
 
 
-def make_movement_with_multiple_airplanes_fixture():
+def make_movement_with_multiple_airplanes_fixture() -> ps.movements.movement.Movement:
     """This method makes a fixture that is a Movement with multiple AirplaneMovements.
 
     :return movement_with_multiple_airplanes_fixture: Movement

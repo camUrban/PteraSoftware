@@ -1,6 +1,7 @@
 """This module contains a class to test oscillation functions."""
 
 import unittest
+from collections.abc import Callable
 
 import numpy.testing as npt
 
@@ -12,8 +13,23 @@ from tests.unit.fixtures import oscillation_fixtures
 class TestOscillation(unittest.TestCase):
     """This is a class with functions to test oscillation functions."""
 
+    static_amp: float
+    static_period: float
+    static_phase: float
+    static_base: float
+    phase_offset_amp: float
+    phase_offset_period: float
+    phase_offset_phase: float
+    phase_offset_base: float
+    max_phase_amp: float
+    max_phase_period: float
+    max_phase_phase: float
+    max_phase_base: float
+    time: float
+    valid_custom_sine: Callable[[float], float]
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         """Set up test fixtures once for all oscillation function tests."""
         # Parameter fixtures.
         (
@@ -45,7 +61,7 @@ class TestOscillation(unittest.TestCase):
             oscillation_fixtures.make_valid_custom_sine_function_fixture()
         )
 
-    def test_oscillating_sin_at_time_static_parameters(self):
+    def test_oscillating_sin_at_time_static_parameters(self) -> None:
         """Test oscillating_sin_at_time with static parameters."""
         result = _oscillation.oscillating_sin_at_time(
             amp=self.static_amp,
@@ -58,7 +74,7 @@ class TestOscillation(unittest.TestCase):
         # Verify output is equal to base.
         npt.assert_allclose(result, self.static_base, rtol=1e-10, atol=1e-14)
 
-    def test_oscillating_sin_at_time_phase_offset(self):
+    def test_oscillating_sin_at_time_phase_offset(self) -> None:
         """Test oscillating_sin_at_time with phase offset."""
         result = _oscillation.oscillating_sin_at_time(
             amp=self.phase_offset_amp,
@@ -72,7 +88,7 @@ class TestOscillation(unittest.TestCase):
         # degree phase should equal the amplitude.
         npt.assert_allclose(result, self.phase_offset_amp, rtol=1e-10, atol=1e-14)
 
-    def test_oscillating_sin_at_time_max_phase(self):
+    def test_oscillating_sin_at_time_max_phase(self) -> None:
         """Test oscillating_sin_at_time with maximum phase."""
         result = _oscillation.oscillating_sin_at_time(
             amp=self.max_phase_amp,
@@ -86,7 +102,7 @@ class TestOscillation(unittest.TestCase):
         # with 180.0 degree phase should be approximately 0.0.
         npt.assert_allclose(result, 0.0, rtol=1e-10, atol=1e-14)
 
-    def test_oscillating_lin_at_time_static_parameters(self):
+    def test_oscillating_lin_at_time_static_parameters(self) -> None:
         """Test oscillating_lin_at_time with static parameters."""
         result = _oscillation.oscillating_lin_at_time(
             amp=self.static_amp,
@@ -99,7 +115,7 @@ class TestOscillation(unittest.TestCase):
         # Verify output is equal to base.
         npt.assert_allclose(result, self.static_base, rtol=1e-10, atol=1e-14)
 
-    def test_oscillating_lin_at_time_phase_offset(self):
+    def test_oscillating_lin_at_time_phase_offset(self) -> None:
         """Test oscillating_lin_at_time with phase offset."""
         result = _oscillation.oscillating_lin_at_time(
             amp=self.phase_offset_amp,
@@ -113,7 +129,7 @@ class TestOscillation(unittest.TestCase):
         # 90.0 degree phase should be near maximum.
         self.assertGreater(result, 0.5 * self.phase_offset_amp)
 
-    def test_oscillating_custom_at_time_static_parameters(self):
+    def test_oscillating_custom_at_time_static_parameters(self) -> None:
         """Test oscillating_custom_at_time with static parameters."""
         result = _oscillation.oscillating_custom_at_time(
             amp=self.static_amp,

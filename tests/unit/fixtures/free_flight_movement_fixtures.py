@@ -9,7 +9,9 @@ from . import (
 )
 
 
-def make_basic_free_flight_movement_fixture():
+def make_basic_free_flight_movement_fixture() -> (
+    ps.movements.free_flight_movement.FreeFlightMovement
+):
     """This method makes a fixture that is a FreeFlightMovement with general-purpose
     moderate values.
 
@@ -40,7 +42,9 @@ def make_basic_free_flight_movement_fixture():
     return basic_free_flight_movement_fixture
 
 
-def make_static_free_flight_movement_fixture():
+def make_static_free_flight_movement_fixture() -> (
+    ps.movements.free_flight_movement.FreeFlightMovement
+):
     """This method makes a fixture that is a FreeFlightMovement with all static
     components.
 
@@ -98,7 +102,9 @@ def make_static_free_flight_movement_fixture():
     return static_free_flight_movement_fixture
 
 
-def make_free_flight_movement_with_multiple_airplanes_fixture():
+def make_free_flight_movement_with_multiple_airplanes_fixture() -> (
+    ps.movements.free_flight_movement.FreeFlightMovement
+):
     """This method makes a fixture that is a FreeFlightMovement with multiple
     AirplaneMovements.
 

@@ -396,8 +396,8 @@ class TestUnsteadyConvergence(unittest.TestCase):
             )
 
     def test_edge_defined_unsteady_convergence(self) -> None:
-        """This method tests that the function finds pre-known convergence parameters for
-        an UnsteadyProblem whose Airplane has an edge-defined Wing with static
+        """This method tests that the function finds pre-known convergence parameters
+        for an UnsteadyProblem whose Airplane has an edge-defined Wing with static
         WingCrossSectionMovements.
 
         :return: None
@@ -440,9 +440,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
         self.assertIsNone(converged_parameters[4])
 
     def test_rejects_non_static_edge_defined_movement(self) -> None:
-        """This method tests that the function rejects an UnsteadyProblem whose
-        edge-defined Wing carries a non-static WingCrossSectionMovement, which resampling
-        the Wing cannot preserve.
+        """This method tests that the function rejects an UnsteadyProblem whose edge-
+        defined Wing carries a non-static WingCrossSectionMovement, which resampling the
+        Wing cannot preserve.
 
         A non-static WingCrossSectionMovement makes the Movement variable, so num_cycles
         bounds are supplied.

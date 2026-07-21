@@ -1,8 +1,8 @@
-"""This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with
-variable, multi-wing geometry.
+"""This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with variable,
+multi-wing geometry.
 
-Note: This case does not currently test the solver's output against an expected
-output. Instead, it just tests that the solver doesn't throw an error.
+Note: This case does not currently test the solver's output against an expected output.
+Instead, it just tests that the solver doesn't throw an error.
 """
 
 import unittest
@@ -14,8 +14,8 @@ from tests.integration.fixtures import solver_fixtures
 class TestUnsteadyRingVortexLatticeMethodMultipleWingVariableGeometry(
     unittest.TestCase
 ):
-    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
-    multi-wing, variable geometry."""
+    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on multi-
+    wing, variable geometry."""
 
     def setUp(self) -> None:
         """This method sets up the test.

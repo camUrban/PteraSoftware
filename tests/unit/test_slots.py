@@ -156,8 +156,7 @@ class TestOperatingPointSlots(unittest.TestCase):
 
     def test_property_access_surface(self) -> None:
         """Test that surface effect properties are accessible on a surface enabled
-        OperatingPoint.
-        """
+        OperatingPoint."""
         self.assertIsNotNone(self.surface_op.surfaceNormal_E)
         self.assertIsNotNone(self.surface_op.surfacePoint_E_Eo)
         self.assertIsNotNone(self.surface_op.surfaceNormal_GP1)
@@ -166,8 +165,7 @@ class TestOperatingPointSlots(unittest.TestCase):
 
     def test_property_access_no_surface(self) -> None:
         """Test that surface effect properties return None when no surface is
-        defined.
-        """
+        defined."""
         self.assertIsNone(self.basic_op.surfaceNormal_GP1)
         self.assertIsNone(self.basic_op.surfacePoint_GP1_CgP1)
         self.assertIsNone(self.basic_op.surfaceReflect_T_act_GP1_CgP1)
@@ -212,8 +210,7 @@ class TestOperatingPointSlots(unittest.TestCase):
 
     def test_deepcopy_with_surface(self) -> None:
         """Test that copy.deepcopy works correctly on a surface enabled
-        OperatingPoint.
-        """
+        OperatingPoint."""
         # Access surface cached properties before copying.
         _ = self.surface_op.surfaceNormal_GP1
         _ = self.surface_op.surfacePoint_GP1_CgP1
@@ -243,9 +240,7 @@ class TestOperatingPointSlots(unittest.TestCase):
 
 
 class TestWingCrossSectionSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    WingCrossSection.
-    """
+    """This class contains tests to verify __slots__ enforcement on WingCrossSection."""
 
     def setUp(self) -> None:
         """Set up test fixtures for WingCrossSection slots tests."""
@@ -755,11 +750,12 @@ class TestSteadyProblemSlots(unittest.TestCase):
 
 
 class TestUnsteadyProblemSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    UnsteadyProblem. Core-owned properties (only_final_results, num_steps,
-    delta_time, first_averaging_step, first_results_step, and the mutable load
-    lists) are tested at the CoreUnsteadyProblem level. This class tests
-    UnsteadyProblem-specific slots and deepcopy.
+    """This class contains tests to verify __slots__ enforcement on UnsteadyProblem.
+
+    Core-owned properties (only_final_results, num_steps, delta_time,
+    first_averaging_step, first_results_step, and the mutable load lists) are tested at
+    the CoreUnsteadyProblem level. This class tests UnsteadyProblem-specific slots and
+    deepcopy.
     """
 
     def setUp(self) -> None:
@@ -813,12 +809,13 @@ class TestUnsteadyProblemSlots(unittest.TestCase):
 
 class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    FreeFlightUnsteadyProblem. Core-owned properties (only_final_results, num_steps,
-    delta_time, first_averaging_step, first_results_step, and the mutable load
-    lists) are tested at the CoreUnsteadyProblem level. Coupled-owned properties
-    (movement, steady_problems, get_steady_problem) are tested at the
-    _CoupledUnsteadyProblem level. This class tests
-    FreeFlightUnsteadyProblem-specific slots.
+    FreeFlightUnsteadyProblem.
+
+    Core-owned properties (only_final_results, num_steps, delta_time,
+    first_averaging_step, first_results_step, and the mutable load lists) are tested at
+    the CoreUnsteadyProblem level. Coupled-owned properties (movement, steady_problems,
+    get_steady_problem) are tested at the _CoupledUnsteadyProblem level. This class
+    tests FreeFlightUnsteadyProblem-specific slots.
     """
 
     def setUp(self) -> None:
@@ -842,8 +839,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that FreeFlightUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem.
-        """
+        _CoupledUnsteadyProblem."""
         self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
 
     def test_property_access(self) -> None:
@@ -857,8 +853,7 @@ class TestFreeFlightUnsteadyProblemSlots(unittest.TestCase):
 
 class TestCoreOperatingPointMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    CoreOperatingPointMovement.
-    """
+    CoreOperatingPointMovement."""
 
     def setUp(self) -> None:
         """Set up test fixtures for CoreOperatingPointMovement slots tests."""
@@ -925,8 +920,7 @@ class TestCoreOperatingPointMovementSlots(unittest.TestCase):
 
 class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    CoreWingCrossSectionMovement.
-    """
+    CoreWingCrossSectionMovement."""
 
     def setUp(self) -> None:
         """Set up test fixtures for CoreWingCrossSectionMovement slots tests."""
@@ -1051,9 +1045,7 @@ class TestCoreWingCrossSectionMovementSlots(unittest.TestCase):
 
 
 class TestCoreWingMovementSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    CoreWingMovement.
-    """
+    """This class contains tests to verify __slots__ enforcement on CoreWingMovement."""
 
     def setUp(self) -> None:
         """Set up test fixtures for CoreWingMovement slots tests."""
@@ -1155,8 +1147,7 @@ class TestCoreWingMovementSlots(unittest.TestCase):
 
 class TestCoreAirplaneMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    CoreAirplaneMovement.
-    """
+    CoreAirplaneMovement."""
 
     def setUp(self) -> None:
         """Set up test fixtures for CoreAirplaneMovement slots tests."""
@@ -1294,8 +1285,7 @@ class TestCoreMovementSlots(unittest.TestCase):
 
 class TestCoreUnsteadyProblemSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    CoreUnsteadyProblem.
-    """
+    CoreUnsteadyProblem."""
 
     def setUp(self) -> None:
         """Set up test fixtures for CoreUnsteadyProblem slots tests."""
@@ -1357,9 +1347,10 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
 
 class TestOperatingPointMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    OperatingPointMovement. All property and deepcopy behavior is tested at the
-    CoreOperatingPointMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    OperatingPointMovement.
+
+    All property and deepcopy behavior is tested at the CoreOperatingPointMovement
+    level. This class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1388,16 +1379,16 @@ class TestOperatingPointMovementSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that OperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
+        CoreOperatingPointMovement."""
         self.assertIsInstance(self.opm, _core.CoreOperatingPointMovement)
 
 
 class TestWingCrossSectionMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    WingCrossSectionMovement. All property and deepcopy behavior is tested at the
-    CoreWingCrossSectionMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    WingCrossSectionMovement.
+
+    All property and deepcopy behavior is tested at the CoreWingCrossSectionMovement
+    level. This class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1426,18 +1417,17 @@ class TestWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that WingCrossSectionMovement is a subclass of
-        CoreWingCrossSectionMovement.
-        """
+        CoreWingCrossSectionMovement."""
         self.assertIsInstance(
             self.wing_cross_section_movement, _core.CoreWingCrossSectionMovement
         )
 
 
 class TestWingMovementSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    WingMovement. All property and deepcopy behavior is tested at the
-    CoreWingMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    """This class contains tests to verify __slots__ enforcement on WingMovement.
+
+    All property and deepcopy behavior is tested at the CoreWingMovement level. This
+    class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1463,10 +1453,10 @@ class TestWingMovementSlots(unittest.TestCase):
 
 
 class TestAirplaneMovementSlots(unittest.TestCase):
-    """This class contains tests to verify __slots__ enforcement on
-    AirplaneMovement. All property and deepcopy behavior is tested at the
-    CoreAirplaneMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    """This class contains tests to verify __slots__ enforcement on AirplaneMovement.
+
+    All property and deepcopy behavior is tested at the CoreAirplaneMovement level. This
+    class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1497,6 +1487,7 @@ class TestAirplaneMovementSlots(unittest.TestCase):
 
 class TestMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on Movement.
+
     Core-owned properties (airplane_movements, operating_point_movement, delta_time,
     num_steps, static, max_period, lcm_period, min_period) are tested at the
     CoreMovement level. This class tests Movement-specific slots and deepcopy.
@@ -1591,19 +1582,16 @@ class TestMuJoCoModelSlots(unittest.TestCase):
 
 class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    SteadyHorseshoeVortexLatticeMethodSolver.
-    """
+    SteadyHorseshoeVortexLatticeMethodSolver."""
 
     def setUp(self) -> None:
         """Set up test fixtures for SteadyHorseshoeVortexLatticeMethodSolver slots
-        tests.
-        """
+        tests."""
         self.solver = solver_fixtures.make_steady_horseshoe_solver_fixture()
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
-        SteadyHorseshoeVortexLatticeMethodSolver.
-        """
+        SteadyHorseshoeVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
                 ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
@@ -1613,8 +1601,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
 
     def test_no_instance_dict(self) -> None:
         """Test that SteadyHorseshoeVortexLatticeMethodSolver instances have no
-        __dict__.
-        """
+        __dict__."""
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
     def test_dynamic_attribute_raises(self) -> None:
@@ -1660,8 +1647,7 @@ class TestSteadyHorseshoeSolverSlots(unittest.TestCase):
 
 class TestSteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    SteadyRingVortexLatticeMethodSolver.
-    """
+    SteadyRingVortexLatticeMethodSolver."""
 
     def setUp(self) -> None:
         """Set up test fixtures for SteadyRingVortexLatticeMethodSolver slots tests."""
@@ -1733,19 +1719,15 @@ class TestSteadyRingSolverSlots(unittest.TestCase):
 
 class TestUnsteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    UnsteadyRingVortexLatticeMethodSolver.
-    """
+    UnsteadyRingVortexLatticeMethodSolver."""
 
     def setUp(self) -> None:
         """Set up test fixtures for UnsteadyRingVortexLatticeMethodSolver slots
-        tests.
-        """
+        tests."""
         self.solver = solver_fixtures.make_unsteady_ring_solver_fixture()
 
     def test_slots_defined(self) -> None:
-        """Test that __slots__ is defined on
-        UnsteadyRingVortexLatticeMethodSolver.
-        """
+        """Test that __slots__ is defined on UnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
                 ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
@@ -1755,8 +1737,7 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
 
     def test_no_instance_dict(self) -> None:
         """Test that UnsteadyRingVortexLatticeMethodSolver instances have no
-        __dict__.
-        """
+        __dict__."""
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
     def test_dynamic_attribute_raises(self) -> None:
@@ -1821,9 +1802,10 @@ class TestUnsteadyRingSolverSlots(unittest.TestCase):
 
 class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    AeroelasticWingCrossSectionMovement. All property and deepcopy behavior is tested at
-    the CoreWingCrossSectionMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    AeroelasticWingCrossSectionMovement.
+
+    All property and deepcopy behavior is tested at the CoreWingCrossSectionMovement
+    level. This class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1858,8 +1840,7 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that AeroelasticWingCrossSectionMovement is a subclass of
-        CoreWingCrossSectionMovement.
-        """
+        CoreWingCrossSectionMovement."""
         self.assertIsInstance(
             self.aeroelastic_wing_cross_section_movement,
             _core.CoreWingCrossSectionMovement,
@@ -1868,10 +1849,11 @@ class TestAeroelasticWingCrossSectionMovementSlots(unittest.TestCase):
 
 class TestAeroelasticWingMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    AeroelasticWingMovement. The second-derivative slot's property and deepcopy behavior
-    is tested in test_aeroelastic_wing_movement.py, and Core-owned behavior at the
-    CoreWingMovement level. This class verifies that the public subclass preserves
-    __slots__ enforcement.
+    AeroelasticWingMovement.
+
+    The second-derivative slot's property and deepcopy behavior is tested in
+    test_aeroelastic_wing_movement.py, and Core-owned behavior at the CoreWingMovement
+    level. This class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1905,9 +1887,10 @@ class TestAeroelasticWingMovementSlots(unittest.TestCase):
 
 class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    AeroelasticAirplaneMovement. All property and deepcopy behavior is tested at the
-    CoreAirplaneMovement level. This class verifies that the public subclass preserves
-    __slots__ enforcement.
+    AeroelasticAirplaneMovement.
+
+    All property and deepcopy behavior is tested at the CoreAirplaneMovement level. This
+    class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -1936,8 +1919,7 @@ class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that AeroelasticAirplaneMovement is a subclass of
-        CoreAirplaneMovement.
-        """
+        CoreAirplaneMovement."""
         self.assertIsInstance(
             self.aeroelastic_airplane_movement, _core.CoreAirplaneMovement
         )
@@ -1945,6 +1927,7 @@ class TestAeroelasticAirplaneMovementSlots(unittest.TestCase):
 
 class TestAeroelasticMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on AeroelasticMovement.
+
     Core-owned properties are tested at the CoreMovement level. This class tests
     AeroelasticMovement-specific slots and deepcopy.
     """
@@ -2014,9 +1997,10 @@ class TestAeroelasticMovementSlots(unittest.TestCase):
 
 class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    AeroelasticUnsteadyProblem. Core-owned properties are tested at the
-    CoreUnsteadyProblem level; this class tests AeroelasticUnsteadyProblem-specific
-    slots, properties, and deepcopy.
+    AeroelasticUnsteadyProblem.
+
+    Core-owned properties are tested at the CoreUnsteadyProblem level; this class tests
+    AeroelasticUnsteadyProblem-specific slots, properties, and deepcopy.
     """
 
     def setUp(self) -> None:
@@ -2040,8 +2024,7 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that AeroelasticUnsteadyProblem is a subclass of
-        _CoupledUnsteadyProblem.
-        """
+        _CoupledUnsteadyProblem."""
         self.assertIsInstance(self.problem, ps.problems._CoupledUnsteadyProblem)
 
     def test_config_property_access(self) -> None:
@@ -2090,19 +2073,16 @@ class TestAeroelasticUnsteadyProblemSlots(unittest.TestCase):
 
 class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    AeroelasticUnsteadyRingVortexLatticeMethodSolver.
-    """
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver."""
 
     def setUp(self) -> None:
         """Set up test fixtures for AeroelasticUnsteadyRingVortexLatticeMethodSolver
-        slots tests.
-        """
+        slots tests."""
         self.solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
-        AeroelasticUnsteadyRingVortexLatticeMethodSolver.
-        """
+        AeroelasticUnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
                 ps.aeroelastic_unsteady_ring_vortex_lattice_method.AeroelasticUnsteadyRingVortexLatticeMethodSolver,
@@ -2112,8 +2092,7 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
 
     def test_no_instance_dict(self) -> None:
         """Test that AeroelasticUnsteadyRingVortexLatticeMethodSolver instances have no
-        __dict__.
-        """
+        __dict__."""
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
     def test_dynamic_attribute_raises(self) -> None:
@@ -2154,9 +2133,10 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
 
 class TestFreeFlightOperatingPointMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    FreeFlightOperatingPointMovement. All property and deepcopy behavior is tested at
-    the CoreOperatingPointMovement level. This class verifies that the public subclass
-    preserves __slots__ enforcement.
+    FreeFlightOperatingPointMovement.
+
+    All property and deepcopy behavior is tested at the CoreOperatingPointMovement
+    level. This class verifies that the public subclass preserves __slots__ enforcement.
     """
 
     def setUp(self) -> None:
@@ -2185,13 +2165,13 @@ class TestFreeFlightOperatingPointMovementSlots(unittest.TestCase):
 
     def test_subclass(self) -> None:
         """Test that FreeFlightOperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
+        CoreOperatingPointMovement."""
         self.assertIsInstance(self.fopm, _core.CoreOperatingPointMovement)
 
 
 class TestFreeFlightMovementSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on FreeFlightMovement.
+
     Core-owned properties are tested at the CoreMovement level. This class tests
     FreeFlightMovement-specific slots and deepcopy.
     """
@@ -2259,22 +2239,21 @@ class TestFreeFlightMovementSlots(unittest.TestCase):
 
 class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
     """This class contains tests to verify __slots__ enforcement on
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver. The solver's only stored state is the
-    transient working state for the strongly coupled sub-iteration (cleared after each
-    step), so this class verifies __slots__ enforcement and that the inherited problem
-    remains accessible.
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver.
+
+    The solver's only stored state is the transient working state for the strongly
+    coupled sub-iteration (cleared after each step), so this class verifies __slots__
+    enforcement and that the inherited problem remains accessible.
     """
 
     def setUp(self) -> None:
         """Set up test fixtures for FreeFlightUnsteadyRingVortexLatticeMethodSolver
-        slots tests.
-        """
+        slots tests."""
         self.solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
 
     def test_slots_defined(self) -> None:
         """Test that __slots__ is defined on
-        FreeFlightUnsteadyRingVortexLatticeMethodSolver.
-        """
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver."""
         self.assertTrue(
             hasattr(
                 ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -2284,8 +2263,7 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
 
     def test_no_instance_dict(self) -> None:
         """Test that FreeFlightUnsteadyRingVortexLatticeMethodSolver instances have no
-        __dict__.
-        """
+        __dict__."""
         self.assertFalse(hasattr(self.solver, "__dict__"))
 
     def test_dynamic_attribute_raises(self) -> None:

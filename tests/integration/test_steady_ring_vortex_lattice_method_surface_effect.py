@@ -44,10 +44,10 @@ class TestSteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
         """This method tests that ground effect increases the lift coefficient
         magnitude.
 
-        In ground effect, the image vortex system reduces downwash, which increases
-        the effective angle of attack and therefore the lift. The lift coefficient
-        (negative of the z-component of forceCoefficients_W) should be larger in
-        magnitude with the surface effect than without.
+        In ground effect, the image vortex system reduces downwash, which increases the
+        effective angle of attack and therefore the lift. The lift coefficient (negative
+        of the z-component of forceCoefficients_W) should be larger in magnitude with
+        the surface effect than without.
 
         :return: None
         """

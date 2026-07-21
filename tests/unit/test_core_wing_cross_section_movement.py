@@ -723,7 +723,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
 
     def test_amp_period_relationship_angles(self) -> None:
-        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding period must be 0."""
+        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding period
+        must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
         base_wing_cross_section = (
@@ -747,7 +748,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
 
     def test_amp_phase_relationship_angles(self) -> None:
-        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding phase must be 0."""
+        """Test that if ampAngles_Wcsp_to_Wcs_ixyz element is 0, corresponding phase
+        must be 0."""
         from tests.unit.fixtures import geometry_fixtures
 
         base_wing_cross_section = (
@@ -839,8 +841,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
 
     def test_all_periods_contains_duplicates(self) -> None:
         """Test that all_periods contains duplicate periods if they appear multiple
-        times.
-        """
+        times."""
         wing_cross_section_movement = self.basic_core_wing_cross_section_movement
         # Both periodLp_Wcsp_Lpp and periodAngles_Wcsp_to_Wcs_ixyz are (2.0, 2.0, 2.0).
         # Should return tuple with six 2.0 values (not deduplicated).
@@ -1032,7 +1033,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertFalse(np.allclose(z_positions[0], 0.0, atol=1e-10))
 
     def test_phase_offset_angles(self) -> None:
-        """Test that phase shifts initial angles correctly for angles_Wcsp_to_Wcs_ixyz."""
+        """Test that phase shifts initial angles correctly for
+        angles_Wcsp_to_Wcs_ixyz."""
         core_wing_cross_section_movement = (
             self.phase_offset_angles_core_wing_cross_section_movement
         )
@@ -1428,7 +1430,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
 
     def test_unsafe_amplitude_causes_error_Lp(self) -> None:
-        """Test that amplitude too high for base Lp value causes error during generation."""
+        """Test that amplitude too high for base Lp value causes error during
+        generation."""
         from tests.unit.fixtures import geometry_fixtures
 
         # Use root fixture with Lp_Wcsp_Lpp = [0.0, 0.0, 0.0].
@@ -1456,7 +1459,8 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
         self.assertIn("Lp_Wcsp_Lpp", str(context.exception))
 
     def test_unsafe_amplitude_causes_error_angles(self) -> None:
-        """Test that amplitude too high for base angle value causes error during generation."""
+        """Test that amplitude too high for base angle value causes error during
+        generation."""
         from tests.unit.fixtures import geometry_fixtures
 
         # Use root fixture with angles = [0.0, 0.0, 0.0].
@@ -1701,7 +1705,8 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         )
 
     def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self) -> None:
-        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+        """Test that deepcopied numpy arrays raise ValueError on in place
+        modification."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
 
@@ -1783,7 +1788,8 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
         self.assertEqual(copied.max_period, original_max_period)
 
     def test_deepcopy_generate_wing_cross_sections_produces_same_results(self) -> None:
-        """Test that generate_wing_cross_sections produces same results after deepcopy."""
+        """Test that generate_wing_cross_sections produces same results after
+        deepcopy."""
         original = self.core_wing_cross_section_movement
         copied = copy.deepcopy(original)
 
@@ -1819,7 +1825,8 @@ class TestCoreWingCrossSectionMovementDeepcopy(unittest.TestCase):
             )
 
     def test_deepcopy_handles_memo_correctly(self) -> None:
-        """Test that deepcopy handles the memo dict correctly for circular references."""
+        """Test that deepcopy handles the memo dict correctly for circular
+        references."""
         original = self.core_wing_cross_section_movement
         memo: dict[int, Any] = {}
 

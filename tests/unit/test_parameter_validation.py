@@ -214,7 +214,8 @@ class TestIntInRangeReturnInt(unittest.TestCase):
         self.assertIn("less than", str(context.exception))
 
     def test_invalid_min_inclusive_without_min_val(self) -> None:
-        """Test int_in_range_return_int raises ValueError with min_inclusive but no min_val."""
+        """Test int_in_range_return_int raises ValueError with min_inclusive but no
+        min_val."""
         with self.assertRaises(ValueError) as context:
             pv.int_in_range_return_int(5, "test_param", min_inclusive=True)
         self.assertIn(
@@ -222,7 +223,8 @@ class TestIntInRangeReturnInt(unittest.TestCase):
         )
 
     def test_invalid_min_val_without_min_inclusive(self) -> None:
-        """Test int_in_range_return_int raises ValueError with min_val but no min_inclusive."""
+        """Test int_in_range_return_int raises ValueError with min_val but no
+        min_inclusive."""
         with self.assertRaises(ValueError) as context:
             pv.int_in_range_return_int(5, "test_param", min_val=0)
         self.assertIn(
@@ -231,7 +233,8 @@ class TestIntInRangeReturnInt(unittest.TestCase):
         )
 
     def test_invalid_max_inclusive_without_max_val(self) -> None:
-        """Test int_in_range_return_int raises ValueError with max_inclusive but no max_val."""
+        """Test int_in_range_return_int raises ValueError with max_inclusive but no
+        max_val."""
         with self.assertRaises(ValueError) as context:
             pv.int_in_range_return_int(5, "test_param", max_inclusive=True)
         self.assertIn(
@@ -239,7 +242,8 @@ class TestIntInRangeReturnInt(unittest.TestCase):
         )
 
     def test_invalid_max_val_without_max_inclusive(self) -> None:
-        """Test int_in_range_return_int raises ValueError with max_val but no max_inclusive."""
+        """Test int_in_range_return_int raises ValueError with max_val but no
+        max_inclusive."""
         with self.assertRaises(ValueError) as context:
             pv.int_in_range_return_int(5, "test_param", max_val=10)
         self.assertIn(
@@ -355,7 +359,8 @@ class TestNumberInRangeReturnFloat(unittest.TestCase):
         self.assertIn("inf", str(context.exception).lower())
 
     def test_invalid_neg_inf(self) -> None:
-        """Test number_in_range_return_float raises ValueError with negative infinity."""
+        """Test number_in_range_return_float raises ValueError with negative
+        infinity."""
         invalid_value = pvf.make_invalid_neg_inf_fixture()
         with self.assertRaises(ValueError) as context:
             pv.number_in_range_return_float(invalid_value, "test_param")
@@ -376,7 +381,8 @@ class TestNumberInRangeReturnFloat(unittest.TestCase):
             )
 
     def test_invalid_parameter_combinations(self) -> None:
-        """Test number_in_range_return_float raises ValueError with invalid parameter combinations."""
+        """Test number_in_range_return_float raises ValueError with invalid parameter
+        combinations."""
         # min_inclusive without min_val
         with self.assertRaises(ValueError):
             pv.number_in_range_return_float(5.0, "test_param", min_inclusive=True)
@@ -460,13 +466,15 @@ class TestArrayLikeOfNumbersInRangeReturnFloat(unittest.TestCase):
         npt.assert_array_equal(result, np.array([1.0, 2.0, 3.0], dtype=float))
 
     def test_invalid_string_array(self) -> None:
-        """Test arrayLike_of_numbers_in_range_return_float raises TypeError with string array."""
+        """Test arrayLike_of_numbers_in_range_return_float raises TypeError with string
+        array."""
         with self.assertRaises(TypeError) as context:
             pv.arrayLike_of_numbers_in_range_return_float(["a", "b", "c"], "test_param")
         self.assertIn("test_param", str(context.exception))
 
     def test_invalid_array_with_nan(self) -> None:
-        """Test arrayLike_of_numbers_in_range_return_float raises ValueError with NaN."""
+        """Test arrayLike_of_numbers_in_range_return_float raises ValueError with
+        NaN."""
         invalid_array = pvf.make_invalid_array_with_nan_fixture()
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_numbers_in_range_return_float(invalid_array, "test_param")
@@ -474,14 +482,16 @@ class TestArrayLikeOfNumbersInRangeReturnFloat(unittest.TestCase):
         self.assertIn("nan", str(context.exception).lower())
 
     def test_invalid_array_with_inf(self) -> None:
-        """Test arrayLike_of_numbers_in_range_return_float raises ValueError with infinity."""
+        """Test arrayLike_of_numbers_in_range_return_float raises ValueError with
+        infinity."""
         invalid_array = pvf.make_invalid_array_with_inf_fixture()
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_numbers_in_range_return_float(invalid_array, "test_param")
         self.assertIn("test_param", str(context.exception))
 
     def test_invalid_below_min(self) -> None:
-        """Test arrayLike_of_numbers_in_range_return_float raises ValueError below min."""
+        """Test arrayLike_of_numbers_in_range_return_float raises ValueError below
+        min."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_numbers_in_range_return_float(
                 [-1.0, 2.0, 3.0],
@@ -492,7 +502,8 @@ class TestArrayLikeOfNumbersInRangeReturnFloat(unittest.TestCase):
         self.assertIn("test_param", str(context.exception))
 
     def test_invalid_above_max(self) -> None:
-        """Test arrayLike_of_numbers_in_range_return_float raises ValueError above max."""
+        """Test arrayLike_of_numbers_in_range_return_float raises ValueError above
+        max."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_numbers_in_range_return_float(
                 [1.0, 2.0, 11.0],
@@ -504,10 +515,12 @@ class TestArrayLikeOfNumbersInRangeReturnFloat(unittest.TestCase):
 
 
 class TestArrayLikeOfTwoDNumberVectorLikesReturnFloat(unittest.TestCase):
-    """A class with functions to test arrayLike_of_twoD_number_vectorLikes_return_float."""
+    """A class with functions to test
+    arrayLike_of_twoD_number_vectorLikes_return_float."""
 
     def test_valid_single_2d_vector(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float with a single 2D vector."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float with a single 2D
+        vector."""
         valid_vector = pvf.make_valid_2d_vector_fixture()
         result = pv.arrayLike_of_twoD_number_vectorLikes_return_float(
             valid_vector, "test_param"
@@ -516,7 +529,8 @@ class TestArrayLikeOfTwoDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertEqual(result.dtype, float)
 
     def test_valid_array_of_2d_vectors(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float with array of 2D vectors."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float with array of 2D
+        vectors."""
         valid_array = pvf.make_valid_2d_vectors_array_fixture()
         result = pv.arrayLike_of_twoD_number_vectorLikes_return_float(
             valid_array, "test_param"
@@ -525,21 +539,24 @@ class TestArrayLikeOfTwoDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertEqual(result.shape, (3, 2))
 
     def test_valid_list_of_2d_vectors(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float with list of 2D vectors."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float with list of 2D
+        vectors."""
         result = pv.arrayLike_of_twoD_number_vectorLikes_return_float(
             [[1.0, 2.0], [3.0, 4.0]], "test_param"
         )
         npt.assert_array_equal(result, np.array([[1.0, 2.0], [3.0, 4.0]], dtype=float))
 
     def test_invalid_scalar(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with scalar."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with
+        scalar."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_twoD_number_vectorLikes_return_float(5.0, "test_param")
         self.assertIn("test_param", str(context.exception))
         self.assertIn("scalar", str(context.exception).lower())
 
     def test_invalid_3d_vector(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with 3D vector."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with
+        3D vector."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_twoD_number_vectorLikes_return_float(
                 [1.0, 2.0, 3.0], "test_param"
@@ -548,7 +565,8 @@ class TestArrayLikeOfTwoDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertIn("2 elements", str(context.exception))
 
     def test_invalid_with_nan(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with NaN."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises ValueError with
+        NaN."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_twoD_number_vectorLikes_return_float(
                 [1.0, np.nan], "test_param"
@@ -557,7 +575,8 @@ class TestArrayLikeOfTwoDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertIn("nan", str(context.exception).lower())
 
     def test_invalid_string(self) -> None:
-        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises TypeError with string."""
+        """Test arrayLike_of_twoD_number_vectorLikes_return_float raises TypeError with
+        string."""
         with self.assertRaises(TypeError):
             pv.arrayLike_of_twoD_number_vectorLikes_return_float(
                 "invalid", "test_param"
@@ -590,13 +609,15 @@ class TestThreeDNumberVectorLikeReturnFloat(unittest.TestCase):
         self.assertEqual(result.shape, (3,))
 
     def test_valid_with_ints(self) -> None:
-        """Test threeD_number_vectorLike_return_float with integers (converted to float)."""
+        """Test threeD_number_vectorLike_return_float with integers (converted to
+        float)."""
         result = pv.threeD_number_vectorLike_return_float([1, 2, 3], "test_param")
         npt.assert_array_equal(result, np.array([1.0, 2.0, 3.0], dtype=float))
         self.assertEqual(result.dtype, float)
 
     def test_invalid_2d_vector(self) -> None:
-        """Test threeD_number_vectorLike_return_float raises ValueError with 2D vector."""
+        """Test threeD_number_vectorLike_return_float raises ValueError with 2D
+        vector."""
         invalid_vector = pvf.make_invalid_2d_vector_as_3d_fixture()
         with self.assertRaises(ValueError) as context:
             pv.threeD_number_vectorLike_return_float(invalid_vector, "test_param")
@@ -604,7 +625,8 @@ class TestThreeDNumberVectorLikeReturnFloat(unittest.TestCase):
         self.assertIn("3-element", str(context.exception))
 
     def test_invalid_4d_vector(self) -> None:
-        """Test threeD_number_vectorLike_return_float raises ValueError with 4D vector."""
+        """Test threeD_number_vectorLike_return_float raises ValueError with 4D
+        vector."""
         invalid_vector = pvf.make_invalid_4d_vector_as_3d_fixture()
         with self.assertRaises(ValueError) as context:
             pv.threeD_number_vectorLike_return_float(invalid_vector, "test_param")
@@ -618,7 +640,8 @@ class TestThreeDNumberVectorLikeReturnFloat(unittest.TestCase):
         self.assertIn("nan", str(context.exception).lower())
 
     def test_invalid_with_inf(self) -> None:
-        """Test threeD_number_vectorLike_return_float raises ValueError with infinity."""
+        """Test threeD_number_vectorLike_return_float raises ValueError with
+        infinity."""
         with self.assertRaises(ValueError):
             pv.threeD_number_vectorLike_return_float([1.0, np.inf, 3.0], "test_param")
 
@@ -629,10 +652,12 @@ class TestThreeDNumberVectorLikeReturnFloat(unittest.TestCase):
 
 
 class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
-    """A class with functions to test arrayLike_of_threeD_number_vectorLikes_return_float."""
+    """A class with functions to test
+    arrayLike_of_threeD_number_vectorLikes_return_float."""
 
     def test_valid_single_3d_vector(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float with single 3D vector."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float with single 3D
+        vector."""
         valid_vector = pvf.make_valid_3d_vector_fixture()
         result = pv.arrayLike_of_threeD_number_vectorLikes_return_float(
             valid_vector, "test_param"
@@ -641,7 +666,8 @@ class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertEqual(result.shape, (3,))
 
     def test_valid_array_of_3d_vectors(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float with array of 3D vectors."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float with array of 3D
+        vectors."""
         valid_array = pvf.make_valid_3d_vectors_array_fixture()
         result = pv.arrayLike_of_threeD_number_vectorLikes_return_float(
             valid_array, "test_param"
@@ -650,7 +676,8 @@ class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertEqual(result.shape, (4, 3))
 
     def test_valid_list_of_3d_vectors(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float with list of 3D vectors."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float with list of 3D
+        vectors."""
         result = pv.arrayLike_of_threeD_number_vectorLikes_return_float(
             [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], "test_param"
         )
@@ -658,14 +685,16 @@ class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
         npt.assert_array_equal(result, expected)
 
     def test_invalid_scalar(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError with scalar."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError
+        with scalar."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_threeD_number_vectorLikes_return_float(5.0, "test_param")
         self.assertIn("test_param", str(context.exception))
         self.assertIn("scalar", str(context.exception).lower())
 
     def test_invalid_2d_vectors(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError with 2D vectors."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError
+        with 2D vectors."""
         with self.assertRaises(ValueError) as context:
             pv.arrayLike_of_threeD_number_vectorLikes_return_float(
                 [[1.0, 2.0], [3.0, 4.0]], "test_param"
@@ -674,14 +703,16 @@ class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
         self.assertIn("3 elements", str(context.exception))
 
     def test_invalid_with_nan(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError with NaN."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises ValueError
+        with NaN."""
         with self.assertRaises(ValueError):
             pv.arrayLike_of_threeD_number_vectorLikes_return_float(
                 [[1.0, np.nan, 3.0]], "test_param"
             )
 
     def test_invalid_string(self) -> None:
-        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises TypeError with string."""
+        """Test arrayLike_of_threeD_number_vectorLikes_return_float raises TypeError
+        with string."""
         with self.assertRaises(TypeError):
             pv.arrayLike_of_threeD_number_vectorLikes_return_float(
                 "invalid", "test_param"
@@ -689,10 +720,12 @@ class TestArrayLikeOfThreeDNumberVectorLikesReturnFloat(unittest.TestCase):
 
 
 class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
-    """A class with functions to test threeD_number_vectorLike_return_float_unit_vector."""
+    """A class with functions to test
+    threeD_number_vectorLike_return_float_unit_vector."""
 
     def test_valid_unit_vector(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector with already unit vector."""
+        """Test threeD_number_vectorLike_return_float_unit_vector with already unit
+        vector."""
         valid_vector = pvf.make_valid_unit_vector_fixture()
         result = pv.threeD_number_vectorLike_return_float_unit_vector(
             valid_vector, "test_param"
@@ -701,7 +734,8 @@ class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
         npt.assert_allclose(np.linalg.norm(result), 1.0, rtol=1e-10, atol=1e-14)
 
     def test_valid_non_unit_vector_normalized(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector normalizes non-unit vector."""
+        """Test threeD_number_vectorLike_return_float_unit_vector normalizes non-unit
+        vector."""
         valid_vector = pvf.make_valid_non_unit_vector_fixture()
         result = pv.threeD_number_vectorLike_return_float_unit_vector(
             valid_vector, "test_param"
@@ -711,7 +745,8 @@ class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
         npt.assert_allclose(np.linalg.norm(result), 1.0, rtol=1e-10, atol=1e-14)
 
     def test_valid_list_normalized(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector normalizes list input."""
+        """Test threeD_number_vectorLike_return_float_unit_vector normalizes list
+        input."""
         result = pv.threeD_number_vectorLike_return_float_unit_vector(
             [0.0, 3.0, 4.0], "test_param"
         )
@@ -719,7 +754,8 @@ class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
         npt.assert_allclose(result, expected, rtol=1e-10, atol=1e-14)
 
     def test_invalid_zero_vector(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with zero vector."""
+        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with
+        zero vector."""
         zero_vector = pvf.make_invalid_zero_vector_fixture()
         with self.assertRaises(ValueError) as context:
             pv.threeD_number_vectorLike_return_float_unit_vector(
@@ -729,7 +765,8 @@ class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
         self.assertIn("non zero length", str(context.exception))
 
     def test_invalid_2d_vector(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with 2D vector."""
+        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with
+        2D vector."""
         invalid_vector = pvf.make_invalid_2d_vector_as_3d_fixture()
         with self.assertRaises(ValueError):
             pv.threeD_number_vectorLike_return_float_unit_vector(
@@ -737,14 +774,16 @@ class TestThreeDNumberVectorLikeReturnFloatUnitVector(unittest.TestCase):
             )
 
     def test_invalid_with_nan(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with NaN."""
+        """Test threeD_number_vectorLike_return_float_unit_vector raises ValueError with
+        NaN."""
         with self.assertRaises(ValueError):
             pv.threeD_number_vectorLike_return_float_unit_vector(
                 [1.0, np.nan, 3.0], "test_param"
             )
 
     def test_invalid_string(self) -> None:
-        """Test threeD_number_vectorLike_return_float_unit_vector raises TypeError with string."""
+        """Test threeD_number_vectorLike_return_float_unit_vector raises TypeError with
+        string."""
         with self.assertRaises(TypeError):
             pv.threeD_number_vectorLike_return_float_unit_vector(
                 "invalid", "test_param"
@@ -770,7 +809,8 @@ class TestThreeDSpacingVectorLikeReturnTuple(unittest.TestCase):
             self.assertTrue(callable(elem))
 
     def test_valid_mixed(self) -> None:
-        """Test threeD_spacing_vectorLike_return_tuple with mixed string and callable."""
+        """Test threeD_spacing_vectorLike_return_tuple with mixed string and
+        callable."""
         valid_spacing = pvf.make_valid_spacing_vector_mixed_fixture()
         result = pv.threeD_spacing_vectorLike_return_tuple(valid_spacing, "test_param")
         self.assertEqual(len(result), 3)
@@ -793,7 +833,8 @@ class TestThreeDSpacingVectorLikeReturnTuple(unittest.TestCase):
         self.assertEqual(result, ("sine", "uniform", "sine"))
 
     def test_invalid_string_value(self) -> None:
-        """Test threeD_spacing_vectorLike_return_tuple raises ValueError with invalid string."""
+        """Test threeD_spacing_vectorLike_return_tuple raises ValueError with invalid
+        string."""
         invalid_spacing = pvf.make_invalid_spacing_string_fixture()
         with self.assertRaises(ValueError) as context:
             pv.threeD_spacing_vectorLike_return_tuple(invalid_spacing, "test_param")
@@ -802,21 +843,24 @@ class TestThreeDSpacingVectorLikeReturnTuple(unittest.TestCase):
         self.assertIn("uniform", str(context.exception))
 
     def test_invalid_type(self) -> None:
-        """Test threeD_spacing_vectorLike_return_tuple raises TypeError with invalid type."""
+        """Test threeD_spacing_vectorLike_return_tuple raises TypeError with invalid
+        type."""
         invalid_spacing = pvf.make_invalid_spacing_type_fixture()
         with self.assertRaises(TypeError) as context:
             pv.threeD_spacing_vectorLike_return_tuple(invalid_spacing, "test_param")
         self.assertIn("Element 1", str(context.exception))
 
     def test_invalid_wrong_length(self) -> None:
-        """Test threeD_spacing_vectorLike_return_tuple raises ValueError with wrong length."""
+        """Test threeD_spacing_vectorLike_return_tuple raises ValueError with wrong
+        length."""
         with self.assertRaises(ValueError) as context:
             pv.threeD_spacing_vectorLike_return_tuple(("sine", "uniform"), "test_param")
         self.assertIn("test_param", str(context.exception))
         self.assertIn("3-element", str(context.exception))
 
     def test_invalid_string_input(self) -> None:
-        """Test threeD_spacing_vectorLike_return_tuple raises TypeError with string input."""
+        """Test threeD_spacing_vectorLike_return_tuple raises TypeError with string
+        input."""
         with self.assertRaises(TypeError) as context:
             pv.threeD_spacing_vectorLike_return_tuple("sine", "test_param")
         self.assertIn("test_param", str(context.exception))
@@ -893,7 +937,8 @@ class TestFourByFourNumberArrayLikeReturnFloat(unittest.TestCase):
         self.assertEqual(result.dtype, float)
 
     def test_invalid_3x3_matrix(self) -> None:
-        """Test fourByFour_number_arrayLike_return_float raises ValueError with 3x3 matrix."""
+        """Test fourByFour_number_arrayLike_return_float raises ValueError with 3x3
+        matrix."""
         invalid_matrix = pvf.make_invalid_3x3_matrix_fixture()
         with self.assertRaises(ValueError) as context:
             pv.fourByFour_number_arrayLike_return_float(invalid_matrix, "test_param")
@@ -901,7 +946,8 @@ class TestFourByFourNumberArrayLikeReturnFloat(unittest.TestCase):
         self.assertIn("4x4", str(context.exception))
 
     def test_invalid_4x3_matrix(self) -> None:
-        """Test fourByFour_number_arrayLike_return_float raises ValueError with 4x3 matrix."""
+        """Test fourByFour_number_arrayLike_return_float raises ValueError with 4x3
+        matrix."""
         with self.assertRaises(ValueError):
             pv.fourByFour_number_arrayLike_return_float(
                 np.zeros((4, 3), dtype=float), "test_param"
@@ -915,7 +961,8 @@ class TestFourByFourNumberArrayLikeReturnFloat(unittest.TestCase):
             pv.fourByFour_number_arrayLike_return_float(matrix_with_nan, "test_param")
 
     def test_invalid_string(self) -> None:
-        """Test fourByFour_number_arrayLike_return_float raises TypeError with string."""
+        """Test fourByFour_number_arrayLike_return_float raises TypeError with
+        string."""
         with self.assertRaises(TypeError):
             pv.fourByFour_number_arrayLike_return_float("invalid", "test_param")
 
@@ -1052,7 +1099,8 @@ class TestMByNNumberArrayLikeReturnFloat(unittest.TestCase):
         self.assertEqual(result.dtype, float)
 
     def test_invalid_wrong_shape(self) -> None:
-        """Test m_by_n_number_arrayLike_return_float raises ValueError with wrong shape."""
+        """Test m_by_n_number_arrayLike_return_float raises ValueError with wrong
+        shape."""
         with self.assertRaises(ValueError) as context:
             pv.m_by_n_number_arrayLike_return_float(
                 np.zeros((2, 3), dtype=float), "test_param", 3, 3

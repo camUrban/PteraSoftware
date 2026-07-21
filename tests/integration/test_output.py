@@ -1,7 +1,7 @@
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test against an expected
-result. Instead, they test that the functions in output.py don't throw any errors.
+Note: Most of the tests in this case do not currently test against an expected result.
+Instead, they test that the functions in output.py don't throw any errors.
 """
 
 import logging
@@ -24,7 +24,6 @@ class TestOutput(unittest.TestCase):
 
         :return: None
         """
-
         # Set up the constructing fixtures.
         cls.unsteady_solver = (
             solver_fixtures.make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry()
@@ -32,12 +31,11 @@ class TestOutput(unittest.TestCase):
         cls.unsteady_solver.run(show_progress=False)
 
     def test_plot_results_versus_time_does_not_throw(self) -> None:
-        """This method tests that the plot_results_versus_time method doesn't throw
-        any errors.
+        """This method tests that the plot_results_versus_time method doesn't throw any
+        errors.
 
         :return: None
         """
-
         # Call the plot_results_versus_time method on the solver fixture. The show flag
         # is set to False, so the figures will not be displayed.
         ps.output.plot_results_versus_time(
@@ -49,7 +47,6 @@ class TestOutput(unittest.TestCase):
 
         :return: None
         """
-
         # Call the animate function on the unsteady solver fixture. The testing flag is
         # true so the animation will start automatically after 1 second.
         ps.output.animate(
@@ -65,7 +62,6 @@ class TestOutput(unittest.TestCase):
 
         :return: None
         """
-
         # Call the draw function on the unsteady solver fixture. The testing flag is set
         # to true, so the plotter will close after 1 second.
         ps.output.draw(
@@ -157,8 +153,8 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         cls.unsteady_solver.run(show_progress=False)
 
     def test_draw_with_surface_effect_does_not_throw(self) -> None:
-        """This method tests that the draw function does not throw any errors when
-        an image surface is defined.
+        """This method tests that the draw function does not throw any errors when an
+        image surface is defined.
 
         :return: None
         """
@@ -171,8 +167,8 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         )
 
     def test_draw_with_surface_effect_and_wake_vortices_does_not_throw(self) -> None:
-        """This method tests that the draw function does not throw any errors when
-        an image surface is defined and wake vortices are shown.
+        """This method tests that the draw function does not throw any errors when an
+        image surface is defined and wake vortices are shown.
 
         :return: None
         """
@@ -185,8 +181,8 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         )
 
     def test_animate_with_surface_effect_does_not_throw(self) -> None:
-        """This method tests that the animate function does not throw any errors
-        when an image surface is defined.
+        """This method tests that the animate function does not throw any errors when an
+        image surface is defined.
 
         :return: None
         """
@@ -199,8 +195,8 @@ class TestOutputSurfaceEffect(unittest.TestCase):
         )
 
     def test_animate_with_surface_effect_and_wake_vortices_does_not_throw(self) -> None:
-        """This method tests that the animate function does not throw any errors
-        when an image surface is defined and wake vortices are shown.
+        """This method tests that the animate function does not throw any errors when an
+        image surface is defined and wake vortices are shown.
 
         :return: None
         """
@@ -232,8 +228,8 @@ class TestFreeFlightOutput(unittest.TestCase):
         cls.free_flight_solver.run(show_progress=False)
 
     def test_draw_does_not_throw(self) -> None:
-        """This method tests that the draw function does not throw any errors for a
-        free flight solver.
+        """This method tests that the draw function does not throw any errors for a free
+        flight solver.
 
         :return: None
         """
@@ -246,8 +242,8 @@ class TestFreeFlightOutput(unittest.TestCase):
         )
 
     def test_draw_with_wake_vortices_does_not_throw(self) -> None:
-        """This method tests that the draw function does not throw any errors for a
-        free flight solver when wake vortices are shown.
+        """This method tests that the draw function does not throw any errors for a free
+        flight solver when wake vortices are shown.
 
         :return: None
         """

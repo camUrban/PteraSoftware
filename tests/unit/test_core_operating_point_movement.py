@@ -292,7 +292,8 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
         npt.assert_allclose(vCg_values, expected_vCg, rtol=1e-10, atol=1e-14)
 
     def test_spacing_uniform_produces_triangular_wave(self) -> None:
-        """Test that uniform spacing actually produces triangular wave motion for vCg__E."""
+        """Test that uniform spacing actually produces triangular wave motion for
+        vCg__E."""
         num_steps = 100
         delta_time = 0.01
         operating_points = (
@@ -588,7 +589,8 @@ class TestCoreOperatingPointMovement(unittest.TestCase):
             core_op_movement.generate_operating_points(num_steps=10, delta_time=0.01)
 
     def test_unsafe_amplitude_causes_error(self) -> None:
-        """Test that amplitude too high for base vCg__E causes error during generation."""
+        """Test that amplitude too high for base vCg__E causes error during
+        generation."""
         # Use low-speed operating point with vCg__E = 10.0.
         base_op = operating_point_fixtures.make_basic_operating_point_fixture()
 

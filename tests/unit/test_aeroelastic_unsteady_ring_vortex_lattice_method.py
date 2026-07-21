@@ -65,8 +65,8 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
 
     def test_slep_point_indices_starts_at_zero(self) -> None:
-        """Test that _slep_point_indices[0] is zero (first panel is always the
-        first SLEP)."""
+        """Test that _slep_point_indices[0] is zero (first panel is always the first
+        SLEP)."""
         self.assertEqual(self.solver._slep_point_indices[0], 0)
 
     def test_slep_point_indices_non_decreasing(self) -> None:
@@ -89,8 +89,7 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(self.solver._stackSlep_GP1_CgP1.size, 0)
 
     def test_reinitialize_step_arrays_hook_produces_zero_arrays(self) -> None:
-        """Test that _reinitialize_step_arrays_hook fills all SLEP arrays with
-        zeros."""
+        """Test that _reinitialize_step_arrays_hook fills all SLEP arrays with zeros."""
         self.solver._reinitialize_step_arrays_hook()
         arrays_to_check = [
             self.solver._stackCblvpr_GP1_Slep,
@@ -106,8 +105,8 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
                 self.assertTrue(np.all(arr == 0.0))
 
     def test_reinitialize_step_arrays_hook_produces_correct_shape(self) -> None:
-        """Test that _reinitialize_step_arrays_hook creates arrays of shape
-        (num_panels, 3)."""
+        """Test that _reinitialize_step_arrays_hook creates arrays of shape (num_panels,
+        3)."""
         self.solver._reinitialize_step_arrays_hook()
         expected_shape = (self.solver.num_panels, 3)
         arrays_to_check = [

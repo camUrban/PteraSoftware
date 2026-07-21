@@ -9,8 +9,7 @@ def make_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates an Airplane to be used as a fixture for testing steady
     solvers.
 
-    :return steady_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return steady_validation_airplane: Airplane This is the Airplane fixture.
     """
     steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -77,8 +76,7 @@ def make_exploded_validation_airplane() -> ps.geometry.airplane.Airplane:
     "exploded". It is used to test that the convergence functions reject Wings whose
     spanwise mesh is not trapezoidal.
 
-    :return exploded_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return exploded_validation_airplane: Airplane This is the Airplane fixture.
     """
     exploded_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -122,8 +120,7 @@ def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
     chord over a five meter half span) that PCHIP resampling reproduces exactly at any
     number of WingCrossSections.
 
-    :return edge_defined_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return edge_defined_validation_airplane: Airplane This is the Airplane fixture.
     """
     ys = np.linspace(0.0, 5.0, 30)
     zeros = np.zeros_like(ys)
@@ -150,8 +147,8 @@ def make_edge_defined_validation_airplane() -> ps.geometry.airplane.Airplane:
 
 
 def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
-    """This function creates an Airplane holding both a trapezoidal Wing and an
-    edge-defined Wing, to be used as a fixture for testing that the convergence functions
+    """This function creates an Airplane holding both a trapezoidal Wing and an edge-
+    defined Wing, to be used as a fixture for testing that the convergence functions
     refine each Wing by its own spanwise mesh.
 
     The trapezoidal Wing (spanwise mesh "trapezoidal") is refined by sweeping its number
@@ -159,8 +156,7 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
     with Wing.from_edge_points) is refined by resampling its stored edge curves. The
     edge-defined Wing is placed behind the trapezoidal Wing so the two do not overlap.
 
-    :return mixed_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return mixed_validation_airplane: Airplane This is the Airplane fixture.
     """
     ys = np.linspace(0.0, 5.0, 30)
     zeros = np.zeros_like(ys)
@@ -220,11 +216,11 @@ def make_mixed_validation_airplane() -> ps.geometry.airplane.Airplane:
 
 
 def make_multiple_wing_steady_validation_airplane() -> ps.geometry.airplane.Airplane:
-    """This function creates an Airplane with multiple Wings to be used as a fixture
-    for testing steady solvers.
+    """This function creates an Airplane with multiple Wings to be used as a fixture for
+    testing steady solvers.
 
-    :return multiple_wing_steady_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return multiple_wing_steady_validation_airplane: Airplane This is the Airplane
+        fixture.
     """
     multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -333,8 +329,8 @@ def make_symmetric_unsteady_validation_airplane() -> ps.geometry.airplane.Airpla
     """This function creates a symmetric Airplane to be used as a fixture for testing
     unsteady solvers.
 
-    :return symmetric_unsteady_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return symmetric_unsteady_validation_airplane: Airplane This is the Airplane
+        fixture.
     """
     symmetric_unsteady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -400,8 +396,8 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
     """This function creates a multi-wing, symmetric Airplane to be used as a fixture
     for testing unsteady solvers.
 
-    :return symmetric_multiple_wing_steady_validation_airplane: Airplane
-        This is the Airplane fixture.
+    :return symmetric_multiple_wing_steady_validation_airplane: Airplane This is the
+        Airplane fixture.
     """
     symmetric_multiple_wing_steady_validation_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -554,15 +550,15 @@ def make_symmetric_multiple_wing_unsteady_validation_airplane() -> (
 def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
     """This function creates the simple glider Airplane used for free flight testing.
 
-    The simple glider is a three-wing aircraft (cambered main wing, symmetric
-    horizontal stabilizer with negative incidence, and a single vertical stabilizer)
-    whose planform geometry, center of gravity, and inertia were tuned for static pitch
-    and yaw stability and verified in XFLR5. The negative horizontal stabilizer
-    incidence relative to the main wing provides the restoring pitch moment that makes
-    the glider statically stable, so that it flies a bounded, damped free flight
-    trajectory rather than diverging. The center of gravity is left at the geometry
-    origin (the default), which is the reference point for the matching inertia matrix
-    in make_simple_glider_free_flight_problem.
+    The simple glider is a three-wing aircraft (cambered main wing, symmetric horizontal
+    stabilizer with negative incidence, and a single vertical stabilizer) whose planform
+    geometry, center of gravity, and inertia were tuned for static pitch and yaw
+    stability and verified in XFLR5. The negative horizontal stabilizer incidence
+    relative to the main wing provides the restoring pitch moment that makes the glider
+    statically stable, so that it flies a bounded, damped free flight trajectory rather
+    than diverging. The center of gravity is left at the geometry origin (the default),
+    which is the reference point for the matching inertia matrix in
+    make_simple_glider_free_flight_problem.
 
     The mesh densities here are coarser than the converged values from the original
     convergence study. The static stability that this fixture relies on is a property of
@@ -570,8 +566,7 @@ def make_simple_glider_airplane() -> ps.geometry.airplane.Airplane:
     so the coarser mesh keeps the free flight integration test affordable while
     preserving the stable behavior.
 
-    :return simple_glider_airplane: Airplane
-        This is the simple glider Airplane fixture.
+    :return simple_glider_airplane: Airplane This is the simple glider Airplane fixture.
     """
     simple_glider_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -687,12 +682,13 @@ def make_flapping_free_flight_airplane() -> ps.geometry.airplane.Airplane:
     stays a single mirrored Wing.
 
     The mesh densities here are coarser than the example's, and the airfoils use the
-    default resampling rather than the example's dense override, which keeps the strongly
-    coupled flapping integration test affordable. The coupling behavior under test is a
-    property of the continuous geometry and mass properties, not of the discretization.
+    default resampling rather than the example's dense override, which keeps the
+    strongly coupled flapping integration test affordable. The coupling behavior under
+    test is a property of the continuous geometry and mass properties, not of the
+    discretization.
 
-    :return flapping_free_flight_airplane: Airplane
-        This is the flapping-wing Airplane fixture.
+    :return flapping_free_flight_airplane: Airplane This is the flapping-wing Airplane
+        fixture.
     """
     flapping_free_flight_airplane = ps.geometry.airplane.Airplane(
         wings=[
@@ -775,8 +771,7 @@ def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
 
     The Airplane uses a NACA 0010 symmetric airfoil with zero twist and zero dihedral.
 
-    :return surface_effect_airplane: Airplane
-        This is the Airplane fixture.
+    :return surface_effect_airplane: Airplane This is the Airplane fixture.
     """
     surface_effect_airplane = ps.geometry.airplane.Airplane(
         wings=[

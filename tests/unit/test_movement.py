@@ -412,7 +412,8 @@ class TestMovement(unittest.TestCase):
             self.assertEqual(len(airplane_list), movement.num_steps)
 
     def test_delta_time_averaging_with_multiple_airplanes(self) -> None:
-        """Test that delta_time is averaged across multiple Airplanes when auto-calculated."""
+        """Test that delta_time is averaged across multiple Airplanes when auto-
+        calculated."""
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
             airplane_movement_fixtures.make_static_airplane_movement_fixture(),
@@ -476,8 +477,8 @@ class TestMovement(unittest.TestCase):
         self.assertGreater(movement.num_steps, 0)
 
     def test_type_4_to_5_transition_raises_error(self) -> None:
-        """Test that a Wing transitioning from type 4 to type 5 symmetry raises
-        an error."""
+        """Test that a Wing transitioning from type 4 to type 5 symmetry raises an
+        error."""
         # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 
@@ -539,8 +540,8 @@ class TestMovement(unittest.TestCase):
         self.assertIn("symmetry", str(context.exception).lower())
 
     def test_type_3_to_2_transition_raises_error(self) -> None:
-        """Test that a Wing transitioning from type 3 to type 2 symmetry raises
-        an error."""
+        """Test that a Wing transitioning from type 3 to type 2 symmetry raises an
+        error."""
         # Create a type 3 Wing (mirror_only=True, non-coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_3_wing_fixture()
 
@@ -603,8 +604,8 @@ class TestMovement(unittest.TestCase):
         self.assertIn("symmetry", str(context.exception).lower())
 
     def test_type_2_to_3_transition_raises_error(self) -> None:
-        """Test that a Wing transitioning from type 2 to type 3 symmetry raises
-        an error."""
+        """Test that a Wing transitioning from type 2 to type 3 symmetry raises an
+        error."""
         # Create a type 2 Wing (mirror_only=True, coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_2_wing_fixture()
 
@@ -844,8 +845,8 @@ class TestMovement(unittest.TestCase):
         self.assertEqual(movement.min_period, 2.0)
 
     def test_min_period_with_different_periods(self) -> None:
-        """Test that min_period returns the smallest period across Wings with
-        different periods."""
+        """Test that min_period returns the smallest period across Wings with different
+        periods."""
         # Create an Airplane with two Wings having periods 3.0 and 4.0.
         base_wing_1 = geometry_fixtures.make_simple_tapered_wing_fixture()
         base_wing_2 = geometry_fixtures.make_simple_tapered_wing_fixture()
@@ -954,8 +955,8 @@ class TestMovement(unittest.TestCase):
         """Test that a non static Movement clamps the default delta_time estimate to
         provide at least 30 time steps per LCM period.
 
-        This test uses mocking to make the analytical optimizer return a value far
-        above the clamp threshold instantly.
+        This test uses mocking to make the analytical optimizer return a value far above
+        the clamp threshold instantly.
         """
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -990,9 +991,9 @@ class TestMovement(unittest.TestCase):
     def test_delta_time_estimate_not_clamped_for_static_movement(self) -> None:
         """Test that a static Movement does not clamp the default delta_time estimate.
 
-        A static Movement has no LCM period to resolve, so the estimate passes
-        through unchanged no matter how large it is. This test uses mocking to make
-        the analytical optimizer return a large value instantly.
+        A static Movement has no LCM period to resolve, so the estimate passes through
+        unchanged no matter how large it is. This test uses mocking to make the
+        analytical optimizer return a large value instantly.
         """
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
@@ -1169,8 +1170,8 @@ class TestMovement(unittest.TestCase):
             )
 
     def test_max_wake_mutual_exclusivity(self) -> None:
-        """Test that at most one of max_wake_rows, max_wake_chords, max_wake_cycles
-        can be non None."""
+        """Test that at most one of max_wake_rows, max_wake_chords, max_wake_cycles can
+        be non None."""
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
@@ -1238,8 +1239,8 @@ class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_returns_initial_for_static_movement(self) -> None:
-        """Test that _analytically_optimize_delta_time returns initial_delta_time
-        for static Movement."""
+        """Test that _analytically_optimize_delta_time returns initial_delta_time for
+        static Movement."""
         from pterasoftware.movements.movement import (
             _analytically_optimize_delta_time,
         )
@@ -1326,8 +1327,8 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_returns_zero_for_static_single_step(self) -> None:
-        """Test that _compute_wake_area_mismatch returns 0.0 when no comparisons
-        are made."""
+        """Test that _compute_wake_area_mismatch returns 0.0 when no comparisons are
+        made."""
         from pterasoftware.movements.movement import _compute_wake_area_mismatch
 
         airplane_movements = [
@@ -1380,7 +1381,8 @@ class TestComputeWakeAreaMismatch(unittest.TestCase):
 
 
 class TestOptimizeDeltaTimeStatic(unittest.TestCase):
-    """This is a class with functions to test the _optimize_delta_time_static function."""
+    """This is a class with functions to test the _optimize_delta_time_static
+    function."""
 
     def test_returns_positive_float(self) -> None:
         """Test that _optimize_delta_time_static returns a positive float."""
@@ -1406,8 +1408,8 @@ class TestOptimizeDeltaTimeStatic(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_early_termination_with_acceptable_initial(self) -> None:
-        """Test that _optimize_delta_time_static terminates early if initial mismatch
-        is below cutoff."""
+        """Test that _optimize_delta_time_static terminates early if initial mismatch is
+        below cutoff."""
         from pterasoftware.movements.movement import _optimize_delta_time_static
 
         airplane_movements = [
@@ -1477,7 +1479,8 @@ class TestOptimizeDeltaTimeNonStatic(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_result_divides_lcm_period_evenly(self) -> None:
-        """Test that _optimize_delta_time_non_static result divides LCM period evenly."""
+        """Test that _optimize_delta_time_non_static result divides LCM period
+        evenly."""
         from pterasoftware._core import lcm_multiple
         from pterasoftware.movements.movement import (
             _analytically_optimize_delta_time,
@@ -1595,8 +1598,8 @@ class TestOptimizeDeltaTime(unittest.TestCase):
         self.assertGreater(optimized_delta_time, 0.0)
 
     def test_dispatches_to_static_for_static_movement(self) -> None:
-        """Test that _optimize_delta_time dispatches to _optimize_delta_time_static
-        for static movements."""
+        """Test that _optimize_delta_time dispatches to _optimize_delta_time_static for
+        static movements."""
         from pterasoftware.movements.movement import _optimize_delta_time
 
         airplane_movements = [
@@ -1670,7 +1673,8 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
         )
 
     def test_airplanes_correct_shape(self) -> None:
-        """Test that airplanes has the correct shape (num_airplane_movements x num_steps)."""
+        """Test that airplanes has the correct shape (num_airplane_movements x
+        num_steps)."""
         movement = self.basic_movement
 
         # Check outer dimension matches number of AirplaneMovements.
@@ -1712,7 +1716,8 @@ class TestMovementGeneratedAttributes(unittest.TestCase):
             self.assertEqual(len(airplane_list), movement.num_steps)
 
     def test_airplanes_static_movement_are_consistent(self) -> None:
-        """Test that static Movement generates consistent Airplanes across time steps."""
+        """Test that static Movement generates consistent Airplanes across time
+        steps."""
         movement = self.static_movement
 
         # For static movement, all Airplanes should have the same Wing positions.
@@ -2149,8 +2154,8 @@ class TestComputeWakeAreaMismatchEdgeCases(unittest.TestCase):
         self.assertGreaterEqual(mismatch, 0.0)
 
     def test_with_non_static_movement_multiple_steps(self) -> None:
-        """Test _compute_wake_area_mismatch computes correctly over multiple time
-        steps for non static movement."""
+        """Test _compute_wake_area_mismatch computes correctly over multiple time steps
+        for non static movement."""
         from pterasoftware.movements.movement import _compute_wake_area_mismatch
 
         airplane_movements = [
@@ -2179,8 +2184,8 @@ class TestComputeWakeAreaMismatchesCachedNonStatic(unittest.TestCase):
     """Tests for the _compute_wake_area_mismatches_cached_non_static function."""
 
     def test_returns_dict_with_all_candidate_keys(self) -> None:
-        """Test that the result dict has exactly the input candidates as keys, with
-        non-negative float values."""
+        """Test that the result dict has exactly the input candidates as keys, with non-
+        negative float values."""
         from pterasoftware.movements.movement import (
             _compute_wake_area_mismatches_cached_non_static,
         )
@@ -2286,8 +2291,8 @@ class TestEvaluateCachedWakeAreaMismatch(unittest.TestCase):
     """Tests for the _evaluate_cached_wake_area_mismatch function."""
 
     def test_returns_zero_for_num_steps_below_two(self) -> None:
-        """Test that the evaluator returns 0.0 when num_steps is less than 2,
-        since at least one step pair is needed for a comparison."""
+        """Test that the evaluator returns 0.0 when num_steps is less than 2, since at
+        least one step pair is needed for a comparison."""
         import numpy as np
 
         from pterasoftware.movements.movement import (
@@ -2441,13 +2446,13 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
     """Tests for warning logic in _optimize_delta_time_static.
 
     Note: scipy's bounded optimizer uses xatol=0.001 tolerance, so it may not converge
-    exactly to bounds. These tests verify the warning logic by mocking the optimizer
-    to return values exactly at the bounds.
+    exactly to bounds. These tests verify the warning logic by mocking the optimizer to
+    return values exactly at the bounds.
     """
 
     def test_warning_logic_for_lower_bound(self) -> None:
-        """Test that _optimize_delta_time_static warning logic triggers correctly
-        for lower bound.
+        """Test that _optimize_delta_time_static warning logic triggers correctly for
+        lower bound.
 
         This test directly verifies the warning logic by patching the optimizer to
         return a value at the lower bound.
@@ -2504,8 +2509,8 @@ class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
         )
 
     def test_warning_logic_for_upper_bound(self) -> None:
-        """Test that _optimize_delta_time_static warning logic triggers correctly
-        for upper bound.
+        """Test that _optimize_delta_time_static warning logic triggers correctly for
+        upper bound.
 
         This test directly verifies the warning logic by patching the optimizer to
         return a value at the upper bound.

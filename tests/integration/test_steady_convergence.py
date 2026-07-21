@@ -54,8 +54,8 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertIsNone(converged_parameters[2])
 
     def test_rejects_exploded_wing(self) -> None:
-        """This method tests that the function rejects a SteadyProblem whose Airplane has
-        an exploded Wing, which carries no edge curves and so cannot be refined.
+        """This method tests that the function rejects a SteadyProblem whose Airplane
+        has an exploded Wing, which carries no edge curves and so cannot be refined.
 
         :return: None
         """
@@ -162,9 +162,9 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
 
     def test_edge_defined_steady_convergence(self) -> None:
-        """This method tests that the function finds pre-known convergence parameters for
-        a SteadyProblem whose Airplane has an edge-defined Wing, refined by resampling
-        its stored edge curves.
+        """This method tests that the function finds pre-known convergence parameters
+        for a SteadyProblem whose Airplane has an edge-defined Wing, refined by
+        resampling its stored edge curves.
 
         :return: None
         """
@@ -345,9 +345,9 @@ class TestSteadyConvergence(unittest.TestCase):
         self.assertEqual(warm_parameters[1], cold_parameters[1])
 
     def test_mixed_airplane_steady_convergence(self) -> None:
-        """This method tests that the function finds pre-known convergence parameters for
-        a SteadyProblem whose Airplane holds both a trapezoidal Wing and an edge-defined
-        Wing, refining each Wing by its own spanwise mesh.
+        """This method tests that the function finds pre-known convergence parameters
+        for a SteadyProblem whose Airplane holds both a trapezoidal Wing and an edge-
+        defined Wing, refining each Wing by its own spanwise mesh.
 
         :return: None
         """

@@ -47,13 +47,11 @@ class TestSolveCacheKey(unittest.TestCase):
 
 class TestSolveCache(unittest.TestCase):
     """This class contains methods for testing _convergence_cache.cached_solve,
-    _convergence_cache.load_solve_cache, and _convergence_cache.write_cache.
-    """
+    _convergence_cache.load_solve_cache, and _convergence_cache.write_cache."""
 
     def test_miss_calls_solve_and_returns_result(self) -> None:
-        """Test that a cache miss calls solve and returns its coefficients and a
-        non-negative solve time.
-        """
+        """Test that a cache miss calls solve and returns its coefficients and a non-
+        negative solve time."""
         cache: dict[str, tuple[np.ndarray, float]] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
         result_coefficients, result_solve_time = _convergence_cache.cached_solve(
@@ -65,8 +63,7 @@ class TestSolveCache(unittest.TestCase):
 
     def test_miss_stores_result_in_cache(self) -> None:
         """Test that a cache miss adds the coefficients and solve time to the in-memory
-        cache.
-        """
+        cache."""
         cache: dict[str, tuple[np.ndarray, float]] = {}
         coefficients = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
         result = _convergence_cache.cached_solve(cache, "key", lambda: coefficients)
@@ -76,8 +73,7 @@ class TestSolveCache(unittest.TestCase):
 
     def test_hit_returns_cached_without_solving(self) -> None:
         """Test that a cache hit returns the stored coefficients and solve time and
-        skips solve.
-        """
+        skips solve."""
         cached = np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float)
         cache: dict[str, tuple[np.ndarray, float]] = {"key": (cached, 42.5)}
         solve_calls = 0
@@ -160,8 +156,7 @@ class TestSolveCache(unittest.TestCase):
 
     def test_round_trip_preserves_coefficients_and_solve_times(self) -> None:
         """Test that writing then loading a cache preserves its coefficients and solve
-        times.
-        """
+        times."""
         cache = {
             "first": (np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float), 1.25),
             "second": (
@@ -204,8 +199,7 @@ class TestSolveCache(unittest.TestCase):
 
     def test_load_malformed_entries_section_returns_empty(self) -> None:
         """Test that a file whose entries section is not a dict is ignored with a
-        warning.
-        """
+        warning."""
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "cache.json"
             data = {
@@ -219,8 +213,7 @@ class TestSolveCache(unittest.TestCase):
 
     def test_load_malformed_entry_returns_empty(self) -> None:
         """Test that a current-version file whose entries section holds a malformed
-        entry is ignored with a warning.
-        """
+        entry is ignored with a warning."""
         # The variants cover an entry that is not a dict, an entry missing its
         # coefficients, an entry missing its solve time, and an entry with non-numeric
         # coefficients.
@@ -248,9 +241,9 @@ class TestSolveCache(unittest.TestCase):
 
 class TestMemoTranslation(unittest.TestCase):
     """This class contains methods for testing _convergence_cache.memos_to_disk and
-    _convergence_cache.memos_from_disk, which translate the in-loop memo caches between their
-    in-memory bounds-relative index keys and the absolute-valued keys stored on disk.
-    """
+    _convergence_cache.memos_from_disk, which translate the in-loop memo caches between
+    their in-memory bounds-relative index keys and the absolute-valued keys stored on
+    disk."""
 
     def test_to_disk_keys_on_absolute_values(self) -> None:
         """Test that translating to disk keys each memo on its absolute Panel aspect
@@ -430,9 +423,8 @@ class TestMemoTranslation(unittest.TestCase):
 
 
 class TestMemoCacheDisk(unittest.TestCase):
-    """This class contains methods for testing _convergence_cache.load_memo_cache, which reads
-    the memo section of a JSON cache file.
-    """
+    """This class contains methods for testing _convergence_cache.load_memo_cache, which
+    reads the memo section of a JSON cache file."""
 
     def test_load_missing_file_returns_empty(self) -> None:
         """Test that loading memos from a missing cache file returns an empty dict.
@@ -531,8 +523,8 @@ class TestMemoCacheDisk(unittest.TestCase):
                 self.assertEqual(_convergence_cache.load_memo_cache(path), {})
 
     def test_load_non_numeric_memo_value_returns_empty(self) -> None:
-        """Test that a current-version file whose memo section holds a non-numeric
-        value is ignored with a warning.
+        """Test that a current-version file whose memo section holds a non-numeric value
+        is ignored with a warning.
 
         :return: None
         """

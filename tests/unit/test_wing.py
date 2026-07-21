@@ -728,8 +728,7 @@ class TestWing(unittest.TestCase):
         npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
 
     def test_projected_area_symmetric_continuous_rectangular_wing(self) -> None:
-        """Test projected area calculation for symmetric continuous rectangular
-        Wing."""
+        """Test projected area calculation for symmetric continuous rectangular Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
@@ -871,8 +870,8 @@ class TestWing(unittest.TestCase):
         npt.assert_allclose(actual_mac, expected_mac, rtol=1e-10, atol=1e-14)
 
     def test_mean_aerodynamic_chord_symmetric_continuous_rectangular_wing(self) -> None:
-        """Test mean aerodynamic chord calculation for symmetric continuous
-        rectangular Wing."""
+        """Test mean aerodynamic chord calculation for symmetric continuous rectangular
+        Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
@@ -1060,7 +1059,8 @@ class TestWing(unittest.TestCase):
         self.assertIsNone(wing.average_panel_aspect_ratio)
 
     def test_average_panel_aspect_ratio_returns_positive_after_meshing(self) -> None:
-        """Test that average_panel_aspect_ratio returns a positive value after meshing."""
+        """Test that average_panel_aspect_ratio returns a positive value after
+        meshing."""
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         wing.generate_mesh(1)
 
@@ -1512,11 +1512,11 @@ class TestWingDeepCopy(unittest.TestCase):
         self.assertGreater(projected_area, 0.0)
 
     def test_deepcopy_meshed_wing_with_populated_axis_caches(self) -> None:
-        """Test deepcopy of a meshed Wing whose WnX_G, WnY_G, and WnZ_G caches
-        have been populated by accessing those properties.
+        """Test deepcopy of a meshed Wing whose WnX_G, WnY_G, and WnZ_G caches have been
+        populated by accessing those properties.
 
-        Accessing the axis-vector properties forces the lazy-computed arrays to
-        be cached as non-None, which exercises the not-None copy branches inside
+        Accessing the axis-vector properties forces the lazy-computed arrays to be
+        cached as non-None, which exercises the not-None copy branches inside
         __deepcopy__ that are skipped when only calling generate_mesh.
         """
         original = self.type_1_wing
@@ -1889,32 +1889,35 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         )
 
     def test_explode_into_strips_false_wing_cross_section_count_unchanged(self) -> None:
-        """Test that explode_into_strips=False keeps the original two WingCrossSections."""
+        """Test that explode_into_strips=False keeps the original two
+        WingCrossSections."""
         wing = self._make_plain_wing(explode_into_strips=False)
         self.assertEqual(len(wing.wing_cross_sections), 2)
 
     def test_explode_into_strips_true_correct_wing_cross_section_count(self) -> None:
-        """Test that explode_into_strips=True with root num_spanwise=3 produces 4 WingCrossSections
-        (root copy plus 3 interpolated including the tip)."""
+        """Test that explode_into_strips=True with root num_spanwise=3 produces 4
+        WingCrossSections (root copy plus 3 interpolated including the tip)."""
         wing = self._make_plain_wing(explode_into_strips=True)
         self.assertEqual(len(wing.wing_cross_sections), 4)
 
     def test_explode_into_strips_true_non_tip_have_num_spanwise_one(self) -> None:
-        """Test that all non-tip WingCrossSections have num_spanwise_panels=1 after explode."""
+        """Test that all non-tip WingCrossSections have num_spanwise_panels=1 after
+        explode."""
         wing = self._make_plain_wing(explode_into_strips=True)
         for wing_cross_section in wing.wing_cross_sections[:-1]:
             with self.subTest(wing_cross_section=wing_cross_section):
                 self.assertEqual(wing_cross_section.num_spanwise_panels, 1)
 
     def test_explode_into_strips_true_tip_has_none_spanwise(self) -> None:
-        """Test that the last WingCrossSection (tip) has num_spanwise_panels=None after explode."""
+        """Test that the last WingCrossSection (tip) has num_spanwise_panels=None after
+        explode."""
         wing = self._make_plain_wing(explode_into_strips=True)
         self.assertIsNone(wing.wing_cross_sections[-1].num_spanwise_panels)
 
     def test_interpolate_returns_n_sections(self) -> None:
-        """Test that _interpolate_between_wing_cross_sections returns N WingCrossSections (the
-        sections downstream of first_wing_cross_section, with no root copy), where N is first_wing_cross_section's spanwise
-        panel count."""
+        """Test that _interpolate_between_wing_cross_sections returns N
+        WingCrossSections (the sections downstream of first_wing_cross_section, with no
+        root copy), where N is first_wing_cross_section's spanwise panel count."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
@@ -1931,8 +1934,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertAlmostEqual(result[-1].chord, 0.5)
 
     def test_interpolate_first_section_chord_linearly_interpolated(self) -> None:
-        """Test that the first interpolated WingCrossSection chord is linearly interpolated
-        between root (1.0) and tip (0.5)."""
+        """Test that the first interpolated WingCrossSection chord is linearly
+        interpolated between root (1.0) and tip (0.5)."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
@@ -1944,8 +1947,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertAlmostEqual(result[0].chord, expected_first_interp, places=10)
 
     def test_interpolate_Lp_y_divided_by_n(self) -> None:
-        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WingCrossSection is
-        tip_Lp_y / N."""
+        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WingCrossSection
+        is tip_Lp_y / N."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
@@ -1961,8 +1964,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
     def test_explode_wing_with_two_wing_cross_sections_returns_correct_count(
         self,
     ) -> None:
-        """Test that _explode_wing with a two-WingCrossSection input (root: num=3, tip) returns 4
-        WingCrossSections."""
+        """Test that _explode_wing with a two-WingCrossSection input (root: num=3, tip)
+        returns 4 WingCrossSections."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._explode_wing(
             [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
@@ -1970,8 +1973,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertEqual(len(result), 4)
 
     def test_explode_wing_first_wing_cross_section_is_root(self) -> None:
-        """Test that _explode_wing seeds the result with the root WingCrossSection (root chord, a
-        single spanwise panel)."""
+        """Test that _explode_wing seeds the result with the root WingCrossSection (root
+        chord, a single spanwise panel)."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._explode_wing(
             [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
@@ -1980,8 +1983,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertEqual(result[0].num_spanwise_panels, 1)
 
     def test_explode_wing_all_non_tip_have_num_spanwise_one(self) -> None:
-        """Test that _explode_wing produces WingCrossSections where every non-tip entry has
-        num_spanwise_panels=1."""
+        """Test that _explode_wing produces WingCrossSections where every non-tip entry
+        has num_spanwise_panels=1."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._explode_wing(
             [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
@@ -1991,7 +1994,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
                 self.assertEqual(wing_cross_section.num_spanwise_panels, 1)
 
     def test_explode_wing_last_wing_cross_section_is_tip(self) -> None:
-        """Test that _explode_wing produces a final WingCrossSection with num_spanwise_panels=None."""
+        """Test that _explode_wing produces a final WingCrossSection with
+        num_spanwise_panels=None."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._explode_wing(
             [self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()]
@@ -1999,8 +2003,8 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertIsNone(result[-1].num_spanwise_panels)
 
     def test_explode_wing_rejects_non_uniform_spanwise_spacing(self) -> None:
-        """Test that _explode_wing raises ValueError when a non tip WingCrossSection uses cosine
-        spanwise spacing, since the explosion assumes uniformly distributed
+        """Test that _explode_wing raises ValueError when a non tip WingCrossSection
+        uses cosine spanwise spacing, since the explosion assumes uniformly distributed
         intermediates."""
         wing = self._make_plain_wing(explode_into_strips=False)
         cosine_root = ps.geometry.wing_cross_section.WingCrossSection(
@@ -2098,7 +2102,8 @@ class TestFromEdgePoints(unittest.TestCase):
         self.assertIsInstance(wing, ps.geometry.wing.Wing)
 
     def test_wing_cross_section_count(self) -> None:
-        """Test that from_edge_points produces num_wing_cross_sections WingCrossSections."""
+        """Test that from_edge_points produces num_wing_cross_sections
+        WingCrossSections."""
         wing = self._make_edge_wing(num_wing_cross_sections=5)
         self.assertEqual(len(wing.wing_cross_sections), 5)
 
@@ -2272,8 +2277,8 @@ class TestFromEdgePoints(unittest.TestCase):
         self.assertAlmostEqual(wing.wing_cross_sections[-1].chord, 0.6, places=10)
 
     def test_pointed_tip_rejected_without_trim(self) -> None:
-        """Test that a planform tapering to a point at the tip is rejected without a
-        tip trim, since the tip chord would be zero."""
+        """Test that a planform tapering to a point at the tip is rejected without a tip
+        trim, since the tip chord would be zero."""
         leading, trailing = self._pointed_tip_edge_points()
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing.from_edge_points(

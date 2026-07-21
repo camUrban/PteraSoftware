@@ -7,12 +7,12 @@ from tests.integration.fixtures import problem_fixtures
 def make_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
     ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
 ):
-    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver to be used as
-    a fixture.
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver to be used as a
+    fixture.
 
     :return steady_horseshoe_vortex_lattice_method_validation_solver:
-    SteadyHorseshoeVortexLatticeMethodSolver
-        This is the SteadyHorseshoeVortexLatticeMethodSolver fixture.
+        SteadyHorseshoeVortexLatticeMethodSolver This is the
+        SteadyHorseshoeVortexLatticeMethodSolver fixture.
     """
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
@@ -26,12 +26,12 @@ def make_steady_horseshoe_vortex_lattice_method_validation_solver() -> (
 def make_steady_multiple_wing_horseshoe_vortex_lattice_method_validation_solver() -> (
     ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
 ):
-    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with
-    multi-wing geometry to be used as a fixture.
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with multi-wing
+    geometry to be used as a fixture.
 
     :return steady_horseshoe_vortex_lattice_method_validation_solver:
-    SteadyHorseshoeVortexLatticeMethodSolver
-        This is the SteadyHorseshoeVortexLatticeMethodSolver fixture.
+        SteadyHorseshoeVortexLatticeMethodSolver This is the
+        SteadyHorseshoeVortexLatticeMethodSolver fixture.
     """
     steady_validation_problem = (
         problem_fixtures.make_steady_multiple_wing_validation_problem()
@@ -51,8 +51,8 @@ def make_steady_ring_vortex_lattice_method_validation_solver() -> (
     fixture.
 
     :return steady_ring_vortex_lattice_method_validation_solver:
-    SteadyRingVortexLatticeMethodSolver
-        This is the SteadyRingVortexLatticeMethodSolver fixture.
+        SteadyRingVortexLatticeMethodSolver This is the
+        SteadyRingVortexLatticeMethodSolver fixture.
     """
     steady_validation_problem = problem_fixtures.make_steady_validation_problem()
 
@@ -72,8 +72,8 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geome
     geometry to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
-    UnsteadyRingVortexLatticeMethodSolver
-        This is the UnsteadyRingVortexLatticeMethodSolver fixture.
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
     """
     unsteady_validation_problem = (
         problem_fixtures.make_unsteady_validation_problem_with_static_geometry()
@@ -95,8 +95,8 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_variable_geo
     geometry to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
-    UnsteadyRingVortexLatticeMethodSolver
-        This is the UnsteadyRingVortexLatticeMethodSolver fixture.
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
     """
     unsteady_validation_problem = (
         problem_fixtures.make_unsteady_validation_problem_with_variable_geometry()
@@ -118,8 +118,8 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     static geometry to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
-    UnsteadyRingVortexLatticeMethodSolver
-        This is the UnsteadyRingVortexLatticeMethodSolver fixture.
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
     """
     unsteady_validation_problem = (
         problem_fixtures.make_unsteady_validation_problem_with_multiple_wing_static_geometry()
@@ -141,8 +141,8 @@ def make_unsteady_ring_vortex_lattice_method_validation_solver_with_multiple_win
     variable geometry to be used as a fixture.
 
     :return unsteady_ring_vortex_lattice_method_validation_solver:
-    UnsteadyRingVortexLatticeMethodSolver
-        This is the UnsteadyRingVortexLatticeMethodSolver fixture.
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
     """
     unsteady_validation_problem = (
         problem_fixtures.make_unsteady_validation_problem_with_multiple_wing_variable_geometry()
@@ -163,8 +163,7 @@ def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver() -> (
     """This function creates a SteadyHorseshoeVortexLatticeMethodSolver with an image
     surface for surface effect testing.
 
-    :return solver: SteadyHorseshoeVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: SteadyHorseshoeVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_steady_problem()
 
@@ -178,11 +177,10 @@ def make_steady_horseshoe_vortex_lattice_method_surface_effect_solver() -> (
 def make_steady_horseshoe_vortex_lattice_method_free_air_solver() -> (
     ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
 ):
-    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver without an
-    image surface, for use as a free-air baseline in surface effect validation tests.
+    """This function creates a SteadyHorseshoeVortexLatticeMethodSolver without an image
+    surface, for use as a free-air baseline in surface effect validation tests.
 
-    :return solver: SteadyHorseshoeVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: SteadyHorseshoeVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
 
@@ -196,11 +194,10 @@ def make_steady_horseshoe_vortex_lattice_method_free_air_solver() -> (
 def make_steady_ring_vortex_lattice_method_surface_effect_solver() -> (
     ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
 ):
-    """This function creates a SteadyRingVortexLatticeMethodSolver with an image
-    surface for surface effect testing.
+    """This function creates a SteadyRingVortexLatticeMethodSolver with an image surface
+    for surface effect testing.
 
-    :return solver: SteadyRingVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: SteadyRingVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_steady_problem()
 
@@ -217,8 +214,7 @@ def make_steady_ring_vortex_lattice_method_free_air_solver() -> (
     """This function creates a SteadyRingVortexLatticeMethodSolver without an image
     surface, for use as a free-air baseline in surface effect validation tests.
 
-    :return solver: SteadyRingVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: SteadyRingVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_free_air_steady_problem()
 
@@ -235,8 +231,7 @@ def make_unsteady_ring_vortex_lattice_method_surface_effect_solver() -> (
     """This function creates an UnsteadyRingVortexLatticeMethodSolver with an image
     surface for surface effect testing.
 
-    :return solver: UnsteadyRingVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: UnsteadyRingVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_unsteady_problem()
 
@@ -255,8 +250,7 @@ def make_unsteady_ring_vortex_lattice_method_free_air_solver() -> (
     """This function creates an UnsteadyRingVortexLatticeMethodSolver without an image
     surface, for use as a free-air baseline in surface effect validation tests.
 
-    :return solver: UnsteadyRingVortexLatticeMethodSolver
-        This is the solver fixture.
+    :return solver: UnsteadyRingVortexLatticeMethodSolver This is the solver fixture.
     """
     problem = problem_fixtures.make_surface_effect_free_air_unsteady_problem()
 
@@ -275,9 +269,9 @@ def make_simple_glider_free_flight_solver() -> (
     """This function creates the simple glider's free flight solver to be used as a
     fixture.
 
-    :return simple_glider_free_flight_solver: FreeFlightUnsteadyRingVortexLatticeMethodSolver
-        This is the simple glider FreeFlightUnsteadyRingVortexLatticeMethodSolver
-        fixture.
+    :return simple_glider_free_flight_solver:
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver This is the simple glider
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver fixture.
     """
     simple_glider_free_flight_problem = (
         problem_fixtures.make_simple_glider_free_flight_problem()

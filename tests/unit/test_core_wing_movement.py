@@ -93,8 +93,7 @@ class TestCoreWingMovement(unittest.TestCase):
         )
 
     def test_spacing_sine_for_Ler_Gs_Cgs(self) -> None:
-        """Test that sine spacing actually produces sinusoidal motion for
-        Ler_Gs_Cgs."""
+        """Test that sine spacing actually produces sinusoidal motion for Ler_Gs_Cgs."""
         num_steps = 100
         delta_time = 0.01
         wings = self.sine_spacing_Ler_wing_movement.generate_wings(
@@ -198,8 +197,7 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(x_angles, expected_x, rtol=1e-10, atol=1e-14)
 
     def test_spacing_mixed_for_angles_Gs_to_Wn_ixyz(self) -> None:
-        """Test that mixed spacing types work correctly for
-        angles_Gs_to_Wn_ixyz."""
+        """Test that mixed spacing types work correctly for angles_Gs_to_Wn_ixyz."""
         num_steps = 100
         delta_time = 0.01
         wings = self.mixed_spacing_angles_wing_movement.generate_wings(
@@ -287,8 +285,7 @@ class TestCoreWingMovement(unittest.TestCase):
             )
 
     def test_phase_offset_Ler_produces_shifted_motion(self) -> None:
-        """Test that phase offset for Ler_Gs_Cgs produces phase-shifted
-        motion."""
+        """Test that phase offset for Ler_Gs_Cgs produces phase-shifted motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.phase_offset_Ler_wing_movement.generate_wings(
@@ -313,8 +310,8 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(z_positions, expected_z, rtol=1e-10, atol=1e-14)
 
     def test_phase_offset_angles_produces_shifted_motion(self) -> None:
-        """Test that phase offset for angles_Gs_to_Wn_ixyz produces
-        phase-shifted motion."""
+        """Test that phase offset for angles_Gs_to_Wn_ixyz produces phase-shifted
+        motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.phase_offset_angles_wing_movement.generate_wings(
@@ -344,20 +341,20 @@ class TestCoreWingMovement(unittest.TestCase):
         self.assertEqual(max_period, 0.0)
 
     def test_max_period_Ler_only_movement(self) -> None:
-        """Test that max_period correctly identifies the maximum period for
-        Ler-only CoreWingMovement."""
+        """Test that max_period correctly identifies the maximum period for Ler-only
+        CoreWingMovement."""
         max_period = self.Ler_only_wing_movement.max_period
         self.assertEqual(max_period, 1.5)
 
     def test_max_period_angles_only_movement(self) -> None:
-        """Test that max_period correctly identifies the maximum period for
-        angles-only CoreWingMovement."""
+        """Test that max_period correctly identifies the maximum period for angles-only
+        CoreWingMovement."""
         max_period = self.angles_only_wing_movement.max_period
         self.assertEqual(max_period, 1.5)
 
     def test_max_period_multiple_periods_movement(self) -> None:
-        """Test that max_period correctly identifies the maximum period when
-        different dimensions have different periods."""
+        """Test that max_period correctly identifies the maximum period when different
+        dimensions have different periods."""
         max_period = self.multiple_periods_wing_movement.max_period
 
         # The maximum should be from either the CoreWingMovement's own motion or from
@@ -587,8 +584,7 @@ class TestCoreWingMovement(unittest.TestCase):
             )
 
     def test_custom_spacing_Ler_produces_expected_motion(self) -> None:
-        """Test that custom spacing function for Ler_Gs_Cgs produces
-        expected motion."""
+        """Test that custom spacing function for Ler_Gs_Cgs produces expected motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.custom_spacing_Ler_wing_movement.generate_wings(
@@ -612,8 +608,8 @@ class TestCoreWingMovement(unittest.TestCase):
         npt.assert_allclose(x_positions, expected_x, rtol=1e-10, atol=1e-14)
 
     def test_custom_spacing_angles_produces_expected_motion(self) -> None:
-        """Test that custom spacing function for angles_Gs_to_Wn_ixyz
-        produces expected motion."""
+        """Test that custom spacing function for angles_Gs_to_Wn_ixyz produces expected
+        motion."""
         num_steps = 100
         delta_time = 0.01
         wings = self.custom_spacing_angles_wing_movement.generate_wings(
@@ -685,8 +681,8 @@ class TestCoreWingMovement(unittest.TestCase):
             )
 
     def test_rotation_point_offset_produces_position_adjustment(self) -> None:
-        """Test that non zero rotation point offset causes position changes when
-        angles oscillate."""
+        """Test that non zero rotation point offset causes position changes when angles
+        oscillate."""
         num_steps = 100
         delta_time = 0.01
         wings = self.rotation_point_offset_wing_movement.generate_wings(
@@ -825,8 +821,7 @@ class TestCoreWingMovement(unittest.TestCase):
 
     def test_all_periods_contains_duplicates(self) -> None:
         """Test that all_periods contains duplicate periods if they appear multiple
-        times.
-        """
+        times."""
         wing_movement = self.basic_wing_movement
         all_periods = wing_movement.all_periods
 
@@ -1077,7 +1072,8 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
         )
 
     def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self) -> None:
-        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+        """Test that deepcopied numpy arrays raise ValueError on in place
+        modification."""
         import copy
 
         original = self.core_wing_movement
@@ -1209,7 +1205,8 @@ class TestCoreWingMovementDeepcopy(unittest.TestCase):
             self.assertEqual(copied_wing.name, original_wing.name)
 
     def test_deepcopy_handles_memo_correctly(self) -> None:
-        """Test that deepcopy handles the memo dict correctly for circular references."""
+        """Test that deepcopy handles the memo dict correctly for circular
+        references."""
         import copy
 
         original = self.core_wing_movement

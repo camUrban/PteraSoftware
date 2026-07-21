@@ -65,7 +65,8 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         )
 
     def test_spacing_sine_for_Cg_GP1_CgP1(self) -> None:
-        """Test that sine spacing actually produces sinusoidal motion for Cg_GP1_CgP1."""
+        """Test that sine spacing actually produces sinusoidal motion for
+        Cg_GP1_CgP1."""
         num_steps = 10
         delta_time = 0.01
         airplanes = self.sine_spacing_Cg_airplane_movement.generate_airplanes(
@@ -1168,7 +1169,8 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
         self.assertIsNot(copied.phaseCg_GP1_CgP1, original.phaseCg_GP1_CgP1)
 
     def test_deepcopy_numpy_arrays_cannot_be_modified_in_place(self) -> None:
-        """Test that deepcopied numpy arrays raise ValueError on in place modification."""
+        """Test that deepcopied numpy arrays raise ValueError on in place
+        modification."""
         original = self.core_airplane_movement
         copied = copy.deepcopy(original)
 
@@ -1270,7 +1272,8 @@ class TestCoreAirplaneMovementDeepcopy(unittest.TestCase):
             self.assertEqual(copied_ap.weight, original_ap.weight)
 
     def test_deepcopy_handles_memo_correctly(self) -> None:
-        """Test that deepcopy handles the memo dict correctly for circular references."""
+        """Test that deepcopy handles the memo dict correctly for circular
+        references."""
         original = self.core_airplane_movement
         memo: dict[int, Any] = {}
 

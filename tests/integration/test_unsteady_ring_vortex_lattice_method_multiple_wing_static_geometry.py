@@ -8,8 +8,8 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.TestCase):
-    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
-    multi-wing, static geometry."""
+    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on multi-
+    wing, static geometry."""
 
     def setUp(self) -> None:
         """This method sets up the test.

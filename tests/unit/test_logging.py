@@ -13,11 +13,11 @@ class TestIndent(unittest.TestCase):
     """Tests for the indent function."""
 
     def test_returns_empty_string_at_default_nesting_level(self) -> None:
-        """indent should return an empty string at the default nesting level."""
+        """Indent should return an empty string at the default nesting level."""
         self.assertEqual(_logging.indent(), "")
 
     def test_returns_two_spaces_per_level(self) -> None:
-        """indent should return two spaces per level beyond the nesting level."""
+        """Indent should return two spaces per level beyond the nesting level."""
         self.assertEqual(_logging.indent(3), "      ")
 
 
@@ -25,34 +25,34 @@ class TestNested(unittest.TestCase):
     """Tests for the nested context manager."""
 
     def test_deepens_nesting_level_by_one_by_default(self) -> None:
-        """nested should deepen the nesting level by one level by default."""
+        """Nested should deepen the nesting level by one level by default."""
         with _logging.nested():
             self.assertEqual(_logging.indent(), "  ")
 
     def test_deepens_nesting_level_by_given_levels(self) -> None:
-        """nested should deepen the nesting level by the given number of levels."""
+        """Nested should deepen the nesting level by the given number of levels."""
         with _logging.nested(3):
             self.assertEqual(_logging.indent(), "      ")
 
     def test_nested_blocks_accumulate(self) -> None:
-        """nested blocks should accumulate their levels."""
+        """Nested blocks should accumulate their levels."""
         with _logging.nested():
             with _logging.nested(2):
                 self.assertEqual(_logging.indent(), "      ")
 
     def test_indent_levels_add_to_nesting_level(self) -> None:
-        """indent's levels should add to the current nesting level."""
+        """Indent's levels should add to the current nesting level."""
         with _logging.nested():
             self.assertEqual(_logging.indent(2), "      ")
 
     def test_restores_nesting_level_after_block(self) -> None:
-        """nested should restore the nesting level after the block."""
+        """Nested should restore the nesting level after the block."""
         with _logging.nested(2):
             pass
         self.assertEqual(_logging.indent(), "")
 
     def test_restores_nesting_level_after_exception(self) -> None:
-        """nested should restore the nesting level when the block raises."""
+        """Nested should restore the nesting level when the block raises."""
         with self.assertRaises(ValueError):
             with _logging.nested():
                 raise ValueError("Test error")

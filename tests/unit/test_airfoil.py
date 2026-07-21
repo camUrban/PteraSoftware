@@ -180,7 +180,8 @@ class TestAirfoil(unittest.TestCase):
         self.assertFalse(np.allclose(original_outline, modified_outline))
 
     def test_add_control_surface_zero_deflection_returns_self(self) -> None:
-        """Verify that zero deflection returns the same Airfoil instance (optimization)."""
+        """Verify that zero deflection returns the same Airfoil instance
+        (optimization)."""
         result = self.naca0012_airfoil.add_control_surface(
             deflection=0.0,
             hinge_point=0.75,
@@ -191,9 +192,9 @@ class TestAirfoil(unittest.TestCase):
         """A positive deflection lowers the trailing edge along wing cross section z,
         and an equal negative deflection raises it by an equal amount.
 
-        The Airfoil's mean camber line is in airfoil axes, whose y-component is the
-        wing cross section z-component: the airfoil embeds in wing cross section axes
-        with the chord along x, the span along y, and the thickness along z. A positive
+        The Airfoil's mean camber line is in airfoil axes, whose y-component is the wing
+        cross section z-component: the airfoil embeds in wing cross section axes with
+        the chord along x, the span along y, and the thickness along z. A positive
         deflection is defined as downward, toward wing cross section -z, so the trailing
         edge's z-component must decrease for a positive deflection and increase by the
         same magnitude for an equal-magnitude negative deflection.
@@ -319,8 +320,8 @@ class TestAirfoil(unittest.TestCase):
         self.assertIsNotNone(airfoil_boundary_camber_pos.outline_A_Lp)
 
     def test_naca_airfoil_thickness(self) -> None:
-        """Test that the generated NACA0012 and NACA2412 Airfoils have approximately
-        the correct maximum thickness."""
+        """Test that the generated NACA0012 and NACA2412 Airfoils have approximately the
+        correct maximum thickness."""
         for airfoil in [self.naca0012_airfoil, self.naca2412_airfoil]:
             outline_A_Lp = airfoil.outline_A_Lp
             outlineY_A_Lp = outline_A_Lp[:, 1]
@@ -614,12 +615,10 @@ class TestAirfoil(unittest.TestCase):
     def test_all_valid_naca4_airfoils_load(self) -> None:
         """Test that all valid NACA 4 series airfoils load without errors.
 
-        NACA 4 series constraints:
-        1. Cannot be "0000" (zero thickness)
-        2. Thickness (last two digits) must be <= 30%
-        3. First two digits must either both be zero (symmetric) or both be
-           non zero (cambered)
-        4. For cambered airfoils: camber_loc >= max_camber + thickness/2
+        NACA 4 series constraints: 1. Cannot be "0000" (zero thickness) 2. Thickness
+        (last two digits) must be <= 30% 3. First two digits must either both be zero
+        (symmetric) or both be    non zero (cambered) 4. For cambered airfoils:
+        camber_loc >= max_camber + thickness/2
         """
         failed_airfoils = []
 

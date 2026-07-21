@@ -97,16 +97,15 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         np.testing.assert_array_equal(mass_matrix[:, :, 1], mass_matrix[:, :, 2])
 
     def test_calculate_spring_moments_accumulates_state_across_steps(self) -> None:
-        """Test that a strip's spring-damper ODE is re-seeded from its own state at
-        the end of the previous time step, so a constant aerodynamic moment drives
-        the strip's deformation angle y component to accumulate across steps toward
-        the static equilibrium M / k.
+        """Test that a strip's spring-damper ODE is re-seeded from its own state at the
+        end of the previous time step, so a constant aerodynamic moment drives the
+        strip's deformation angle y component to accumulate across steps toward the
+        static equilibrium M / k.
 
         Uses a single-strip Wing in a slow, overdamped regime where the one-step
         response from rest is a small fraction of M / k. If a strip's state were
-        discarded between steps (a restart from rest every step), the deformation
-        angle y component would freeze at that one-step response instead of
-        converging.
+        discarded between steps (a restart from rest every step), the deformation angle
+        y component would freeze at that one-step response instead of converging.
         """
         problem = ps.problems.AeroelasticUnsteadyProblem(
             movement=movement_fixtures.make_basic_aeroelastic_movement_fixture(),
@@ -187,8 +186,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_record_structural_state_records_new_state_after_discard_window(
         self,
     ) -> None:
-        """Test that _record_structural_state appends the new state to both time
-        series as fresh arrays when the time step is past the discard window."""
+        """Test that _record_structural_state appends the new state to both time series
+        as fresh arrays when the time step is past the discard window."""
         problem = self.problem
         wing_idx = 0
         num_wing_cross_sections = problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[
@@ -331,8 +330,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         self.assertIsInstance(theta_derivative_rad, float)
 
     def test_spring_numerical_ode_spring_restores_toward_zero(self) -> None:
-        """Test that a positive initial displacement decays toward zero with
-        positive spring constant and damping."""
+        """Test that a positive initial displacement decays toward zero with positive
+        spring constant and damping."""
         t = np.array([0.0, 0.5, 1.0])
         zero_moment_func = lambda time: 0.0
         theta0_rad = 1.0
@@ -412,9 +411,9 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
         """Test that a motion-off wing movement (zero flapping amplitude and period)
         produces an identically zero, finite inertial moment at every time.
 
-        A wing with no prescribed flapping applies no inertial moment, so the
-        returned function must evaluate to exactly 0.0 rather than to NaN from the
-        2 * pi / period frequency computation with a zero period.
+        A wing with no prescribed flapping applies no inertial moment, so the returned
+        function must evaluate to exactly 0.0 rather than to NaN from the 2 * pi /
+        period frequency computation with a zero period.
         """
         static_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
@@ -432,8 +431,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
             self.assertAlmostEqual(float(result), 0.0, places=12)
 
     def test_generate_inertial_moment_function_uniform_spacing_raises(self) -> None:
-        """Test that _generate_inertial_moment_function raises ValueError when the
-        wing motion spacing is "uniform" (sawtooth), which is not differentiable."""
+        """Test that _generate_inertial_moment_function raises ValueError when the wing
+        motion spacing is "uniform" (sawtooth), which is not differentiable."""
         wing_movement = self.wing_movement
         with patch.object(
             type(wing_movement),
@@ -449,8 +448,9 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
     def test_generate_inertial_moment_function_callable_spacing_with_derivative(
         self,
     ) -> None:
-        """Test that _generate_inertial_moment_function uses the AeroelasticWingMovement's
-        second derivative when the spacing is a custom callable."""
+        """Test that _generate_inertial_moment_function uses the
+        AeroelasticWingMovement's second derivative when the spacing is a custom
+        callable."""
         wing_movement = self.wing_movement
         with (
             patch.object(
@@ -479,8 +479,8 @@ class TestAeroelasticUnsteadyProblem(unittest.TestCase):
 
 
 class TestRecordNullStepForWing(unittest.TestCase):
-    """This class contains unit tests for the _record_null_step_for_wing method and
-    the standard WingMovement code path in _calculate_wing_deformation."""
+    """This class contains unit tests for the _record_null_step_for_wing method and the
+    standard WingMovement code path in _calculate_wing_deformation."""
 
     def setUp(self) -> None:
         """Set up a fresh AeroelasticUnsteadyProblem for each test."""
@@ -494,8 +494,8 @@ class TestRecordNullStepForWing(unittest.TestCase):
     def test_record_null_step_for_wing_appends_one_entry_to_each_time_series(
         self,
     ) -> None:
-        """Test that _record_null_step_for_wing appends exactly one entry to each
-        per-wing time series list."""
+        """Test that _record_null_step_for_wing appends exactly one entry to each per-
+        wing time series list."""
         wing_idx = 0
         problem = self.problem_aero
         num_previous_states = len(

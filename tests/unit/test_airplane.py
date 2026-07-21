@@ -196,8 +196,8 @@ class TestAirplane(unittest.TestCase):
                 ps.geometry.airplane.Airplane(wings=[test_wing])
 
     def test_c_ref_none_with_none_mean_aerodynamic_chord_raises(self) -> None:
-        """Test that c_ref=None raises ValueError when wing's mean_aerodynamic_chord
-        is None."""
+        """Test that c_ref=None raises ValueError when wing's mean_aerodynamic_chord is
+        None."""
         with patch.object(
             ps.geometry.wing.Wing,
             "mean_aerodynamic_chord",
@@ -451,8 +451,8 @@ class TestAirplane(unittest.TestCase):
             )
 
     def test_process_wing_symmetry_type_4_asymmetric_root_raises(self) -> None:
-        """A type 4 Wing whose root cross section (on the coincident symmetry plane)
-        has an asymmetric control surface with a nonzero deflection must raise.
+        """A type 4 Wing whose root cross section (on the coincident symmetry plane) has
+        an asymmetric control surface with a nonzero deflection must raise.
 
         The original and mirrored halves would deflect that shared cross section in
         opposite directions, tearing the mesh at the centerline seam.
@@ -480,7 +480,9 @@ class TestAirplane(unittest.TestCase):
     def test_process_wing_symmetry_type_4_asymmetric_tip_allowed(self) -> None:
         """A type 4 Wing may carry an asymmetric control surface on an off-plane cross
         section (an outboard aileron), since only the shared root cross section tears
-        the mesh. The guard must reject the root case without over-restricting this one.
+        the mesh.
+
+        The guard must reject the root case without over-restricting this one.
         """
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -862,7 +864,8 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
                     original.deep_copy_with_Cg_GP1_CgP1(invalid_position)
 
     def test_deep_copy_with_Cg_GP1_CgP1_multi_wing(self) -> None:
-        """Test that deep_copy_with_Cg_GP1_CgP1 works correctly for multi wing Airplanes."""
+        """Test that deep_copy_with_Cg_GP1_CgP1 works correctly for multi wing
+        Airplanes."""
         original = self.multi_wing_airplane
         new_position = [15.0, -10.0, 5.0]
         copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
@@ -947,8 +950,7 @@ class TestAirplaneTPasGCgToGP1CgP1(unittest.TestCase):
 
     def test_transformation_matrix_applies_correct_translation(self) -> None:
         """Test that the transformation matrix applies the correct translation to a
-        point.
-        """
+        point."""
         position = np.array([5.0, 2.0, -1.0])
         test_wing = geometry_fixtures.make_type_1_wing_fixture()
         airplane = ps.geometry.airplane.Airplane(
@@ -990,8 +992,7 @@ class TestAirplaneGetPlottableData(unittest.TestCase):
         self,
     ) -> None:
         """Test that the returned data structure matches the number of Wings and
-        WingCrossSections.
-        """
+        WingCrossSections."""
         result = self.basic_airplane.get_plottable_data(show=False)
         assert result is not None
         outlines = result[0]

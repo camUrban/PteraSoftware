@@ -12,8 +12,8 @@ def make_basic_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
     """This method makes a fixture that is a MuJoCoModel with basic parameters
     representing a simple rigid body at rest with identity orientation.
 
-    :return basic_mujoco_model_fixture: MuJoCoModel
-        This is the MuJoCoModel with basic parameters.
+    :return basic_mujoco_model_fixture: MuJoCoModel This is the MuJoCoModel with basic
+        parameters.
     """
     basic_mujoco_model_fixture = _mujoco_model.MuJoCoModel(
         name="test_airplane",
@@ -29,11 +29,11 @@ def make_basic_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
 
 
 def make_rotated_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
-    """This method makes a fixture that is a MuJoCoModel with a 90 degree rotation
-    about the z axis and non zero initial angular velocity.
+    """This method makes a fixture that is a MuJoCoModel with a 90 degree rotation about
+    the z axis and non zero initial angular velocity.
 
-    :return rotated_mujoco_model_fixture: MuJoCoModel
-        This is the MuJoCoModel with rotated initial orientation.
+    :return rotated_mujoco_model_fixture: MuJoCoModel This is the MuJoCoModel with
+        rotated initial orientation.
     """
     T_pas = np.eye(4, dtype=float)
     T_pas[:3, :3] = np.array(
@@ -69,8 +69,8 @@ def make_pitched_mujoco_model_fixture(
     :param omegas_BP1__E: A (3,) array-like of floats representing the initial angular
         velocity of the body axes (in body axes, observed from the Earth frame), in
         degrees per second. The default is no rotation, which leaves the body at rest.
-    :return pitched_mujoco_model_fixture: MuJoCoModel
-        This is the MuJoCoModel pitched 90 degrees about the y axis.
+    :return pitched_mujoco_model_fixture: MuJoCoModel This is the MuJoCoModel pitched 90
+        degrees about the y axis.
     """
     angles_E_to_BP1_izyx = np.array([0.0, 90.0, 0.0], dtype=float)
     T_pas_E_CgP1_to_BP1_CgP1 = _transformations.generate_rot_T(
@@ -95,8 +95,7 @@ def make_basic_mujoco_model_name_fixture() -> str:
     """This method makes a fixture that is the name used by the basic MuJoCoModel
     fixture.
 
-    :return: str
-        The name of the basic MuJoCoModel fixture.
+    :return: str The name of the basic MuJoCoModel fixture.
     """
     return "test_airplane"
 
@@ -105,8 +104,7 @@ def make_basic_mujoco_model_mass_fixture() -> float:
     """This method makes a fixture that is the mass used by the basic MuJoCoModel
     fixture.
 
-    :return: float
-        The mass in kilograms.
+    :return: float The mass in kilograms.
     """
     return 1.0
 
@@ -115,7 +113,6 @@ def make_basic_mujoco_model_delta_time_fixture() -> float:
     """This method makes a fixture that is the delta_time used by the basic MuJoCoModel
     fixture.
 
-    :return: float
-        The time step in seconds.
+    :return: float The time step in seconds.
     """
     return 0.01

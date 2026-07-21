@@ -15,9 +15,9 @@ def make_basic_free_flight_movement_fixture() -> (
     """This method makes a fixture that is a FreeFlightMovement with general-purpose
     moderate values.
 
-    :return basic_free_flight_movement_fixture: FreeFlightMovement
-        This is the FreeFlightMovement with general-purpose values. Its single
-        AirplaneMovement oscillates, so the FreeFlightMovement is non static.
+    :return basic_free_flight_movement_fixture: FreeFlightMovement This is the
+        FreeFlightMovement with general-purpose values. Its single AirplaneMovement
+        oscillates, so the FreeFlightMovement is non static.
     """
     # Initialize the constructing fixtures.
     airplane_movements = [
@@ -48,11 +48,11 @@ def make_static_free_flight_movement_fixture() -> (
     """This method makes a fixture that is a FreeFlightMovement with all static
     components.
 
-    :return static_free_flight_movement_fixture: FreeFlightMovement
-        This is the FreeFlightMovement with no prescribed motion. Because the
-        FreeFlightOperatingPointMovement never oscillates, the only possible motion comes
-        from the AirplaneMovement, which is static here, so the FreeFlightMovement is
-        static.
+    :return static_free_flight_movement_fixture: FreeFlightMovement This is the
+        FreeFlightMovement with no prescribed motion. Because the
+        FreeFlightOperatingPointMovement never oscillates, the only possible motion
+        comes from the AirplaneMovement, which is static here, so the FreeFlightMovement
+        is static.
     """
     # Initialize the constructing fixtures. The base Airplane is the first Airplane in a
     # simulation, so its Cg_GP1_CgP1 parameter is all zeros. The base Wing is a type 1

@@ -95,7 +95,8 @@ def make_valid_nested_list_fixture() -> list[list[float]]:
 
 # Valid 3D vector fixtures.
 def make_valid_3d_vector_fixture() -> np.ndarray:
-    """Makes a fixture that is a valid 3D vector for threeD_number_vectorLike_return_float.
+    """Makes a fixture that is a valid 3D vector for
+    threeD_number_vectorLike_return_float.
 
     :return: A (3,) ndarray of floats.
     """
@@ -103,7 +104,8 @@ def make_valid_3d_vector_fixture() -> np.ndarray:
 
 
 def make_valid_3d_list_fixture() -> list[float]:
-    """Makes a fixture that is a valid 3D list for threeD_number_vectorLike_return_float.
+    """Makes a fixture that is a valid 3D list for
+    threeD_number_vectorLike_return_float.
 
     :return: A list with 3 elements.
     """
@@ -111,7 +113,8 @@ def make_valid_3d_list_fixture() -> list[float]:
 
 
 def make_valid_3d_tuple_fixture() -> tuple[float, float, float]:
-    """Makes a fixture that is a valid 3D tuple for threeD_number_vectorLike_return_float.
+    """Makes a fixture that is a valid 3D tuple for
+    threeD_number_vectorLike_return_float.
 
     :return: A tuple with 3 elements.
     """
@@ -136,7 +139,8 @@ def make_valid_non_unit_vector_fixture() -> np.ndarray:
 
 # Valid 2D vector fixtures.
 def make_valid_2d_vector_fixture() -> np.ndarray:
-    """Makes a fixture that is a valid 2D vector for arrayLike_of_twoD_number_vectorLikes_return_float.
+    """Makes a fixture that is a valid 2D vector for
+    arrayLike_of_twoD_number_vectorLikes_return_float.
 
     :return: A (2,) ndarray of floats.
     """
@@ -189,7 +193,8 @@ def make_valid_spacing_vector_all_callables_fixture() -> (
 def make_valid_spacing_vector_mixed_fixture() -> (
     tuple[str, Callable[[float], float], str]
 ):
-    """Makes a fixture that is a valid spacing vector with mixed string and callable elements.
+    """Makes a fixture that is a valid spacing vector with mixed string and callable
+    elements.
 
     :return: A tuple with mixed string and callable elements.
     """
@@ -202,7 +207,8 @@ def make_valid_spacing_vector_mixed_fixture() -> (
 
 # Valid 4x4 matrix fixtures.
 def make_valid_4x4_matrix_fixture() -> np.ndarray:
-    """Makes a fixture that is a valid 4x4 matrix for fourByFour_number_arrayLike_return_float.
+    """Makes a fixture that is a valid 4x4 matrix for
+    fourByFour_number_arrayLike_return_float.
 
     :return: A (4, 4) ndarray of floats.
     """
@@ -210,7 +216,8 @@ def make_valid_4x4_matrix_fixture() -> np.ndarray:
 
 
 def make_valid_4x4_list_fixture() -> list[list[float]]:
-    """Makes a fixture that is a valid 4x4 nested list for fourByFour_number_arrayLike_return_float.
+    """Makes a fixture that is a valid 4x4 nested list for
+    fourByFour_number_arrayLike_return_float.
 
     :return: A nested list with shape (4, 4).
     """
@@ -307,7 +314,8 @@ def make_invalid_inf_fixture() -> float:
 
 
 def make_invalid_neg_inf_fixture() -> float:
-    """Makes a fixture that is negative infinity for testing finite value validation errors.
+    """Makes a fixture that is negative infinity for testing finite value validation
+    errors.
 
     :return: -np.inf.
     """
@@ -347,7 +355,8 @@ def make_invalid_3x3_matrix_fixture() -> np.ndarray:
 
 
 def make_invalid_empty_list_fixture() -> list[object]:
-    """Makes a fixture that is an empty list for testing non-empty list validation errors.
+    """Makes a fixture that is an empty list for testing non-empty list validation
+    errors.
 
     :return: An empty list.
     """

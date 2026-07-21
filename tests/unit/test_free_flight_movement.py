@@ -53,8 +53,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_rejects_non_airplane_movement_children(self) -> None:
         """Test that FreeFlightMovement rejects children that are not
-        AirplaneMovements.
-        """
+        AirplaneMovements."""
         operating_point_movement = (
             free_flight_operating_point_movement_fixtures.make_basic_free_flight_operating_point_movement_fixture()
         )
@@ -71,8 +70,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_rejects_non_free_flight_operating_point_movement(self) -> None:
         """Test that FreeFlightMovement rejects OperatingPointMovement instances that
-        are not FreeFlightOperatingPointMovements.
-        """
+        are not FreeFlightOperatingPointMovements."""
         airplane_movements = [
             airplane_movement_fixtures.make_basic_airplane_movement_fixture()
         ]
@@ -188,8 +186,7 @@ class TestFreeFlightMovement(unittest.TestCase):
         self,
     ) -> None:
         """Test that operating_point_movement returns a
-        FreeFlightOperatingPointMovement.
-        """
+        FreeFlightOperatingPointMovement."""
         self.assertIsInstance(
             self.basic_free_flight_movement.operating_point_movement,
             ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement,
@@ -197,8 +194,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_airplanes_structure(self) -> None:
         """Test that airplanes is a tuple of tuples of Airplanes with the correct
-        dimensions.
-        """
+        dimensions."""
         airplanes = self.basic_free_flight_movement.airplanes
         self.assertIsInstance(airplanes, tuple)
 
@@ -241,22 +237,19 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_max_period_for_non_static_free_flight_movement(self) -> None:
         """Test that max_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
         self.assertEqual(self.basic_free_flight_movement.max_period, 2.0)
 
     def test_min_period_for_non_static_free_flight_movement(self) -> None:
         """Test that min_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0.
         self.assertEqual(self.basic_free_flight_movement.min_period, 2.0)
 
     def test_lcm_period_for_non_static_free_flight_movement(self) -> None:
         """Test that lcm_period returns the correct value for a non static
-        FreeFlightMovement.
-        """
+        FreeFlightMovement."""
         # The basic FreeFlightMovement's prescribed motion has a period of 2.0, so the
         # LCM of its identical periods is that period.
         self.assertEqual(self.basic_free_flight_movement.lcm_period, 2.0)
@@ -366,8 +359,7 @@ class TestFreeFlightMovement(unittest.TestCase):
 
     def test_static_motion_with_symmetric_wing_succeeds(self) -> None:
         """Test that a FreeFlightMovement with a symmetric Wing but no motion
-        succeeds.
-        """
+        succeeds."""
         # Create a type 4 Wing (symmetric=True, coincident symmetry plane).
         base_wing = geometry_fixtures.make_type_4_wing_fixture()
 

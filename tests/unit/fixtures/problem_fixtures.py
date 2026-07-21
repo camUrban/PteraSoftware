@@ -20,8 +20,8 @@ def make_basic_aeroelastic_unsteady_problem_fixture() -> (
 ):
     """This method makes a fixture that is an AeroelasticUnsteadyProblem for testing.
 
-    :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem
-        This is the AeroelasticUnsteadyProblem configured for general testing.
+    :return basic_aeroelastic_unsteady_problem_fixture: AeroelasticUnsteadyProblem This
+        is the AeroelasticUnsteadyProblem configured for general testing.
     """
     # Create the AeroelasticMovement.
     aeroelastic_movement = movement_fixtures.make_basic_aeroelastic_movement_fixture()
@@ -44,9 +44,8 @@ def make_aeroelastic_unsteady_problem_with_standard_wing_fixture() -> (
     backed by a standard WingMovement rather than an AeroelasticWingMovement.
 
     :return aeroelastic_unsteady_problem_with_standard_wing_fixture:
-        AeroelasticUnsteadyProblem
-        This is the AeroelasticUnsteadyProblem configured for testing the
-        non-aeroelastic Wing code path.
+        AeroelasticUnsteadyProblem This is the AeroelasticUnsteadyProblem configured for
+        testing the non-aeroelastic Wing code path.
     """
     # Create the AeroelasticMovement with a standard WingMovement child.
     movement = movement_fixtures.make_aeroelastic_movement_with_standard_wing_fixture()
@@ -67,8 +66,8 @@ def make_aeroelastic_unsteady_problem_with_standard_wing_fixture() -> (
 def make_basic_steady_problem_fixture() -> ps.problems.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem for general testing.
 
-    :return basic_steady_problem_fixture: SteadyProblem
-        This is the SteadyProblem configured for general testing.
+    :return basic_steady_problem_fixture: SteadyProblem This is the SteadyProblem
+        configured for general testing.
     """
     # Create an Airplane.
     first_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -90,8 +89,8 @@ def make_basic_steady_problem_fixture() -> ps.problems.SteadyProblem:
 def make_multi_airplane_steady_problem_fixture() -> ps.problems.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem with multiple Airplanes.
 
-    :return multi_airplane_steady_problem_fixture: SteadyProblem
-        This is the SteadyProblem with multiple Airplanes.
+    :return multi_airplane_steady_problem_fixture: SteadyProblem This is the
+        SteadyProblem with multiple Airplanes.
     """
     # Create multiple Airplanes.
     airplane1 = geometry_fixtures.make_first_airplane_fixture()
@@ -112,8 +111,8 @@ def make_multi_airplane_steady_problem_fixture() -> ps.problems.SteadyProblem:
 def make_basic_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem for general testing.
 
-    :return basic_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem configured for general testing.
+    :return basic_unsteady_problem_fixture: UnsteadyProblem This is the UnsteadyProblem
+        configured for general testing.
     """
     # Create a basic Movement.
     basic_movement = movement_fixtures.make_basic_movement_fixture()
@@ -131,8 +130,8 @@ def make_only_final_results_unsteady_problem_fixture() -> ps.problems.UnsteadyPr
     """This method makes a fixture that is an UnsteadyProblem with only_final_results
     set to True.
 
-    :return only_final_results_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem with only_final_results set to True.
+    :return only_final_results_unsteady_problem_fixture: UnsteadyProblem This is the
+        UnsteadyProblem with only_final_results set to True.
     """
     # Create a basic Movement.
     basic_movement = movement_fixtures.make_basic_movement_fixture()
@@ -149,8 +148,8 @@ def make_only_final_results_unsteady_problem_fixture() -> ps.problems.UnsteadyPr
 def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with multiple Airplanes.
 
-    :return multi_airplane_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem with multiple Airplanes.
+    :return multi_airplane_unsteady_problem_fixture: UnsteadyProblem This is the
+        UnsteadyProblem with multiple Airplanes.
     """
     # Create a Movement with multiple AirplaneMovements.
     multi_airplane_movement = (
@@ -167,12 +166,11 @@ def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProble
 
 
 def make_with_body_rates_steady_problem_fixture() -> ps.problems.SteadyProblem:
-    """This method makes a fixture that is a SteadyProblem with a non zero
-    omegas_BP1__E for testing that the steady solvers reject body rotation.
+    """This method makes a fixture that is a SteadyProblem with a non zero omegas_BP1__E
+    for testing that the steady solvers reject body rotation.
 
-    :return with_body_rates_steady_problem_fixture: SteadyProblem
-        This is the SteadyProblem whose OperatingPoint has a non zero body
-        angular velocity.
+    :return with_body_rates_steady_problem_fixture: SteadyProblem This is the
+        SteadyProblem whose OperatingPoint has a non zero body angular velocity.
     """
     return ps.problems.SteadyProblem(
         airplanes=[geometry_fixtures.make_first_airplane_fixture()],
@@ -181,13 +179,13 @@ def make_with_body_rates_steady_problem_fixture() -> ps.problems.SteadyProblem:
 
 
 def make_with_body_rates_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
-    """This method makes a fixture that is an UnsteadyProblem whose Movement
-    carries a non zero omegas_BP1__E on its base OperatingPoint, for testing
-    that the unsteady solver rejects body rotation.
+    """This method makes a fixture that is an UnsteadyProblem whose Movement carries a
+    non zero omegas_BP1__E on its base OperatingPoint, for testing that the unsteady
+    solver rejects body rotation.
 
-    :return with_body_rates_unsteady_problem_fixture: UnsteadyProblem
-        This is the UnsteadyProblem whose generated per-step OperatingPoints
-        all carry a non zero body angular velocity.
+    :return with_body_rates_unsteady_problem_fixture: UnsteadyProblem This is the
+        UnsteadyProblem whose generated per-step OperatingPoints all carry a non zero
+        body angular velocity.
     """
     airplane_movement = (
         airplane_movement_fixtures.make_basic_airplane_movement_fixture()
@@ -223,18 +221,17 @@ def make_basic_free_flight_unsteady_problem_fixture(
     """This method makes a fixture that is a FreeFlightUnsteadyProblem for general
     testing.
 
-    :param base_operating_point: OperatingPoint or None
-        The base OperatingPoint for the FreeFlightOperatingPointMovement. If None, a
-        basic OperatingPoint with no body rotation is used. The default is None.
-    :param external_loads_fn: Callable or None
-        A callable that computes additional forces and moments to apply to the Airplane
-        during the simulation. If None, no additional loads are applied. The default is
-        None.
-    :param mujoco_assets: dict or None
-        A dict mapping virtual filenames to their binary contents for the MuJoCo model.
-        If None, no extra assets are provided. The default is None.
-    :return basic_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem
-        This is the FreeFlightUnsteadyProblem configured for general testing.
+    :param base_operating_point: OperatingPoint or None The base OperatingPoint for the
+        FreeFlightOperatingPointMovement. If None, a basic OperatingPoint with no body
+        rotation is used. The default is None.
+    :param external_loads_fn: Callable or None A callable that computes additional
+        forces and moments to apply to the Airplane during the simulation. If None, no
+        additional loads are applied. The default is None.
+    :param mujoco_assets: dict or None A dict mapping virtual filenames to their binary
+        contents for the MuJoCo model. If None, no extra assets are provided. The
+        default is None.
+    :return basic_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem This
+        is the FreeFlightUnsteadyProblem configured for general testing.
     """
     # Build the FreeFlightMovement using a static motion configuration.
     base_airplane = geometry_fixtures.make_first_airplane_fixture()
@@ -318,9 +315,9 @@ def make_with_body_rates_free_flight_unsteady_problem_fixture() -> (
     OperatingPoint carries a non zero omegas_BP1__E, for testing that the free-flight
     solver permits body rotation.
 
-    :return with_body_rates_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem
-        This is the FreeFlightUnsteadyProblem whose initial OperatingPoint carries a non
-        zero body angular velocity.
+    :return with_body_rates_free_flight_unsteady_problem_fixture:
+        FreeFlightUnsteadyProblem This is the FreeFlightUnsteadyProblem whose initial
+        OperatingPoint carries a non zero body angular velocity.
     """
     return make_basic_free_flight_unsteady_problem_fixture(
         base_operating_point=operating_point_fixtures.make_with_body_rates_operating_point_fixture()
@@ -330,10 +327,11 @@ def make_with_body_rates_free_flight_unsteady_problem_fixture() -> (
 def make_basic_coupled_unsteady_problem_fixture() -> (
     ps.problems._CoupledUnsteadyProblem
 ):
-    """This method makes a fixture that is a _CoupledUnsteadyProblem for general testing.
+    """This method makes a fixture that is a _CoupledUnsteadyProblem for general
+    testing.
 
-    :return basic_coupled_unsteady_problem_fixture: _CoupledUnsteadyProblem
-        This is the _CoupledUnsteadyProblem configured for general testing.
+    :return basic_coupled_unsteady_problem_fixture: _CoupledUnsteadyProblem This is the
+        _CoupledUnsteadyProblem configured for general testing.
     """
     # SteadyProblem sets GP1_CgP1 attributes on each Panel exactly once, so a fresh
     # Airplane is required for every _CoupledUnsteadyProblem instance.

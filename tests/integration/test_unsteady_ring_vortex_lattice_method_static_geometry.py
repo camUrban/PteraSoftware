@@ -1,15 +1,13 @@
 """This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with static
 geometry.
 
-Based on an equivalent XFLR5 testing case, the expected output for this case is:
-    CL:     0.485
-    CDi:    0.015
-    Cm:     -0.166
+Based on an equivalent XFLR5 testing case, the expected output for this case is:     CL:
+0.485     CDi:    0.015     Cm:     -0.166
 
-Note: The expected output was created using XFLR5's inviscid VLM2 analysis type,
-which is a ring vortex lattice method solver. The geometry in this case is static.
-Therefore, the results of this unsteady solver should converge to be close to XFLR5's
-static result.
+Note: The expected output was created using XFLR5's inviscid VLM2 analysis type, which
+is a ring vortex lattice method solver. The geometry in this case is static. Therefore,
+the results of this unsteady solver should converge to be close to XFLR5's static
+result.
 """
 
 import unittest
@@ -19,8 +17,8 @@ from tests.integration.fixtures import solver_fixtures
 
 
 class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
-    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on
-    static geometry."""
+    """This is a class for testing the UnsteadyRingVortexLatticeMethodSolver on static
+    geometry."""
 
     unsteady_ring_vortex_lattice_method_validation_solver: (
         ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
@@ -37,8 +35,9 @@ class TestUnsteadyRingVortexLatticeMethodStaticGeometry(unittest.TestCase):
         )
 
     def test_method(self) -> None:
-        """This method tests the UnsteadyRingVortexLatticeMethodSolver's output. It
-        also tests that the solver doesn't throw an error when the animate and
+        """This method tests the UnsteadyRingVortexLatticeMethodSolver's output.
+
+        It also tests that the solver doesn't throw an error when the animate and
         plot_results_versus_time functions are called using it.
 
         :return: None

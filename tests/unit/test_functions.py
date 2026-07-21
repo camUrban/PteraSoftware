@@ -434,8 +434,8 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         }
 
     def test_below_threshold_limits_blas_to_one_thread(self) -> None:
-        """Inside the below-threshold context, every controllable BLAS library
-        should be limited to 1 thread."""
+        """Inside the below-threshold context, every controllable BLAS library should be
+        limited to 1 thread."""
         with _functions.solve_loop_thread_limits(
             _functions._SOLVE_THREAD_THRESHOLD - 1
         ):
@@ -444,8 +444,8 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
                     self.assertEqual(library["num_threads"], 1)
 
     def test_below_threshold_leaves_non_blas_pools_alone(self) -> None:
-        """The below-threshold context should not limit non BLAS thread pools, such
-        as the one behind Numba's threading layer."""
+        """The below-threshold context should not limit non BLAS thread pools, such as
+        the one behind Numba's threading layer."""
         outside_num_threads = {
             library["filepath"]: library["num_threads"]
             for library in threadpoolctl.threadpool_info()
@@ -476,8 +476,8 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         self.assertEqual(self._blas_num_threads(), outside_num_threads)
 
     def test_at_threshold_leaves_blas_at_full_width(self) -> None:
-        """A Panel count at the threshold should leave every BLAS library's thread
-        count untouched."""
+        """A Panel count at the threshold should leave every BLAS library's thread count
+        untouched."""
         outside_num_threads = self._blas_num_threads()
 
         with _functions.solve_loop_thread_limits(_functions._SOLVE_THREAD_THRESHOLD):

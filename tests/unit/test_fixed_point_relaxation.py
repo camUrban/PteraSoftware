@@ -9,9 +9,7 @@ from pterasoftware import _fixed_point_relaxation
 
 
 class TestWeightedNorm(unittest.TestCase):
-    """This class contains methods for testing
-    _fixed_point_relaxation.weighted_norm.
-    """
+    """This class contains methods for testing _fixed_point_relaxation.weighted_norm."""
 
     def test_unit_weights_equals_euclidean_norm(self) -> None:
         """Test that unit weights reduce the weighted norm to the Euclidean norm."""
@@ -49,9 +47,7 @@ class TestWeightedNorm(unittest.TestCase):
 
 
 class TestIsConverged(unittest.TestCase):
-    """This class contains methods for testing
-    _fixed_point_relaxation.is_converged.
-    """
+    """This class contains methods for testing _fixed_point_relaxation.is_converged."""
 
     def test_zero_residual_is_converged(self) -> None:
         """Test that a zero residual is always converged."""
@@ -159,8 +155,7 @@ class TestIsConverged(unittest.TestCase):
 
 class TestAitkenRelaxationFactor(unittest.TestCase):
     """This class contains methods for testing
-    _fixed_point_relaxation.aitken_relaxation_factor.
-    """
+    _fixed_point_relaxation.aitken_relaxation_factor."""
 
     def test_matches_hand_computed_value(self) -> None:
         """Test the factor against a hand computed unit weight case.
@@ -194,8 +189,8 @@ class TestAitkenRelaxationFactor(unittest.TestCase):
     def test_guard_reverts_on_unchanged_residual(self) -> None:
         """Test that an unchanged residual reverts the factor to the initial factor.
 
-        When the residual does not change between sub-iterations the denominator is zero,
-        so the guard returns the initial factor rather than dividing by zero.
+        When the residual does not change between sub-iterations the denominator is
+        zero, so the guard returns the initial factor rather than dividing by zero.
         """
         weights = np.array([1.0, 1.0], dtype=float)
         previous_residual = np.array([1.0, 2.0], dtype=float)

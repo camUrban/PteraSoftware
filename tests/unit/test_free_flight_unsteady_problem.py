@@ -308,8 +308,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
 
     def test_I_BP1_CgP1_accepts_array_like(self) -> None:
         """Test that I_BP1_CgP1 accepts a nested list and converts it to a float
-        ndarray.
-        """
+        ndarray."""
         movement, mass = _movement_and_mass()
         inertia_list = [
             [2, 0, 0],
@@ -337,8 +336,7 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
 
     def test_free_flight_movement_property_narrows_movement(self) -> None:
         """Test that the _free_flight_movement property returns the same object as
-        movement, narrowed to FreeFlightMovement.
-        """
+        movement, narrowed to FreeFlightMovement."""
         self.assertIs(self.problem._free_flight_movement, self.problem.movement)
         self.assertIsInstance(
             self.problem._free_flight_movement,
@@ -439,11 +437,12 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
             tuple[np.ndarray, np.ndarray],
         ],
     ) -> tuple[ps.problems.FreeFlightUnsteadyProblem, MagicMock]:
-        """Build a problem carrying the given external_loads_fn and a primed mock solver.
+        """Build a problem carrying the given external_loads_fn and a primed mock
+        solver.
 
-        Mirrors setUp's load priming and _mock_mujoco_model, but for a fresh problem that
-        carries an external_loads_fn so its first-invocation return validation can be
-        exercised on a non final step.
+        Mirrors setUp's load priming and _mock_mujoco_model, but for a fresh problem
+        that carries an external_loads_fn so its first-invocation return validation can
+        be exercised on a non final step.
 
         :param external_loads_fn: The external_loads_fn to attach to the problem.
         :return: A tuple of the FreeFlightUnsteadyProblem and the primed mock solver.
@@ -486,8 +485,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
     def test_appends_next_operating_point_on_non_final_step(self) -> None:
         """Test that a new OperatingPoint is appended to the movement on a non final
-        step.
-        """
+        step."""
         self._mock_mujoco_model()
         operating_points = (
             self.problem._free_flight_movement.operating_point_movement.operating_points
@@ -500,8 +498,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
     def test_steps_dynamics_but_withholds_loads_on_prescribed_step(self) -> None:
         """Test that on a prescribed phase step the MuJoCo model is stepped but no loads
-        are applied, so the body coasts at its trimmed condition.
-        """
+        are applied, so the body coasts at its trimmed condition."""
         mock_model = self._mock_mujoco_model()
 
         # Step 0 is always in the prescribed phase, since prescribed_num_steps is at
@@ -530,8 +527,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
     def test_external_loads_fn_invoked_on_non_final_step(self) -> None:
         """Test that a set external_loads_fn is invoked with the current OperatingPoint
-        and Airplane on a non final step.
-        """
+        and Airplane on a non final step."""
         external_loads_fn = MagicMock(
             return_value=(np.zeros(3, dtype=float), np.zeros(3, dtype=float))
         )
@@ -545,8 +541,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
     def test_external_loads_fn_not_invoked_on_later_prescribed_step(self) -> None:
         """Test that the external_loads_fn is not invoked on a prescribed phase step
-        after the first, since its loads would be withheld there in any case.
-        """
+        after the first, since its loads would be withheld there in any case."""
         external_loads_fn = MagicMock(
             return_value=(np.zeros(3, dtype=float), np.zeros(3, dtype=float))
         )
@@ -561,8 +556,7 @@ class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
 
     def test_external_loads_fn_valid_return_passes(self) -> None:
         """Test that a well formed external_loads_fn return passes validation and marks
-        the return as validated.
-        """
+        the return as validated."""
         external_loads_fn = MagicMock(
             return_value=(
                 np.array([1.0, 0.0, 0.0], dtype=float),
@@ -768,9 +762,10 @@ class TestFreeFlightUnsteadyProblemRelaxationWeights(unittest.TestCase):
         """Test that _build_relaxation_weights builds the weighting diagonal from the
         reference chord, mass, inertia, and time step per its definition.
 
-        A non-identity inertia is used so the mean of the principal moments (one third of
-        the trace) is exercised rather than collapsing to one. The velocity and angular
-        rate blocks must equal the position and attitude blocks scaled by the time step.
+        A non-identity inertia is used so the mean of the principal moments (one third
+        of the trace) is exercised rather than collapsing to one. The velocity and
+        angular rate blocks must equal the position and attitude blocks scaled by the
+        time step.
         """
         movement, mass = _movement_and_mass()
         problem = ps.problems.FreeFlightUnsteadyProblem(

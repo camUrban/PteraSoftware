@@ -18,7 +18,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_problem_validation(self) -> None:
         """Test problem parameter validation."""
-
         with self.assertRaises(TypeError):
             ps.trim.analyze_unsteady_trim(
                 problem="not a problem",
@@ -30,7 +29,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_multiple_airplane_movements_validation(self) -> None:
         """Test that only one AirplaneMovement is allowed."""
-
         problem = problem_fixtures.make_multi_airplane_unsteady_problem_fixture()
 
         with self.assertRaises(ValueError):
@@ -44,7 +42,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_boundsVCg__E_validation(self) -> None:
         """Test boundsVCg__E parameter validation."""
-
         with self.assertRaises(TypeError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -92,7 +89,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_alpha_bounds_validation(self) -> None:
         """Test alpha_bounds parameter validation."""
-
         with self.assertRaises(TypeError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -131,7 +127,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_beta_bounds_validation(self) -> None:
         """Test beta_bounds parameter validation."""
-
         with self.assertRaises(TypeError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -170,7 +165,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_boundsExternalFX_W_validation(self) -> None:
         """Test boundsExternalFX_W parameter validation."""
-
         with self.assertRaises(TypeError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -209,7 +203,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_objective_cut_off_validation(self) -> None:
         """Test objective_cut_off parameter validation."""
-
         with self.assertRaises(ValueError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -232,7 +225,6 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_num_calls_validation(self) -> None:
         """Test num_calls parameter validation."""
-
         with self.assertRaises(ValueError):
             ps.trim.analyze_unsteady_trim(
                 problem=self.problem,
@@ -265,9 +257,7 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
 
     def test_base_operating_point_parameter_bounds_validation(self) -> None:
         """Test that the base operating point values must lie within the supplied
-        bounds.
-        """
-
+        bounds."""
         base_operating_point = (
             self.problem.movement.operating_point_movement.base_operating_point
         )

@@ -1,9 +1,7 @@
 """This module is a testing case for the SteadyRingVortexLatticeMethodSolver.
 
-Based on an identical XFLR5 VLM2 testing case, the expected output for this case is:
-    CL:     0.784
-    CDi:    0.019
-    Cm:     -0.678
+Based on an identical XFLR5 VLM2 testing case, the expected output for this case is: CL:
+0.784     CDi:    0.019     Cm:     -0.678
 """
 
 import unittest
@@ -30,8 +28,9 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         )
 
     def test_method(self) -> None:
-        """This method tests the SteadyRingVortexLatticeMethodSolver's output. It
-        also tests that the solver doesn't throw an error when the draw function is
+        """This method tests the SteadyRingVortexLatticeMethodSolver's output.
+
+        It also tests that the solver doesn't throw an error when the draw function is
         called using it.
 
         :return: None

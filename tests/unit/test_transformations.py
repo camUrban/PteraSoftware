@@ -91,8 +91,8 @@ class TestGenerateRotT(unittest.TestCase):
     def test_intrinsic_vs_extrinsic_relationship(self) -> None:
         """Tests the relationship between intrinsic and extrinsic rotations.
 
-        For the same angles, intrinsic rotations with order ABC should equal
-        extrinsic rotations with reversed order CBA.
+        For the same angles, intrinsic rotations with order ABC should equal extrinsic
+        rotations with reversed order CBA.
 
         :return: None
         """
@@ -595,7 +595,6 @@ class TestGenerateTransT(unittest.TestCase):
 
         :return: None
         """
-
         # Generate passive and active transformation matrices.
         translation = np.array([1.0, 2.0, 3.0])
         T_trans_pas = _transformations.generate_trans_T(translation, True)
@@ -1824,8 +1823,8 @@ class TestRToQuatWxyz(unittest.TestCase):
         self.assertEqual(q.dtype, np.float64)
 
     def test_roundtrip_with_generate_rot_T(self) -> None:
-        """Tests that quaternion correctly represents the rotation by verifying
-        rotation of vectors.
+        """Tests that quaternion correctly represents the rotation by verifying rotation
+        of vectors.
 
         :return: None
         """
@@ -1970,8 +1969,8 @@ class TestRToAnglesIzyx(unittest.TestCase):
     def test_90_degree_rotations_about_x_and_z(self) -> None:
         """Tests +/-90 degree rotations about the x and z axes.
 
-        Rotations about the y axis at +/-90 degrees hit the gimbal lock pole and
-        are tested separately.
+        Rotations about the y axis at +/-90 degrees hit the gimbal lock pole and are
+        tested separately.
 
         :return: None
         """
@@ -2066,8 +2065,7 @@ class TestRToAnglesIzyx(unittest.TestCase):
 
 class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
     """This class contains methods for testing the alpha_and_beta_from_vInf_BP1
-    function.
-    """
+    function."""
 
     def test_straight_and_level(self) -> None:
         """Tests that pure forward freestream yields zero alpha and zero beta.
@@ -2083,8 +2081,7 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         self.assertEqual(beta, 0.0)
 
     def test_positive_alpha(self) -> None:
-        """Tests that freestream with positive nose up component yields positive
-        alpha.
+        """Tests that freestream with positive nose up component yields positive alpha.
 
         :return: None
         """
@@ -2195,8 +2192,8 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         this function and stores them on a new OperatingPoint, which rebuilds its
         freestream from them. If the two conventions disagree, that round trip corrupts
         the freestream every time step. Build OperatingPoints across a grid of alpha and
-        beta, take each one's freestream in body axes, and confirm this function recovers
-        the original alpha and beta.
+        beta, take each one's freestream in body axes, and confirm this function
+        recovers the original alpha and beta.
 
         :return: None
         """
@@ -2222,9 +2219,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
     def test_zero_speed_returns_nan(self) -> None:
         """Tests that zero speed yields NaN for both alpha and beta.
 
-        Alpha and beta are physically undefined at zero speed (no preferred
-        freestream direction), and the helper returns NaN to make that explicit
-        rather than substituting a finite placeholder.
+        Alpha and beta are physically undefined at zero speed (no preferred freestream
+        direction), and the helper returns NaN to make that explicit rather than
+        substituting a finite placeholder.
 
         :return: None
         """

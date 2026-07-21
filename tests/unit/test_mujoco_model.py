@@ -38,9 +38,8 @@ class TestMuJoCoModelInit(unittest.TestCase):
         self.assertIn('integrator="RK4"', self.model.xml_str)
 
     def test_accepts_integrator(self) -> None:
-        """Test that MuJoCoModel accepts an integrator, injects it into the XML, and
-        the compiled model uses it.
-        """
+        """Test that MuJoCoModel accepts an integrator, injects it into the XML, and the
+        compiled model uses it."""
         model = _mujoco_model.MuJoCoModel(
             name="integrator_test",
             mass=1.0,
@@ -86,8 +85,7 @@ class TestMuJoCoModelInit(unittest.TestCase):
 
     def test_initial_qvel_contains_angular_velocity(self) -> None:
         """Test that initial_qvel contains the initial angular velocity in radians per
-        second.
-        """
+        second."""
         npt.assert_allclose(self.model.initial_qvel[3:6], [0.0, 0.0, 0.0], atol=1e-14)
 
     def test_mass_set_on_model(self) -> None:
@@ -475,8 +473,7 @@ class TestMuJoCoModelSaveState(unittest.TestCase):
 
     def test_save_state_is_float_array(self) -> None:
         """Test that the saved snapshot is a float array, as MuJoCo's state API
-        requires.
-        """
+        requires."""
         snapshot = self.model.save_state()
         self.assertEqual(snapshot.dtype, np.float64)
 
@@ -573,9 +570,9 @@ class TestMuJoCoModelRestoreState(unittest.TestCase):
     def test_restore_state_restores_orientation_and_angular_velocity(self) -> None:
         """Test that restore_state restores the orientation and angular velocity.
 
-        Restoring must recompute the derived orientation matrix, so get_state reports the
-        restored attitude even without an intervening step. A rotated model is stepped so
-        both quantities evolve to a non trivial state before the snapshot.
+        Restoring must recompute the derived orientation matrix, so get_state reports
+        the restored attitude even without an intervening step. A rotated model is
+        stepped so both quantities evolve to a non trivial state before the snapshot.
         """
         model = mujoco_model_fixtures.make_rotated_mujoco_model_fixture()
         for _ in range(5):
@@ -653,13 +650,14 @@ class TestMuJoCoModelConventions(unittest.TestCase):
     """This class contains methods verifying the MuJoCo axis conventions documented in
     MUJOCO_CONVENTIONS.md.
 
-    Each test runs through MuJoCoModel's own translation between MuJoCo's freejoint state
-    and Ptera Software's conventions (the qpos quaternion construction, get_state's xmat
-    handling, and apply_loads's xfrc_applied packing), so it pins that contract rather
-    than just MuJoCo. The model is pitched 90 degrees about the y axis, which places the
-    body's +x direction along Earth -z, so a body-axes quantity and its Earth-axes
-    counterpart point in clearly different directions. Assertions are directional rather
-    than exact to stay robust to the integrator's small numerical drift.
+    Each test runs through MuJoCoModel's own translation between MuJoCo's freejoint
+    state and Ptera Software's conventions (the qpos quaternion construction,
+    get_state's xmat handling, and apply_loads's xfrc_applied packing), so it pins that
+    contract rather than just MuJoCo. The model is pitched 90 degrees about the y axis,
+    which places the body's +x direction along Earth -z, so a body-axes quantity and its
+    Earth-axes counterpart point in clearly different directions. Assertions are
+    directional rather than exact to stay robust to the integrator's small numerical
+    drift.
     """
 
     def setUp(self) -> None:
@@ -706,8 +704,9 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         """Test that an applied torque is in Earth axes, independent of orientation.
 
         A torque about Earth +x is applied to the pitched model. If the torque were in
-        body axes it would act about the body's +x direction (Earth -z); because it is in
-        Earth axes, the body accelerates about Earth +x regardless of its orientation.
+        body axes it would act about the body's +x direction (Earth -z); because it is
+        in Earth axes, the body accelerates about Earth +x regardless of its
+        orientation.
         """
         self.model.apply_loads(np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]))
 
@@ -727,9 +726,10 @@ class TestMuJoCoModelConventions(unittest.TestCase):
     def test_applied_force_is_in_earth_axes(self) -> None:
         """Test that an applied force is in Earth axes, independent of orientation.
 
-        A force along Earth +x is applied to the pitched model. If the force were in body
-        axes it would act along the body's +x direction (Earth -z); because it is in
-        Earth axes, the body accelerates along Earth +x regardless of its orientation.
+        A force along Earth +x is applied to the pitched model. If the force were in
+        body axes it would act along the body's +x direction (Earth -z); because it is
+        in Earth axes, the body accelerates along Earth +x regardless of its
+        orientation.
         """
         self.model.apply_loads(np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 0.0]))
 

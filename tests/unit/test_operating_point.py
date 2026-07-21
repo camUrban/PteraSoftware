@@ -887,9 +887,9 @@ class TestOperatingPoint(unittest.TestCase):
         """Test that an unset angles_E_to_BP1_izyx resolves to the level-flight
         attitude.
 
-        With the default alpha of 5 degrees and no sideslip, the unset attitude
-        resolves to a 5 degree pitch (body izyx (0, 5, 0)) so the body flies level
-        along Earth +x rather than tilting the flight path relative to Earth.
+        With the default alpha of 5 degrees and no sideslip, the unset attitude resolves
+        to a 5 degree pitch (body izyx (0, 5, 0)) so the body flies level along Earth +x
+        rather than tilting the flight path relative to Earth.
         """
         op = ps.operating_point.OperatingPoint()
         npt.assert_allclose(op.angles_E_to_BP1_izyx, [0.0, 5.0, 0.0], atol=1e-12)
@@ -918,9 +918,7 @@ class TestOperatingPoint(unittest.TestCase):
                 )
 
     def test_angles_E_to_BP1_izyx_parameter_validation_invalid_range(self) -> None:
-        """Test angles_E_to_BP1_izyx parameter validation with values outside
-        range.
-        """
+        """Test angles_E_to_BP1_izyx parameter validation with values outside range."""
         # Test angles outside the valid range (-180, 180].
         invalid_angles_values = [
             (180.1, 0.0, 0.0),
@@ -1191,9 +1189,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_T_pas_GP1_CgP1_to_BP1_CgP1_is_180_deg_about_y(self) -> None:
         """Test that GP1 to BP1 is a 180 degree rotation about y.
 
-        Geometry axes: +x aft, +y right, +z up.
-        Body axes: +x forward, +y right, +z down.
-        So x and z flip sign; y is unchanged.
+        Geometry axes: +x aft, +y right, +z up. Body axes: +x forward, +y right, +z
+        down. So x and z flip sign; y is unchanged.
         """
         T = self.basic_op.T_pas_GP1_CgP1_to_BP1_CgP1
         R = T[:3, :3]
@@ -1268,9 +1265,8 @@ class TestOperatingPoint(unittest.TestCase):
             op.T_pas_W_CgP1_to_BP1_CgP1[0, 0] = 999.0
 
     def test_intermediate_transformations_cached(self) -> None:
-        """Test that intermediate transformation properties return the same
-        objects on repeated access.
-        """
+        """Test that intermediate transformation properties return the same objects on
+        repeated access."""
         op = self.basic_op
 
         self.assertIs(op.T_pas_GP1_CgP1_to_BP1_CgP1, op.T_pas_GP1_CgP1_to_BP1_CgP1)
@@ -1289,9 +1285,7 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertEqual(T.dtype, float)
 
     def test_T_pas_E_CgP1_to_BP1_CgP1_identity_when_zero_angles(self) -> None:
-        """Test that E to BP1 is identity when angles_E_to_BP1_izyx is all
-        zeros.
-        """
+        """Test that E to BP1 is identity when angles_E_to_BP1_izyx is all zeros."""
         op = self.basic_op
         T = op.T_pas_E_CgP1_to_BP1_CgP1
 
@@ -1347,8 +1341,8 @@ class TestOperatingPoint(unittest.TestCase):
         """Test that E to GP1 equals the 180 degree about y rotation when
         angles_E_to_BP1_izyx is all zeros.
 
-        When E to BP1 is identity, E to GP1 is just BP1 to GP1, which is the
-        180 degree rotation about y (flipping x and z).
+        When E to BP1 is identity, E to GP1 is just BP1 to GP1, which is the 180 degree
+        rotation about y (flipping x and z).
         """
         op = self.basic_op
         T = op.T_pas_E_CgP1_to_GP1_CgP1
@@ -1428,9 +1422,8 @@ class TestOperatingPoint(unittest.TestCase):
             op.T_pas_E_CgP1_to_W_CgP1[0, 0] = 999.0
 
     def test_earth_transformations_cached(self) -> None:
-        """Test that Earth transformation properties return the same objects on
-        repeated access.
-        """
+        """Test that Earth transformation properties return the same objects on repeated
+        access."""
         op = self.with_attitude_angles_op
 
         self.assertIs(op.T_pas_E_CgP1_to_BP1_CgP1, op.T_pas_E_CgP1_to_BP1_CgP1)
@@ -1443,21 +1436,15 @@ class TestOperatingPoint(unittest.TestCase):
     # --- Tests for derived surface properties ---
 
     def test_surfaceNormal_GP1_is_none_when_no_surface(self) -> None:
-        """Test that surfaceNormal_GP1 returns None when no surface is
-        defined.
-        """
+        """Test that surfaceNormal_GP1 returns None when no surface is defined."""
         self.assertIsNone(self.basic_op.surfaceNormal_GP1)
 
     def test_surfacePoint_GP1_CgP1_is_none_when_no_surface(self) -> None:
-        """Test that surfacePoint_GP1_CgP1 returns None when no surface is
-        defined.
-        """
+        """Test that surfacePoint_GP1_CgP1 returns None when no surface is defined."""
         self.assertIsNone(self.basic_op.surfacePoint_GP1_CgP1)
 
     def test_surfaceNormal_GP1_is_unit_vector(self) -> None:
-        """Test that surfaceNormal_GP1 is a unit vector when a surface is
-        defined.
-        """
+        """Test that surfaceNormal_GP1 is a unit vector when a surface is defined."""
         fixtures = [
             self.with_ground_surface_op,
             self.with_tilted_surface_op,
@@ -1524,8 +1511,8 @@ class TestOperatingPoint(unittest.TestCase):
     def test_surfacePoint_GP1_CgP1_depends_on_cg_position(self) -> None:
         """Test that surfacePoint_GP1_CgP1 changes with CgP1_E_Eo.
 
-        With the same surface in Earth axes, changing the CG position should
-        change where the surface point is relative to the CG in GP1 axes.
+        With the same surface in Earth axes, changing the CG position should change
+        where the surface point is relative to the CG in GP1 axes.
         """
         op_near = ps.operating_point.OperatingPoint(
             angles_E_to_BP1_izyx=(0.0, 0.0, 0.0),
@@ -1572,9 +1559,8 @@ class TestOperatingPoint(unittest.TestCase):
             op.surfacePoint_GP1_CgP1[0] = 999.0
 
     def test_derived_surface_properties_cached(self) -> None:
-        """Test that derived surface properties return the same objects on
-        repeated access.
-        """
+        """Test that derived surface properties return the same objects on repeated
+        access."""
         op = self.with_ground_surface_op
 
         self.assertIs(op.surfaceNormal_GP1, op.surfaceNormal_GP1)
@@ -1604,9 +1590,8 @@ class TestOperatingPoint(unittest.TestCase):
         npt.assert_allclose(np.linalg.norm(normal), 1.0, atol=1e-14)
 
     def test_surfaceReflect_T_act_GP1_CgP1_is_none_when_no_surface(self) -> None:
-        """Test that surfaceReflect_T_act_GP1_CgP1 returns None when no surface
-        is defined.
-        """
+        """Test that surfaceReflect_T_act_GP1_CgP1 returns None when no surface is
+        defined."""
         self.assertIsNone(self.basic_op.surfaceReflect_T_act_GP1_CgP1)
 
     def test_surfaceReflect_T_act_GP1_CgP1_shape_and_type(self) -> None:
@@ -1699,8 +1684,7 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_surfaceReflect_T_act_GP1_CgP1_cached(self) -> None:
         """Test that the reflection matrix returns the same object on repeated
-        access.
-        """
+        access."""
         op = self.with_ground_surface_op
         self.assertIs(
             op.surfaceReflect_T_act_GP1_CgP1, op.surfaceReflect_T_act_GP1_CgP1

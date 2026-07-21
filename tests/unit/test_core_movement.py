@@ -59,8 +59,8 @@ class TestCoreMovement(unittest.TestCase):
         """Test that lcm_period collects all periods, not just max from each
         CoreAirplaneMovement.
 
-        This test creates a single Airplane with two Wings having different periods
-        (3.0 s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
+        This test creates a single Airplane with two Wings having different periods (3.0
+        s and 4.0 s). The correct LCM is 12.0 s. If the implementation only uses
         max_period from the CoreAirplaneMovement, lcm_period would incorrectly return
         4.0 s instead of 12.0 s.
         """
@@ -141,8 +141,7 @@ class TestCoreMovement(unittest.TestCase):
         self.assertEqual(core_movement.lcm_period, 12.0)
 
     def test_lcm_period_with_multiple_cross_sections_same_wing(self) -> None:
-        """Test that lcm_period collects all periods from
-        CoreWingCrossSectionMovements.
+        """Test that lcm_period collects all periods from CoreWingCrossSectionMovements.
 
         This test creates a single Wing with three WingCrossSections having different
         periods (root static, middle 3.0 s, tip 4.0 s). The correct LCM is 12.0 s. If

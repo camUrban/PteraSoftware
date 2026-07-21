@@ -9,8 +9,8 @@ from pterasoftware import _panel
 def make_basic_panel_fixture() -> _panel.Panel:
     """This method makes a fixture that is a Panel for testing purposes.
 
-    The Panel is a simple rectangular panel with 1.0 m chord and 0.5 m span, lying
-    flat in the xy plane.
+    The Panel is a simple rectangular panel with 1.0 m chord and 0.5 m span, lying flat
+    in the xy plane.
 
     :return: A Panel configured for testing.
     """

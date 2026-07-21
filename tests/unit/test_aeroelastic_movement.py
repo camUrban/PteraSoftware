@@ -30,8 +30,7 @@ class TestAeroelasticMovement(unittest.TestCase):
 
     def test_instantiation_returns_correct_type(self) -> None:
         """Test that AeroelasticMovement instantiation returns an
-        AeroelasticMovement.
-        """
+        AeroelasticMovement."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -42,8 +41,7 @@ class TestAeroelasticMovement(unittest.TestCase):
 
     def test_rejects_non_aeroelastic_airplane_movement(self) -> None:
         """Test that AeroelasticMovement rejects a CoreAirplaneMovement that is not an
-        AeroelasticAirplaneMovement.
-        """
+        AeroelasticAirplaneMovement."""
         # A standard AirplaneMovement is a CoreAirplaneMovement but not an
         # AeroelasticAirplaneMovement, so it must be rejected.
         airplane_movements: Any = [
@@ -63,8 +61,7 @@ class TestAeroelasticMovement(unittest.TestCase):
 
     def test_rejects_non_standard_operating_point_movement(self) -> None:
         """Test that AeroelasticMovement rejects a CoreOperatingPointMovement that is
-        not an OperatingPointMovement.
-        """
+        not an OperatingPointMovement."""
         # A FreeFlightOperatingPointMovement is a CoreOperatingPointMovement but not an
         # OperatingPointMovement, so it must be rejected.
         airplane_movements = [
@@ -84,8 +81,7 @@ class TestAeroelasticMovement(unittest.TestCase):
 
     def test_airplane_movements_property_returns_tuple(self) -> None:
         """Test that the airplane_movements property returns a tuple of the
-        AeroelasticMovement's AeroelasticAirplaneMovements.
-        """
+        AeroelasticMovement's AeroelasticAirplaneMovements."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -101,8 +97,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         self,
     ) -> None:
         """Test that the operating_point_movement property returns an
-        OperatingPointMovement.
-        """
+        OperatingPointMovement."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -113,8 +108,7 @@ class TestAeroelasticMovement(unittest.TestCase):
 
     def test_operating_points_property_returns_tuple(self) -> None:
         """Test that the operating_points property returns a tuple of the
-        OperatingPoints pre generated for every time step.
-        """
+        OperatingPoints pre generated for every time step."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -147,8 +141,7 @@ class TestAeroelasticMovement(unittest.TestCase):
         self,
     ) -> None:
         """Test that generate_airplane_at_time_step delegates to the selected
-        AeroelasticAirplaneMovement using the AeroelasticMovement's own delta_time.
-        """
+        AeroelasticAirplaneMovement using the AeroelasticMovement's own delta_time."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )
@@ -172,10 +165,9 @@ class TestAeroelasticMovement(unittest.TestCase):
             )
 
     def test_generate_airplane_at_time_step_applies_deformation(self) -> None:
-        """Test that generate_airplane_at_time_step threads per Wing deformation down
-        to the AeroelasticAirplaneMovement, so each WingCrossSection's angles differ
-        from the prescribed angles by exactly that row's deformation.
-        """
+        """Test that generate_airplane_at_time_step threads per Wing deformation down to
+        the AeroelasticAirplaneMovement, so each WingCrossSection's angles differ from
+        the prescribed angles by exactly that row's deformation."""
         aeroelastic_movement = (
             movement_fixtures.make_basic_aeroelastic_movement_fixture()
         )

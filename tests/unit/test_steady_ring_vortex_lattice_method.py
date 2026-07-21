@@ -18,9 +18,8 @@ class TestSteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         )
 
     def test_initialization_rejects_non_zero_body_rates(self) -> None:
-        """Test that initialization raises when the operating point carries a
-        non-zero body angular velocity, which this solver does not model.
-        """
+        """Test that initialization raises when the operating point carries a non-zero
+        body angular velocity, which this solver does not model."""
         rotating_problem = (
             problem_fixtures.make_with_body_rates_steady_problem_fixture()
         )

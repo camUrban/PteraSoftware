@@ -38,8 +38,9 @@ def make_sine_spacing_core_operating_point_movement_fixture() -> (
     """This method makes a fixture that is an CoreOperatingPointMovement with sine
     spacing for vCg__E.
 
-    :return sine_spacing_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with sine spacing for vCg__E.
+    :return sine_spacing_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with sine
+        spacing for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (
@@ -65,8 +66,9 @@ def make_uniform_spacing_core_operating_point_movement_fixture() -> (
     """This method makes a fixture that is an CoreOperatingPointMovement with uniform
     spacing for vCg__E.
 
-    :return uniform_spacing_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with uniform spacing for vCg__E.
+    :return uniform_spacing_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with uniform
+        spacing for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (
@@ -89,11 +91,12 @@ def make_uniform_spacing_core_operating_point_movement_fixture() -> (
 def make_phase_offset_core_operating_point_movement_fixture() -> (
     CoreOperatingPointMovement
 ):
-    """This method makes a fixture that is an CoreOperatingPointMovement with
-    non-zero phase offset for vCg__E.
+    """This method makes a fixture that is an CoreOperatingPointMovement with non-zero
+    phase offset for vCg__E.
 
-    :return phase_offset_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with phase offset for vCg__E.
+    :return phase_offset_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with phase
+        offset for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (
@@ -116,11 +119,12 @@ def make_phase_offset_core_operating_point_movement_fixture() -> (
 def make_custom_spacing_core_operating_point_movement_fixture() -> (
     CoreOperatingPointMovement
 ):
-    """This method makes a fixture that is an CoreOperatingPointMovement with a
-    custom spacing function for vCg__E.
+    """This method makes a fixture that is an CoreOperatingPointMovement with a custom
+    spacing function for vCg__E.
 
-    :return custom_spacing_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with custom spacing for vCg__E.
+    :return custom_spacing_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with custom
+        spacing for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (
@@ -131,11 +135,10 @@ def make_custom_spacing_core_operating_point_movement_fixture() -> (
     def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        This function satisfies all requirements: starts at 0, returns to 0 at
-        2*pi, has zero mean, has amplitude of 1, and is periodic.
+        This function satisfies all requirements: starts at 0, returns to 0 at 2*pi, has
+        zero mean, has amplitude of 1, and is periodic.
 
         :param x: A float representing the input angle in radians.
-
         :return: A float representing the output value.
         """
         return float(
@@ -156,11 +159,11 @@ def make_custom_spacing_core_operating_point_movement_fixture() -> (
 
 
 def make_basic_core_operating_point_movement_fixture() -> CoreOperatingPointMovement:
-    """This method makes a fixture that is an CoreOperatingPointMovement with
-    general-purpose moderate values.
+    """This method makes a fixture that is an CoreOperatingPointMovement with general-
+    purpose moderate values.
 
-    :return basic_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with general-purpose values.
+    :return basic_core_operating_point_movement_fixture: CoreOperatingPointMovement This
+        is the CoreOperatingPointMovement with general-purpose values.
     """
     # Initialize the constructing fixture.
     base_operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
@@ -184,8 +187,9 @@ def make_large_amplitude_core_operating_point_movement_fixture() -> (
     """This method makes a fixture that is an CoreOperatingPointMovement with large
     amplitude relative to base speed.
 
-    :return large_amplitude_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with large amplitude for vCg__E.
+    :return large_amplitude_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with large
+        amplitude for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = (
@@ -211,8 +215,9 @@ def make_long_period_core_operating_point_movement_fixture() -> (
     """This method makes a fixture that is an CoreOperatingPointMovement with a long
     period.
 
-    :return long_period_core_operating_point_movement_fixture: CoreOperatingPointMovement
-        This is the CoreOperatingPointMovement with a long period for vCg__E.
+    :return long_period_core_operating_point_movement_fixture:
+        CoreOperatingPointMovement This is the CoreOperatingPointMovement with a long
+        period for vCg__E.
     """
     # Initialize the constructing fixture.
     base_operating_point = operating_point_fixtures.make_basic_operating_point_fixture()

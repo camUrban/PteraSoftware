@@ -27,4 +27,4 @@ jobs:
           pip install -r requirements.txt mypy scipy-stubs
       - name: Run mypy type checking
         run: |
-          mypy pterasoftware examples scripts tests
+          mypy pterasoftware examples scripts tests validation

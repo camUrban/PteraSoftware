@@ -214,7 +214,8 @@ class TestSteadyProblemImmutability(unittest.TestCase):
             airplanes.append(geometry_fixtures.make_basic_airplane_fixture())
 
     def test_reynolds_numbers_caching(self) -> None:
-        """Test that reynolds_numbers returns the same cached object on repeated access."""
+        """Test that reynolds_numbers returns the same cached object on repeated
+        access."""
         # Access reynolds_numbers twice.
         reynolds_first = self.basic_steady_problem.reynolds_numbers
         reynolds_second = self.basic_steady_problem.reynolds_numbers
@@ -438,8 +439,7 @@ class TestUnsteadyProblemImmutability(unittest.TestCase):
 
     def test_steady_problems_tuple_immutability(self) -> None:
         """Test that steady_problems tuple cannot be modified via append or other
-        methods.
-        """
+        methods."""
         # Tuples don't have append, so attempting to call it raises AttributeError.
         steady_problems: Any = self.basic_unsteady_problem.steady_problems
         with self.assertRaises(AttributeError):

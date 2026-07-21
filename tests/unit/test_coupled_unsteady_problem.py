@@ -35,8 +35,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
     def test_step_zero_seeded_from_initial_inputs(self) -> None:
         """Test that _steady_problems is seeded with one SteadyProblem built from
-        initial_airplanes and initial_operating_point.
-        """
+        initial_airplanes and initial_operating_point."""
         self.assertEqual(len(self.problem._steady_problems), 1)
         seed = self.problem._steady_problems[0]
         self.assertIsInstance(seed, ps.problems.SteadyProblem)
@@ -61,8 +60,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
     def test_lcm_period_from_movement(self) -> None:
         """Test that lcm_period is taken from the movement by asserting the derived
-        first_averaging_step matches the static-movement formula (num_steps - 1).
-        """
+        first_averaging_step matches the static-movement formula (num_steps - 1)."""
         self.assertEqual(self.movement.lcm_period, 0.0)
         self.assertEqual(self.problem.first_averaging_step, self.movement.num_steps - 1)
 
@@ -72,8 +70,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
     def test_steady_problems_property_returns_tuple(self) -> None:
         """Test that the steady_problems property returns a tuple view of the
-        _steady_problems backing list.
-        """
+        _steady_problems backing list."""
         steady_problems = self.problem.steady_problems
         self.assertIsInstance(steady_problems, tuple)
         self.assertEqual(len(steady_problems), 1)
@@ -81,8 +78,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
 
     def test_steady_problems_property_reflects_appends(self) -> None:
         """Test that appends to _steady_problems are reflected in the steady_problems
-        tuple view on subsequent access.
-        """
+        tuple view on subsequent access."""
         self.assertEqual(len(self.problem.steady_problems), 1)
 
         next_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
@@ -92,9 +88,7 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
         self.assertIs(self.problem.steady_problems[1], next_steady_problem)
 
     def test_get_steady_problem_returns_requested_step(self) -> None:
-        """Test that get_steady_problem returns the SteadyProblem at the given
-        step.
-        """
+        """Test that get_steady_problem returns the SteadyProblem at the given step."""
         self.assertIs(
             self.problem.get_steady_problem(0),
             self.problem._steady_problems[0],
@@ -110,16 +104,14 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
             self.problem.get_steady_problem(-1)
 
     def test_get_steady_problem_rejects_step_beyond_initialized(self) -> None:
-        """Test that get_steady_problem raises for a step index that has not yet
-        been initialized.
-        """
+        """Test that get_steady_problem raises for a step index that has not yet been
+        initialized."""
         with self.assertRaises(ValueError):
             self.problem.get_steady_problem(1)
 
     def test_get_steady_problem_dynamic_bounds(self) -> None:
-        """Test that the valid range of get_steady_problem grows as new
-        SteadyProblems are appended to _steady_problems.
-        """
+        """Test that the valid range of get_steady_problem grows as new SteadyProblems
+        are appended to _steady_problems."""
         with self.assertRaises(ValueError):
             self.problem.get_steady_problem(1)
 
@@ -129,9 +121,8 @@ class TestCoupledUnsteadyProblem(unittest.TestCase):
         self.assertIs(self.problem.get_steady_problem(1), next_steady_problem)
 
     def test_initialize_next_problem_raises_not_implemented(self) -> None:
-        """Test that initialize_next_problem raises NotImplementedError on the
-        abstract middle class.
-        """
+        """Test that initialize_next_problem raises NotImplementedError on the abstract
+        middle class."""
         none_solver: Any = None
         with self.assertRaises(NotImplementedError):
             self.problem.initialize_next_problem(none_solver, 0)
@@ -164,8 +155,7 @@ class TestCoupledUnsteadyProblemImmutability(unittest.TestCase):
     def test_private_steady_problems_list_is_mutable(self) -> None:
         """Test that _steady_problems remains mutable so subclass
         initialize_next_problem overrides can append the next step's SteadyProblem
-        during the run loop.
-        """
+        during the run loop."""
         next_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
         self.problem._steady_problems.append(next_steady_problem)
 

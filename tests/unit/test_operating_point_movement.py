@@ -14,8 +14,7 @@ class TestOperatingPointMovement(unittest.TestCase):
 
     def test_is_subclass_of_core(self) -> None:
         """Test that OperatingPointMovement is a subclass of
-        CoreOperatingPointMovement.
-        """
+        CoreOperatingPointMovement."""
         self.assertTrue(
             issubclass(
                 ps.movements.operating_point_movement.OperatingPointMovement,
@@ -25,8 +24,7 @@ class TestOperatingPointMovement(unittest.TestCase):
 
     def test_instantiation_returns_correct_type(self) -> None:
         """Test that OperatingPointMovement instantiation returns an
-        OperatingPointMovement.
-        """
+        OperatingPointMovement."""
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
@@ -42,8 +40,7 @@ class TestOperatingPointMovement(unittest.TestCase):
 
     def test_generate_operating_points_returns_operating_points(self) -> None:
         """Test that generate_operating_points returns OperatingPoints when called
-        through the public class.
-        """
+        through the public class."""
         operating_point_movement = (
             operating_point_movement_fixtures.make_sine_spacing_operating_point_movement_fixture()
         )

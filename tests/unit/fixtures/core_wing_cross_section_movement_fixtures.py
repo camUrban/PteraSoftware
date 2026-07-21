@@ -15,8 +15,9 @@ def make_sine_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with sine
     spacing for Lp_Wcsp_Lpp.
 
-    :return sine_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with sine spacing for Lp_Wcsp_Lpp.
+    :return sine_spacing_Lp_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with sine
+        spacing for Lp_Wcsp_Lpp.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -42,9 +43,9 @@ def make_uniform_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with uniform
     spacing for Lp_Wcsp_Lpp.
 
-    :return uniform_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with uniform spacing for
-        Lp_Wcsp_Lpp.
+    :return uniform_spacing_Lp_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
+        uniform spacing for Lp_Wcsp_Lpp.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -70,8 +71,9 @@ def make_mixed_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     spacing for Lp_Wcsp_Lpp.
 
-    :return mixed_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with mixed spacing for Lp_Wcsp_Lpp.
+    :return mixed_spacing_Lp_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with mixed
+        spacing for Lp_Wcsp_Lpp.
     """
     # Initialize the constructing fixture. Use the tip fixture, which has Lp_Wcsp_Lpp[1]
     # = 2.0, allowing for amplitude of 1.5.
@@ -98,9 +100,9 @@ def make_sine_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with sine
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
-    :return sine_spacing_angles_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with sine spacing for
-        angles_Wcsp_to_Wcs_ixyz.
+    :return sine_spacing_angles_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with sine
+        spacing for angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -126,9 +128,9 @@ def make_uniform_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with uniform
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
-    :return uniform_spacing_angles_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with uniform spacing for
-        angles_Wcsp_to_Wcs_ixyz.
+    :return uniform_spacing_angles_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
+        uniform spacing for angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -154,9 +156,9 @@ def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     spacing for angles_Wcsp_to_Wcs_ixyz.
 
-    :return mixed_spacing_angles_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with mixed spacing for
-        angles_Wcsp_to_Wcs_ixyz.
+    :return mixed_spacing_angles_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with mixed
+        spacing for angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -182,8 +184,9 @@ def make_static_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement).
 
-    :return static_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with no movement.
+    :return static_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with no
+        movement.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -211,9 +214,9 @@ def make_static_tip_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement), using a tip WingCrossSection as the base.
 
-    :return static_tip_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with no movement for a tip cross
-        section.
+    :return static_tip_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with no
+        movement for a tip cross section.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
@@ -238,8 +241,8 @@ def make_static_tip_core_wing_cross_section_movement_fixture() -> (
 def make_basic_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with
-    general-purpose moderate values.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with general-
+    purpose moderate values.
 
     :return basic_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with general-purpose values.
@@ -271,8 +274,9 @@ def make_Lp_only_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement where only
     Lp_Wcsp_Lpp moves.
 
-    :return Lp_only_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with only Lp_Wcsp_Lpp movement.
+    :return Lp_only_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with only
+        Lp_Wcsp_Lpp movement.
     """
     # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
     # non-negative during oscillation.
@@ -301,9 +305,9 @@ def make_angles_only_core_wing_cross_section_movement_fixture() -> (
     """This method makes a fixture that is a CoreWingCrossSectionMovement where only
     angles_Wcsp_to_Wcs_ixyz moves.
 
-    :return angles_only_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with only angles_Wcsp_to_Wcs_ixyz
-        movement.
+    :return angles_only_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with only
+        angles_Wcsp_to_Wcs_ixyz movement.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -328,11 +332,12 @@ def make_angles_only_core_wing_cross_section_movement_fixture() -> (
 def make_phase_offset_Lp_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with
-    non-zero phase offset for Lp_Wcsp_Lpp.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with non-zero
+    phase offset for Lp_Wcsp_Lpp.
 
-    :return phase_offset_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with phase offset for Lp_Wcsp_Lpp.
+    :return phase_offset_Lp_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with phase
+        offset for Lp_Wcsp_Lpp.
     """
     # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
     # non-negative during oscillation.
@@ -360,12 +365,12 @@ def make_phase_offset_Lp_core_wing_cross_section_movement_fixture() -> (
 def make_phase_offset_angles_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with
-    non-zero phase offset for angles_Wcsp_to_Wcs_ixyz.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with non-zero
+    phase offset for angles_Wcsp_to_Wcs_ixyz.
 
-    :return phase_offset_angles_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with phase offset for
-        angles_Wcsp_to_Wcs_ixyz.
+    :return phase_offset_angles_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with phase
+        offset for angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -392,11 +397,12 @@ def make_phase_offset_angles_core_wing_cross_section_movement_fixture() -> (
 def make_multiple_periods_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with
-    different periods for different dimensions.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with different
+    periods for different dimensions.
 
-    :return multiple_periods_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with different periods.
+    :return multiple_periods_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
+        different periods.
     """
     # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
     # non-negative during oscillation.
@@ -424,11 +430,12 @@ def make_multiple_periods_core_wing_cross_section_movement_fixture() -> (
 def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with a
-    custom spacing function for Lp_Wcsp_Lpp.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with a custom
+    spacing function for Lp_Wcsp_Lpp.
 
-    :return custom_spacing_Lp_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with custom spacing for Lp_Wcsp_Lpp.
+    :return custom_spacing_Lp_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
+        custom spacing for Lp_Wcsp_Lpp.
     """
     # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
     # non-negative during oscillation.
@@ -438,11 +445,10 @@ def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
     def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        This function satisfies all requirements: starts at 0, returns to 0 at
-        2*pi, has zero mean, has amplitude of 1, and is periodic.
+        This function satisfies all requirements: starts at 0, returns to 0 at 2*pi, has
+        zero mean, has amplitude of 1, and is periodic.
 
         :param x: A float representing the input angle in radians.
-
         :return: A float representing the output value.
         """
         return float(
@@ -471,12 +477,12 @@ def make_custom_spacing_Lp_core_wing_cross_section_movement_fixture() -> (
 def make_custom_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     CoreWingCrossSectionMovement
 ):
-    """This method makes a fixture that is a CoreWingCrossSectionMovement with a
-    custom spacing function for angles_Wcsp_to_Wcs_ixyz.
+    """This method makes a fixture that is a CoreWingCrossSectionMovement with a custom
+    spacing function for angles_Wcsp_to_Wcs_ixyz.
 
-    :return custom_spacing_angles_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with custom spacing for
-        angles_Wcsp_to_Wcs_ixyz.
+    :return custom_spacing_angles_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
+        custom spacing for angles_Wcsp_to_Wcs_ixyz.
     """
     # Initialize the constructing fixture.
     base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
@@ -485,11 +491,10 @@ def make_custom_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     def custom_harmonic(x: float) -> float:
         """Custom harmonic spacing function: normalized combination of harmonics.
 
-        This function satisfies all requirements: starts at 0, returns to 0 at
-        2*pi, has zero mean, has amplitude of 1, and is periodic.
+        This function satisfies all requirements: starts at 0, returns to 0 at 2*pi, has
+        zero mean, has amplitude of 1, and is periodic.
 
         :param x: A float representing the input angle in radians.
-
         :return: A float representing the output value.
         """
         return float(
@@ -521,9 +526,9 @@ def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixt
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     custom and standard spacing functions.
 
-    :return mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
-        This is the CoreWingCrossSectionMovement with mixed custom and standard
-        spacing.
+    :return mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture:
+        CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with mixed
+        custom and standard spacing.
     """
     # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
     # non-negative during oscillation.
@@ -534,7 +539,6 @@ def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixt
         """Custom harmonic spacing function: normalized combination of harmonics.
 
         :param x: A float representing the input angle in radians.
-
         :return: A float representing the output value.
         """
         return float(

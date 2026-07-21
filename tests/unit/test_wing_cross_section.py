@@ -399,8 +399,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_validate_mid_constraints_zero_y_offset(self) -> None:
         """Test that validate_mid_constraints rejects zero y component of
-        Lp_Wcsp_Lpp.
-        """
+        Lp_Wcsp_Lpp."""
         zero_y_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=8,
@@ -413,8 +412,7 @@ class TestWingCrossSection(unittest.TestCase):
 
     def test_validate_tip_constraints_zero_y_offset(self) -> None:
         """Test that validate_tip_constraints rejects zero y component of
-        Lp_Wcsp_Lpp.
-        """
+        Lp_Wcsp_Lpp."""
         zero_y_tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
             airfoil=self.test_airfoil,
             num_spanwise_panels=None,
@@ -587,8 +585,8 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
     def test_validated_false_to_false_succeeds(self) -> None:
         """Test that setting validated from False to False succeeds.
 
-        The set once logic only blocks when validated is already True. Setting
-        from False to False is allowed. This test documents this behavior.
+        The set once logic only blocks when validated is already True. Setting from
+        False to False is allowed. This test documents this behavior.
         """
         self.assertFalse(self.basic_wing_cross_section.validated)
         self.basic_wing_cross_section.validated = False
@@ -613,18 +611,16 @@ class TestWingCrossSectionImmutability(unittest.TestCase):
             T[0, 0] = 999.0
 
     def test_T_pas_Wcsp_Lpp_to_Wcs_Lp_caching_returns_same_object(self) -> None:
-        """Test that repeated access to T_pas_Wcsp_Lpp_to_Wcs_Lp returns the same
-        cached object.
-        """
+        """Test that repeated access to T_pas_Wcsp_Lpp_to_Wcs_Lp returns the same cached
+        object."""
         self.basic_wing_cross_section.validated = True
         T1 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         T2 = self.basic_wing_cross_section.T_pas_Wcsp_Lpp_to_Wcs_Lp
         self.assertIs(T1, T2)
 
     def test_T_pas_Wcs_Lp_to_Wcsp_Lpp_caching_returns_same_object(self) -> None:
-        """Test that repeated access to T_pas_Wcs_Lp_to_Wcsp_Lpp returns the same
-        cached object.
-        """
+        """Test that repeated access to T_pas_Wcs_Lp_to_Wcsp_Lpp returns the same cached
+        object."""
         self.basic_wing_cross_section.validated = True
         T1 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
         T2 = self.basic_wing_cross_section.T_pas_Wcs_Lp_to_Wcsp_Lpp
@@ -738,7 +734,8 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.symmetry_type)
 
     def test_deepcopy_preserves_transformation_matrix_behavior(self) -> None:
-        """Test that copied WingCrossSection has correct transformation matrix behavior."""
+        """Test that copied WingCrossSection has correct transformation matrix
+        behavior."""
         import copy
 
         original = self.basic_wing_cross_section
@@ -768,7 +765,8 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.T_pas_Wcsp_Lpp_to_Wcs_Lp)
 
     def test_deepcopy_airfoil_independence(self) -> None:
-        """Test that deepcopied Airfoil is a separate instance with immutable attributes."""
+        """Test that deepcopied Airfoil is a separate instance with immutable
+        attributes."""
         import copy
 
         original = self.basic_wing_cross_section
@@ -811,7 +809,8 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
             copied_T_inverse[0, 0] = 999.0
 
     def test_deepcopy_cached_transformation_matrices_are_independent(self) -> None:
-        """Test that deepcopied cached transformation matrices are independent copies."""
+        """Test that deepcopied cached transformation matrices are independent
+        copies."""
         import copy
 
         original = self.basic_wing_cross_section
@@ -871,8 +870,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
 
     def test_get_plottable_data_returns_none_when_neither_set(self) -> None:
         """Test that get_plottable_data returns None when neither validated nor
-        symmetry_type is set.
-        """
+        symmetry_type is set."""
         self.assertFalse(self.basic_wing_cross_section.validated)
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
 
@@ -881,9 +879,8 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_get_plottable_data_returns_list_when_valid(self) -> None:
-        """Test that get_plottable_data returns a list when validated and
-        symmetry_type is set.
-        """
+        """Test that get_plottable_data returns a list when validated and symmetry_type
+        is set."""
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
@@ -919,9 +916,8 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
     def test_get_plottable_data_y_components_are_zero(self) -> None:
         """Test that get_plottable_data returns points with zero y components.
 
-        The points are in wing cross section axes relative to the leading point,
-        so the y components should all be zero (the cross section is in the xz
-        plane).
+        The points are in wing cross section axes relative to the leading point, so the
+        y components should all be zero (the cross section is in the xz plane).
         """
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1

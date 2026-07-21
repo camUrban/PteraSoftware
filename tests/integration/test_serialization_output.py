@@ -15,8 +15,7 @@ from tests.integration.fixtures import solver_fixtures
 
 class TestSteadySolverSerializationOutput(unittest.TestCase):
     """This class contains methods for testing that output functions accept a
-    deserialized SteadyRingVortexLatticeMethodSolver.
-    """
+    deserialized SteadyRingVortexLatticeMethodSolver."""
 
     temporary_directory: tempfile.TemporaryDirectory[str]
     loaded_solver: (
@@ -76,8 +75,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
 
 class TestUnsteadySolverSerializationOutput(unittest.TestCase):
     """This class contains methods for testing that output functions accept a
-    deserialized UnsteadyRingVortexLatticeMethodSolver.
-    """
+    deserialized UnsteadyRingVortexLatticeMethodSolver."""
 
     temporary_directory: tempfile.TemporaryDirectory[str]
     loaded_solver: (
@@ -128,8 +126,8 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         )
 
     def test_animate_with_scalar_does_not_throw(self) -> None:
-        """Tests that the animate function accepts a deserialized unsteady solver with
-        a scalar type that requires Panel force data.
+        """Tests that the animate function accepts a deserialized unsteady solver with a
+        scalar type that requires Panel force data.
 
         :return: None
         """

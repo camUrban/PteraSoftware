@@ -1,5 +1,5 @@
-"""This module contains functions to create FreeFlightOperatingPointMovements for use
-in tests."""
+"""This module contains functions to create FreeFlightOperatingPointMovements for use in
+tests."""
 
 import pterasoftware as ps
 
@@ -13,8 +13,8 @@ def make_basic_free_flight_operating_point_movement_fixture() -> (
     general testing.
 
     :return basic_free_flight_operating_point_movement_fixture:
-        FreeFlightOperatingPointMovement
-        This is the FreeFlightOperatingPointMovement configured for general testing.
+        FreeFlightOperatingPointMovement This is the FreeFlightOperatingPointMovement
+        configured for general testing.
     """
     # Initialize the constructing fixture.
     base_operating_point = operating_point_fixtures.make_basic_operating_point_fixture()

@@ -4,12 +4,12 @@ import pterasoftware as ps
 
 
 def make_basic_operating_point_fixture() -> ps.operating_point.OperatingPoint:
-    """This method makes a fixture that is an OperatingPoint with standard
-    atmospheric conditions for general testing.
+    """This method makes a fixture that is an OperatingPoint with standard atmospheric
+    conditions for general testing.
 
-    :return basic_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint configured for general testing with standard
-        sea level conditions, moderate speed, small positive alpha, and zero beta.
+    :return basic_operating_point_fixture: OperatingPoint This is the OperatingPoint
+        configured for general testing with standard sea level conditions, moderate
+        speed, small positive alpha, and zero beta.
     """
     basic_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -25,12 +25,12 @@ def make_basic_operating_point_fixture() -> ps.operating_point.OperatingPoint:
 
 
 def make_zero_alpha_beta_operating_point_fixture() -> ps.operating_point.OperatingPoint:
-    """This method makes a fixture that is an OperatingPoint with zero alpha and
-    beta for aligned flow testing.
+    """This method makes a fixture that is an OperatingPoint with zero alpha and beta
+    for aligned flow testing.
 
-    :return zero_alpha_beta_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with alpha and beta both set to zero to test
-        baseline wind axes alignment.
+    :return zero_alpha_beta_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with alpha and beta both set to zero to test baseline wind axes
+        alignment.
     """
     zero_alpha_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -45,12 +45,12 @@ def make_zero_alpha_beta_operating_point_fixture() -> ps.operating_point.Operati
 
 
 def make_high_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoint:
-    """This method makes a fixture that is an OperatingPoint with large positive
-    alpha for large angle transformation testing.
+    """This method makes a fixture that is an OperatingPoint with large positive alpha
+    for large angle transformation testing.
 
-    :return high_alpha_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with large positive angle of attack to test
-        large angle transformations.
+    :return high_alpha_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with large positive angle of attack to test large angle
+        transformations.
     """
     high_alpha_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -65,12 +65,11 @@ def make_high_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoi
 
 
 def make_negative_alpha_operating_point_fixture() -> ps.operating_point.OperatingPoint:
-    """This method makes a fixture that is an OperatingPoint with negative alpha
-    for negative angle handling testing.
+    """This method makes a fixture that is an OperatingPoint with negative alpha for
+    negative angle handling testing.
 
-    :return negative_alpha_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with negative angle of attack to test negative
-        angle handling.
+    :return negative_alpha_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with negative angle of attack to test negative angle handling.
     """
     negative_alpha_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -88,9 +87,8 @@ def make_nonzero_beta_operating_point_fixture() -> ps.operating_point.OperatingP
     """This method makes a fixture that is an OperatingPoint with non-zero sideslip
     angle for 3D wind axes testing.
 
-    :return nonzero_beta_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with non-zero sideslip angle to test 3D wind
-        axes orientation.
+    :return nonzero_beta_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with non-zero sideslip angle to test 3D wind axes orientation.
     """
     nonzero_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -108,9 +106,8 @@ def make_high_speed_operating_point_fixture() -> ps.operating_point.OperatingPoi
     """This method makes a fixture that is an OperatingPoint with high velocity for
     dynamic pressure scaling testing.
 
-    :return high_speed_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with high velocity to test dynamic pressure
-        scaling.
+    :return high_speed_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with high velocity to test dynamic pressure scaling.
     """
     high_speed_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -128,9 +125,9 @@ def make_low_density_operating_point_fixture() -> ps.operating_point.OperatingPo
     """This method makes a fixture that is an OperatingPoint with low density for
     altitude effects testing.
 
-    :return low_density_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with low air density to test high altitude
-        effects on dynamic pressure.
+    :return low_density_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with low air density to test high altitude effects on dynamic
+        pressure.
     """
     low_density_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=0.3,
@@ -150,9 +147,8 @@ def make_with_external_force_operating_point_fixture() -> (
     """This method makes a fixture that is an OperatingPoint with non-zero external
     force for trim analysis testing.
 
-    :return with_external_force_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with non-zero external force to test trim
-        analysis configuration.
+    :return with_external_force_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with non-zero external force to test trim analysis configuration.
     """
     with_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -172,9 +168,9 @@ def make_custom_viscosity_operating_point_fixture() -> (
     """This method makes a fixture that is an OperatingPoint with custom kinematic
     viscosity for vortex core growth parameter testing.
 
-    :return custom_viscosity_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with custom kinematic viscosity value to test
-        vortex core growth parameter.
+    :return custom_viscosity_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with custom kinematic viscosity value to test vortex core growth
+        parameter.
     """
     custom_viscosity_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -192,9 +188,9 @@ def make_boundary_alpha_operating_point_fixture() -> ps.operating_point.Operatin
     """This method makes a fixture that is an OperatingPoint with alpha at boundary
     values for angle wrapping edge case testing.
 
-    :return boundary_alpha_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with alpha at the boundary value of 180
-        degrees to test angle wrapping edge cases.
+    :return boundary_alpha_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with alpha at the boundary value of 180 degrees to test angle
+        wrapping edge cases.
     """
     boundary_alpha_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -212,9 +208,9 @@ def make_negative_beta_operating_point_fixture() -> ps.operating_point.Operating
     """This method makes a fixture that is an OperatingPoint with negative sideslip
     angle for negative angle handling testing.
 
-    :return negative_beta_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with negative sideslip angle to test negative
-        angle handling in wind axes orientation.
+    :return negative_beta_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with negative sideslip angle to test negative angle handling in
+        wind axes orientation.
     """
     negative_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -232,9 +228,9 @@ def make_boundary_beta_operating_point_fixture() -> ps.operating_point.Operating
     """This method makes a fixture that is an OperatingPoint with beta at boundary
     values for angle wrapping edge case testing.
 
-    :return boundary_beta_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with beta at the boundary value of 180
-        degrees to test angle wrapping edge cases.
+    :return boundary_beta_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with beta at the boundary value of 180 degrees to test angle
+        wrapping edge cases.
     """
     boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -251,12 +247,12 @@ def make_boundary_beta_operating_point_fixture() -> ps.operating_point.Operating
 def make_combined_boundary_angles_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with both alpha and
-    beta at boundary values for combined boundary edge case testing.
+    """This method makes a fixture that is an OperatingPoint with both alpha and beta at
+    boundary values for combined boundary edge case testing.
 
-    :return combined_boundary_angles_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with both alpha and beta at boundary
-        values to test combined boundary edge cases.
+    :return combined_boundary_angles_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with both alpha and beta at boundary values to test combined
+        boundary edge cases.
     """
     combined_boundary_angles_operating_point_fixture = (
         ps.operating_point.OperatingPoint(
@@ -276,9 +272,9 @@ def make_very_low_speed_operating_point_fixture() -> ps.operating_point.Operatin
     """This method makes a fixture that is an OperatingPoint with very low but valid
     velocity for testing numerical stability at low speeds.
 
-    :return very_low_speed_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with very low velocity to test numerical
-        stability at low dynamic pressures.
+    :return very_low_speed_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with very low velocity to test numerical stability at low dynamic
+        pressures.
     """
     very_low_speed_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -298,9 +294,9 @@ def make_integer_parameters_operating_point_fixture() -> (
     """This method makes a fixture that is an OperatingPoint initialized with integer
     values to verify type conversion to floats.
 
-    :return integer_parameters_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint initialized with integer values to test
-        internal conversion to floats.
+    :return integer_parameters_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint initialized with integer values to test internal conversion to
+        floats.
     """
     integer_parameters_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1,
@@ -320,9 +316,8 @@ def make_negative_external_force_operating_point_fixture() -> (
     """This method makes a fixture that is an OperatingPoint with negative external
     force for drag simulation testing.
 
-    :return negative_external_force_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with negative external force to test drag
-        simulation.
+    :return negative_external_force_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with negative external force to test drag simulation.
     """
     negative_external_force_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -339,12 +334,12 @@ def make_negative_external_force_operating_point_fixture() -> (
 def make_near_boundary_alpha_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with alpha near the
-    lower boundary for testing near boundary behavior.
+    """This method makes a fixture that is an OperatingPoint with alpha near the lower
+    boundary for testing near boundary behavior.
 
-    :return near_boundary_alpha_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with alpha near the lower boundary value
-        of negative 180 degrees to test near boundary behavior.
+    :return near_boundary_alpha_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with alpha near the lower boundary value of negative 180 degrees
+        to test near boundary behavior.
     """
     near_boundary_alpha_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -361,12 +356,12 @@ def make_near_boundary_alpha_operating_point_fixture() -> (
 def make_near_boundary_beta_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with beta near the
-    lower boundary for testing near boundary behavior.
+    """This method makes a fixture that is an OperatingPoint with beta near the lower
+    boundary for testing near boundary behavior.
 
-    :return near_boundary_beta_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with beta near the lower boundary value
-        of negative 180 degrees to test near boundary behavior.
+    :return near_boundary_beta_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with beta near the lower boundary value of negative 180 degrees
+        to test near boundary behavior.
     """
     near_boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -383,13 +378,12 @@ def make_near_boundary_beta_operating_point_fixture() -> (
 def make_with_attitude_angles_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with non zero
-    Earth to body attitude angles for testing Earth to geometry coordinate
-    transformations.
+    """This method makes a fixture that is an OperatingPoint with non zero Earth to body
+    attitude angles for testing Earth to geometry coordinate transformations.
 
-    :return with_attitude_angles_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with non zero angles_E_to_BP1_izyx to test
-        Earth to geometry axes transformations.
+    :return with_attitude_angles_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with non zero angles_E_to_BP1_izyx to test Earth to geometry axes
+        transformations.
     """
     with_attitude_angles_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -407,12 +401,12 @@ def make_with_attitude_angles_operating_point_fixture() -> (
 def make_with_cg_position_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with non zero CG
-    position in Earth axes for testing position dependent transformations.
+    """This method makes a fixture that is an OperatingPoint with non zero CG position
+    in Earth axes for testing position dependent transformations.
 
-    :return with_cg_position_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with non zero CgP1_E_Eo to test position
-        dependent surface point transformations.
+    :return with_cg_position_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with non zero CgP1_E_Eo to test position dependent surface point
+        transformations.
     """
     with_cg_position_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -457,14 +451,14 @@ def make_with_ground_surface_operating_point_fixture() -> (
 def make_with_tilted_surface_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with a tilted
-    image surface, non zero attitude angles, and non zero CG position for
-    testing the full image surface transformation pipeline.
+    """This method makes a fixture that is an OperatingPoint with a tilted image
+    surface, non zero attitude angles, and non zero CG position for testing the full
+    image surface transformation pipeline.
 
-    :return with_tilted_surface_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with a tilted image surface, non zero
-        orientation, and non zero CG position to test the complete surface
-        transformation from Earth to geometry axes.
+    :return with_tilted_surface_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with a tilted image surface, non zero orientation, and non zero
+        CG position to test the complete surface transformation from Earth to geometry
+        axes.
     """
     with_tilted_surface_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
@@ -486,9 +480,9 @@ def make_with_body_rates_operating_point_fixture() -> ps.operating_point.Operati
     """This method makes a fixture that is an OperatingPoint with a non zero
     omegas_BP1__E for testing that non-free-flight solvers reject body rotation.
 
-    :return with_body_rates_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint with a non zero angular velocity of the first
-        Airplane's body axes (observed from the Earth frame).
+    :return with_body_rates_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint with a non zero angular velocity of the first Airplane's body
+        axes (observed from the Earth frame).
     """
     with_body_rates_operating_point_fixture = ps.operating_point.OperatingPoint(
         omegas_BP1__E=(0.0, 0.0, 1.0),
@@ -505,9 +499,9 @@ def make_with_full_body_rates_operating_point_fixture() -> (
     to geometry transformation negates the x and z components while preserving the y
     component.
 
-    :return with_full_body_rates_operating_point_fixture: OperatingPoint
-        This is the OperatingPoint whose angular velocity of the first Airplane's body
-        axes (observed from the Earth frame) has three distinct non zero components.
+    :return with_full_body_rates_operating_point_fixture: OperatingPoint This is the
+        OperatingPoint whose angular velocity of the first Airplane's body axes
+        (observed from the Earth frame) has three distinct non zero components.
     """
     with_full_body_rates_operating_point_fixture = ps.operating_point.OperatingPoint(
         omegas_BP1__E=(1.0, 2.0, 3.0),

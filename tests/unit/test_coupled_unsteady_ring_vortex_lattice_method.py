@@ -1,4 +1,5 @@
-"""This module contains classes to test CoupledUnsteadyRingVortexLatticeMethodSolvers."""
+"""This module contains classes to test
+CoupledUnsteadyRingVortexLatticeMethodSolvers."""
 
 import unittest
 from typing import Any
@@ -14,8 +15,7 @@ from tests.unit.fixtures import problem_fixtures, solver_fixtures
 
 class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
     """This is a class with functions to test
-    CoupledUnsteadyRingVortexLatticeMethodSolvers.
-    """
+    CoupledUnsteadyRingVortexLatticeMethodSolvers."""
 
     def setUp(self) -> None:
         """Set up a fresh problem and solver for each test."""
@@ -55,8 +55,7 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
 
     def test_coupled_unsteady_problem_property_narrows_unsteady_problem(self) -> None:
         """Test that the _coupled_unsteady_problem property returns the same object as
-        unsteady_problem, narrowed to _CoupledUnsteadyProblem.
-        """
+        unsteady_problem, narrowed to _CoupledUnsteadyProblem."""
         self.assertIs(
             self.solver._coupled_unsteady_problem, self.solver.unsteady_problem
         )
@@ -70,8 +69,8 @@ class TestCoupledUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         """Test that both steady_problems and _get_steady_problem_at reflect the
         problem's growing _steady_problems list.
 
-        The coupled problem seeds its backing list with step zero and appends each
-        later step during the solve. The solver's steady_problems property and its
+        The coupled problem seeds its backing list with step zero and appends each later
+        step during the solve. The solver's steady_problems property and its
         _get_steady_problem_at dispatch both read that live list, so an append is
         visible immediately through either path.
         """

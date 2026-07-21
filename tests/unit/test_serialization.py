@@ -90,9 +90,8 @@ from tests.unit.fixtures import (
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
-    """This class contains methods for testing _ndarray_to_dict and
-    _ndarray_from_dict round trips.
-    """
+    """This class contains methods for testing _ndarray_to_dict and _ndarray_from_dict
+    round trips."""
 
     def test_float64_1d(self) -> None:
         """Tests round trip for a 1D float64 array.
@@ -647,8 +646,7 @@ class TestDeserializeValue(unittest.TestCase):
 
 class TestValueRoundTrip(unittest.TestCase):
     """This class contains methods for testing _serialize_value and _deserialize_value
-    round trips.
-    """
+    round trips."""
 
     def test_none(self) -> None:
         """Tests round trip for None.
@@ -1054,8 +1052,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
 
 class TestOperatingPointRoundTrip(unittest.TestCase):
     """This class contains methods for testing OperatingPoint serialization round
-    trips.
-    """
+    trips."""
 
     def test_round_trip(self) -> None:
         """Tests that an OperatingPoint survives a full round trip.
@@ -1131,8 +1128,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
 
 class TestWingCrossSectionRoundTrip(unittest.TestCase):
     """This class contains methods for testing WingCrossSection serialization round
-    trips.
-    """
+    trips."""
 
     def test_round_trip(self) -> None:
         """Tests that a WingCrossSection survives a full round trip.
@@ -1409,8 +1405,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
 
 class TestSteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyProblem serialization round
-    trips.
-    """
+    trips."""
 
     def test_round_trip(self) -> None:
         """Tests that a SteadyProblem survives a full round trip.
@@ -1495,8 +1490,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
 
 class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyHorseshoeVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
     def test_solved_round_trip(self) -> None:
         """Tests that a solved steady horseshoe solver survives a full round trip.
@@ -1516,8 +1510,8 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         )
 
     def test_shared_reference_identity(self) -> None:
-        """Tests that the solver's shared references point into the SteadyProblem
-        graph after round trip.
+        """Tests that the solver's shared references point into the SteadyProblem graph
+        after round trip.
 
         :return: None
         """
@@ -1541,8 +1535,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         self.assertFalse(result.ran)
 
     def test_save_load_round_trip(self) -> None:
-        """Tests that a solved steady horseshoe solver survives a save/load round
-        trip.
+        """Tests that a solved steady horseshoe solver survives a save/load round trip.
 
         :return: None
         """
@@ -1559,8 +1552,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
 
 class TestSteadyRingSolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing SteadyRingVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
     def test_solved_round_trip(self) -> None:
         """Tests that a solved steady ring solver survives a full round trip.
@@ -1580,8 +1572,8 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         )
 
     def test_shared_reference_identity(self) -> None:
-        """Tests that the solver's shared references point into the SteadyProblem
-        graph after round trip.
+        """Tests that the solver's shared references point into the SteadyProblem graph
+        after round trip.
 
         :return: None
         """
@@ -1622,8 +1614,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
 
 class TestMovementClassesRoundTrip(unittest.TestCase):
     """This class contains methods for testing movement class serialization round
-    trips.
-    """
+    trips."""
 
     def test_operating_point_movement(self) -> None:
         """Tests that an OperatingPointMovement survives a full round trip.
@@ -1682,8 +1673,8 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         )
 
     def test_bare_movement(self) -> None:
-        """Tests that a bare Movement (not inside UnsteadyProblem) serializes all
-        slots including _airplanes and _operating_points.
+        """Tests that a bare Movement (not inside UnsteadyProblem) serializes all slots
+        including _airplanes and _operating_points.
 
         :return: None
         """
@@ -1775,8 +1766,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
 
 class TestUnsteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing UnsteadyProblem serialization round
-    trips.
-    """
+    trips."""
 
     def test_round_trip(self) -> None:
         """Tests that an UnsteadyProblem survives a full round trip.
@@ -1790,8 +1780,8 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(len(result.steady_problems), len(problem.steady_problems))
 
     def test_movement_airplanes_identity(self) -> None:
-        """Tests that Movement._airplanes and SteadyProblem.airplanes point to the
-        same objects after round trip.
+        """Tests that Movement._airplanes and SteadyProblem.airplanes point to the same
+        objects after round trip.
 
         :return: None
         """
@@ -1808,8 +1798,8 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
                 )
 
     def test_movement_operating_points_identity(self) -> None:
-        """Tests that Movement._operating_points and SteadyProblem.operating_point
-        point to the same objects after round trip.
+        """Tests that Movement._operating_points and SteadyProblem.operating_point point
+        to the same objects after round trip.
 
         :return: None
         """
@@ -1836,8 +1826,8 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, problem.num_steps)
 
     def test_formation_flight_round_trip(self) -> None:
-        """Tests that an UnsteadyProblem with two Airplanes survives a full round
-        trip with correct DAG identity.
+        """Tests that an UnsteadyProblem with two Airplanes survives a full round trip
+        with correct DAG identity.
 
         :return: None
         """
@@ -1861,8 +1851,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing UnsteadyRingVortexLatticeMethodSolver
-    serialization round trips.
-    """
+    serialization round trips."""
 
     def test_solved_round_trip(self) -> None:
         """Tests that a solved unsteady solver survives a full round trip.
@@ -1891,8 +1880,8 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         self.assertIs(result.steady_problems, result.unsteady_problem.steady_problems)
 
     def test_movement_dag_identity(self) -> None:
-        """Tests that the Movement <-> SteadyProblem DAG identity is preserved
-        through the unsteady solver round trip.
+        """Tests that the Movement <-> SteadyProblem DAG identity is preserved through
+        the unsteady solver round trip.
 
         :return: None
         """
@@ -1942,9 +1931,8 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
 
 
 class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
-    """This class contains methods for testing aeroelastic movement class
-    serialization round trips.
-    """
+    """This class contains methods for testing aeroelastic movement class serialization
+    round trips."""
 
     def setUp(self) -> None:
         """Build a shared AeroelasticUnsteadyProblem to source the movement graph.
@@ -1995,8 +1983,7 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         )
 
     def test_aeroelastic_wing_cross_section_movement(self) -> None:
-        """Tests that an AeroelasticWingCrossSectionMovement survives a full round
-        trip.
+        """Tests that an AeroelasticWingCrossSectionMovement survives a full round trip.
 
         :return: None
         """
@@ -2032,9 +2019,8 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
 
 
 class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
-    """This class contains methods for testing AeroelasticUnsteadyProblem
-    serialization round trips.
-    """
+    """This class contains methods for testing AeroelasticUnsteadyProblem serialization
+    round trips."""
 
     def test_round_trip(self) -> None:
         """Tests that an AeroelasticUnsteadyProblem survives a full round trip.
@@ -2067,8 +2053,7 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing
-    AeroelasticUnsteadyRingVortexLatticeMethodSolver serialization round trips.
-    """
+    AeroelasticUnsteadyRingVortexLatticeMethodSolver serialization round trips."""
 
     def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run aeroelastic solver survives round trip.
@@ -2093,8 +2078,8 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         self.assertEqual(result.num_steps, solver.num_steps)
 
     def test_shared_reference_identity(self) -> None:
-        """Tests that the solver's reconstructed steady problems are the same objects
-        as those reachable through its AeroelasticUnsteadyProblem after round trip.
+        """Tests that the solver's reconstructed steady problems are the same objects as
+        those reachable through its AeroelasticUnsteadyProblem after round trip.
 
         :return: None
         """
@@ -2111,8 +2096,8 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         """Tests that the AeroelasticUnsteadyProblem's per-wing deformation state (both
         the angle and angle derivative time series) survives the solver round trip.
 
-        The spring-damper ODEs are re-seeded from both time series, so both must
-        survive for a reconstructed problem's structural state to be usable.
+        The spring-damper ODEs are re-seeded from both time series, so both must survive
+        for a reconstructed problem's structural state to be usable.
 
         :return: None
         """
@@ -2234,8 +2219,7 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
 
 class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
     """This class contains methods for testing free flight movement class serialization
-    round trips.
-    """
+    round trips."""
 
     def setUp(self) -> None:
         """Build a shared FreeFlightUnsteadyProblem to source the movement graph.
@@ -2276,8 +2260,7 @@ class TestFreeFlightMovementClassesRoundTrip(unittest.TestCase):
 
 class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
     """This class contains methods for testing FreeFlightUnsteadyProblem serialization
-    round trips.
-    """
+    round trips."""
 
     def test_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem survives a full round trip, with its
@@ -2362,8 +2345,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
 
 class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
     """This class contains methods for testing
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver serialization round trips.
-    """
+    FreeFlightUnsteadyRingVortexLatticeMethodSolver serialization round trips."""
 
     def test_pre_run_round_trip(self) -> None:
         """Tests that a pre run free flight solver survives a round trip.

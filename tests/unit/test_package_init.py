@@ -146,8 +146,7 @@ class TestLazyCallableImports(unittest.TestCase):
         self.assertIs(func1, func2)
 
     def test_lazy_callable_is_correct_function(self) -> None:
-        """The lazy imported set_up_logging should be the actual function from
-        _logging.
+        """The lazy imported set_up_logging should be the actual function from _logging.
 
         :return: None
         """

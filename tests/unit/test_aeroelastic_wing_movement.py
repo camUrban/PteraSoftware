@@ -54,8 +54,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
 
     def test_instantiation_returns_correct_type(self) -> None:
         """Test that AeroelasticWingMovement instantiation returns an
-        AeroelasticWingMovement.
-        """
+        AeroelasticWingMovement."""
         base_wing, wing_cross_section_movements = (
             _make_base_wing_and_wing_cross_section_movements()
         )
@@ -72,8 +71,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
 
     def test_rejects_non_aeroelastic_wing_cross_section_movement_children(self) -> None:
         """Test that AeroelasticWingMovement rejects WingCrossSectionMovement instances
-        that are not AeroelasticWingCrossSectionMovements.
-        """
+        that are not AeroelasticWingCrossSectionMovements."""
         base_wing = geometry_fixtures.make_origin_wing_fixture()
         wing_cross_section_movements: Any = [
             wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
@@ -87,8 +85,7 @@ class TestAeroelasticWingMovement(unittest.TestCase):
 
     def test_generate_wings_returns_wings(self) -> None:
         """Test that generate_wings returns Wings when called through the public
-        class.
-        """
+        class."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
@@ -116,13 +113,11 @@ class TestAeroelasticWingMovement(unittest.TestCase):
 
 class TestAeroelasticWingMovementDeformation(unittest.TestCase):
     """This is a class with functions to test the structural deformation behavior of
-    AeroelasticWingMovement.generate_wing_at_time_step.
-    """
+    AeroelasticWingMovement.generate_wing_at_time_step."""
 
     def test_no_deformation_matches_static_base(self) -> None:
-        """Test that, with no prescribed movement and no deformation, the generated
-        Wing matches the base Wing.
-        """
+        """Test that, with no prescribed movement and no deformation, the generated Wing
+        matches the base Wing."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
@@ -153,9 +148,8 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             )
 
     def test_default_deformation_matches_explicit_none(self) -> None:
-        """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same result as
-        explicitly passing None.
-        """
+        """Test that omitting deformationAngles_Wcsp_to_Wcs_ixyz produces the same
+        result as explicitly passing None."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
@@ -178,9 +172,8 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
             )
 
     def test_deformation_adds_to_prescribed_angles(self) -> None:
-        """Test that each row of deformationAngles_Wcsp_to_Wcs_ixyz is added to the corresponding
-        WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz.
-        """
+        """Test that each row of deformationAngles_Wcsp_to_Wcs_ixyz is added to the
+        corresponding WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_static_aeroelastic_wing_movement_fixture()
         )
@@ -239,8 +232,7 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
 
     def test_deformation_adds_on_top_of_oscillation(self) -> None:
         """Test that deformation is added on top of the oscillating prescribed
-        WingCrossSection angles.
-        """
+        WingCrossSection angles."""
         aeroelastic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
@@ -272,16 +264,13 @@ class TestAeroelasticWingMovementDeformation(unittest.TestCase):
 
 
 class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
-    """This is a class with functions to test that a non zero
-    rotationPointOffset_Gs_Ler shifts the generated Wing's Ler_Gs_Cgs during angular
-    motion.
-    """
+    """This is a class with functions to test that a non zero rotationPointOffset_Gs_Ler
+    shifts the generated Wing's Ler_Gs_Cgs during angular motion."""
 
     def test_offset_has_no_effect_with_zero_angular_motion(self) -> None:
         """Test that, at a time step with zero angular motion, a rotation point offset
         leaves the generated Wing's Ler_Gs_Cgs unchanged relative to the no offset
-        case.
-        """
+        case."""
         basic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
@@ -308,8 +297,7 @@ class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
     def test_offset_shifts_ler_with_nonzero_angular_motion(self) -> None:
         """Test that, at a time step with non zero angular motion, a rotation point
         offset shifts the generated Wing's Ler_Gs_Cgs but leaves its
-        angles_Gs_to_Wn_ixyz unchanged relative to the no offset case.
-        """
+        angles_Gs_to_Wn_ixyz unchanged relative to the no offset case."""
         basic_wing_movement = (
             aeroelastic_wing_movement_fixtures.make_basic_aeroelastic_wing_movement_fixture()
         )
@@ -338,13 +326,11 @@ class TestAeroelasticWingMovementRotationPointOffset(unittest.TestCase):
 class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
     """This is a class with functions to test the
     spacingAnglesSecondDerivative_Gs_to_Wn_ixyz validation logic in
-    AeroelasticWingMovement.__init__.
-    """
+    AeroelasticWingMovement.__init__."""
 
     def setUp(self) -> None:
         """Set up a shared base Wing and AeroelasticWingCrossSectionMovements for each
-        test.
-        """
+        test."""
         self.base_wing, self.wing_cross_section_movements = (
             _make_base_wing_and_wing_cross_section_movements()
         )
@@ -356,8 +342,8 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
             np.ndarray | Sequence[str | Callable[[float], float]]
         ) = ("sine", "sine", "sine"),
     ) -> ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement:
-        """Construct an AeroelasticWingMovement with the given angular spacing and second
-        derivative arguments.
+        """Construct an AeroelasticWingMovement with the given angular spacing and
+        second derivative arguments.
 
         :param spacingAnglesSecondDerivative_Gs_to_Wn_ixyz: The value to pass for the
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz parameter.
@@ -378,8 +364,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
 
     def test_non_sequence_raises_value_error(self) -> None:
         """Test that passing a non sequence value for
-        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz raises ValueError.
-        """
+        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz raises ValueError."""
         with self.assertRaises(ValueError):
             self._make_wing_movement(
                 spacingAnglesSecondDerivative_Gs_to_Wn_ixyz="bad_value"
@@ -401,8 +386,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
 
     def test_non_callable_element_raises_type_error(self) -> None:
         """Test that passing a sequence whose element is neither callable nor None
-        raises TypeError.
-        """
+        raises TypeError."""
         with self.assertRaises(TypeError):
             self._make_wing_movement(
                 spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[42, None, None]
@@ -420,9 +404,8 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
         )
 
     def test_valid_callable_element_accepted_and_stored(self) -> None:
-        """Test that a valid list with a callable at index 0 is accepted, converted to
-        a tuple, and stored correctly.
-        """
+        """Test that a valid list with a callable at index 0 is accepted, converted to a
+        tuple, and stored correctly."""
 
         # noinspection PyUnusedLocal
         def custom_spacing(t: float) -> float:
@@ -444,8 +427,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
 
     def test_property_returns_none_defaults_when_none_passed(self) -> None:
         """Test that the property returns (None, None, None) when
-        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=None is passed (the default).
-        """
+        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=None is passed (the default)."""
         aeroelastic_wing_movement = self._make_wing_movement(
             spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=None
         )
@@ -457,8 +439,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
 
     def test_callable_spacing_no_derivative_raises(self) -> None:
         """Test that a custom callable spacingAngles_Gs_to_Wn_ixyz component with no
-        matching second derivative raises ValueError.
-        """
+        matching second derivative raises ValueError."""
 
         # noinspection PyUnusedLocal
         def custom_spacing(t: float) -> float:
@@ -477,8 +458,7 @@ class TestAeroelasticWingMovementSecondDerivativeValidation(unittest.TestCase):
     def test_non_callable_spacing_with_derivative_raises(self) -> None:
         """Test that a non-None spacingAnglesSecondDerivative_Gs_to_Wn_ixyz component
         paired with a named (non callable) spacingAngles_Gs_to_Wn_ixyz component raises
-        ValueError.
-        """
+        ValueError."""
 
         def deriv_func(t: float) -> float:
             return -1.0 * t
@@ -513,8 +493,7 @@ class TestAeroelasticWingMovementDeepCopy(unittest.TestCase):
 
     def test_deepcopy_preserves_second_derivative(self) -> None:
         """Test that deep copying preserves the
-        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz tuple.
-        """
+        spacingAnglesSecondDerivative_Gs_to_Wn_ixyz tuple."""
         base_wing, wing_cross_section_movements = (
             _make_base_wing_and_wing_cross_section_movements()
         )

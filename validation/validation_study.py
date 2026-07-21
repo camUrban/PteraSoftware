@@ -4,14 +4,15 @@
 
 I first emulate the geometry and kinematics of a flapping robotic test stand from
 "Experimental and Analytical Pressure Characterization of a Rigid Flapping Wing for
-Ornithopter Development" by Derrick Yeo, Ella M. Atkins, and Wei Shyy. Then,
-I run the UVLM simulation of an experiment from this paper. Finally, I compare the
-simulated results to the published experimental results.
+Ornithopter Development" by Derrick Yeo, Ella M. Atkins, and Wei Shyy. Then, I run the
+UVLM simulation of an experiment from this paper. Finally, I compare the simulated
+results to the published experimental results.
 
 WebPlotDigitizer, by Ankit Rohatgi, was used to extract data from Yeo et al., 2011.
 
-More information can be found in my accompanying report: "Validating an Open-Source
-UVLM Solver for Analyzing Flapping Wing Flight: An Experimental Approach." """
+More information can be found in my accompanying report: "Validating an Open-Source UVLM
+Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
+"""
 
 # Import Python's math package.
 import math
@@ -256,23 +257,20 @@ del this_main_wing_cross_section_movement
 del this_reflected_main_wing_cross_section_movement
 
 
-def validation_geometry_sweep_function(time):
-    """This function takes in the time during a flap cycle and returns the flap angle
-    in degrees. It uses the flapping frequency defined in the encompassing script,
-    and is based on a fourth-order Fourier series. The coefficients were calculated
-    by Yeo et al., 2011.
+def validation_geometry_sweep_function(
+    time: float | np.ndarray,
+) -> float | np.ndarray:
+    """This function takes in the time during a flap cycle and returns the flap angle in
+    degrees. It uses the flapping frequency defined in the encompassing script, and is
+    based on a fourth-order Fourier series. The coefficients were calculated by Yeo et
+    al., 2011.
 
-    :param time: float or a (N,) ndarray of floats
-
-        This is a single time or a ndarray of N times at which to calculate the flap
-        angle. The units are seconds.
-
-    :return flap_angle: float a (N,) ndarray of floats
-
-        This is a single flap angle or a ndarray of N flap angles at the inputted
-        time value or values. The units are degrees.
+    :param time: float or a (N,) ndarray of floats This is a single time or a ndarray of
+        N times at which to calculate the flap angle. The units are seconds.
+    :return flap_angle: float a (N,) ndarray of floats This is a single flap angle or a
+        ndarray of N flap angles at the inputted time value or values. The units are
+        degrees.
     """
-
     # Set the Fourier series coefficients and the flapping frequency.
     a_0 = 0.0354
     a_1 = 4.10e-5
@@ -299,22 +297,19 @@ def validation_geometry_sweep_function(time):
     ) / 0.0174533
 
 
-def time_normalized_validation_geometry_sweep_function_rad(time):
-    """This function takes in the time during a flap cycle and returns the flap angle
-    in radians. It uses a normalized flapping frequency of 1 Hz, and is based on a
-    fourth-order Fourier series. The coefficients were calculated by Yeo et al., 2011.
+def time_normalized_validation_geometry_sweep_function_rad(
+    time: float | np.ndarray,
+) -> float | np.ndarray:
+    """This function takes in the time during a flap cycle and returns the flap angle in
+    radians. It uses a normalized flapping frequency of 1 Hz, and is based on a fourth-
+    order Fourier series. The coefficients were calculated by Yeo et al., 2011.
 
-    :param time: float or a (N,) ndarray of floats
-
-        This is a single time or a ndarray of N times at which to calculate the flap
-        angle. The units are seconds.
-
-    :return flap_angle: float or a (N,) ndarray of floats
-
-        This is a single flap angle or a ndarray of N flap angles at the inputted
-        time value or values. The units are radians.
+    :param time: float or a (N,) ndarray of floats This is a single time or a ndarray of
+        N times at which to calculate the flap angle. The units are seconds.
+    :return flap_angle: float or a (N,) ndarray of floats This is a single flap angle or
+        a ndarray of N flap angles at the inputted time value or values. The units are
+        radians.
     """
-
     # Set the Fourier series coefficients.
     a_0 = 0.0354
     a_1 = 4.10e-5

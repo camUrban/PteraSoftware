@@ -322,22 +322,22 @@ class Airfoil:
         flippedUpperOutlineHingePoint_A_Lp = preHingeFlippedUpperOutline_A_Lp[-1, :]
         lowerOutlineHingePoint_A_Lp = preHingeLowerOutline_A_Lp[-1, :]
 
-        flippedUpperOutlineHingePoint_Wcs_lp = np.hstack(
+        flippedUpperOutlineHingePoint_Wcs_Lp = np.hstack(
             [
                 flippedUpperOutlineHingePoint_A_Lp[0],
                 0.0,
                 flippedUpperOutlineHingePoint_A_Lp[1],
             ]
         )
-        lowerOutlineHingePoint_Wcs_lp = np.hstack(
+        lowerOutlineHingePoint_Wcs_Lp = np.hstack(
             [lowerOutlineHingePoint_A_Lp[0], 0.0, lowerOutlineHingePoint_A_Lp[1]]
         )
 
         flippedUpperOutlineToOrigin_T_act = _transformations.generate_trans_T(
-            -flippedUpperOutlineHingePoint_Wcs_lp, passive=False
+            -flippedUpperOutlineHingePoint_Wcs_Lp, passive=False
         )
         lowerOutlineToOrigin_T_act = _transformations.generate_trans_T(
-            -lowerOutlineHingePoint_Wcs_lp, passive=False
+            -lowerOutlineHingePoint_Wcs_Lp, passive=False
         )
 
         # Make the active rotational homogeneous transformation matrix that deflects the
@@ -356,10 +356,10 @@ class Airfoil:
         )
 
         flippedUpperOutlineBack_T_act = _transformations.generate_trans_T(
-            flippedUpperOutlineHingePoint_Wcs_lp, passive=False
+            flippedUpperOutlineHingePoint_Wcs_Lp, passive=False
         )
         lowerOutlineBack_T_act = _transformations.generate_trans_T(
-            lowerOutlineHingePoint_Wcs_lp, passive=False
+            lowerOutlineHingePoint_Wcs_Lp, passive=False
         )
 
         postHingeFlippedUpperOutline_T_act = _transformations.compose_T_act(
@@ -371,14 +371,14 @@ class Airfoil:
             lowerOutlineToOrigin_T_act, deflect_T_act, lowerOutlineBack_T_act
         )
 
-        postHingeFlippedUpperOutline_Wcs_lp = np.column_stack(
+        postHingeFlippedUpperOutline_Wcs_Lp = np.column_stack(
             [
                 postHingeFlippedUpperOutline_A_Lp[:, 0],
                 np.zeros_like(postHingeFlippedUpperOutline_A_Lp[:, 0]),
                 postHingeFlippedUpperOutline_A_Lp[:, 1],
             ]
         )
-        postHingeLowerOutline_Wcs_lp = np.column_stack(
+        postHingeLowerOutline_Wcs_Lp = np.column_stack(
             [
                 postHingeLowerOutline_A_Lp[:, 0],
                 np.zeros_like(postHingeLowerOutline_A_Lp[:, 0]),
@@ -389,13 +389,13 @@ class Airfoil:
         flappedPostHingeFlippedUpperOutline_A_Lp = (
             _transformations.apply_T_to_vectors(
                 postHingeFlippedUpperOutline_T_act,
-                postHingeFlippedUpperOutline_Wcs_lp,
+                postHingeFlippedUpperOutline_Wcs_Lp,
                 is_position=True,
             )
         )[:, [0, 2]]
         flappedPostHingeLowerOutline_A_Lp = _transformations.apply_T_to_vectors(
             postHingeLowerOutline_T_act,
-            postHingeLowerOutline_Wcs_lp,
+            postHingeLowerOutline_Wcs_Lp,
             is_position=True,
         )[:, [0, 2]]
 
@@ -503,8 +503,8 @@ class Airfoil:
             outlineYMin_A_Lp - y_padding, outlineYMax_A_Lp + y_padding
         )
 
-        airfoil_axes.set_xlabel("AX_lp")
-        airfoil_axes.set_ylabel("AY_lp")
+        airfoil_axes.set_xlabel("AX_Lp")
+        airfoil_axes.set_ylabel("AY_Lp")
         airfoil_axes.set_title(f"{self.name} Airfoil")
         airfoil_axes.legend(
             ["Outline", "Mean Camber Line (MCL)"],

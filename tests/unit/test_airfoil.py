@@ -417,8 +417,8 @@ class TestAirfoil(unittest.TestCase):
 
         # After normalization, leading point should be at ~ [0.0, 0.0].
         Lp_index = int(np.argmin(airfoil.outline_A_Lp[:, 0]))
-        lp = airfoil.outline_A_Lp[Lp_index, :]
-        npt.assert_allclose(lp, [0.0, 0.0], atol=1e-6)
+        Lp_A_Lp = airfoil.outline_A_Lp[Lp_index, :]
+        npt.assert_allclose(Lp_A_Lp, [0.0, 0.0], atol=1e-6)
 
         # Trailing edge should be at ~ x = 1.0.
         self.assertAlmostEqual(airfoil.outline_A_Lp[0, 0], 1.0, places=5)
@@ -453,8 +453,8 @@ class TestAirfoil(unittest.TestCase):
 
         # After normalization, leading point should be at ~ [0.0, 0.0].
         Lp_index = int(np.argmin(airfoil.outline_A_Lp[:, 0]))
-        lp = airfoil.outline_A_Lp[Lp_index, :]
-        npt.assert_allclose(lp, [0.0, 0.0], atol=1e-6)
+        Lp_A_Lp = airfoil.outline_A_Lp[Lp_index, :]
+        npt.assert_allclose(Lp_A_Lp, [0.0, 0.0], atol=1e-6)
 
         # Trailing edge should be at ~ x = 1.0 (unit chord).
         self.assertAlmostEqual(airfoil.outline_A_Lp[0, 0], 1.0, places=5)

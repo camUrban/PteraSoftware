@@ -1637,32 +1637,32 @@ class Wing:
         if self.symmetry_type is None:
             return None
 
-        airfoilOutlines_Wn_ler = []
-        airfoilMcls_Wn_ler = []
+        airfoilOutlines_Wn_Ler = []
+        airfoilMcls_Wn_Ler = []
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections
         ):
             plottable_data = wing_cross_section.get_plottable_data(show=False)
             assert plottable_data is not None
 
-            [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp] = plottable_data
+            [airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp] = plottable_data
 
             T_pas_Wcs_Lp_to_Wn_Ler = self.children_T_pas_Wcs_Lp_to_Wn_Ler[
                 wing_cross_section_id
             ]
 
-            airfoilOutline_Wn_ler = _transformations.apply_T_to_vectors(
-                T_pas_Wcs_Lp_to_Wn_Ler, airfoilOutline_Wcs_lp, is_position=True
+            airfoilOutline_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, airfoilOutline_Wcs_Lp, is_position=True
             )
-            airfoilMcl_Wn_ler = _transformations.apply_T_to_vectors(
-                T_pas_Wcs_Lp_to_Wn_Ler, airfoilMcl_Wcs_lp, is_position=True
+            airfoilMcl_Wn_Ler = _transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_Wn_Ler, airfoilMcl_Wcs_Lp, is_position=True
             )
 
-            airfoilOutlines_Wn_ler.append(airfoilOutline_Wn_ler)
-            airfoilMcls_Wn_ler.append(airfoilMcl_Wn_ler)
+            airfoilOutlines_Wn_Ler.append(airfoilOutline_Wn_Ler)
+            airfoilMcls_Wn_Ler.append(airfoilMcl_Wn_Ler)
 
         if not show:
-            return [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler]
+            return [airfoilOutlines_Wn_Ler, airfoilMcls_Wn_Ler]
 
         plotter = pv.Plotter()
 
@@ -1734,14 +1734,14 @@ class Wing:
         for wing_cross_section_id, wing_cross_section in enumerate(
             self.wing_cross_sections
         ):
-            airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[wing_cross_section_id]
-            airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[wing_cross_section_id]
+            airfoilOutline_Wn_Ler = airfoilOutlines_Wn_Ler[wing_cross_section_id]
+            airfoilMcl_Wn_Ler = airfoilMcls_Wn_Ler[wing_cross_section_id]
 
             airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
-                _T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, is_position=True
+                _T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_Ler, is_position=True
             )
             airfoilMcl_G_Cg = _transformations.apply_T_to_vectors(
-                _T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, is_position=True
+                _T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_Ler, is_position=True
             )
 
             airfoilOutline_faces = np.hstack(

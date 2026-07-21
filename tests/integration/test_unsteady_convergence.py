@@ -504,6 +504,7 @@ class TestUnsteadyConvergence(unittest.TestCase):
             converged_solver,
             ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
         )
+        assert converged_solver is not None
         self.assertGreater(
             len(converged_solver.unsteady_problem.finalForceCoefficients_W), 0
         )

@@ -128,6 +128,7 @@ class TestSteadyConvergence(unittest.TestCase):
             converged_solver,
             ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver,
         )
+        assert converged_solver is not None
         self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
 
     def test_steady_ring_convergence_resolves_solver(self) -> None:
@@ -159,6 +160,7 @@ class TestSteadyConvergence(unittest.TestCase):
             converged_solver,
             ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
         )
+        assert converged_solver is not None
         self.assertIsNotNone(converged_solver.airplanes[0].forceCoefficients_W)
 
     def test_edge_defined_steady_convergence(self) -> None:

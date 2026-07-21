@@ -9,7 +9,9 @@ Any WebP file larger than the size ceiling is re-rendered at progressively lower
 (dropping by 35 each attempt) until it fits.
 """
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pterasoftware as ps
 
@@ -22,11 +24,11 @@ _INITIAL_QUALITY = 75.0
 _QUALITY_STEP = 35.0
 _MAX_RERENDER_ATTEMPTS = 2
 
-_DRAW_KWARGS = {
+_DRAW_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
 }
-_ANIMATE_KWARGS = {
+_ANIMATE_KWARGS: dict[str, Any] = {
     "scalar_type": "induced drag",
     "show_wake_vortices": True,
 }
@@ -34,6 +36,10 @@ _ANIMATE_KWARGS = {
 ps.set_up_logging()
 
 loaded_hero_solver = ps.load(_hero_graphics_dir / "hero_solver.json.gz")
+assert isinstance(
+    loaded_hero_solver,
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+)
 
 ps.output.draw(
     solver=loaded_hero_solver,
@@ -47,14 +53,16 @@ ps.output.animate(
     save=True,
 )
 
-for name, render_func, render_kwargs in [
+_RENDER_TARGETS: list[tuple[str, Callable[..., None], dict[str, Any]]] = [
     ("draw.webp", ps.output.draw, {"solver": loaded_hero_solver, **_DRAW_KWARGS}),
     (
         "animate.webp",
         ps.output.animate,
         {"unsteady_solver": loaded_hero_solver, **_ANIMATE_KWARGS},
     ),
-]:
+]
+
+for name, render_func, render_kwargs in _RENDER_TARGETS:
     webp_path = Path(name)
     if not webp_path.exists():
         continue

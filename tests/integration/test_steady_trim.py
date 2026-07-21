@@ -74,6 +74,9 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             num_calls=100,
         )
 
+        assert trim_conditions[0] is not None
+        assert trim_conditions[1] is not None
+        assert trim_conditions[3] is not None
         v_error = (trim_conditions[0] - self.v_x_ans) / self.v_x_ans
         alpha_error = (trim_conditions[1] - self.alpha_ans) / self.alpha_ans
         thrust_error = (trim_conditions[3] - self.thrust_ans) / self.thrust_ans

@@ -311,6 +311,14 @@ ps.save("example_solver.json.gz", example_solver)
 # passed to any output function.
 loaded_solver = ps.load("example_solver.json.gz")
 
+# The load function is annotated as returning object because a saved file can hold any
+# Ptera Software object. This assert narrows the type for type checkers and guards
+# against loading the wrong file.
+assert isinstance(
+    loaded_solver,
+    ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+)
+
 # Log the loaded solver's loads. For a free flight solver, this also logs the first
 # Airplane's initial and final six-degree-of-freedom state: its position, velocity,
 # orientation, angular velocity, and aerodynamic angles.

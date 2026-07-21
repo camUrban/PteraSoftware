@@ -135,6 +135,14 @@ ps.save("example_solver.json.gz", example_solver)
 # passed to any output function.
 loaded_solver = ps.load("example_solver.json.gz")
 
+# The load function is annotated as returning object because a saved file can hold any
+# Ptera Software object. This assert narrows the type for type checkers and guards
+# against loading the wrong file.
+assert isinstance(
+    loaded_solver,
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver,
+)
+
 # Call this function from the output module to log the results.
 ps.output.log_results(loaded_solver)
 

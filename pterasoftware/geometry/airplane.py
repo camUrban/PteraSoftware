@@ -404,10 +404,10 @@ class Airplane:
             # generate_trans_T with passive=True expects the `translations` parameter to
             # be the position of the target reference point (CgP1) relative to the
             # source reference point (Cg). Using the notation from
-            # AXES_POINTS_AND_FRAMES.md: translations=CgP1_G_Cg. However, we have
+            # AXES_POINTS_AND_FRAMES.md: translations = CgP1_G_Cg. However, we have
             # Cg_GP1_CgP1 (position of Cg, in GP1 axes, relative to CgP1). Since
             # geometry axes G and GP1 are parallel (pure translation, no rotation):
-            # CgP1_G_Cg=-Cg_GP1_CgP1.
+            # CgP1_G_Cg = -Cg_GP1_CgP1.
             self._T_pas_G_Cg_to_GP1_CgP1 = _transformations.generate_trans_T(
                 translations=-self._Cg_GP1_CgP1, passive=True
             )
@@ -489,7 +489,7 @@ class Airplane:
         # Convert the Panel vertices and faces to PolyData.
         panel_surfaces = pv.PolyData(panel_vertices, panel_faces)
 
-        # Add the Panels to the plotter
+        # Add the Panels to the plotter.
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
@@ -497,7 +497,7 @@ class Airplane:
             smooth_shading=False,
         )
 
-        # Set the plotter's background color
+        # Set the plotter's background color.
         plotter.set_background(color=plotter_background_color)  # type: ignore[call-arg]
 
         if not testing:
@@ -509,7 +509,7 @@ class Airplane:
                 auto_close=False,
             )
         else:
-            # Show the plotter for 1 second, then proceed automatically (for testing)
+            # Show the plotter for 1 second, then proceed automatically (for testing).
             plotter.show(
                 title=f"Airplane: {self._name}",
                 cpos=(-1, -1, 1),
@@ -519,7 +519,7 @@ class Airplane:
             )
             time.sleep(1)
 
-        # If the user wants to save the image, take a screenshot and save as WebP
+        # If the user wants to save the image, take a screenshot and save as WebP.
         if save:
             screenshot = plotter.screenshot(
                 filename=None,
@@ -536,7 +536,7 @@ class Airplane:
                 quality=quality,
             )
 
-        # Close all the plotters
+        # Close all the plotters.
         pv.close_all()
 
     def get_plottable_data(
@@ -566,20 +566,20 @@ class Airplane:
             plottable_data = wing.get_plottable_data(show=False)
 
             assert plottable_data is not None
-            [airfoilOutlines_Wn_ler, airfoilMcls_Wn_ler] = plottable_data
+            [airfoilOutlines_Wn_Ler, airfoilMcls_Wn_Ler] = plottable_data
 
             these_airfoilOutlines_G_Cg = []
             these_airfoilMcls_G_Cg = []
-            for airfoil_id in range(len(airfoilOutlines_Wn_ler)):
-                airfoilOutline_Wn_ler = airfoilOutlines_Wn_ler[airfoil_id]
-                airfoilMcl_Wn_ler = airfoilMcls_Wn_ler[airfoil_id]
+            for airfoil_id in range(len(airfoilOutlines_Wn_Ler)):
+                airfoilOutline_Wn_Ler = airfoilOutlines_Wn_Ler[airfoil_id]
+                airfoilMcl_Wn_Ler = airfoilMcls_Wn_Ler[airfoil_id]
 
                 assert wing.T_pas_Wn_Ler_to_G_Cg is not None
                 airfoilOutline_G_Cg = _transformations.apply_T_to_vectors(
-                    wing.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_ler, is_position=True
+                    wing.T_pas_Wn_Ler_to_G_Cg, airfoilOutline_Wn_Ler, is_position=True
                 )
                 airfoilMcl_G_Cg = _transformations.apply_T_to_vectors(
-                    wing.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_ler, is_position=True
+                    wing.T_pas_Wn_Ler_to_G_Cg, airfoilMcl_Wn_Ler, is_position=True
                 )
 
                 these_airfoilOutlines_G_Cg.append(airfoilOutline_G_Cg)
@@ -715,18 +715,18 @@ class Airplane:
                     plotter.add_actor(AxesWcsLp_G_Cg)
 
             if wing.panels is not None:
-                # Initialize empty arrays to hold the Panels' vertices and faces
+                # Initialize empty arrays to hold the Panels' vertices and faces.
                 panel_vertices = np.empty((0, 3), dtype=float)
                 panel_faces = np.empty(0, dtype=int)
 
                 # Initialize a variable to keep track of how many Panels' data has been
-                # added to the arrays
+                # added to the arrays.
                 panel_num = 0
 
-                # Unravel the Wing's Panel matrix and iterate through it
+                # Unravel the Wing's Panel matrix and iterate through it.
                 panels = np.ravel(wing.panels)
                 for panel in panels:
-                    # Stack this Panel's vertices and faces
+                    # Stack this Panel's vertices and faces.
                     panel_vertices_to_add = np.vstack(
                         (
                             panel.Flpp_G_Cg,
@@ -756,7 +756,7 @@ class Airplane:
                     # Convert the Panel vertices and faces to PolyData.
                     panel_surfaces = pv.PolyData(panel_vertices, panel_faces)
 
-                    # Add the Panels to the plotter
+                    # Add the Panels to the plotter.
                     plotter.add_mesh(
                         panel_surfaces,
                         show_edges=True,
@@ -879,25 +879,25 @@ class Airplane:
         if not wing.symmetric:
             if not wing.mirror_only:
                 # Type 1 Symmetry:
-                # symmetric=False, mirror_only=False
+                # symmetric = False, mirror_only = False
                 symmetry_type = 1
             else:
                 if coincident_symmetry_plane:
                     # Type 2 Symmetry:
-                    # symmetric=False, mirror_only=True, coincident_symmetry_plane=True
+                    # symmetric = False, mirror_only = True, coincident_symmetry_plane = True
                     symmetry_type = 2
                 else:
                     # Type 3 Symmetry:
-                    # symmetric=False, mirror_only=True, coincident_symmetry_plane=False
+                    # symmetric = False, mirror_only = True, coincident_symmetry_plane = False
                     symmetry_type = 3
         else:
             if coincident_symmetry_plane:
                 # Type 4 Symmetry:
-                # symmetric=True, coincident_symmetry_plane=True
+                # symmetric = True, coincident_symmetry_plane = True
                 symmetry_type = 4
             else:
                 # Type 5 Symmetry:
-                # symmetric=True, coincident_symmetry_plane=False
+                # symmetric = True, coincident_symmetry_plane = False
                 symmetry_type = 5
 
         # Based on the determined symmetry type, validate the Wing's WingCrossSections'
@@ -943,7 +943,7 @@ class Airplane:
                     "of a Wing with a coincident symmetry plane"
                 )
 
-        # Based on symmetry type, generate the mesh and return the wing(s).
+        # Based on symmetry type, generate the mesh and return the Wing(s).
         if symmetry_type in [1, 2, 3, 4]:
             wing.generate_mesh(symmetry_type)
             return [wing]

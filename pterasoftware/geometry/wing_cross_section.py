@@ -528,14 +528,14 @@ class WingCrossSection:
         assert plottable_data is not None
         [airfoilOutline_A_Lp, airfoilMcl_A_Lp] = plottable_data
 
-        airfoilNonScaledOutline_Wcs_lp = np.column_stack(
+        airfoilNonScaledOutline_Wcs_Lp = np.column_stack(
             [
                 airfoilOutline_A_Lp[:, 0],
                 np.zeros_like(airfoilOutline_A_Lp[:, 0]),
                 airfoilOutline_A_Lp[:, 1],
             ]
         )
-        airfoilNonScaledMcl_Wcs_lp = np.column_stack(
+        airfoilNonScaledMcl_Wcs_Lp = np.column_stack(
             [
                 airfoilMcl_A_Lp[:, 0],
                 np.zeros_like(airfoilMcl_A_Lp[:, 0]),
@@ -552,26 +552,26 @@ class WingCrossSection:
             ]
         )
 
-        airfoilOutline_Wcs_lp = _transformations.apply_T_to_vectors(
-            airfoilScalingMatrix, airfoilNonScaledOutline_Wcs_lp, is_position=True
+        airfoilOutline_Wcs_Lp = _transformations.apply_T_to_vectors(
+            airfoilScalingMatrix, airfoilNonScaledOutline_Wcs_Lp, is_position=True
         )
-        airfoilMcl_Wcs_lp = _transformations.apply_T_to_vectors(
-            airfoilScalingMatrix, airfoilNonScaledMcl_Wcs_lp, is_position=True
+        airfoilMcl_Wcs_Lp = _transformations.apply_T_to_vectors(
+            airfoilScalingMatrix, airfoilNonScaledMcl_Wcs_Lp, is_position=True
         )
 
         if not show:
-            return [airfoilOutline_Wcs_lp, airfoilMcl_Wcs_lp]
+            return [airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp]
 
         plotter = pv.Plotter()
 
         _T_pas_Wcs_Lp_to_Wcsp_Lpp = self.T_pas_Wcs_Lp_to_Wcsp_Lpp
         assert _T_pas_Wcs_Lp_to_Wcsp_Lpp is not None
 
-        airfoilOutline_Wcsp_lpp = _transformations.apply_T_to_vectors(
-            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_lp, is_position=True
+        airfoilOutline_Wcsp_Lpp = _transformations.apply_T_to_vectors(
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilOutline_Wcs_Lp, is_position=True
         )
-        airfoilMcl_Wcsp_lpp = _transformations.apply_T_to_vectors(
-            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_lp, is_position=True
+        airfoilMcl_Wcsp_Lpp = _transformations.apply_T_to_vectors(
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, airfoilMcl_Wcs_Lp, is_position=True
         )
 
         if self.symmetry_type in (2, 3):
@@ -579,17 +579,17 @@ class WingCrossSection:
                 np.array([0.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), passive=False
             )
 
-            airfoilOutline_WcspReflectY_lpp = _transformations.apply_T_to_vectors(
-                UserMatrixAxesWcspLpp, airfoilOutline_Wcsp_lpp, is_position=True
+            airfoilOutline_WcspReflectY_Lpp = _transformations.apply_T_to_vectors(
+                UserMatrixAxesWcspLpp, airfoilOutline_Wcsp_Lpp, is_position=True
             )
-            airfoilMcl_WcspReflectY_lpp = _transformations.apply_T_to_vectors(
-                UserMatrixAxesWcspLpp, airfoilMcl_Wcsp_lpp, is_position=True
+            airfoilMcl_WcspReflectY_Lpp = _transformations.apply_T_to_vectors(
+                UserMatrixAxesWcspLpp, airfoilMcl_Wcsp_Lpp, is_position=True
             )
 
         else:
             UserMatrixAxesWcspLpp = np.eye(4, dtype=float)
-            airfoilOutline_WcspReflectY_lpp = airfoilOutline_Wcsp_lpp
-            airfoilMcl_WcspReflectY_lpp = airfoilMcl_Wcsp_lpp
+            airfoilOutline_WcspReflectY_Lpp = airfoilOutline_Wcsp_Lpp
+            airfoilMcl_WcspReflectY_Lpp = airfoilMcl_Wcsp_Lpp
 
         rot_T_act = _transformations.generate_rot_T(
             angles=self.angles_Wcsp_to_Wcs_ixyz,
@@ -610,18 +610,18 @@ class WingCrossSection:
 
         airfoilOutline_faces = np.hstack(
             [
-                airfoilOutline_WcspReflectY_lpp.shape[0],
-                np.arange(airfoilOutline_WcspReflectY_lpp.shape[0]),
+                airfoilOutline_WcspReflectY_Lpp.shape[0],
+                np.arange(airfoilOutline_WcspReflectY_Lpp.shape[0]),
             ]
         )
         airfoilOutline_mesh = pv.PolyData(
-            airfoilOutline_WcspReflectY_lpp, faces=airfoilOutline_faces
+            airfoilOutline_WcspReflectY_Lpp, faces=airfoilOutline_faces
         )
         plotter.add_mesh(airfoilOutline_mesh)
-        plotter.add_lines(airfoilMcl_WcspReflectY_lpp)
+        plotter.add_lines(airfoilMcl_WcspReflectY_Lpp)
 
         if np.allclose(UserMatrixAxesWcsLp_WcspLpp, UserMatrixAxesWcspLpp):
-            AxesWcsLpWcspLpp_Wcsp_lpp = pv.AxesAssembly(
+            AxesWcsLpWcspLpp_Wcsp_Lpp = pv.AxesAssembly(
                 x_label="WcsX@Lp/WcspX@Lpp",
                 y_label="WcsY@Lp/WcspY@Lpp",
                 z_label="WcsZ@Lp/WcspZ@Lpp",
@@ -647,9 +647,9 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_lpp)
+            plotter.add_actor(AxesWcsLpWcspLpp_Wcsp_Lpp)
         else:
-            AxesWcsLp_Wcsp_lpp = pv.AxesAssembly(
+            AxesWcsLp_Wcsp_Lpp = pv.AxesAssembly(
                 x_label="WcsX@Lp",
                 y_label="WcsY@Lp",
                 z_label="WcsZ@Lp",
@@ -702,7 +702,7 @@ class WingCrossSection:
                 tip_length=(0.2, 0.2, 0.2),
                 symmetric_bounds=False,
             )
-            plotter.add_actor(AxesWcsLp_Wcsp_lpp)
+            plotter.add_actor(AxesWcsLp_Wcsp_Lpp)
             plotter.add_actor(AxesWcspLpp)
 
         plotter.enable_parallel_projection()  # type: ignore[call-arg]

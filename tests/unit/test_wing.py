@@ -15,21 +15,21 @@ class TestWing(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures for Wing tests."""
-        # Create fixtures for all Wing types
+        # Create fixtures for all Wing types.
         self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
         self.type_2_wing = geometry_fixtures.make_type_2_wing_fixture()
         self.type_3_wing = geometry_fixtures.make_type_3_wing_fixture()
         self.type_4_wing = geometry_fixtures.make_type_4_wing_fixture()
         self.type_5_wing = geometry_fixtures.make_type_5_wing_fixture()
 
-        # Create additional test fixtures
+        # Create additional test fixtures.
         self.root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
 
     def test_initialization_valid_parameters(self):
         """Test Wing initialization with valid parameters for all types."""
-        # Test that all Wing types initialize correctly
+        # Test that all Wing types initialize correctly.
         wings_to_test = [
             (self.type_1_wing, "type 1"),
             (self.type_2_wing, "type 2"),
@@ -53,20 +53,20 @@ class TestWing(unittest.TestCase):
 
     def test_wing_cross_sections_validation(self):
         """Test that wing_cross_sections parameter validation works correctly."""
-        # Test empty list raises error
+        # Test empty list raises error.
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(wing_cross_sections=[])
 
-        # Test non-list raises error
+        # Test non-list raises error.
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             ps.geometry.wing.Wing(wing_cross_sections="not a list")
 
-        # Test single WingCrossSection raises error (need at least 2)
+        # Test single WingCrossSection raises error (need at least 2).
         with self.assertRaises(ValueError):
             ps.geometry.wing.Wing(wing_cross_sections=[self.root_wing_cross_section])
 
-        # Test non-WingCrossSection objects raise error
+        # Test non-WingCrossSection objects raise error.
         with self.assertRaises(TypeError):
             ps.geometry.wing.Wing(
                 wing_cross_sections=[
@@ -92,7 +92,7 @@ class TestWing(unittest.TestCase):
                 symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
             )
 
-        # Test that symmetry parameters must be None when no symmetry
+        # Test that symmetry parameters must be None when no symmetry.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -105,7 +105,7 @@ class TestWing(unittest.TestCase):
                 symmetryNormal_G=[0.0, 1.0, 0.0],
             )
 
-        # Test that symmetry parameters must be provided when symmetric=True
+        # Test that symmetry parameters must be provided when symmetric=True.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -122,20 +122,20 @@ class TestWing(unittest.TestCase):
         """Test type 1 wing (symmetric=False, mirror_only=False) properties."""
         wing = self.type_1_wing
 
-        # Test basic properties
+        # Test basic properties.
         self.assertFalse(wing.symmetric)
         self.assertFalse(wing.mirror_only)
         self.assertIsNone(wing.symmetryNormal_G)
         self.assertIsNone(wing.symmetryPoint_G_Cg)
 
-        # Test that symmetry_type is None before meshing
+        # Test that symmetry_type is None before meshing.
         self.assertIsNone(wing.symmetry_type)
 
     def test_wing_type_2_properties(self):
         """Test type 2 wing (mirror_only=True, coincident symmetry plane) properties."""
         wing = self.type_2_wing
 
-        # Test basic properties
+        # Test basic properties.
         self.assertFalse(wing.symmetric)
         self.assertTrue(wing.mirror_only)
         npt.assert_array_equal(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]))
@@ -146,7 +146,7 @@ class TestWing(unittest.TestCase):
         properties."""
         wing = self.type_3_wing
 
-        # Test basic properties
+        # Test basic properties.
         self.assertFalse(wing.symmetric)
         self.assertTrue(wing.mirror_only)
         npt.assert_array_equal(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]))
@@ -156,13 +156,13 @@ class TestWing(unittest.TestCase):
         """Test type 4 wing (symmetric=True, coincident symmetry plane) properties."""
         wing = self.type_4_wing
 
-        # Test basic properties
+        # Test basic properties.
         self.assertTrue(wing.symmetric)
         self.assertFalse(wing.mirror_only)
         npt.assert_array_equal(wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]))
         npt.assert_array_equal(wing.symmetryPoint_G_Cg, np.array([1.0, 0.0, 0.5]))
 
-        # Test that WingCrossSections have control surface symmetry types
+        # Test that WingCrossSections have control surface symmetry types.
         for wing_cross_section in wing.wing_cross_sections:
             self.assertEqual(
                 wing_cross_section.control_surface_symmetry_type, "symmetric"
@@ -173,7 +173,7 @@ class TestWing(unittest.TestCase):
         properties."""
         wing = self.type_5_wing
 
-        # Test basic properties (before Airplane processing)
+        # Test basic properties (before Airplane processing).
         self.assertTrue(wing.symmetric)
         self.assertFalse(wing.mirror_only)
         npt.assert_array_equal(
@@ -271,7 +271,7 @@ class TestWing(unittest.TestCase):
         """Test that transformation matrices are None before meshing."""
         wing = self.type_1_wing
 
-        # All transformation matrices should be None before meshing
+        # All transformation matrices should be None before meshing.
         self.assertIsNone(wing.T_pas_G_Cg_to_Wn_Ler)
         self.assertIsNone(wing.T_pas_Wn_Ler_to_G_Cg)
 
@@ -280,15 +280,15 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Transformation matrices should be available after meshing
+        # Transformation matrices should be available after meshing.
         self.assertIsNotNone(wing.T_pas_G_Cg_to_Wn_Ler)
         self.assertIsNotNone(wing.T_pas_Wn_Ler_to_G_Cg)
 
-        # Should be 4x4 matrices
+        # They should be 4 x 4 matrices.
         self.assertEqual(wing.T_pas_G_Cg_to_Wn_Ler.shape, (4, 4))
         self.assertEqual(wing.T_pas_Wn_Ler_to_G_Cg.shape, (4, 4))
 
-        # Should be inverses of each other
+        # They should be inverses of each other.
         identity = wing.T_pas_G_Cg_to_Wn_Ler @ wing.T_pas_Wn_Ler_to_G_Cg
         npt.assert_allclose(identity, np.eye(4), atol=1e-14)
 
@@ -297,22 +297,22 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Wing axes basis vectors should be available
+        # Wing axes basis vectors should be available.
         self.assertIsNotNone(wing.WnX_G)
         self.assertIsNotNone(wing.WnY_G)
         self.assertIsNotNone(wing.WnZ_G)
 
-        # Should be 3-element vectors
+        # They should be 3-element vectors.
         self.assertEqual(len(wing.WnX_G), 3)
         self.assertEqual(len(wing.WnY_G), 3)
         self.assertEqual(len(wing.WnZ_G), 3)
 
-        # Should form an orthonormal basis
+        # They should form an orthonormal basis.
         npt.assert_allclose(np.linalg.norm(wing.WnX_G), 1.0, atol=1e-14)
         npt.assert_allclose(np.linalg.norm(wing.WnY_G), 1.0, atol=1e-14)
         npt.assert_allclose(np.linalg.norm(wing.WnZ_G), 1.0, atol=1e-14)
 
-        # Should be orthogonal
+        # They should be orthogonal.
         npt.assert_allclose(np.dot(wing.WnX_G, wing.WnY_G), 0.0, atol=1e-14)
         npt.assert_allclose(wing.WnY_G @ wing.WnZ_G, 0.0, atol=1e-14)
         npt.assert_allclose(wing.WnZ_G @ wing.WnX_G, 0.0, atol=1e-14)
@@ -322,7 +322,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Should have transformation lists for each WingCrossSection
+        # It should have transformation lists for each WingCrossSection.
         num_wing_cross_sections = len(wing.wing_cross_sections)
         self.assertEqual(
             len(wing.children_T_pas_Wn_Ler_to_Wcs_Lp), num_wing_cross_sections
@@ -337,7 +337,7 @@ class TestWing(unittest.TestCase):
             len(wing.children_T_pas_Wcs_Lp_to_G_Cg), num_wing_cross_sections
         )
 
-        # Each transformation should be a 4x4 matrix
+        # Each transformation should be a 4 x 4 matrix.
         for i in range(num_wing_cross_sections):
             self.assertEqual(wing.children_T_pas_Wn_Ler_to_Wcs_Lp[i].shape, (4, 4))
             self.assertEqual(wing.children_T_pas_Wcs_Lp_to_Wn_Ler[i].shape, (4, 4))
@@ -349,14 +349,14 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Test that geometric properties are available and positive
+        # Test that geometric properties are available and positive.
         self.assertGreater(wing.projected_area, 0.0)
         self.assertGreater(wing.wetted_area, 0.0)
         self.assertGreater(wing.span, 0.0)
         self.assertGreater(wing.standard_mean_chord, 0.0)
         self.assertGreater(wing.mean_aerodynamic_chord, 0.0)
 
-        # Test that wetted area is greater than projected area (both sides)
+        # Test that wetted area is greater than projected area (both sides).
         self.assertGreaterEqual(wing.wetted_area, wing.projected_area)
 
     def test_geometric_properties_before_meshing_return_none(self):
@@ -437,7 +437,7 @@ class TestWing(unittest.TestCase):
                 Ler_Gs_Cgs="invalid",
             )
 
-        # Test invalid angles
+        # Test invalid angles.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -449,7 +449,7 @@ class TestWing(unittest.TestCase):
                 angles_Gs_to_Wn_ixyz="invalid",
             )
 
-        # Test invalid num_chordwise_panels
+        # Test invalid num_chordwise_panels.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -461,7 +461,7 @@ class TestWing(unittest.TestCase):
                 num_chordwise_panels=0,
             )
 
-        # Test invalid chordwise_spacing
+        # Test invalid chordwise_spacing.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -472,7 +472,7 @@ class TestWing(unittest.TestCase):
                 chordwise_spacing="invalid_spacing",
             )
 
-        # Test invalid symmetric
+        # Test invalid symmetric.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -484,7 +484,7 @@ class TestWing(unittest.TestCase):
                 symmetric="invalid",
             )
 
-        # Test invalid mirror_only
+        # Test invalid mirror_only.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -496,7 +496,7 @@ class TestWing(unittest.TestCase):
                 mirror_only="invalid",
             )
 
-        # Test invalid explode_into_strips
+        # Test invalid explode_into_strips.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -522,7 +522,7 @@ class TestWing(unittest.TestCase):
         )
         self.assertEqual(wing.name, "Test Wing Name")
 
-        # Test invalid name type
+        # Test invalid name type.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -536,12 +536,12 @@ class TestWing(unittest.TestCase):
 
     def test_symmetry_normal_normalization(self):
         """Test that symmetry normal vectors are properly normalized."""
-        # Create fresh fixtures since WingCrossSections can only be validated once
+        # Create fresh fixtures since WingCrossSections can only be validated once.
         root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
         tip_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
-        # Create Wing with non-unit normal vector
+        # Create Wing with non-unit normal vector.
         wing = ps.geometry.wing.Wing(
             wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
             symmetric=False,
@@ -550,7 +550,7 @@ class TestWing(unittest.TestCase):
             symmetryPoint_G_Cg=[0.0, 0.0, 0.0],
         )
 
-        # Should be normalized to unit vector
+        # It should be normalized to unit vector.
         npt.assert_allclose(np.linalg.norm(wing.symmetryNormal_G), 1.0, atol=1e-14)
         npt.assert_allclose(
             wing.symmetryNormal_G, np.array([0.0, 1.0, 0.0]), atol=1e-14
@@ -558,23 +558,23 @@ class TestWing(unittest.TestCase):
 
     def test_three_section_wing_validation(self):
         """Test Wing with 3 WingCrossSections validates correctly."""
-        # Test that valid 3-WingCrossSection Wing initializes correctly
+        # Test that valid 3-WingCrossSection Wing initializes correctly.
         wing = geometry_fixtures.make_three_section_wing_fixture()
         self.assertIsInstance(wing, ps.geometry.wing.Wing)
         self.assertEqual(len(wing.wing_cross_sections), 3)
 
-        # Verify all WingCrossSections are validated
+        # Verify all WingCrossSections are validated.
         for wing_cross_section in wing.wing_cross_sections:
             self.assertTrue(wing_cross_section.validated)
 
     def test_four_section_wing_validation(self):
         """Test Wing with 4 WingCrossSections validates correctly."""
-        # Test that valid 4-WingCrossSection Wing initializes correctly
+        # Test that valid 4-WingCrossSection Wing initializes correctly.
         wing = geometry_fixtures.make_four_section_wing_fixture()
         self.assertIsInstance(wing, ps.geometry.wing.Wing)
         self.assertEqual(len(wing.wing_cross_sections), 4)
 
-        # Verify all WingCrossSections are validated
+        # Verify all WingCrossSections are validated.
         for wing_cross_section in wing.wing_cross_sections:
             self.assertTrue(wing_cross_section.validated)
 
@@ -627,7 +627,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 2.0 meters (from y=0 to y=2.0)
+        # Expected span: 2.0 meters (from y = 0.0 to y = 2.0).
         expected_span = 2.0
         actual_span = wing.span
 
@@ -639,7 +639,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 3.0 meters (from y=0 to y=3.0)
+        # Expected span: 3.0 meters (from y = 0.0 to y = 3.0).
         expected_span = 3.0
         actual_span = wing.span
 
@@ -651,7 +651,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
-        # Expected span: 5.0 meters (2 * 2.5, due to symmetry)
+        # Expected span: 5.0 meters (2.0 * 2.5, due to symmetry).
         expected_span = 5.0
         actual_span = wing.span
 
@@ -663,7 +663,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 4.0 meters (from y=0 to y=4.0)
+        # Expected span: 4.0 meters (from y = 0.0 to y = 4.0).
         expected_span = 4.0
         actual_span = wing.span
 
@@ -675,7 +675,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected projected area: 2.0 square meters (1.0 m chord * 2.0 m span)
+        # Expected projected area: 2.0 square meters (1.0 m chord * 2.0 m span).
         expected_area = 2.0
         actual_area = wing.projected_area
 
@@ -751,7 +751,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         wing.generate_mesh(1)
 
-        # Standard mean chord = projected_area / span = 2.0 / 2.0 = 1.0
+        # Standard mean chord = projected_area / span = 2.0 / 2.0 = 1.0.
         expected_smc = 1.0
         actual_smc = wing.standard_mean_chord
 
@@ -763,7 +763,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Standard mean chord = projected_area / span = 4.5 / 3.0 = 1.5
+        # Standard mean chord = projected_area / span = 4.5 / 3.0 = 1.5.
         expected_smc = 1.5
         actual_smc = wing.standard_mean_chord
 
@@ -776,7 +776,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
-        # Standard mean chord = projected_area / span = 7.5 / 5.0 = 1.5
+        # Standard mean chord = projected_area / span = 7.5 / 5.0 = 1.5.
         expected_smc = 1.5
         actual_smc = wing.standard_mean_chord
 
@@ -788,7 +788,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_three_section_tapered_wing_fixture()
         wing.generate_mesh(1)
 
-        # Standard mean chord = projected_area / span = 8.0 / 4.0 = 2.0
+        # Standard mean chord = projected_area / span = 8.0 / 4.0 = 2.0.
         expected_smc = 2.0
         actual_smc = wing.standard_mean_chord
 
@@ -800,7 +800,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
         wing.generate_mesh(1)
 
-        # For a rectangular wing (constant chord), MAC = chord = 1.0
+        # For a rectangular wing (constant chord), MAC = chord = 1.0.
         expected_mac = 1.0
         actual_mac = wing.mean_aerodynamic_chord
 
@@ -813,10 +813,10 @@ class TestWing(unittest.TestCase):
         wing.generate_mesh(1)
 
         # For a linearly tapered wing:
-        # MAC = (2/3) * (c_root + c_tip - c_root * c_tip / (c_root + c_tip))
-        # With c_root=2.0, c_tip=1.0:
-        # MAC = (2/3) * (2.0 + 1.0 - 2.0 * 1.0 / (2.0 + 1.0))
-        # MAC = (2/3) * (3.0 - 2.0/3.0) = (2/3) * (7.0/3.0) = 14.0/9.0 = 1.555...
+        # MAC = (2.0 / 3.0) * (c_root + c_tip - c_root * c_tip / (c_root + c_tip))
+        # With c_root = 2.0, c_tip = 1.0:
+        # MAC = (2.0 / 3.0) * (2.0 + 1.0 - 2.0 * 1.0 / (2.0 + 1.0))
+        # MAC = (2.0 / 3.0) * (3.0 - 2.0 / 3.0) = (2.0 / 3.0) * (7.0 / 3.0) = 14.0 / 9.0 = 1.555...
         c_root = 2.0
         c_tip = 1.0
         expected_mac = (2.0 / 3.0) * (
@@ -834,7 +834,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
-        # For a rectangular wing (constant chord), MAC = chord = 1.5
+        # For a rectangular wing (constant chord), MAC = chord = 1.5.
         expected_mac = 1.5
         actual_mac = wing.mean_aerodynamic_chord
 
@@ -858,12 +858,12 @@ class TestWing(unittest.TestCase):
             with self.subTest(wing=wing.name):
                 wing.generate_mesh(symmetry_type)
 
-                # Get properties
+                # Get properties.
                 span = wing.span
                 projected_area = wing.projected_area
                 standard_mean_chord = wing.standard_mean_chord
 
-                # Verify consistency: projected_area = span * standard_mean_chord
+                # Verify consistency: projected_area = span * standard_mean_chord.
                 self.assertIsNotNone(span)
                 self.assertIsNotNone(projected_area)
                 self.assertIsNotNone(standard_mean_chord)
@@ -875,11 +875,11 @@ class TestWing(unittest.TestCase):
 
     def test_span_rotated_wing_x_axis(self):
         """Test span calculation invariance for Wing rotated about x axis."""
-        # Create a Wing rotated 45 degrees about x axis
+        # Create a Wing rotated 45.0 degrees about x axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
         wing.generate_mesh(1)
 
-        # Expected span: 2.0 meters (rotation about x axis does not affect y extent)
+        # Expected span: 2.0 meters (rotation about x axis does not affect y extent).
         expected_span = 2.0
 
         actual_span = wing.span
@@ -889,11 +889,11 @@ class TestWing(unittest.TestCase):
 
     def test_span_rotated_wing_y_axis(self):
         """Test span calculation invariance for Wing rotated about y axis."""
-        # Create a Wing rotated 30 degrees about y axis
+        # Create a Wing rotated 30.0 degrees about y axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 30.0, 0.0])
         wing.generate_mesh(1)
 
-        # Expected span: 2.0 meters (rotation about y axis does not affect y extent)
+        # Expected span: 2.0 meters (rotation about y axis does not affect y extent).
         expected_span = 2.0
 
         actual_span = wing.span
@@ -903,11 +903,11 @@ class TestWing(unittest.TestCase):
 
     def test_span_rotated_wing_z_axis(self):
         """Test span calculation invariance for Wing rotated about z axis."""
-        # Create a Wing rotated 60 degrees about z axis
+        # Create a Wing rotated 60.0 degrees about z axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([0.0, 0.0, 60.0])
         wing.generate_mesh(1)
 
-        # Expected span: 2.0 meters (rotation about z axis does not affect y extent)
+        # Expected span: 2.0 meters (rotation about z axis does not affect y extent).
         expected_span = 2.0
 
         actual_span = wing.span
@@ -917,13 +917,13 @@ class TestWing(unittest.TestCase):
 
     def test_span_rotated_wing_combined_rotations(self):
         """Test span calculation invariance for Wing with combined rotations."""
-        # Create a Wing with combined rotations
+        # Create a Wing with combined rotations.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
             [15.0, 25.0, 35.0]
         )
         wing.generate_mesh(1)
 
-        # Expected span: 2.0 meters (rotations do not affect y extent in wing axes)
+        # Expected span: 2.0 meters (rotations do not affect y extent in wing axes).
         expected_span = 2.0
 
         actual_span = wing.span
@@ -936,7 +936,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_wing_with_rotated_cross_sections_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 5.0 meters (rotation about y axis does not affect y position)
+        # Expected span: 5.0 meters (rotation about y axis does not affect y position).
         expected_span = 5.0
 
         actual_span = wing.span
@@ -949,7 +949,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_swept_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected span: 3.0 meters (sweep in x direction does not affect y extent)
+        # Expected span: 3.0 meters (sweep in x direction does not affect y extent).
         expected_span = 3.0
 
         actual_span = wing.span
@@ -973,11 +973,11 @@ class TestWing(unittest.TestCase):
 
     def test_standard_mean_chord_rotated_wing(self):
         """Test standard mean chord calculation for rotated Wing."""
-        # Create a Wing rotated 45 degrees about x axis
+        # Create a Wing rotated 45.0 degrees about x axis.
         wing = geometry_fixtures.make_rotated_rectangular_wing_fixture([45.0, 0.0, 0.0])
         wing.generate_mesh(1)
 
-        # Expected standard mean chord: 1.0 (projected_area / span = 2.0 / 2.0)
+        # Expected standard mean chord: 1.0 (projected_area / span = 2.0 / 2.0).
         expected_smc = 1.0
 
         actual_smc = wing.standard_mean_chord
@@ -990,7 +990,7 @@ class TestWing(unittest.TestCase):
         wing = geometry_fixtures.make_swept_wing_fixture()
         wing.generate_mesh(1)
 
-        # Expected standard mean chord: projected_area / span = 4.5 / 3.0 = 1.5
+        # Expected standard mean chord: projected_area / span = 4.5 / 3.0 = 1.5.
         expected_smc = 1.5
 
         actual_smc = wing.standard_mean_chord
@@ -1021,9 +1021,9 @@ class TestWing(unittest.TestCase):
         average_aspect_ratio = wing.average_panel_aspect_ratio
         self.assertIsNotNone(average_aspect_ratio)
 
-        # For a rectangular Wing with uniform spacing: Panel chord = wing_chord /
-        # num_chordwise_panels = 1.0 / 4 = 0.25 Panel span = wing_span /
-        # num_spanwise_panels = 2.0 / 8 = 0.25 The expected aspect ratio is
+        # For a rectangular wing with uniform spacing: Panel chord = wing_chord /
+        # num_chordwise_panels = 1.0 / 4 = 0.25. Panel span = wing_span /
+        # num_spanwise_panels = 2.0 / 8 = 0.25. The expected aspect ratio is
         # approximately 1.0 for roughly square Panels. This is an approximate check
         # since actual Panel aspect ratios depend on the meshing algorithm's
         # implementation details.
@@ -1446,15 +1446,15 @@ class TestWingDeepCopy(unittest.TestCase):
         original.generate_mesh(1)
 
         # Access cached properties to populate internal caches before deepcopy.
-        _wn_x = original.WnX_G
-        _wn_y = original.WnY_G
-        _wn_z = original.WnZ_G
+        _WnX_G = original.WnX_G
+        _WnY_G = original.WnY_G
+        _WnZ_G = original.WnZ_G
         _children_to_wing_cross_section = original.children_T_pas_Wn_Ler_to_Wcs_Lp
         _children_from_wing_cross_section = original.children_T_pas_Wcs_Lp_to_Wn_Ler
 
         copied = copy.deepcopy(original)
 
-        # Verify the copied wing has matching axis vectors.
+        # Verify the copied Wing has matching axis vectors.
         npt.assert_array_equal(copied.WnX_G, original.WnX_G)
         npt.assert_array_equal(copied.WnY_G, original.WnY_G)
         npt.assert_array_equal(copied.WnZ_G, original.WnZ_G)
@@ -1520,18 +1520,18 @@ class TestWingGetPlottableData(unittest.TestCase):
 
         num_wing_cross_sections = len(wing.wing_cross_sections)
 
-        # Should have one outline array per WingCrossSection.
+        # It should have one outline array per WingCrossSection.
         self.assertEqual(len(result[0]), num_wing_cross_sections)
-        # Should have one MCL array per WingCrossSection.
+        # It should have one MCL array per WingCrossSection.
         self.assertEqual(len(result[1]), num_wing_cross_sections)
 
         for outline in result[0]:
             self.assertIsInstance(outline, np.ndarray)
-            self.assertEqual(outline.shape[1], 3)  # 3D points
+            self.assertEqual(outline.shape[1], 3)  # These are 3D points.
 
         for mcl in result[1]:
             self.assertIsInstance(mcl, np.ndarray)
-            self.assertEqual(mcl.shape[1], 3)  # 3D points
+            self.assertEqual(mcl.shape[1], 3)  # These are 3D points.
 
     def test_get_plottable_data_three_section_wing(self):
         """Test get_plottable_data for Wing with 3 WingCrossSections."""
@@ -1540,7 +1540,7 @@ class TestWingGetPlottableData(unittest.TestCase):
 
         result = wing.get_plottable_data(show=False)
 
-        # Should have 3 outlines and 3 MCLs.
+        # It should have 3 outlines and 3 MCLs.
         self.assertEqual(len(result[0]), 3)
         self.assertEqual(len(result[1]), 3)
 
@@ -1560,7 +1560,7 @@ class TestWingGetPlottableData(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Call without show parameter, should return data (not None).
+        # Call without a show parameter. It should return data (not None).
         result = wing.get_plottable_data()
 
         self.assertIsNotNone(result)
@@ -1819,7 +1819,7 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
-        # N=3 => 3 interpolated sections
+        # N = 3 => 3 interpolated sections
         self.assertEqual(len(result), 3)
 
     def test_interpolate_last_section_has_tip_chord(self):
@@ -1837,24 +1837,25 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
-        # N=3: the first section is at t=1/3
-        # chord at t=1/3: (1 - 1/3)*1.0 + (1/3)*0.5 = 5/6
+        # N = 3: the first section is at t = 1.0 / 3.0
+        # chord at t = 1.0 / 3.0: (1.0 - 1.0 / 3.0) * 1.0 + (1.0 / 3.0) * 0.5 = 5.0 /
+        # 6.0
         expected_first_interp = (1.0 - 1.0 / 3.0) * 1.0 + (1.0 / 3.0) * 0.5
         self.assertAlmostEqual(result[0].chord, expected_first_interp, places=10)
 
-    def test_interpolate_lp_y_divided_by_n(self):
+    def test_interpolate_Lp_y_divided_by_n(self):
         """Test that the Lp_Wcsp_Lpp y-component of each interpolated WingCrossSection is
         tip_Lp_y / N."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(
             self._make_root_wing_cross_section(), self._make_tip_wing_cross_section()
         )
-        # tip has Lp_y = 0.5; N=3 => each section Lp_y = 0.5/3
-        expected_lp_y = 0.5 / 3.0
+        # tip has Lp_y = 0.5. N = 3 => each section Lp_y = 0.5 / 3.0.
+        expected_Lp_y = 0.5 / 3.0
         for wing_cross_section in result:
             with self.subTest(wing_cross_section=wing_cross_section):
                 self.assertAlmostEqual(
-                    float(wing_cross_section.Lp_Wcsp_Lpp[1]), expected_lp_y, places=10
+                    float(wing_cross_section.Lp_Wcsp_Lpp[1]), expected_Lp_y, places=10
                 )
 
     def test_explode_wing_with_two_wing_cross_sections_returns_correct_count(self):

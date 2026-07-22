@@ -233,6 +233,13 @@ def process_solver_loads(
     """Uses the loads a solver has found on its Panels to find and set the net loads and
     associated coefficients for each Airplane.
 
+    Each Airplane receives two sets of load attributes. The first set holds the total
+    force (in wind axes), the total moment (in wind axes, relative to the first
+    Airplane's CG), and their coefficients. The second set holds the total force (in the
+    Airplane's geometry axes), the total moment (in the Airplane's geometry axes,
+    relative to the Airplane's CG), the total moment (in wind axes, relative to the
+    Airplane's CG), and their coefficients.
+
     :param solver: The solver whose loads will be processed.
     :param stackPanelForces_GP1: A (N,3) ndarray of floats representing the forces (in
         the first Airplane's geometry axes) on each of the solver's Panels. The units
@@ -326,14 +333,47 @@ def process_solver_loads(
                 stackAirplaneMoments_GP1_CgP1[airplane_num, :] += panel.moments_GP1_CgP1
 
     for airplane_num, airplane in enumerate(these_airplanes):
+        theseAirplaneForces_GP1 = stackAirplaneForces_GP1[airplane_num]
+        theseAirplaneMoments_GP1_CgP1 = stackAirplaneMoments_GP1_CgP1[airplane_num]
+
         airplane.forces_W = _transformations.apply_T_to_vectors(
             T_pas_GP1_CgP1_to_W_CgP1,
-            stackAirplaneForces_GP1[airplane_num],
+            theseAirplaneForces_GP1,
             is_position=False,
         )
         airplane.moments_W_CgP1 = _transformations.apply_T_to_vectors(
             T_pas_GP1_CgP1_to_W_CgP1,
-            stackAirplaneMoments_GP1_CgP1[airplane_num],
+            theseAirplaneMoments_GP1_CgP1,
+            is_position=False,
+        )
+
+        # Because every Airplane's geometry axes are parallel to the first Airplane's
+        # geometry axes, the total force's components are identical in both, so the
+        # total force (in this Airplane's geometry axes) is a relabeling of the total
+        # force (in the first Airplane's geometry axes).
+        airplane.forces_G = theseAirplaneForces_GP1.copy()
+
+        # Find the total moment (in this Airplane's geometry axes, relative to this
+        # Airplane's CG). Changing a moment's reference point is a physical operation,
+        # not a coordinate transformation: M_Cg = M_CgP1 - Cg_GP1_CgP1 x F_total, where
+        # the cross product term is the moment of the total force applied at the first
+        # Airplane's CG, taken relative to this Airplane's CG. The axes relabeling from
+        # the first Airplane's geometry axes to this Airplane's geometry axes is free
+        # because the axes are parallel. For the first Airplane, Cg_GP1_CgP1 is zero, so
+        # the two moment variants coincide.
+        airplane.moments_G_Cg = theseAirplaneMoments_GP1_CgP1 - np.cross(
+            airplane.Cg_GP1_CgP1, theseAirplaneForces_GP1
+        )
+
+        # Find the total moment (in wind axes, relative to this Airplane's CG).
+        # T_pas_GP1_CgP1_to_W_CgP1 preserves its reference point, so it is a pure
+        # rotation, and because this Airplane's geometry axes are parallel to the first
+        # Airplane's geometry axes, it is numerically identical to the matrix mapping in
+        # homogeneous coordinates from this Airplane's geometry axes, relative to this
+        # Airplane's CG to wind axes, relative to this Airplane's CG.
+        airplane.moments_W_Cg = _transformations.apply_T_to_vectors(
+            T_pas_GP1_CgP1_to_W_CgP1,
+            airplane.moments_G_Cg,
             is_position=False,
         )
 
@@ -355,11 +395,29 @@ def process_solver_loads(
             airplane.moments_W_CgP1[2] / qInf__E / airplane.s_ref / airplane.b_ref
         )
 
+        assert airplane.forces_G is not None
+        cFX_G = airplane.forces_G[0] / qInf__E / airplane.s_ref
+        cFY_G = airplane.forces_G[1] / qInf__E / airplane.s_ref
+        cFZ_G = airplane.forces_G[2] / qInf__E / airplane.s_ref
+
+        assert airplane.moments_G_Cg is not None
+        cMX_G_Cg = airplane.moments_G_Cg[0] / qInf__E / airplane.s_ref / airplane.b_ref
+        cMY_G_Cg = airplane.moments_G_Cg[1] / qInf__E / airplane.s_ref / airplane.c_ref
+        cMZ_G_Cg = airplane.moments_G_Cg[2] / qInf__E / airplane.s_ref / airplane.b_ref
+
+        assert airplane.moments_W_Cg is not None
+        cMX_W_Cg = airplane.moments_W_Cg[0] / qInf__E / airplane.s_ref / airplane.b_ref
+        cMY_W_Cg = airplane.moments_W_Cg[1] / qInf__E / airplane.s_ref / airplane.c_ref
+        cMZ_W_Cg = airplane.moments_W_Cg[2] / qInf__E / airplane.s_ref / airplane.b_ref
+
         # Populate this Airplane's load coefficients.
         airplane.forceCoefficients_W = np.array([cFX_W, cFY_W, cFZ_W])
         airplane.momentCoefficients_W_CgP1 = np.array(
             [cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1]
         )
+        airplane.forceCoefficients_G = np.array([cFX_G, cFY_G, cFZ_G])
+        airplane.momentCoefficients_G_Cg = np.array([cMX_G_Cg, cMY_G_Cg, cMZ_G_Cg])
+        airplane.momentCoefficients_W_Cg = np.array([cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg])
 
 
 def update_ring_vortex_solvers_panel_attributes(

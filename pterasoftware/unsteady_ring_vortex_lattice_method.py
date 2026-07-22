@@ -2377,6 +2377,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
         moment_coefficients_W_CgP1 = np.zeros(
             (self.num_airplanes, 3, num_steps_to_average), dtype=float
         )
+        forces_G = np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
+        force_coefficients_G = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
+        moments_G_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
+        moment_coefficients_G_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
+        moments_W_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
+        moment_coefficients_W_Cg = np.zeros(
+            (self.num_airplanes, 3, num_steps_to_average), dtype=float
+        )
 
         # Initialize a variable to track position in the loads ndarrays.
         results_step = 0
@@ -2401,6 +2417,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 moment_coefficients_W_CgP1[airplane_id, :, results_step] = (
                     airplane.momentCoefficients_W_CgP1
                 )
+                forces_G[airplane_id, :, results_step] = airplane.forces_G
+                force_coefficients_G[airplane_id, :, results_step] = (
+                    airplane.forceCoefficients_G
+                )
+                moments_G_Cg[airplane_id, :, results_step] = airplane.moments_G_Cg
+                moment_coefficients_G_Cg[airplane_id, :, results_step] = (
+                    airplane.momentCoefficients_G_Cg
+                )
+                moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
+                moment_coefficients_W_Cg[airplane_id, :, results_step] = (
+                    airplane.momentCoefficients_W_Cg
+                )
 
             results_step += 1
 
@@ -2420,6 +2448,22 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 self.unsteady_problem.finalMomentCoefficients_W_CgP1.append(
                     moment_coefficients_W_CgP1[airplane_id, :, -1]
                 )
+                self.unsteady_problem.finalForces_G.append(forces_G[airplane_id, :, -1])
+                self.unsteady_problem.finalForceCoefficients_G.append(
+                    force_coefficients_G[airplane_id, :, -1]
+                )
+                self.unsteady_problem.finalMoments_G_Cg.append(
+                    moments_G_Cg[airplane_id, :, -1]
+                )
+                self.unsteady_problem.finalMomentCoefficients_G_Cg.append(
+                    moment_coefficients_G_Cg[airplane_id, :, -1]
+                )
+                self.unsteady_problem.finalMoments_W_Cg.append(
+                    moments_W_Cg[airplane_id, :, -1]
+                )
+                self.unsteady_problem.finalMomentCoefficients_W_Cg.append(
+                    moment_coefficients_W_Cg[airplane_id, :, -1]
+                )
             else:
                 # The number of intervals for the trapezoidal rule is one less than the
                 # number of samples.
@@ -2437,6 +2481,27 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 )
                 self.unsteady_problem.finalMeanMomentCoefficients_W_CgP1.append(
                     np.trapezoid(moment_coefficients_W_CgP1[airplane_id], axis=-1)
+                    / num_intervals
+                )
+                self.unsteady_problem.finalMeanForces_G.append(
+                    np.trapezoid(forces_G[airplane_id], axis=-1) / num_intervals
+                )
+                self.unsteady_problem.finalMeanForceCoefficients_G.append(
+                    np.trapezoid(force_coefficients_G[airplane_id], axis=-1)
+                    / num_intervals
+                )
+                self.unsteady_problem.finalMeanMoments_G_Cg.append(
+                    np.trapezoid(moments_G_Cg[airplane_id], axis=-1) / num_intervals
+                )
+                self.unsteady_problem.finalMeanMomentCoefficients_G_Cg.append(
+                    np.trapezoid(moment_coefficients_G_Cg[airplane_id], axis=-1)
+                    / num_intervals
+                )
+                self.unsteady_problem.finalMeanMoments_W_Cg.append(
+                    np.trapezoid(moments_W_Cg[airplane_id], axis=-1) / num_intervals
+                )
+                self.unsteady_problem.finalMeanMomentCoefficients_W_Cg.append(
+                    np.trapezoid(moment_coefficients_W_Cg[airplane_id], axis=-1)
                     / num_intervals
                 )
 
@@ -2471,6 +2536,60 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     np.sqrt(
                         np.trapezoid(
                             np.square(moment_coefficients_W_CgP1[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsForces_G.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(forces_G[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsForceCoefficients_G.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(force_coefficients_G[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsMoments_G_Cg.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(moments_G_Cg[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsMomentCoefficients_G_Cg.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(moment_coefficients_G_Cg[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsMoments_W_Cg.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(moments_W_Cg[airplane_id]),
+                            axis=-1,
+                        )
+                        / num_intervals
+                    )
+                )
+                self.unsteady_problem.finalRmsMomentCoefficients_W_Cg.append(
+                    np.sqrt(
+                        np.trapezoid(
+                            np.square(moment_coefficients_W_Cg[airplane_id]),
                             axis=-1,
                         )
                         / num_intervals

@@ -9,7 +9,7 @@
     "governor": "performance"
   },
   "memory": {
-    "total_mb": 63842,
+    "total_mb": 63839,
     "swappiness": 0,
     "transparent_hugepages": "madvise"
   },

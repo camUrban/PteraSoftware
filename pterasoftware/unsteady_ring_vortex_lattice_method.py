@@ -1966,12 +1966,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
         chordwise_vorticity_gradients = self._calculate_chordwise_vorticity_gradients()
         spanwise_vorticity_gradients = self._calculate_spanwise_vorticity_gradients()
 
+        # Calculate the apparent velocity due to prescribed motion at each Panel's
+        # centroid.
+        stackMovementVelocityCentroid_GP1__E = (
+            self._calculate_current_movement_velocities_at_centroids()
+        )
+
         # Calculate velocity at Panel centroids.
         stackVelocityCentroid_GP1__E = (
             self.calculate_solution_velocity(
                 stackP_GP1_CgP1=self._stackCentroid_GP1_CgP1
             )
-            + self._calculate_current_movement_velocities_at_centroids()
+            + stackMovementVelocityCentroid_GP1__E
         )
 
         # Calculate the chordwise velocity component.
@@ -2006,12 +2012,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # === Induced Drag Correction (Lambert 2015, Eq. 2.13 to 2.16) ===
 
-        # Get local flow reference frame.
+        # Build the decomposition's flow directions from the kinematic velocity (the
+        # freestream plus any apparent velocity due to prescribed motion, excluding
+        # induced velocities), matching Lambert's U_hat^m.
+        stackKinematicVelocityCentroid_GP1__E = (
+            self._currentVInf_GP1__E + stackMovementVelocityCentroid_GP1__E
+        )
         (
             stackFlowUnitVectors_GP1,
             stackLiftDirections_GP1,
             stackSinAlpha,
-        ) = self._calculate_local_flow_directions(stackVelocityCentroid_GP1__E)
+        ) = self._calculate_local_flow_directions(stackKinematicVelocityCentroid_GP1__E)
 
         # cos(alpha) = |P_U_hat * n_hat| (magnitude of lift direction vector).
         stackCosAlpha = np.linalg.norm(stackLiftDirections_GP1, axis=1)
@@ -2092,17 +2103,24 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
-    # TODO: Why are we treating the leading and trailing edges differently?
     def _calculate_chordwise_vorticity_gradients(self) -> np.ndarray:
-        """Calculates the chordwise vortex strength gradient for each Panel.
+        """Calculates the average chordwise bound vorticity density for each Panel.
 
-        Uses backward differencing for non leading edge Panels and a one sided
-        difference for leading edge Panels. The gradient is computed as the vortex
-        strength difference divided by the actual distance between Panel centers, which
-        correctly handles non uniform Panel spacing.
+        Following Katz and Plotkin Eq. 13.150, each Panel's value is the net circulation
+        jump across the Panel divided by the Panel's own chord length. The jump is the
+        Panel's ring vortex strength minus the strength of the ring vortex ahead of it,
+        and the circulation upstream of a leading edge Panel is zero.
 
-        :return: A (num_panels,) ndarray of floats representing the chordwise vorticity
-            gradient for each Panel. The units are in meters per second.
+        This is not a finite difference between Panel centers. The ring vortex model
+        concentrates each Panel's net spanwise bound vorticity in the single segment
+        that the Panel owns, and dividing that segment's circulation by the Panel's
+        chord length spreads it back over the Panel as an average vorticity density.
+        Dividing by a center-to-center distance instead would break the property that
+        each Panel's chordwise pressure force is the Kutta-Joukowski force on the
+        segment it owns, double counting the leading edge Panels' circulation.
+
+        :return: A (num_panels,) ndarray of floats representing the average chordwise
+            vorticity density for each Panel. The units are in meters per second.
         """
         chordwise_gradients = np.zeros(self.num_panels, dtype=float)
         global_panel_position = 0
@@ -2130,31 +2148,23 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     this_chord = self._panel_chord_lengths[global_panel_position]
 
                     if panel.is_leading_edge:
-                        # Leading edge: Distance from leading edge to Panel center is
-                        # this_chord / 2. This assumes zero vorticity upstream of the
-                        # wing.
-                        distance = this_chord / 2
-                        if distance > 0:
-                            chordwise_gradients[global_panel_position] = (
-                                this_gamma / distance
-                            )
+                        # Leading edge: the circulation upstream of the Wing is zero.
+                        circulation_jump = this_gamma
                     else:
-                        # Non leading edge: use backward difference.
                         front_global = (
                             wing_start_global
                             + (_local_chordwise_position - 1) * num_spanwise
                             + _local_spanwise_position
                         )
-                        gamma_front = self._current_bound_vortex_strengths[front_global]
-                        chord_front = self._panel_chord_lengths[front_global]
+                        circulation_jump = (
+                            this_gamma
+                            - self._current_bound_vortex_strengths[front_global]
+                        )
 
-                        # This is the distance from center of front Panel to center of
-                        # this Panel.
-                        distance = (chord_front + this_chord) / 2
-                        if distance > 0:
-                            chordwise_gradients[global_panel_position] = (
-                                this_gamma - gamma_front
-                            ) / distance
+                    if this_chord > 0:
+                        chordwise_gradients[global_panel_position] = (
+                            circulation_jump / this_chord
+                        )
 
                     global_panel_position += 1
 
@@ -2299,21 +2309,38 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
     def _calculate_chordwise_induced_velocity(self) -> np.ndarray:
-        """Computes velocity at collocation points from bound chordwise vortex segments.
+        """Computes velocity at collocation points from the bound trailing vorticity.
 
         Returns the velocity induced at each collocation point by the chordwise
-        (streamwise) segments of all bound RingVortices. This corresponds to U_bc in
-        Lambert (2015) Eq. 2.15 and w_ind in Katz and Plotkin Eq. 13.152.
+        (streamwise) segments of all bound RingVortices, plus the back legs of the
+        trailing edge bound RingVortices. This corresponds to U_bc in Lambert (2015) Eq.
+        2.15 and w_ind in Katz and Plotkin Eq. 13.152.
+
+        The trailing edge back legs are absent from the text of both references, but
+        Katz and Plotkin's Program No. 16 includes them in its induced drag downwash:
+        its WINGL subroutine adds them as the latest unsteady wake element. They are
+        required because they cancel the spanwise legs of the first row of wake
+        RingVortices per the Kutta condition. Without them, that wake row induces a
+        large spurious upwash at the collocation points.
 
         When an image surface is defined on the OperatingPoint, the returned velocity
-        also includes the induced velocity from image bound chordwise vortex segments
-        reflected across that surface.
+        also includes the induced velocity from the image counterparts of both sets of
+        segments reflected across that surface.
 
         :return: A (num_panels, 3) ndarray of floats for the induced velocity (in the
             first Airplane's geometry axes, observed from the Earth frame) at each
             collocation point. The units are in meters per second.
         """
         singularity_counts = np.zeros(4, dtype=np.int64)
+
+        # Gather the endpoints, strengths, and initial core radii of the trailing edge
+        # bound ring vortices' back legs, which run from their back left to their back
+        # right vertices.
+        te_mask = self.panel_is_trailing_edge
+        stackTeBlbrvp_GP1_CgP1 = self.stackBlbrvp_GP1_CgP1[te_mask]
+        stackTeBrbrvp_GP1_CgP1 = self.stackBrbrvp_GP1_CgP1[te_mask]
+        te_strengths = self._current_bound_vortex_strengths[te_mask]
+        te_r_c0s = self._currentStackBoundRc0s[te_mask]
 
         stackChordwiseVInd_GP1__E = _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
             stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
@@ -2326,6 +2353,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
             singularity_counts=singularity_counts,
             ages=None,
             nu=self.current_operating_point.nu,
+        )
+        stackChordwiseVInd_GP1__E += (
+            _aerodynamics_functions.collapsed_velocities_from_line_vortices(
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                stackSlvp_GP1_CgP1=stackTeBlbrvp_GP1_CgP1,
+                stackElvp_GP1_CgP1=stackTeBrbrvp_GP1_CgP1,
+                strengths=te_strengths,
+                r_c0s=te_r_c0s,
+                singularity_counts=singularity_counts,
+                ages=None,
+                nu=self.current_operating_point.nu,
+            )
         )
 
         # Add the image contribution if an image surface is defined.
@@ -2349,6 +2388,18 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 singularity_counts=singularity_counts,
                 ages=None,
                 nu=self.current_operating_point.nu,
+            )
+            stackImageChordwiseVInd_GP1__E += (
+                _aerodynamics_functions.collapsed_velocities_from_line_vortices(
+                    stackP_GP1_CgP1=stackReflectedCpp_GP1_CgP1,
+                    stackSlvp_GP1_CgP1=stackTeBlbrvp_GP1_CgP1,
+                    stackElvp_GP1_CgP1=stackTeBrbrvp_GP1_CgP1,
+                    strengths=te_strengths,
+                    r_c0s=te_r_c0s,
+                    singularity_counts=singularity_counts,
+                    ages=None,
+                    nu=self.current_operating_point.nu,
+                )
             )
             stackChordwiseVInd_GP1__E += _transformations.apply_T_to_vectors(
                 surfaceReflect_T_act_GP1_CgP1,

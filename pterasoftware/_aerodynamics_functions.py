@@ -350,6 +350,84 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
     return stackVInd_GP1__E
 
 
+def collapsed_velocities_from_line_vortices(
+    stackP_GP1_CgP1: np.ndarray,
+    stackSlvp_GP1_CgP1: np.ndarray,
+    stackElvp_GP1_CgP1: np.ndarray,
+    strengths: np.ndarray,
+    r_c0s: np.ndarray,
+    singularity_counts: np.ndarray,
+    ages: np.ndarray | None = None,
+    nu: float = 0.0,
+) -> np.ndarray:
+    """Takes in a group of points and the attributes of a group of line vortices and
+    finds the cumulative induced velocity at every point due to the line vortices.
+
+    This function's performance has been highly optimized for unsteady simulations via
+    Numba. While using Numba dramatically increases unsteady simulation performance, it
+    does cause a performance drop for the less intense steady simulations. Each kernel
+    launch runs with a work-proportional thread count, which never exceeds the launch's
+    point count, the current Numba thread mask, or the module's kernel thread ceiling.
+
+    :param stackP_GP1_CgP1: A (N,3) ndarray of floats representing the positions of N
+        points (in the first Airplane's geometry axes, relative to the first Airplane's
+        CG). The units are in meters.
+    :param stackSlvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
+        the M line vortices' starting vertices (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG). The units are in meters.
+    :param stackElvp_GP1_CgP1: A (M,3) ndarray of floats representing the positions of
+        the M line vortices' ending vertices (in the first Airplane's geometry axes,
+        relative to the first Airplane's CG). The units are in meters.
+    :param strengths: A (M,) ndarray of floats representing the strengths of the M line
+        vortices. The units are in meters squared per second.
+    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
+        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
+        value that works across scales is 3.0% the chord length of each line vortex's
+        parent Wing. The units are in meters.
+    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
+        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
+        incremented in place and accumulate across calls.
+    :param ages: For bound line vortices, this must be None. For line vortices that have
+        been shed into the wake, it must be a (M,) ndarray of floats representing the
+        ages of the M line vortices in seconds. The default is None.
+    :param nu: A non negative float representing the kinematic viscosity of the fluid.
+        The units are in meters squared per second. The default is 0.0.
+    :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
+        the N points (in the first Airplane's geometry axes, observed from the Earth
+        frame) due to the M line vortices. The units are in meters per second.
+    """
+    stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
+
+    # Read the current thread mask so the dispatch honors any cap the user has set, and
+    # restore it once the kernel launch finishes.
+    external_cap = numba.get_num_threads()
+    numba.set_num_threads(
+        min(
+            _threads_for_launch(stackP_GP1_CgP1.shape[0], strengths.shape[0]),
+            external_cap,
+            _ceiling(),
+        )
+    )
+
+    # Get the velocity induced by each line vortex (in the first Airplane's geometry
+    # axes, observed from the Earth frame).
+    try:
+        stackVInd_GP1__E += _collapsed_velocities_from_line_vortices(
+            stackP_GP1_CgP1=stackP_GP1_CgP1,
+            stackSlvp_GP1_CgP1=stackSlvp_GP1_CgP1,
+            stackElvp_GP1_CgP1=stackElvp_GP1_CgP1,
+            strengths=strengths,
+            r_c0s=r_c0s,
+            singularity_counts=singularity_counts,
+            ages=ages,
+            nu=nu,
+        )
+    finally:
+        numba.set_num_threads(external_cap)
+    return stackVInd_GP1__E
+
+
 def expanded_velocities_from_ring_vortices(
     stackP_GP1_CgP1: np.ndarray,
     stackBrrvp_GP1_CgP1: np.ndarray,

@@ -65,8 +65,14 @@ class TestForceMethodsComparison(unittest.TestCase):
         else:
             relative_diff = 0.0
 
-        # Both methods should produce lift within 25% of each other.
-        allowable_difference = 0.25
+        # Both methods compute lift from the same bound circulation distribution, and
+        # the Katz method's chordwise pressure term telescopes over each chordwise strip
+        # to the same Kutta-Joukowski strip total that the Joukowski method integrates,
+        # so the two methods should agree closely on lift. This tolerance also guards
+        # the Panel-length denominator in the chordwise vorticity density: dividing by
+        # center-to-center distances instead double counts the leading edge Panels'
+        # circulation and pushes this difference to about 24%.
+        allowable_difference = 0.05
         self.assertLess(
             relative_diff,
             allowable_difference,
@@ -91,10 +97,15 @@ class TestForceMethodsComparison(unittest.TestCase):
         else:
             relative_diff = 0.0
 
-        # Drag is the most sensitive quantity to force calculation method, so allow 100%
-        # difference. This is expected because induced drag prediction is one of the
-        # weakest aspects of panel methods.
-        allowable_difference = 1.00
+        # The two methods agree on this case's drag to within about 7%. Drag is still
+        # the most sensitive quantity to the force calculation method, so allow a 25%
+        # difference. This tolerance guards the two pieces of the Katz method's induced
+        # drag that pressure integration cannot check: omitting the trailing edge back
+        # legs from the drag downwash drives the Katz drag negative (a difference of
+        # about 200%), and building the decomposition axes from the full solution
+        # velocity instead of the kinematic velocity double counts the induced drag (a
+        # difference of about 69%).
+        allowable_difference = 0.25
         self.assertLess(
             relative_diff,
             allowable_difference,
@@ -137,9 +148,10 @@ class TestForceMethodsComparison(unittest.TestCase):
         # The transient decay is governed by the unsteady term in each method's load
         # calculation, so this comparison guards the sign of the unsteady term in the
         # Katz method's induced drag. With the correct sign, this difference is about
-        # 0.40. With the wrong sign, the Katz transient rises for several time steps
-        # instead of decaying, and this difference grows to about 0.62.
-        allowable_difference = 0.50
+        # 0.9, reflecting the Katz method's larger transient amplitude. With the wrong
+        # sign, the Katz transient rises sharply after the impulsive start instead of
+        # decaying, and this difference grows to about 5.4.
+        allowable_difference = 2.0
         self.assertLess(
             relative_diff,
             allowable_difference,

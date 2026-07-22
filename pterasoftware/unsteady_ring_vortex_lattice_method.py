@@ -113,7 +113,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_stackChordwiseTangent_GP1",
         "_stackSpanwiseTangent_GP1",
         "_stackCentroid_GP1_CgP1",
-        "_stackLastCentroid_GP1_CgP1",
         "panel_is_trailing_edge",
         "panel_is_leading_edge",
         "panel_is_left_edge",
@@ -341,7 +340,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._stackChordwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
         self._stackSpanwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
         self._stackCentroid_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackLastCentroid_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize variables to hold aerodynamic data about each Panel's location on
         # its Wing.
@@ -631,7 +629,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._stackChordwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackSpanwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackCentroid_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackLastCentroid_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables to hold details about each Panel's location on its Wing.
         self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
@@ -971,46 +968,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     # of the four Panel points), in the first Airplane's geometry axes,
                     # relative to the first Airplane's CG.
                     self._stackCentroid_GP1_CgP1[global_panel_position, :] = (
-                        _Frpp + _Flpp + _Blpp + _Brpp
-                    ) / 4
-
-                    global_panel_position += 1
-
-        # Populate last centroid positions, in the first Airplane's geometry axes,
-        # relative to the first Airplane's CG, if not the first time step.
-        if self._current_step > 0:
-            self._populate_last_centroid_positions()
-
-    def _populate_last_centroid_positions(self) -> None:
-        """Populates the centroid positions from the previous time step, in the first
-        Airplane's geometry axes, relative to the first Airplane's CG.
-
-        :return: None
-        """
-        global_panel_position = 0
-
-        last_problem = self.steady_problems[self._current_step - 1]
-        last_airplanes = last_problem.airplanes
-
-        for last_airplane in last_airplanes:
-            for last_wing in last_airplane.wings:
-                _last_panels = last_wing.panels
-                assert _last_panels is not None
-
-                last_panels = np.ravel(_last_panels)
-
-                last_panel: _panel.Panel
-                for last_panel in last_panels:
-                    _Frpp = last_panel.Frpp_GP1_CgP1
-                    _Flpp = last_panel.Flpp_GP1_CgP1
-                    _Blpp = last_panel.Blpp_GP1_CgP1
-                    _Brpp = last_panel.Brpp_GP1_CgP1
-                    assert _Frpp is not None
-                    assert _Flpp is not None
-                    assert _Blpp is not None
-                    assert _Brpp is not None
-
-                    self._stackLastCentroid_GP1_CgP1[global_panel_position, :] = (
                         _Frpp + _Flpp + _Blpp + _Brpp
                     ) / 4
 
@@ -1967,27 +1924,25 @@ class UnsteadyRingVortexLatticeMethodSolver:
         spanwise_vorticity_gradients = self._calculate_spanwise_vorticity_gradients()
 
         # Calculate the apparent velocity due to prescribed motion at each Panel's
-        # centroid.
-        stackMovementVelocityCentroid_GP1__E = (
-            self._calculate_current_movement_velocities_at_centroids()
+        # collocation point.
+        stackMovementVelocityCpp_GP1__E = (
+            self._calculate_current_movement_velocities_at_collocation_points()
         )
 
-        # Calculate velocity at Panel centroids.
-        stackVelocityCentroid_GP1__E = (
-            self.calculate_solution_velocity(
-                stackP_GP1_CgP1=self._stackCentroid_GP1_CgP1
-            )
-            + stackMovementVelocityCentroid_GP1__E
+        # Calculate velocity at Panel collocation points.
+        stackVelocityCpp_GP1__E = (
+            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCpp_GP1_CgP1)
+            + stackMovementVelocityCpp_GP1__E
         )
 
         # Calculate the chordwise velocity component.
         chordwise_velocity_component = np.einsum(
-            "ij,ij->i", stackVelocityCentroid_GP1__E, self._stackChordwiseTangent_GP1
+            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackChordwiseTangent_GP1
         )
 
         # Calculate the spanwise velocity component.
         spanwise_velocity_component = np.einsum(
-            "ij,ij->i", stackVelocityCentroid_GP1__E, self._stackSpanwiseTangent_GP1
+            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackSpanwiseTangent_GP1
         )
 
         # Calculate the time derivatives of the vortex strengths.
@@ -2015,14 +1970,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Build the decomposition's flow directions from the kinematic velocity (the
         # freestream plus any apparent velocity due to prescribed motion, excluding
         # induced velocities), matching Lambert's U_hat^m.
-        stackKinematicVelocityCentroid_GP1__E = (
-            self._currentVInf_GP1__E + stackMovementVelocityCentroid_GP1__E
+        stackKinematicVelocityCpp_GP1__E = (
+            self._currentVInf_GP1__E + stackMovementVelocityCpp_GP1__E
         )
         (
             stackFlowUnitVectors_GP1,
             stackLiftDirections_GP1,
             stackSinAlpha,
-        ) = self._calculate_local_flow_directions(stackKinematicVelocityCentroid_GP1__E)
+        ) = self._calculate_local_flow_directions(stackKinematicVelocityCpp_GP1__E)
 
         # cos(alpha) = |P_U_hat * n_hat| (magnitude of lift direction vector).
         stackCosAlpha = np.linalg.norm(stackLiftDirections_GP1, axis=1)
@@ -2283,31 +2238,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return spanwise_gradients
 
-    def _calculate_current_movement_velocities_at_centroids(self) -> np.ndarray:
-        """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at each Panel's centroid due to any motion
-        defined in Movement at the current time step.
-
-        **Notes:**
-
-        At each point, any apparent velocity due to Movement is opposite the motion due
-        to Movement.
-
-        :return: A (num_panels, 3) ndarray of floats representing the apparent velocity
-            (in the first Airplane's geometry axes, observed from the Earth frame) at
-            each Panel's centroid due to any motion defined in Movement. If the current
-            time step is the first time step, these velocities are all zeros. The units
-            are in meters per second.
-        """
-        if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
-
-        return cast(
-            np.ndarray,
-            -(self._stackCentroid_GP1_CgP1 - self._stackLastCentroid_GP1_CgP1)
-            / self.delta_time,
-        )
-
     def _calculate_chordwise_induced_velocity(self) -> np.ndarray:
         """Computes velocity at collocation points from the bound trailing vorticity.
 
@@ -2488,8 +2418,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         is the lift direction), and sin(alpha) (the sine of the local angle of attack).
 
         :param stackLocalVelocity_GP1__E: A (num_panels, 3) ndarray of floats for the
-            local velocity at each Panel's centroid (in the first Airplane's geometry
-            axes, observed from the Earth frame). The units are in meters per second.
+            local velocity at each Panel's collocation point (in the first Airplane's
+            geometry axes, observed from the Earth frame). The units are in meters per
+            second.
         :return: A tuple of three ndarrays. The first is stackFlowUnitVectors_GP1, a
             (num_panels, 3) ndarray of floats for the unit flow direction at each Panel
             (in the first Airplane's geometry axes). The second is

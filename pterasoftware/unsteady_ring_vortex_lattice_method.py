@@ -2062,8 +2062,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Second term of induced drag (Lambert Eq. 2.15): rho * (dGamma/dt) * S *
-        # sin(alpha)
-        induced_drag_term2 = rho * d_gamma_dt * self.panel_areas * stackSinAlpha
+        # sin(alpha). This term is the drag direction projection of the same unsteady
+        # pressure term that appears in delta_p above, so it carries the same sign flip
+        # relative to the reference literature. The time derivative of vorticity has the
+        # opposite sign under Ptera Software's counter-clockwise vertex ordering
+        # compared to the clockwise ordering used by Katz and Plotkin and by Lambert.
+        # See the comment above the delta_p calculation and issue #27:
+        # https://github.com/camUrban/PteraSoftware/issues/27
+        induced_drag_term2 = rho * -d_gamma_dt * self.panel_areas * stackSinAlpha
 
         stackDragMagnitudes = induced_drag_term1 + induced_drag_term2
 

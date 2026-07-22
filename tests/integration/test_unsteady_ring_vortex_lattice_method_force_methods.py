@@ -8,6 +8,8 @@ other.
 
 import unittest
 
+import numpy as np
+
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
 
@@ -98,6 +100,52 @@ class TestForceMethodsComparison(unittest.TestCase):
             allowable_difference,
             f"Drag coefficients differ by {relative_diff:.1%}: "
             f"Joukowski={c_di_joukowski:.4f}, Katz={c_di_katz:.4f}",
+        )
+
+    def test_static_geometry_methods_produce_similar_drag_transients(self) -> None:
+        """Test that both methods produce similar drag transients after the impulsive
+        start."""
+        # Collect each solver's drag coefficient history over all time steps.
+        joukowski_history = []
+        for steady_problem in self.static_solver_joukowski.steady_problems:
+            airplane = steady_problem.airplanes[0]
+            assert airplane.forceCoefficients_W is not None
+            joukowski_history.append(-airplane.forceCoefficients_W[0])
+        katz_history = []
+        for steady_problem in self.static_solver_katz.steady_problems:
+            airplane = steady_problem.airplanes[0]
+            assert airplane.forceCoefficients_W is not None
+            katz_history.append(-airplane.forceCoefficients_W[0])
+
+        # Isolate each method's transient by subtracting its own converged value, and
+        # drop the first time step, whose drag is dominated by the impulsive start.
+        # Comparing the transients rather than the raw histories removes the steady
+        # state offset between the methods, which the drag comparison test above already
+        # covers.
+        joukowski_transient = np.array(joukowski_history)
+        joukowski_transient = (joukowski_transient - joukowski_transient[-1])[1:]
+        katz_transient = np.array(katz_history)
+        katz_transient = (katz_transient - katz_transient[-1])[1:]
+
+        # Calculate the RMS difference between the transients, normalized by the RMS of
+        # the Joukowski transient.
+        relative_diff = float(
+            np.sqrt(np.mean((katz_transient - joukowski_transient) ** 2))
+            / np.sqrt(np.mean(joukowski_transient**2))
+        )
+
+        # The transient decay is governed by the unsteady term in each method's load
+        # calculation, so this comparison guards the sign of the unsteady term in the
+        # Katz method's induced drag. With the correct sign, this difference is about
+        # 0.40. With the wrong sign, the Katz transient rises for several time steps
+        # instead of decaying, and this difference grows to about 0.62.
+        allowable_difference = 0.50
+        self.assertLess(
+            relative_diff,
+            allowable_difference,
+            f"Drag transients differ by {relative_diff:.1%} of the Joukowski "
+            f"transient's RMS, which suggests a sign error in the unsteady term of "
+            f"the Katz method's induced drag calculation.",
         )
 
     def test_static_geometry_methods_produce_similar_moment(self) -> None:

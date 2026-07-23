@@ -2989,236 +2989,103 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Determine if this SteadyProblem's geometry is static or variable.
         static = self.unsteady_problem.movement.static
 
-        # Initialize ndarrays to hold each Airplane's loads and load coefficients at
+        # Each row names one load quantity: the Airplane attribute that holds its value
+        # at each time step, followed by the UnsteadyProblem lists that receive its
+        # final, final mean, and final RMS values.
+        load_names = (
+            ("forces_W", "finalForces_W", "finalMeanForces_W", "finalRmsForces_W"),
+            (
+                "forceCoefficients_W",
+                "finalForceCoefficients_W",
+                "finalMeanForceCoefficients_W",
+                "finalRmsForceCoefficients_W",
+            ),
+            (
+                "moments_W_CgP1",
+                "finalMoments_W_CgP1",
+                "finalMeanMoments_W_CgP1",
+                "finalRmsMoments_W_CgP1",
+            ),
+            (
+                "momentCoefficients_W_CgP1",
+                "finalMomentCoefficients_W_CgP1",
+                "finalMeanMomentCoefficients_W_CgP1",
+                "finalRmsMomentCoefficients_W_CgP1",
+            ),
+            ("forces_G", "finalForces_G", "finalMeanForces_G", "finalRmsForces_G"),
+            (
+                "forceCoefficients_G",
+                "finalForceCoefficients_G",
+                "finalMeanForceCoefficients_G",
+                "finalRmsForceCoefficients_G",
+            ),
+            (
+                "moments_G_Cg",
+                "finalMoments_G_Cg",
+                "finalMeanMoments_G_Cg",
+                "finalRmsMoments_G_Cg",
+            ),
+            (
+                "momentCoefficients_G_Cg",
+                "finalMomentCoefficients_G_Cg",
+                "finalMeanMomentCoefficients_G_Cg",
+                "finalRmsMomentCoefficients_G_Cg",
+            ),
+            (
+                "moments_W_Cg",
+                "finalMoments_W_Cg",
+                "finalMeanMoments_W_Cg",
+                "finalRmsMoments_W_Cg",
+            ),
+            (
+                "momentCoefficients_W_Cg",
+                "finalMomentCoefficients_W_Cg",
+                "finalMeanMomentCoefficients_W_Cg",
+                "finalRmsMomentCoefficients_W_Cg",
+            ),
+        )
+
+        # Initialize a ndarray for each load quantity to hold each Airplane's values at
         # each of the time steps that calculated the loads.
-        forces_W = np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
-        force_coefficients_W = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moments_W_CgP1 = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moment_coefficients_W_CgP1 = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        forces_G = np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
-        force_coefficients_G = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moments_G_Cg = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moment_coefficients_G_Cg = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moments_W_Cg = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
-        moment_coefficients_W_Cg = np.zeros(
-            (self.num_airplanes, 3, num_steps_to_average), dtype=float
-        )
+        load_histories = {
+            name: np.zeros((self.num_airplanes, 3, num_steps_to_average), dtype=float)
+            for name, _, _, _ in load_names
+        }
 
-        # Initialize a variable to track position in the loads ndarrays.
-        results_step = 0
-
-        # Iterate through the time steps with loads and add the loads to their
-        # respective ndarrays.
-        for step in range(self._first_averaging_step, self.num_steps):
-
-            # Get the Airplanes from the SteadyProblem at this time step.
+        # Iterate through the time steps with loads and add each Airplane's loads to
+        # their respective ndarrays.
+        for results_step, step in enumerate(
+            range(self._first_averaging_step, self.num_steps)
+        ):
             this_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(
                 step
             )
-            these_airplanes = this_steady_problem.airplanes
-
-            # Iterate through this time step's Airplanes.
-            for airplane_id, airplane in enumerate(these_airplanes):
-                forces_W[airplane_id, :, results_step] = airplane.forces_W
-                force_coefficients_W[airplane_id, :, results_step] = (
-                    airplane.forceCoefficients_W
-                )
-                moments_W_CgP1[airplane_id, :, results_step] = airplane.moments_W_CgP1
-                moment_coefficients_W_CgP1[airplane_id, :, results_step] = (
-                    airplane.momentCoefficients_W_CgP1
-                )
-                forces_G[airplane_id, :, results_step] = airplane.forces_G
-                force_coefficients_G[airplane_id, :, results_step] = (
-                    airplane.forceCoefficients_G
-                )
-                moments_G_Cg[airplane_id, :, results_step] = airplane.moments_G_Cg
-                moment_coefficients_G_Cg[airplane_id, :, results_step] = (
-                    airplane.momentCoefficients_G_Cg
-                )
-                moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
-                moment_coefficients_W_Cg[airplane_id, :, results_step] = (
-                    airplane.momentCoefficients_W_Cg
-                )
-
-            results_step += 1
+            for airplane_id, airplane in enumerate(this_steady_problem.airplanes):
+                for name, _, _, _ in load_names:
+                    load_histories[name][airplane_id, :, results_step] = getattr(
+                        airplane, name
+                    )
 
         # For each Airplane, calculate and then save the final or cycle-averaged and RMS
         # loads and load coefficients. For variable geometry cases, use the trapezoidal
-        # rule to compute the time-averaged mean and RMS over the final cycle.
-        first_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
-        for airplane_id, airplane in enumerate(first_problem.airplanes):
-            if static:
-                self.unsteady_problem.finalForces_W.append(forces_W[airplane_id, :, -1])
-                self.unsteady_problem.finalForceCoefficients_W.append(
-                    force_coefficients_W[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMoments_W_CgP1.append(
-                    moments_W_CgP1[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMomentCoefficients_W_CgP1.append(
-                    moment_coefficients_W_CgP1[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalForces_G.append(forces_G[airplane_id, :, -1])
-                self.unsteady_problem.finalForceCoefficients_G.append(
-                    force_coefficients_G[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMoments_G_Cg.append(
-                    moments_G_Cg[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMomentCoefficients_G_Cg.append(
-                    moment_coefficients_G_Cg[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMoments_W_Cg.append(
-                    moments_W_Cg[airplane_id, :, -1]
-                )
-                self.unsteady_problem.finalMomentCoefficients_W_Cg.append(
-                    moment_coefficients_W_Cg[airplane_id, :, -1]
-                )
-            else:
-                # The number of intervals for the trapezoidal rule is one less than the
-                # number of samples.
-                num_intervals = num_steps_to_average - 1
-
-                self.unsteady_problem.finalMeanForces_W.append(
-                    np.trapezoid(forces_W[airplane_id], axis=-1) / num_intervals
-                )
-                self.unsteady_problem.finalMeanForceCoefficients_W.append(
-                    np.trapezoid(force_coefficients_W[airplane_id], axis=-1)
-                    / num_intervals
-                )
-                self.unsteady_problem.finalMeanMoments_W_CgP1.append(
-                    np.trapezoid(moments_W_CgP1[airplane_id], axis=-1) / num_intervals
-                )
-                self.unsteady_problem.finalMeanMomentCoefficients_W_CgP1.append(
-                    np.trapezoid(moment_coefficients_W_CgP1[airplane_id], axis=-1)
-                    / num_intervals
-                )
-                self.unsteady_problem.finalMeanForces_G.append(
-                    np.trapezoid(forces_G[airplane_id], axis=-1) / num_intervals
-                )
-                self.unsteady_problem.finalMeanForceCoefficients_G.append(
-                    np.trapezoid(force_coefficients_G[airplane_id], axis=-1)
-                    / num_intervals
-                )
-                self.unsteady_problem.finalMeanMoments_G_Cg.append(
-                    np.trapezoid(moments_G_Cg[airplane_id], axis=-1) / num_intervals
-                )
-                self.unsteady_problem.finalMeanMomentCoefficients_G_Cg.append(
-                    np.trapezoid(moment_coefficients_G_Cg[airplane_id], axis=-1)
-                    / num_intervals
-                )
-                self.unsteady_problem.finalMeanMoments_W_Cg.append(
-                    np.trapezoid(moments_W_Cg[airplane_id], axis=-1) / num_intervals
-                )
-                self.unsteady_problem.finalMeanMomentCoefficients_W_Cg.append(
-                    np.trapezoid(moment_coefficients_W_Cg[airplane_id], axis=-1)
-                    / num_intervals
-                )
-
-                self.unsteady_problem.finalRmsForces_W.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(forces_W[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
+        # rule to compute the time-averaged mean and RMS over the final cycle. The
+        # number of intervals for the trapezoidal rule is one less than the number of
+        # samples.
+        num_intervals = num_steps_to_average - 1
+        for airplane_id in range(self.num_airplanes):
+            for name, final_name, mean_name, rms_name in load_names:
+                history = load_histories[name][airplane_id]
+                if static:
+                    getattr(self.unsteady_problem, final_name).append(history[:, -1])
+                else:
+                    getattr(self.unsteady_problem, mean_name).append(
+                        np.trapezoid(history, axis=-1) / num_intervals
                     )
-                )
-                self.unsteady_problem.finalRmsForceCoefficients_W.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(force_coefficients_W[airplane_id]),
-                            axis=-1,
+                    getattr(self.unsteady_problem, rms_name).append(
+                        np.sqrt(
+                            np.trapezoid(np.square(history), axis=-1) / num_intervals
                         )
-                        / num_intervals
                     )
-                )
-                self.unsteady_problem.finalRmsMoments_W_CgP1.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moments_W_CgP1[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsMomentCoefficients_W_CgP1.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moment_coefficients_W_CgP1[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsForces_G.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(forces_G[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsForceCoefficients_G.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(force_coefficients_G[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsMoments_G_Cg.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moments_G_Cg[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsMomentCoefficients_G_Cg.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moment_coefficients_G_Cg[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsMoments_W_Cg.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moments_W_Cg[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
-                self.unsteady_problem.finalRmsMomentCoefficients_W_Cg.append(
-                    np.sqrt(
-                        np.trapezoid(
-                            np.square(moment_coefficients_W_Cg[airplane_id]),
-                            axis=-1,
-                        )
-                        / num_intervals
-                    )
-                )
 
     def _get_steady_problem_at(self, step: int) -> problems.SteadyProblem:
         """Gets the SteadyProblem at a given time step.

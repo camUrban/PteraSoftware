@@ -22,7 +22,7 @@ _logger = _logging.get_logger("_convergence_cache")
 # This is independent of the serialization format version that hash_object folds into
 # each key, which guards against changes to the reference problem's serialized
 # structure.
-_SOLVE_CACHE_VERSION = 5
+_SOLVE_CACHE_VERSION = 6
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:
@@ -64,8 +64,8 @@ def load_solve_cache(
     :return: A dict mapping each cache key to a tuple of a (num_airplanes, 6) ndarray of
         floats holding that mesh's per-Airplane load coefficients (the three force
         coefficients (in wind axes) followed by the three moment coefficients (in wind
-        axes, relative to the first Airplane's CG)) and a float holding the time, in
-        seconds, its solve took when it ran.
+        axes, relative to each Airplane's CG)) and a float holding the time, in seconds,
+        its solve took when it ran.
     """
     if cache_path is None or not cache_path.exists():
         return {}
@@ -132,8 +132,8 @@ def write_cache(
     :param solve_cache: A dict mapping each solve-cache key to a tuple of a
         (num_airplanes, 6) ndarray of floats holding that mesh's per-Airplane load
         coefficients (the three force coefficients (in wind axes) followed by the three
-        moment coefficients (in wind axes, relative to the first Airplane's CG)) and a
-        float holding the time, in seconds, its solve took when it ran.
+        moment coefficients (in wind axes, relative to each Airplane's CG)) and a float
+        holding the time, in seconds, its solve took when it ran.
     :param memo_cache: A dict mapping each absolute-valued memo key to its value, as
         returned by memos_to_disk.
     :return: None
@@ -180,15 +180,15 @@ def cached_solve(
     :param solve: A callable that builds and solves the mesh and returns its
         (num_airplanes, 6) ndarray of floats of per-Airplane load coefficients (the
         three force coefficients (in wind axes) followed by the three moment
-        coefficients (in wind axes, relative to the first Airplane's CG)). It is called
-        only on a cache miss.
+        coefficients (in wind axes, relative to each Airplane's CG)). It is called only
+        on a cache miss.
     :param persist: An optional callback that writes the whole cache through to disk. It
         is called only on a cache miss, and only when caching to a file. When None, the
         cache is kept in memory only. The default is None.
     :return: A tuple of a (num_airplanes, 6) ndarray of floats holding the mesh's per-
         Airplane load coefficients (the three force coefficients (in wind axes) followed
-        by the three moment coefficients (in wind axes, relative to the first Airplane's
-        CG)) and a float holding the time, in seconds, its solve took when it ran.
+        by the three moment coefficients (in wind axes, relative to each Airplane's CG))
+        and a float holding the time, in seconds, its solve took when it ran.
     """
     if key in cache:
         return cache[key]

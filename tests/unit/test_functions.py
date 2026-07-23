@@ -7,8 +7,11 @@ import numpy as np
 import numpy.testing as npt
 import threadpoolctl
 
+import pterasoftware as ps
+
 # noinspection PyProtectedMember
-from pterasoftware import _functions
+from pterasoftware import _functions, _transformations
+from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 
 
 class TestCosspace(unittest.TestCase):
@@ -606,3 +609,240 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
             _functions._SOLVE_THREAD_THRESHOLD - 1
         ):
             pass
+
+
+class TestProcessSolverLoads(unittest.TestCase):
+    """Tests for the process_solver_loads function."""
+
+    secondCg_GP1_CgP1: np.ndarray
+    first_airplane: ps.geometry.airplane.Airplane
+    second_airplane: ps.geometry.airplane.Airplane
+    qInf__E: float
+    T_pas_GP1_CgP1_to_W_CgP1: np.ndarray
+    firstStackPanelForces_GP1: np.ndarray
+    firstStackPanelMoments_GP1_CgP1: np.ndarray
+    secondStackPanelForces_GP1: np.ndarray
+    secondStackPanelMoments_GP1_CgP1: np.ndarray
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the shared test fixtures by processing synthetic Panel loads."""
+        cls.secondCg_GP1_CgP1 = np.array([10.0, 4.0, -2.0])
+
+        # Build a two Airplane SteadyProblem in which the second Airplane is a
+        # translated copy of the first.
+        first_airplane = geometry_fixtures.make_first_airplane_fixture()
+        second_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(
+            cls.secondCg_GP1_CgP1
+        )
+        operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
+        steady_problem = ps.problems.SteadyProblem(
+            airplanes=[first_airplane, second_airplane],
+            operating_point=operating_point,
+        )
+        solver = ps.steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver(
+            steady_problem
+        )
+
+        # Populate the solver's Panels in the same order as its geometry collapsing
+        # step: each Airplane's Wings' Panels, unraveled.
+        global_panel_position = 0
+        for airplane in solver.airplanes:
+            for wing in airplane.wings:
+                assert wing.panels is not None
+                for panel in np.ravel(wing.panels):
+                    solver.panels[global_panel_position] = panel
+                    global_panel_position += 1
+
+        # Create deterministic synthetic loads for the first Airplane's Panels.
+        indices = np.arange(first_airplane.num_panels, dtype=float)
+        cls.firstStackPanelForces_GP1 = np.column_stack(
+            (
+                0.5 + 0.1 * indices,
+                -0.3 + 0.05 * indices,
+                2.0 + 0.2 * indices,
+            )
+        )
+        cls.firstStackPanelMoments_GP1_CgP1 = np.column_stack(
+            (
+                1.0 - 0.02 * indices,
+                0.4 + 0.03 * indices,
+                -0.6 + 0.01 * indices,
+            )
+        )
+
+        # Give the second Airplane's Panels the loads that the first Airplane's load
+        # distribution produces after translating it by secondCg_GP1_CgP1: each Panel's
+        # force is unchanged because the geometry axes are parallel, and each Panel's
+        # moment (relative to the first Airplane's CG) picks up the cross product of
+        # secondCg_GP1_CgP1 with that Panel's force.
+        cls.secondStackPanelForces_GP1 = cls.firstStackPanelForces_GP1.copy()
+        cls.secondStackPanelMoments_GP1_CgP1 = (
+            cls.firstStackPanelMoments_GP1_CgP1
+            + np.cross(cls.secondCg_GP1_CgP1, cls.firstStackPanelForces_GP1)
+        )
+
+        _functions.process_solver_loads(
+            solver=solver,
+            stackPanelForces_GP1=np.vstack(
+                (cls.firstStackPanelForces_GP1, cls.secondStackPanelForces_GP1)
+            ),
+            stackPanelMoments_GP1_CgP1=np.vstack(
+                (
+                    cls.firstStackPanelMoments_GP1_CgP1,
+                    cls.secondStackPanelMoments_GP1_CgP1,
+                )
+            ),
+        )
+
+        cls.first_airplane = first_airplane
+        cls.second_airplane = second_airplane
+        cls.qInf__E = operating_point.qInf__E
+        cls.T_pas_GP1_CgP1_to_W_CgP1 = operating_point.T_pas_GP1_CgP1_to_W_CgP1
+
+    def test_wind_axes_loads_match_panel_sums(self) -> None:
+        """Test that the wind axes loads are the rotated Panel load sums."""
+        for airplane, stackForces_GP1, stackMoments_GP1_CgP1 in (
+            (
+                self.first_airplane,
+                self.firstStackPanelForces_GP1,
+                self.firstStackPanelMoments_GP1_CgP1,
+            ),
+            (
+                self.second_airplane,
+                self.secondStackPanelForces_GP1,
+                self.secondStackPanelMoments_GP1_CgP1,
+            ),
+        ):
+            with self.subTest(airplane=airplane.name):
+                expectedForces_W = _transformations.apply_T_to_vectors(
+                    self.T_pas_GP1_CgP1_to_W_CgP1,
+                    np.sum(stackForces_GP1, axis=0),
+                    is_position=False,
+                )
+                expectedMoments_W_CgP1 = _transformations.apply_T_to_vectors(
+                    self.T_pas_GP1_CgP1_to_W_CgP1,
+                    np.sum(stackMoments_GP1_CgP1, axis=0),
+                    is_position=False,
+                )
+
+                assert airplane.forces_W is not None
+                npt.assert_allclose(airplane.forces_W, expectedForces_W)
+                assert airplane.moments_W_CgP1 is not None
+                npt.assert_allclose(airplane.moments_W_CgP1, expectedMoments_W_CgP1)
+
+    def test_forces_G_equal_panel_force_sums(self) -> None:
+        """Test that forces_G equals each Airplane's Panel force sum."""
+        assert self.first_airplane.forces_G is not None
+        npt.assert_allclose(
+            self.first_airplane.forces_G,
+            np.sum(self.firstStackPanelForces_GP1, axis=0),
+        )
+        assert self.second_airplane.forces_G is not None
+        npt.assert_allclose(
+            self.second_airplane.forces_G,
+            np.sum(self.secondStackPanelForces_GP1, axis=0),
+        )
+
+    def test_own_CG_moments_match_re_referencing(self) -> None:
+        """Test that the second Airplane's own CG moments match the hand computed re
+        referencing."""
+        secondForces_GP1 = np.sum(self.secondStackPanelForces_GP1, axis=0)
+        secondMoments_GP1_CgP1 = np.sum(self.secondStackPanelMoments_GP1_CgP1, axis=0)
+
+        expectedMoments_G_Cg = secondMoments_GP1_CgP1 - np.cross(
+            self.secondCg_GP1_CgP1, secondForces_GP1
+        )
+        expectedMoments_W_Cg = _transformations.apply_T_to_vectors(
+            self.T_pas_GP1_CgP1_to_W_CgP1,
+            expectedMoments_G_Cg,
+            is_position=False,
+        )
+
+        assert self.second_airplane.moments_G_Cg is not None
+        npt.assert_allclose(self.second_airplane.moments_G_Cg, expectedMoments_G_Cg)
+        assert self.second_airplane.moments_W_Cg is not None
+        npt.assert_allclose(self.second_airplane.moments_W_Cg, expectedMoments_W_Cg)
+
+    def test_first_airplane_moment_variants_coincide(self) -> None:
+        """Test that the first Airplane's moment variants relative to its own CG equal
+        those relative to the first Airplane's CG."""
+        first_airplane = self.first_airplane
+
+        assert first_airplane.moments_G_Cg is not None
+        npt.assert_allclose(
+            first_airplane.moments_G_Cg,
+            np.sum(self.firstStackPanelMoments_GP1_CgP1, axis=0),
+        )
+        assert first_airplane.moments_W_Cg is not None
+        assert first_airplane.moments_W_CgP1 is not None
+        npt.assert_allclose(first_airplane.moments_W_Cg, first_airplane.moments_W_CgP1)
+        assert first_airplane.momentCoefficients_W_Cg is not None
+        assert first_airplane.momentCoefficients_W_CgP1 is not None
+        npt.assert_allclose(
+            first_airplane.momentCoefficients_W_Cg,
+            first_airplane.momentCoefficients_W_CgP1,
+        )
+
+    def test_coefficients_follow_normalization(self) -> None:
+        """Test that the new coefficients follow the existing normalization scheme."""
+        airplane = self.second_airplane
+        force_normalization = self.qInf__E * airplane.s_ref
+        moment_normalizations = force_normalization * np.array(
+            [airplane.b_ref, airplane.c_ref, airplane.b_ref]
+        )
+
+        assert airplane.forces_G is not None
+        assert airplane.forceCoefficients_G is not None
+        npt.assert_allclose(
+            airplane.forceCoefficients_G,
+            airplane.forces_G / force_normalization,
+        )
+        assert airplane.moments_G_Cg is not None
+        assert airplane.momentCoefficients_G_Cg is not None
+        npt.assert_allclose(
+            airplane.momentCoefficients_G_Cg,
+            airplane.moments_G_Cg / moment_normalizations,
+        )
+        assert airplane.moments_W_Cg is not None
+        assert airplane.momentCoefficients_W_Cg is not None
+        npt.assert_allclose(
+            airplane.momentCoefficients_W_Cg,
+            airplane.moments_W_Cg / moment_normalizations,
+        )
+
+    def test_translated_copy_reports_same_own_axes_loads(self) -> None:
+        """Test that a translated copy of an Airplane reports the same own axes loads as
+        the original at the origin."""
+        first_airplane = self.first_airplane
+        second_airplane = self.second_airplane
+
+        assert first_airplane.forces_G is not None
+        assert second_airplane.forces_G is not None
+        npt.assert_allclose(second_airplane.forces_G, first_airplane.forces_G)
+        assert first_airplane.moments_G_Cg is not None
+        assert second_airplane.moments_G_Cg is not None
+        npt.assert_allclose(second_airplane.moments_G_Cg, first_airplane.moments_G_Cg)
+        assert first_airplane.moments_W_Cg is not None
+        assert second_airplane.moments_W_Cg is not None
+        npt.assert_allclose(second_airplane.moments_W_Cg, first_airplane.moments_W_Cg)
+
+        # The two Airplanes share reference dimensions, so their own axes coefficients
+        # must also agree.
+        assert first_airplane.forceCoefficients_G is not None
+        assert second_airplane.forceCoefficients_G is not None
+        npt.assert_allclose(
+            second_airplane.forceCoefficients_G, first_airplane.forceCoefficients_G
+        )
+        assert first_airplane.momentCoefficients_G_Cg is not None
+        assert second_airplane.momentCoefficients_G_Cg is not None
+        npt.assert_allclose(
+            second_airplane.momentCoefficients_G_Cg,
+            first_airplane.momentCoefficients_G_Cg,
+        )
+        assert first_airplane.momentCoefficients_W_Cg is not None
+        assert second_airplane.momentCoefficients_W_Cg is not None
+        npt.assert_allclose(
+            second_airplane.momentCoefficients_W_Cg,
+            first_airplane.momentCoefficients_W_Cg,
+        )

@@ -1,26 +1,42 @@
 INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125640250 bytes)
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125680647 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
 INFO    |_serialization                              |Loaded FreeFlightUnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz
 INFO    |output                                      |Airplane "Example Airplane":
+INFO    |output                                      |  Final Forces (in Geometry Axes):
+INFO    |output                                      |    fX_G:           -17.1 N
+INFO    |output                                      |    fY_G:       -1.16E-12 N
+INFO    |output                                      |    fZ_G:            418. N
+INFO    |output                                      |  Final Moments (in Geometry Axes, Relative to the CG):
+INFO    |output                                      |    mX_G_Cg:     2.72E-11 Nm
+INFO    |output                                      |    mY_G_Cg:         2.73 Nm
+INFO    |output                                      |    mZ_G_Cg:    -6.43E-12 Nm
+INFO    |output                                      |  Final Force Coefficients (in Geometry Axes):
+INFO    |output                                      |    cFX_G:        -0.0160
+INFO    |output                                      |    cFY_G:      -1.08E-15
+INFO    |output                                      |    cFZ_G:          0.389
+INFO    |output                                      |  Final Moment Coefficients (in Geometry Axes, Relative to the CG):
+INFO    |output                                      |    cMX_G_Cg:    2.53E-15
+INFO    |output                                      |    cMY_G_Cg:     0.00254
+INFO    |output                                      |    cMZ_G_Cg:   -5.99E-16
 INFO    |output                                      |  Final Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:             -6.05 N     Drag:                   6.05 N
-INFO    |output                                      |    fY_W:         -1.16E-12 N     Side Force:        -1.16E-12 N
-INFO    |output                                      |    fZ_W:             -418. N     Lift:                   418. N
-INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    mX_W_CgP1:    -2.68E-11 Nm    Rolling Moment:    -2.68E-11 Nm
-INFO    |output                                      |    mY_W_CgP1:         2.73 Nm    Pitching Moment:        2.73 Nm
-INFO    |output                                      |    mZ_W_CgP1:     7.92E-12 Nm    Yawing Moment:      7.92E-12 Nm
+INFO    |output                                      |    fX_W:           -6.05 N     Drag:                   6.05 N
+INFO    |output                                      |    fY_W:       -1.16E-12 N     Side Force:        -1.16E-12 N
+INFO    |output                                      |    fZ_W:           -418. N     Lift:                   418. N
+INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):
+INFO    |output                                      |    mX_W_Cg:    -2.68E-11 Nm    Rolling Moment:    -2.68E-11 Nm
+INFO    |output                                      |    mY_W_Cg:         2.73 Nm    Pitching Moment:        2.73 Nm
+INFO    |output                                      |    mZ_W_Cg:     7.92E-12 Nm    Yawing Moment:      7.92E-12 Nm
 INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
-INFO    |output                                      |    cFX_W:         -0.00564       CDi:                 0.00564
-INFO    |output                                      |    cFY_W:        -1.08E-15       CY:                -1.08E-15
-INFO    |output                                      |    cFZ_W:           -0.389       CL:                    0.389
-INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the First Airplane's CG):
-INFO    |output                                      |    cMX_W_CgP1:   -2.50E-15       Cl:                -2.50E-15
-INFO    |output                                      |    cMY_W_CgP1:     0.00254       Cm:                  0.00254
-INFO    |output                                      |    cMZ_W_CgP1:    7.38E-16       Cn:                 7.38E-16
+INFO    |output                                      |    cFX_W:       -0.00564       CDi:                 0.00564
+INFO    |output                                      |    cFY_W:      -1.08E-15       CY:                -1.08E-15
+INFO    |output                                      |    cFZ_W:         -0.389       CL:                    0.389
+INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the CG):
+INFO    |output                                      |    cMX_W_Cg:   -2.50E-15       Cl:                -2.50E-15
+INFO    |output                                      |    cMY_W_Cg:     0.00254       Cm:                  0.00254
+INFO    |output                                      |    cMZ_W_Cg:    7.38E-16       Cn:                 7.38E-16
 INFO    |output                                      |The First Airplane's Free Flight State History:
 INFO    |output                                      |  Initial State (at t = 0.00 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):

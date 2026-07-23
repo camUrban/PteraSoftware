@@ -625,6 +625,12 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsNone(self.airplane.forceCoefficients_W)
         self.assertIsNone(self.airplane.moments_W_CgP1)
         self.assertIsNone(self.airplane.momentCoefficients_W_CgP1)
+        self.assertIsNone(self.airplane.forces_G)
+        self.assertIsNone(self.airplane.forceCoefficients_G)
+        self.assertIsNone(self.airplane.moments_G_Cg)
+        self.assertIsNone(self.airplane.momentCoefficients_G_Cg)
+        self.assertIsNone(self.airplane.moments_W_Cg)
+        self.assertIsNone(self.airplane.momentCoefficients_W_Cg)
 
     def test_deepcopy_method(self) -> None:
         """Test that __deepcopy__ produces a correct independent copy."""
@@ -667,6 +673,12 @@ class TestAirplaneSlots(unittest.TestCase):
         self.assertIsNone(copied.forceCoefficients_W)
         self.assertIsNone(copied.moments_W_CgP1)
         self.assertIsNone(copied.momentCoefficients_W_CgP1)
+        self.assertIsNone(copied.forces_G)
+        self.assertIsNone(copied.forceCoefficients_G)
+        self.assertIsNone(copied.moments_G_Cg)
+        self.assertIsNone(copied.momentCoefficients_G_Cg)
+        self.assertIsNone(copied.moments_W_Cg)
+        self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deep_copy_with_cg(self) -> None:
         """Test that deep_copy_with_Cg_GP1_CgP1 works with __slots__."""
@@ -1342,6 +1354,40 @@ class TestCoreUnsteadyProblemSlots(unittest.TestCase):
         self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_W_CgP1, list)
         self.assertIsInstance(
             self.core_unsteady_problem.finalRmsMomentCoefficients_W_CgP1, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalForces_G, list)
+        self.assertIsInstance(self.core_unsteady_problem.finalForceCoefficients_G, list)
+        self.assertIsInstance(self.core_unsteady_problem.finalMoments_G_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalMomentCoefficients_G_Cg, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalMoments_W_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalMomentCoefficients_W_Cg, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalMeanForces_G, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalMeanForceCoefficients_G, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalMeanMoments_G_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalMeanMomentCoefficients_G_Cg, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalMeanMoments_W_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalMeanMomentCoefficients_W_Cg, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalRmsForces_G, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalRmsForceCoefficients_G, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_G_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalRmsMomentCoefficients_G_Cg, list
+        )
+        self.assertIsInstance(self.core_unsteady_problem.finalRmsMoments_W_Cg, list)
+        self.assertIsInstance(
+            self.core_unsteady_problem.finalRmsMomentCoefficients_W_Cg, list
         )
 
 

@@ -482,6 +482,11 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         This method assumes that the correct strengths for the horseshoe vortices have
         already been calculated and set.
 
+        After finding the loads on every Panel, this method passes them to
+        process_solver_loads, which finds and sets each Airplane's total loads and their
+        coefficients, including the total moments in the Airplane's geometry axes and in
+        wind axes, both relative to the Airplane's CG.
+
         :return: None
         """
         # Calculate the velocity (in the first Airplane's geometry axes, observed from
@@ -527,6 +532,4 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             axis=-1,
         )
 
-        # TODO: Transform forces_GP1 and moments_GP1_CgP1 to each Airplane's local
-        #  geometry axes before passing to process_solver_loads.
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)

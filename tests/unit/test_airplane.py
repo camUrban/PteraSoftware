@@ -243,6 +243,12 @@ class TestAirplane(unittest.TestCase):
         self.assertIsNone(airplane.forceCoefficients_W)
         self.assertIsNone(airplane.moments_W_CgP1)
         self.assertIsNone(airplane.momentCoefficients_W_CgP1)
+        self.assertIsNone(airplane.forces_G)
+        self.assertIsNone(airplane.forceCoefficients_G)
+        self.assertIsNone(airplane.moments_G_Cg)
+        self.assertIsNone(airplane.momentCoefficients_G_Cg)
+        self.assertIsNone(airplane.moments_W_Cg)
+        self.assertIsNone(airplane.momentCoefficients_W_Cg)
 
     def test_validate_first_airplane_constraints_valid(self) -> None:
         """Test validate_first_airplane_constraints with valid first Airplane."""
@@ -592,6 +598,12 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
         original.forceCoefficients_W = np.array([0.01, 0.02, 0.03])
         original.momentCoefficients_W_CgP1 = np.array([0.001, 0.002, 0.003])
+        original.forces_G = np.array([1.0, 2.0, 3.0])
+        original.forceCoefficients_G = np.array([0.01, 0.02, 0.03])
+        original.moments_G_Cg = np.array([0.1, 0.2, 0.3])
+        original.momentCoefficients_G_Cg = np.array([0.001, 0.002, 0.003])
+        original.moments_W_Cg = np.array([0.1, 0.2, 0.3])
+        original.momentCoefficients_W_Cg = np.array([0.001, 0.002, 0.003])
 
         copied = copy.deepcopy(original)
 
@@ -599,6 +611,12 @@ class TestAirplaneDeepCopy(unittest.TestCase):
         self.assertIsNone(copied.moments_W_CgP1)
         self.assertIsNone(copied.forceCoefficients_W)
         self.assertIsNone(copied.momentCoefficients_W_CgP1)
+        self.assertIsNone(copied.forces_G)
+        self.assertIsNone(copied.forceCoefficients_G)
+        self.assertIsNone(copied.moments_G_Cg)
+        self.assertIsNone(copied.momentCoefficients_G_Cg)
+        self.assertIsNone(copied.moments_W_Cg)
+        self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deepcopy_preserves_num_panels(self) -> None:
         """Test that deepcopy preserves the total number of Panels."""
@@ -738,6 +756,48 @@ class TestAirplaneImmutability(unittest.TestCase):
             np.array([0.001, 0.002, 0.003]),
         )
 
+    def test_mutable_forces_G(self) -> None:
+        """Test that forces_G attribute remains mutable."""
+        self.basic_airplane.forces_G = np.array([1.0, 2.0, 3.0])
+        npt.assert_array_equal(self.basic_airplane.forces_G, np.array([1.0, 2.0, 3.0]))
+
+    def test_mutable_forceCoefficients_G(self) -> None:
+        """Test that forceCoefficients_G attribute remains mutable."""
+        self.basic_airplane.forceCoefficients_G = np.array([0.01, 0.02, 0.03])
+        npt.assert_array_equal(
+            self.basic_airplane.forceCoefficients_G, np.array([0.01, 0.02, 0.03])
+        )
+
+    def test_mutable_moments_G_Cg(self) -> None:
+        """Test that moments_G_Cg attribute remains mutable."""
+        self.basic_airplane.moments_G_Cg = np.array([0.1, 0.2, 0.3])
+        npt.assert_array_equal(
+            self.basic_airplane.moments_G_Cg, np.array([0.1, 0.2, 0.3])
+        )
+
+    def test_mutable_momentCoefficients_G_Cg(self) -> None:
+        """Test that momentCoefficients_G_Cg attribute remains mutable."""
+        self.basic_airplane.momentCoefficients_G_Cg = np.array([0.001, 0.002, 0.003])
+        npt.assert_array_equal(
+            self.basic_airplane.momentCoefficients_G_Cg,
+            np.array([0.001, 0.002, 0.003]),
+        )
+
+    def test_mutable_moments_W_Cg(self) -> None:
+        """Test that moments_W_Cg attribute remains mutable."""
+        self.basic_airplane.moments_W_Cg = np.array([0.1, 0.2, 0.3])
+        npt.assert_array_equal(
+            self.basic_airplane.moments_W_Cg, np.array([0.1, 0.2, 0.3])
+        )
+
+    def test_mutable_momentCoefficients_W_Cg(self) -> None:
+        """Test that momentCoefficients_W_Cg attribute remains mutable."""
+        self.basic_airplane.momentCoefficients_W_Cg = np.array([0.001, 0.002, 0.003])
+        npt.assert_array_equal(
+            self.basic_airplane.momentCoefficients_W_Cg,
+            np.array([0.001, 0.002, 0.003]),
+        )
+
 
 class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
     """Tests for Airplane.deep_copy_with_Cg_GP1_CgP1 method."""
@@ -805,6 +865,12 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         original.moments_W_CgP1 = np.array([0.1, 0.2, 0.3])
         original.forceCoefficients_W = np.array([0.01, 0.02, 0.03])
         original.momentCoefficients_W_CgP1 = np.array([0.001, 0.002, 0.003])
+        original.forces_G = np.array([1.0, 2.0, 3.0])
+        original.forceCoefficients_G = np.array([0.01, 0.02, 0.03])
+        original.moments_G_Cg = np.array([0.1, 0.2, 0.3])
+        original.momentCoefficients_G_Cg = np.array([0.001, 0.002, 0.003])
+        original.moments_W_Cg = np.array([0.1, 0.2, 0.3])
+        original.momentCoefficients_W_Cg = np.array([0.001, 0.002, 0.003])
 
         new_position = [10.0, -5.0, 3.0]
         copied = original.deep_copy_with_Cg_GP1_CgP1(new_position)
@@ -813,6 +879,12 @@ class TestAirplaneDeepCopyWithCgGP1CgP1(unittest.TestCase):
         self.assertIsNone(copied.moments_W_CgP1)
         self.assertIsNone(copied.forceCoefficients_W)
         self.assertIsNone(copied.momentCoefficients_W_CgP1)
+        self.assertIsNone(copied.forces_G)
+        self.assertIsNone(copied.forceCoefficients_G)
+        self.assertIsNone(copied.moments_G_Cg)
+        self.assertIsNone(copied.momentCoefficients_G_Cg)
+        self.assertIsNone(copied.moments_W_Cg)
+        self.assertIsNone(copied.momentCoefficients_W_Cg)
 
     def test_deep_copy_with_Cg_GP1_CgP1_resets_transformation_cache(self) -> None:
         """Test that deep_copy_with_Cg_GP1_CgP1 resets T_pas_G_Cg_to_GP1_CgP1 cache."""

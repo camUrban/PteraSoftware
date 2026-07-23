@@ -115,22 +115,40 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 #### Mutable (populated by solver)
 
-| Attribute                            | Type               | Notes                              |
-|--------------------------------------|--------------------|------------------------------------|
-| `finalForces_W`                      | `list[np.ndarray]` | Final forces                       |
-| `finalForceCoefficients_W`           | `list[np.ndarray]` | Final force coefficients           |
-| `finalMoments_W_CgP1`                | `list[np.ndarray]` | Final moments                      |
-| `finalMomentCoefficients_W_CgP1`     | `list[np.ndarray]` | Final moment coefficients          |
-| `finalMeanForces_W`                  | `list[np.ndarray]` | Cycle averaged forces              |
-| `finalMeanForceCoefficients_W`       | `list[np.ndarray]` | Cycle averaged coefficients        |
-| `finalMeanMoments_W_CgP1`            | `list[np.ndarray]` | Cycle averaged moments             |
-| `finalMeanMomentCoefficients_W_CgP1` | `list[np.ndarray]` | Cycle averaged moment coefficients |
-| `finalRmsForces_W`                   | `list[np.ndarray]` | RMS forces                         |
-| `finalRmsForceCoefficients_W`        | `list[np.ndarray]` | RMS force coefficients             |
-| `finalRmsMoments_W_CgP1`             | `list[np.ndarray]` | RMS moments                        |
-| `finalRmsMomentCoefficients_W_CgP1`  | `list[np.ndarray]` | RMS moment coefficients            |
+| Attribute                            | Type               | Notes                                            |
+|--------------------------------------|--------------------|--------------------------------------------------|
+| `finalForces_W`                      | `list[np.ndarray]` | Final forces                                     |
+| `finalForceCoefficients_W`           | `list[np.ndarray]` | Final force coefficients                         |
+| `finalMoments_W_CgP1`                | `list[np.ndarray]` | Final moments                                    |
+| `finalMomentCoefficients_W_CgP1`     | `list[np.ndarray]` | Final moment coefficients                        |
+| `finalForces_G`                      | `list[np.ndarray]` | Final geometry-axes forces                       |
+| `finalForceCoefficients_G`           | `list[np.ndarray]` | Final geometry-axes force coefficients           |
+| `finalMoments_G_Cg`                  | `list[np.ndarray]` | Final own-CG moments (geometry axes)             |
+| `finalMomentCoefficients_G_Cg`       | `list[np.ndarray]` | Final own-CG moment coefficients (geometry axes) |
+| `finalMoments_W_Cg`                  | `list[np.ndarray]` | Final own-CG moments (wind axes)                 |
+| `finalMomentCoefficients_W_Cg`       | `list[np.ndarray]` | Final own-CG moment coefficients (wind axes)     |
+| `finalMeanForces_W`                  | `list[np.ndarray]` | Cycle averaged counterparts of the above         |
+| `finalMeanForceCoefficients_W`       | `list[np.ndarray]` |                                                  |
+| `finalMeanMoments_W_CgP1`            | `list[np.ndarray]` |                                                  |
+| `finalMeanMomentCoefficients_W_CgP1` | `list[np.ndarray]` |                                                  |
+| `finalMeanForces_G`                  | `list[np.ndarray]` |                                                  |
+| `finalMeanForceCoefficients_G`       | `list[np.ndarray]` |                                                  |
+| `finalMeanMoments_G_Cg`              | `list[np.ndarray]` |                                                  |
+| `finalMeanMomentCoefficients_G_Cg`   | `list[np.ndarray]` |                                                  |
+| `finalMeanMoments_W_Cg`              | `list[np.ndarray]` |                                                  |
+| `finalMeanMomentCoefficients_W_Cg`   | `list[np.ndarray]` |                                                  |
+| `finalRmsForces_W`                   | `list[np.ndarray]` | RMS counterparts of the above                    |
+| `finalRmsForceCoefficients_W`        | `list[np.ndarray]` |                                                  |
+| `finalRmsMoments_W_CgP1`             | `list[np.ndarray]` |                                                  |
+| `finalRmsMomentCoefficients_W_CgP1`  | `list[np.ndarray]` |                                                  |
+| `finalRmsForces_G`                   | `list[np.ndarray]` |                                                  |
+| `finalRmsForceCoefficients_G`        | `list[np.ndarray]` |                                                  |
+| `finalRmsMoments_G_Cg`               | `list[np.ndarray]` |                                                  |
+| `finalRmsMomentCoefficients_G_Cg`    | `list[np.ndarray]` |                                                  |
+| `finalRmsMoments_W_Cg`               | `list[np.ndarray]` |                                                  |
+| `finalRmsMomentCoefficients_W_Cg`    | `list[np.ndarray]` |                                                  |
 
-**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve.
+**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-Airplane lists, the G and Cg IDs are used without an Airplane index to implicitly mean "in the entry's own Airplane's geometry axes" and "relative to the entry's own Airplane's CG".
 
 ## _CoupledUnsteadyProblem Class (`problems.py`)
 
@@ -472,12 +490,18 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Mutable (set by solver)
 
-| Attribute                   | Type                 | Notes                |
-|-----------------------------|----------------------|----------------------|
-| `forces_W`                  | `np.ndarray \| None` | Forces in wind axes  |
-| `forceCoefficients_W`       | `np.ndarray \| None` | Force coefficients   |
-| `moments_W_CgP1`            | `np.ndarray \| None` | Moments in wind axes |
-| `momentCoefficients_W_CgP1` | `np.ndarray \| None` | Moment coefficients  |
+| Attribute                   | Type                 | Notes                                       |
+|-----------------------------|----------------------|---------------------------------------------|
+| `forces_W`                  | `np.ndarray \| None` | Forces in wind axes                         |
+| `forceCoefficients_W`       | `np.ndarray \| None` | Force coefficients                          |
+| `moments_W_CgP1`            | `np.ndarray \| None` | Moments relative to the first Airplane's CG |
+| `momentCoefficients_W_CgP1` | `np.ndarray \| None` | Moment coefficients                         |
+| `forces_G`                  | `np.ndarray \| None` | Forces in geometry axes                     |
+| `forceCoefficients_G`       | `np.ndarray \| None` | Force coefficients                          |
+| `moments_G_Cg`              | `np.ndarray \| None` | Moments relative to this Airplane's CG      |
+| `momentCoefficients_G_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
+| `moments_W_Cg`              | `np.ndarray \| None` | Wind-axes rotation of `moments_G_Cg`        |
+| `momentCoefficients_W_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
 
 ---
 

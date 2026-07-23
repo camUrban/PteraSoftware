@@ -28,6 +28,33 @@ def make_steady_validation_problem() -> ps.problems.SteadyProblem:
     return steady_validation_problem
 
 
+def make_steady_formation_validation_problem() -> ps.problems.SteadyProblem:
+    """This function creates a SteadyProblem with two identical, widely separated
+    Airplanes to be used as a fixture.
+
+    :return steady_formation_validation_problem: SteadyProblem This is the SteadyProblem
+        fixture.
+    """
+    first_airplane = airplane_fixtures.make_steady_validation_airplane()
+
+    # Offset the second Airplane far enough from the first that their aerodynamic
+    # interaction is negligible.
+    second_airplane = first_airplane.deep_copy_with_Cg_GP1_CgP1(
+        np.array([10.0, 500.0, -20.0])
+    )
+
+    steady_validation_operating_point = (
+        operating_point_fixtures.make_validation_operating_point()
+    )
+
+    steady_formation_validation_problem = ps.problems.SteadyProblem(
+        airplanes=[first_airplane, second_airplane],
+        operating_point=steady_validation_operating_point,
+    )
+
+    return steady_formation_validation_problem
+
+
 def make_steady_multiple_wing_validation_problem() -> ps.problems.SteadyProblem:
     """This function creates a SteadyProblem with multi-wing geometry to be used as a
     fixture.

@@ -78,8 +78,18 @@ class Airplane:
     Derived properties (num_panels and T_pas_G_Cg_to_GP1_CgP1) are lazily evaluated and
     cached since they depend only on immutable attributes.
 
+    The load attributes remain mutable as they are set by the solver during simulation.
     The forces_W, forceCoefficients_W, moments_W_CgP1, and momentCoefficients_W_CgP1
-    attributes remain mutable as they are set by the solver during simulation.
+    attributes hold the total force (in wind axes), the total moment (in wind axes,
+    relative to the first Airplane's CG), and their coefficients. The forces_G,
+    forceCoefficients_G, moments_G_Cg, momentCoefficients_G_Cg, moments_W_Cg, and
+    momentCoefficients_W_Cg attributes hold the total force (in geometry axes), the
+    total moment (in geometry axes, relative to the CG), the total moment (in wind axes,
+    relative to the CG), and their coefficients. Because every Airplane's geometry axes
+    are parallel to the first Airplane's geometry axes, the components of forces_G equal
+    the components of the total force (in the first Airplane's geometry axes). For the
+    first Airplane, moments_W_Cg equals moments_W_CgP1, and momentCoefficients_W_Cg
+    equals momentCoefficients_W_CgP1.
 
     **Citation:**
 
@@ -104,6 +114,12 @@ class Airplane:
         "forceCoefficients_W",
         "moments_W_CgP1",
         "momentCoefficients_W_CgP1",
+        "forces_G",
+        "forceCoefficients_G",
+        "moments_G_Cg",
+        "momentCoefficients_G_Cg",
+        "moments_W_Cg",
+        "momentCoefficients_W_Cg",
     )
 
     def __init__(
@@ -226,6 +242,12 @@ class Airplane:
         self.forceCoefficients_W: np.ndarray | None = None
         self.moments_W_CgP1: np.ndarray | None = None
         self.momentCoefficients_W_CgP1: np.ndarray | None = None
+        self.forces_G: np.ndarray | None = None
+        self.forceCoefficients_G: np.ndarray | None = None
+        self.moments_G_Cg: np.ndarray | None = None
+        self.momentCoefficients_G_Cg: np.ndarray | None = None
+        self.moments_W_Cg: np.ndarray | None = None
+        self.momentCoefficients_W_Cg: np.ndarray | None = None
 
     # --- Deep copy methods ---
     def __deepcopy__(self, memo: dict) -> Airplane:
@@ -277,6 +299,12 @@ class Airplane:
         new_airplane.forceCoefficients_W = None
         new_airplane.moments_W_CgP1 = None
         new_airplane.momentCoefficients_W_CgP1 = None
+        new_airplane.forces_G = None
+        new_airplane.forceCoefficients_G = None
+        new_airplane.moments_G_Cg = None
+        new_airplane.momentCoefficients_G_Cg = None
+        new_airplane.moments_W_Cg = None
+        new_airplane.momentCoefficients_W_Cg = None
 
         return new_airplane
 
@@ -339,6 +367,12 @@ class Airplane:
         new_airplane.forceCoefficients_W = None
         new_airplane.moments_W_CgP1 = None
         new_airplane.momentCoefficients_W_CgP1 = None
+        new_airplane.forces_G = None
+        new_airplane.forceCoefficients_G = None
+        new_airplane.moments_G_Cg = None
+        new_airplane.momentCoefficients_G_Cg = None
+        new_airplane.moments_W_Cg = None
+        new_airplane.momentCoefficients_W_Cg = None
 
         return new_airplane
 

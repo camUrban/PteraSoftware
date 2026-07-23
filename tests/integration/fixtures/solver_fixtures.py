@@ -65,6 +65,29 @@ def make_steady_ring_vortex_lattice_method_validation_solver() -> (
     return steady_ring_vortex_lattice_method_validation_solver
 
 
+def make_steady_ring_vortex_lattice_method_formation_solver() -> (
+    ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver
+):
+    """This function creates a SteadyRingVortexLatticeMethodSolver with two identical,
+    widely separated Airplanes to be used as a fixture.
+
+    :return steady_ring_vortex_lattice_method_formation_solver:
+        SteadyRingVortexLatticeMethodSolver This is the
+        SteadyRingVortexLatticeMethodSolver fixture.
+    """
+    steady_formation_validation_problem = (
+        problem_fixtures.make_steady_formation_validation_problem()
+    )
+
+    steady_ring_vortex_lattice_method_formation_solver = (
+        ps.steady_ring_vortex_lattice_method.SteadyRingVortexLatticeMethodSolver(
+            steady_formation_validation_problem
+        )
+    )
+
+    return steady_ring_vortex_lattice_method_formation_solver
+
+
 def make_unsteady_ring_vortex_lattice_method_validation_solver_with_static_geometry() -> (
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
 ):

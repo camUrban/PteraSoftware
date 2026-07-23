@@ -195,6 +195,24 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     and AirplaneMovements.
 
     steady_problems: A tuple of SteadyProblems, one for each time step.
+
+    **Notes:**
+
+    The solver populates the mutable load lists during simulation, with one entry per
+    Airplane: the final lists for static motion, the final cycle averaged lists for
+    cyclic motion, and the final cycle root mean squared lists for variable geometry
+    problems. The lists with names ending in Forces_W, ForceCoefficients_W,
+    Moments_W_CgP1, and MomentCoefficients_W_CgP1 hold the total force (in wind axes),
+    the total moment (in wind axes, relative to the first Airplane's CG), and their
+    coefficients. The lists with names ending in Forces_G, ForceCoefficients_G,
+    Moments_G_Cg, MomentCoefficients_G_Cg, Moments_W_Cg, and MomentCoefficients_W_Cg
+    hold the total force (in geometry axes), the total moment (in geometry axes,
+    relative to the CG), the total moment (in wind axes, relative to the CG), and their
+    coefficients. In these per-Airplane lists, the G and Cg IDs are used without an
+    Airplane index to implicitly mean "in the entry's own Airplane's geometry axes" and
+    "relative to the entry's own Airplane's CG". For the first Airplane's entries, the
+    Moments_W_Cg and MomentCoefficients_W_Cg lists equal the Moments_W_CgP1 and
+    MomentCoefficients_W_CgP1 lists.
     """
 
     __slots__ = (

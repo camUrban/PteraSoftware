@@ -462,6 +462,7 @@ def analyze_unsteady_trim(
     objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
     show_solver_progress: bool | np.bool_ = True,
+    force_method: str = "joukowski",
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
     operating conditions until the net loads are sufficiently low.
@@ -523,6 +524,11 @@ def analyze_unsteady_trim(
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
         a numpy bool and will be converted internally to a bool. The default is True.
+    :param force_method: The method each run of the unsteady solver uses for calculating
+        aerodynamic forces. Valid options are "joukowski" which uses the Kutta Joukowski
+        theorem on each RingVortex leg, and "katz" which uses the pressure integration
+        method adapted from "Low Speed Aerodynamics" by Katz and Plotkin (Section 13.12,
+        Eq. 13.150 and 13.151). The default is "joukowski".
     :return: A tuple of four floats representing the trimmed parameters found. In order,
         they are: vCg__E (in meters per second), alpha (in degrees), beta (in degrees),
         and externalFX_W (in Newtons). If no trim condition was found, it will instead
@@ -600,6 +606,13 @@ def analyze_unsteady_trim(
     show_solver_progress = _parameter_validation.boolLike_return_bool(
         show_solver_progress, "show_solver_progress"
     )
+
+    # Validate the force_method parameter.
+    force_method = _parameter_validation.str_return_str(force_method, "force_method")
+    if force_method not in ("joukowski", "katz"):
+        raise ValueError(
+            f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+        )
 
     base_operating_point = (
         problem.movement.operating_point_movement.base_operating_point
@@ -724,7 +737,11 @@ def analyze_unsteady_trim(
             )
         )
 
-        this_solver.run(prescribed_wake=True, show_progress=show_solver_progress)
+        this_solver.run(
+            prescribed_wake=True,
+            show_progress=show_solver_progress,
+            force_method=force_method,
+        )
 
         finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
         assert finalForceCoefficients_W is not None

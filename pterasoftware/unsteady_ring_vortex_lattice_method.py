@@ -407,9 +407,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             converted internally to a bool. The default is True.
         :param force_method: The method to use for calculating aerodynamic forces. Valid
             options are "joukowski" which uses the Kutta Joukowski theorem on each
-            RingVortex leg, and "katz" which uses the pressure integration method from
-            "Low Speed Aerodynamics" by Katz and Plotkin (Section 13.12, Eq. 13.150 and
-            13.151). The default is "joukowski".
+            RingVortex leg, and "katz" which uses the pressure integration method
+            adapted from "Low Speed Aerodynamics" by Katz and Plotkin (Section 13.12,
+            Eq. 13.150 and 13.151). The default is "joukowski".
         :return: None
         """
         self._prescribed_wake = _parameter_validation.boolLike_return_bool(

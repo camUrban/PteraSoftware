@@ -270,6 +270,29 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 num_calls=-1,
             )
 
+    def test_force_method_validation(self) -> None:
+        """Test force_method parameter validation."""
+        bad_type: Any = 42
+        with self.assertRaises(TypeError):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                force_method=bad_type,
+            )
+
+        with self.assertRaises(ValueError):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                force_method="invalid",
+            )
+
     def test_base_operating_point_parameter_bounds_validation(self) -> None:
         """Test that the base operating point values must lie within the supplied
         bounds."""

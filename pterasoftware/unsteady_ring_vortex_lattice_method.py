@@ -1929,7 +1929,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self._calculate_current_movement_velocities_at_collocation_points()
         )
 
-        # Calculate velocity at Panel collocation points.
+        # Calculate the velocity at the Panel collocation points, which feeds the
+        # quasi-steady terms of delta_p below. It includes the bound ring vortices'
+        # induced velocities, intentionally deviating from Katz and Plotkin Eq. 13.150
+        # and Lambert Eq. 2.13, which use only the kinematic and wake velocities. The
+        # circulation gradient factors in delta_p represent the tangential velocity jump
+        # across the surface, so the velocity dotted with them should be the mean flow
+        # past the surface, and on nonplanar geometry the bound vorticity contributes to
+        # that mean. For a planar wing, the bound legs induce no tangential velocity at
+        # the collocation points, and the two forms agree exactly.
         stackVelocityCpp_GP1__E = (
             self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCpp_GP1_CgP1)
             + stackMovementVelocityCpp_GP1__E

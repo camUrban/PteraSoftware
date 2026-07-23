@@ -110,8 +110,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "stackBbrv_GP1",
         "_panel_chord_lengths",
         "_panel_span_lengths",
-        "_stackChordwiseTangent_GP1",
-        "_stackSpanwiseTangent_GP1",
+        "_stackChordwiseTangents_GP1",
+        "_stackSpanwiseTangents_GP1",
         "panel_is_trailing_edge",
         "panel_is_leading_edge",
         "panel_is_left_edge",
@@ -336,8 +336,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Initialize Katz-method-specific arrays for the pressure calculation.
         self._panel_chord_lengths: np.ndarray = np.empty(0, dtype=float)
         self._panel_span_lengths: np.ndarray = np.empty(0, dtype=float)
-        self._stackChordwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackSpanwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
+        self._stackChordwiseTangents_GP1: np.ndarray = np.empty(0, dtype=float)
+        self._stackSpanwiseTangents_GP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize variables to hold aerodynamic data about each Panel's location on
         # its Wing.
@@ -624,8 +624,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Reinitialize the Katz-method-specific arrays.
         self._panel_chord_lengths = np.zeros(self.num_panels, dtype=float)
         self._panel_span_lengths = np.zeros(self.num_panels, dtype=float)
-        self._stackChordwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackSpanwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackChordwiseTangents_GP1 = np.zeros((self.num_panels, 3), dtype=float)
+        self._stackSpanwiseTangents_GP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables to hold details about each Panel's location on its Wing.
         self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
@@ -935,7 +935,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     chordwise_GP1 = (_rightLeg_GP1 - _leftLeg_GP1) / 2
                     chordwise_length = float(np.linalg.norm(chordwise_GP1))
                     if chordwise_length > 0:
-                        self._stackChordwiseTangent_GP1[global_panel_position, :] = (
+                        self._stackChordwiseTangents_GP1[global_panel_position, :] = (
                             chordwise_GP1 / chordwise_length
                         )
                     self._panel_chord_lengths[global_panel_position] = chordwise_length
@@ -945,7 +945,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     spanwise_GP1 = (_frontLeg_GP1 - _backLeg_GP1) / 2
                     spanwise_length = float(np.linalg.norm(spanwise_GP1))
                     if spanwise_length > 0:
-                        self._stackSpanwiseTangent_GP1[global_panel_position, :] = (
+                        self._stackSpanwiseTangents_GP1[global_panel_position, :] = (
                             spanwise_GP1 / spanwise_length
                         )
                     self._panel_span_lengths[global_panel_position] = spanwise_length
@@ -1923,13 +1923,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Calculate the chordwise velocity component.
-        chordwise_velocity_component = np.einsum(
-            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackChordwiseTangent_GP1
+        chordwiseVelocityComponents__E = np.einsum(
+            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackChordwiseTangents_GP1
         )
 
         # Calculate the spanwise velocity component.
-        spanwise_velocity_component = np.einsum(
-            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackSpanwiseTangent_GP1
+        spanwiseVelocityComponents__E = np.einsum(
+            "ij,ij->i", stackVelocityCpp_GP1__E, self._stackSpanwiseTangents_GP1
         )
 
         # Calculate the time derivatives of the vortex strengths.
@@ -1938,8 +1938,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         ) / self.delta_time
 
         # Compute the chordwise and spanwise pressure terms.
-        chord_term = chordwise_velocity_component * chordwise_vorticity_densities
-        span_term = spanwise_velocity_component * spanwise_vorticity_densities
+        chord_term = chordwiseVelocityComponents__E * chordwise_vorticity_densities
+        span_term = spanwiseVelocityComponents__E * spanwise_vorticity_densities
 
         # Calculate the pressure difference across each Panel using Katz and Plotkin Eq.
         # 13.150. The unsteady term is subtracted instead of added to account for a sign
@@ -1963,13 +1963,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         (
             stackFlowUnitVectors_GP1,
             stackLiftDirections_GP1,
-            stackSinAlpha,
+            stackSinLocalAlphas,
         ) = self._calculate_local_flow_directions(stackKinematicVelocityCpp_GP1__E)
 
         # cos(alpha) = |P_U_hat * n_hat| (magnitude of lift direction vector).
-        stackCosAlpha = np.linalg.norm(stackLiftDirections_GP1, axis=1)
+        stackCosLocalAlphas = np.linalg.norm(stackLiftDirections_GP1, axis=1)
         # Prevent division by zero.
-        stackCosAlpha = np.maximum(stackCosAlpha, 1e-10)
+        stackCosLocalAlphas = np.maximum(stackCosLocalAlphas, 1e-10)
 
         # Normalize the lift directions to unit vectors. This intentionally diverges
         # from the literal text of Lambert Eq. 2.15 and 2.16, which uses the
@@ -1983,7 +1983,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
 
         # Lift calculation (Lambert Eq. 2.14): delta_L = delta_p * S * cos(alpha)
-        stackLiftMagnitudes = delta_p * self.panel_areas * stackCosAlpha
+        stackLiftMagnitudes = delta_p * self.panel_areas * stackCosLocalAlphas
 
         # Induced drag calculation (Lambert Eq. 2.15). First term: rho * (U_bc + U_w)
         # dot (P_U_hat * n_hat) * delta_Gamma * b where delta_Gamma = Gamma_{i, j} -
@@ -2010,7 +2010,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # writes this projection with the non-normalized P_U_hat * n_hat. Using the unit
         # lift direction instead matches the downwash in Katz and Plotkin Eq. 13.152 and
         # is consistent with the normalization above.
-        induced_velocity_lift_component = np.einsum(
+        inducedVelocityLiftComponents__E = np.einsum(
             "ij,ij->i", stackTotalInducedVelocity_GP1__E, stackLiftDirections_GP1
         )
 
@@ -2022,7 +2022,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # * n_hat) * delta_Gamma * b
         induced_drag_term1 = (
             rho
-            * induced_velocity_lift_component
+            * inducedVelocityLiftComponents__E
             * chordwise_circulation_diff
             * self._panel_span_lengths
         )
@@ -2035,7 +2035,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # compared to the clockwise ordering used by Katz and Plotkin and by Lambert.
         # See the comment above the delta_p calculation and issue #27:
         # https://github.com/camUrban/PteraSoftware/issues/27
-        induced_drag_term2 = rho * -d_gamma_dt * self.panel_areas * stackSinAlpha
+        induced_drag_term2 = rho * -d_gamma_dt * self.panel_areas * stackSinLocalAlphas
 
         stackDragMagnitudes = induced_drag_term1 + induced_drag_term2
 
@@ -2407,19 +2407,20 @@ class UnsteadyRingVortexLatticeMethodSolver:
             (in the first Airplane's geometry axes). The second is
             stackLiftDirections_GP1, a (num_panels, 3) ndarray of floats for the lift
             direction vector at each Panel (in the first Airplane's geometry axes). The
-            third is stackSinAlpha, a (num_panels,) ndarray of floats for the sine of
-            the local angle of attack at each Panel. The direction vectors are unitless.
+            third is stackSinLocalAlphas, a (num_panels,) ndarray of floats for the
+            sines of the local angles of attack at each Panel. The direction vectors are
+            unitless.
         """
         # Compute unit flow vectors U_hat.
-        flow_magnitudes = np.linalg.norm(
+        flowMagnitudes__E = np.linalg.norm(
             stackLocalVelocity_GP1__E, axis=1, keepdims=True
         )
         # Prevent division by zero.
-        flow_magnitudes = np.maximum(flow_magnitudes, 1e-10)
-        stackFlowUnitVectors_GP1 = stackLocalVelocity_GP1__E / flow_magnitudes
+        flowMagnitudes__E = np.maximum(flowMagnitudes__E, 1e-10)
+        stackFlowUnitVectors_GP1 = stackLocalVelocity_GP1__E / flowMagnitudes__E
 
         # Compute sin(alpha) = n_hat dot U_hat for each Panel.
-        stackSinAlpha = np.einsum(
+        stackSinLocalAlphas = np.einsum(
             "ij,ij->i",
             self.stackUnitNormals_GP1,
             stackFlowUnitVectors_GP1,
@@ -2429,10 +2430,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # This is the Panel normal with its flow parallel component removed.
         stackLiftDirections_GP1 = (
             self.stackUnitNormals_GP1
-            - stackSinAlpha[:, np.newaxis] * stackFlowUnitVectors_GP1
+            - stackSinLocalAlphas[:, np.newaxis] * stackFlowUnitVectors_GP1
         )
 
-        return stackFlowUnitVectors_GP1, stackLiftDirections_GP1, stackSinAlpha
+        return stackFlowUnitVectors_GP1, stackLiftDirections_GP1, stackSinLocalAlphas
 
     def _calculate_chordwise_vorticity_differences(self) -> np.ndarray:
         """Computes (Gamma_{i, j} - Gamma_{i-1, j}) for each Panel.

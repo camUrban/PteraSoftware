@@ -1141,7 +1141,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # axes, observed from the Earth frame.
         currentStackApparentV_GP1_E = self._apply_body_rate(
             self.stackCpp_GP1_CgP1,
-            self._calculate_current_movement_velocities_at_collocation_points(),
+            self._calculate_current_movement_velocities(
+                self.stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
+            ),
         )
 
         # Get the current apparent-motion influence coefficients at each Panel's
@@ -1617,7 +1619,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
             )
-            + self._calculate_current_movement_velocities_at_right_leg_centers(),
+            + self._calculate_current_movement_velocities(
+                self.stackCblvpr_GP1_CgP1, self._lastStackCblvpr_GP1_CgP1
+            ),
         )
         stackVelocityFrontLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpf_GP1_CgP1,
@@ -1626,7 +1630,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
             )
-            + self._calculate_current_movement_velocities_at_front_leg_centers(),
+            + self._calculate_current_movement_velocities(
+                self.stackCblvpf_GP1_CgP1, self._lastStackCblvpf_GP1_CgP1
+            ),
         )
         stackVelocityLeftLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpl_GP1_CgP1,
@@ -1635,7 +1641,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
             )
-            + self._calculate_current_movement_velocities_at_left_leg_centers(),
+            + self._calculate_current_movement_velocities(
+                self.stackCblvpl_GP1_CgP1, self._lastStackCblvpl_GP1_CgP1
+            ),
         )
         stackVelocityBackLineVortexCenters_GP1__E = self._apply_body_rate(
             self.stackCblvpb_GP1_CgP1,
@@ -1644,7 +1652,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 bound_singularity_counts=bound_singularity_counts,
                 wake_singularity_counts=wake_singularity_counts,
             )
-            + self._calculate_current_movement_velocities_at_back_leg_centers(),
+            + self._calculate_current_movement_velocities(
+                self.stackCblvpb_GP1_CgP1, self._lastStackCblvpb_GP1_CgP1
+            ),
         )
 
         unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
@@ -1904,8 +1914,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Calculate the apparent velocity due to prescribed motion at each Panel's
         # collocation point.
-        stackMovementVelocityCpp_GP1__E = (
-            self._calculate_current_movement_velocities_at_collocation_points()
+        stackMovementVelocityCpp_GP1__E = self._calculate_current_movement_velocities(
+            self.stackCpp_GP1_CgP1, self._stackLastCpp_GP1_CgP1
         )
 
         # Calculate the velocity at the Panel collocation points, which feeds the
@@ -2928,135 +2938,40 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         old_start:old_end
                     ]
 
-    def _calculate_current_movement_velocities_at_collocation_points(
+    def _calculate_current_movement_velocities(
         self,
+        stackP_GP1_CgP1: np.ndarray,
+        lastStackP_GP1_CgP1: np.ndarray,
     ) -> np.ndarray:
         """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at each Panel's collocation point due to any
-        motion defined in Movement at the current time step.
+        observed from the Earth frame) at a stack of points due to any motion defined in
+        Movement at the current time step.
 
         **Notes:**
 
         At each point, any apparent velocity due to Movement is opposite the motion due
         to Movement.
 
+        :param stackP_GP1_CgP1: A (M, 3) ndarray of floats representing the positions
+            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
+            of the points at the current time step. Its units are in meters.
+        :param lastStackP_GP1_CgP1: A (M, 3) ndarray of floats representing the
+            positions (in the first Airplane's geometry axes, relative to the first
+            Airplane's CG) of the same points at the previous time step. Its units are
+            in meters.
         :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
-            first Airplane's geometry axes, observed from the Earth frame) at each
-            Panel's collocation point due to any motion defined in Movement. If the
-            current time step is the first time step, these velocities will all be all
-            zeros. Its units are in meters per second.
+            first Airplane's geometry axes, observed from the Earth frame) at each point
+            due to any motion defined in Movement. If the current time step is the first
+            time step, these velocities will all be all zeros. Its units are in meters
+            per second.
         """
-        # Check if this is the current time step. If so, return all zeros.
+        # Check if this is the first time step. If so, return all zeros.
         if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
+            return np.zeros(stackP_GP1_CgP1.shape, dtype=float)
 
         return cast(
             np.ndarray,
-            -(self.stackCpp_GP1_CgP1 - self._stackLastCpp_GP1_CgP1) / self.delta_time,
-        )
-
-    def _calculate_current_movement_velocities_at_right_leg_centers(self) -> np.ndarray:
-        """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at the center point of each bound ring vortex's
-        right leg due to any motion defined in Movement at the current time step.
-
-        **Notes:**
-
-        At each point, any apparent velocity due to Movement is opposite the motion due
-        to Movement.
-
-        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
-            first Airplane's geometry axes, observed from the Earth frame) at the center
-            point of each bound ring vortex's right leg due to any motion defined in
-            Movement. If the current time step is the first time step, these velocities
-            will all be all zeros. Its units are in meters per second.
-        """
-        # Check if this is the current time step. If so, return all zeros.
-        if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
-
-        return cast(
-            np.ndarray,
-            -(self.stackCblvpr_GP1_CgP1 - self._lastStackCblvpr_GP1_CgP1)
-            / self.delta_time,
-        )
-
-    def _calculate_current_movement_velocities_at_front_leg_centers(self) -> np.ndarray:
-        """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at the center point of each bound ring vortex's
-        front leg due to any motion defined in Movement at the current time step.
-
-        **Notes:**
-
-        At each point, any apparent velocity due to Movement is opposite the motion due
-        to Movement.
-
-        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
-            first Airplane's geometry axes, observed from the Earth frame) at the center
-            point of each bound ring vortex's front leg due to any motion defined in
-            Movement. If the current time step is the first time step, these velocities
-            will all be all zeros. Its units are in meters per second.
-        """
-        # Check if this is the current time step. If so, return all zeros.
-        if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
-
-        return cast(
-            np.ndarray,
-            -(self.stackCblvpf_GP1_CgP1 - self._lastStackCblvpf_GP1_CgP1)
-            / self.delta_time,
-        )
-
-    def _calculate_current_movement_velocities_at_left_leg_centers(self) -> np.ndarray:
-        """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at the center point of each bound ring vortex's
-        left leg due to any motion defined in Movement at the current time step.
-
-        **Notes:**
-
-        At each point, any apparent velocity due to Movement is opposite the motion due
-        to Movement.
-
-        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
-            first Airplane's geometry axes, observed from the Earth frame) at the center
-            point of each bound ring vortex's left leg due to any motion defined in
-            Movement. If the current time step is the first time step, these velocities
-            will all be all zeros. Its units are in meters per second.
-        """
-        # Check if this is the current time step. If so, return all zeros.
-        if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
-
-        return cast(
-            np.ndarray,
-            -(self.stackCblvpl_GP1_CgP1 - self._lastStackCblvpl_GP1_CgP1)
-            / self.delta_time,
-        )
-
-    def _calculate_current_movement_velocities_at_back_leg_centers(self) -> np.ndarray:
-        """Finds the apparent velocities (in the first Airplane's geometry axes,
-        observed from the Earth frame) at the center point of each bound ring vortex's
-        back leg due to any motion defined in Movement at the current time step.
-
-        **Notes:**
-
-        At each point, any apparent velocity due to Movement is opposite the motion due
-        to Movement.
-
-        :return: A (M, 3) ndarray of floats representing the apparent velocity (in the
-            first Airplane's geometry axes, observed from the Earth frame) at the center
-            point of each bound ring vortex's back leg due to any motion defined in
-            Movement. If the current time step is the first time step, these velocities
-            will all be all zeros. Its units are in meters per second.
-        """
-        # Check if this is the current time step. If so, return all zeros.
-        if self._current_step < 1:
-            return np.zeros((self.num_panels, 3), dtype=float)
-
-        return cast(
-            np.ndarray,
-            -(self.stackCblvpb_GP1_CgP1 - self._lastStackCblvpb_GP1_CgP1)
-            / self.delta_time,
+            -(stackP_GP1_CgP1 - lastStackP_GP1_CgP1) / self.delta_time,
         )
 
     def _finalize_loads(self) -> None:

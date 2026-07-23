@@ -1,4 +1,5 @@
-recursive-include pterasoftware *
 include pterasoftware/py.typed
-global-exclude __pycache__
+graft pterasoftware/_colormap_data
+graft pterasoftware/geometry/_airfoils
+global-exclude __pycache__/*
 global-exclude *.pyc

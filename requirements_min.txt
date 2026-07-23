@@ -2,7 +2,7 @@ matplotlib == 3.10.5
 mujoco == 3.8.0
 numba == 0.63.0
 numpy == 2.3.2
-pyvista == 0.45.0
+pyvista == 0.47.0
 scipy == 1.16.1
 threadpoolctl == 3.5.0
 tqdm == 4.66.3

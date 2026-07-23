@@ -82,6 +82,7 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
     * Unsteady simulations support both fixed and free wakes.
     * Unsteady simulations implement vortex aging to reduce numerical instabilities.
+    * Unsteady simulations can calculate aerodynamic loads with either the Kutta-Joukowski theorem (the default) or a pressure integration method adapted from "Low-Speed Aerodynamics" by Katz and Plotkin (2001).
     * All three solvers support surface effects (e.g., ground effect) via the method of images.
 2. Customizable Aircraft Geometry
     * Aircraft can be defined as a collection of one or more wings of any dimensions and positions.
@@ -94,8 +95,8 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 4. Customizable Operating Points
     * Parameters such as the free-stream velocity, density, angle of attack, angle of sideslip, etc. can be changed by the user.
 5. High-Speed Simulations
-    * Using Just-In-Time compilation, Ptera Software can solve many unsteady flapping-wing simulations in less than a minute!
-    * Steady simulations take only seconds!
+    * Ptera Software uses Just-In-Time compilation and has been optimized for parallel processing on multiple CPU cores.
+    * Most steady simulations take under a second, and most unsteady simulations take under a minute!
 6. Simulations of Formation Flight
     * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
     * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!

@@ -1984,6 +1984,17 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Prevent division by zero.
         stackCosAlpha = np.maximum(stackCosAlpha, 1e-10)
 
+        # Normalize the lift directions to unit vectors. This intentionally diverges
+        # from the literal text of Lambert Eq. 2.15 and 2.16, which uses the
+        # non-normalized projection P_U_hat * n_hat (whose magnitude is cos(alpha)) as
+        # the lift direction. Combining that with the cos(alpha) already in Eq. 2.14's
+        # lift magnitude would scale the lift by cos^2(alpha), and undoing the induced
+        # drag correction would then fail to recover the pressure force delta_p * S *
+        # n_hat from Katz and Plotkin Eq. 13.151.
+        stackLiftDirections_GP1 = stackLiftDirections_GP1 / np.maximum(
+            np.linalg.norm(stackLiftDirections_GP1, axis=1, keepdims=True), 1e-10
+        )
+
         # Lift calculation (Lambert Eq. 2.14): delta_L = delta_p * S * cos(alpha)
         stackLiftMagnitudes = delta_p * self.panel_areas * stackCosAlpha
 
@@ -2008,8 +2019,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
             stackChordwiseInducedVelocity_GP1__E + stackWakeInducedVelocity_GP1__E
         )
 
-        # Project induced velocity onto lift direction. This gives (U_bc + U_w) dot
-        # (P_U_hat * n_hat).
+        # Project the induced velocity onto the unit lift direction. Lambert Eq. 2.15
+        # writes this projection with the non-normalized P_U_hat * n_hat. Using the unit
+        # lift direction instead matches the downwash in Katz and Plotkin Eq. 13.152 and
+        # is consistent with the normalization above.
         induced_velocity_lift_component = np.einsum(
             "ij,ij->i", stackTotalInducedVelocity_GP1__E, stackLiftDirections_GP1
         )
@@ -2040,10 +2053,10 @@ class UnsteadyRingVortexLatticeMethodSolver:
         stackDragMagnitudes = induced_drag_term1 + induced_drag_term2
 
         # Net force calculation (Lambert Eq. 2.16):
-        # F = D * U_hat + L * (P_U_hat * n_hat)
-        # Note: The lift direction (P_U_hat * n_hat) is not normalized per Lambert's
-        # formulation. This results in lift force magnitude of delta_p * S *
-        # cos^2(alpha).
+        # F = D * U_hat + L * l_hat
+        # where l_hat is the unit lift direction, so the lift force magnitude is delta_p
+        # * S * cos(alpha) per Eq. 2.14. Lambert's text uses the non-normalized P_U_hat
+        # * n_hat here. See the normalization comment above.
         forces_GP1 = (
             stackDragMagnitudes[:, np.newaxis] * stackFlowUnitVectors_GP1
             + stackLiftMagnitudes[:, np.newaxis] * stackLiftDirections_GP1

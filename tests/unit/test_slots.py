@@ -2153,11 +2153,6 @@ class TestAeroelasticUnsteadyRingSolverSlots(unittest.TestCase):
             ps.problems.AeroelasticUnsteadyProblem,
         )
         self.assertIsInstance(self.solver._slep_point_indices, np.ndarray)
-        self.assertIsInstance(self.solver._stackCblvpr_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver._stackCblvpf_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver._stackCblvpl_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver._stackCblvpb_GP1_Slep, np.ndarray)
-        self.assertIsInstance(self.solver._stackCpp_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver.moments_GP1_Slep, np.ndarray)
         self.assertIsInstance(self.solver._stackSlep_GP1_CgP1, np.ndarray)
 

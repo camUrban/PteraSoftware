@@ -1484,6 +1484,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         vortex with its own effective strength.
 
         After finding the loads on every Panel, this method passes them to
+        _process_panel_loads_hook, whose base implementation hands them to
         process_solver_loads, which finds and sets each Airplane's total loads and their
         coefficients, including the total moments in the Airplane's geometry axes and in
         wind axes, both relative to the Airplane's CG.
@@ -1766,32 +1767,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + unsteady_forces_GP1
         )
 
-        moments_GP1_CgP1 = self._load_calculation_moment_processing_hook(
-            rightLegForces_GP1,
-            frontLegForces_GP1,
-            leftLegForces_GP1,
-            backLegForces_GP1,
-            unsteady_forces_GP1,
-        )
-
-        _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
-
-    def _load_calculation_moment_processing_hook(
-        self,
-        rightLegForces_GP1: np.ndarray,
-        frontLegForces_GP1: np.ndarray,
-        leftLegForces_GP1: np.ndarray,
-        backLegForces_GP1: np.ndarray,
-        unsteady_forces_GP1: np.ndarray,
-    ) -> np.ndarray:
-        """A hook method for processing the moments calculated in _calculate_loads.
-
-        This is added to allow for overriding the moment calculation in a child class.
-
-        :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
-            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
-            on every Panel at the current time step.
-        """
         # Find the moments (in the first Airplane's geometry axes, relative to the first
         # Airplane's CG) on the Panels' ring vortex's right line vortex, front line
         # vortex, left line vortex, and back line vortex.
@@ -1826,7 +1801,32 @@ class UnsteadyRingVortexLatticeMethodSolver:
             + unsteady_moments_GP1_CgP1
         )
 
-        return np.array(moments_GP1_CgP1)
+        self._process_panel_loads_hook(forces_GP1, moments_GP1_CgP1)
+
+    def _process_panel_loads_hook(
+        self,
+        forces_GP1: np.ndarray,
+        moments_GP1_CgP1: np.ndarray,
+    ) -> None:
+        """A hook method for processing the per Panel loads a load calculation method
+        has found.
+
+        The base implementation passes the loads to process_solver_loads, which finds
+        and sets each Airplane's total loads and their coefficients. A child class can
+        override this method to derive additional load products from the per Panel
+        totals before calling the base implementation. Every load calculation method
+        ends by calling this hook, so an override applies regardless of the force
+        method.
+
+        :param forces_GP1: A (N,3) ndarray of floats representing the forces (in the
+            first Airplane's geometry axes) on every Panel at the current time step. The
+            units are in Newtons.
+        :param moments_GP1_CgP1: A (N,3) ndarray of floats representing the moments (in
+            the first Airplane's geometry axes, relative to the first Airplane's CG) on
+            every Panel at the current time step. The units are in Newton-meters.
+        :return: None
+        """
+        _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
 
     def _calculate_wake_grid_induced_velocities(
         self,
@@ -2069,7 +2069,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             self.stackCblvpf_GP1_CgP1, forces_GP1
         )
 
-        _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)
+        self._process_panel_loads_hook(forces_GP1, moments_GP1_CgP1)
 
     def _calculate_chordwise_vorticity_densities(self) -> np.ndarray:
         """Calculates the average chordwise bound vorticity density for each Panel.

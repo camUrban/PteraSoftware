@@ -22,7 +22,7 @@ _logger = _logging.get_logger("_convergence_cache")
 # This is independent of the serialization format version that hash_object folds into
 # each key, which guards against changes to the reference problem's serialized
 # structure.
-_SOLVE_CACHE_VERSION = 6
+_SOLVE_CACHE_VERSION = 7
 
 
 def solve_cache_key(ref_problem_hash: str, *components: object) -> str:

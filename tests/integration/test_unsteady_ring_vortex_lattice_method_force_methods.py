@@ -161,7 +161,7 @@ class TestForceMethodsComparison(unittest.TestCase):
         )
 
     def test_static_geometry_methods_produce_similar_moment(self) -> None:
-        """Test that both methods produce moment within 50% of each other."""
+        """Test that both methods produce moment within 5% of each other."""
         joukowski_airplane = self.static_solver_joukowski.current_airplanes[0]
         katz_airplane = self.static_solver_katz.current_airplanes[0]
         assert joukowski_airplane.momentCoefficients_W_CgP1 is not None
@@ -177,8 +177,10 @@ class TestForceMethodsComparison(unittest.TestCase):
         else:
             relative_diff = 0.0
 
-        # Allow 50% difference for moment.
-        allowable_difference = 0.50
+        # This tolerance guards the Katz method's moment arm placement: applying the
+        # forces at the Panel centroids instead of at the centers of the bound ring
+        # vortices' front legs pushes this difference to about 9%.
+        allowable_difference = 0.05
         self.assertLess(
             relative_diff,
             allowable_difference,

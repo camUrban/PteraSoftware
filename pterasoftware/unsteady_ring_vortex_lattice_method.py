@@ -112,7 +112,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_panel_span_lengths",
         "_stackChordwiseTangent_GP1",
         "_stackSpanwiseTangent_GP1",
-        "_stackCentroid_GP1_CgP1",
         "panel_is_trailing_edge",
         "panel_is_leading_edge",
         "panel_is_left_edge",
@@ -339,7 +338,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._panel_span_lengths: np.ndarray = np.empty(0, dtype=float)
         self._stackChordwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
         self._stackSpanwiseTangent_GP1: np.ndarray = np.empty(0, dtype=float)
-        self._stackCentroid_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # Initialize variables to hold aerodynamic data about each Panel's location on
         # its Wing.
@@ -628,7 +626,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._panel_span_lengths = np.zeros(self.num_panels, dtype=float)
         self._stackChordwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
         self._stackSpanwiseTangent_GP1 = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackCentroid_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
         # Initialize variables to hold details about each Panel's location on its Wing.
         self.panel_is_trailing_edge = np.zeros(self.num_panels, dtype=bool)
@@ -952,24 +949,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                             spanwise_GP1 / spanwise_length
                         )
                     self._panel_span_lengths[global_panel_position] = spanwise_length
-
-                    # Get the locations of the Panel points, in the first Airplane's
-                    # geometry axes, relative to the first Airplane's CG.
-                    _Frpp = panel.Frpp_GP1_CgP1
-                    _Flpp = panel.Flpp_GP1_CgP1
-                    _Blpp = panel.Blpp_GP1_CgP1
-                    _Brpp = panel.Brpp_GP1_CgP1
-                    assert _Frpp is not None
-                    assert _Flpp is not None
-                    assert _Blpp is not None
-                    assert _Brpp is not None
-
-                    # Compute the location of the centroid (the average of the locations
-                    # of the four Panel points), in the first Airplane's geometry axes,
-                    # relative to the first Airplane's CG.
-                    self._stackCentroid_GP1_CgP1[global_panel_position, :] = (
-                        _Frpp + _Flpp + _Blpp + _Brpp
-                    ) / 4
 
                     global_panel_position += 1
 
@@ -2072,9 +2051,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Find the moment due to the force on each Panel, in the first Airplane's
         # geometry axes, relative to the first Airplane's CG, from forces applied at the
-        # centroids of each Panel.
+        # centers of the bound ring vortices' front legs. Katz and Plotkin's Program No.
+        # 16 takes each Panel's moment arm from this point, which lies on the Panel's
+        # quarter chord line. This placement matches the lumped-vortex position of the
+        # Panel's lift, and the induced drag acts on the front leg's net circulation.
         moments_GP1_CgP1 = _functions.numba_1d_explicit_cross(
-            self._stackCentroid_GP1_CgP1, forces_GP1
+            self.stackCblvpf_GP1_CgP1, forces_GP1
         )
 
         _functions.process_solver_loads(self, forces_GP1, moments_GP1_CgP1)

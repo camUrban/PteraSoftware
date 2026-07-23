@@ -318,16 +318,16 @@ def analyze_steady_trim(
         airplane = solver.airplanes[0]
 
         assert airplane.forceCoefficients_W is not None
-        assert airplane.momentCoefficients_W_CgP1 is not None
+        assert airplane.momentCoefficients_W_Cg is not None
 
         netForceCoefficient_W = float(
             np.linalg.norm(airplane.forceCoefficients_W + externalForceCoefficients_W)
         )
-        netMomentCoefficient_W_CgP1 = float(
-            np.linalg.norm(airplane.momentCoefficients_W_CgP1)
+        netMomentCoefficient_W_Cg = float(
+            np.linalg.norm(airplane.momentCoefficients_W_Cg)
         )
 
-        objective = (netForceCoefficient_W + netMomentCoefficient_W_CgP1) / 2
+        objective = (netForceCoefficient_W + netMomentCoefficient_W_Cg) / 2
 
         _logger.info(_logging.indent(1) + "State:")
         _logger.info(_logging.indent(2) + "vCg__E: " + f"{vCg__E:#.3G}" + " m/s")
@@ -730,7 +730,7 @@ def analyze_unsteady_trim(
         assert finalForceCoefficients_W is not None
 
         finalMomentCoefficients_W_Cg = (
-            this_solver.unsteady_problem.finalMomentCoefficients_W_CgP1
+            this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
         )
         assert finalMomentCoefficients_W_Cg is not None
 

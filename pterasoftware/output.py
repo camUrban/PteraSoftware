@@ -1248,8 +1248,8 @@ def plot_results_versus_time(
     forceCoefficients_W = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
-    moments_W_CgP1 = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    momentCoefficients_W_CgP1 = np.zeros(
+    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    momentCoefficients_W_Cg = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
 
@@ -1268,9 +1268,9 @@ def plot_results_versus_time(
             forceCoefficients_W[airplane_id, :, results_step] = (
                 airplane.forceCoefficients_W
             )
-            moments_W_CgP1[airplane_id, :, results_step] = airplane.moments_W_CgP1
-            momentCoefficients_W_CgP1[airplane_id, :, results_step] = (
-                airplane.momentCoefficients_W_CgP1
+            moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
+            momentCoefficients_W_Cg[airplane_id, :, results_step] = (
+                airplane.momentCoefficients_W_Cg
             )
 
         results_step += 1
@@ -1385,7 +1385,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_CgP1[airplane_id, 0],
+            moments_W_Cg[airplane_id, 0],
             label="Rolling Moment",
             color=_angular_x_color,
             linewidth=_widths_3[0],
@@ -1393,7 +1393,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_CgP1[airplane_id, 1],
+            moments_W_Cg[airplane_id, 1],
             label="Pitching Moment",
             color=_angular_y_color,
             linewidth=_widths_3[1],
@@ -1401,7 +1401,7 @@ def plot_results_versus_time(
         )
         moment_axes.plot(
             times,
-            moments_W_CgP1[airplane_id, 2],
+            moments_W_Cg[airplane_id, 2],
             label="Yawing Moment",
             color=_angular_z_color,
             linewidth=_widths_3[2],
@@ -1409,7 +1409,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_CgP1[airplane_id, 0],
+            momentCoefficients_W_Cg[airplane_id, 0],
             label="Rolling Moment Coefficient",
             color=_angular_x_color,
             linewidth=_widths_3[0],
@@ -1417,7 +1417,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_CgP1[airplane_id, 1],
+            momentCoefficients_W_Cg[airplane_id, 1],
             label="Pitching Moment Coefficient",
             color=_angular_y_color,
             linewidth=_widths_3[1],
@@ -1425,7 +1425,7 @@ def plot_results_versus_time(
         )
         moment_coefficients_axes.plot(
             times,
-            momentCoefficients_W_CgP1[airplane_id, 2],
+            momentCoefficients_W_Cg[airplane_id, 2],
             label="Yawing Moment Coefficient",
             color=_angular_z_color,
             linewidth=_widths_3[2],
@@ -1441,10 +1441,8 @@ def plot_results_versus_time(
         moment_coefficient_title = airplane_name + " Moment Coefficients"
         force_subtitle = "(in Wind Axes)"
         force_coefficient_subtitle = "(in Wind Axes)"
-        moment_subtitle = "(in Wind Axes, Relative to the First Airplane's CG)"
-        moment_coefficient_subtitle = (
-            "(in Wind Axes, Relative to the First Airplane's CG)"
-        )
+        moment_subtitle = "(in Wind Axes, Relative to the CG)"
+        moment_coefficient_subtitle = "(in Wind Axes, Relative to the CG)"
 
         # Name the plots' axis labels, titles, and subtitles. The main title uses
         # suptitle at the default size, and the subtitle uses set_title at a smaller
@@ -1716,23 +1714,39 @@ def log_results(
 
     padding_spaces = 2
 
+    # Labels for the loads in each Airplane's own geometry axes, followed by the loads
+    # in wind axes.
     col1 = [
+        "fX_G",
+        "fY_G",
+        "fZ_G",
+        "mX_G_Cg",
+        "mY_G_Cg",
+        "mZ_G_Cg",
+        "cFX_G",
+        "cFY_G",
+        "cFZ_G",
+        "cMX_G_Cg",
+        "cMY_G_Cg",
+        "cMZ_G_Cg",
         "fX_W",
         "fY_W",
         "fZ_W",
-        "mX_W_CgP1",
-        "mY_W_CgP1",
-        "mZ_W_CgP1",
+        "mX_W_Cg",
+        "mY_W_Cg",
+        "mZ_W_Cg",
         "cFX_W",
         "cFY_W",
         "cFZ_W",
-        "cMX_W_CgP1",
-        "cMY_W_CgP1",
-        "cMZ_W_CgP1",
+        "cMX_W_Cg",
+        "cMY_W_Cg",
+        "cMZ_W_Cg",
     ]
     col1 = [label + ":" for label in col1]
     col1_space = max(len(elem) for elem in col1) + padding_spaces
 
+    # Named load labels for the wind axes rows only, because names like drag and lift
+    # are wind axes concepts with no geometry axes counterparts.
     col3 = [
         "Drag",
         "Side Force",
@@ -1751,48 +1765,59 @@ def log_results(
     col3_space = max(len(elem) for elem in col3) + padding_spaces
 
     for airplane_num, airplane in enumerate(these_airplanes):
-        title1: str = ""
-        title2: str = ""
-        title3: str = ""
-        title4: str = ""
+        title_prefix: str = ""
+        these_forces_G: np.ndarray = np.empty(0, dtype=float)
+        these_moments_G_Cg: np.ndarray = np.empty(0, dtype=float)
+        these_forceCoefficients_G: np.ndarray = np.empty(0, dtype=float)
+        these_momentCoefficients_G_Cg: np.ndarray = np.empty(0, dtype=float)
         these_forces_W: np.ndarray = np.empty(0, dtype=float)
-        these_moments_W_CgP1: np.ndarray = np.empty(0, dtype=float)
+        these_moments_W_Cg: np.ndarray = np.empty(0, dtype=float)
         these_forceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
-        these_momentCoefficients_W_CgP1: np.ndarray = np.empty(0, dtype=float)
+        these_momentCoefficients_W_Cg: np.ndarray = np.empty(0, dtype=float)
 
         match solver_type:
             case "steady":
-                title1 = _logging.indent(1) + "Forces (in Wind Axes):"
-                title2 = (
-                    _logging.indent(1)
-                    + "Moments (in Wind Axes, Relative to the First Airplane's CG):"
-                )
-                title3 = _logging.indent(1) + "Force Coefficients (in Wind Axes):"
-                title4 = (
-                    _logging.indent(1)
-                    + "Moment Coefficients (in Wind Axes, Relative to the First "
-                    "Airplane's CG):"
-                )
+                title_prefix = ""
+
+                _forces_G = airplane.forces_G
+                assert _forces_G is not None
+
+                these_forces_G = _forces_G
+
+                _moments_G_Cg = airplane.moments_G_Cg
+                assert _moments_G_Cg is not None
+
+                these_moments_G_Cg = _moments_G_Cg
+
+                _forceCoefficients_G = airplane.forceCoefficients_G
+                assert _forceCoefficients_G is not None
+
+                these_forceCoefficients_G = _forceCoefficients_G
+
+                _momentCoefficients_G_Cg = airplane.momentCoefficients_G_Cg
+                assert _momentCoefficients_G_Cg is not None
+
+                these_momentCoefficients_G_Cg = _momentCoefficients_G_Cg
 
                 _forces_W = airplane.forces_W
                 assert _forces_W is not None
 
                 these_forces_W = _forces_W
 
-                _moments_W_CgP1 = airplane.moments_W_CgP1
-                assert _moments_W_CgP1 is not None
+                _moments_W_Cg = airplane.moments_W_Cg
+                assert _moments_W_Cg is not None
 
-                these_moments_W_CgP1 = _moments_W_CgP1
+                these_moments_W_Cg = _moments_W_Cg
 
                 _forceCoefficients_W = airplane.forceCoefficients_W
                 assert _forceCoefficients_W is not None
 
                 these_forceCoefficients_W = _forceCoefficients_W
 
-                _momentCoefficients_W_CgP1 = airplane.momentCoefficients_W_CgP1
-                assert _momentCoefficients_W_CgP1 is not None
+                _momentCoefficients_W_Cg = airplane.momentCoefficients_W_Cg
+                assert _momentCoefficients_W_Cg is not None
 
-                these_momentCoefficients_W_CgP1 = _momentCoefficients_W_CgP1
+                these_momentCoefficients_W_Cg = _momentCoefficients_W_Cg
 
             case "static geometry unsteady":
                 assert isinstance(
@@ -1800,27 +1825,26 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = _logging.indent(1) + "Final Forces (in Wind Axes):"
-                title2 = (
-                    _logging.indent(1)
-                    + "Final Moments (in Wind Axes, Relative to the First "
-                    "Airplane's CG):"
+                title_prefix = "Final "
+                these_forces_G = solver.unsteady_problem.finalForces_G[airplane_num]
+                these_moments_G_Cg = solver.unsteady_problem.finalMoments_G_Cg[
+                    airplane_num
+                ]
+                these_forceCoefficients_G = (
+                    solver.unsteady_problem.finalForceCoefficients_G[airplane_num]
                 )
-                title3 = _logging.indent(1) + "Final Force Coefficients (in Wind Axes):"
-                title4 = (
-                    _logging.indent(1)
-                    + "Final Moment Coefficients (in Wind Axes, Relative to "
-                    "the First Airplane's CG):"
+                these_momentCoefficients_G_Cg = (
+                    solver.unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
                 )
                 these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
-                these_moments_W_CgP1 = solver.unsteady_problem.finalMoments_W_CgP1[
+                these_moments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
                     airplane_num
                 ]
                 these_forceCoefficients_W = (
                     solver.unsteady_problem.finalForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_CgP1 = (
-                    solver.unsteady_problem.finalMomentCoefficients_W_CgP1[airplane_num]
+                these_momentCoefficients_W_Cg = (
+                    solver.unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
                 )
             case "variable geometry unsteady":
                 assert isinstance(
@@ -1828,55 +1852,86 @@ def log_results(
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
-                title1 = (
-                    _logging.indent(1) + "Final Cycle-Averaged Forces (in Wind Axes):"
+                title_prefix = "Final Cycle-Averaged "
+                these_forces_G = solver.unsteady_problem.finalMeanForces_G[airplane_num]
+                these_moments_G_Cg = solver.unsteady_problem.finalMeanMoments_G_Cg[
+                    airplane_num
+                ]
+                these_forceCoefficients_G = (
+                    solver.unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
                 )
-                title2 = (
-                    _logging.indent(1)
-                    + "Final Cycle-Averaged Moments (in Wind Axes, Relative to the "
-                    "First Airplane's CG):"
-                )
-                title3 = (
-                    _logging.indent(1)
-                    + "Final Cycle-Averaged Force Coefficients (in Wind Axes):"
-                )
-                title4 = (
-                    _logging.indent(1)
-                    + "Final Cycle-Averaged Moment Coefficients (in Wind Axes, "
-                    "Relative to the First Airplane's CG):"
+                these_momentCoefficients_G_Cg = (
+                    solver.unsteady_problem.finalMeanMomentCoefficients_G_Cg[
+                        airplane_num
+                    ]
                 )
                 these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
-                these_moments_W_CgP1 = solver.unsteady_problem.finalMeanMoments_W_CgP1[
+                these_moments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
                     airplane_num
                 ]
                 these_forceCoefficients_W = (
                     solver.unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_CgP1 = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_W_CgP1[
+                these_momentCoefficients_W_Cg = (
+                    solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg[
                         airplane_num
                     ]
                 )
             case _:
                 raise ValueError(f"Unknown solver type: {solver_type}")
 
+        # One title per three-row group, in the order the groups are logged: the loads
+        # in this Airplane's own geometry axes, then the loads in wind axes.
+        titles = [
+            _logging.indent(1) + title_prefix + "Forces (in Geometry Axes):",
+            _logging.indent(1)
+            + title_prefix
+            + "Moments (in Geometry Axes, Relative to the CG):",
+            _logging.indent(1)
+            + title_prefix
+            + "Force Coefficients (in Geometry Axes):",
+            _logging.indent(1)
+            + title_prefix
+            + "Moment Coefficients (in Geometry Axes, Relative to the CG):",
+            _logging.indent(1) + title_prefix + "Forces (in Wind Axes):",
+            _logging.indent(1)
+            + title_prefix
+            + "Moments (in Wind Axes, Relative to the CG):",
+            _logging.indent(1) + title_prefix + "Force Coefficients (in Wind Axes):",
+            _logging.indent(1)
+            + title_prefix
+            + "Moment Coefficients (in Wind Axes, Relative to the CG):",
+        ]
+
         col2 = [
+            these_forces_G[0],
+            these_forces_G[1],
+            these_forces_G[2],
+            these_moments_G_Cg[0],
+            these_moments_G_Cg[1],
+            these_moments_G_Cg[2],
+            these_forceCoefficients_G[0],
+            these_forceCoefficients_G[1],
+            these_forceCoefficients_G[2],
+            these_momentCoefficients_G_Cg[0],
+            these_momentCoefficients_G_Cg[1],
+            these_momentCoefficients_G_Cg[2],
             these_forces_W[0],
             these_forces_W[1],
             these_forces_W[2],
-            these_moments_W_CgP1[0],
-            these_moments_W_CgP1[1],
-            these_moments_W_CgP1[2],
+            these_moments_W_Cg[0],
+            these_moments_W_Cg[1],
+            these_moments_W_Cg[2],
             these_forceCoefficients_W[0],
             these_forceCoefficients_W[1],
             these_forceCoefficients_W[2],
-            these_momentCoefficients_W_CgP1[0],
-            these_momentCoefficients_W_CgP1[1],
-            these_momentCoefficients_W_CgP1[2],
+            these_momentCoefficients_W_Cg[0],
+            these_momentCoefficients_W_Cg[1],
+            these_momentCoefficients_W_Cg[2],
         ]
         col2 = [f"{val:#10.3G}" for val in col2]
         col2 = [
-            val + " N" if i < 3 else val + " Nm" if i < 6 else val
+            val + " N" if i % 12 < 3 else val + " Nm" if i % 12 < 6 else val
             for i, val in enumerate(col2)
         ]
         col2_space = max(len(elem) for elem in col2) + 2 * padding_spaces
@@ -1885,15 +1940,15 @@ def log_results(
             -these_forces_W[0],
             these_forces_W[1],
             -these_forces_W[2],
-            these_moments_W_CgP1[0],
-            these_moments_W_CgP1[1],
-            these_moments_W_CgP1[2],
+            these_moments_W_Cg[0],
+            these_moments_W_Cg[1],
+            these_moments_W_Cg[2],
             -these_forceCoefficients_W[0],
             these_forceCoefficients_W[1],
             -these_forceCoefficients_W[2],
-            these_momentCoefficients_W_CgP1[0],
-            these_momentCoefficients_W_CgP1[1],
-            these_momentCoefficients_W_CgP1[2],
+            these_momentCoefficients_W_Cg[0],
+            these_momentCoefficients_W_Cg[1],
+            these_momentCoefficients_W_Cg[2],
         ]
         col4 = [f"{val:#10.3G}" for val in col4]
         col4 = [
@@ -1916,19 +1971,18 @@ def log_results(
             _logger.info(_logging.indent(1) + f"Reynolds Number: {re:#.3G}")
 
         for i in range(len(col1)):
-            if i == 0:
-                _logger.info(title1)
-            elif i == 3:
-                _logger.info(title2)
-            elif i == 6:
-                _logger.info(title3)
-            elif i == 9:
-                _logger.info(title4)
+            if i % 3 == 0:
+                _logger.info(titles[i // 3])
 
-            s = (
-                _logging.indent(2)
-                + f"{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[i]:<{col3_space}}{col4[i]}"
-            )
+            if i < 12:
+                # The geometry axes rows have no named load columns.
+                s = _logging.indent(2) + f"{col1[i]:<{col1_space}}{col2[i]}"
+            else:
+                j = i - 12
+                s = (
+                    _logging.indent(2)
+                    + f"{col1[i]:<{col1_space}}{col2[i]:<{col2_space}}{col3[j]:<{col3_space}}{col4[j]}"
+                )
             _logger.info(s)
 
     # For a free flight solver, also log the first Airplane's initial and final

@@ -41,14 +41,14 @@ _logger = _logging.get_logger("convergence")
 
 # The labels of the six load coefficients that convergence is checked against, in the
 # order they are stored: the three force coefficients (in wind axes) followed by the
-# three moment coefficients (in wind axes, relative to the first Airplane's CG).
+# three moment coefficients (in wind axes, relative to each Airplane's CG).
 _COEFFICIENT_LABELS = (
     "cFX_W",
     "cFY_W",
     "cFZ_W",
-    "cMX_W_CgP1",
-    "cMY_W_CgP1",
-    "cMZ_W_CgP1",
+    "cMX_W_Cg",
+    "cMY_W_Cg",
+    "cMZ_W_Cg",
 )
 
 
@@ -83,15 +83,15 @@ def analyze_steady_convergence(
 
     With each new combination of these values, the SteadyProblem is solved, and each
     Airplane's six load coefficients are stored: the three force coefficients (in wind
-    axes) and the three moment coefficients (in wind axes, relative to the first
-    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). Then,
-    convergence is checked per coefficient between this iteration and the iterations
-    with incrementally coarser meshes in the two parameter directions (Panel aspect
-    ratio and number of chordwise Panels). A coefficient is converged in a parameter
-    direction when its absolute change from the coarser iteration is at most atol + rtol
-    * max(abs(this), abs(coarser)). A parameter direction is converged when every
-    unmasked coefficient of every Airplane is converged in that direction, so a multi-
-    Airplane study converges only once all its Airplanes have.
+    axes) and the three moment coefficients (in wind axes, relative to each Airplane's
+    CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg). Then, convergence is
+    checked per coefficient between this iteration and the iterations with incrementally
+    coarser meshes in the two parameter directions (Panel aspect ratio and number of
+    chordwise Panels). A coefficient is converged in a parameter direction when its
+    absolute change from the coarser iteration is at most atol + rtol * max(abs(this),
+    abs(coarser)). A parameter direction is converged when every unmasked coefficient of
+    every Airplane is converged in that direction, so a multi- Airplane study converges
+    only once all its Airplanes have.
 
     If an iteration is converged in both parameter directions, then we exit the nested
     for loops and return the converged parameters. However, the converged parameters are
@@ -146,10 +146,10 @@ def analyze_steady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
-        order) must converge, or None to require all six. At least one element must be
-        True. Use this to ignore coefficients that are physically irrelevant to the
-        analysis. The default is None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg, in that order)
+        must converge, or None to require all six. At least one element must be True.
+        Use this to ignore coefficients that are physically irrelevant to the analysis.
+        The default is None.
     :param resolve_converged_solver: A bool for whether to recreate and run the solver
         at the converged parameters and return it. Because finding convergence is
         expensive, this defaults to False, in which case the returned solver is None.
@@ -264,8 +264,8 @@ def analyze_steady_convergence(
         (len(panel_aspect_ratios_list), len(num_chordwise_panels_list)), dtype=float
     )
 
-    # Each iteration stores the six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1,
-    # cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the last axis.
+    # Each iteration stores the six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_Cg,
+    # cMY_W_Cg, cMZ_W_Cg) of each Airplane, in that order, along the last axis.
     coefficients = np.zeros(
         (
             len(panel_aspect_ratios_list),
@@ -416,20 +416,20 @@ def analyze_steady_convergence(
                     this_solver.run(calculate_streamlines=False)
 
                 # Create and fill an ndarray with each of this iteration's Airplanes'
-                # six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1,
-                # cMZ_W_CgP1).
+                # six load coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg,
+                # cMZ_W_Cg).
                 solved_coefficients = np.zeros((len(these_airplanes), 6), dtype=float)
 
                 for this_airplane_id, this_airplane in enumerate(these_airplanes):
                     _forceCoefficients_W = this_airplane.forceCoefficients_W
                     assert _forceCoefficients_W is not None
 
-                    _momentCoefficients_W_CgP1 = this_airplane.momentCoefficients_W_CgP1
-                    assert _momentCoefficients_W_CgP1 is not None
+                    _momentCoefficients_W_Cg = this_airplane.momentCoefficients_W_Cg
+                    assert _momentCoefficients_W_Cg is not None
 
                     solved_coefficients[this_airplane_id, 0:3] = _forceCoefficients_W
                     solved_coefficients[this_airplane_id, 3:6] = (
-                        _momentCoefficients_W_CgP1
+                        _momentCoefficients_W_Cg
                     )
 
                 return solved_coefficients
@@ -741,19 +741,19 @@ def analyze_unsteady_convergence(
 
     With each new combination of these values, the UnsteadyProblem is solved, and each
     Airplane's six final load coefficients are stored: the three force coefficients (in
-    wind axes) and the three moment coefficients (in wind axes, relative to the first
-    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1). As
-    this function deals with UnsteadyProblems, it considers the final load coefficients
-    to be the final cycle's mean load coefficients (the signed time-average over the
-    final cycle) for UnsteadyProblems with variable geometry, and the final time step's
-    load coefficients for static geometry cases. Then, convergence is checked per
-    coefficient between this iteration and the iterations with incrementally coarser
-    meshes in all four parameter directions (wake state, wake length, Panel aspect
-    ratio, and number of chordwise Panels). A coefficient is converged in a parameter
-    direction when its absolute change from the coarser iteration is at most atol + rtol
-    * max(abs(this), abs(coarser)). A parameter direction is converged when every
-    unmasked coefficient of every Airplane is converged in that direction, so a multi-
-    Airplane study converges only once all its Airplanes have.
+    wind axes) and the three moment coefficients (in wind axes, relative to each
+    Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg). As this
+    function deals with UnsteadyProblems, it considers the final load coefficients to be
+    the final cycle's mean load coefficients (the signed time-average over the final
+    cycle) for UnsteadyProblems with variable geometry, and the final time step's load
+    coefficients for static geometry cases. Then, convergence is checked per coefficient
+    between this iteration and the iterations with incrementally coarser meshes in all
+    four parameter directions (wake state, wake length, Panel aspect ratio, and number
+    of chordwise Panels). A coefficient is converged in a parameter direction when its
+    absolute change from the coarser iteration is at most atol + rtol * max(abs(this),
+    abs(coarser)). A parameter direction is converged when every unmasked coefficient of
+    every Airplane is converged in that direction, so a multi- Airplane study converges
+    only once all its Airplanes have.
 
     If an iteration is converged in all four parameter directions, then we exit the
     nested for loops and return the converged parameters. However, the converged
@@ -841,10 +841,10 @@ def analyze_unsteady_convergence(
         zero from being held to an unreachable relative tolerance. Values are converted
         to floats internally. The default is 0.001.
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1, in that
-        order) must converge, or None to require all six. At least one element must be
-        True. Use this to ignore coefficients that are physically irrelevant to the
-        analysis. The default is None.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg, in that order)
+        must converge, or None to require all six. At least one element must be True.
+        Use this to ignore coefficients that are physically irrelevant to the analysis.
+        The default is None.
     :param show_solver_progress: Set this to True to show the TQDM progress bar during
         each run of the unsteady solver. For showing progress bars and displaying log
         statements, set up logging using the setup_logging function. It can be a bool or
@@ -1052,8 +1052,8 @@ def analyze_unsteady_convergence(
         dtype=float,
     )
     # Each iteration stores the six final load coefficients (cFX_W, cFY_W, cFZ_W,
-    # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) of each Airplane, in that order, along the
-    # last axis.
+    # cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg) of each Airplane, in that order, along the last
+    # axis.
     final_coefficients = np.zeros(
         (
             len(wake_list),
@@ -1243,7 +1243,7 @@ def analyze_unsteady_convergence(
 
                         # Create and fill an ndarray with each of this iteration's
                         # Airplanes' six final load coefficients (cFX_W, cFY_W, cFZ_W,
-                        # cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
+                        # cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg).
                         solved_coefficients = np.zeros(
                             (len(ref_airplane_movements), 6), dtype=float
                         )
@@ -1257,7 +1257,7 @@ def analyze_unsteady_convergence(
                                     this_problem.finalForceCoefficients_W[airplane_id]
                                 )
                                 solved_coefficients[airplane_id, 3:6] = (
-                                    this_problem.finalMomentCoefficients_W_CgP1[
+                                    this_problem.finalMomentCoefficients_W_Cg[
                                         airplane_id
                                     ]
                                 )
@@ -1268,7 +1268,7 @@ def analyze_unsteady_convergence(
                                     ]
                                 )
                                 solved_coefficients[airplane_id, 3:6] = (
-                                    this_problem.finalMeanMomentCoefficients_W_CgP1[
+                                    this_problem.finalMeanMomentCoefficients_W_Cg[
                                         airplane_id
                                     ]
                                 )
@@ -1765,8 +1765,8 @@ def _validate_coefficient_mask(
     functions and returns it as an ndarray.
 
     :param coefficient_mask: A tuple of six bools that determines which of the six load
-        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1) must
-        converge, or None to require all six. At least one element must be True.
+        coefficients (cFX_W, cFY_W, cFZ_W, cMX_W_Cg, cMY_W_Cg, cMZ_W_Cg) must converge,
+        or None to require all six. At least one element must be True.
     :return: A (6,) ndarray of bools representing the validated mask.
     """
     if coefficient_mask is None:
@@ -1808,8 +1808,8 @@ def _check_coefficient_convergence(
     :param these_coefficients: A (M,6) ndarray of floats, where M is the number of
         Airplanes, of this iteration's six load coefficients for each Airplane: the
         three force coefficients (in wind axes) and the three moment coefficients (in
-        wind axes, relative to the first Airplane's CG), or (cFX_W, cFY_W, cFZ_W,
-        cMX_W_CgP1, cMY_W_CgP1, cMZ_W_CgP1).
+        wind axes, relative to each Airplane's CG), or (cFX_W, cFY_W, cFZ_W, cMX_W_Cg,
+        cMY_W_Cg, cMZ_W_Cg).
     :param coarser_coefficients: A (M,6) ndarray of floats, of the same shape, of the
         incrementally coarser iteration's six load coefficients for each Airplane.
     :param rtol: The relative tolerance. It must be a positive float.

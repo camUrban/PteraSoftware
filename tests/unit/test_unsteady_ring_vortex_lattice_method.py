@@ -69,10 +69,40 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         with self.assertRaises(AttributeError):
             setattr(solver, "steady_problems", ())
 
-    def test_force_method_defaults_to_joukowski(self) -> None:
-        """Test that force_method defaults to "joukowski"."""
+    def test_prescribed_wake_raises_before_run(self) -> None:
+        """Test that reading prescribed_wake before run raises a RuntimeError."""
         solver = solver_fixtures.make_unsteady_ring_solver_fixture()
-        self.assertEqual(solver._force_method, "joukowski")
+        with self.assertRaises(RuntimeError):
+            _ = solver.prescribed_wake
+
+    def test_prescribed_wake_is_read_only(self) -> None:
+        """Test that the prescribed_wake property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "prescribed_wake", True)
+
+    def test_force_method_raises_before_run(self) -> None:
+        """Test that reading force_method before run raises a RuntimeError."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(RuntimeError):
+            _ = solver.force_method
+
+    def test_force_method_is_read_only(self) -> None:
+        """Test that the force_method property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "force_method", "joukowski")
+
+    def test_ran_is_false_before_run(self) -> None:
+        """Test that ran is False before run has been called."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        self.assertFalse(solver.ran)
+
+    def test_ran_is_read_only(self) -> None:
+        """Test that the ran property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "ran", True)
 
     def test_run_rejects_invalid_force_method_strings(self) -> None:
         """Test that run raises ValueError for invalid force_method strings."""

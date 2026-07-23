@@ -81,7 +81,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         "_stackRc0s",
         "stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
-        "ran",
+        "_ran",
     )
 
     def __init__(self, steady_problem: problems.SteadyProblem) -> None:
@@ -145,7 +145,15 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
         self.gridStreamlinePoints_GP1_CgP1 = np.empty((0, 3), dtype=float)
 
-        self.ran = False
+        self._ran: bool = False
+
+    @property
+    def ran(self) -> bool:
+        """Whether the solver has been run.
+
+        :return: True if a call to run has completed on this solver and False otherwise.
+        """
+        return self._ran
 
     def run(self, calculate_streamlines: bool | np.bool_ = True) -> None:
         """Runs the solver on the SteadyProblem.
@@ -203,7 +211,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.
-        self.ran = True
+        self._ran = True
 
     def _collapse_geometry(self) -> None:
         """Computes the horseshoe vortex geometries and collapses them, along with each

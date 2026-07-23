@@ -132,7 +132,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_currentStackWakeRc0s",
         "stackSeedPoints_GP1_CgP1",
         "gridStreamlinePoints_GP1_CgP1",
-        "ran",
+        "_ran",
     )
 
     # This attribute indicates whether the solver models body angular rates (a non-zero
@@ -171,8 +171,11 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.first_results_step = self.unsteady_problem.first_results_step
         self._first_averaging_step = self.unsteady_problem.first_averaging_step
         self._current_step: int = 0
-        self._prescribed_wake: bool = True
-        self._force_method: str = "joukowski"
+
+        # These two backing slots hold the configuration of the most recent run. They
+        # are None until the first call to run assigns them validated values.
+        self._prescribed_wake: bool | None = None
+        self._force_method: str | None = None
 
         first_steady_problem: problems.SteadyProblem = self._get_steady_problem_at(0)
 
@@ -369,7 +372,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self.stackSeedPoints_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
         self.gridStreamlinePoints_GP1_CgP1: np.ndarray = np.empty((0, 3), dtype=float)
 
-        self.ran = False
+        self._ran: bool = False
 
     @property
     def steady_problems(self) -> tuple[problems.SteadyProblem, ...]:
@@ -383,6 +386,41 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :return: A tuple of the SteadyProblems, one per initialized time step.
         """
         return self.unsteady_problem.steady_problems
+
+    @property
+    def prescribed_wake(self) -> bool:
+        """The wake model selection from the most recent call to run.
+
+        Reading this property before run has been called raises a RuntimeError.
+
+        :return: True if the most recent run used a prescribed wake model and False if
+            it used a free wake.
+        """
+        if self._prescribed_wake is None:
+            raise RuntimeError(
+                "prescribed_wake is unset because run has not been called."
+            )
+        return self._prescribed_wake
+
+    @property
+    def force_method(self) -> str:
+        """The force calculation method selection from the most recent call to run.
+
+        Reading this property before run has been called raises a RuntimeError.
+
+        :return: Either "joukowski" or "katz".
+        """
+        if self._force_method is None:
+            raise RuntimeError("force_method is unset because run has not been called.")
+        return self._force_method
+
+    @property
+    def ran(self) -> bool:
+        """Whether the solver has been run.
+
+        :return: True if a call to run has completed on this solver and False otherwise.
+        """
+        return self._ran
 
     def run(
         self,
@@ -551,7 +589,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             _functions.calculate_streamlines(self)
 
         # Mark that the solver has run.
-        self.ran = True
+        self._ran = True
 
     def _evaluate_step_aerodynamics(self) -> None:
         """Evaluates the aerodynamics for the current time step.

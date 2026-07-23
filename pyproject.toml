@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 profile = "black"
 
 [tool.black]
-target-version = ['py313']
+target-version = ['py311', 'py312', 'py313', 'py314']
 include = '\.pyi?$'
 
 [tool.codespell]

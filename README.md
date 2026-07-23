@@ -19,7 +19,7 @@ This is Ptera Software: a fast, easy-to-use, and open-source package for analyzi
 
 ## Quick Start
 
-Install the package with pip (requires Python 3.11, 3.12, or 3.13):
+Install the package with pip (requires Python 3.11, 3.12, 3.13, or 3.14):
 
 ```shell
 pip install pterasoftware

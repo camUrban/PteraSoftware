@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         dependency-set: ["min", "latest"]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -35,28 +35,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements_min.txt
       - name: Install latest dependencies
-        if: ${{ matrix.dependency-set == 'latest' && matrix.python-version != '3.13' }}
+        if: ${{ matrix.dependency-set == 'latest' && matrix.python-version != '3.14' }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Install latest dependencies and Codecov
-        if: ${{ matrix.dependency-set == 'latest' && matrix.python-version == '3.13' }}
+        if: ${{ matrix.dependency-set == 'latest' && matrix.python-version == '3.14' }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt codecov
       - name: Run tests without coverage
-        if: ${{ !(matrix.python-version == '3.13' && matrix.dependency-set == 'latest') }}
+        if: ${{ !(matrix.python-version == '3.14' && matrix.dependency-set == 'latest') }}
         run: |
           python -m unittest discover -s tests
       - name: Run tests with coverage and generate coverage report
-        if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
+        if: ${{ matrix.python-version == '3.14' && matrix.dependency-set == 'latest' }}
         env:
           NUMBA_JIT_COVERAGE: "1"
         run: |
           coverage run --source=pterasoftware -m unittest discover -s tests
           coverage xml -o coverage.xml
       - name: Upload coverage report to Codecov
-        if: ${{ matrix.python-version == '3.13' && matrix.dependency-set == 'latest' }}
+        if: ${{ matrix.python-version == '3.14' && matrix.dependency-set == 'latest' }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

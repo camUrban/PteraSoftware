@@ -92,11 +92,6 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         """Test that _reinitialize_step_arrays_hook fills all SLEP arrays with zeros."""
         self.solver._reinitialize_step_arrays_hook()
         arrays_to_check = [
-            self.solver._stackCblvpr_GP1_Slep,
-            self.solver._stackCblvpf_GP1_Slep,
-            self.solver._stackCblvpl_GP1_Slep,
-            self.solver._stackCblvpb_GP1_Slep,
-            self.solver._stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
             self.solver._stackSlep_GP1_CgP1,
         ]
@@ -110,11 +105,6 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.solver._reinitialize_step_arrays_hook()
         expected_shape = (self.solver.num_panels, 3)
         arrays_to_check = [
-            self.solver._stackCblvpr_GP1_Slep,
-            self.solver._stackCblvpf_GP1_Slep,
-            self.solver._stackCblvpl_GP1_Slep,
-            self.solver._stackCblvpb_GP1_Slep,
-            self.solver._stackCpp_GP1_Slep,
             self.solver.moments_GP1_Slep,
             self.solver._stackSlep_GP1_CgP1,
         ]

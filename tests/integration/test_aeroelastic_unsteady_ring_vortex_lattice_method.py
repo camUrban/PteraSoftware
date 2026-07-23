@@ -1,6 +1,6 @@
 """Integration tests for the AeroelasticUnsteadyRingVortexLatticeMethodSolver.
 
-These tests verify four things:
+These tests verify five things:
 
 1. The solver runs to completion and populates the expected output state.
 2. A wing with higher density deforms more than a wing with lower density when all
@@ -13,6 +13,10 @@ These tests verify four things:
    strip's leading edge point) and the deformation angle y component histories (the
    entries of listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz) of the main and reflected
    wings match.
+5. A run with the Katz force method completes and produces nonzero aeroelastic
+   forcing: the structural solve consumes the SLEP moments that the
+   force-method-agnostic load processing hook derives from the per-Panel loads, so
+   the run must yield nonzero SLEP moments and nonzero wing deformation.
 
 The second property follows from the torsional spring-damper model. The prescribed
 flapping motion applies an inertial moment M_inertial = I * d^2(theta_prescribed)/dt^2
@@ -292,6 +296,60 @@ class TestAeroelasticUnsteadySolverCompletion(unittest.TestCase):
             len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0]),
             expected_time_series_length,
         )
+
+
+class TestAeroelasticUnsteadySolverKatzForceMethod(unittest.TestCase):
+    """Verifies that the AeroelasticUnsteadyRingVortexLatticeMethodSolver runs to
+    completion with the Katz force method and produces nonzero aeroelastic forcing.
+
+    The structural solve consumes the SLEP moments that the force-method-agnostic load
+    processing hook derives from the per-Panel loads, so a healthy run with the Katz
+    force method must yield nonzero SLEP moments and nonzero wing deformation. The
+    failure mode this guards against is a run that completes while leaving the SLEP
+    moments at zero, in which case the structural solve sees no aerodynamic forcing and
+    the wing never deforms.
+    """
+
+    def setUp(self) -> None:
+        """Create and run the solver with the Katz force method.
+
+        :return: None
+        """
+        self.solver = _make_aeroelastic_solver(wing_density=0.01)
+        self.solver.run(
+            prescribed_wake=False,
+            calculate_streamlines=False,
+            show_progress=False,
+            force_method="katz",
+        )
+
+    def test_solver_completes_and_deforms(self) -> None:
+        """The solver populates the full deformation angle time series and produces
+        nonzero SLEP moments and nonzero deformation angles.
+
+        The time series is seeded with one initial-state entry at construction, and
+        initialize_next_problem appends one entry on each of steps 1 through num_steps -
+        1, so a completed 20 step run holds 20 entries.
+
+        :return: None
+        """
+        problem = self.solver._aeroelastic_unsteady_problem
+        # One seed entry plus one entry for steps 1 through num_steps - 1.
+        expected_time_series_length = 20  # 1 + (num_steps - 1) = 1 + (20 - 1)
+        self.assertEqual(
+            len(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0]),
+            expected_time_series_length,
+        )
+
+        slep_moment_magnitude = float(np.max(np.abs(self.solver.moments_GP1_Slep)))
+        self.assertGreater(slep_moment_magnitude, 0.0)
+
+        deformation_magnitude = float(
+            np.max(
+                np.abs(np.array(problem.listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz[0]))
+            )
+        )
+        self.assertGreater(deformation_magnitude, 0.0)
 
 
 class TestAeroelasticUnsteadySolverPhysics(unittest.TestCase):

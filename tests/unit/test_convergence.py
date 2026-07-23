@@ -466,6 +466,25 @@ class TestAnalyzeUnsteadyConvergenceValidation(unittest.TestCase):
                 free_wake=False,
             )
 
+    def test_non_string_force_method_raises_type_error(self) -> None:
+        """Test that a force_method that is not a str raises a TypeError."""
+        bad_force_method: Any = 42
+        with self.assertRaises(TypeError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_cycles_bounds=(1, 2),
+                force_method=bad_force_method,
+            )
+
+    def test_invalid_force_method_string_raises_value_error(self) -> None:
+        """Test that a force_method that is not a valid option raises a ValueError."""
+        with self.assertRaises(ValueError):
+            convergence.analyze_unsteady_convergence(
+                ref_problem=self.variable_problem,
+                num_cycles_bounds=(1, 2),
+                force_method="invalid",
+            )
+
     def test_max_wake_cycles_raises_value_error(self) -> None:
         """Test that a variable-geometry ref_problem whose wake is truncated by
         max_wake_cycles raises a ValueError."""

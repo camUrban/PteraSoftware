@@ -31,6 +31,7 @@
       <w>bfgs</w>
       <w>bhvp</w>
       <w>bhvr</w>
+      <w>bigg</w>
       <w>blbrvp</w>
       <w>bleriot</w>
       <w>blhvp</w>
@@ -38,6 +39,7 @@
       <w>blrvp</w>
       <w>blvrp</w>
       <w>blwrvp</w>
+      <w>boldsymbol</w>
       <w>bopp</w>
       <w>brbrvp</w>
       <w>brhvp</w>
@@ -52,6 +54,7 @@
       <w>cblvpf</w>
       <w>cblvpl</w>
       <w>cblvpr</w>
+      <w>cdots</w>
       <w>chgrp</w>
       <w>chordwise</w>
       <w>chown</w>
@@ -70,6 +73,8 @@
       <w>customspaces</w>
       <w>darkgray</w>
       <w>davissm</w>
+      <w>dbln</w>
+      <w>ddots</w>
       <w>deepcopied</w>
       <w>deepcopying</w>
       <w>defs</w>
@@ -154,6 +159,7 @@
       <w>lachassgne</w>
       <w>lanz</w>
       <w>lbrv</w>
+      <w>ldots</w>
       <w>legacysolvers</w>
       <w>leishman</w>
       <w>lers</w>
@@ -168,6 +174,7 @@
       <w>marske</w>
       <w>massa</w>
       <w>mathbf</w>
+      <w>mathrm</w>
       <w>matplotlib</w>
       <w>maxfev</w>
       <w>maxfun</w>
@@ -190,6 +197,8 @@
       <w>noninfringement</w>
       <w>numba</w>
       <w>numexpr</w>
+      <w>oint</w>
+      <w>onera</w>
       <w>ornithopter</w>
       <w>pathex</w>
       <w>pchip</w>
@@ -251,12 +260,15 @@
       <w>uninsdeletekey</w>
       <w>uninsdeletevalue</w>
       <w>unitless</w>
+      <w>unst</w>
       <w>usnps</w>
       <w>uvlm</w>
       <w>vawt</w>
+      <w>vdots</w>
       <w>vectorize</w>
       <w>viridis</w>
       <w>vortices</w>
+      <w>vortxl</w>
       <w>vstab</w>
       <w>vstack</w>
       <w>vtkmodules</w>

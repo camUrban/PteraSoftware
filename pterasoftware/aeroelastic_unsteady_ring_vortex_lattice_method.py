@@ -38,12 +38,10 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     the wing root.
 
     **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:**
-    initializes and maintains SLEP index mapping and position arrays, overrides
-    ``_reinitialize_step_arrays_hook`` to reset SLEP arrays each step, overrides
-    ``_load_calculation_moment_processing_hook`` to compute the moments (in the first
-    Airplane's geometry axes) about the strip leading edge points, and computes the
-    bound vortex positions (in the first Airplane's geometry axes) relative to the strip
-    leading edge points.
+    initializes and maintains the SLEP index mapping and position arrays, overrides
+    ``_reinitialize_step_arrays_hook`` to reset the SLEP arrays each step, and overrides
+    ``_process_panel_loads_hook`` to compute the moments (in the first Airplane's
+    geometry axes) about the strip leading edge points from the per Panel total loads.
 
     **Structural coupling output:** moments_GP1_Slep is the solver's one public SLEP
     attribute: a (num_panels, 3) ndarray of floats representing the moments (in the
@@ -57,11 +55,6 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     __slots__ = (
         "_slep_point_indices",
         "_slep_outboard_is_left",
-        "_stackCblvpr_GP1_Slep",
-        "_stackCblvpf_GP1_Slep",
-        "_stackCblvpl_GP1_Slep",
-        "_stackCblvpb_GP1_Slep",
-        "_stackCpp_GP1_Slep",
         "moments_GP1_Slep",
         "_stackSlep_GP1_CgP1",
     )
@@ -122,19 +115,10 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
             slep_outboard_is_left_list, dtype=bool
         )
 
-        # These are the current time step's center bound line vortex points for the
-        # right, front, left, and back legs (in the first Airplane's geometry axes,
-        # relative to the local strip leading edge point).
-        self._stackCblvpr_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self._stackCblvpf_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self._stackCblvpl_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-        self._stackCblvpb_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
-
-        # These are the collocation Panel points (in the first Airplane's geometry axes,
-        # relative to the local strip leading edge point), and each Panel's own strip's
-        # leading edge point (in the first Airplane's geometry axes, relative to the
-        # first Airplane's CG).
-        self._stackCpp_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
+        # These are the moments (in the first Airplane's geometry axes, each relative to
+        # its panel's strip leading edge point) on every Panel, and each Panel's own
+        # strip's leading edge point (in the first Airplane's geometry axes, relative to
+        # the first Airplane's CG).
         self.moments_GP1_Slep: np.ndarray = np.empty(0, dtype=float)
         self._stackSlep_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
@@ -156,96 +140,53 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
 
         :return: None
         """
-        self._stackCblvpr_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackCblvpf_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackCblvpl_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackCblvpb_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
-        self._stackCpp_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
         self.moments_GP1_Slep = np.zeros((self.num_panels, 3), dtype=float)
         self._stackSlep_GP1_CgP1 = np.zeros((self.num_panels, 3), dtype=float)
 
-    def _load_calculation_moment_processing_hook(
+    def _process_panel_loads_hook(
         self,
-        rightLegForces_GP1: np.ndarray,
-        frontLegForces_GP1: np.ndarray,
-        leftLegForces_GP1: np.ndarray,
-        backLegForces_GP1: np.ndarray,
-        unsteady_forces_GP1: np.ndarray,
-    ) -> np.ndarray:
-        """Override parent to compute moments about both the first Airplane's CG and the
-        strip leading edge points.
+        forces_GP1: np.ndarray,
+        moments_GP1_CgP1: np.ndarray,
+    ) -> None:
+        """Override parent to additionally compute the moments about the strip leading
+        edge points.
 
-        This hook extends the parent class's moment calculation by additionally
-        computing the moments (in the first Airplane's geometry axes) about each panel's
-        strip leading edge point (SLEP). This is used for analyzing wing loading and
-        deformation characteristics relative to the wing root.
+        This hook extends the parent class's load processing by computing the moments
+        (in the first Airplane's geometry axes, each relative to its panel's strip
+        leading edge point) on every Panel and storing them in self.moments_GP1_Slep,
+        which the AeroelasticUnsteadyProblem's structural solve reads as its aerodynamic
+        forcing.
 
-        The method first calls the parent's implementation to get the moments (in the
-        first Airplane's geometry axes, relative to the first Airplane's CG), then
-        updates the bound vortex positions to be relative to the strip leading edge
-        points, recalculates all moment contributions (in the first Airplane's geometry
-        axes, each relative to its panel's strip leading edge point), and stores them in
-        self.moments_GP1_Slep.
+        Each Panel's moment about its strip leading edge point follows from the moment
+        transport theorem: it is the Panel's moment about the first Airplane's CG minus
+        the cross product of the strip leading edge point's position (relative to that
+        CG) with the Panel's total force. Because this consumes only the per Panel total
+        loads, it holds for every force method regardless of where each method applies
+        its component forces.
 
-        :return: moments_GP1_CgP1, a (N,3) ndarray of floats representing the moments
-            (in the first Airplane's geometry axes, relative to the first Airplane's CG)
-            on every Panel at the current time step. SLEP moments are stored separately
-            in self.moments_GP1_Slep.
+        :param forces_GP1: A (N,3) ndarray of floats representing the forces (in the
+            first Airplane's geometry axes) on every Panel at the current time step. The
+            units are in Newtons.
+        :param moments_GP1_CgP1: A (N,3) ndarray of floats representing the moments (in
+            the first Airplane's geometry axes, relative to the first Airplane's CG) on
+            every Panel at the current time step. The units are in Newton-meters.
+        :return: None
         """
-        moments_GP1_CgP1 = super()._load_calculation_moment_processing_hook(
-            rightLegForces_GP1,
-            frontLegForces_GP1,
-            leftLegForces_GP1,
-            backLegForces_GP1,
-            unsteady_forces_GP1,
+        self._populate_slep_positions()
+
+        self.moments_GP1_Slep = moments_GP1_CgP1 - _functions.numba_1d_explicit_cross(
+            self._stackSlep_GP1_CgP1, forces_GP1
         )
 
-        self._update_bound_vortex_positions_relative_to_slep_points()
+        super()._process_panel_loads_hook(forces_GP1, moments_GP1_CgP1)
 
-        rightLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self._stackCblvpr_GP1_Slep, rightLegForces_GP1
-        )
-        frontLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self._stackCblvpf_GP1_Slep, frontLegForces_GP1
-        )
-        leftLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self._stackCblvpl_GP1_Slep, leftLegForces_GP1
-        )
-        backLegMoments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self._stackCblvpb_GP1_Slep, backLegForces_GP1
-        )
-
-        # The unsteady moment is calculated at the collocation point because the
-        # unsteady force acts on the bound ring vortex, whose center is at the
-        # collocation point, not at the Panel's centroid.
-        unsteady_moments_GP1_Slep = _functions.numba_1d_explicit_cross(
-            self._stackCpp_GP1_Slep, unsteady_forces_GP1
-        )
-
-        self.moments_GP1_Slep = (
-            rightLegMoments_GP1_Slep
-            + frontLegMoments_GP1_Slep
-            + leftLegMoments_GP1_Slep
-            + backLegMoments_GP1_Slep
-            + unsteady_moments_GP1_Slep
-        )
-
-        return moments_GP1_CgP1
-
-    def _update_bound_vortex_positions_relative_to_slep_points(self) -> None:
-        """Transform the bound RingVortex leg center positions (in the first Airplane's
-        geometry axes) from relative to the first Airplane's CG to relative to each
-        panel's strip leading edge point.
+    def _populate_slep_positions(self) -> None:
+        """Populate each Panel's strip leading edge point position (in the first
+        Airplane's geometry axes, relative to the first Airplane's CG).
 
         Gathers the outboard front point from each panel (the front-right point on a
-        root-to-tip grid, and the front-left point on a mirror-meshed grid), maps each
-        panel to its strip's leading edge point using _slep_point_indices, and subtracts
-        that SLEP position from the vortex leg center positions and the collocation
-        points.
-
-        This prepares positions for computing the moments (in the first Airplane's
-        geometry axes) about the strip leading edge points, which is important for
-        analyzing local wing loading and deformations.
+        root-to-tip grid, and the front-left point on a mirror-meshed grid) and maps
+        each panel to its strip's leading edge point using _slep_point_indices.
 
         :return: None
         """
@@ -261,18 +202,3 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
         self._stackSlep_GP1_CgP1 = outboardFrontPoints_GP1_CgP1[
             self._slep_point_indices
         ]
-        self._stackCblvpr_GP1_Slep = (
-            self.stackCblvpr_GP1_CgP1 - self._stackSlep_GP1_CgP1
-        )
-        self._stackCblvpf_GP1_Slep = (
-            self.stackCblvpf_GP1_CgP1 - self._stackSlep_GP1_CgP1
-        )
-        self._stackCblvpl_GP1_Slep = (
-            self.stackCblvpl_GP1_CgP1 - self._stackSlep_GP1_CgP1
-        )
-        self._stackCblvpb_GP1_Slep = (
-            self.stackCblvpb_GP1_CgP1 - self._stackSlep_GP1_CgP1
-        )
-
-        # Find the collocation point positions relative to the SLEP points.
-        self._stackCpp_GP1_Slep = self.stackCpp_GP1_CgP1 - self._stackSlep_GP1_CgP1

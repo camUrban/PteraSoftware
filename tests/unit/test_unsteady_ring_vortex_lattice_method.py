@@ -69,6 +69,66 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         with self.assertRaises(AttributeError):
             setattr(solver, "steady_problems", ())
 
+    def test_prescribed_wake_raises_before_run(self) -> None:
+        """Test that reading prescribed_wake before run raises a RuntimeError."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(RuntimeError):
+            _ = solver.prescribed_wake
+
+    def test_prescribed_wake_is_read_only(self) -> None:
+        """Test that the prescribed_wake property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "prescribed_wake", True)
+
+    def test_force_method_raises_before_run(self) -> None:
+        """Test that reading force_method before run raises a RuntimeError."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(RuntimeError):
+            _ = solver.force_method
+
+    def test_force_method_is_read_only(self) -> None:
+        """Test that the force_method property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "force_method", "joukowski")
+
+    def test_ran_is_false_before_run(self) -> None:
+        """Test that ran is False before run has been called."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        self.assertFalse(solver.ran)
+
+    def test_ran_is_read_only(self) -> None:
+        """Test that the ran property cannot be reassigned."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        with self.assertRaises(AttributeError):
+            setattr(solver, "ran", True)
+
+    def test_run_rejects_invalid_force_method_strings(self) -> None:
+        """Test that run raises ValueError for invalid force_method strings."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        invalid_values = ["invalid", "JOUKOWSKI", "Katz", "both", ""]
+        for invalid in invalid_values:
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError):
+                    solver.run(force_method=invalid, show_progress=False)
+
+    def test_run_rejects_non_string_force_methods(self) -> None:
+        """Test that run raises TypeError for non-string force_method values."""
+        solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        invalid_types: list[Any] = [
+            123,
+            1.0,
+            None,
+            True,
+            ["joukowski"],
+            {"method": "joukowski"},
+        ]
+        for invalid in invalid_types:
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(TypeError):
+                    solver.run(force_method=invalid, show_progress=False)
+
 
 class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
     """Tests for the default implementations of the three solver extension hooks added

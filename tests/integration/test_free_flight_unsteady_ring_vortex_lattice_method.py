@@ -17,6 +17,11 @@ This case validates that the coupling completes a flapping free flight without
 diverging, that the flapping genuinely excites large oscillatory loads, that the sub-
 iteration converges within its cap every step, and that symmetric flapping keeps the
 flight laterally symmetric.
+
+The third case reruns the simple glider with the Katz force method. The rigid body
+dynamics consume only the total loads that process_solver_loads writes, which both force
+methods produce, so the coupled run must again yield a finite, full-length load history
+whose mean lift approximately balances the glider's weight.
 """
 
 import logging
@@ -339,3 +344,65 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         self.assertLess(float(np.max(np.abs(self.betas))), 1.0)
         self.assertLess(float(np.max(np.abs(self.side_forces))), 1.0)
         self.assertLess(float(np.max(np.abs(self.positions_E_Eo[:, 1]))), 1.0e-3)
+
+
+class TestFreeFlightUnsteadyRingVortexLatticeMethodKatzForceMethod(unittest.TestCase):
+    """This is a class for testing the FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    on the statically stable glider with the Katz force method."""
+
+    solver: (
+        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    )
+    forces_W: np.ndarray
+    lifts: np.ndarray
+    weight: float
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """This method sets up the test by running the simple glider's free flight
+        simulation once with the Katz force method and extracting its load history.
+
+        :return: None
+        """
+        cls.solver = solver_fixtures.make_simple_glider_free_flight_solver()
+        cls.solver.run(prescribed_wake=True, show_progress=False, force_method="katz")
+
+        problem = cls.solver.unsteady_problem
+
+        # In Ptera Software's wind axes, lift is the negative z component of the wind
+        # axes force.
+        forces_W = np.array(
+            [
+                steady_problem.airplanes[0].forces_W
+                for steady_problem in problem.steady_problems
+            ]
+        )
+        cls.forces_W = forces_W
+        cls.lifts = -forces_W[:, 2]
+
+        cls.weight = cls.solver.current_airplanes[0].weight
+
+    def test_run_produces_finite_full_length_history(self) -> None:
+        """This method tests that the coupled run completed for every time step and
+        produced a finite load history with the Katz force method.
+
+        :return: None
+        """
+        num_steps = self.solver.unsteady_problem.num_steps
+
+        self.assertEqual(len(self.forces_W), num_steps)
+
+        self.assertTrue(np.all(np.isfinite(self.forces_W)))
+
+    def test_lift_approximately_balances_weight(self) -> None:
+        """This method tests that the mean lift over the glide is close to the glider's
+        weight, as it should be near the trimmed condition. This confirms that the Katz
+        force method feeds physically sensible loads into the rigid body dynamics.
+
+        :return: None
+        """
+        mean_lift = float(np.mean(self.lifts))
+        lift_to_weight_ratio = mean_lift / self.weight
+
+        self.assertGreater(lift_to_weight_ratio, 0.85)
+        self.assertLess(lift_to_weight_ratio, 1.15)

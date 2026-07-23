@@ -714,6 +714,7 @@ def analyze_unsteady_convergence(
     show_solver_progress: bool | np.bool_ = True,
     resolve_converged_solver: bool | np.bool_ = False,
     cache_path: str | Path | None = None,
+    force_method: str = "joukowski",
 ) -> (
     tuple[
         bool,
@@ -857,20 +858,25 @@ def analyze_unsteady_convergence(
         calculated, so the returned solver is ready to use. The default is False.
     :param cache_path: An optional path (a str or Path, which must end with ".json") to
         a JSON file that caches each iteration's solved load coefficients and solve
-        time, keyed on the reference problem and the wake state, wake length, and mesh
-        parameters, together with the mesh values it resolved (the spanwise Panel and
-        WingCrossSection counts and the optimized delta_time). When given, an iteration
-        already in the cache reuses those stored coefficients and values instead of re-
-        running the solver and re-resolving the mesh, so a warm run also skips the
-        delta_time optimizer, and each new iteration is written through to the file, so
-        an interrupted or repeated study reuses the work it has already done. A cached
-        iteration reports its stored solve time, so a warm run's convergence report
-        still shows how long the converged mesh took to solve. An iteration whose
-        coefficients and values are all cached also skips building its meshed problem,
-        which avoids regenerating the geometry at every time step. The mesh values are
-        keyed on the absolute mesh rather than a sweep index, so a later run over
-        different bounds still reuses any iteration it shares. When None, no cache is
-        read or written. The default is None.
+        time, keyed on the reference problem and the wake state, wake length, mesh
+        parameters, and force method, together with the mesh values it resolved (the
+        spanwise Panel and WingCrossSection counts and the optimized delta_time). When
+        given, an iteration already in the cache reuses those stored coefficients and
+        values instead of re-running the solver and re-resolving the mesh, so a warm run
+        also skips the delta_time optimizer, and each new iteration is written through
+        to the file, so an interrupted or repeated study reuses the work it has already
+        done. A cached iteration reports its stored solve time, so a warm run's
+        convergence report still shows how long the converged mesh took to solve. An
+        iteration whose coefficients and values are all cached also skips building its
+        meshed problem, which avoids regenerating the geometry at every time step. The
+        mesh values are keyed on the absolute mesh rather than a sweep index, so a later
+        run over different bounds still reuses any iteration it shares. When None, no
+        cache is read or written. The default is None.
+    :param force_method: The method each run of the unsteady solver uses for calculating
+        aerodynamic forces. Valid options are "joukowski" which uses the Kutta Joukowski
+        theorem on each RingVortex leg, and "katz" which uses the pressure integration
+        method adapted from "Low Speed Aerodynamics" by Katz and Plotkin (Section 13.12,
+        Eq. 13.150 and 13.151). The default is "joukowski".
     :return: A tuple of one bool, three ints, and a solver, or a tuple of five Nones. In
         order, the first four elements are the converged wake state (prescribed=True and
         free=False), the converged wake length (in number of cycles for non static
@@ -988,6 +994,13 @@ def analyze_unsteady_convergence(
             raise ValueError(
                 f"cache_path must be a file path, got directory '{cache_path}'."
             )
+
+    # Validate the force_method parameter.
+    force_method = _parameter_validation.str_return_str(force_method, "force_method")
+    if force_method not in ("joukowski", "katz"):
+        raise ValueError(
+            f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+        )
 
     run_start_time = time.time()
     _logger.info(_logging.indent() + "Beginning convergence analysis")
@@ -1171,14 +1184,15 @@ def analyze_unsteady_convergence(
                     )
 
                     # Build this mesh's solve-cache key from the reference problem and
-                    # the wake state, wake length, and mesh parameters that determine
-                    # the solve.
+                    # the wake state, wake length, mesh parameters, and force method
+                    # that determine the solve.
                     solve_cache_key = _convergence_cache.solve_cache_key(
                         ref_problem_hash,
                         wake,
                         wake_length,
                         panel_aspect_ratio,
                         num_chordwise_panels,
+                        force_method,
                     )
                     cached = solve_cache_key in solve_cache
 
@@ -1239,6 +1253,7 @@ def analyze_unsteady_convergence(
                                 prescribed_wake=wake,
                                 calculate_streamlines=False,
                                 show_progress=show_solver_progress,
+                                force_method=force_method,
                             )
 
                         # Create and fill an ndarray with each of this iteration's
@@ -1641,6 +1656,7 @@ def analyze_unsteady_convergence(
                                     prescribed_wake=converged_wake,
                                     calculate_streamlines=True,
                                     show_progress=show_solver_progress,
+                                    force_method=force_method,
                                 )
 
                         _logger.info(

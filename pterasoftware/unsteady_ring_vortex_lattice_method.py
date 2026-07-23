@@ -1927,8 +1927,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # past the surface, and on nonplanar geometry the bound vorticity contributes to
         # that mean. For a planar wing, the bound legs induce no tangential velocity at
         # the collocation points, and the two forms agree exactly.
+        bound_singularity_counts = np.zeros(4, dtype=np.int64)
+        wake_singularity_counts = np.zeros(4, dtype=np.int64)
         stackVelocityCpp_GP1__E = (
-            self.calculate_solution_velocity(stackP_GP1_CgP1=self.stackCpp_GP1_CgP1)
+            self.calculate_solution_velocity(
+                stackP_GP1_CgP1=self.stackCpp_GP1_CgP1,
+                bound_singularity_counts=bound_singularity_counts,
+                wake_singularity_counts=wake_singularity_counts,
+            )
             + stackMovementVelocityCpp_GP1__E
         )
 
@@ -2000,20 +2006,34 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # Gamma_{i-1, j}.
 
         # Get velocities induced by bound chordwise vortex segments and wake.
-
-        # TODO: Update _calculate_chordwise_induced_velocity and
-        #  _calculate_wake_induced_velocity to include their Biot-Savart calls in the
-        #  main singularity accounting, similar to how _calculate_loads_joukowski passes
-        #  bound_singularity_counts and wake_singularity_counts through
-        #  calculate_solution_velocity.
         stackChordwiseInducedVelocity_GP1__E = (
-            self._calculate_chordwise_induced_velocity()
+            self._calculate_chordwise_induced_velocity(bound_singularity_counts)
         )
-        stackWakeInducedVelocity_GP1__E = self._calculate_wake_induced_velocity()
+        stackWakeInducedVelocity_GP1__E = self._calculate_wake_induced_velocity(
+            wake_singularity_counts
+        )
 
         # This is the total induced velocity at collocation points.
         stackTotalInducedVelocity_GP1__E = (
             stackChordwiseInducedVelocity_GP1__E + stackWakeInducedVelocity_GP1__E
+        )
+
+        # Unlike the Joukowski method's leg center evaluations, all of the Katz method's
+        # velocity evaluations are at the collocation points, which lie on no bound
+        # filament, so no structural singularity counts are expected.
+        unexpected_bound_singularity_counts = np.copy(bound_singularity_counts)
+        unexpected_wake_singularity_counts = np.copy(wake_singularity_counts)
+        _functions.log_unexpected_singularity_counts(
+            _logger,
+            logging.ERROR,
+            "_calculate_loads (bound)",
+            unexpected_bound_singularity_counts,
+        )
+        _functions.log_unexpected_singularity_counts(
+            _logger,
+            logging.INFO,
+            "_calculate_loads (wake)",
+            unexpected_wake_singularity_counts,
         )
 
         # Project the induced velocity onto the unit lift direction. Lambert Eq. 2.15
@@ -2229,7 +2249,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return spanwise_densities
 
-    def _calculate_chordwise_induced_velocity(self) -> np.ndarray:
+    def _calculate_chordwise_induced_velocity(
+        self, singularity_counts: np.ndarray
+    ) -> np.ndarray:
         """Computes velocity at collocation points from the bound trailing vorticity.
 
         Returns the velocity induced at each collocation point by the chordwise
@@ -2248,12 +2270,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         also includes the induced velocity from the image counterparts of both sets of
         segments reflected across that surface.
 
+        :param singularity_counts: A (4,) ndarray of int64 for accumulating singularity
+            event counts from this method's Biot-Savart calls. Counts are incremented in
+            place and accumulate across calls.
         :return: A (num_panels, 3) ndarray of floats for the induced velocity (in the
             first Airplane's geometry axes, observed from the Earth frame) at each
             collocation point. The units are in meters per second.
         """
-        singularity_counts = np.zeros(4, dtype=np.int64)
-
         # Gather the endpoints, strengths, and initial core radii of the trailing edge
         # bound ring vortices' back legs, which run from their back left to their back
         # right vertices.
@@ -2330,7 +2353,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         return stackChordwiseVInd_GP1__E
 
-    def _calculate_wake_induced_velocity(self) -> np.ndarray:
+    def _calculate_wake_induced_velocity(
+        self, singularity_counts: np.ndarray
+    ) -> np.ndarray:
         """Computes velocity at collocation points from wake vortices.
 
         Returns the velocity induced at each collocation point by all wake RingVortices.
@@ -2341,14 +2366,15 @@ class UnsteadyRingVortexLatticeMethodSolver:
         also includes the induced velocity from image wake RingVortices reflected across
         that surface.
 
+        :param singularity_counts: A (4,) ndarray of int64 for accumulating singularity
+            event counts from this method's Biot-Savart calls. Counts are incremented in
+            place and accumulate across calls.
         :return: A (num_panels, 3) ndarray of floats for the wake induced velocity (in
             the first Airplane's geometry axes, observed from the Earth frame) at each
             collocation point. The units are meters per second.
         """
         if self._current_step < 1:
             return np.zeros((self.num_panels, 3), dtype=float)
-
-        singularity_counts = np.zeros(4, dtype=np.int64)
 
         stackWakeVInd_GP1__E = (
             _aerodynamics_functions.collapsed_velocities_from_ring_vortices(

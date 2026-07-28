@@ -233,28 +233,38 @@ def draw(
     )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing an image of a size the caller never
-    # asked for. Only a granted size smaller than the request counts as a shrink, since
-    # a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        granted_width, granted_height = _output_rendering.get_granted_window_size(
-            window_width, window_height
-        )
-        if granted_width < window_width or granted_height < window_height:
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered on "
-                f"screen, where the window manager grants at most {largest_width} by "
-                f"{largest_height} pixels. Request a smaller window, or render off "
-                f"screen by setting pyvista.OFF_SCREEN to True."
-            )
-
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
     plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
+
+    # Set the background color before the check below realizes the window, so that the
+    # window appears in its final color rather than flashing white first.
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
+
+    # A window manager will not grant an on-screen render window the whole display, and
+    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
+    # rejected here rather than quietly producing a file of a size the caller never
+    # asked for. Rendering the empty scene realizes the window, which is what makes the
+    # granted size readable. Only a granted size smaller than the request counts as a
+    # shrink, since a display that scales its pixels reports a larger one.
+    if not pv.OFF_SCREEN:
+        render_window = plotter.ren_win
+        assert render_window is not None
+        render_window.Render()
+        granted_width, granted_height = render_window.GetSize()
+        if granted_width < window_width or granted_height < window_height:
+            pv.close_all()
+            largest_width, largest_height = _output_rendering.get_largest_window_size()
+            raise ValueError(
+                f"window_size {window_width} by {window_height} cannot be rendered "
+                f"on screen, where the window manager grants at most "
+                f"{largest_width} by {largest_height} pixels. Request a smaller "
+                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
+                f"True."
+            )
 
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
@@ -494,10 +504,6 @@ def draw(
     else:
         draw_cpos = None
 
-    # Set the Plotter's background color.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window. When
         # the user closes the window, the Plotter still exists. Therefore, it can later
@@ -662,28 +668,38 @@ def animate(
         speed = 50.0 / requested_fps
     actual_fps = float(math.floor(requested_fps * speed))
 
-    # A window manager will not grant an on-screen render window the whole display, and
-    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
-    # rejected here rather than quietly producing an animation of a size the caller
-    # never asked for. Only a granted size smaller than the request counts as a shrink,
-    # since a display that scales its pixels reports a larger one.
-    if not pv.OFF_SCREEN:
-        granted_width, granted_height = _output_rendering.get_granted_window_size(
-            window_width, window_height
-        )
-        if granted_width < window_width or granted_height < window_height:
-            largest_width, largest_height = _output_rendering.get_largest_window_size()
-            raise ValueError(
-                f"window_size {window_width} by {window_height} cannot be rendered on "
-                f"screen, where the window manager grants at most {largest_width} by "
-                f"{largest_height} pixels. Request a smaller window, or render off "
-                f"screen by setting pyvista.OFF_SCREEN to True."
-            )
-
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
     plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
+
+    # Set the background color before the check below realizes the window, so that the
+    # window appears in its final color rather than flashing white first.
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
+
+    # A window manager will not grant an on-screen render window the whole display, and
+    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
+    # rejected here rather than quietly producing a file of a size the caller never
+    # asked for. Rendering the empty scene realizes the window, which is what makes the
+    # granted size readable. Only a granted size smaller than the request counts as a
+    # shrink, since a display that scales its pixels reports a larger one.
+    if not pv.OFF_SCREEN:
+        render_window = plotter.ren_win
+        assert render_window is not None
+        render_window.Render()
+        granted_width, granted_height = render_window.GetSize()
+        if granted_width < window_width or granted_height < window_height:
+            pv.close_all()
+            largest_width, largest_height = _output_rendering.get_largest_window_size()
+            raise ValueError(
+                f"window_size {window_width} by {window_height} cannot be rendered "
+                f"on screen, where the window manager grants at most "
+                f"{largest_width} by {largest_height} pixels. Request a smaller "
+                f"window, or render off screen by setting pyvista.OFF_SCREEN to "
+                f"True."
+            )
 
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
@@ -910,11 +926,6 @@ def animate(
         animate_cpos = (-1, -1, 1)
     else:
         animate_cpos = None
-
-    # Set the Plotter's background color.
-    plotter.set_background(  # type: ignore[call-arg]
-        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
-    )
 
     # If not testing, show the Plotter with the first time step so the user can orient
     # the view. When the user presses any key, set the title back to the animation title

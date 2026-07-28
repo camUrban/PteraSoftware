@@ -78,26 +78,27 @@ def get_window_scale(window_width: int, window_height: int) -> float:
     )
 
 
-def get_granted_window_size(window_width: int, window_height: int) -> tuple[int, int]:
-    """Returns the window size a window manager will actually grant for a request.
+def get_largest_window_size() -> tuple[int, int]:
+    """Returns the largest on-screen render window a window manager will grant.
 
-    An on-screen render window cannot be larger than the area the window manager grants,
-    which is the display less any docks or bars and less the window's own title bar, and
-    VTK silently shrinks one that asks for more. GetScreenSize reports neither
-    reduction, and the granted size only becomes readable once a window has been
-    realized, so this measures it rather than computing it.
+    A window cannot be larger than the area the window manager grants, which is the
+    display less any docks or bars and less the window's own title bar, and VTK silently
+    shrinks one that asks for more. GetScreenSize reports neither reduction, and the
+    granted size only becomes readable once a window has been realized, so this measures
+    it rather than computing it.
 
-    The measurement is taken on a throwaway render window. Realizing the render window
-    that will draw the visualization would be cheaper, but rendering an empty scene
-    through it perturbs what it later draws.
+    The measurement is taken on a throwaway render window asking to be far larger than
+    any display, which is shrunk in both dimensions and so reports the maximum in both.
+    draw and animate detect a shrink on their own render window and call this only to
+    name the ceiling in the resulting error, so the throwaway window is created on the
+    error path alone.
 
-    :param window_width: The requested width in pixels.
-    :param window_height: The requested height in pixels.
-    :return: A tuple of the granted width and height in pixels. This equals the request
-        when the window manager grants it in full, and when rendering off screen, which
-        has no such ceiling.
+    :return: A tuple of the largest grantable width and height in pixels. Off-screen
+        rendering has no such ceiling, so this reports the requested size there.
     """
-    probe = pv.Plotter(window_size=[window_width, window_height], lighting=None)
+    probe = pv.Plotter(
+        window_size=[_OVERSIZED_WINDOW_LENGTH, _OVERSIZED_WINDOW_LENGTH], lighting=None
+    )
     try:
         # Match the background the visualizations render on so the probe, which is
         # briefly visible, does not flash a bright window against a dark one.
@@ -109,18 +110,6 @@ def get_granted_window_size(window_width: int, window_height: int) -> tuple[int,
     finally:
         probe.close()
     return granted_width, granted_height
-
-
-def get_largest_window_size() -> tuple[int, int]:
-    """Returns the largest on-screen render window a window manager will grant.
-
-    get_granted_window_size reports what one particular request was given, which names
-    the maximum only in whichever dimension was shrunk. Asking for a window far larger
-    than any display is shrunk in both, so this reports the maximum in both.
-
-    :return: A tuple of the largest grantable width and height in pixels.
-    """
-    return get_granted_window_size(_OVERSIZED_WINDOW_LENGTH, _OVERSIZED_WINDOW_LENGTH)
 
 
 def get_panel_surfaces(

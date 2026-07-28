@@ -22,7 +22,6 @@ the first Airplane's initial and final six-degree-of-freedom state.
 
 from __future__ import annotations
 
-import math
 import os.path
 import time
 from collections.abc import Sequence
@@ -57,7 +56,6 @@ _logger = _logging.get_logger("output")
 _STREAMLINE_COLOR = "orchid"
 _STREAMLINE_LINE_WIDTH = 2.0
 _IMAGE_SURFACE_OPACITY = 0.5
-_TEXT_SPEED_POSITION = (0.05, 0.075)
 
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
@@ -577,6 +575,7 @@ def animate(
     save: bool | np.bool_ = False,
     path: str | Path = "animate.webp",
     quality: int | float = 75.0,
+    speed: int | float | None = None,
     testing: bool | np.bool_ = False,
 ) -> None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
@@ -615,6 +614,17 @@ def animate(
         the most compression artifacts and 100.0 is the largest file with the fewest. It
         can be an int or a float and will be converted internally to a float. This has
         no effect unless save is True. The default is 75.0.
+    :param speed: The playback speed of the saved animation, as a multiple of real time,
+        where 1.0 plays the simulation at true speed and 0.5 plays it at half speed.
+        Setting this to None plays at true speed, slowing the animation down only when
+        true speed would need more than 50.0 frames per second, which is the fastest
+        some programs will render a WebP. Any speed that would need more than 50.0
+        frames per second is instead reached by saving only every Nth frame, which
+        trades the animation's temporal resolution for its speed. It can be an int or a
+        float, must be positive, and will be converted internally to a float. A speed so
+        slow that the animation would save fewer than one frame per second of playback,
+        or so fast that it would save fewer than two frames in total, is rejected. This
+        has no effect unless save is True. The default is None.
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
@@ -664,6 +674,10 @@ def animate(
     quality = _parameter_validation.number_in_range_return_float(
         quality, "quality", 0.0, True, 100.0, True
     )
+    if speed is not None:
+        speed = _parameter_validation.number_in_range_return_float(
+            speed, "speed", 0.0, False
+        )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
     first_results_step = unsteady_solver.first_results_step
@@ -693,13 +707,9 @@ def animate(
             for steady_problem in unsteady_solver.steady_problems
         ]
 
-    # Scale down the true-speed frames per second to at most 50 fps. This is the maximum
-    # speed at which some programs can render WebPs.
-    requested_fps = 1.0 / unsteady_solver.delta_time
-    speed = 1.0
-    if requested_fps > 50.0:
-        speed = 50.0 / requested_fps
-    actual_fps = float(math.floor(requested_fps * speed))
+    # Resolve the playback speed into the frame stride, frame rate, and text overlays
+    # that describe how the saved animation steps through the time steps.
+    playback = _output_rendering.resolve_playback(unsteady_solver, speed, save)
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
@@ -871,15 +881,10 @@ def animate(
             )
         )
 
-    # If saving the animation, add text that displays its speed.
+    # If saving the animation, add the text overlays that describe its playback.
     if save:
-        plotter.add_text(
-            text="Speed: " + str(round(100 * speed)) + "%",
-            position=_TEXT_SPEED_POSITION,
-            font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
-            viewport=True,
-            color=animate_text_color,
-            render=False,
+        _output_rendering.add_playback_overlays(
+            plotter, playback, window_scale, animate_text_color
         )
 
     # Get the Panel surfaces of the first time step's Airplane(s), mapping them into
@@ -1029,15 +1034,10 @@ def animate(
                 panel_surfaces, step_transforms[current_step]
             )
 
-        # If saving the animation, add text that displays its speed.
+        # If saving the animation, add the text overlays that describe its playback.
         if save:
-            plotter.add_text(
-                text="Speed: " + str(round(100 * speed)) + "%",
-                position=_TEXT_SPEED_POSITION,
-                font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
-                viewport=True,
-                color=animate_text_color,
-                render=False,
+            _output_rendering.add_playback_overlays(
+                plotter, playback, window_scale, animate_text_color
             )
 
         # If showing wake ring vortices, get their surfaces, mapping them into Earth
@@ -1107,8 +1107,11 @@ def animate(
         # is whole is invisible, unlike the renders the adds used to trigger.
         plotter.render()
 
-        # If saving, append a WebP Image of this frame to the list of Images.
-        if save:
+        # If saving, append a WebP Image of this frame to the list of Images. Only the
+        # time steps that are multiples of the stride are saved, so a speed the maximum
+        # frame rate cannot carry drops the ones in between. The render above is not
+        # skipped, so the animation on screen still steps through every time step.
+        if save and current_step % playback.keep_every == 0:
             images.append(_output_rendering.screenshot_image(plotter))
 
         # Increment the time step tracker.
@@ -1119,7 +1122,7 @@ def animate(
         # Convert the list of WebP Images to an WebP animation. webp annotates file_path
         # as a str, so the Path is converted at the boundary.
         webp.save_images(
-            images, str(path), fps=actual_fps, lossless=False, quality=quality
+            images, str(path), fps=playback.frame_rate, lossless=False, quality=quality
         )
 
     # Close all the Plotters.

@@ -3,6 +3,7 @@ visualizations with PyVista."""
 
 from __future__ import annotations
 
+import math
 from typing import NamedTuple
 
 import matplotlib.colors
@@ -10,9 +11,11 @@ import numpy as np
 import pyvista as pv
 import webp
 
-from . import _colormaps, _transformations, geometry
+from . import _colormaps, _logging, _transformations, geometry
 from . import operating_point as operating_point_mod
 from . import unsteady_ring_vortex_lattice_method
+
+_logger = _logging.get_logger("output")
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
 # maps and color palettes live in the _colormaps module. The edge line widths are in
@@ -47,13 +50,32 @@ _BAR_WIDTH = 0.5
 _BAR_POSITION_X = 0.25
 _BAR_POSITION_Y = 0.05
 _BAR_N_LABELS = 2
-_TEXT_MAX_POSITION = (0.85, 0.075)
-_TEXT_MIN_POSITION = (0.85, 0.050)
-TEXT_FONT_SIZE = 11
+_TEXT_MAX_POSITION = (0.89, 0.080)
+_TEXT_MIN_POSITION = (0.89, 0.045)
+TEXT_FONT_SIZE = 10
+
+# An animation's playback overlays sit against the left margin, a step apart, mirroring
+# the maximum and minimum scalar text on the other side of the window. The scalar bar
+# occupies the lower of the two rows as well, and its widget's box hides anything drawn
+# behind it, so both overlays are held close to the margin to leave the lower one as
+# much room as _BAR_POSITION_X allows.
+_TEXT_SPEED_POSITION = (0.01, 0.080)
+_TEXT_DROPPED_FRAMES_POSITION = (0.01, 0.045)
 
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
 REFERENCE_WINDOW_SIZE = (1024, 768)
+
+# Define the highest frame rate, in frames per second, that an animation is saved at.
+# Some programs will not render a WebP any faster than this.
+_MAX_FRAME_RATE = 50.0
+
+# Define the fewest frames per cycle of the fastest prescribed motion that a saved
+# animation can show before it stops resolving that motion. The Nyquist floor is 2.0
+# frames per cycle, below which the apparent motion can reverse direction or stand
+# still, but an animation is already jerky and misleading well above that floor. One
+# threshold here covers both regimes.
+_MIN_FRAMES_PER_PERIOD = 10.0
 
 
 def get_window_scale(window_width: int, window_height: int) -> float:
@@ -110,6 +132,138 @@ def get_largest_window_size() -> tuple[int, int]:
     finally:
         probe.close()
     return granted_width, granted_height
+
+
+class Playback(NamedTuple):
+    """How a saved animation steps through a simulation's time steps and how fast it
+    plays them back.
+
+    keep_every is a whole number of time steps, so an animation saves the time steps at
+    its multiples and drops the rest. frame_rate is deliberately not a whole number of
+    frames per second: a WebP stores each frame's duration as a whole number of
+    milliseconds, but the encoder reaches a frame rate by giving each frame a cumulative
+    timestamp rather than a fixed duration, so a fractional rate is played back to
+    within a small fraction of a percent instead of being quantized.
+    """
+
+    keep_every: int
+    frame_rate: float
+    overlay_texts: list[tuple[str, tuple[float, float]]]
+
+
+def resolve_playback(
+    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    speed: float | None,
+    save: bool,
+) -> Playback:
+    """Resolves a requested playback speed into a frame stride, a frame rate, and the
+    text overlays that describe them.
+
+    A speed that the maximum frame rate cannot carry on its own is reached by saving
+    only every keep_every-th frame, which trades the animation's temporal resolution for
+    its speed. The stride is 1 whenever no frames need to be dropped, and it is also
+    what holds the frame rate at or below the maximum.
+
+    Dropping frames undersamples the prescribed motion, so this warns when the frames
+    that survive no longer resolve the fastest motion in the simulation. The shortest
+    non zero period is what governs that, since aliasing is set by the highest frequency
+    present rather than by the composite motion's repeat interval.
+
+    :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver being animated.
+    :param speed: The requested playback speed as a multiple of real time, or None to
+        play at true speed and scale that speed down only when true speed would need
+        more than the maximum frame rate. It must be positive.
+    :param save: Whether the animation is being saved. Frames are dropped from the saved
+        file alone, so the aliasing warning is skipped when nothing is saved.
+    :return: The resolved Playback.
+    :raises ValueError: If the speed is so slow that the animation would save fewer than
+        one frame per second of playback, or so fast that it would save fewer than two
+        frames in total.
+    """
+    delta_time = unsteady_solver.delta_time
+    num_steps = unsteady_solver.num_steps
+    if speed is None:
+        speed = min(1.0, _MAX_FRAME_RATE * delta_time)
+
+    # The clamp only guards against the division landing an ulp above the maximum, since
+    # the stride already holds the quotient at or below it.
+    keep_every = math.ceil(speed / (_MAX_FRAME_RATE * delta_time))
+    frame_rate = min(_MAX_FRAME_RATE, speed / (keep_every * delta_time))
+    achieved_speed = frame_rate * keep_every * delta_time
+
+    # Frames are saved at every time step that is a multiple of the stride, so time step
+    # 0 is always saved and the last time step may not be.
+    num_saved_frames = (num_steps - 1) // keep_every + 1
+
+    # Guard the two speeds that cannot produce a usable animation. The default reaches
+    # neither, except on a simulation whose delta_time exceeds one second, where playing
+    # at true speed genuinely does need less than one frame per second.
+    if frame_rate < 1.0:
+        raise ValueError(
+            f"speed is too slow to animate a simulation whose delta_time is "
+            f"{delta_time} seconds, because it saves fewer than one frame per second "
+            f"of playback. The slowest speed this simulation can be animated at is "
+            f"{delta_time}."
+        )
+    if num_saved_frames < 2:
+        largest_speed = (num_steps - 1) * _MAX_FRAME_RATE * delta_time
+        raise ValueError(
+            f"speed is too fast to animate a simulation of {num_steps} time steps, "
+            f"because it saves fewer than two frames. The fastest speed this "
+            f"simulation can be animated at is {largest_speed}."
+        )
+
+    # The speed overlay reports the speed the animation achieves, which is the requested
+    # speed wherever the clamp above leaves the frame rate alone. The second overlay
+    # appears only when frames are actually dropped.
+    overlay_texts = [(f"Speed: {100 * achieved_speed:#.4G}%", _TEXT_SPEED_POSITION)]
+    if keep_every > 1:
+        overlay_texts.append(
+            (f"Frames: Every 1 of {keep_every}", _TEXT_DROPPED_FRAMES_POSITION)
+        )
+
+    # A static geometry has nothing to alias, a stride of 1 drops nothing, and an
+    # animation that is not saved keeps every frame, so none of the three is tested.
+    movement = unsteady_solver.unsteady_problem.movement
+    if save and keep_every > 1 and not movement.static:
+        frames_per_period = movement.min_period / (keep_every * delta_time)
+        if frames_per_period < _MIN_FRAMES_PER_PERIOD:
+            _logger.warning(
+                _logging.indent() + f"The animation saves {frames_per_period:.1f} "
+                f"frames per cycle of its fastest motion, whose period is "
+                f"{movement.min_period} seconds. Below {_MIN_FRAMES_PER_PERIOD} frames "
+                f"per cycle the motion looks jerky, and below the Nyquist floor of 2.0 "
+                f"it can appear to reverse direction or stand still. Animate at a "
+                f"slower speed to save more frames."
+            )
+
+    return Playback(keep_every, frame_rate, overlay_texts)
+
+
+def add_playback_overlays(
+    plotter: pv.Plotter,
+    playback: Playback,
+    window_scale: float,
+    text_color: tuple[int, int, int],
+) -> None:
+    """Adds a saved animation's playback text overlays to a Plotter.
+
+    :param plotter: The Plotter to add the overlays to.
+    :param playback: The Playback whose overlays will be added.
+    :param window_scale: The render window's size relative to REFERENCE_WINDOW_SIZE,
+        which the font size is scaled by.
+    :param text_color: The RGB color to draw the overlays in.
+    :return: None
+    """
+    for overlay_text, overlay_position in playback.overlay_texts:
+        plotter.add_text(
+            text=overlay_text,
+            position=overlay_position,
+            font_size=round(TEXT_FONT_SIZE * window_scale),
+            viewport=True,
+            color=text_color,
+            render=False,
+        )
 
 
 def get_panel_surfaces(

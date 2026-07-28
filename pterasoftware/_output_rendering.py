@@ -719,6 +719,36 @@ def screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
     )
 
 
+def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:
+    """Runs the render pass that settles a Plotter's scalar bar layout, without
+    displaying its result.
+
+    Adding an image surface mesh with an opacity leaves VTK's UnconstrainedFontSize
+    layout with the scalar bar's labels off their bar edges (PyVista issue #7516). The
+    layout only settles once the bar has been rendered again, so this marks the bars
+    modified and renders. The result of that render is the mispositioned layout, so the
+    buffers are held back from swapping, which keeps it off the screen and leaves the
+    settled layout to the caller's next render. The render window is driven directly
+    rather than through the Plotter, since the Plotter's render does nothing before its
+    first show.
+
+    :param plotter: The Plotter whose scalar bar layout to settle.
+    :return: None
+    """
+    scalar_bar_actors = list(plotter.scalar_bars.values())
+    if not scalar_bar_actors:
+        return
+
+    for scalar_bar_actor in scalar_bar_actors:
+        scalar_bar_actor.Modified()
+
+    render_window = plotter.ren_win
+    assert render_window is not None
+    render_window.SwapBuffersOff()
+    render_window.Render()
+    render_window.SwapBuffersOn()
+
+
 def _plot_scalars(
     plotter: pv.Plotter,
     these_scalars: np.ndarray,
@@ -762,6 +792,13 @@ def _plot_scalars(
         n_labels=_BAR_N_LABELS,
         fmt="%#.3G",
         color=text_color,
+        # Suppress the render that adding the scalar bar would otherwise trigger. The
+        # add_mesh call below forwards these arguments to add_scalar_bar, which renders
+        # whenever the Plotter has already been shown unless render is passed
+        # explicitly, and it ignores the render argument given to add_mesh. Without
+        # this, each of an animation's frames is rendered half-assembled and then again
+        # once whole, which reads on screen as the scalar bar and the labels flashing.
+        render=False,
     )
     plotter.add_mesh(
         panel_surfaces,
@@ -772,6 +809,7 @@ def _plot_scalars(
         scalars=these_scalars,
         smooth_shading=False,
         scalar_bar_args=scalar_bar_args,  # type: ignore[arg-type]
+        render=False,
     )
 
     plotter.add_text(
@@ -780,6 +818,7 @@ def _plot_scalars(
         font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
+        render=False,
     )
     plotter.add_text(
         text=f"Min: {min_scalar:#.3G}",
@@ -787,6 +826,7 @@ def _plot_scalars(
         font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
+        render=False,
     )
 
 
@@ -853,6 +893,7 @@ def add_frame_geometry(
             line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
             smooth_shading=False,
             color=_WAKE_VORTEX_COLOR,
+            render=False,
         )
 
     # Plot the Panels either with scalar coloring or with a uniform color.
@@ -877,6 +918,7 @@ def add_frame_geometry(
             line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
             color=_PANEL_COLOR,
             smooth_shading=False,
+            render=False,
         )
 
     if T_reflect is None:
@@ -900,6 +942,7 @@ def add_frame_geometry(
             scalars=coloring.scalars,
             smooth_shading=False,
             show_scalar_bar=False,
+            render=False,
         )
     else:
         plotter.add_mesh(
@@ -909,6 +952,7 @@ def add_frame_geometry(
             edge_color=muted_edge_color,
             color=mute_color(_PANEL_COLOR, mute),
             smooth_shading=False,
+            render=False,
         )
 
     # Add reflected wake ring vortex surfaces if they are being shown.
@@ -920,4 +964,5 @@ def add_frame_geometry(
             edge_color=muted_edge_color,
             smooth_shading=False,
             color=mute_color(_WAKE_VORTEX_COLOR, mute),
+            render=False,
         )

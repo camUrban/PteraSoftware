@@ -380,6 +380,7 @@ def draw(
             color=_STREAMLINE_COLOR,
             line_width=_STREAMLINE_LINE_WIDTH * window_scale,
             smooth_shading=False,
+            render=False,
         )
 
         # If an image surface is defined, add the reflected streamlines, muted toward
@@ -393,6 +394,7 @@ def draw(
                 ),
                 line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
+                render=False,
             )
 
     # If an image surface is defined, save the geometry bounds (which now include the
@@ -429,6 +431,7 @@ def draw(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            render=False,
         )
 
         # For the standard body-fixed rendering, fit the camera to the geometry bounds
@@ -467,6 +470,12 @@ def draw(
         draw_cpos = (-1, -1, 1)
     else:
         draw_cpos = None
+
+    # Settle the scalar bar layout before the drawing is displayed. This is the first of
+    # the two passes it takes, and show below is the second, so the labels are in place
+    # by the time the user sees anything.
+    if T_reflect is not None:
+        _output_rendering.settle_scalar_bar_layout(plotter)
 
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window. When
@@ -810,6 +819,7 @@ def animate(
             font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
             viewport=True,
             color=animate_text_color,
+            render=False,
         )
 
     # Get the Panel surfaces of the first time step's Airplane(s), mapping them into
@@ -861,6 +871,7 @@ def animate(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            render=False,
         )
 
         # For the standard body-fixed rendering, fit the camera to the geometry bounds
@@ -890,6 +901,13 @@ def animate(
         animate_cpos = (-1, -1, 1)
     else:
         animate_cpos = None
+
+    # Give the first frame the scalar bar layout pass that the frames in the loop get,
+    # so the view held for the user matches the animation that follows it. This is the
+    # first of the two passes the layout takes to settle, and show below is the second,
+    # so the labels are in place by the time the user sees anything.
+    if T_reflect is not None:
+        _output_rendering.settle_scalar_bar_layout(plotter)
 
     # If not testing, show the Plotter with the first time step so the user can orient
     # the view. When the user presses any key, set the title back to the animation title
@@ -922,12 +940,13 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh) for clip_mesh in free_flight_clip_meshes
+            plotter.add_mesh(clip_mesh, render=False)
+            for clip_mesh in free_flight_clip_meshes
         ]
         plotter.reset_camera_clipping_range()
         free_flight_clipping_range = plotter.camera.clipping_range
         for temporary_actor in temporary_actors:
-            plotter.remove_actor(temporary_actor)
+            plotter.remove_actor(temporary_actor, render=False)
         plotter.camera.clipping_range = free_flight_clipping_range
 
     # Start a list to hold a WebP Image of each frame, beginning with this first frame.
@@ -958,6 +977,7 @@ def animate(
                 font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
                 viewport=True,
                 color=animate_text_color,
+                render=False,
             )
 
         # If showing wake ring vortices, get their surfaces, mapping them into Earth
@@ -1014,16 +1034,18 @@ def animate(
                 texture=image_surface_texture,
                 opacity=_IMAGE_SURFACE_OPACITY,
                 smooth_shading=True,
+                render=False,
             )
 
-        # If an image surface is present, force VTK to recalculate the scalar bar
-        # layout. Adding the image surface mesh with opacity causes VTK's
-        # UnconstrainedFontSize layout to misposition the left label (PyVista issue
-        # #7516).
+        # If an image surface is present, settle the scalar bar layout before the frame
+        # is displayed, leaving the second of its two passes to the render below.
         if T_reflect is not None:
-            for scalar_bar_actor in plotter.scalar_bars.values():
-                scalar_bar_actor.Modified()
-            plotter.render()
+            _output_rendering.settle_scalar_bar_layout(plotter)
+
+        # Render the assembled frame. Every add above is made with render=False, so
+        # without this the frame would never reach the screen. Rendering once the frame
+        # is whole is invisible, unlike the renders the adds used to trigger.
+        plotter.render()
 
         # If saving, append a WebP Image of this frame to the list of Images.
         if save:

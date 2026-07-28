@@ -288,26 +288,7 @@ def draw(
         these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
         min_scalar = float(min(these_scalars))
         max_scalar = float(max(these_scalars))
-
-        # Choose the color map and set its limits based on if the min and max scalars
-        # have the same sign (sequential color map) or if they have different signs
-        # (diverging color map).
-        if np.sign(np.min(these_scalars)) == np.sign(np.max(these_scalars)):
-            color_map = _colormaps.sequential_color_map
-            c_min = max(
-                float(np.mean(these_scalars))
-                - _color_map_num_sig * float(np.std(these_scalars)),
-                float(np.min(these_scalars)),
-            )
-            c_max = min(
-                float(np.mean(these_scalars))
-                + _color_map_num_sig * float(np.std(these_scalars)),
-                float(np.max(these_scalars)),
-            )
-        else:
-            color_map = _colormaps.diverging_color_map
-            c_min = -_color_map_num_sig * float(np.std(these_scalars))
-            c_max = _color_map_num_sig * float(np.std(these_scalars))
+        color_map, c_min, c_max = _choose_color_map(these_scalars)
 
         T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
         _plot_scalars(
@@ -540,18 +521,9 @@ def draw(
         )
         time.sleep(1)
 
-    # If saving, take a screenshot, convert it to a ndarray, convert that to an Image,
-    # and save it as a WebP.
+    # If saving, take a screenshot and save it as a WebP.
     if save:
-        image = webp.Image.fromarray(
-            np.array(
-                plotter.screenshot(
-                    filename=None,
-                    transparent_background=True,
-                    return_img=True,
-                )
-            )
-        )
+        image = _screenshot_image(plotter)
 
         webp.save_image(
             img=image, file_path="draw.webp", lossless=False, quality=_quality
@@ -686,25 +658,9 @@ def animate(
             )
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
-        # Choose the color map and set its limits based on if the min and max scalars
-        # across all time steps have the same sign (sequential color map) or if they
-        # have different signs (diverging color map).
-        if np.sign(np.min(all_scalars)) == np.sign(np.max(all_scalars)):
-            color_map = _colormaps.sequential_color_map
-            c_min = max(
-                float(np.mean(all_scalars))
-                - _color_map_num_sig * float(np.std(all_scalars)),
-                float(np.min(all_scalars)),
-            )
-            c_max = min(
-                float(np.mean(all_scalars))
-                + _color_map_num_sig * float(np.std(all_scalars)),
-                float(np.max(all_scalars)),
-            )
-        else:
-            color_map = _colormaps.diverging_color_map
-            c_min = -_color_map_num_sig * float(np.std(all_scalars))
-            c_max = _color_map_num_sig * float(np.std(all_scalars))
+        # Choose the color map from the scalars across all the time steps, so that one
+        # map and one pair of limits apply to every frame.
+        color_map, c_min, c_max = _choose_color_map(all_scalars)
 
         min_scalar = float(min(all_scalars))
         max_scalar = float(max(all_scalars))
@@ -1009,18 +965,8 @@ def animate(
             plotter.remove_actor(temporary_actor)
         plotter.camera.clipping_range = free_flight_clipping_range
 
-    # Start a list to hold a WebP Image of each frame. To start, take a screenshot,
-    # convert it to a ndarray, and convert that to an Image.
-    images = [
-        webp.Image.fromarray(
-            np.array(
-                plotter.screenshot(
-                    transparent_background=True,
-                    return_img=True,
-                )
-            )
-        )
-    ]
+    # Start a list to hold a WebP Image of each frame, beginning with this first frame.
+    images = [_screenshot_image(plotter)]
 
     # Initialize a variable to keep track of the current time step.
     current_step = 1
@@ -1151,20 +1097,9 @@ def animate(
                 scalar_bar_actor.Modified()
             plotter.render()
 
-        # If saving, append a WebP Image of this frame to the list of Images. To do so,
-        # take a screenshot, convert it to a ndarray, and convert that to an Image.
+        # If saving, append a WebP Image of this frame to the list of Images.
         if save:
-            images.append(
-                webp.Image.fromarray(
-                    np.array(
-                        plotter.screenshot(
-                            filename=None,
-                            transparent_background=True,
-                            return_img=True,
-                        )
-                    )
-                )
-            )
+            images.append(_screenshot_image(plotter))
 
         # Increment the time step tracker.
         current_step += 1
@@ -2463,6 +2398,62 @@ def _get_scalars(
 
     # Return the resulting ndarray of scalars.
     return scalars
+
+
+def _choose_color_map(
+    scalars: np.ndarray,
+) -> tuple[matplotlib.colors.Colormap, float, float]:
+    """Chooses the color map to color a set of scalars with and finds the limits to
+    apply to it.
+
+    Scalars that keep one sign get a sequential color map, since their values run in a
+    single direction. Scalars that change sign get a diverging color map with limits
+    placed symmetrically about zero, so the map's midpoint marks where the scalar
+    changes sign. In both cases the limits are held within a fixed number of standard
+    deviations of the mean so that a few outlying Panels cannot flatten the contrast
+    across the rest of the geometry.
+
+    :param scalars: A (N,) ndarray of floats representing the scalar value at each of
+        the N Panels being colored.
+    :return: A tuple holding the color map, the lower limit to apply to it, and the
+        upper limit to apply to it.
+    """
+    if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
+        color_map: matplotlib.colors.Colormap = _colormaps.sequential_color_map
+        c_min = max(
+            float(np.mean(scalars)) - _color_map_num_sig * float(np.std(scalars)),
+            float(np.min(scalars)),
+        )
+        c_max = min(
+            float(np.mean(scalars)) + _color_map_num_sig * float(np.std(scalars)),
+            float(np.max(scalars)),
+        )
+    else:
+        color_map = _colormaps.diverging_color_map
+        c_min = -_color_map_num_sig * float(np.std(scalars))
+        c_max = _color_map_num_sig * float(np.std(scalars))
+
+    return color_map, c_min, c_max
+
+
+# The webp package re-exports Pillow's Image module under the name webp.Image, so the
+# Image class itself is webp.Image.Image. Naming the class through webp keeps this
+# module off Pillow, which Ptera Software only depends on transitively through webp.
+def _screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
+    """Takes a screenshot of a Plotter and returns it as an Image.
+
+    :param plotter: The Plotter to capture.
+    :return: The captured frame as an Image with a transparent background.
+    """
+    return webp.Image.fromarray(
+        np.array(
+            plotter.screenshot(
+                filename=None,
+                transparent_background=True,
+                return_img=True,
+            )
+        )
+    )
 
 
 def _plot_scalars(

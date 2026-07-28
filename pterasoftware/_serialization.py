@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from . import _logging
+from . import _logging, _parameter_validation
 
 # This module is inherently coupled to the internals of every class in the package (it
 # reads __slots__, knows class structure, and imports all classes into its registry), so
@@ -216,13 +216,9 @@ def save(path: str | Path, obj: object) -> None:
         cannot be saved directly.
     :return: None
     """
-    path = Path(path)
-    if not path.name.endswith(".json") and not path.name.endswith(".json.gz"):
-        raise ValueError(
-            f"Path must end with '.json' or '.json.gz', got '{path.name}'."
-        )
-    if path.is_dir():
-        raise ValueError(f"Path must be a file path, got directory '{path}'.")
+    path = _parameter_validation.pathLike_return_path(
+        path, "path", (".json", ".json.gz")
+    )
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:

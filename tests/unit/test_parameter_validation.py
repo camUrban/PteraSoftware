@@ -1,6 +1,8 @@
 """This module contains a class to test parameter validation functions."""
 
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 import numpy.testing as npt
@@ -44,6 +46,84 @@ class TestStrReturnStr(unittest.TestCase):
         """Test str_return_str raises TypeError with a list."""
         with self.assertRaises(TypeError):
             pv.str_return_str(["a", "b"], "test_param")
+
+
+class TestPathLikeReturnPath(unittest.TestCase):
+    """A class with functions to test pathLike_return_path."""
+
+    def test_valid_str(self) -> None:
+        """Test pathLike_return_path with a str naming an accepted suffix."""
+        result = pv.pathLike_return_path("drawing.webp", "test_param", (".webp",))
+        self.assertEqual(result, Path("drawing.webp"))
+        self.assertIsInstance(result, Path)
+
+    def test_valid_path(self) -> None:
+        """Test pathLike_return_path with a Path naming an accepted suffix."""
+        result = pv.pathLike_return_path(Path("drawing.webp"), "test_param", (".webp",))
+        self.assertEqual(result, Path("drawing.webp"))
+        self.assertIsInstance(result, Path)
+
+    def test_valid_in_existing_directory(self) -> None:
+        """Test pathLike_return_path with a path inside an existing directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            candidate = Path(temp_dir) / "drawing.webp"
+            result = pv.pathLike_return_path(candidate, "test_param", (".webp",))
+            self.assertEqual(result, candidate)
+
+    def test_valid_multi_part_suffix(self) -> None:
+        """Test pathLike_return_path accepts a suffix that Path.suffix would split."""
+        result = pv.pathLike_return_path(
+            "solver.json.gz", "test_param", (".json", ".json.gz")
+        )
+        self.assertEqual(result, Path("solver.json.gz"))
+
+    def test_valid_second_suffix(self) -> None:
+        """Test pathLike_return_path accepts any of the given suffixes."""
+        result = pv.pathLike_return_path(
+            "solver.json", "test_param", (".json", ".json.gz")
+        )
+        self.assertEqual(result, Path("solver.json"))
+
+    def test_invalid_int(self) -> None:
+        """Test pathLike_return_path raises TypeError with an int."""
+        with self.assertRaises(TypeError) as context:
+            pv.pathLike_return_path(1, "test_param", (".webp",))
+        self.assertIn("test_param", str(context.exception))
+
+    def test_invalid_none(self) -> None:
+        """Test pathLike_return_path raises TypeError with None."""
+        with self.assertRaises(TypeError):
+            pv.pathLike_return_path(None, "test_param", (".webp",))
+
+    def test_invalid_suffix(self) -> None:
+        """Test pathLike_return_path raises ValueError with an unaccepted suffix."""
+        with self.assertRaises(ValueError) as context:
+            pv.pathLike_return_path("drawing.png", "test_param", (".webp",))
+        self.assertIn("test_param", str(context.exception))
+        self.assertIn(".webp", str(context.exception))
+
+    def test_invalid_no_suffix(self) -> None:
+        """Test pathLike_return_path raises ValueError with no suffix at all."""
+        with self.assertRaises(ValueError):
+            pv.pathLike_return_path("drawing", "test_param", (".webp",))
+
+    def test_invalid_existing_directory(self) -> None:
+        """Test pathLike_return_path raises ValueError when the path is a directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            candidate = Path(temp_dir) / "drawing.webp"
+            candidate.mkdir()
+            with self.assertRaises(ValueError) as context:
+                pv.pathLike_return_path(candidate, "test_param", (".webp",))
+            self.assertIn("test_param", str(context.exception))
+
+    def test_invalid_missing_directory(self) -> None:
+        """Test pathLike_return_path raises ValueError when the parent is missing."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            candidate = Path(temp_dir) / "absent" / "drawing.webp"
+            with self.assertRaises(ValueError) as context:
+                pv.pathLike_return_path(candidate, "test_param", (".webp",))
+            self.assertIn("test_param", str(context.exception))
+            self.assertIn("absent", str(context.exception))
 
 
 class TestBoolLikeReturnBool(unittest.TestCase):

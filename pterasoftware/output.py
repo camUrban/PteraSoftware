@@ -25,6 +25,7 @@ from __future__ import annotations
 import math
 import time
 from collections.abc import Sequence
+from pathlib import Path
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -96,6 +97,7 @@ def draw(
     show_wake_vortices: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
+    path: str | Path = "draw.webp",
     quality: int | float = 75.0,
     testing: bool | np.bool_ = False,
 ) -> None:
@@ -141,6 +143,9 @@ def draw(
         The default is (1024, 768).
     :param save: Set this to True to save the image as a WebP. It can be a bool or a
         numpy bool and will be converted internally to a bool. The default is False.
+    :param path: The file path to save the image to. It can be a str or a Path, must end
+        with '.webp', and its directory must already exist. This has no effect unless
+        save is True. The default is "draw.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
         can be an int or a float and will be converted internally to a float. This has
@@ -215,6 +220,7 @@ def draw(
     )
 
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
     quality = _parameter_validation.number_in_range_return_float(
         quality, "quality", 0.0, True, 100.0, True
     )
@@ -509,9 +515,8 @@ def draw(
     if save:
         image = _output_rendering.screenshot_image(plotter)
 
-        webp.save_image(
-            img=image, file_path="draw.webp", lossless=False, quality=quality
-        )
+        # webp annotates file_path as a str, so the Path is converted at the boundary.
+        webp.save_image(img=image, file_path=str(path), lossless=False, quality=quality)
 
     # Close all Plotters.
     pv.close_all()
@@ -523,6 +528,7 @@ def animate(
     show_wake_vortices: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
+    path: str | Path = "animate.webp",
     quality: int | float = 75.0,
     testing: bool | np.bool_ = False,
 ) -> None:
@@ -555,6 +561,9 @@ def animate(
     :param save: Set this to True to save the animation as an animated WebP. It can be a
         bool or a numpy bool and will be converted internally to a bool. The default is
         False.
+    :param path: The file path to save the animation to. It can be a str or a Path, must
+        end with '.webp', and its directory must already exist. This has no effect
+        unless save is True. The default is "animate.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
         can be an int or a float and will be converted internally to a float. This has
@@ -604,6 +613,7 @@ def animate(
     )
 
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
     quality = _parameter_validation.number_in_range_return_float(
         quality, "quality", 0.0, True, 100.0, True
     )
@@ -1040,9 +1050,10 @@ def animate(
 
     # If saving, save the list of Images as an animated WebP.
     if save:
-        # Convert the list of WebP Images to an WebP animation.
+        # Convert the list of WebP Images to an WebP animation. webp annotates file_path
+        # as a str, so the Path is converted at the boundary.
         webp.save_images(
-            images, "animate.webp", fps=actual_fps, lossless=False, quality=quality
+            images, str(path), fps=actual_fps, lossless=False, quality=quality
         )
 
     # Close all the Plotters.

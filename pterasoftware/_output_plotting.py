@@ -56,8 +56,10 @@ def plot_time_history(
     title: str,
     subtitle: str,
     y_label: str,
+    figure_size_in: tuple[float, float],
     save: bool,
     save_name: str,
+    resolution_dpi: float,
 ) -> None:
     """Plots one time-history figure, which is a set of series that share a y-axis and
     are plotted against time.
@@ -75,11 +77,13 @@ def plot_time_history(
     :param subtitle: A smaller line below the title describing the axes, points, and
         frames of the plotted quantity. Pass an empty string to omit.
     :param y_label: The figure's y-axis label.
+    :param figure_size_in: The figure's width and height in inches.
     :param save: Set this to True to save the figure as a PNG.
     :param save_name: The file name to save the figure under if save is True.
+    :param resolution_dpi: The dots per inch at which to save the PNG if save is True.
     :return: None
     """
-    figure, axes = plt.subplots()
+    figure, axes = plt.subplots(figsize=figure_size_in)
 
     # Remove the plot's top and right spines.
     axes.spines.right.set_visible(False)
@@ -139,4 +143,4 @@ def plot_time_history(
 
     # Save the figure as a PNG if the user wants to do so.
     if save:
-        figure.savefig(save_name, dpi=300)
+        figure.savefig(save_name, dpi=resolution_dpi)

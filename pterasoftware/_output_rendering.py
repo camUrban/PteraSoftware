@@ -15,9 +15,13 @@ from . import operating_point as operating_point_mod
 from . import unsteady_ring_vortex_lattice_method
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
-# maps and color palettes live in the _colormaps module.
+# maps and color palettes live in the _colormaps module. The edge line widths are in
+# pixels, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale
+# wherever they are used, as the font sizes below are.
 _WAKE_VORTEX_COLOR = "white"
+_WAKE_VORTEX_EDGE_LINE_WIDTH = 1.0
 _PANEL_COLOR = "chartreuse"
+_PANEL_EDGE_LINE_WIDTH = 1.0
 _IMAGE_SURFACE_SCALE = 5.0
 IMAGE_REFLECTION_MUTE_FACTOR = 0.5
 _IMAGE_SURFACE_CHECKER_SIZE = 25
@@ -25,8 +29,17 @@ _IMAGE_SURFACE_COLOR_A = np.array([40, 40, 40], dtype=np.uint8)
 _IMAGE_SURFACE_COLOR_B = np.array([80, 80, 80], dtype=np.uint8)
 TEXT_COLOR = (129, 129, 129)
 TEXT_COLOR_SURFACE = (220, 220, 220)
+PLOTTER_BACKGROUND_COLOR = "black"
 
-# Set constants for the color maps, scalar bars, and text boxes.
+# Define the window length used to measure the largest window a window manager will
+# grant. X11 window dimensions are 16 bit, so this is the largest a window can ask to be
+# and is certain to be shrunk to the maximum on any display.
+_OVERSIZED_WINDOW_LENGTH = 32767
+
+# Set constants for the color maps, scalar bars, and text boxes. The positions are
+# fractions of the render window, so they track its size on their own. The font sizes
+# are in pixels and do not, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by
+# get_window_scale wherever they are used.
 _COLOR_MAP_NUM_SIG = 3
 _BAR_TITLE_FONT_SIZE = 30
 _BAR_LABEL_FONT_SIZE = 21
@@ -37,6 +50,77 @@ _BAR_N_LABELS = 2
 _TEXT_MAX_POSITION = (0.85, 0.075)
 _TEXT_MIN_POSITION = (0.85, 0.050)
 TEXT_FONT_SIZE = 11
+
+# Define the render window size that every font size and line width in the
+# visualizations is tuned against.
+REFERENCE_WINDOW_SIZE = (1024, 768)
+
+
+def get_window_scale(window_width: int, window_height: int) -> float:
+    """Returns the factor by which to scale the font sizes and line widths that are
+    tuned for REFERENCE_WINDOW_SIZE.
+
+    VTK sizes text and lines in pixels, so without scaling they keep the same pixel
+    count at every window size. That crowds a small window, where the scalar bar's
+    labels overlap the bar itself, and it leaves them nearly unreadable in a large one.
+
+    The smaller of the two ratios is used rather than the height ratio alone. The scalar
+    labels are anchored near the right edge and grow rightward, so a wide but short
+    window runs out of horizontal room before it runs out of vertical room.
+
+    :param window_width: The render window's width in pixels.
+    :param window_height: The render window's height in pixels.
+    :return: The scale factor, which is exactly 1.0 at REFERENCE_WINDOW_SIZE.
+    """
+    return min(
+        window_width / REFERENCE_WINDOW_SIZE[0],
+        window_height / REFERENCE_WINDOW_SIZE[1],
+    )
+
+
+def get_granted_window_size(window_width: int, window_height: int) -> tuple[int, int]:
+    """Returns the window size a window manager will actually grant for a request.
+
+    An on-screen render window cannot be larger than the area the window manager grants,
+    which is the display less any docks or bars and less the window's own title bar, and
+    VTK silently shrinks one that asks for more. GetScreenSize reports neither
+    reduction, and the granted size only becomes readable once a window has been
+    realized, so this measures it rather than computing it.
+
+    The measurement is taken on a throwaway render window. Realizing the render window
+    that will draw the visualization would be cheaper, but rendering an empty scene
+    through it perturbs what it later draws.
+
+    :param window_width: The requested width in pixels.
+    :param window_height: The requested height in pixels.
+    :return: A tuple of the granted width and height in pixels. This equals the request
+        when the window manager grants it in full, and when rendering off screen, which
+        has no such ceiling.
+    """
+    probe = pv.Plotter(window_size=[window_width, window_height], lighting=None)
+    try:
+        # Match the background the visualizations render on so the probe, which is
+        # briefly visible, does not flash a bright window against a dark one.
+        probe.set_background(color=PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
+        probe_render_window = probe.ren_win
+        assert probe_render_window is not None
+        probe_render_window.Render()
+        granted_width, granted_height = probe_render_window.GetSize()
+    finally:
+        probe.close()
+    return granted_width, granted_height
+
+
+def get_largest_window_size() -> tuple[int, int]:
+    """Returns the largest on-screen render window a window manager will grant.
+
+    get_granted_window_size reports what one particular request was given, which names
+    the maximum only in whichever dimension was shrunk. Asking for a window far larger
+    than any display is shrunk in both, so this reports the maximum in both.
+
+    :return: A tuple of the largest grantable width and height in pixels.
+    """
+    return get_granted_window_size(_OVERSIZED_WINDOW_LENGTH, _OVERSIZED_WINDOW_LENGTH)
 
 
 def get_panel_surfaces(
@@ -626,6 +710,7 @@ def _plot_scalars(
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
+    window_scale: float,
     text_color: tuple[int, int, int] = TEXT_COLOR,
 ) -> None:
     """Plots a scalar bar, the surfaces of a set of Panels with particular scalars, and
@@ -642,14 +727,16 @@ def _plot_scalars(
     :param c_min: Lower bound for the color map scaling.
     :param c_max: Upper bound for the color map scaling.
     :param panel_surfaces: PolyData representing the Panels' surfaces.
+    :param window_scale: The factor by which to scale the font sizes, as returned by
+        get_window_scale.
     :param text_color: The color used for the scalar bar and label text. The default is
         TEXT_COLOR.
     :return: None
     """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",
-        title_font_size=_BAR_TITLE_FONT_SIZE,
-        label_font_size=_BAR_LABEL_FONT_SIZE,
+        title_font_size=round(_BAR_TITLE_FONT_SIZE * window_scale),
+        label_font_size=round(_BAR_LABEL_FONT_SIZE * window_scale),
         width=_BAR_WIDTH,
         position_x=_BAR_POSITION_X,
         position_y=_BAR_POSITION_Y,
@@ -660,6 +747,7 @@ def _plot_scalars(
     plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
+        line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
         cmap=color_map,
         clim=[c_min, c_max],
         scalars=these_scalars,
@@ -670,14 +758,14 @@ def _plot_scalars(
     plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
         position=_TEXT_MAX_POSITION,
-        font_size=TEXT_FONT_SIZE,
+        font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
     )
     plotter.add_text(
         text=f"Min: {min_scalar:#.3G}",
         position=_TEXT_MIN_POSITION,
-        font_size=TEXT_FONT_SIZE,
+        font_size=round(TEXT_FONT_SIZE * window_scale),
         viewport=True,
         color=text_color,
     )
@@ -711,6 +799,7 @@ def add_frame_geometry(
     wake_surfaces: pv.PolyData | None,
     coloring: ScalarColoring | None,
     T_reflect: np.ndarray | None,
+    window_scale: float,
 ) -> None:
     """Adds one frame's geometry to a Plotter, which is the wake, the Panels, and, when
     an image surface is defined, a muted reflected copy of both.
@@ -733,6 +822,8 @@ def add_frame_geometry(
     :param T_reflect: A (4,4) ndarray of floats representing the active transformation
         that reflects geometry across the image surface, or None when no image surface
         is defined, in which case no reflected geometry is added.
+    :param window_scale: The factor by which to scale the scalar bar and label font
+        sizes, as returned by get_window_scale.
     :return: None
     """
     # Add the wake ring vortex surfaces if they are being shown.
@@ -740,6 +831,7 @@ def add_frame_geometry(
         plotter.add_mesh(
             wake_surfaces,
             show_edges=True,
+            line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
             smooth_shading=False,
             color=_WAKE_VORTEX_COLOR,
         )
@@ -756,12 +848,14 @@ def add_frame_geometry(
             coloring.c_min,
             coloring.c_max,
             panel_surfaces,
+            window_scale,
             text_color=TEXT_COLOR_SURFACE if T_reflect is not None else TEXT_COLOR,
         )
     else:
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
+            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
             color=_PANEL_COLOR,
             smooth_shading=False,
         )
@@ -780,6 +874,7 @@ def add_frame_geometry(
         plotter.add_mesh(
             reflected_panel_surfaces,
             show_edges=True,
+            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
             edge_color=muted_edge_color,
             cmap=coloring.muted_color_map,
             clim=[coloring.c_min, coloring.c_max],
@@ -791,6 +886,7 @@ def add_frame_geometry(
         plotter.add_mesh(
             reflected_panel_surfaces,
             show_edges=True,
+            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
             edge_color=muted_edge_color,
             color=mute_color(_PANEL_COLOR, mute),
             smooth_shading=False,
@@ -801,6 +897,7 @@ def add_frame_geometry(
         plotter.add_mesh(
             _reflect_mesh(wake_surfaces, T_reflect),
             show_edges=True,
+            line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
             edge_color=muted_edge_color,
             smooth_shading=False,
             color=mute_color(_WAKE_VORTEX_COLOR, mute),

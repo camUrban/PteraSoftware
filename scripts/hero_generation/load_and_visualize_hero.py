@@ -77,9 +77,7 @@ for name, render_func, render_kwargs in _RENDER_TARGETS:
             f"  {name} is {original_bytes / 1024:.0f} KB, "
             f"re-rendering at quality={quality:.0f}..."
         )
-        ps.output._quality = quality
-        render_func(**render_kwargs, save=True)
-        ps.output._quality = _INITIAL_QUALITY
+        render_func(**render_kwargs, save=True, quality=quality)
 
         new_bytes = webp_path.stat().st_size
         if new_bytes <= _MAX_WEBP_BYTES:

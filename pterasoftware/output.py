@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import math
 import time
+from collections.abc import Sequence
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -48,13 +49,13 @@ from .movements import free_flight_movement as free_flight_movement_mod
 
 _logger = _logging.get_logger("output")
 
-# Define the Plotter's appearance and the quality of the WebPs it is saved to.
-_PLOTTER_BACKGROUND_COLOR = "black"
+# Define the Plotter's appearance. The streamline line width is in pixels and is tuned
+# for _output_rendering.REFERENCE_WINDOW_SIZE, so it is scaled wherever it is used, as
+# the font sizes in _output_rendering are.
 _STREAMLINE_COLOR = "orchid"
+_STREAMLINE_LINE_WIDTH = 2.0
 _IMAGE_SURFACE_OPACITY = 0.5
 _TEXT_SPEED_POSITION = (0.05, 0.075)
-_quality = 75.0
-_WINDOW_SIZE = [1024, 768]
 
 # Define the colors of the series in the results plots.
 [
@@ -93,7 +94,9 @@ def draw(
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool_ = False,
     show_wake_vortices: bool | np.bool_ = False,
+    window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
+    quality: int | float = 75.0,
     testing: bool | np.bool_ = False,
 ) -> None:
     """Draws a solver's Airplane(s).
@@ -129,8 +132,19 @@ def draw(
         the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
         already been run. Can be a bool or a numpy bool and will be converted internally
         to a bool. The default is False.
+    :param window_size: The width and height, in pixels, of the render window. This also
+        sets the resolution of the saved WebP. It must be a sequence of two positive
+        ints, and, when rendering on screen, must fit within the area the window manager
+        grants, which is the display less any docks or bars and less the window's own
+        title bar. The text and line widths scale with it, so a larger or smaller window
+        is legible rather than being drawn with the same pixel counts as the default.
+        The default is (1024, 768).
     :param save: Set this to True to save the image as a WebP. It can be a bool or a
         numpy bool and will be converted internally to a bool. The default is False.
+    :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
+        the most compression artifacts and 100.0 is the largest file with the fewest. It
+        can be an int or a float and will be converted internally to a float. This has
+        no effect unless save is True. The default is 75.0.
     :param testing: Set this to True to close the image after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
@@ -191,12 +205,44 @@ def draw(
             "solver must have run before drawing with show_wake_vortices set to True."
         )
 
+    if not isinstance(window_size, Sequence) or len(window_size) != 2:
+        raise ValueError("window_size must be a sequence of two ints.")
+    window_width = _parameter_validation.int_in_range_return_int(
+        window_size[0], "window_size[0]", 0, False
+    )
+    window_height = _parameter_validation.int_in_range_return_int(
+        window_size[1], "window_size[1]", 0, False
+    )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    quality = _parameter_validation.number_in_range_return_float(
+        quality, "quality", 0.0, True, 100.0, True
+    )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
+    # A window manager will not grant an on-screen render window the whole display, and
+    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
+    # rejected here rather than quietly producing an image of a size the caller never
+    # asked for. Only a granted size smaller than the request counts as a shrink, since
+    # a display that scales its pixels reports a larger one.
+    if not pv.OFF_SCREEN:
+        granted_width, granted_height = _output_rendering.get_granted_window_size(
+            window_width, window_height
+        )
+        if granted_width < window_width or granted_height < window_height:
+            largest_width, largest_height = _output_rendering.get_largest_window_size()
+            raise ValueError(
+                f"window_size {window_width} by {window_height} cannot be rendered on "
+                f"screen, where the window manager grants at most {largest_width} by "
+                f"{largest_height} pixels. Request a smaller window, or render off "
+                f"screen by setting pyvista.OFF_SCREEN to True."
+            )
+
     # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=_WINDOW_SIZE, lighting=None)
+    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
+
+    window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
     # body flies through the scene. T_pas_GP1_CgP1_to_E_Eo holds the passive
@@ -289,6 +335,7 @@ def draw(
         wake_ring_vortex_surfaces,
         coloring,
         T_reflect,
+        window_scale,
     )
 
     # If showing streamlines, plot them.
@@ -329,7 +376,7 @@ def draw(
                         ),
                         show_edges=True,
                         color=_STREAMLINE_COLOR,
-                        line_width=2,
+                        line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                         smooth_shading=False,
                     )
 
@@ -356,7 +403,7 @@ def draw(
                                 _STREAMLINE_COLOR,
                                 _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR,
                             ),
-                            line_width=2,
+                            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                             smooth_shading=False,
                         )
 
@@ -434,7 +481,9 @@ def draw(
         draw_cpos = None
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window. When
         # the user closes the window, the Plotter still exists. Therefore, it can later
@@ -461,7 +510,7 @@ def draw(
         image = _output_rendering.screenshot_image(plotter)
 
         webp.save_image(
-            img=image, file_path="draw.webp", lossless=False, quality=_quality
+            img=image, file_path="draw.webp", lossless=False, quality=quality
         )
 
     # Close all Plotters.
@@ -472,7 +521,9 @@ def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool_ = False,
+    window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
+    quality: int | float = 75.0,
     testing: bool | np.bool_ = False,
 ) -> None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
@@ -494,9 +545,20 @@ def animate(
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param window_size: The width and height, in pixels, of the render window. This also
+        sets the resolution of the saved WebP. It must be a sequence of two positive
+        ints, and, when rendering on screen, must fit within the area the window manager
+        grants, which is the display less any docks or bars and less the window's own
+        title bar. The text and line widths scale with it, so a larger or smaller window
+        is legible rather than being drawn with the same pixel counts as the default.
+        The default is (1024, 768).
     :param save: Set this to True to save the animation as an animated WebP. It can be a
         bool or a numpy bool and will be converted internally to a bool. The default is
         False.
+    :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
+        the most compression artifacts and 100.0 is the largest file with the fewest. It
+        can be an int or a float and will be converted internally to a float. This has
+        no effect unless save is True. The default is 75.0.
     :param testing: Set this to True to start the animation after one second, which is
         useful for running test suites. It can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
@@ -532,7 +594,19 @@ def animate(
             " to True."
         )
 
+    if not isinstance(window_size, Sequence) or len(window_size) != 2:
+        raise ValueError("window_size must be a sequence of two ints.")
+    window_width = _parameter_validation.int_in_range_return_int(
+        window_size[0], "window_size[0]", 0, False
+    )
+    window_height = _parameter_validation.int_in_range_return_int(
+        window_size[1], "window_size[1]", 0, False
+    )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    quality = _parameter_validation.number_in_range_return_float(
+        quality, "quality", 0.0, True, 100.0, True
+    )
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
     first_results_step = unsteady_solver.first_results_step
@@ -570,9 +644,29 @@ def animate(
         speed = 50.0 / requested_fps
     actual_fps = float(math.floor(requested_fps * speed))
 
+    # A window manager will not grant an on-screen render window the whole display, and
+    # VTK silently shrinks one that asks for it, so a request that would be shrunk is
+    # rejected here rather than quietly producing an animation of a size the caller
+    # never asked for. Only a granted size smaller than the request counts as a shrink,
+    # since a display that scales its pixels reports a larger one.
+    if not pv.OFF_SCREEN:
+        granted_width, granted_height = _output_rendering.get_granted_window_size(
+            window_width, window_height
+        )
+        if granted_width < window_width or granted_height < window_height:
+            largest_width, largest_height = _output_rendering.get_largest_window_size()
+            raise ValueError(
+                f"window_size {window_width} by {window_height} cannot be rendered on "
+                f"screen, where the window manager grants at most {largest_width} by "
+                f"{largest_height} pixels. Request a smaller window, or render off "
+                f"screen by setting pyvista.OFF_SCREEN to True."
+            )
+
     # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=_WINDOW_SIZE, lighting=None)
+    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
+
+    window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
     # Initialize values to hold the color map choice and its limits.
     c_min = 0.0
@@ -714,7 +808,7 @@ def animate(
         plotter.add_text(
             text="Speed: " + str(round(100 * speed)) + "%",
             position=_TEXT_SPEED_POSITION,
-            font_size=_output_rendering.TEXT_FONT_SIZE,
+            font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
             viewport=True,
             color=animate_text_color,
         )
@@ -751,7 +845,7 @@ def animate(
     # Add the first time step's geometry. No wake is passed, since the first time step
     # has not shed one yet.
     _output_rendering.add_frame_geometry(
-        plotter, panel_surfaces, None, coloring, T_reflect
+        plotter, panel_surfaces, None, coloring, T_reflect, window_scale
     )
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
@@ -799,7 +893,9 @@ def animate(
         animate_cpos = None
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
+    plotter.set_background(  # type: ignore[call-arg]
+        color=_output_rendering.PLOTTER_BACKGROUND_COLOR
+    )
 
     # If not testing, show the Plotter with the first time step so the user can orient
     # the view. When the user presses any key, set the title back to the animation title
@@ -865,7 +961,7 @@ def animate(
             plotter.add_text(
                 text="Speed: " + str(round(100 * speed)) + "%",
                 position=_TEXT_SPEED_POSITION,
-                font_size=_output_rendering.TEXT_FONT_SIZE,
+                font_size=round(_output_rendering.TEXT_FONT_SIZE * window_scale),
                 viewport=True,
                 color=animate_text_color,
             )
@@ -908,7 +1004,12 @@ def animate(
 
         # Add this time step's geometry.
         _output_rendering.add_frame_geometry(
-            plotter, panel_surfaces, wake_ring_vortex_surfaces, coloring, T_reflect
+            plotter,
+            panel_surfaces,
+            wake_ring_vortex_surfaces,
+            coloring,
+            T_reflect,
+            window_scale,
         )
 
         # If an image surface is defined, add the pre-computed image surface plane.
@@ -941,7 +1042,7 @@ def animate(
     if save:
         # Convert the list of WebP Images to an WebP animation.
         webp.save_images(
-            images, "animate.webp", fps=actual_fps, lossless=False, quality=_quality
+            images, "animate.webp", fps=actual_fps, lossless=False, quality=quality
         )
 
     # Close all the Plotters.
@@ -951,7 +1052,9 @@ def animate(
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     show: bool | np.bool_ = True,
+    figure_size_in: Sequence[int | float] = (6.4, 4.8),
     save: bool | np.bool_ = False,
+    resolution_dpi: int | float = 300.0,
 ) -> None:
     """Plots the loads and load coefficients of an UnsteadyRingVortexLatticeMethodSolver
     or one of its subclasses (the aeroelastic or free flight solver) as a function of
@@ -971,8 +1074,15 @@ def plot_results_versus_time(
         history is plotted as well.
     :param show: Set this to True to show the plots. It can be a bool or a numpy bool
         and will be converted internally to a bool. The default is True.
+    :param figure_size_in: The width and height, in inches, of each figure. Multiplying
+        this by resolution_dpi gives the resolution of each saved PNG. It must be a
+        sequence of two positive numbers. The default is (6.4, 4.8), which is
+        Matplotlib's own default.
     :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
         bool and will be converted internally to a bool. The default is False.
+    :param resolution_dpi: The dots per inch at which to save each PNG. It can be an int
+        or a float and will be converted internally to a float. This has no effect
+        unless save is True. The default is 300.0.
     :return: None
     """
     if not isinstance(
@@ -983,7 +1093,20 @@ def plot_results_versus_time(
             "unsteady_solver must be an " "UnsteadyRingVortexLatticeMethodSolver."
         )
     show = _parameter_validation.boolLike_return_bool(show, "show")
+
+    if not isinstance(figure_size_in, Sequence) or len(figure_size_in) != 2:
+        raise ValueError("figure_size_in must be a sequence of two numbers.")
+    figure_width_in = _parameter_validation.number_in_range_return_float(
+        figure_size_in[0], "figure_size_in[0]", 0.0, False
+    )
+    figure_height_in = _parameter_validation.number_in_range_return_float(
+        figure_size_in[1], "figure_size_in[1]", 0.0, False
+    )
+
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    resolution_dpi = _parameter_validation.number_in_range_return_float(
+        resolution_dpi, "resolution_dpi", 0.0, False
+    )
 
     if not unsteady_solver.ran:
         raise RuntimeError(
@@ -1066,8 +1189,10 @@ def plot_results_versus_time(
             airplane_name + " Forces",
             "(in Wind Axes)",
             "Force (N)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_forces.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1085,8 +1210,10 @@ def plot_results_versus_time(
             airplane_name + " Force Coefficients",
             "(in Wind Axes)",
             "Force Coefficient",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_force_coefficients.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1100,8 +1227,10 @@ def plot_results_versus_time(
             airplane_name + " Moments",
             "(in Wind Axes, Relative to the CG)",
             "Moment (N m)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_moments.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1119,8 +1248,10 @@ def plot_results_versus_time(
             airplane_name + " Moment Coefficients",
             "(in Wind Axes, Relative to the CG)",
             "Moment Coefficient",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_moment_coefficients.png",
+            resolution_dpi,
         )
 
     # For a free flight solver, also plot the first Airplane's six-degree-of-freedom
@@ -1179,8 +1310,10 @@ def plot_results_versus_time(
             "(of the First Airplane's CG, in Earth Axes, Relative to the "
             "Earth Origin)",
             "Position (m)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_position.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1191,8 +1324,10 @@ def plot_results_versus_time(
             "(of the First Airplane's CG, in Earth Axes, Observed from the "
             "Earth Frame)",
             "Velocity (m/s)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_velocity.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1207,8 +1342,10 @@ def plot_results_versus_time(
             "(of the First Airplane's Body Axes Relative to Earth Axes "
             "Using an Intrinsic zy'x\" Sequence)",
             "Orientation (deg)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_orientation.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1218,8 +1355,10 @@ def plot_results_versus_time(
             airplane_name + " Angular Velocity",
             "(in the First Airplane's Body Axes, Observed from the " "Earth Frame)",
             "Angular Velocity (deg/s)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_angular_velocity.png",
+            resolution_dpi,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1229,8 +1368,10 @@ def plot_results_versus_time(
             airplane_name + " Aerodynamic Angles",
             "",
             "Angle (deg)",
+            (figure_width_in, figure_height_in),
             save,
             airplane_name_snake + "_aerodynamic_angles.png",
+            resolution_dpi,
         )
 
     # If the user wants to show the plots, do so. This is done outside the loop so that

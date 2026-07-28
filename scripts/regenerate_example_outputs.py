@@ -30,7 +30,7 @@ _INITIAL_QUALITY = 75.0
 _QUALITY_STEP = 35.0
 _MAX_RERENDER_ATTEMPTS = 2
 
-_MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "testing"}
+_MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
 
 
 def _extract_output_kwargs(
@@ -39,8 +39,8 @@ def _extract_output_kwargs(
     """Extracts the keyword arguments from ps.output.draw and ps.output.animate calls.
 
     Parses the example script's AST and returns the keyword arguments (excluding the
-    managed kwargs solver, unsteady_solver, save, and testing) for each call. Only
-    literal values are extracted.
+    managed kwargs solver, unsteady_solver, save, quality, and testing) for each call.
+    Only literal values are extracted.
 
     :param script_path: The path to the example script to parse.
     :return: A tuple of (draw_kwargs, animate_kwargs). Either value is None if the
@@ -149,9 +149,7 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
 
             for _ in range(_MAX_RERENDER_ATTEMPTS):
                 quality -= _QUALITY_STEP
-                ps.output._quality = quality
-                render_func(**render_kwargs, save=True, testing=True)
-                ps.output._quality = _INITIAL_QUALITY
+                render_func(**render_kwargs, save=True, quality=quality, testing=True)
 
                 new_bytes = webp_path.stat().st_size
                 if new_bytes <= _MAX_WEBP_BYTES:
@@ -163,7 +161,6 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
                     )
                     break
             else:
-                ps.output._quality = _INITIAL_QUALITY
                 final_bytes = webp_path.stat().st_size
                 print(
                     f"    Warning: {name} is still "
@@ -172,7 +169,6 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
                     f"(final quality={quality:.1f})."
                 )
         finally:
-            ps.output._quality = _INITIAL_QUALITY
             os.chdir(original_cwd)
 
 

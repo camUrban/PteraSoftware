@@ -364,72 +364,36 @@ def draw(
 
     # If showing streamlines, plot them.
     if show_streamlines:
-        # Iterate through the spanwise positions in the solver's streamline point
-        # ndarray.
-        for spanwise_position in range(solver.gridStreamlinePoints_GP1_CgP1.shape[1]):
-            # Get the ndarray of streamline points at this spanwise position (in the
-            # first Airplane's geometry axes, relative to the first Airplane's CG).
-            stackStreamlinePoints_GP1_CgP1 = solver.gridStreamlinePoints_GP1_CgP1[
-                :, spanwise_position, :
-            ]
+        streamline_surfaces = _output_rendering.get_streamline_surfaces(
+            solver.gridStreamlinePoints_GP1_CgP1
+        )
 
-            # Iterate through the streamline points at this spanwise position.
-            for point_index in range(stackStreamlinePoints_GP1_CgP1.shape[0]):
+        # For free flight, map the streamlines into Earth axes.
+        if T_pas_GP1_CgP1_to_E_Eo is not None:
+            streamline_surfaces = _output_rendering.transform_mesh(
+                streamline_surfaces, T_pas_GP1_CgP1_to_E_Eo
+            )
 
-                # Skip the first point because it has no previous point with which to
-                # make a line.
-                if point_index != 0:
-                    # Get the current and last point.
-                    point = stackStreamlinePoints_GP1_CgP1[point_index, :]
-                    last_point = stackStreamlinePoints_GP1_CgP1[point_index - 1, :]
+        plotter.add_mesh(
+            streamline_surfaces,
+            show_edges=True,
+            color=_STREAMLINE_COLOR,
+            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+            smooth_shading=False,
+        )
 
-                    # For free flight, map the segment into Earth axes.
-                    if T_pas_GP1_CgP1_to_E_Eo is not None:
-                        point = _transformations.apply_T_to_vectors(
-                            T_pas_GP1_CgP1_to_E_Eo, point, is_position=True
-                        )
-                        last_point = _transformations.apply_T_to_vectors(
-                            T_pas_GP1_CgP1_to_E_Eo, last_point, is_position=True
-                        )
-
-                    # Add a line to make this segment of the streamline.
-                    plotter.add_mesh(
-                        pv.Line(
-                            last_point,
-                            point,
-                        ),
-                        show_edges=True,
-                        color=_STREAMLINE_COLOR,
-                        line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-                        smooth_shading=False,
-                    )
-
-                    # If an image surface is defined, add the reflected streamline
-                    # segment.
-                    if T_reflect is not None:
-                        reflected_point = _transformations.apply_T_to_vectors(
-                            T_reflect,
-                            point,
-                            is_position=True,
-                        )
-                        reflected_last_point = _transformations.apply_T_to_vectors(
-                            T_reflect,
-                            last_point,
-                            is_position=True,
-                        )
-                        plotter.add_mesh(
-                            pv.Line(
-                                reflected_last_point,
-                                reflected_point,
-                            ),
-                            show_edges=True,
-                            color=_output_rendering.mute_color(
-                                _STREAMLINE_COLOR,
-                                _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR,
-                            ),
-                            line_width=_STREAMLINE_LINE_WIDTH * window_scale,
-                            smooth_shading=False,
-                        )
+        # If an image surface is defined, add the reflected streamlines, muted toward
+        # gray so that they read as a reflection rather than as more streamlines.
+        if T_reflect is not None:
+            plotter.add_mesh(
+                _output_rendering.transform_mesh(streamline_surfaces, T_reflect),
+                show_edges=True,
+                color=_output_rendering.mute_color(
+                    _STREAMLINE_COLOR, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
+                ),
+                line_width=_STREAMLINE_LINE_WIDTH * window_scale,
+                smooth_shading=False,
+            )
 
     # If an image surface is defined, save the geometry bounds (which now include the
     # reflected geometry but not the image surface plane), add the image surface plane,

@@ -171,6 +171,36 @@ def get_panel_surfaces(
     return pv.PolyData(panel_vertices, panel_faces)
 
 
+def get_streamline_surfaces(
+    gridStreamlinePoints_GP1_CgP1: np.ndarray,
+) -> pv.PolyData:
+    """Returns a PolyData representation of a solver's streamlines.
+
+    Each streamline becomes one polyline through its own points, so the whole set is a
+    single mesh. Adding one mesh per segment instead, which is what this replaced, gives
+    VTK an actor per segment and costs seconds once there are a few hundred of them.
+
+    :param gridStreamlinePoints_GP1_CgP1: A (num_points,num_streamlines,3) ndarray of
+        floats representing the points along each streamline (in the first Airplane's
+        geometry axes, relative to the first Airplane's CG).
+    :return: A PolyData representation of the streamlines.
+    """
+    num_points, num_streamlines = gridStreamlinePoints_GP1_CgP1.shape[:2]
+
+    # Order the points streamline by streamline so that each one is a contiguous run.
+    streamline_points = np.swapaxes(gridStreamlinePoints_GP1_CgP1, 0, 1).reshape(-1, 3)
+
+    # Describe each streamline as one polyline over its run, in the flat cell format VTK
+    # expects: a point count followed by that many point indices.
+    first_indices = np.arange(num_streamlines) * num_points
+    point_indices = first_indices[:, None] + np.arange(num_points)[None, :]
+    lines = np.hstack(
+        (np.full((num_streamlines, 1), num_points, dtype=int), point_indices)
+    ).ravel()
+
+    return pv.PolyData(streamline_points, lines=lines)
+
+
 def get_image_surface_mesh_and_texture(
     this_operating_point: operating_point_mod.OperatingPoint,
     geometry_bounds: tuple[float, float, float, float, float, float],

@@ -665,71 +665,26 @@ def animate(
         min_scalar = float(min(all_scalars))
         max_scalar = float(max(all_scalars))
 
-    # Pre-compute the image surface mesh and reflection matrix from the last time step's
-    # geometry so that the plane is large enough to encompass the fully developed wake.
-    # The mesh, texture, and reflection matrix are static and reused for every frame.
-    # The last step's geometry bounds (including reflected geometry but not the image
-    # surface plane) are also saved so the camera can be fitted to the geometry rather
-    # than the larger image surface.
+    # Pre-compute the image surface plane and the reflection that maps geometry onto its
+    # far side. Both are static across the animation, so they are built once here from
+    # the last time step's geometry and reused for every frame.
     last_step = len(step_airplanes) - 1
     last_step_operating_point = unsteady_solver.steady_problems[
         last_step
     ].operating_point
-    T_reflect = last_step_operating_point.surfaceReflect_T_act_GP1_CgP1
+    (
+        image_surface_mesh,
+        image_surface_texture,
+        T_reflect,
+        image_surface_geometry_bounds,
+    ) = _get_animation_image_surface(
+        unsteady_solver,
+        step_airplanes,
+        step_transforms,
+        is_free_flight,
+        show_wake_vortices,
+    )
     animate_text_color = _text_color_surface if T_reflect is not None else _text_color
-    image_surface_geometry_bounds = None
-    if is_free_flight:
-        if T_reflect is not None:
-            # The image surface is fixed in the world, so build its plane once from the
-            # last step's quantities in geometry axes, then map it into Earth axes.
-            # Re-expressing the reflection in Earth axes (a change of basis by the same
-            # passive transformation) lets the reflected geometry be built from the
-            # panels in Earth axes each frame.
-            T_pas_last = step_transforms[last_step]
-            geometry_axis_bounds = _get_panel_surfaces(step_airplanes[last_step]).bounds
-            image_surface_result = _get_image_surface_mesh_and_texture(
-                last_step_operating_point, geometry_axis_bounds
-            )
-            assert image_surface_result is not None
-            image_surface_mesh, image_surface_texture = image_surface_result
-            image_surface_mesh = _transform_mesh(image_surface_mesh, T_pas_last)
-            T_reflect = (
-                T_pas_last @ T_reflect @ _transformations.invert_T_pas(T_pas_last)
-            )
-        else:
-            image_surface_mesh = None
-            image_surface_texture = None
-    elif T_reflect is not None:
-        last_step_panel_surfaces = _get_panel_surfaces(step_airplanes[last_step])
-        reflected_last_step_panel_surfaces = _reflect_mesh(
-            last_step_panel_surfaces, T_reflect
-        )
-        if show_wake_vortices:
-            last_step_wake_surfaces = _get_wake_ring_vortex_surfaces(
-                unsteady_solver, last_step
-            )
-            reflected_last_step_wake_surfaces = _reflect_mesh(
-                last_step_wake_surfaces, T_reflect
-            )
-            combined = (
-                last_step_panel_surfaces.merge(last_step_wake_surfaces)
-                .merge(reflected_last_step_panel_surfaces)
-                .merge(reflected_last_step_wake_surfaces)
-            )
-            image_surface_geometry_bounds = combined.bounds
-        else:
-            combined = last_step_panel_surfaces.merge(
-                reflected_last_step_panel_surfaces
-            )
-            image_surface_geometry_bounds = combined.bounds
-        image_surface_result = _get_image_surface_mesh_and_texture(
-            last_step_operating_point, image_surface_geometry_bounds
-        )
-        assert image_surface_result is not None
-        image_surface_mesh, image_surface_texture = image_surface_result
-    else:
-        image_surface_mesh = None
-        image_surface_texture = None
 
     # For free flight, compute a fixed camera that frames the whole trajectory. The body
     # moves through the scene, so the camera is centered on the trajectory's midpoint
@@ -2118,6 +2073,113 @@ def _get_image_surface_mesh_and_texture(
     texture = pv.numpy_to_texture(image)
 
     return mesh, texture
+
+
+def _get_animation_image_surface(
+    unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
+    step_airplanes: list[tuple[geometry.airplane.Airplane, ...]],
+    step_transforms: list[np.ndarray],
+    is_free_flight: bool,
+    show_wake_vortices: bool,
+) -> tuple[
+    pv.PolyData | None,
+    pv.Texture | None,
+    np.ndarray | None,
+    tuple[float, float, float, float, float, float] | None,
+]:
+    """Builds the image surface plane that an animation reuses for every frame, and
+    returns it alongside the reflection that maps geometry onto its far side.
+
+    The plane is built from the last time step's geometry so that it is large enough to
+    encompass the fully developed wake. It is static across the animation, as is the
+    reflection, so both are computed once here rather than per frame.
+
+    For the standard body-fixed rendering, the plane is sized to the last step's
+    geometry together with its reflected copy, and the wake is included in that extent
+    when it is being shown. For free flight, the plane is fixed in the world while the
+    geometry is rendered in Earth axes, so it is built from the last step's geometry
+    axis bounds and then mapped into Earth axes. The reflection is re-expressed in Earth
+    axes by the same passive transformation, which lets each frame's reflected geometry
+    be built directly from the panels already mapped into Earth axes.
+
+    :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver being animated.
+    :param step_airplanes: A list holding each time step's tuple of Airplanes.
+    :param step_transforms: A list holding, per time step, the (4,4) ndarray of floats
+        representing the passive transformation from the first Airplane's geometry axes
+        (relative to its CG) to Earth axes (relative to the Earth origin). It is empty
+        when is_free_flight is False.
+    :param is_free_flight: Set this to True when the solver is a
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, whose geometry is rendered in
+        Earth axes.
+    :param show_wake_vortices: Set this to True when the wake ring vortices are being
+        shown, which includes them in the extent the plane is sized to.
+    :return: A tuple holding the image surface plane's mesh, its Texture, the (4,4)
+        ndarray of floats representing the active transformation that reflects geometry
+        across the image surface, and the (xmin, xmax, ymin, ymax, zmin, zmax) bounding
+        box to fit the camera to. The bounding box spans the geometry and its reflection
+        but not the much larger plane, so fitting to it keeps the plane from dominating
+        the view. All four are None when no image surface is defined, and the bounding
+        box is also None for free flight, which frames its own camera to the trajectory.
+    """
+    last_step = len(step_airplanes) - 1
+    last_step_operating_point = unsteady_solver.steady_problems[
+        last_step
+    ].operating_point
+    T_reflect = last_step_operating_point.surfaceReflect_T_act_GP1_CgP1
+
+    if T_reflect is None:
+        return None, None, None, None
+
+    last_step_panel_surfaces = _get_panel_surfaces(step_airplanes[last_step])
+
+    if is_free_flight:
+        # Size the plane from the geometry axis bounds, since the image surface helper
+        # builds it from geometry axis quantities, then map it into Earth axes to match
+        # the rendered geometry.
+        image_surface_result = _get_image_surface_mesh_and_texture(
+            last_step_operating_point, last_step_panel_surfaces.bounds
+        )
+        assert image_surface_result is not None
+        image_surface_mesh, image_surface_texture = image_surface_result
+
+        T_pas_last = step_transforms[last_step]
+        image_surface_mesh = _transform_mesh(image_surface_mesh, T_pas_last)
+        T_reflect = T_pas_last @ T_reflect @ _transformations.invert_T_pas(T_pas_last)
+
+        # Free flight frames its camera to the whole trajectory, so it needs no geometry
+        # bounding box from here.
+        return image_surface_mesh, image_surface_texture, T_reflect, None
+
+    # Size the plane to the last step's geometry together with its reflected copy, so
+    # that it spans both sides of the surface.
+    reflected_last_step_panel_surfaces = _reflect_mesh(
+        last_step_panel_surfaces, T_reflect
+    )
+    if show_wake_vortices:
+        last_step_wake_surfaces = _get_wake_ring_vortex_surfaces(
+            unsteady_solver, last_step
+        )
+        combined = (
+            last_step_panel_surfaces.merge(last_step_wake_surfaces)
+            .merge(reflected_last_step_panel_surfaces)
+            .merge(_reflect_mesh(last_step_wake_surfaces, T_reflect))
+        )
+    else:
+        combined = last_step_panel_surfaces.merge(reflected_last_step_panel_surfaces)
+
+    image_surface_geometry_bounds = combined.bounds
+    image_surface_result = _get_image_surface_mesh_and_texture(
+        last_step_operating_point, image_surface_geometry_bounds
+    )
+    assert image_surface_result is not None
+    image_surface_mesh, image_surface_texture = image_surface_result
+
+    return (
+        image_surface_mesh,
+        image_surface_texture,
+        T_reflect,
+        image_surface_geometry_bounds,
+    )
 
 
 def _get_T_pas_GP1_CgP1_to_E_Eo(

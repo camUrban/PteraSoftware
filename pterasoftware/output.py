@@ -58,6 +58,13 @@ _STREAMLINE_LINE_WIDTH = 2.0
 _IMAGE_SURFACE_OPACITY = 0.5
 _TEXT_SPEED_POSITION = (0.05, 0.075)
 
+# Define the number of samples used for multisample anti-aliasing. PyVista defaults to
+# 8, whose resolve is not reproducible on every driver: rendering one scene twice can
+# differ by a few intensity levels along an anti-aliased edge, which makes a saved WebP
+# vary between runs. Four samples is stable and renders indistinguishably, so the
+# visualizations pin it rather than take the default.
+_MULTI_SAMPLES = 4
+
 # Define the colors of the series in the results plots.
 [
     _ALPHA_COLOR,
@@ -247,6 +254,7 @@ def draw(
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
+    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
 
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 
@@ -675,6 +683,7 @@ def animate(
     # Create the Plotter and set it to use parallel projection (instead of perspective).
     plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
+    plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
 
     window_scale = _output_rendering.get_window_scale(window_width, window_height)
 

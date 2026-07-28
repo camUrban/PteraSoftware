@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 
 import matplotlib.legend_handler
@@ -48,6 +49,81 @@ def get_operating_point_velocity(
         is_position=False,
     )
     return -vInf_E__E
+
+
+def csv_headers(labels: list[str], subtitle: str, y_label: str) -> list[str]:
+    """Composes one figure's CSV column headers out of the text that figure already
+    carries.
+
+    A header is a transformed form of three pieces of a figure: the quantity from the
+    legend label, the axes, point, and frame from the subtitle, and the unit from the
+    y-axis label. Deriving them rather than writing them out a second time is what keeps
+    a column and the figure beside it describing the same quantity the same way.
+
+    :param labels: The figure's legend labels, one per series.
+    :param subtitle: The figure's subtitle, parenthesized as the figure carries it. Pass
+        an empty string for a figure that has none.
+    :param y_label: The figure's y-axis label.
+    :return: A list of column headers, one per label.
+    """
+    # A y-axis label pairs a quantity with an optional unit, as in "Position (m)" or
+    # "Force Coefficient".
+    if y_label.endswith(")"):
+        quantity, _, unit = y_label.rpartition(" (")
+        unit = "(" + unit
+    else:
+        quantity = y_label
+        unit = ""
+
+    # A header spells a moment's unit "N*m" where the axis label spells it "N m". The
+    # axis label sits beneath a figure that names the quantity, so the looser spelling
+    # reads fine there, while a header stands alone.
+    unit = unit.replace("N m", "N*m")
+
+    # A subtitle is parenthesized and comma separated, and a header is neither.
+    context = subtitle.strip("()").replace(",", "")
+
+    headers = []
+    for label in labels:
+        # A figure that labels its series by component alone names the quantity in its
+        # title. A column has no title, so the y-axis label's quantity stands in.
+        if label.endswith(" Component"):
+            label = label.replace("Component", quantity)
+        headers.append(" ".join(piece for piece in (label, context, unit) if piece))
+    return headers
+
+
+def write_time_history_csv(
+    times: np.ndarray,
+    headers: list[str],
+    columns: list[np.ndarray],
+    save_path: Path,
+) -> None:
+    """Writes one time history to a CSV file, with time as the first column.
+
+    The columns arrive already carrying the signs and the selection that the figures
+    plot, so a row reads the same way the corresponding figure does. The headers are
+    composed by the caller alongside the figures, since they are drawn from the same
+    legend labels, titles, subtitles, and y-axis labels that the figures use.
+
+    :param times: A (num_steps,) ndarray of floats representing the time, in seconds, at
+        each time step.
+    :param headers: The column headers, one per column, not counting time.
+    :param columns: A list of (num_steps,) ndarrays of floats, one per column, not
+        counting time.
+    :param save_path: The fully resolved file path to write the CSV to.
+    :return: None
+    """
+    if len(headers) != len(columns):
+        raise ValueError("headers and columns must be the same length.")
+
+    # newline="" is what the csv module requires so that it controls the line endings
+    # itself rather than having the text layer translate them a second time.
+    with open(save_path, "w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["Time (s)"] + headers)
+        for step, time_value in enumerate(times):
+            writer.writerow([time_value] + [column[step] for column in columns])
 
 
 def plot_time_history(

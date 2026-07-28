@@ -78,6 +78,65 @@ _MULTI_SAMPLES = 4
     _ANGULAR_Z_COLOR,
 ] = _colormaps.prism[1:9]
 
+# Define the text that the results outputs share. Every figure's legend labels,
+# subtitle, and y-axis label are named once here because the other two outputs restate
+# them: a CSV header is the transformed form of the same three pieces, taking its
+# quantity from the legend label, its axes, point, and frame from the subtitle, and its
+# unit from the y-axis label, while a logged group header pairs a quantity with the same
+# subtitle. Naming them once is what keeps the three describing a quantity the same way.
+_FORCE_LABELS = ["Induced Drag", "Side Force", "Lift"]
+_FORCE_COEFFICIENT_LABELS = [
+    "Induced Drag Coefficient",
+    "Side Force Coefficient",
+    "Lift Coefficient",
+]
+_MOMENT_LABELS = ["Rolling Moment", "Pitching Moment", "Yawing Moment"]
+_MOMENT_COEFFICIENT_LABELS = [
+    "Rolling Moment Coefficient",
+    "Pitching Moment Coefficient",
+    "Yawing Moment Coefficient",
+]
+
+# The position and velocity figures label their series by component alone, since their
+# titles name the quantity. A CSV column has no title, so it takes the quantity from the
+# y-axis label instead.
+_COMPONENT_LABELS = ["X Component", "Y Component", "Z Component"]
+_ORIENTATION_LABELS = ["Roll Angle", "Pitch Angle", "Yaw Angle"]
+_ANGULAR_VELOCITY_LABELS = ["Roll Rate", "Pitch Rate", "Yaw Rate"]
+_AERODYNAMIC_ANGLE_LABELS = ["Angle of Attack", "Sideslip Angle"]
+
+_WIND_AXES_SUBTITLE = "(in Wind Axes)"
+_WIND_AXES_CG_SUBTITLE = "(in Wind Axes, Relative to the CG)"
+
+# The logged results report the loads in each Airplane's own geometry axes as well,
+# which no figure plots.
+_GEOMETRY_AXES_SUBTITLE = "(in Geometry Axes)"
+_GEOMETRY_AXES_CG_SUBTITLE = "(in Geometry Axes, Relative to the CG)"
+_POSITION_SUBTITLE = (
+    "(of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin)"
+)
+_VELOCITY_SUBTITLE = (
+    "(of the First Airplane's CG, in Earth Axes, Observed from the Earth Frame)"
+)
+_ORIENTATION_SUBTITLE = (
+    "(of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic "
+    "zy'x\" Sequence)"
+)
+_ANGULAR_VELOCITY_SUBTITLE = (
+    "(in the First Airplane's Body Axes, Observed from the Earth Frame)"
+)
+_AERODYNAMIC_ANGLE_SUBTITLE = ""
+
+_FORCE_Y_LABEL = "Force (N)"
+_FORCE_COEFFICIENT_Y_LABEL = "Force Coefficient"
+_MOMENT_Y_LABEL = "Moment (N m)"
+_MOMENT_COEFFICIENT_Y_LABEL = "Moment Coefficient"
+_POSITION_Y_LABEL = "Position (m)"
+_VELOCITY_Y_LABEL = "Velocity (m/s)"
+_ORIENTATION_Y_LABEL = "Orientation (deg)"
+_ANGULAR_VELOCITY_Y_LABEL = "Angular Velocity (deg/s)"
+_AERODYNAMIC_ANGLE_Y_LABEL = "Angle (deg)"
+
 # Define the camera's view-up direction for free flight visualizations. Earth axes have
 # +z pointing down, so physical up is the -z direction. The free flight visualizations
 # render geometry in Earth axes (so the body flies through the scene in its true pose)
@@ -1072,6 +1131,7 @@ def plot_results_versus_time(
     show: bool | np.bool_ = True,
     figure_size_in: Sequence[int | float] = (6.4, 4.8),
     save: bool | np.bool_ = False,
+    save_csv: bool | np.bool_ = False,
     directory: str | Path = ".",
     prefix: str = "",
     resolution_dpi: int | float = 300.0,
@@ -1087,8 +1147,8 @@ def plot_results_versus_time(
     whole simulation rather than per Airplane.
 
     Each file is named after the Airplane it describes, so an Airplane whose name holds
-    a path separator is rejected when save is True. Such a name would compose a
-    destination outside the directory that was asked for.
+    a path separator is rejected when save or save_csv is True. Such a name would
+    compose a destination outside the directory that was asked for.
 
     :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver whose loads and
         load coefficients will be plotted. Its subclasses, the
@@ -1104,17 +1164,25 @@ def plot_results_versus_time(
         Matplotlib's own default.
     :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
         bool and will be converted internally to a bool. The default is False.
-    :param directory: The directory to save the PNGs in. It can be a str or a Path and
-        must already exist. This has no effect unless save is True. The default is ".",
-        the current working directory.
-    :param prefix: A prefix to prepend to each PNG's file name, which distinguishes one
-        run's figures from another's. It must be a str and must be a file name component
+    :param save_csv: Set this to True to save the plotted data as CSVs, which is
+        independent of save, so the data can be exported without rendering any images.
+        One file holds the loads and load coefficients of each Airplane, and, for a
+        FreeFlightUnsteadyRingVortexLatticeMethodSolver, a second holds the first
+        Airplane's state history. The two are separate files because the load histories
+        begin at the solver's first results step while the state history begins at time
+        step 0, so they have different numbers of rows. It can be a bool or a numpy bool
+        and will be converted internally to a bool. The default is False.
+    :param directory: The directory to save the PNGs and CSVs in. It can be a str or a
+        Path and must already exist. This has no effect unless save or save_csv is True.
+        The default is ".", the current working directory.
+    :param prefix: A prefix to prepend to each file's name, which distinguishes one
+        run's output from another's. It must be a str and must be a file name component
         rather than a path. With the default, an empty string, each file is named after
-        its Airplane and the quantity it plots, as in "example_airplane_forces.png".
-        With a non-empty prefix, each name becomes "<prefix>_<airplane>_<quantity>.png".
-        The Airplane's name is included either way, since dropping it would collide
-        across the Airplanes of a formation simulation. This has no effect unless save
-        is True.
+        its Airplane and the quantity it holds, as in "example_airplane_forces.png".
+        With a non-empty prefix, each name becomes
+        "<prefix>_<airplane>_<quantity>.<ext>". The Airplane's name is included either
+        way, since dropping it would collide across the Airplanes of a formation
+        simulation. This has no effect unless save or save_csv is True.
     :param resolution_dpi: The dots per inch at which to save each PNG. It can be an int
         or a float and will be converted internally to a float. This has no effect
         unless save is True. The default is 300.0.
@@ -1139,6 +1207,7 @@ def plot_results_versus_time(
     )
 
     save = _parameter_validation.boolLike_return_bool(save, "save")
+    save_csv = _parameter_validation.boolLike_return_bool(save_csv, "save_csv")
 
     # A missing directory is an error rather than something to create, matching what
     # pathLike_return_path does for draw's and animate's single file destinations.
@@ -1177,7 +1246,7 @@ def plot_results_versus_time(
     # rule as prefix: a separator in one would compose a destination outside the
     # directory the caller named. Every Airplane is checked before any figure is drawn,
     # so a bad name never leaves a partly written set behind.
-    if save:
+    if save or save_csv:
         for airplane in unsteady_solver.steady_problems[0].airplanes:
             airplane_name_snake = airplane.name.lower().replace(" ", "_")
             if airplane_name_snake != os.path.basename(airplane_name_snake):
@@ -1262,11 +1331,11 @@ def plot_results_versus_time(
                 forces_W[airplane_id, 1],
                 -forces_W[airplane_id, 2],
             ],
-            ["Induced Drag", "Side Force", "Lift"],
+            _FORCE_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Forces",
-            "(in Wind Axes)",
-            "Force (N)",
+            _WIND_AXES_SUBTITLE,
+            _FORCE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_forces.png"),
@@ -1279,15 +1348,11 @@ def plot_results_versus_time(
                 forceCoefficients_W[airplane_id, 1],
                 -forceCoefficients_W[airplane_id, 2],
             ],
-            [
-                "Induced Drag Coefficient",
-                "Side Force Coefficient",
-                "Lift Coefficient",
-            ],
+            _FORCE_COEFFICIENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Force Coefficients",
-            "(in Wind Axes)",
-            "Force Coefficient",
+            _WIND_AXES_SUBTITLE,
+            _FORCE_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_force_coefficients.png"),
@@ -1300,11 +1365,11 @@ def plot_results_versus_time(
                 moments_W_Cg[airplane_id, 1],
                 moments_W_Cg[airplane_id, 2],
             ],
-            ["Rolling Moment", "Pitching Moment", "Yawing Moment"],
+            _MOMENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Moments",
-            "(in Wind Axes, Relative to the CG)",
-            "Moment (N m)",
+            _WIND_AXES_CG_SUBTITLE,
+            _MOMENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_moments.png"),
@@ -1317,20 +1382,58 @@ def plot_results_versus_time(
                 momentCoefficients_W_Cg[airplane_id, 1],
                 momentCoefficients_W_Cg[airplane_id, 2],
             ],
-            [
-                "Rolling Moment Coefficient",
-                "Pitching Moment Coefficient",
-                "Yawing Moment Coefficient",
-            ],
+            _MOMENT_COEFFICIENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Moment Coefficients",
-            "(in Wind Axes, Relative to the CG)",
-            "Moment Coefficient",
+            _WIND_AXES_CG_SUBTITLE,
+            _MOMENT_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_moment_coefficients.png"),
             resolution_dpi,
         )
+
+        # Write this Airplane's twelve plotted load series to one CSV. A reader
+        # comparing induced drag against pitching moment should read one table rather
+        # than join four, and a table has none of a plot's limited visual capacity, so
+        # the four figures collapse to a single file here. The columns repeat the
+        # figures' sign conventions and the headers are derived from the same four
+        # figures' text, so a row reads the way the figures do.
+        if save_csv:
+            _output_plotting.write_time_history_csv(
+                times,
+                _output_plotting.csv_headers(
+                    _FORCE_LABELS, _WIND_AXES_SUBTITLE, _FORCE_Y_LABEL
+                )
+                + _output_plotting.csv_headers(
+                    _FORCE_COEFFICIENT_LABELS,
+                    _WIND_AXES_SUBTITLE,
+                    _FORCE_COEFFICIENT_Y_LABEL,
+                )
+                + _output_plotting.csv_headers(
+                    _MOMENT_LABELS, _WIND_AXES_CG_SUBTITLE, _MOMENT_Y_LABEL
+                )
+                + _output_plotting.csv_headers(
+                    _MOMENT_COEFFICIENT_LABELS,
+                    _WIND_AXES_CG_SUBTITLE,
+                    _MOMENT_COEFFICIENT_Y_LABEL,
+                ),
+                [
+                    -forces_W[airplane_id, 0],
+                    forces_W[airplane_id, 1],
+                    -forces_W[airplane_id, 2],
+                    -forceCoefficients_W[airplane_id, 0],
+                    forceCoefficients_W[airplane_id, 1],
+                    -forceCoefficients_W[airplane_id, 2],
+                    moments_W_Cg[airplane_id, 0],
+                    moments_W_Cg[airplane_id, 1],
+                    moments_W_Cg[airplane_id, 2],
+                    momentCoefficients_W_Cg[airplane_id, 0],
+                    momentCoefficients_W_Cg[airplane_id, 1],
+                    momentCoefficients_W_Cg[airplane_id, 2],
+                ],
+                directory / (file_stem + "_loads.csv"),
+            )
 
     # For a free flight solver, also plot the first Airplane's six-degree-of-freedom
     # state history. This is plotted once for the whole simulation, since the state
@@ -1358,8 +1461,8 @@ def plot_results_versus_time(
         # Initialize matrices to hold the state quantities at every time step.
         positions_E_Eo = np.zeros((3, num_state_steps), dtype=float)
         velocities_E__E = np.zeros((3, num_state_steps), dtype=float)
-        anglesDeg_E_to_BP1_izyx = np.zeros((3, num_state_steps), dtype=float)
-        omegasDeg_BP1__E = np.zeros((3, num_state_steps), dtype=float)
+        angles_E_to_BP1_izyx = np.zeros((3, num_state_steps), dtype=float)
+        omegas_BP1__E = np.zeros((3, num_state_steps), dtype=float)
         alphas = np.zeros(num_state_steps, dtype=float)
         betas = np.zeros(num_state_steps, dtype=float)
 
@@ -1369,8 +1472,8 @@ def plot_results_versus_time(
             velocities_E__E[:, step] = _output_plotting.get_operating_point_velocity(
                 this_operating_point
             )
-            anglesDeg_E_to_BP1_izyx[:, step] = this_operating_point.angles_E_to_BP1_izyx
-            omegasDeg_BP1__E[:, step] = this_operating_point.omegas_BP1__E
+            angles_E_to_BP1_izyx[:, step] = this_operating_point.angles_E_to_BP1_izyx
+            omegas_BP1__E[:, step] = this_operating_point.omegas_BP1__E
             alphas[step] = this_operating_point.alpha
             betas[step] = this_operating_point.beta
 
@@ -1387,12 +1490,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
-            ["X Component", "Y Component", "Z Component"],
+            _COMPONENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Position",
-            "(of the First Airplane's CG, in Earth Axes, Relative to the "
-            "Earth Origin)",
-            "Position (m)",
+            _POSITION_SUBTITLE,
+            _POSITION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_position.png"),
@@ -1401,12 +1503,11 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
-            ["X Component", "Y Component", "Z Component"],
+            _COMPONENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Velocity",
-            "(of the First Airplane's CG, in Earth Axes, Observed from the "
-            "Earth Frame)",
-            "Velocity (m/s)",
+            _VELOCITY_SUBTITLE,
+            _VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_velocity.png"),
@@ -1415,16 +1516,15 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [
-                anglesDeg_E_to_BP1_izyx[0],
-                anglesDeg_E_to_BP1_izyx[1],
-                anglesDeg_E_to_BP1_izyx[2],
+                angles_E_to_BP1_izyx[0],
+                angles_E_to_BP1_izyx[1],
+                angles_E_to_BP1_izyx[2],
             ],
-            ["Roll Angle", "Pitch Angle", "Yaw Angle"],
+            _ORIENTATION_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Orientation",
-            "(of the First Airplane's Body Axes Relative to Earth Axes "
-            "Using an Intrinsic zy'x\" Sequence)",
-            "Orientation (deg)",
+            _ORIENTATION_SUBTITLE,
+            _ORIENTATION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_orientation.png"),
@@ -1432,12 +1532,12 @@ def plot_results_versus_time(
         )
         _output_plotting.plot_time_history(
             state_times,
-            [omegasDeg_BP1__E[0], omegasDeg_BP1__E[1], omegasDeg_BP1__E[2]],
-            ["Roll Rate", "Pitch Rate", "Yaw Rate"],
+            [omegas_BP1__E[0], omegas_BP1__E[1], omegas_BP1__E[2]],
+            _ANGULAR_VELOCITY_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Angular Velocity",
-            "(in the First Airplane's Body Axes, Observed from the " "Earth Frame)",
-            "Angular Velocity (deg/s)",
+            _ANGULAR_VELOCITY_SUBTITLE,
+            _ANGULAR_VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_angular_velocity.png"),
@@ -1446,16 +1546,62 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             state_times,
             [alphas, betas],
-            ["Angle of Attack", "Sideslip Angle"],
+            _AERODYNAMIC_ANGLE_LABELS,
             [_ALPHA_COLOR, _BETA_COLOR],
             airplane_name + " Aerodynamic Angles",
-            "",
-            "Angle (deg)",
+            _AERODYNAMIC_ANGLE_SUBTITLE,
+            _AERODYNAMIC_ANGLE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
             directory / (file_stem + "_aerodynamic_angles.png"),
             resolution_dpi,
         )
+
+        # Write the state history to its own CSV rather than into the loads file. The
+        # loads begin at the solver's first results step while the state begins at time
+        # step 0, so the two have different numbers of rows and cannot share a table.
+        # The headers are derived from the same five figures' text, so a column and the
+        # figure that plots it describe the quantity the same way.
+        if save_csv:
+            _output_plotting.write_time_history_csv(
+                state_times,
+                _output_plotting.csv_headers(
+                    _COMPONENT_LABELS, _POSITION_SUBTITLE, _POSITION_Y_LABEL
+                )
+                + _output_plotting.csv_headers(
+                    _COMPONENT_LABELS, _VELOCITY_SUBTITLE, _VELOCITY_Y_LABEL
+                )
+                + _output_plotting.csv_headers(
+                    _ORIENTATION_LABELS, _ORIENTATION_SUBTITLE, _ORIENTATION_Y_LABEL
+                )
+                + _output_plotting.csv_headers(
+                    _ANGULAR_VELOCITY_LABELS,
+                    _ANGULAR_VELOCITY_SUBTITLE,
+                    _ANGULAR_VELOCITY_Y_LABEL,
+                )
+                + _output_plotting.csv_headers(
+                    _AERODYNAMIC_ANGLE_LABELS,
+                    _AERODYNAMIC_ANGLE_SUBTITLE,
+                    _AERODYNAMIC_ANGLE_Y_LABEL,
+                ),
+                [
+                    positions_E_Eo[0],
+                    positions_E_Eo[1],
+                    positions_E_Eo[2],
+                    velocities_E__E[0],
+                    velocities_E__E[1],
+                    velocities_E__E[2],
+                    angles_E_to_BP1_izyx[0],
+                    angles_E_to_BP1_izyx[1],
+                    angles_E_to_BP1_izyx[2],
+                    omegas_BP1__E[0],
+                    omegas_BP1__E[1],
+                    omegas_BP1__E[2],
+                    alphas,
+                    betas,
+                ],
+                directory / (file_stem + "_state.csv"),
+            )
 
     # If the user wants to show the plots, do so. This is done outside the loop so that
     # plt.show() is only called once after all figures are created.
@@ -1554,35 +1700,36 @@ def log_results(
     col1 = [label + ":" for label in col1]
     col1_space = max(len(elem) for elem in col1) + padding_spaces
 
-    # Named load labels for the wind axes rows only, because names like drag and lift
-    # are wind axes concepts with no geometry axes counterparts.
-    col3 = [
-        "Drag",
-        "Side Force",
-        "Lift",
-        "Rolling Moment",
-        "Pitching Moment",
-        "Yawing Moment",
-        "CDi",
-        "CY",
-        "CL",
-        "Cl",
-        "Cm",
-        "Cn",
-    ]
+    # Named load labels for the wind axes rows only, because names like induced drag and
+    # lift are wind axes concepts with no geometry axes counterparts. The forces and
+    # moments are named the way the figures that plot them are, while the coefficients
+    # go by their symbols, which are shorter than their names and unambiguous in a table
+    # whose rows are already labeled by variable name.
+    col3 = (
+        _FORCE_LABELS
+        + _MOMENT_LABELS
+        + [
+            "CDi",
+            "CY",
+            "CL",
+            "Cl",
+            "Cm",
+            "Cn",
+        ]
+    )
     col3 = [label + ":" for label in col3]
     col3_space = max(len(elem) for elem in col3) + padding_spaces
 
     for airplane_num, airplane in enumerate(these_airplanes):
         title_prefix: str = ""
-        these_forces_G: np.ndarray = np.empty(0, dtype=float)
-        these_moments_G_Cg: np.ndarray = np.empty(0, dtype=float)
-        these_forceCoefficients_G: np.ndarray = np.empty(0, dtype=float)
-        these_momentCoefficients_G_Cg: np.ndarray = np.empty(0, dtype=float)
-        these_forces_W: np.ndarray = np.empty(0, dtype=float)
-        these_moments_W_Cg: np.ndarray = np.empty(0, dtype=float)
-        these_forceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
-        these_momentCoefficients_W_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseForces_G: np.ndarray = np.empty(0, dtype=float)
+        theseMoments_G_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseForceCoefficients_G: np.ndarray = np.empty(0, dtype=float)
+        theseMomentCoefficients_G_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseForces_W: np.ndarray = np.empty(0, dtype=float)
+        theseMoments_W_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseForceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
+        theseMomentCoefficients_W_Cg: np.ndarray = np.empty(0, dtype=float)
 
         match solver_type:
             case "steady":
@@ -1591,42 +1738,42 @@ def log_results(
                 _forces_G = airplane.forces_G
                 assert _forces_G is not None
 
-                these_forces_G = _forces_G
+                theseForces_G = _forces_G
 
                 _moments_G_Cg = airplane.moments_G_Cg
                 assert _moments_G_Cg is not None
 
-                these_moments_G_Cg = _moments_G_Cg
+                theseMoments_G_Cg = _moments_G_Cg
 
                 _forceCoefficients_G = airplane.forceCoefficients_G
                 assert _forceCoefficients_G is not None
 
-                these_forceCoefficients_G = _forceCoefficients_G
+                theseForceCoefficients_G = _forceCoefficients_G
 
                 _momentCoefficients_G_Cg = airplane.momentCoefficients_G_Cg
                 assert _momentCoefficients_G_Cg is not None
 
-                these_momentCoefficients_G_Cg = _momentCoefficients_G_Cg
+                theseMomentCoefficients_G_Cg = _momentCoefficients_G_Cg
 
                 _forces_W = airplane.forces_W
                 assert _forces_W is not None
 
-                these_forces_W = _forces_W
+                theseForces_W = _forces_W
 
                 _moments_W_Cg = airplane.moments_W_Cg
                 assert _moments_W_Cg is not None
 
-                these_moments_W_Cg = _moments_W_Cg
+                theseMoments_W_Cg = _moments_W_Cg
 
                 _forceCoefficients_W = airplane.forceCoefficients_W
                 assert _forceCoefficients_W is not None
 
-                these_forceCoefficients_W = _forceCoefficients_W
+                theseForceCoefficients_W = _forceCoefficients_W
 
                 _momentCoefficients_W_Cg = airplane.momentCoefficients_W_Cg
                 assert _momentCoefficients_W_Cg is not None
 
-                these_momentCoefficients_W_Cg = _momentCoefficients_W_Cg
+                theseMomentCoefficients_W_Cg = _momentCoefficients_W_Cg
 
             case "static geometry unsteady":
                 assert isinstance(
@@ -1635,24 +1782,24 @@ def log_results(
                 )
 
                 title_prefix = "Final "
-                these_forces_G = solver.unsteady_problem.finalForces_G[airplane_num]
-                these_moments_G_Cg = solver.unsteady_problem.finalMoments_G_Cg[
+                theseForces_G = solver.unsteady_problem.finalForces_G[airplane_num]
+                theseMoments_G_Cg = solver.unsteady_problem.finalMoments_G_Cg[
                     airplane_num
                 ]
-                these_forceCoefficients_G = (
+                theseForceCoefficients_G = (
                     solver.unsteady_problem.finalForceCoefficients_G[airplane_num]
                 )
-                these_momentCoefficients_G_Cg = (
+                theseMomentCoefficients_G_Cg = (
                     solver.unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
                 )
-                these_forces_W = solver.unsteady_problem.finalForces_W[airplane_num]
-                these_moments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
+                theseForces_W = solver.unsteady_problem.finalForces_W[airplane_num]
+                theseMoments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
                     airplane_num
                 ]
-                these_forceCoefficients_W = (
+                theseForceCoefficients_W = (
                     solver.unsteady_problem.finalForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_Cg = (
+                theseMomentCoefficients_W_Cg = (
                     solver.unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
                 )
             case "variable geometry unsteady":
@@ -1662,26 +1809,26 @@ def log_results(
                 )
 
                 title_prefix = "Final Cycle-Averaged "
-                these_forces_G = solver.unsteady_problem.finalMeanForces_G[airplane_num]
-                these_moments_G_Cg = solver.unsteady_problem.finalMeanMoments_G_Cg[
+                theseForces_G = solver.unsteady_problem.finalMeanForces_G[airplane_num]
+                theseMoments_G_Cg = solver.unsteady_problem.finalMeanMoments_G_Cg[
                     airplane_num
                 ]
-                these_forceCoefficients_G = (
+                theseForceCoefficients_G = (
                     solver.unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
                 )
-                these_momentCoefficients_G_Cg = (
+                theseMomentCoefficients_G_Cg = (
                     solver.unsteady_problem.finalMeanMomentCoefficients_G_Cg[
                         airplane_num
                     ]
                 )
-                these_forces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
-                these_moments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
+                theseForces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
+                theseMoments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
                     airplane_num
                 ]
-                these_forceCoefficients_W = (
+                theseForceCoefficients_W = (
                     solver.unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
                 )
-                these_momentCoefficients_W_Cg = (
+                theseMomentCoefficients_W_Cg = (
                     solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg[
                         airplane_num
                     ]
@@ -1692,51 +1839,51 @@ def log_results(
         # One title per three-row group, in the order the groups are logged: the loads
         # in this Airplane's own geometry axes, then the loads in wind axes.
         titles = [
-            _logging.indent(1) + title_prefix + "Forces (in Geometry Axes):",
+            _logging.indent(1) + title_prefix + f"Forces {_GEOMETRY_AXES_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + "Moments (in Geometry Axes, Relative to the CG):",
+            + f"Moments {_GEOMETRY_AXES_CG_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + "Force Coefficients (in Geometry Axes):",
+            + f"Force Coefficients {_GEOMETRY_AXES_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + "Moment Coefficients (in Geometry Axes, Relative to the CG):",
-            _logging.indent(1) + title_prefix + "Forces (in Wind Axes):",
+            + f"Moment Coefficients {_GEOMETRY_AXES_CG_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Forces {_WIND_AXES_SUBTITLE}:",
+            _logging.indent(1) + title_prefix + f"Moments {_WIND_AXES_CG_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + "Moments (in Wind Axes, Relative to the CG):",
-            _logging.indent(1) + title_prefix + "Force Coefficients (in Wind Axes):",
+            + f"Force Coefficients {_WIND_AXES_SUBTITLE}:",
             _logging.indent(1)
             + title_prefix
-            + "Moment Coefficients (in Wind Axes, Relative to the CG):",
+            + f"Moment Coefficients {_WIND_AXES_CG_SUBTITLE}:",
         ]
 
         col2 = [
-            these_forces_G[0],
-            these_forces_G[1],
-            these_forces_G[2],
-            these_moments_G_Cg[0],
-            these_moments_G_Cg[1],
-            these_moments_G_Cg[2],
-            these_forceCoefficients_G[0],
-            these_forceCoefficients_G[1],
-            these_forceCoefficients_G[2],
-            these_momentCoefficients_G_Cg[0],
-            these_momentCoefficients_G_Cg[1],
-            these_momentCoefficients_G_Cg[2],
-            these_forces_W[0],
-            these_forces_W[1],
-            these_forces_W[2],
-            these_moments_W_Cg[0],
-            these_moments_W_Cg[1],
-            these_moments_W_Cg[2],
-            these_forceCoefficients_W[0],
-            these_forceCoefficients_W[1],
-            these_forceCoefficients_W[2],
-            these_momentCoefficients_W_Cg[0],
-            these_momentCoefficients_W_Cg[1],
-            these_momentCoefficients_W_Cg[2],
+            theseForces_G[0],
+            theseForces_G[1],
+            theseForces_G[2],
+            theseMoments_G_Cg[0],
+            theseMoments_G_Cg[1],
+            theseMoments_G_Cg[2],
+            theseForceCoefficients_G[0],
+            theseForceCoefficients_G[1],
+            theseForceCoefficients_G[2],
+            theseMomentCoefficients_G_Cg[0],
+            theseMomentCoefficients_G_Cg[1],
+            theseMomentCoefficients_G_Cg[2],
+            theseForces_W[0],
+            theseForces_W[1],
+            theseForces_W[2],
+            theseMoments_W_Cg[0],
+            theseMoments_W_Cg[1],
+            theseMoments_W_Cg[2],
+            theseForceCoefficients_W[0],
+            theseForceCoefficients_W[1],
+            theseForceCoefficients_W[2],
+            theseMomentCoefficients_W_Cg[0],
+            theseMomentCoefficients_W_Cg[1],
+            theseMomentCoefficients_W_Cg[2],
         ]
         col2 = [f"{val:#10.3G}" for val in col2]
         col2 = [
@@ -1746,18 +1893,18 @@ def log_results(
         col2_space = max(len(elem) for elem in col2) + 2 * padding_spaces
 
         col4 = [
-            -these_forces_W[0],
-            these_forces_W[1],
-            -these_forces_W[2],
-            these_moments_W_Cg[0],
-            these_moments_W_Cg[1],
-            these_moments_W_Cg[2],
-            -these_forceCoefficients_W[0],
-            these_forceCoefficients_W[1],
-            -these_forceCoefficients_W[2],
-            these_momentCoefficients_W_Cg[0],
-            these_momentCoefficients_W_Cg[1],
-            these_momentCoefficients_W_Cg[2],
+            -theseForces_W[0],
+            theseForces_W[1],
+            -theseForces_W[2],
+            theseMoments_W_Cg[0],
+            theseMoments_W_Cg[1],
+            theseMoments_W_Cg[2],
+            -theseForceCoefficients_W[0],
+            theseForceCoefficients_W[1],
+            -theseForceCoefficients_W[2],
+            theseMomentCoefficients_W_Cg[0],
+            theseMomentCoefficients_W_Cg[1],
+            theseMomentCoefficients_W_Cg[2],
         ]
         col4 = [f"{val:#10.3G}" for val in col4]
         col4 = [
@@ -1839,24 +1986,16 @@ def log_results(
         )
 
         state_group_header_position = (
-            _logging.indent(2)
-            + "Position (of the First Airplane's CG, in Earth Axes, Relative "
-            "to the Earth Origin):"
+            _logging.indent(2) + f"Position {_POSITION_SUBTITLE}:"
         )
         state_group_header_orientation = (
-            _logging.indent(2)
-            + "Orientation (of the First Airplane's Body Axes Relative to "
-            "Earth Axes, Intrinsic zy'x\" Sequence):"
+            _logging.indent(2) + f"Orientation {_ORIENTATION_SUBTITLE}:"
         )
         state_group_header_velocity = (
-            _logging.indent(2)
-            + "Velocity (of the First Airplane's CG, in Earth Axes, Observed "
-            "from the Earth Frame):"
+            _logging.indent(2) + f"Velocity {_VELOCITY_SUBTITLE}:"
         )
         state_group_header_angular_velocity = (
-            _logging.indent(2)
-            + "Angular Velocity (in the First Airplane's Body Axes, Observed "
-            "from the Earth Frame):"
+            _logging.indent(2) + f"Angular Velocity {_ANGULAR_VELOCITY_SUBTITLE}:"
         )
 
         # Log the initial state (at time step 0) and the final state.

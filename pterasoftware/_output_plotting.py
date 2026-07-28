@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import matplotlib.legend_handler
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,7 +60,7 @@ def plot_time_history(
     y_label: str,
     figure_size_in: tuple[float, float],
     save: bool,
-    save_name: str,
+    save_path: Path,
     resolution_dpi: float,
 ) -> None:
     """Plots one time-history figure, which is a set of series that share a y-axis and
@@ -79,7 +81,9 @@ def plot_time_history(
     :param y_label: The figure's y-axis label.
     :param figure_size_in: The figure's width and height in inches.
     :param save: Set this to True to save the figure as a PNG.
-    :param save_name: The file name to save the figure under if save is True.
+    :param save_path: The fully resolved file path to save the figure to if save is
+        True. The caller composes it, so this function neither knows nor decides how the
+        figures are named.
     :param resolution_dpi: The dots per inch at which to save the PNG if save is True.
     :return: None
     """
@@ -143,4 +147,4 @@ def plot_time_history(
 
     # Save the figure as a PNG if the user wants to do so.
     if save:
-        figure.savefig(save_name, dpi=resolution_dpi)
+        figure.savefig(save_path, dpi=resolution_dpi)

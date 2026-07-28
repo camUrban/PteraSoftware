@@ -34,7 +34,9 @@ def pathLike_return_path(value: Any, name: str, suffixes: tuple[str, ...]) -> Pa
     :param name: The name of the value.
     :param suffixes: The accepted file name suffixes, such as (".json", ".json.gz").
         These are matched against the whole file name rather than through Path.suffix,
-        so that multi part suffixes work.
+        so that multi part suffixes work. The match ignores case, since Windows treats
+        ".WEBP" as the same extension as ".webp" and rejecting it would refuse a
+        spelling that platform considers ordinary.
     :return: The validated value as a Path.
     """
     if not isinstance(value, (str, Path)):
@@ -42,7 +44,8 @@ def pathLike_return_path(value: Any, name: str, suffixes: tuple[str, ...]) -> Pa
 
     validated_path = Path(value)
 
-    if not any(validated_path.name.endswith(suffix) for suffix in suffixes):
+    lowered_name = validated_path.name.lower()
+    if not any(lowered_name.endswith(suffix.lower()) for suffix in suffixes):
         accepted = " or ".join(f"'{suffix}'" for suffix in suffixes)
         raise ValueError(
             f"{name} must end with {accepted}, got '{validated_path.name}'."

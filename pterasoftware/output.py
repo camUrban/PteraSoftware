@@ -23,6 +23,7 @@ the first Airplane's initial and final six-degree-of-freedom state.
 from __future__ import annotations
 
 import math
+import os.path
 import time
 from collections.abc import Sequence
 from pathlib import Path
@@ -1071,6 +1072,8 @@ def plot_results_versus_time(
     show: bool | np.bool_ = True,
     figure_size_in: Sequence[int | float] = (6.4, 4.8),
     save: bool | np.bool_ = False,
+    directory: str | Path = ".",
+    prefix: str = "",
     resolution_dpi: int | float = 300.0,
 ) -> None:
     """Plots the loads and load coefficients of an UnsteadyRingVortexLatticeMethodSolver
@@ -1082,6 +1085,10 @@ def plot_results_versus_time(
     angular velocity, and aerodynamic angles versus time. These describe the first
     Airplane, the rigid body the dynamics integrate, so they are plotted once for the
     whole simulation rather than per Airplane.
+
+    Each file is named after the Airplane it describes, so an Airplane whose name holds
+    a path separator is rejected when save is True. Such a name would compose a
+    destination outside the directory that was asked for.
 
     :param unsteady_solver: The UnsteadyRingVortexLatticeMethodSolver whose loads and
         load coefficients will be plotted. Its subclasses, the
@@ -1097,6 +1104,17 @@ def plot_results_versus_time(
         Matplotlib's own default.
     :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
         bool and will be converted internally to a bool. The default is False.
+    :param directory: The directory to save the PNGs in. It can be a str or a Path and
+        must already exist. This has no effect unless save is True. The default is ".",
+        the current working directory.
+    :param prefix: A prefix to prepend to each PNG's file name, which distinguishes one
+        run's figures from another's. It must be a str and must be a file name component
+        rather than a path. With the default, an empty string, each file is named after
+        its Airplane and the quantity it plots, as in "example_airplane_forces.png".
+        With a non-empty prefix, each name becomes "<prefix>_<airplane>_<quantity>.png".
+        The Airplane's name is included either way, since dropping it would collide
+        across the Airplanes of a formation simulation. This has no effect unless save
+        is True.
     :param resolution_dpi: The dots per inch at which to save each PNG. It can be an int
         or a float and will be converted internally to a float. This has no effect
         unless save is True. The default is 300.0.
@@ -1121,6 +1139,31 @@ def plot_results_versus_time(
     )
 
     save = _parameter_validation.boolLike_return_bool(save, "save")
+
+    # A missing directory is an error rather than something to create, matching what
+    # pathLike_return_path does for draw's and animate's single file destinations.
+    if not isinstance(directory, (str, Path)):
+        raise TypeError("directory must be a str or a Path.")
+    directory = Path(directory)
+    if directory.exists() and not directory.is_dir():
+        raise ValueError(f"directory must be a directory, got file '{directory}'.")
+    if not directory.is_dir():
+        raise ValueError(
+            f"directory '{directory}' does not exist. Create it first, or choose a "
+            f"destination that already exists."
+        )
+
+    # A prefix carrying a separator would compose a path into a subdirectory that this
+    # function never checked for, so the missing directory would surface as a
+    # FileNotFoundError from Matplotlib instead of as the error above. The test goes
+    # through os.path rather than Path, since Path normalizes a "." away and so would
+    # reject it while accepting "..", even though both compose a valid file name.
+    prefix = _parameter_validation.str_return_str(prefix, "prefix")
+    if prefix != os.path.basename(prefix):
+        raise ValueError(
+            f"prefix must be a file name component rather than a path, got '{prefix}'."
+        )
+
     resolution_dpi = _parameter_validation.number_in_range_return_float(
         resolution_dpi, "resolution_dpi", 0.0, False
     )
@@ -1129,6 +1172,19 @@ def plot_results_versus_time(
         raise RuntimeError(
             "unsteady_solver must have run before plotting results versus time."
         )
+
+    # The Airplanes' names reach the composed file paths, so they are held to the same
+    # rule as prefix: a separator in one would compose a destination outside the
+    # directory the caller named. Every Airplane is checked before any figure is drawn,
+    # so a bad name never leaves a partly written set behind.
+    if save:
+        for airplane in unsteady_solver.steady_problems[0].airplanes:
+            airplane_name_snake = airplane.name.lower().replace(" ", "_")
+            if airplane_name_snake != os.path.basename(airplane_name_snake):
+                raise ValueError(
+                    f"An Airplane's name, '{airplane.name}', cannot be used in a file "
+                    f"name, since it contains a path separator."
+                )
 
     first_results_step = unsteady_solver.first_results_step
 
@@ -1191,6 +1247,11 @@ def plot_results_versus_time(
         airplane_name = unsteady_solver.steady_problems[0].airplanes[airplane_id].name
         airplane_name_snake = airplane_name.lower().replace(" ", "_")
 
+        # Compose the stem that each of this Airplane's file names begins with.
+        file_stem = airplane_name_snake
+        if prefix:
+            file_stem = prefix + "_" + airplane_name_snake
+
         # Plot this Airplane's four load figures. The wind axes x and z force components
         # are negated so the series read as induced drag and lift, which point opposite
         # those axes.
@@ -1208,7 +1269,7 @@ def plot_results_versus_time(
             "Force (N)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_forces.png",
+            directory / (file_stem + "_forces.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1229,7 +1290,7 @@ def plot_results_versus_time(
             "Force Coefficient",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_force_coefficients.png",
+            directory / (file_stem + "_force_coefficients.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1246,7 +1307,7 @@ def plot_results_versus_time(
             "Moment (N m)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_moments.png",
+            directory / (file_stem + "_moments.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1267,7 +1328,7 @@ def plot_results_versus_time(
             "Moment Coefficient",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_moment_coefficients.png",
+            directory / (file_stem + "_moment_coefficients.png"),
             resolution_dpi,
         )
 
@@ -1318,6 +1379,11 @@ def plot_results_versus_time(
         airplane_name = unsteady_solver.steady_problems[0].airplanes[0].name
         airplane_name_snake = airplane_name.lower().replace(" ", "_")
 
+        # Compose the stem that each of the state figures' file names begins with.
+        file_stem = airplane_name_snake
+        if prefix:
+            file_stem = prefix + "_" + airplane_name_snake
+
         _output_plotting.plot_time_history(
             state_times,
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
@@ -1329,7 +1395,7 @@ def plot_results_versus_time(
             "Position (m)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_position.png",
+            directory / (file_stem + "_position.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1343,7 +1409,7 @@ def plot_results_versus_time(
             "Velocity (m/s)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_velocity.png",
+            directory / (file_stem + "_velocity.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1361,7 +1427,7 @@ def plot_results_versus_time(
             "Orientation (deg)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_orientation.png",
+            directory / (file_stem + "_orientation.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1374,7 +1440,7 @@ def plot_results_versus_time(
             "Angular Velocity (deg/s)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_angular_velocity.png",
+            directory / (file_stem + "_angular_velocity.png"),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1387,7 +1453,7 @@ def plot_results_versus_time(
             "Angle (deg)",
             (figure_width_in, figure_height_in),
             save,
-            airplane_name_snake + "_aerodynamic_angles.png",
+            directory / (file_stem + "_aerodynamic_angles.png"),
             resolution_dpi,
         )
 

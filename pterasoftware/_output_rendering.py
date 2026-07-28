@@ -16,27 +16,27 @@ from . import unsteady_ring_vortex_lattice_method
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
 # maps and color palettes live in the _colormaps module.
-_wake_vortex_color = "white"
-_panel_color = "chartreuse"
-_image_surface_scale = 5.0
-image_reflection_mute_factor = 0.5
-_image_surface_checker_size = 25
-_image_surface_color_a = np.array([40, 40, 40], dtype=np.uint8)
-_image_surface_color_b = np.array([80, 80, 80], dtype=np.uint8)
-text_color = (129, 129, 129)
-text_color_surface = (220, 220, 220)
+_WAKE_VORTEX_COLOR = "white"
+_PANEL_COLOR = "chartreuse"
+_IMAGE_SURFACE_SCALE = 5.0
+IMAGE_REFLECTION_MUTE_FACTOR = 0.5
+_IMAGE_SURFACE_CHECKER_SIZE = 25
+_IMAGE_SURFACE_COLOR_A = np.array([40, 40, 40], dtype=np.uint8)
+_IMAGE_SURFACE_COLOR_B = np.array([80, 80, 80], dtype=np.uint8)
+TEXT_COLOR = (129, 129, 129)
+TEXT_COLOR_SURFACE = (220, 220, 220)
 
 # Set constants for the color maps, scalar bars, and text boxes.
-_color_map_num_sig = 3
-_bar_title_font_size = 30
-_bar_label_font_size = 21
-_bar_width = 0.5
-_bar_position_x = 0.25
-_bar_position_y = 0.05
-_bar_n_labels = 2
-_text_max_position = (0.85, 0.075)
-_text_min_position = (0.85, 0.050)
-text_font_size = 11
+_COLOR_MAP_NUM_SIG = 3
+_BAR_TITLE_FONT_SIZE = 30
+_BAR_LABEL_FONT_SIZE = 21
+_BAR_WIDTH = 0.5
+_BAR_POSITION_X = 0.25
+_BAR_POSITION_Y = 0.05
+_BAR_N_LABELS = 2
+_TEXT_MAX_POSITION = (0.85, 0.075)
+_TEXT_MIN_POSITION = (0.85, 0.050)
+TEXT_FONT_SIZE = 11
 
 
 def get_panel_surfaces(
@@ -149,7 +149,7 @@ def get_image_surface_mesh_and_texture(
     plane_center = bbox_center - offset * surface_normal
 
     # Size the plane proportionally to the bounding box diagonal.
-    plane_size = _image_surface_scale * bbox_diagonal
+    plane_size = _IMAGE_SURFACE_SCALE * bbox_diagonal
 
     mesh = pv.Plane(
         center=plane_center,
@@ -160,13 +160,13 @@ def get_image_surface_mesh_and_texture(
 
     # Build a checkerboard texture image. Each cell is one pixel, so a 25 x 25
     # checkerboard is a 25 x 25 x 3 RGB image.
-    n = _image_surface_checker_size
+    n = _IMAGE_SURFACE_CHECKER_SIZE
     row = np.arange(n, dtype=int)
     col = np.arange(n, dtype=int)
     rr, cc = np.meshgrid(row, col, indexing="ij")
     is_dark = (rr + cc) % 2 == 0
     image = np.where(
-        is_dark[:, :, np.newaxis], _image_surface_color_a, _image_surface_color_b
+        is_dark[:, :, np.newaxis], _IMAGE_SURFACE_COLOR_A, _IMAGE_SURFACE_COLOR_B
     )
     texture = pv.numpy_to_texture(image)
 
@@ -280,7 +280,7 @@ def get_animation_image_surface(
     )
 
 
-def get_T_pas_GP1_CgP1_to_E_Eo(
+def get_free_flight_transformation(
     this_operating_point: operating_point_mod.OperatingPoint,
 ) -> np.ndarray:
     """Returns the passive transformation from the first Airplane's geometry axes,
@@ -351,7 +351,7 @@ def _reflect_mesh(
     return transform_mesh(mesh, T_reflect)
 
 
-def free_flight_fit_parallel_scale(
+def get_free_flight_fit_parallel_scale(
     meshes: list[pv.PolyData],
     focalPoint_E_Eo: np.ndarray,
     viewDirection_E: np.ndarray,
@@ -581,17 +581,17 @@ def choose_color_map(
     if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
         color_map: matplotlib.colors.Colormap = _colormaps.sequential_color_map
         c_min = max(
-            float(np.mean(scalars)) - _color_map_num_sig * float(np.std(scalars)),
+            float(np.mean(scalars)) - _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.min(scalars)),
         )
         c_max = min(
-            float(np.mean(scalars)) + _color_map_num_sig * float(np.std(scalars)),
+            float(np.mean(scalars)) + _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.max(scalars)),
         )
     else:
         color_map = _colormaps.diverging_color_map
-        c_min = -_color_map_num_sig * float(np.std(scalars))
-        c_max = _color_map_num_sig * float(np.std(scalars))
+        c_min = -_COLOR_MAP_NUM_SIG * float(np.std(scalars))
+        c_max = _COLOR_MAP_NUM_SIG * float(np.std(scalars))
 
     return color_map, c_min, c_max
 
@@ -626,7 +626,7 @@ def _plot_scalars(
     c_min: float,
     c_max: float,
     panel_surfaces: pv.PolyData,
-    this_text_color: tuple[int, int, int] = text_color,
+    text_color: tuple[int, int, int] = TEXT_COLOR,
 ) -> None:
     """Plots a scalar bar, the surfaces of a set of Panels with particular scalars, and
     labels for the minimum and maximum scalar values.
@@ -642,20 +642,20 @@ def _plot_scalars(
     :param c_min: Lower bound for the color map scaling.
     :param c_max: Upper bound for the color map scaling.
     :param panel_surfaces: PolyData representing the Panels' surfaces.
-    :param this_text_color: The color used for the scalar bar and label text. The
-        default is text_color.
+    :param text_color: The color used for the scalar bar and label text. The default is
+        TEXT_COLOR.
     :return: None
     """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",
-        title_font_size=_bar_title_font_size,
-        label_font_size=_bar_label_font_size,
-        width=_bar_width,
-        position_x=_bar_position_x,
-        position_y=_bar_position_y,
-        n_labels=_bar_n_labels,
+        title_font_size=_BAR_TITLE_FONT_SIZE,
+        label_font_size=_BAR_LABEL_FONT_SIZE,
+        width=_BAR_WIDTH,
+        position_x=_BAR_POSITION_X,
+        position_y=_BAR_POSITION_Y,
+        n_labels=_BAR_N_LABELS,
         fmt="%#.3G",
-        color=this_text_color,
+        color=text_color,
     )
     plotter.add_mesh(
         panel_surfaces,
@@ -669,17 +669,17 @@ def _plot_scalars(
 
     plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
-        position=_text_max_position,
-        font_size=text_font_size,
+        position=_TEXT_MAX_POSITION,
+        font_size=TEXT_FONT_SIZE,
         viewport=True,
-        color=this_text_color,
+        color=text_color,
     )
     plotter.add_text(
         text=f"Min: {min_scalar:#.3G}",
-        position=_text_min_position,
-        font_size=text_font_size,
+        position=_TEXT_MIN_POSITION,
+        font_size=TEXT_FONT_SIZE,
         viewport=True,
-        color=this_text_color,
+        color=text_color,
     )
 
 
@@ -741,7 +741,7 @@ def add_frame_geometry(
             wake_surfaces,
             show_edges=True,
             smooth_shading=False,
-            color=_wake_vortex_color,
+            color=_WAKE_VORTEX_COLOR,
         )
 
     # Plot the Panels either with scalar coloring or with a uniform color.
@@ -756,13 +756,13 @@ def add_frame_geometry(
             coloring.c_min,
             coloring.c_max,
             panel_surfaces,
-            this_text_color=text_color_surface if T_reflect is not None else text_color,
+            text_color=TEXT_COLOR_SURFACE if T_reflect is not None else TEXT_COLOR,
         )
     else:
         plotter.add_mesh(
             panel_surfaces,
             show_edges=True,
-            color=_panel_color,
+            color=_PANEL_COLOR,
             smooth_shading=False,
         )
 
@@ -771,7 +771,7 @@ def add_frame_geometry(
 
     # An image surface is defined, so add the reflected geometry. It is muted toward
     # gray so that it reads as a reflection rather than as more geometry.
-    mute = image_reflection_mute_factor
+    mute = IMAGE_REFLECTION_MUTE_FACTOR
     muted_edge_color = mute_color("black", mute)
 
     # Add reflected Panel surfaces with muted coloring.
@@ -792,7 +792,7 @@ def add_frame_geometry(
             reflected_panel_surfaces,
             show_edges=True,
             edge_color=muted_edge_color,
-            color=mute_color(_panel_color, mute),
+            color=mute_color(_PANEL_COLOR, mute),
             smooth_shading=False,
         )
 
@@ -803,5 +803,5 @@ def add_frame_geometry(
             show_edges=True,
             edge_color=muted_edge_color,
             smooth_shading=False,
-            color=mute_color(_wake_vortex_color, mute),
+            color=mute_color(_WAKE_VORTEX_COLOR, mute),
         )

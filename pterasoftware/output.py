@@ -49,23 +49,23 @@ from .movements import free_flight_movement as free_flight_movement_mod
 _logger = _logging.get_logger("output")
 
 # Define the Plotter's appearance and the quality of the WebPs it is saved to.
-_plotter_background_color = "black"
-_streamline_color = "orchid"
-_image_surface_opacity = 0.5
-_text_speed_position = (0.05, 0.075)
+_PLOTTER_BACKGROUND_COLOR = "black"
+_STREAMLINE_COLOR = "orchid"
+_IMAGE_SURFACE_OPACITY = 0.5
+_TEXT_SPEED_POSITION = (0.05, 0.075)
 _quality = 75.0
-_window_size = [1024, 768]
+_WINDOW_SIZE = [1024, 768]
 
 # Define the colors of the series in the results plots.
 [
-    _alpha_color,
-    _beta_color,
-    _linear_x_color,
-    _linear_y_color,
-    _linear_z_color,
-    _angular_x_color,
-    _angular_y_color,
-    _angular_z_color,
+    _ALPHA_COLOR,
+    _BETA_COLOR,
+    _LINEAR_X_COLOR,
+    _LINEAR_Y_COLOR,
+    _LINEAR_Z_COLOR,
+    _ANGULAR_X_COLOR,
+    _ANGULAR_Y_COLOR,
+    _ANGULAR_Z_COLOR,
 ] = _colormaps.prism[1:9]
 
 # Define the camera's view-up direction for free flight visualizations. Earth axes have
@@ -73,14 +73,14 @@ _window_size = [1024, 768]
 # render geometry in Earth axes (so the body flies through the scene in its true pose)
 # and use this view-up so that down appears downward on screen. This is a rendering
 # setting, not an axis system.
-_free_flight_view_up_E = np.array([0.0, 0.0, -1.0], dtype=float)
+_freeFlightViewUp_E = np.array([0.0, 0.0, -1.0], dtype=float)
 
 # Define the camera's view direction for free flight visualizations, given as the offset
 # from the focal point to the camera position (in Earth axes). This views the scene
 # obliquely from the South, West, and above (Earth -x, -y, and -z).
-_free_flight_view_direction_E = np.array([1.0, -1.0, -1.0], dtype=float)
-_free_flight_view_direction_E = _free_flight_view_direction_E / np.linalg.norm(
-    _free_flight_view_direction_E
+_freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
+_freeFlightViewDirection_E = _freeFlightViewDirection_E / np.linalg.norm(
+    _freeFlightViewDirection_E
 )
 
 
@@ -195,7 +195,7 @@ def draw(
     testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=_window_size, lighting=None)
+    plotter = pv.Plotter(window_size=_WINDOW_SIZE, lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # For a free flight solver, geometry is rendered in its true Earth-frame pose so the
@@ -224,7 +224,7 @@ def draw(
         qInf__E = draw_operating_point.qInf__E
 
         if is_free_flight:
-            T_pas_GP1_CgP1_to_E_Eo = _output_rendering.get_T_pas_GP1_CgP1_to_E_Eo(
+            T_pas_GP1_CgP1_to_E_Eo = _output_rendering.get_free_flight_transformation(
                 draw_operating_point
             )
 
@@ -275,7 +275,7 @@ def draw(
             max_scalar=float(max(these_scalars)),
             color_map=color_map,
             muted_color_map=_output_rendering.mute_colormap(
-                color_map, _output_rendering.image_reflection_mute_factor
+                color_map, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
             ),
             c_min=c_min,
             c_max=c_max,
@@ -328,7 +328,7 @@ def draw(
                             point,
                         ),
                         show_edges=True,
-                        color=_streamline_color,
+                        color=_STREAMLINE_COLOR,
                         line_width=2,
                         smooth_shading=False,
                     )
@@ -353,8 +353,8 @@ def draw(
                             ),
                             show_edges=True,
                             color=_output_rendering.mute_color(
-                                _streamline_color,
-                                _output_rendering.image_reflection_mute_factor,
+                                _STREAMLINE_COLOR,
+                                _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR,
                             ),
                             line_width=2,
                             smooth_shading=False,
@@ -392,7 +392,7 @@ def draw(
         plotter.add_mesh(
             image_surface_mesh,
             texture=image_surface_texture,
-            opacity=_image_surface_opacity,
+            opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
         )
 
@@ -423,9 +423,9 @@ def draw(
         )
         plotter.camera.focal_point = tuple(center_E_Eo)
         plotter.camera.position = tuple(
-            center_E_Eo + 3.0 * airplane_diagonal * _free_flight_view_direction_E
+            center_E_Eo + 3.0 * airplane_diagonal * _freeFlightViewDirection_E
         )
-        plotter.camera.up = _free_flight_view_up_E
+        plotter.camera.up = _freeFlightViewUp_E
         plotter.reset_camera()  # type: ignore[call-arg]
         draw_cpos = None
     elif image_surface_mesh is None:
@@ -434,7 +434,7 @@ def draw(
         draw_cpos = None
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
+    plotter.set_background(color=_PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
     if not testing:
         # Show the Plotter so the user can adjust the camera position and window. When
         # the user closes the window, the Plotter still exists. Therefore, it can later
@@ -556,7 +556,9 @@ def animate(
     step_transforms: list[np.ndarray] = []
     if is_free_flight:
         step_transforms = [
-            _output_rendering.get_T_pas_GP1_CgP1_to_E_Eo(steady_problem.operating_point)
+            _output_rendering.get_free_flight_transformation(
+                steady_problem.operating_point
+            )
             for steady_problem in unsteady_solver.steady_problems
         ]
 
@@ -569,7 +571,7 @@ def animate(
     actual_fps = float(math.floor(requested_fps * speed))
 
     # Create the Plotter and set it to use parallel projection (instead of perspective).
-    plotter = pv.Plotter(window_size=_window_size, lighting=None)
+    plotter = pv.Plotter(window_size=_WINDOW_SIZE, lighting=None)
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
     # Initialize values to hold the color map choice and its limits.
@@ -600,7 +602,7 @@ def animate(
         # carries reflected geometry needs it.
         color_map, c_min, c_max = _output_rendering.choose_color_map(all_scalars)
         muted_color_map = _output_rendering.mute_colormap(
-            color_map, _output_rendering.image_reflection_mute_factor
+            color_map, _output_rendering.IMAGE_REFLECTION_MUTE_FACTOR
         )
 
         min_scalar = float(min(all_scalars))
@@ -626,9 +628,9 @@ def animate(
         show_wake_vortices,
     )
     animate_text_color = (
-        _output_rendering.text_color_surface
+        _output_rendering.TEXT_COLOR_SURFACE
         if T_reflect is not None
-        else _output_rendering.text_color
+        else _output_rendering.TEXT_COLOR
     )
 
     # For free flight, compute a fixed camera that frames the whole trajectory. The body
@@ -670,12 +672,12 @@ def animate(
         padding = max(2.0 * airplane_diagonal, 0.5 * trajectory_extent)
         camera_distance = trajectory_extent + padding
         cameraPosition_E_Eo = (
-            trajectoryMidpoint_E_Eo + camera_distance * _free_flight_view_direction_E
+            trajectoryMidpoint_E_Eo + camera_distance * _freeFlightViewDirection_E
         )
         free_flight_cpos = [
             tuple(cameraPosition_E_Eo),
             tuple(trajectoryMidpoint_E_Eo),
-            _free_flight_view_up_E,
+            _freeFlightViewUp_E,
         ]
 
         # Collect the geometry that frames the trajectory: the body at both ends, plus
@@ -698,19 +700,21 @@ def animate(
         # projection is parallel) to the projected extent of that geometry about the
         # focal point. This frames the glide snugly. The user can rescale interactively
         # before the animation is captured.
-        free_flight_parallel_scale = _output_rendering.free_flight_fit_parallel_scale(
-            framing_meshes,
-            trajectoryMidpoint_E_Eo,
-            _free_flight_view_direction_E,
-            _free_flight_view_up_E,
+        free_flight_parallel_scale = (
+            _output_rendering.get_free_flight_fit_parallel_scale(
+                framing_meshes,
+                trajectoryMidpoint_E_Eo,
+                _freeFlightViewDirection_E,
+                _freeFlightViewUp_E,
+            )
         )
 
     # If saving the animation, add text that displays its speed.
     if save:
         plotter.add_text(
             text="Speed: " + str(round(100 * speed)) + "%",
-            position=_text_speed_position,
-            font_size=_output_rendering.text_font_size,
+            position=_TEXT_SPEED_POSITION,
+            font_size=_output_rendering.TEXT_FONT_SIZE,
             viewport=True,
             color=animate_text_color,
         )
@@ -762,7 +766,7 @@ def animate(
         plotter.add_mesh(
             image_surface_mesh,
             texture=image_surface_texture,
-            opacity=_image_surface_opacity,
+            opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
         )
 
@@ -795,7 +799,7 @@ def animate(
         animate_cpos = None
 
     # Set the Plotter's background color.
-    plotter.set_background(color=_plotter_background_color)  # type: ignore[call-arg]
+    plotter.set_background(color=_PLOTTER_BACKGROUND_COLOR)  # type: ignore[call-arg]
 
     # If not testing, show the Plotter with the first time step so the user can orient
     # the view. When the user presses any key, set the title back to the animation title
@@ -860,8 +864,8 @@ def animate(
         if save:
             plotter.add_text(
                 text="Speed: " + str(round(100 * speed)) + "%",
-                position=_text_speed_position,
-                font_size=_output_rendering.text_font_size,
+                position=_TEXT_SPEED_POSITION,
+                font_size=_output_rendering.TEXT_FONT_SIZE,
                 viewport=True,
                 color=animate_text_color,
             )
@@ -913,7 +917,7 @@ def animate(
             plotter.add_mesh(
                 image_surface_mesh,
                 texture=image_surface_texture,
-                opacity=_image_surface_opacity,
+                opacity=_IMAGE_SURFACE_OPACITY,
                 smooth_shading=True,
             )
 
@@ -1058,7 +1062,7 @@ def plot_results_versus_time(
                 -forces_W[airplane_id, 2],
             ],
             ["Induced Drag", "Side Force", "Lift"],
-            [_linear_x_color, _linear_y_color, _linear_z_color],
+            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Forces",
             "(in Wind Axes)",
             "Force (N)",
@@ -1077,7 +1081,7 @@ def plot_results_versus_time(
                 "Side Force Coefficient",
                 "Lift Coefficient",
             ],
-            [_linear_x_color, _linear_y_color, _linear_z_color],
+            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Force Coefficients",
             "(in Wind Axes)",
             "Force Coefficient",
@@ -1092,7 +1096,7 @@ def plot_results_versus_time(
                 moments_W_Cg[airplane_id, 2],
             ],
             ["Rolling Moment", "Pitching Moment", "Yawing Moment"],
-            [_angular_x_color, _angular_y_color, _angular_z_color],
+            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Moments",
             "(in Wind Axes, Relative to the CG)",
             "Moment (N m)",
@@ -1111,7 +1115,7 @@ def plot_results_versus_time(
                 "Pitching Moment Coefficient",
                 "Yawing Moment Coefficient",
             ],
-            [_angular_x_color, _angular_y_color, _angular_z_color],
+            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Moment Coefficients",
             "(in Wind Axes, Relative to the CG)",
             "Moment Coefficient",
@@ -1153,10 +1157,8 @@ def plot_results_versus_time(
         # Iterate through the time steps and extract each step's state.
         for step, this_operating_point in enumerate(operating_points):
             positions_E_Eo[:, step] = this_operating_point.CgP1_E_Eo
-            velocities_E__E[:, step] = (
-                _output_plotting.velocity_E__E_from_operating_point(
-                    this_operating_point
-                )
+            velocities_E__E[:, step] = _output_plotting.get_operating_point_velocity(
+                this_operating_point
             )
             anglesDeg_E_to_BP1_izyx[:, step] = this_operating_point.angles_E_to_BP1_izyx
             omegasDeg_BP1__E[:, step] = this_operating_point.omegas_BP1__E
@@ -1172,7 +1174,7 @@ def plot_results_versus_time(
             state_times,
             [positions_E_Eo[0], positions_E_Eo[1], positions_E_Eo[2]],
             ["X Component", "Y Component", "Z Component"],
-            [_linear_x_color, _linear_y_color, _linear_z_color],
+            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Position",
             "(of the First Airplane's CG, in Earth Axes, Relative to the "
             "Earth Origin)",
@@ -1184,7 +1186,7 @@ def plot_results_versus_time(
             state_times,
             [velocities_E__E[0], velocities_E__E[1], velocities_E__E[2]],
             ["X Component", "Y Component", "Z Component"],
-            [_linear_x_color, _linear_y_color, _linear_z_color],
+            [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
             airplane_name + " Velocity",
             "(of the First Airplane's CG, in Earth Axes, Observed from the "
             "Earth Frame)",
@@ -1200,7 +1202,7 @@ def plot_results_versus_time(
                 anglesDeg_E_to_BP1_izyx[2],
             ],
             ["Roll Angle", "Pitch Angle", "Yaw Angle"],
-            [_angular_x_color, _angular_y_color, _angular_z_color],
+            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Orientation",
             "(of the First Airplane's Body Axes Relative to Earth Axes "
             "Using an Intrinsic zy'x\" Sequence)",
@@ -1212,7 +1214,7 @@ def plot_results_versus_time(
             state_times,
             [omegasDeg_BP1__E[0], omegasDeg_BP1__E[1], omegasDeg_BP1__E[2]],
             ["Roll Rate", "Pitch Rate", "Yaw Rate"],
-            [_angular_x_color, _angular_y_color, _angular_z_color],
+            [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
             airplane_name + " Angular Velocity",
             "(in the First Airplane's Body Axes, Observed from the " "Earth Frame)",
             "Angular Velocity (deg/s)",
@@ -1223,7 +1225,7 @@ def plot_results_versus_time(
             state_times,
             [alphas, betas],
             ["Angle of Attack", "Sideslip Angle"],
-            [_alpha_color, _beta_color],
+            [_ALPHA_COLOR, _BETA_COLOR],
             airplane_name + " Aerodynamic Angles",
             "",
             "Angle (deg)",
@@ -1640,7 +1642,7 @@ def log_results(
         ]:
             CgP1_E_Eo = this_operating_point.CgP1_E_Eo
             angles_E_to_BP1_izyx = this_operating_point.angles_E_to_BP1_izyx
-            velocity_E__E = _output_plotting.velocity_E__E_from_operating_point(
+            velocity_E__E = _output_plotting.get_operating_point_velocity(
                 this_operating_point
             )
             omegas_BP1__E = this_operating_point.omegas_BP1__E

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import math
 import time
+from typing import NamedTuple
 
 import matplotlib.colors
 import matplotlib.legend_handler
@@ -244,7 +245,10 @@ def draw(
     )
     T_pas_GP1_CgP1_to_E_Eo: np.ndarray | None = None
 
-    # Get the solver's geometry and OperatingPoint.
+    # Get the solver's geometry and OperatingPoint, along with the wake ring vortex
+    # surfaces when they are being shown. The wake stays None otherwise, which omits it
+    # from the scene.
+    wake_ring_vortex_surfaces: pv.PolyData | None = None
     if isinstance(
         solver,
         unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
@@ -258,7 +262,6 @@ def draw(
         if is_free_flight:
             T_pas_GP1_CgP1_to_E_Eo = _get_T_pas_GP1_CgP1_to_E_Eo(draw_operating_point)
 
-        # If showing wake ring vortices, get their surfaces and plot them.
         if show_wake_vortices:
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 solver, draw_step
@@ -267,12 +270,6 @@ def draw(
                 wake_ring_vortex_surfaces = _transform_mesh(
                     wake_ring_vortex_surfaces, T_pas_GP1_CgP1_to_E_Eo
                 )
-            plotter.add_mesh(
-                wake_ring_vortex_surfaces,
-                show_edges=True,
-                smooth_shading=False,
-                color=_wake_vortex_color,
-            )
     else:
         airplanes = solver.airplanes
         draw_operating_point = solver.operating_point
@@ -283,34 +280,7 @@ def draw(
     if T_pas_GP1_CgP1_to_E_Eo is not None:
         panel_surfaces = _transform_mesh(panel_surfaces, T_pas_GP1_CgP1_to_E_Eo)
 
-    # Plot the Panels either with scalar coloring or with a uniform color.
-    if scalar_type in ("induced drag", "side force", "lift"):
-        these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
-        min_scalar = float(min(these_scalars))
-        max_scalar = float(max(these_scalars))
-        color_map, c_min, c_max = _choose_color_map(these_scalars)
-
-        T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
-        _plot_scalars(
-            plotter,
-            these_scalars,
-            scalar_type,
-            min_scalar,
-            max_scalar,
-            color_map,
-            c_min,
-            c_max,
-            panel_surfaces,
-            text_color=_text_color_surface if T_reflect is not None else _text_color,
-        )
-    else:
-        plotter.add_mesh(
-            panel_surfaces,
-            show_edges=True,
-            color=_panel_color,
-            smooth_shading=False,
-        )
-        T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
+    T_reflect = draw_operating_point.surfaceReflect_T_act_GP1_CgP1
     image_surface_mesh = None
 
     # For free flight, the active reflection is represented in geometry axes, but the
@@ -324,43 +294,33 @@ def draw(
             @ _transformations.invert_T_pas(T_pas_GP1_CgP1_to_E_Eo)
         )
 
-    # If an image surface is defined, add reflected geometry. The image surface plane is
-    # added later, after the geometry bounds are captured.
-    if T_reflect is not None:
-        mute = _image_reflection_mute_factor
-        muted_edge_color = _mute_color("black", mute)
+    # Choose the scalar coloring for the Panels, leaving it None to color them
+    # uniformly.
+    coloring: _ScalarColoring | None = None
+    if scalar_type in ("induced drag", "side force", "lift"):
+        these_scalars = _get_scalars(airplanes, scalar_type, qInf__E)
+        color_map, c_min, c_max = _choose_color_map(these_scalars)
+        coloring = _ScalarColoring(
+            scalars=these_scalars,
+            scalar_type=scalar_type,
+            min_scalar=float(min(these_scalars)),
+            max_scalar=float(max(these_scalars)),
+            color_map=color_map,
+            muted_color_map=_mute_colormap(color_map, _image_reflection_mute_factor),
+            c_min=c_min,
+            c_max=c_max,
+        )
 
-        # Add reflected Panel surfaces with muted coloring.
-        reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
-        if scalar_type in ("induced drag", "side force", "lift"):
-            plotter.add_mesh(
-                reflected_panel_surfaces,
-                show_edges=True,
-                edge_color=muted_edge_color,
-                cmap=_mute_colormap(color_map, mute),
-                clim=[c_min, c_max],
-                scalars=these_scalars,
-                smooth_shading=False,
-                show_scalar_bar=False,
-            )
-        else:
-            plotter.add_mesh(
-                reflected_panel_surfaces,
-                show_edges=True,
-                edge_color=muted_edge_color,
-                color=_mute_color(_panel_color, mute),
-                smooth_shading=False,
-            )
+    # Add the wake, the Panels, and, if an image surface is defined, their reflections.
+    # The image surface plane is added later, after the geometry bounds are captured.
+    _add_frame_geometry(
+        plotter,
+        panel_surfaces,
+        wake_ring_vortex_surfaces,
+        coloring,
+        T_reflect,
+    )
 
-        # Add reflected wake ring vortex surfaces if they are being shown.
-        if show_wake_vortices:
-            plotter.add_mesh(
-                _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
-                show_edges=True,
-                edge_color=muted_edge_color,
-                smooth_shading=False,
-                color=_mute_color(_wake_vortex_color, mute),
-            )
     # If showing streamlines, plot them.
     if show_streamlines:
         # Iterate through the spanwise positions in the solver's streamline point
@@ -422,7 +382,9 @@ def draw(
                                 reflected_point,
                             ),
                             show_edges=True,
-                            color=_mute_color(_streamline_color, mute),
+                            color=_mute_color(
+                                _streamline_color, _image_reflection_mute_factor
+                            ),
                             line_width=2,
                             smooth_shading=False,
                         )
@@ -641,6 +603,7 @@ def animate(
     c_min = 0.0
     c_max = 0.0
     color_map: matplotlib.colors.Colormap | None = None
+    muted_color_map: matplotlib.colors.Colormap | None = None
 
     # Initialize variables to hold the SteadyProblems' scalars and their attributes.
     all_scalars = np.empty(0, dtype=float)
@@ -659,8 +622,11 @@ def animate(
             all_scalars = np.hstack((all_scalars, scalars_to_add))
 
         # Choose the color map from the scalars across all the time steps, so that one
-        # map and one pair of limits apply to every frame.
+        # map and one pair of limits apply to every frame. Mute it once here as well,
+        # since building the muted copy walks a 256 entry table and every frame that
+        # carries reflected geometry needs it.
         color_map, c_min, c_max = _choose_color_map(all_scalars)
+        muted_color_map = _mute_colormap(color_map, _image_reflection_mute_factor)
 
         min_scalar = float(min(all_scalars))
         max_scalar = float(max(all_scalars))
@@ -774,73 +740,38 @@ def animate(
     if is_free_flight:
         panel_surfaces = _transform_mesh(panel_surfaces, step_transforms[0])
 
-    # Plot the first time step's Airplanes' Panels either with scalar coloring or with a
-    # uniform color.
+    # Choose the first time step's scalar coloring, leaving it None to color the Panels
+    # uniformly.
+    coloring: _ScalarColoring | None = None
     if scalar_type is not None and first_results_step == 0:
-        these_scalars = _get_scalars(
-            step_airplanes[0],
-            scalar_type,
-            unsteady_solver.steady_problems[0].operating_point.qInf__E,
-        )
-
         assert color_map is not None
-        _plot_scalars(
-            plotter,
-            these_scalars,
+        assert muted_color_map is not None
+        coloring = _ScalarColoring(
+            _get_scalars(
+                step_airplanes[0],
+                scalar_type,
+                unsteady_solver.steady_problems[0].operating_point.qInf__E,
+            ),
             scalar_type,
             min_scalar,
             max_scalar,
             color_map,
+            muted_color_map,
             c_min,
             c_max,
-            panel_surfaces,
-            text_color=_text_color_surface if T_reflect is not None else _text_color,
-        )
-    else:
-        plotter.add_mesh(
-            panel_surfaces,
-            show_edges=True,
-            color=_panel_color,
-            smooth_shading=False,
         )
 
-    # If an image surface is defined, add reflected geometry, plot the pre-computed
-    # plane, set the camera direction, and fit the camera to the last time step's
-    # geometry bounds so the view is not dominated by the much larger image surface
-    # plane. When an image surface is present, cpos is not passed to show() because that
-    # would trigger an auto-fit to all actors (including the image surface).
+    # Add the first time step's geometry. No wake is passed, since the first time step
+    # has not shed one yet.
+    _add_frame_geometry(plotter, panel_surfaces, None, coloring, T_reflect)
+
+    # If an image surface is defined, plot the pre-computed plane, set the camera
+    # direction, and fit the camera to the last time step's geometry bounds so the view
+    # is not dominated by the much larger image surface plane. When an image surface is
+    # present, cpos is not passed to show() because that would trigger an auto-fit to
+    # all actors (including the image surface).
     if T_reflect is not None:
         assert image_surface_mesh is not None
-        mute = _image_reflection_mute_factor
-        muted_edge_color = _mute_color("black", mute)
-        muted_panel_color = _mute_color(_panel_color, mute)
-        muted_wake_color = _mute_color(_wake_vortex_color, mute)
-        if color_map is not None:
-            muted_color_map = _mute_colormap(color_map, mute)
-        else:
-            muted_color_map = None
-
-        # Add reflected Panel surfaces with muted coloring.
-        reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
-        if scalar_type is not None and first_results_step == 0:
-            plotter.add_mesh(
-                reflected_panel_surfaces,
-                show_edges=True,
-                edge_color=muted_edge_color,
-                cmap=muted_color_map,
-                clim=[c_min, c_max],
-                scalars=these_scalars,
-                smooth_shading=False,
-                show_scalar_bar=False,
-            )
-        else:
-            plotter.add_mesh(
-                reflected_panel_surfaces,
-                show_edges=True,
-                edge_color=muted_edge_color,
-                color=muted_panel_color,
-                smooth_shading=False,
-            )
 
         # Add the image surface plane.
         plotter.add_mesh(
@@ -950,7 +881,10 @@ def animate(
                 color=animate_text_color,
             )
 
-        # If showing wake ring vortices, get their surfaces and plot them.
+        # If showing wake ring vortices, get their surfaces, mapping them into Earth
+        # axes for free flight. They stay None otherwise, which omits them from the
+        # scene.
+        wake_ring_vortex_surfaces = None
         if show_wake_vortices:
             wake_ring_vortex_surfaces = _get_wake_ring_vortex_surfaces(
                 unsteady_solver, current_step
@@ -959,83 +893,38 @@ def animate(
                 wake_ring_vortex_surfaces = _transform_mesh(
                     wake_ring_vortex_surfaces, step_transforms[current_step]
                 )
-            plotter.add_mesh(
-                wake_ring_vortex_surfaces,
-                show_edges=True,
-                smooth_shading=False,
-                color=_wake_vortex_color,
-            )
 
-        # Plot the Panels either with a uniform color or, if the current time step has
-        # results, with scalar coloring.
+        # Choose this time step's scalar coloring, leaving it None to color the Panels
+        # uniformly. Time steps before the first one with results have no scalars.
+        coloring = None
         if scalar_type is not None and first_results_step <= current_step:
-            these_scalars = _get_scalars(
-                airplanes,
-                scalar_type,
-                unsteady_solver.steady_problems[current_step].operating_point.qInf__E,
-            )
-
             assert color_map is not None
-            _plot_scalars(
-                plotter,
-                these_scalars,
+            assert muted_color_map is not None
+            coloring = _ScalarColoring(
+                _get_scalars(
+                    airplanes,
+                    scalar_type,
+                    unsteady_solver.steady_problems[
+                        current_step
+                    ].operating_point.qInf__E,
+                ),
                 scalar_type,
                 min_scalar,
                 max_scalar,
                 color_map,
+                muted_color_map,
                 c_min,
                 c_max,
-                panel_surfaces,
-                text_color=(
-                    _text_color_surface if T_reflect is not None else _text_color
-                ),
-            )
-        else:
-            plotter.add_mesh(
-                panel_surfaces,
-                show_edges=True,
-                color=_panel_color,
-                smooth_shading=False,
             )
 
-        # If an image surface is defined, add reflected geometry and the pre-computed
-        # image surface plane.
+        # Add this time step's geometry.
+        _add_frame_geometry(
+            plotter, panel_surfaces, wake_ring_vortex_surfaces, coloring, T_reflect
+        )
+
+        # If an image surface is defined, add the pre-computed image surface plane.
         if T_reflect is not None:
             assert image_surface_mesh is not None
-
-            # Add reflected Panel surfaces with muted coloring.
-            reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
-            if scalar_type is not None and first_results_step <= current_step:
-                plotter.add_mesh(
-                    reflected_panel_surfaces,
-                    show_edges=True,
-                    edge_color=muted_edge_color,
-                    cmap=muted_color_map,
-                    clim=[c_min, c_max],
-                    scalars=these_scalars,
-                    smooth_shading=False,
-                    show_scalar_bar=False,
-                )
-            else:
-                plotter.add_mesh(
-                    reflected_panel_surfaces,
-                    show_edges=True,
-                    edge_color=muted_edge_color,
-                    color=muted_panel_color,
-                    smooth_shading=False,
-                )
-
-            # Add reflected wake ring vortex surfaces if they are being shown.
-            if show_wake_vortices:
-                plotter.add_mesh(
-                    _reflect_mesh(wake_ring_vortex_surfaces, T_reflect),
-                    show_edges=True,
-                    edge_color=muted_edge_color,
-                    smooth_shading=False,
-                    color=muted_wake_color,
-                )
-
-            # Add the image surface plane.
             plotter.add_mesh(
                 image_surface_mesh,
                 texture=image_surface_texture,
@@ -2583,3 +2472,127 @@ def _plot_scalars(
         viewport=True,
         color=text_color,
     )
+
+
+class _ScalarColoring(NamedTuple):
+    """Everything needed to color one frame's Panels by a scalar, and to color their
+    reflected copies to match.
+
+    Only the scalars themselves change from frame to frame during an animation. The
+    remaining fields are constant across the whole animation, because the color map and
+    its limits are chosen once from the scalars of every time step so that a given color
+    means the same value in every frame. muted_color_map is carried here, rather than
+    derived where it is used, because building it walks a 256 entry table and it would
+    otherwise be rebuilt on every frame.
+    """
+
+    scalars: np.ndarray
+    scalar_type: str
+    min_scalar: float
+    max_scalar: float
+    color_map: matplotlib.colors.Colormap
+    muted_color_map: matplotlib.colors.Colormap
+    c_min: float
+    c_max: float
+
+
+def _add_frame_geometry(
+    plotter: pv.Plotter,
+    panel_surfaces: pv.PolyData,
+    wake_surfaces: pv.PolyData | None,
+    coloring: _ScalarColoring | None,
+    T_reflect: np.ndarray | None,
+) -> None:
+    """Adds one frame's geometry to a Plotter, which is the wake, the Panels, and, when
+    an image surface is defined, a muted reflected copy of both.
+
+    A single drawing and every frame of an animation are the same scene, so both are
+    assembled here. The meshes arrive already mapped into whichever axes they are being
+    rendered in, so this function does not need to know whether it is drawing a free
+    flight body in Earth axes or a body-fixed one in geometry axes.
+
+    The image surface plane itself is not added here. A drawing sizes its plane from the
+    bounds of the geometry added above, so it cannot be added until afterward, and it
+    must in any case be added last so it renders over the geometry it is blended with.
+
+    :param plotter: The Plotter to add the geometry to.
+    :param panel_surfaces: The PolyData representation of the frame's Panel surfaces.
+    :param wake_surfaces: The PolyData representation of the frame's wake ring vortex
+        surfaces, or None to omit the wake.
+    :param coloring: The scalar coloring to apply to the Panels, or None to color them
+        uniformly.
+    :param T_reflect: A (4,4) ndarray of floats representing the active transformation
+        that reflects geometry across the image surface, or None when no image surface
+        is defined, in which case no reflected geometry is added.
+    :return: None
+    """
+    # Add the wake ring vortex surfaces if they are being shown.
+    if wake_surfaces is not None:
+        plotter.add_mesh(
+            wake_surfaces,
+            show_edges=True,
+            smooth_shading=False,
+            color=_wake_vortex_color,
+        )
+
+    # Plot the Panels either with scalar coloring or with a uniform color.
+    if coloring is not None:
+        _plot_scalars(
+            plotter,
+            coloring.scalars,
+            coloring.scalar_type,
+            coloring.min_scalar,
+            coloring.max_scalar,
+            coloring.color_map,
+            coloring.c_min,
+            coloring.c_max,
+            panel_surfaces,
+            text_color=_text_color_surface if T_reflect is not None else _text_color,
+        )
+    else:
+        plotter.add_mesh(
+            panel_surfaces,
+            show_edges=True,
+            color=_panel_color,
+            smooth_shading=False,
+        )
+
+    if T_reflect is None:
+        return
+
+    # An image surface is defined, so add the reflected geometry. It is muted toward
+    # gray so that it reads as a reflection rather than as more geometry.
+    mute = _image_reflection_mute_factor
+    muted_edge_color = _mute_color("black", mute)
+
+    # Add reflected Panel surfaces with muted coloring.
+    reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
+    if coloring is not None:
+        plotter.add_mesh(
+            reflected_panel_surfaces,
+            show_edges=True,
+            edge_color=muted_edge_color,
+            cmap=coloring.muted_color_map,
+            clim=[coloring.c_min, coloring.c_max],
+            scalars=coloring.scalars,
+            smooth_shading=False,
+            show_scalar_bar=False,
+        )
+    else:
+        plotter.add_mesh(
+            reflected_panel_surfaces,
+            show_edges=True,
+            edge_color=muted_edge_color,
+            color=_mute_color(_panel_color, mute),
+            smooth_shading=False,
+        )
+
+    # Add reflected wake ring vortex surfaces if they are being shown.
+    if wake_surfaces is not None:
+        plotter.add_mesh(
+            _reflect_mesh(wake_surfaces, T_reflect),
+            show_edges=True,
+            edge_color=muted_edge_color,
+            smooth_shading=False,
+            color=_mute_color(_wake_vortex_color, mute),
+        )

@@ -89,6 +89,8 @@ Requires Python 3.11, but active development is done in 3.14
     - `_logging.py`: Contains function for setting up logging
     - `_mujoco_model.py`: Contains the MuJoCoModel class.
     - `_oscillation.py`: Oscillation functions for movement classes
+    - `_output_plotting.py`: Matplotlib figure drawing for the visualization functions
+    - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
     - `_serialization.py`: JSON serialization and deserialization (save/load)

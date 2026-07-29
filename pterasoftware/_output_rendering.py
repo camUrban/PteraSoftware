@@ -50,8 +50,11 @@ _BAR_WIDTH = 0.5
 _BAR_POSITION_X = 0.25
 _BAR_POSITION_Y = 0.05
 _BAR_N_LABELS = 2
-_TEXT_MAX_POSITION = (0.89, 0.080)
-_TEXT_MIN_POSITION = (0.89, 0.045)
+# The maximum and minimum scalar labels are right justified, so these positions anchor
+# their right edges against the right margin and the text grows leftward. No label
+# length can overflow the window that way.
+_TEXT_MAX_POSITION = (0.99, 0.080)
+_TEXT_MIN_POSITION = (0.99, 0.045)
 TEXT_FONT_SIZE = 10
 
 # An animation's playback overlays sit against the left margin, a step apart, mirroring
@@ -87,8 +90,8 @@ def get_window_scale(window_width: int, window_height: int) -> float:
     labels overlap the bar itself, and it leaves them nearly unreadable in a large one.
 
     The smaller of the two ratios is used rather than the height ratio alone. The scalar
-    labels are anchored near the right edge and grow rightward, so a wide but short
-    window runs out of horizontal room before it runs out of vertical room.
+    labels grow leftward from the right margin toward the centered scalar bar, so a wide
+    but short window runs out of horizontal room before it runs out of vertical room.
 
     :param window_width: The render window's width in pixels.
     :param window_height: The render window's height in pixels.
@@ -971,7 +974,7 @@ def _plot_scalars(
         render=False,
     )
 
-    plotter.add_text(
+    max_label = plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
         position=_TEXT_MAX_POSITION,
         font_size=round(TEXT_FONT_SIZE * window_scale),
@@ -979,7 +982,7 @@ def _plot_scalars(
         color=text_color,
         render=False,
     )
-    plotter.add_text(
+    min_label = plotter.add_text(
         text=f"Min: {min_scalar:#.3G}",
         position=_TEXT_MIN_POSITION,
         font_size=round(TEXT_FONT_SIZE * window_scale),
@@ -987,6 +990,8 @@ def _plot_scalars(
         color=text_color,
         render=False,
     )
+    for label in (max_label, min_label):
+        label.prop.justification_horizontal = "right"
 
 
 class ScalarColoring(NamedTuple):

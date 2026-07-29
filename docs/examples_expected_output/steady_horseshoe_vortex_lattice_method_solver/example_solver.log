@@ -1,0 +1,40 @@
+INFO    |output                                      |Airplane "Example Airplane":
+INFO    |output                                      |  Reynolds Number: 1.08E+06
+INFO    |output                                      |  Forces (in Geometry Axes):
+INFO    |output                                      |    fX_G:           -51.3 N
+INFO    |output                                      |    fY_G:        3.53E-14 N
+INFO    |output                                      |    fZ_G:        1.06E+03 N
+INFO    |output                                      |  Moments (in Geometry Axes, Relative to the CG):
+INFO    |output                                      |    mX_G_Cg:    -4.34E-13 Nm
+INFO    |output                                      |    mY_G_Cg:    -2.04E+03 Nm
+INFO    |output                                      |    mZ_G_Cg:     1.07E-13 Nm
+INFO    |output                                      |  Force Coefficients (in Geometry Axes):
+INFO    |output                                      |    cFX_G:        -0.0430
+INFO    |output                                      |    cFY_G:       2.96E-17
+INFO    |output                                      |    cFZ_G:          0.886
+INFO    |output                                      |  Moment Coefficients (in Geometry Axes, Relative to the CG):
+INFO    |output                                      |    cMX_G_Cg:   -3.04E-17
+INFO    |output                                      |    cMY_G_Cg:       -1.05
+INFO    |output                                      |    cMZ_G_Cg:    7.51E-18
+INFO    |output                                      |  Forces (in Wind Axes):
+INFO    |output                                      |    fX_W:           -41.0 N     Induced Drag:           41.0 N
+INFO    |output                                      |    fY_W:        3.53E-14 N     Side Force:         3.53E-14 N
+INFO    |output                                      |    fZ_W:       -1.06E+03 N     Lift:               1.06E+03 N
+INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):
+INFO    |output                                      |    mX_W_Cg:     4.23E-13 Nm    Rolling Moment:     4.23E-13 Nm
+INFO    |output                                      |    mY_W_Cg:    -2.04E+03 Nm    Pitching Moment:   -2.04E+03 Nm
+INFO    |output                                      |    mZ_W_Cg:    -1.45E-13 Nm    Yawing Moment:     -1.45E-13 Nm
+INFO    |output                                      |  Force Coefficients (in Wind Axes):
+INFO    |output                                      |    cFX_W:        -0.0344       CDi:                  0.0344
+INFO    |output                                      |    cFY_W:       2.96E-17       CY:                 2.96E-17
+INFO    |output                                      |    cFZ_W:         -0.886       CL:                    0.886
+INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the CG):
+INFO    |output                                      |    cMX_W_Cg:    2.96E-17       Cl:                 2.96E-17
+INFO    |output                                      |    cMY_W_Cg:       -1.05       Cm:                    -1.05
+INFO    |output                                      |    cMZ_W_Cg:   -1.01E-17       Cn:                -1.01E-17
+INFO    |_serialization                              |Saving SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz
+INFO    |_serialization                              |Saved SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz (492076 bytes)
+INFO    |_serialization                              |Loading from example_solver.json.gz
+WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
+WARNING |_serialization                              |The current working tree has uncommitted changes
+INFO    |_serialization                              |Loaded SteadyHorseshoeVortexLatticeMethodSolver from example_solver.json.gz

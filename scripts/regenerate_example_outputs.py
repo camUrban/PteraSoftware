@@ -10,9 +10,10 @@ the one the example runs in. Everything here that walks an example's output ther
 walks it recursively.
 
 After each example runs, any WebP file larger than the size ceiling is re-rendered from
-the saved solver at progressively lower quality until it fits. This avoids generation
-loss from recompression and keeps the expected output tree suitable for display on
-GitHub and ReadTheDocs without manual size management.
+the saved solver at progressively lower quality until it fits, though never below the
+quality floor where the visualizations' text stops being readable. This avoids
+generation loss from recompression and keeps the expected output tree suitable for
+display on GitHub and ReadTheDocs without manual size management.
 """
 
 import argparse
@@ -31,7 +32,11 @@ OUTPUT_DIR = PROJECT_ROOT / "docs" / "examples_expected_output"
 
 _MAX_WEBP_BYTES = 5 * 1024 * 1024
 _INITIAL_QUALITY = 75.0
-_QUALITY_STEP = 35.0
+_QUALITY_STEP = 25.0
+# The lowest quality a re-render will try. Below this, WebP compression makes the
+# visualizations' overlay text hard to read. The floor was chosen by inspecting the
+# aeroelastic example's animation rendered at qualities from 5 to 95.
+_MIN_QUALITY = 25.0
 _MAX_RERENDER_ATTEMPTS = 2
 
 # The keyword arguments this script supplies itself, which override whatever an example
@@ -128,7 +133,7 @@ def _output_destination(
 
 def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     """Re-renders any oversized WebP files by loading the saved solver and calling draw
-    or animate at progressively lower quality.
+    or animate at progressively lower quality, no lower than _MIN_QUALITY.
 
     :param output_subdir: The directory containing the example's output files.
     :param script_path: The path to the example script, used to extract the original
@@ -193,25 +198,27 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
             os.chdir(output_subdir)
 
             for _ in range(_MAX_RERENDER_ATTEMPTS):
-                quality -= _QUALITY_STEP
+                quality = max(quality - _QUALITY_STEP, _MIN_QUALITY)
                 render_func(**render_kwargs, save=True, quality=quality, testing=True)
 
                 new_bytes = webp_path.stat().st_size
-                if new_bytes <= _MAX_WEBP_BYTES:
-                    print(
-                        f"    Re-rendered {name}: "
-                        f"{original_bytes / 1024:.0f} KB -> "
-                        f"{new_bytes / 1024:.0f} KB "
-                        f"(quality={quality:.1f})"
-                    )
+                if new_bytes <= _MAX_WEBP_BYTES or quality == _MIN_QUALITY:
                     break
+
+            new_bytes = webp_path.stat().st_size
+            if new_bytes <= _MAX_WEBP_BYTES:
+                print(
+                    f"    Re-rendered {name}: "
+                    f"{original_bytes / 1024:.0f} KB -> "
+                    f"{new_bytes / 1024:.0f} KB "
+                    f"(quality={quality:.1f})"
+                )
             else:
-                final_bytes = webp_path.stat().st_size
                 print(
                     f"    Warning: {name} is still "
-                    f"{final_bytes / 1024:.0f} KB after "
-                    f"{_MAX_RERENDER_ATTEMPTS} re-render attempts "
-                    f"(final quality={quality:.1f})."
+                    f"{new_bytes / 1024:.0f} KB after re-rendering down to "
+                    f"quality={quality:.1f}. Quality is never reduced below "
+                    f"{_MIN_QUALITY:.1f}, where the text stops being readable."
                 )
         finally:
             os.chdir(original_cwd)

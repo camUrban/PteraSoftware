@@ -232,6 +232,19 @@ def plot_time_history(
         },
     )
 
+    # The subtitle centers over the axes, but the title, being a figure-level artist,
+    # centers over the figure, whose midpoint sits left of the axes' midpoint because
+    # constrained layout widens the left margin to fit the y axis text. One layout pass
+    # finds the axes' final position, and the title is then re-centered over it so the
+    # two stay aligned. The layout engine leaves the title's x alone on later draws.
+    figure.draw_without_rendering()
+    axes_position = axes.get_position()
+    figure.suptitle(
+        title,
+        color=_TEXT_COLOR_NORMALIZED,
+        x=(axes_position.x0 + axes_position.x1) / 2,
+    )
+
     # Save the figure as a PNG if the user wants to do so.
     if save:
         figure.savefig(save_path, dpi=resolution_dpi)

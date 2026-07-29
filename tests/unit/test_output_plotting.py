@@ -517,6 +517,37 @@ class TestPlotTimeHistory(unittest.TestCase):
             (plt.rcParams["axes.xmargin"], _output_plotting._Y_AXIS_MARGIN),
         )
 
+    def test_centers_the_title_over_the_axes(self) -> None:
+        """Test that the title centers over the axes, where the subtitle centers.
+
+        Constrained layout widens the left margin to fit the y axis text, so the axes'
+        midpoint sits right of the figure's, where a figure-level title would land.
+        """
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+        )
+        figure = plt.gcf()
+        figure.draw_without_rendering()
+        axes_position = figure.axes[0].get_position()
+        (title,) = (
+            text
+            for text in figure.texts
+            if text.get_text() == "Example Airplane Forces"
+        )
+        self.assertAlmostEqual(
+            title.get_position()[0], (axes_position.x0 + axes_position.x1) / 2
+        )
+
     def test_hides_the_top_and_right_spines(self) -> None:
         """Test that the plot keeps only the spines its axis labels sit beside."""
         _output_plotting.plot_time_history(

@@ -174,6 +174,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 ## Contributors
 
 * Cameron Urban ([camUrban](https://github.com/camUrban))
+* w3lld1 ([w3lld1](https://github.com/w3lld1))
 * Zach Tait ([Zach10a](https://github.com/Zach10a))
 * Jonah Jaffe ([JonahJ27](https://github.com/JonahJ27))
 * Venkata Akhil Mettu ([AKHIL-149](https://github.com/AKHIL-149))

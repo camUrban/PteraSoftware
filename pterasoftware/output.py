@@ -77,10 +77,10 @@ _MULTI_SAMPLES = 4
 ] = _colormaps.prism[1:9]
 
 # Define the text that the results outputs share. Every figure's legend labels,
-# subtitle, and y-axis label are named once here because the other two outputs restate
+# subtitle, and y axis label are named once here because the other two outputs restate
 # them: a CSV header is the transformed form of the same three pieces, taking its
 # quantity from the legend label, its axes, point, and frame from the subtitle, and its
-# unit from the y-axis label, while a logged group header pairs a quantity with the same
+# unit from the y axis label, while a logged group header pairs a quantity with the same
 # subtitle. Naming them once is what keeps the three describing a quantity the same way.
 _FORCE_LABELS = ["Induced Drag", "Side Force", "Lift"]
 _FORCE_COEFFICIENT_LABELS = [
@@ -97,7 +97,7 @@ _MOMENT_COEFFICIENT_LABELS = [
 
 # The position and velocity figures label their series by component alone, since their
 # titles name the quantity. A CSV column has no title, so it takes the quantity from the
-# y-axis label instead.
+# y axis label instead.
 _COMPONENT_LABELS = ["X Component", "Y Component", "Z Component"]
 _ORIENTATION_LABELS = ["Roll Angle", "Pitch Angle", "Yaw Angle"]
 _ANGULAR_VELOCITY_LABELS = ["Roll Rate", "Pitch Rate", "Yaw Rate"]
@@ -1616,7 +1616,6 @@ def plot_results_versus_time(
         plt.close("all")
 
 
-# TEST: Consider adding integration tests for this function.
 def log_results(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver

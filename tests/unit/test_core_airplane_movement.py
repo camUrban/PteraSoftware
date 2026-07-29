@@ -491,7 +491,7 @@ class TestCoreAirplaneMovement(unittest.TestCase):
         airplane_movement = self.custom_spacing_Cg_airplane_movement
         airplanes = airplane_movement.generate_airplanes(num_steps=100, delta_time=0.01)
 
-        # Extract x-positions (in Earth axes, relative to the simulation starting
+        # Extract x positions (in Earth axes, relative to the simulation starting
         # point).
         x_positions = np.array([airplane.Cg_GP1_CgP1[0] for airplane in airplanes])
 

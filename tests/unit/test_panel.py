@@ -143,7 +143,7 @@ class TestPanel(unittest.TestCase):
 
         unitNormal_G = panel.unitNormal_G
 
-        # For a flat panel in the xy-plane, normal should point in +z direction
+        # For a flat panel in the xy plane, normal should point in +z direction
         expected_unitNormal_G = np.array([0.0, 0.0, 1.0])
         npt.assert_array_almost_equal(unitNormal_G, expected_unitNormal_G)
 
@@ -154,7 +154,7 @@ class TestPanel(unittest.TestCase):
         """Test projected area when normal is aligned with panel normal."""
         panel = self.basic_panel
 
-        # Project onto xy-plane (panel is in xy-plane)
+        # Project onto xy plane (panel is in xy plane)
         normal_G = np.array([0.0, 0.0, 1.0])
         projected_area = panel.calculate_projected_area(normal_G)
 
@@ -165,7 +165,7 @@ class TestPanel(unittest.TestCase):
         """Test projected area when normal is perpendicular to panel."""
         panel = self.basic_panel
 
-        # Project onto xz-plane (perpendicular to panel in xy-plane)
+        # Project onto xz plane (perpendicular to panel in xy plane)
         normal_G = np.array([0.0, 1.0, 0.0])
         projected_area = panel.calculate_projected_area(normal_G)
 
@@ -188,7 +188,7 @@ class TestPanel(unittest.TestCase):
         """Test that calculate_projected_area normalizes non-unit normal vectors."""
         panel = self.basic_panel
 
-        # Use a non-unit vector that points in z-direction
+        # Use a non-unit vector that points in z direction
         normal_G = np.array([0.0, 0.0, 5.0])
         projected_area = panel.calculate_projected_area(normal_G)
 
@@ -573,7 +573,7 @@ class TestPanelDegenerateCases(unittest.TestCase):
 
     def test_collinear_points_panel(self) -> None:
         """Test with a degenerate panel where points are collinear (zero area)."""
-        # Create a panel with collinear points (all on x-axis)
+        # Create a panel with collinear points (all on x axis)
         panel = _panel.Panel(
             Frpp_G_Cg=np.array([0.0, 0.0, 0.0]),
             Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
@@ -610,7 +610,7 @@ class TestPanelDegenerateCases(unittest.TestCase):
         npt.assert_array_almost_equal(panel.backLeg_G, np.array([0.0, 0.0, 0.0]))
 
     def test_panel_in_yz_plane(self) -> None:
-        """Test with panel in the yz plane (perpendicular to x-axis)."""
+        """Test with panel in the yz plane (perpendicular to x axis)."""
         panel = _panel.Panel(
             Frpp_G_Cg=np.array([0.0, 0.0, 0.5]),
             Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),
@@ -632,7 +632,7 @@ class TestPanelDegenerateCases(unittest.TestCase):
         self.assertAlmostEqual(unitNormal_G[2], 0.0, places=10)
 
     def test_panel_in_xz_plane(self) -> None:
-        """Test with panel in the xz plane (perpendicular to y-axis)."""
+        """Test with panel in the xz plane (perpendicular to y axis)."""
         panel = _panel.Panel(
             Frpp_G_Cg=np.array([0.0, 0.0, 0.5]),
             Flpp_G_Cg=np.array([0.0, 0.0, 0.0]),

@@ -71,7 +71,7 @@ stackPlanformPoints_YeoXReversed_Ler = stackPlanformPoints_Yeo_Ler * np.array(
 )
 
 # Swap the axes to the form [chordwise coordinate, spanwise coordinate]. The coordinates
-# are now in wing axes projected onto its xy-plane, and relative to the leading edge
+# are now in wing axes projected onto its xy plane, and relative to the leading edge
 # root point.
 stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
@@ -80,7 +80,7 @@ stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
 
 # Using the tip index, split the points into two ndarrays of leading and trailing edge
-# points (in wing axes projected onto its xy-plane, relative to the leading edge root
+# points (in wing axes projected onto its xy plane, relative to the leading edge root
 # point).
 stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[:tip_index, :]
 stackTrailingPointsXY_Wn_Ler = np.flip(
@@ -114,11 +114,11 @@ stackLeftTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 stackRightTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
 
 # Iterate through the locations of the future sections to populate the left and right
-# WingCrossSection's leading and trailing points (in wing axes projected onto its
-# xy-plane, relative to the leading edge root point).
+# WingCrossSection's leading and trailing points (in wing axes projected onto its xy
+# plane, relative to the leading edge root point).
 for spanwise_loc in range(num_spanwise_sections):
     # Find the y component of the leading and trailing points (in wing axes projected
-    # onto its xy-plane, relative to the leading edge root point).
+    # onto its xy plane, relative to the leading edge root point).
     stackLeftLpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
     stackLeftTpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
     stackRightLpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
@@ -608,7 +608,7 @@ stackExpNetForcesZ_G = 2 * (
     + stackExpGreenLeadingForcesZ_G
 )
 
-# Initialize a ndarray to hold the net force's wind axes' z-component.
+# Initialize a ndarray to hold the net force's wind axes' z component.
 stackExpNetForcesZ_W = np.zeros(stackExpNetForcesZ_G.size, dtype=float)
 
 # Get the passive transformation matrix which maps in homogeneous coordinates from the
@@ -626,8 +626,8 @@ for force_id, expNetForceZ_GP1 in enumerate(stackExpNetForcesZ_G):
     expNetForceZ_W = expNetForceHomog_W[2]
     stackExpNetForcesZ_W[force_id] = expNetForceZ_W
 
-# Get the experimental lift values. Lift is defined as the force's wind axes'
-# z-component multiplied by negative one.
+# Get the experimental lift values. Lift is defined as the force's wind axes' z
+# component multiplied by negative one.
 exp_lifts = -1 * stackExpNetForcesZ_W
 
 # Get this solver's SteadyProblems' Airplanes.
@@ -645,7 +645,7 @@ for step, airplane in enumerate(airplanes):
 # Initialize the figure and axes of the experimental versus simulated lift plot.
 lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
 
-# Get the simulated lift values. Lift is defined as the force's wind axes' z-component
+# Get the simulated lift values. Lift is defined as the force's wind axes' z component
 # multiplied by negative one.
 sim_lifts = -1 * stackSimForces_W[2, :]
 

@@ -345,7 +345,7 @@ class TestOperatingPoint(unittest.TestCase):
         # first Airplane's geometry axes (wind comes from below).
         self.assertGreater(vInf_GP1__E_pos[2], 0.0)
 
-        # The y-component should be approximately zero (no sideslip).
+        # The y component should be approximately zero (no sideslip).
         npt.assert_allclose(vInf_GP1__E_pos[1], 0.0, atol=1e-14)
 
         # Negative alpha means the nose points below the direction of travel, so the
@@ -357,7 +357,7 @@ class TestOperatingPoint(unittest.TestCase):
         # first Airplane's geometry axes (wind comes from above).
         self.assertLess(vInf_GP1__E_neg[2], 0.0)
 
-        # The y-component should be approximately zero (no sideslip).
+        # The y component should be approximately zero (no sideslip).
         npt.assert_allclose(vInf_GP1__E_neg[1], 0.0, atol=1e-14)
 
     def test_transformation_beta_only(self) -> None:
@@ -365,7 +365,7 @@ class TestOperatingPoint(unittest.TestCase):
         # Positive beta means the nose points to the left of the direction of travel, so
         # the airplane moves to the right of where the nose points. The relative wind
         # comes from the right. In the first Airplane's geometry axes (+y = right), the
-        # freestream velocity vector should have a negative y-component (pointing left,
+        # freestream velocity vector should have a negative y component (pointing left,
         # opposite the airplane's rightward motion).
         op_positive_beta = ps.operating_point.OperatingPoint(alpha=0.0, beta=10.0)
         vInf_GP1__E_pos = op_positive_beta.vInfHat_GP1__E
@@ -374,7 +374,7 @@ class TestOperatingPoint(unittest.TestCase):
         # first Airplane's geometry axes (wind from right, pointing left).
         self.assertLess(vInf_GP1__E_pos[1], 0.0)
 
-        # The z-component should be approximately zero (no vertical component).
+        # The z component should be approximately zero (no vertical component).
         npt.assert_allclose(vInf_GP1__E_pos[2], 0.0, atol=1e-14)
 
         # Negative beta means the nose points to the right of the direction of travel,
@@ -387,7 +387,7 @@ class TestOperatingPoint(unittest.TestCase):
         # first Airplane's geometry axes (wind from left, pointing right).
         self.assertGreater(vInf_GP1__E_neg[1], 0.0)
 
-        # The z-component should be approximately zero (no vertical component).
+        # The z component should be approximately zero (no vertical component).
         npt.assert_allclose(vInf_GP1__E_neg[2], 0.0, atol=1e-14)
 
     def test_transformation_both_alpha_beta(self) -> None:

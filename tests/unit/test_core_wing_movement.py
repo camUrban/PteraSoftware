@@ -101,7 +101,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-positions from generated Wings.
+        # Extract x positions from generated Wings.
         x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected sine wave values.
@@ -121,7 +121,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-positions from generated Wings.
+        # Extract x positions from generated Wings.
         x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected triangular wave values.
@@ -166,7 +166,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-angles from generated Wings.
+        # Extract x angles from generated Wings.
         x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected sine wave values.
@@ -186,7 +186,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-angles from generated Wings.
+        # Extract x angles from generated Wings.
         x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected triangular wave values.
@@ -592,7 +592,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-positions from generated Wings.
+        # Extract x positions from generated Wings.
         x_positions = np.array([wing.Ler_Gs_Cgs[0] for wing in wings])
 
         # Calculate expected custom harmonic wave values.
@@ -617,7 +617,7 @@ class TestCoreWingMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-angles from generated Wings.
+        # Extract x angles from generated Wings.
         x_angles = np.array([wing.angles_Gs_to_Wn_ixyz[0] for wing in wings])
 
         # Calculate expected custom harmonic wave values.

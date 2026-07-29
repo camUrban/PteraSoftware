@@ -136,7 +136,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         """This method tests that the glider loses altitude over the glide.
 
         In Earth axes, the +z direction points down (gravity acts along +z), so a
-        descending glider's z-coordinate increases.
+        descending glider's z coordinate increases.
 
         :return: None
         """

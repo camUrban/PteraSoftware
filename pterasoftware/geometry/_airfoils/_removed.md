@@ -56,7 +56,7 @@ These files represent shapes that are not traditional airfoils (e.g., cowlings, 
 
 ### Inward Trailing Edges
 
-These files have trailing edges where the outline wraps around, causing x-coordinates to not be strictly monotonic from leading edge to trailing edge. This breaks the interpolation that assumes x always increases along each surface.
+These files have trailing edges where the outline wraps around, causing x coordinates to not be strictly monotonic from leading edge to trailing edge. This breaks the interpolation that assumes x always increases along each surface.
 
 - cap21c.dat
 

@@ -192,11 +192,11 @@ class TestAirfoil(unittest.TestCase):
         """A positive deflection lowers the trailing edge along wing cross section z,
         and an equal negative deflection raises it by an equal amount.
 
-        The Airfoil's mean camber line is in airfoil axes, whose y-component is the wing
-        cross section z-component: the airfoil embeds in wing cross section axes with
+        The Airfoil's mean camber line is in airfoil axes, whose y component is the wing
+        cross section z component: the airfoil embeds in wing cross section axes with
         the chord along x, the span along y, and the thickness along z. A positive
         deflection is defined as downward, toward wing cross section -z, so the trailing
-        edge's z-component must decrease for a positive deflection and increase by the
+        edge's z component must decrease for a positive deflection and increase by the
         same magnitude for an equal-magnitude negative deflection.
         """
         hinge_point = 0.75

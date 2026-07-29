@@ -52,7 +52,7 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
 
         In ground effect, the image vortex system reduces downwash, which increases the
         effective angle of attack and therefore the lift. The lift coefficient (negative
-        of the z-component of forceCoefficients_W) should be larger in magnitude with
+        of the z component of forceCoefficients_W) should be larger in magnitude with
         the surface effect than without.
 
         :return: None
@@ -72,8 +72,8 @@ class TestUnsteadyRingVortexLatticeMethodSurfaceEffect(unittest.TestCase):
         magnitude.
 
         In ground effect, the reduced downwash tilts the lift vector forward, which
-        decreases the induced drag. The induced drag coefficient (negative of the
-        x-component of forceCoefficients_W) should be smaller in magnitude with the
+        decreases the induced drag. The induced drag coefficient (negative of the x
+        component of forceCoefficients_W) should be smaller in magnitude with the
         surface effect than without.
 
         :return: None

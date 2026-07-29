@@ -243,7 +243,8 @@ def draw(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
-                'scalar_type must be None, "induced drag", "side force", or "lift".'
+                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
+                f"got '{scalar_type}'."
             )
 
     show_streamlines = _parameter_validation.boolLike_return_bool(
@@ -648,7 +649,8 @@ def animate(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in ("induced drag", "side force", "lift"):
             raise ValueError(
-                'scalar_type must be None, "induced drag", "side force", or "lift".'
+                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
+                f"got '{scalar_type}'."
             )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(

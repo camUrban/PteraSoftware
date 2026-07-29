@@ -770,6 +770,11 @@ def get_scalars(
     """Returns the load coefficient values from a SteadyProblem's Airplanes' Wings'
     Panels.
 
+    The scalar type is taken as given rather than checked, because the public output
+    functions reject an unrecognized one before any geometry is walked, and this is
+    called once per time step of an animation. A type outside the three named ones
+    therefore contributes no scalars rather than raising.
+
     :param airplanes: The tuple of Airplanes with the scalars to return.
     :param scalar_type: Determines which load coefficient to return as scalars. Can be
         "induced drag", "side force", or "lift", which respectively use each Panel's

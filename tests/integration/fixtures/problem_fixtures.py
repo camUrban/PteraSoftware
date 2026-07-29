@@ -394,3 +394,21 @@ def make_flapping_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem
     )
 
     return flapping_free_flight_problem
+
+
+def make_unsteady_formation_validation_problem() -> ps.problems.UnsteadyProblem:
+    """This function creates an UnsteadyProblem with two Airplanes, the second of which
+    has a name carrying a path separator, to be used as a fixture.
+
+    :return unsteady_formation_validation_problem: UnsteadyProblem This is the
+        UnsteadyProblem fixture.
+    """
+    formation_validation_movement = (
+        movement_fixtures.make_formation_validation_movement()
+    )
+
+    unsteady_formation_validation_problem = ps.problems.UnsteadyProblem(
+        movement=formation_validation_movement
+    )
+
+    return unsteady_formation_validation_problem

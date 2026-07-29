@@ -491,9 +491,12 @@ def analyze_unsteady_trim(
     :param problem: The UnsteadyProblem whose trim condition will be found. This must be
         a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
         AeroelasticUnsteadyProblem, neither of which is supported. The UnsteadyProblem's
-        Movement must contain exactly one AirplaneMovement. The problem's
-        OperatingPointMovement's base OperatingPoint will be modified during the trim
-        search.
+        Movement must contain exactly one AirplaneMovement. The problem's Movement must
+        define its duration with num_cycles or num_chords, rather than an explicit
+        num_steps. If its wake is truncated, the maximum wake length must likewise be
+        defined with max_wake_cycles or max_wake_chords, rather than an explicit
+        max_wake_rows. The problem's OperatingPointMovement's base OperatingPoint will
+        be modified during the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
@@ -544,6 +547,21 @@ def analyze_unsteady_trim(
         raise ValueError(
             "The UnsteadyProblem's Movement must contain exactly one AirplaneMovement "
             "for trim analysis."
+        )
+    if problem.movement.num_cycles is None and problem.movement.num_chords is None:
+        raise ValueError(
+            "The UnsteadyProblem's Movement must define its duration with num_cycles "
+            "or num_chords for trim analysis, rather than an explicit num_steps."
+        )
+    if (
+        problem.movement.max_wake_rows is not None
+        and problem.movement.max_wake_chords is None
+        and problem.movement.max_wake_cycles is None
+    ):
+        raise ValueError(
+            "The UnsteadyProblem's Movement must define its maximum wake length with "
+            "max_wake_chords or max_wake_cycles for trim analysis, rather than an "
+            "explicit max_wake_rows."
         )
 
     # Validate the boundsVCg__E parameter.
@@ -715,16 +733,24 @@ def analyze_unsteady_trim(
         externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
+        reference_operating_point_movement = problem.movement.operating_point_movement
         this_operating_point_movement = (
             movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=trial_operating_point
+                base_operating_point=trial_operating_point,
+                ampVCg__E=reference_operating_point_movement.ampVCg__E,
+                periodVCg__E=reference_operating_point_movement.periodVCg__E,
+                spacingVCg__E=reference_operating_point_movement.spacingVCg__E,
+                phaseVCg__E=reference_operating_point_movement.phaseVCg__E,
             )
         )
 
         this_movement = movements.movement.Movement(
             airplane_movements=[problem.movement.airplane_movements[0]],
             operating_point_movement=this_operating_point_movement,
-            num_steps=problem.movement.num_steps,
+            num_cycles=problem.movement.num_cycles,
+            num_chords=problem.movement.num_chords,
+            max_wake_chords=problem.movement.max_wake_chords,
+            max_wake_cycles=problem.movement.max_wake_cycles,
         )
 
         this_problem = problems.UnsteadyProblem(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -18,6 +19,51 @@ def str_return_str(value: Any, name: str) -> str:
     if not isinstance(value, str):
         raise TypeError(f"{name} must be a str.")
     return value
+
+
+def pathLike_return_path(value: Any, name: str, suffixes: tuple[str, ...]) -> Path:
+    """Validates that a value is a str or a Path naming a writable file with an accepted
+    suffix, and returns it as a Path.
+
+    A missing parent directory is an error rather than something to create, so that a
+    mistyped destination surfaces where it was made instead of scattering directory
+    trees across the caller's disk. This matches what matplotlib.figure.Figure.savefig
+    does.
+
+    :param value: The value to validate.
+    :param name: The name of the value.
+    :param suffixes: The accepted file name suffixes, such as (".json", ".json.gz").
+        These are matched against the whole file name rather than through Path.suffix,
+        so that multi part suffixes work. The match ignores case, since Windows treats
+        ".WEBP" as the same extension as ".webp" and rejecting it would refuse a
+        spelling that platform considers ordinary.
+    :return: The validated value as a Path.
+    """
+    if not isinstance(value, (str, Path)):
+        raise TypeError(f"{name} must be a str or a Path.")
+
+    validated_path = Path(value)
+
+    lowered_name = validated_path.name.lower()
+    if not any(lowered_name.endswith(suffix.lower()) for suffix in suffixes):
+        accepted = " or ".join(f"'{suffix}'" for suffix in suffixes)
+        raise ValueError(
+            f"{name} must end with {accepted}, got '{validated_path.name}'."
+        )
+
+    if validated_path.is_dir():
+        raise ValueError(
+            f"{name} must be a file path, got directory '{validated_path}'."
+        )
+
+    parent_directory = validated_path.parent
+    if not parent_directory.is_dir():
+        raise ValueError(
+            f"{name}'s directory '{parent_directory}' does not exist. Create it first, "
+            f"or choose a destination that already exists."
+        )
+
+    return validated_path
 
 
 def boolLike_return_bool(value: Any, name: str) -> bool:

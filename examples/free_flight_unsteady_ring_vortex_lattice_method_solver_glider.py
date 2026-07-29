@@ -337,9 +337,9 @@ ps.output.draw(
 )
 
 # Call the animate function on the loaded solver. For a free flight solver, this flies
-# the airplane through the scene along its computed trajectory, producing a GIF saved in
-# the same directory as this script. Press any key, after orienting the view, to begin
-# the animation.
+# the airplane through the scene along its computed trajectory, producing an animated
+# WebP saved in the same directory as this script. Press any key, after orienting the
+# view, to begin the animation.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
@@ -350,8 +350,17 @@ ps.output.animate(
 # Call the plotting function on the solver. This produces graphs of the loads with
 # respect to time. For a free flight solver, it also plots the first Airplane's
 # six-degree-of-freedom state history.
+#
+# Setting save_csv exports the same series the figures plot as CSV files, which is what
+# you want in order to compare quantities that no single figure holds together, or to
+# take the results into another tool. It writes two files here, because the loads and
+# the state history do not share a time base: the loads begin at the solver's first
+# results step, while the state history begins at the first time step. Note that
+# save_csv is independent of save, so the data can be exported without rendering any
+# images.
 ps.output.plot_results_versus_time(
     unsteady_solver=loaded_solver,
     show=True,
     save=True,
+    save_csv=True,
 )

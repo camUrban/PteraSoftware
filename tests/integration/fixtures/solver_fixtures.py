@@ -324,3 +324,27 @@ def make_flapping_free_flight_solver() -> (
     )
 
     return flapping_free_flight_solver
+
+
+def make_unsteady_ring_vortex_lattice_method_formation_solver() -> (
+    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
+):
+    """This function creates an UnsteadyRingVortexLatticeMethodSolver with two
+    Airplanes, the second of which has a name carrying a path separator, to be used as a
+    fixture.
+
+    :return unsteady_ring_vortex_lattice_method_formation_solver:
+        UnsteadyRingVortexLatticeMethodSolver This is the
+        UnsteadyRingVortexLatticeMethodSolver fixture.
+    """
+    unsteady_formation_validation_problem = (
+        problem_fixtures.make_unsteady_formation_validation_problem()
+    )
+
+    unsteady_ring_vortex_lattice_method_formation_solver = (
+        ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            unsteady_formation_validation_problem
+        )
+    )
+
+    return unsteady_ring_vortex_lattice_method_formation_solver

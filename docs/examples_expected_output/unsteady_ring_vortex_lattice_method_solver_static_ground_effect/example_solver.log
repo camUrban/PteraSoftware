@@ -2,7 +2,7 @@ INFO    |movements.movement                          |Starting analytical delta_
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
 INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8418377 bytes)
+INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8418561 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -25,7 +25,7 @@ INFO    |output                                      |    cMX_G_Cg:    5.99E-17
 INFO    |output                                      |    cMY_G_Cg:     0.00110
 INFO    |output                                      |    cMZ_G_Cg:    1.51E-17
 INFO    |output                                      |  Final Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:           -10.5 N     Drag:                   10.5 N
+INFO    |output                                      |    fX_W:           -10.5 N     Induced Drag:           10.5 N
 INFO    |output                                      |    fY_W:       -2.62E-14 N     Side Force:        -2.62E-14 N
 INFO    |output                                      |    fZ_W:           -400. N     Lift:                   400. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):

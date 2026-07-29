@@ -726,3 +726,52 @@ def make_flapping_free_flight_movement() -> (
     )
 
     return flapping_free_flight_movement
+
+
+def make_formation_validation_movement() -> ps.movements.movement.Movement:
+    """This function creates a static Movement over two Airplanes to be used as a
+    fixture.
+
+    The second Airplane's name carries a path separator, so this Movement backs the
+    tests that prove the output functions reject such a name before writing any of the
+    first Airplane's files.
+
+    :return formation_validation_movement: Movement This is the Movement fixture.
+    """
+    formation_airplanes = [
+        airplane_fixtures.make_formation_lead_validation_airplane(),
+        airplane_fixtures.make_separator_named_validation_airplane(),
+    ]
+
+    formation_airplane_movements = []
+    for formation_airplane in formation_airplanes:
+        formation_wing_cross_section_movements = [
+            ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+                base_wing_cross_section=wing_cross_section
+            )
+            for wing_cross_section in formation_airplane.wings[0].wing_cross_sections
+        ]
+
+        formation_wing_movement = ps.movements.wing_movement.WingMovement(
+            base_wing=formation_airplane.wings[0],
+            wing_cross_section_movements=formation_wing_cross_section_movements,
+        )
+
+        formation_airplane_movements.append(
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=formation_airplane,
+                wing_movements=[formation_wing_movement],
+            )
+        )
+
+    formation_operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=operating_point_fixtures.make_validation_operating_point()
+    )
+
+    formation_validation_movement = ps.movements.movement.Movement(
+        airplane_movements=formation_airplane_movements,
+        operating_point_movement=formation_operating_point_movement,
+        num_chords=3,
+    )
+
+    return formation_validation_movement

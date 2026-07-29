@@ -210,7 +210,7 @@ class TestWing(unittest.TestCase):
         normals = np.array([panel.unitNormal_G for panel in panels])
 
         # The dihedral should give the normals a non-trivial spanwise component, so the
-        # y-flip below is a meaningful check rather than an identity.
+        # y flip below is a meaningful check rather than an identity.
         self.assertGreater(np.max(np.abs(normals[:, 1])), 0.1)
 
         # Reflection across the xz (y = 0) symmetry plane negates only the y component.
@@ -1947,7 +1947,7 @@ class TestExplodeIntoStripsMethods(unittest.TestCase):
         self.assertAlmostEqual(result[0].chord, expected_first_interp, places=10)
 
     def test_interpolate_Lp_y_divided_by_n(self) -> None:
-        """Test that the Lp_Wcsp_Lpp y-component of each interpolated WingCrossSection
+        """Test that the Lp_Wcsp_Lpp y component of each interpolated WingCrossSection
         is tip_Lp_y / N."""
         wing = self._make_plain_wing(explode_into_strips=False)
         result = wing._interpolate_between_wing_cross_sections(

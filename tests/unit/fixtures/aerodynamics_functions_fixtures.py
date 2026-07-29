@@ -21,7 +21,7 @@ def make_grid_of_points_fixture() -> np.ndarray:
     velocity calculation functions.
 
     :return grid_of_points_fixture: (25, 3) ndarray of floats This is a 5x5 grid of
-        evaluation points in the xz-plane (in the first Airplane's geometry axes,
+        evaluation points in the xz plane (in the first Airplane's geometry axes,
         relative to the first Airplane's CG), spanning from -2 to 2 in both x and z
         directions.
     """
@@ -40,7 +40,7 @@ def make_line_of_points_fixture() -> np.ndarray:
     velocity calculation functions.
 
     :return line_of_points_fixture: (10, 3) ndarray of floats This is a line of 10
-        evaluation points along the x-axis (in the first Airplane's geometry axes,
+        evaluation points along the x axis (in the first Airplane's geometry axes,
         relative to the first Airplane's CG), from x=-5.0 to x=5.0.
     """
     x = np.linspace(-5.0, 5.0, 10, dtype=float)

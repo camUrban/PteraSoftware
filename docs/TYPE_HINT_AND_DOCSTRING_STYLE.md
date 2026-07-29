@@ -821,9 +821,9 @@ def _get_mcl_points(
     :return: A list of four (N,1) ndarrays of floats, where N is the number of points
         at which we'd like to sample each Airfoil's MCL. The ndarrays contain components
         of the positions of points along each Airfoil's MCL. In order, the ndarrays
-        returned are, (1) the inner Airfoil's MCL points' y-components, (2) the inner
-        Airfoil's MCL points' x-components (3) the outer Airfoil's MCL points'
-        y-components, and (4) the outer Airfoil's MCL points' x-components. The values
+        returned are, (1) the inner Airfoil's MCL points' y components, (2) the inner
+        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points'
+        y components, and (4) the outer Airfoil's MCL points' x components. The values
         are normalized from 0.0 to 1.0 and are unitless.
     """
 ```
@@ -856,7 +856,7 @@ def _get_mcs_points(
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
     :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the
-        number of chordwise points in the mesh. Each element represents the y-component
+        number of chordwise points in the mesh. Each element represents the y component
         of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
         inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
         are unitless.
@@ -890,7 +890,7 @@ def __init__(
         axes, relative to the leading point). If you wish to load coordinates from the
         airfoils directory, leave this as None, which is the default. Can be a tuple,
         list, or ndarray. Values are converted to floats internally. Make sure all
-        x-component values are in the range [0.0, 1.0]. The default value is None.
+        x component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: Determines whether to resample the points defining the Airfoil's
         outline. This applies to points passed in by the user or to those from the
         airfoils directory. I highly recommended setting this to True. Can be a bool or

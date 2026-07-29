@@ -829,3 +829,101 @@ def make_surface_effect_airplane() -> ps.geometry.airplane.Airplane:
         b_ref=None,
     )
     return surface_effect_airplane
+
+
+def _make_formation_validation_airplane(
+    name: str,
+    Cg_GP1_CgP1: tuple[float, float, float],
+) -> ps.geometry.airplane.Airplane:
+    """This function creates one of the formation validation Airplanes.
+
+    The mesh is deliberately coarse. The formation fixtures exist to test how the output
+    functions compose file names from Airplane names, not to validate any aerodynamics,
+    so the solver run they feed should stay cheap.
+
+    :param name: The Airplane's name.
+    :param Cg_GP1_CgP1: A tuple of three floats representing the position of the
+        Airplane's CG (in the first Airplane's geometry axes, relative to the first
+        Airplane's CG). The units are in meters.
+    :return formation_validation_airplane: Airplane This is the Airplane fixture.
+    """
+    formation_validation_airplane = ps.geometry.airplane.Airplane(
+        wings=[
+            ps.geometry.wing.Wing(
+                wing_cross_sections=[
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
+                            name="naca2412",
+                            outline_A_Lp=None,
+                            resample=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=4,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing="cosine",
+                    ),
+                    ps.geometry.wing_cross_section.WingCrossSection(
+                        airfoil=ps.geometry.airfoil.Airfoil(
+                            name="naca2412",
+                            outline_A_Lp=None,
+                            resample=True,
+                            n_points_per_side=50,
+                        ),
+                        num_spanwise_panels=None,
+                        chord=1.0,
+                        Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
+                        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                        control_surface_symmetry_type="symmetric",
+                        control_surface_hinge_point=0.75,
+                        control_surface_deflection=0.0,
+                        spanwise_spacing=None,
+                    ),
+                ],
+                name="Main Wing",
+                Ler_Gs_Cgs=(0.0, 0.0, 0.0),
+                angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+                symmetric=True,
+                mirror_only=False,
+                symmetryNormal_G=(0.0, 1.0, 0.0),
+                symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+                num_chordwise_panels=3,
+                chordwise_spacing="uniform",
+            ),
+        ],
+        name=name,
+        Cg_GP1_CgP1=Cg_GP1_CgP1,
+        weight=0.0,
+        s_ref=None,
+        c_ref=None,
+        b_ref=None,
+    )
+    return formation_validation_airplane
+
+
+def make_formation_lead_validation_airplane() -> ps.geometry.airplane.Airplane:
+    """This function creates the lead formation validation Airplane, whose name composes
+    a valid file name.
+
+    :return formation_lead_validation_airplane: Airplane This is the Airplane fixture.
+    """
+    return _make_formation_validation_airplane("Lead Airplane", (0.0, 0.0, 0.0))
+
+
+def make_separator_named_validation_airplane() -> ps.geometry.airplane.Airplane:
+    """This function creates the trailing formation validation Airplane, whose name
+    carries a path separator.
+
+    A file named after this Airplane would land outside the directory the caller asked
+    for, so the output functions must reject the name rather than compose it. The
+    Airplane accepts the name freely, since only file name composition is affected. It
+    sits far enough from the lead Airplane that their aerodynamic interaction is
+    negligible.
+
+    :return separator_named_validation_airplane: Airplane This is the Airplane fixture.
+    """
+    return _make_formation_validation_airplane("Trail/Airplane", (0.0, 20.0, 0.0))

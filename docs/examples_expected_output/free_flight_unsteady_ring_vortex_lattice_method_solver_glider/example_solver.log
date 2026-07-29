@@ -1,5 +1,5 @@
 INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125680647 bytes)
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125680974 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -22,7 +22,7 @@ INFO    |output                                      |    cMX_G_Cg:    2.53E-15
 INFO    |output                                      |    cMY_G_Cg:     0.00254
 INFO    |output                                      |    cMZ_G_Cg:   -5.99E-16
 INFO    |output                                      |  Final Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:           -6.05 N     Drag:                   6.05 N
+INFO    |output                                      |    fX_W:           -6.05 N     Induced Drag:           6.05 N
 INFO    |output                                      |    fY_W:       -1.16E-12 N     Side Force:        -1.16E-12 N
 INFO    |output                                      |    fZ_W:           -418. N     Lift:                   418. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):
@@ -43,7 +43,7 @@ INFO    |output                                      |    Position (of the First
 INFO    |output                                      |      cgP1X_E_Eo:                    0.00 m
 INFO    |output                                      |      cgP1Y_E_Eo:                    0.00 m
 INFO    |output                                      |      cgP1Z_E_Eo:                    0.00 m
-INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes, Intrinsic zy'x" Sequence):
+INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic zy'x" Sequence):
 INFO    |output                                      |      angleX_E_to_BP1_izyx:          0.00 deg
 INFO    |output                                      |      angleY_E_to_BP1_izyx:          3.30 deg
 INFO    |output                                      |      angleZ_E_to_BP1_izyx:          0.00 deg
@@ -62,7 +62,7 @@ INFO    |output                                      |    Position (of the First
 INFO    |output                                      |      cgP1X_E_Eo:                    33.4 m
 INFO    |output                                      |      cgP1Y_E_Eo:               -3.58E-15 m
 INFO    |output                                      |      cgP1Z_E_Eo:                   0.972 m
-INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes, Intrinsic zy'x" Sequence):
+INFO    |output                                      |    Orientation (of the First Airplane's Body Axes Relative to Earth Axes Using an Intrinsic zy'x" Sequence):
 INFO    |output                                      |      angleX_E_to_BP1_izyx:     -7.74E-15 deg
 INFO    |output                                      |      angleY_E_to_BP1_izyx:         0.809 deg
 INFO    |output                                      |      angleZ_E_to_BP1_izyx:     -1.46E-14 deg

@@ -8,7 +8,7 @@ Each version's bar is measured against a frozen software stack reconstructed at 
 
 Every bar in the archive shares the host hardware described under [Test environment](#test-environment) below. The publishing step refuses to emit a chart that mixes bars from different hosts, so a hardware change in the archive forces a full re-run before publication can resume.
 
-The baseline against which speedups and ratios are computed is the immediately-preceding pypi version of the latest pypi version. Open the interactive chart's toggle ("Speedup vs. baseline" for time, "Ratio vs. baseline" for memory) to switch from absolute units on a log y-axis to the normalized view on a linear y-axis.
+The baseline against which speedups and ratios are computed is the immediately-preceding pypi version of the latest pypi version. Open the interactive chart's toggle ("Speedup vs. baseline" for time, "Ratio vs. baseline" for memory) to switch from absolute units on a log y axis to the normalized view on a linear y axis.
 
 ## Test environment
 
@@ -70,6 +70,6 @@ Download the raw data: <a href="_static/benchmarks/solver_run_memory.csv">solver
 
 ## Notes on what's shown
 
-- Configurations are ordered along the x-axis by cost. The slug prefix (for example, `0007_8E07evals_urvlm`) records the approximate Biot-Savart kernel-evaluation count and the solver family (`srvlm` for the steady ring vortex lattice method, `shvlm` for the steady horseshoe vortex lattice method, or `urvlm` for the unsteady ring vortex lattice method).
+- Configurations are ordered along the x axis by cost. The slug prefix (for example, `0007_8E07evals_urvlm`) records the approximate Biot-Savart kernel-evaluation count and the solver family (`srvlm` for the steady ring vortex lattice method, `shvlm` for the steady horseshoe vortex lattice method, or `urvlm` for the unsteady ring vortex lattice method).
 - Cells deliberately gated out of a version (for example, configurations too large to fit in memory on this host) render as missing bars rather than as zero-height bars. The CSVs preserve the distinction between `ok`, `skipped`, and `missing` states in the `status` column, with the reason (when known) in the `reason` column.
 - No aggregate or "headline" speedup is reported. The benchmark suite is a trimmed, down-sampled selection from the Monte Carlo distribution of expected workloads, so an arithmetic or geometric mean over the selection would not faithfully represent the underlying distribution. The chart is the report; read individual configurations.

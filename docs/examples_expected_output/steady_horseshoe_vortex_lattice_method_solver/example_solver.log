@@ -17,7 +17,7 @@ INFO    |output                                      |    cMX_G_Cg:   -3.04E-17
 INFO    |output                                      |    cMY_G_Cg:       -1.05
 INFO    |output                                      |    cMZ_G_Cg:    7.51E-18
 INFO    |output                                      |  Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:           -41.0 N     Drag:                   41.0 N
+INFO    |output                                      |    fX_W:           -41.0 N     Induced Drag:           41.0 N
 INFO    |output                                      |    fY_W:        3.53E-14 N     Side Force:         3.53E-14 N
 INFO    |output                                      |    fZ_W:       -1.06E+03 N     Lift:               1.06E+03 N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):
@@ -33,7 +33,7 @@ INFO    |output                                      |    cMX_W_Cg:    2.96E-17 
 INFO    |output                                      |    cMY_W_Cg:       -1.05       Cm:                    -1.05
 INFO    |output                                      |    cMZ_W_Cg:   -1.01E-17       Cn:                -1.01E-17
 INFO    |_serialization                              |Saving SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz (492075 bytes)
+INFO    |_serialization                              |Saved SteadyHorseshoeVortexLatticeMethodSolver to example_solver.json.gz (492076 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes

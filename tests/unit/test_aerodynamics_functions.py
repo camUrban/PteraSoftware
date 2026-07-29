@@ -643,7 +643,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
     def test_ref_biot_savart_single_line_vortex_along_axis(self) -> None:
         """Test reference Biot-Savart implementation for a conceptual line vortex along
-        z-axis with a perpendicular evaluation point."""
+        z axis with a perpendicular evaluation point."""
         A_A_a = np.array([0.0, 0.0, 0.0], dtype=float)
         B_A_a = np.array([0.0, 0.0, 1.0], dtype=float)
         gamma = 2.0
@@ -653,7 +653,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Calculate the expected velocity using the reference implementation.
         v_A__I = self.ref_calculate_biot_savart_velocity(A_A_a, B_A_a, P_A_a, gamma)
 
-        # Verify the velocity is in y-direction (due to right-hand rule). For a
+        # Verify the velocity is in y direction (due to right-hand rule). For a
         # conceptual line vortex along +z and evaluation point at +x, the velocity
         # should be in +y.
         self.assertGreater(float(v_A__I[1]), 0.0)
@@ -663,7 +663,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
     def test_ref_biot_savart_symmetric_configuration(self) -> None:
         """Test reference Biot-Savart implementation for symmetric vortex
         configuration."""
-        # Two line vortices forming a V-shape, symmetric about xz-plane (in A axes).
+        # Two line vortices forming a V-shape, symmetric about xz plane (in A axes).
         # Vortex 1: from (1, 1, 0) to origin (in A axes, relative to the a point).
         # Vortex 2: from origin to (1, -1, 0) (in A axes, relative to the a point).
         S1_A_a = np.array([1.0, 1.0, 0.0], dtype=float)
@@ -671,7 +671,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         S2_A_a = np.array([0.0, 0.0, 0.0], dtype=float)
         E2_A_a = np.array([1.0, -1.0, 0.0], dtype=float)
 
-        # Evaluation point on xz-plane at (0.5, 0, 0) (in A axes, relative to the a
+        # Evaluation point on xz plane at (0.5, 0, 0) (in A axes, relative to the a
         # point).
         P_A_a = np.array([0.5, 0.0, 0.0], dtype=float)
 
@@ -745,7 +745,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Vortex strength.
         gamma = 1.0
 
-        # Evaluation points at increasing distances along x-axis.
+        # Evaluation points at increasing distances along x axis.
         distances = [1.0, 2.0, 5.0, 10.0]
         velocities = []
 
@@ -780,7 +780,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
     def test_ring_vortex_decomposition_against_ref_biot_savart(self) -> None:
         """Test that a ring vortex induces the same velocity as four conceptual line
         vortices."""
-        # Create a unit square in the xy-plane (in geometry axes, relative to the CG).
+        # Create a unit square in the xy plane (in geometry axes, relative to the CG).
         Br_G_Cg = np.array([1.0, 1.0, 0.0], dtype=float)
         Fr_G_Cg = np.array([0.0, 1.0, 0.0], dtype=float)
         Fl_G_Cg = np.array([0.0, 0.0, 0.0], dtype=float)
@@ -841,8 +841,8 @@ class TestAerodynamicsFunctions(unittest.TestCase):
     def test_horseshoe_vortex_decomposition_against_ref_biot_savart(self) -> None:
         """Test that a horseshoe vortex induces the same velocity as three conceptual
         line vortices."""
-        # Create horseshoe vortex with finite leg along y-axis and infinite legs along
-        # x-axis.
+        # Create horseshoe vortex with finite leg along y axis and infinite legs along x
+        # axis.
         Fr = np.array([0.0, 0.5, 0.0], dtype=float)
         Fl = np.array([0.0, -0.5, 0.0], dtype=float)
         Br = np.array([20.0, 0.5, 0.0], dtype=float)

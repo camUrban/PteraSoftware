@@ -1,14 +1,19 @@
 """Regenerates the expected outputs for the example scripts.
 
-Runs each example script in examples/ and collects its outputs (WebPs, PNGs, and JSON
-files) into the corresponding subdirectory under docs/examples_expected_output/. When
-run without arguments, wipes and rebuilds the entire output tree. When given an example
-file name, regenerates only that example's subdirectory.
+Runs each example script in examples/ and collects its outputs (WebPs, PNGs, CSVs, and
+JSON files) into the corresponding subdirectory under docs/examples_expected_output/.
+When run without arguments, wipes and rebuilds the entire output tree. When given an
+example file name, regenerates only that example's subdirectory.
+
+An example chooses its own output destinations, so a file may land in a subdirectory of
+the one the example runs in. Everything here that walks an example's output therefore
+walks it recursively.
 
 After each example runs, any WebP file larger than the size ceiling is re-rendered from
-the saved solver at progressively lower quality until it fits. This avoids generation
-loss from recompression and keeps the expected output tree suitable for display on
-GitHub and ReadTheDocs without manual size management.
+the saved solver at progressively lower quality until it fits, though never below the
+quality floor where the visualizations' text stops being readable. This avoids
+generation loss from recompression and keeps the expected output tree suitable for
+display on GitHub and ReadTheDocs without manual size management.
 """
 
 import argparse
@@ -27,10 +32,22 @@ OUTPUT_DIR = PROJECT_ROOT / "docs" / "examples_expected_output"
 
 _MAX_WEBP_BYTES = 5 * 1024 * 1024
 _INITIAL_QUALITY = 75.0
-_QUALITY_STEP = 35.0
+_QUALITY_STEP = 25.0
+# The lowest quality a re-render will try. Below this, WebP compression makes the
+# visualizations' overlay text hard to read. The floor was chosen by inspecting the
+# aeroelastic example's animation rendered at qualities from 5 to 95.
+_MIN_QUALITY = 25.0
 _MAX_RERENDER_ATTEMPTS = 2
 
-_MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "testing"}
+# The keyword arguments this script supplies itself, which override whatever an example
+# passes. Every other keyword is forwarded to the re-render so that it reproduces the
+# example's output. path is deliberately absent: a re-render has to write back over the
+# file it is shrinking, so it needs the destination the example chose.
+_MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
+
+# The destinations draw and animate write to when an example names none.
+_DEFAULT_DRAW_PATH = "draw.webp"
+_DEFAULT_ANIMATE_PATH = "animate.webp"
 
 
 def _extract_output_kwargs(
@@ -39,8 +56,9 @@ def _extract_output_kwargs(
     """Extracts the keyword arguments from ps.output.draw and ps.output.animate calls.
 
     Parses the example script's AST and returns the keyword arguments (excluding the
-    managed kwargs solver, unsteady_solver, save, and testing) for each call. Only
-    literal values are extracted.
+    managed kwargs solver, unsteady_solver, save, quality, and testing) for each call.
+    Only literal values are extracted, so a call that builds an argument at runtime
+    yields no entry for it and is treated as though it had used the default.
 
     :param script_path: The path to the example script to parse.
     :return: A tuple of (draw_kwargs, animate_kwargs). Either value is None if the
@@ -86,20 +104,36 @@ def _extract_output_kwargs(
 
 
 def _find_solver_file(directory: Path) -> Path | None:
-    """Finds the saved solver JSON file in a directory.
+    """Finds the saved solver JSON file in a directory or any of its subdirectories.
 
     :param directory: The directory to search.
-    :return: The path to the solver file, or None if not found.
+    :return: The path to the solver file, or None if the directory tree does not hold
+        exactly one.
     """
-    candidates = sorted(directory.glob("*.json.gz"))
+    candidates = sorted(directory.rglob("*.json.gz"))
     if len(candidates) == 1:
         return candidates[0]
     return None
 
 
+def _output_destination(
+    output_subdir: Path, kwargs: dict[str, object], default_path: str
+) -> Path:
+    """Returns the absolute path an output call writes its file to.
+
+    :param output_subdir: The directory the example runs in, which a relative
+        destination is resolved against.
+    :param kwargs: The keyword arguments extracted from the output call.
+    :param default_path: The destination the output function uses when the call names
+        none.
+    :return: The resolved absolute path.
+    """
+    return (output_subdir / Path(str(kwargs.get("path", default_path)))).resolve()
+
+
 def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     """Re-renders any oversized WebP files by loading the saved solver and calling draw
-    or animate at progressively lower quality.
+    or animate at progressively lower quality, no lower than _MIN_QUALITY.
 
     :param output_subdir: The directory containing the example's output files.
     :param script_path: The path to the example script, used to extract the original
@@ -108,7 +142,7 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
     """
     oversized = [
         p
-        for p in sorted(output_subdir.glob("*.webp"))
+        for p in sorted(output_subdir.rglob("*.webp"))
         if p.stat().st_size > _MAX_WEBP_BYTES
     ]
     if not oversized:
@@ -125,21 +159,37 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
 
     loaded_solver = ps.load(solver_file)
 
+    # Match each oversized file to the call that produced it by destination rather than
+    # by name, since an example can name its own. A call whose destination is not a
+    # literal has none to match against, so its file is reported rather than re-rendered
+    # under a name it never used.
+    renderers: dict[Path, tuple[Callable[..., None], dict[str, Any]]] = {}
+    if draw_kwargs is not None:
+        draw_destination = _output_destination(
+            output_subdir, draw_kwargs, _DEFAULT_DRAW_PATH
+        )
+        renderers[draw_destination] = (
+            ps.output.draw,
+            {**draw_kwargs, "solver": loaded_solver},
+        )
+    if animate_kwargs is not None:
+        animate_destination = _output_destination(
+            output_subdir, animate_kwargs, _DEFAULT_ANIMATE_PATH
+        )
+        renderers[animate_destination] = (
+            ps.output.animate,
+            {**animate_kwargs, "unsteady_solver": loaded_solver},
+        )
+
     for webp_path in oversized:
         original_bytes = webp_path.stat().st_size
-        name = webp_path.name
+        name = str(webp_path.relative_to(output_subdir))
 
-        render_func: Callable[..., None]
-        render_kwargs: dict[str, Any]
-        if name == "draw.webp" and draw_kwargs is not None:
-            render_func = ps.output.draw
-            render_kwargs = {**draw_kwargs, "solver": loaded_solver}
-        elif name == "animate.webp" and animate_kwargs is not None:
-            render_func = ps.output.animate
-            render_kwargs = {**animate_kwargs, "unsteady_solver": loaded_solver}
-        else:
+        renderer = renderers.get(webp_path.resolve())
+        if renderer is None:
             print(f"    Cannot re-render {name}: no matching output call found.")
             continue
+        render_func, render_kwargs = renderer
 
         original_cwd = os.getcwd()
         quality = _INITIAL_QUALITY
@@ -148,31 +198,29 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
             os.chdir(output_subdir)
 
             for _ in range(_MAX_RERENDER_ATTEMPTS):
-                quality -= _QUALITY_STEP
-                ps.output._quality = quality
-                render_func(**render_kwargs, save=True, testing=True)
-                ps.output._quality = _INITIAL_QUALITY
+                quality = max(quality - _QUALITY_STEP, _MIN_QUALITY)
+                render_func(**render_kwargs, save=True, quality=quality, testing=True)
 
                 new_bytes = webp_path.stat().st_size
-                if new_bytes <= _MAX_WEBP_BYTES:
-                    print(
-                        f"    Re-rendered {name}: "
-                        f"{original_bytes / 1024:.0f} KB -> "
-                        f"{new_bytes / 1024:.0f} KB "
-                        f"(quality={quality:.1f})"
-                    )
+                if new_bytes <= _MAX_WEBP_BYTES or quality == _MIN_QUALITY:
                     break
+
+            new_bytes = webp_path.stat().st_size
+            if new_bytes <= _MAX_WEBP_BYTES:
+                print(
+                    f"    Re-rendered {name}: "
+                    f"{original_bytes / 1024:.0f} KB -> "
+                    f"{new_bytes / 1024:.0f} KB "
+                    f"(quality={quality:.1f})"
+                )
             else:
-                ps.output._quality = _INITIAL_QUALITY
-                final_bytes = webp_path.stat().st_size
                 print(
                     f"    Warning: {name} is still "
-                    f"{final_bytes / 1024:.0f} KB after "
-                    f"{_MAX_RERENDER_ATTEMPTS} re-render attempts "
-                    f"(final quality={quality:.1f})."
+                    f"{new_bytes / 1024:.0f} KB after re-rendering down to "
+                    f"quality={quality:.1f}. Quality is never reduced below "
+                    f"{_MIN_QUALITY:.1f}, where the text stops being readable."
                 )
         finally:
-            ps.output._quality = _INITIAL_QUALITY
             os.chdir(original_cwd)
 
 
@@ -291,7 +339,7 @@ def main() -> int:
 
         print(f"Running {script_path.name}...", flush=True)
         if _run_example(script_path, output_subdir):
-            n_files = len(list(output_subdir.iterdir()))
+            n_files = sum(1 for p in output_subdir.rglob("*") if p.is_file())
             if n_files > 0:
                 print(
                     f"  Saved {n_files} file(s) to {output_subdir.relative_to(PROJECT_ROOT)}"
@@ -302,7 +350,10 @@ def main() -> int:
                     solver_file.unlink()
                 succeeded.append(name)
             else:
-                output_subdir.rmdir()
+                # An example that writes nothing can still have left the subdirectories
+                # it meant to write into, so the whole tree goes rather than the one
+                # directory.
+                shutil.rmtree(output_subdir)
                 print("  No output files produced, removed empty directory.")
                 succeeded.append(name)
         else:

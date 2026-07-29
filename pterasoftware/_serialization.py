@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from . import _logging
+from . import _logging, _parameter_validation
 
 # This module is inherently coupled to the internals of every class in the package (it
 # reads __slots__, knows class structure, and imports all classes into its registry), so
@@ -198,10 +198,11 @@ _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset(
 def save(path: str | Path, obj: object) -> None:
     """Saves a Ptera Software object to a JSON file.
 
-    If the path ends with ".json.gz", the output is gzip compressed automatically. Using
-    ".json.gz" is highly recommended for all but the smallest unmeshed geometry objects.
-    Gzip compression typically reduces file sizes by 10x or more, and plain ".json"
-    files use indented formatting that further increases their size.
+    If the path ends with ".json.gz", ignoring case, the output is gzip compressed
+    automatically. Using ".json.gz" is highly recommended for all but the smallest
+    unmeshed geometry objects. Gzip compression typically reduces file sizes by 10x or
+    more, and plain ".json" files use indented formatting that further increases their
+    size.
 
     The file records an internal serialization format version. load() accepts a file
     only when that format version matches the running code's exactly, and there is no
@@ -216,13 +217,9 @@ def save(path: str | Path, obj: object) -> None:
         cannot be saved directly.
     :return: None
     """
-    path = Path(path)
-    if not path.name.endswith(".json") and not path.name.endswith(".json.gz"):
-        raise ValueError(
-            f"Path must end with '.json' or '.json.gz', got '{path.name}'."
-        )
-    if path.is_dir():
-        raise ValueError(f"Path must be a file path, got directory '{path}'.")
+    path = _parameter_validation.pathLike_return_path(
+        path, "path", (".json", ".json.gz")
+    )
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:
@@ -240,7 +237,7 @@ def save(path: str | Path, obj: object) -> None:
     header = {"_format_version": _FORMAT_VERSION, **provenance}
     data = {**header, **data}
 
-    if path.name.endswith(".json.gz"):
+    if path.name.lower().endswith(".json.gz"):
         # Use compact format for gzip since readability does not matter and whitespace
         # would increase the pre-compression size.
         json_bytes = json.dumps(data).encode("utf-8")
@@ -264,7 +261,8 @@ def save(path: str | Path, obj: object) -> None:
 def load(path: str | Path, max_size: int | None = None) -> object:
     """Loads a Ptera Software object from a JSON file.
 
-    If the path ends with ".json.gz", the input is gzip decompressed automatically.
+    If the path ends with ".json.gz", ignoring case, the input is gzip decompressed
+    automatically.
 
     The file records an internal serialization format version. A file is accepted only
     when that format version matches the running code's exactly, and there is no
@@ -279,7 +277,8 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     :return: The deserialized Ptera Software object.
     """
     path = Path(path)
-    if not path.name.endswith(".json") and not path.name.endswith(".json.gz"):
+    lowered_name = path.name.lower()
+    if not lowered_name.endswith(".json") and not lowered_name.endswith(".json.gz"):
         raise ValueError(
             f"Path must end with '.json' or '.json.gz', got '{path.name}'."
         )
@@ -290,7 +289,7 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
 
-    if path.name.endswith(".json.gz"):
+    if lowered_name.endswith(".json.gz"):
         with gzip.open(path, "rb") as f:
             raw = f.read(max_size + 1)
             if len(raw) > max_size:

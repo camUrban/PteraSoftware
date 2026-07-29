@@ -179,7 +179,7 @@ class TestGenerateRotT(unittest.TestCase):
 
         :return: None
         """
-        # Test 90-degree rotation about x-axis (order "xyz", only first angle)
+        # Test 90-degree rotation about x axis (order "xyz", only first angle)
         angles_x90 = np.array([90.0, 0.0, 0.0])
         R_act_x90_expected = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
 
@@ -187,7 +187,7 @@ class TestGenerateRotT(unittest.TestCase):
         R_act_x90 = T_act_x90[:3, :3]
         npt.assert_allclose(R_act_x90, R_act_x90_expected, atol=1e-14)
 
-        # Test 90-degree rotation about y-axis (order "xyz", only second angle)
+        # Test 90-degree rotation about y axis (order "xyz", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         R_act_y90_expected = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
 
@@ -195,7 +195,7 @@ class TestGenerateRotT(unittest.TestCase):
         R_act_y90 = T_act_y90[:3, :3]
         npt.assert_allclose(R_act_y90, R_act_y90_expected, atol=1e-14)
 
-        # Test 90-degree rotation about z-axis (order "xyz", only third angle)
+        # Test 90-degree rotation about z axis (order "xyz", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         R_act_z90_expected = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
@@ -208,7 +208,7 @@ class TestGenerateRotT(unittest.TestCase):
 
         :return: None
         """
-        # Test 90-degree rotation about x-axis (order "xyz", only first angle)
+        # Test 90-degree rotation about x axis (order "xyz", only first angle)
         angles_x90 = np.array([90.0, 0.0, 0.0])
         v_A = np.array([0.0, 1.0, 0.0])
         v_B_expected = np.array([0.0, 0.0, -1.0])
@@ -218,7 +218,7 @@ class TestGenerateRotT(unittest.TestCase):
         v_B = R_pas_x90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
-        # Test 90-degree rotation about y-axis (order "xyz", only second angle)
+        # Test 90-degree rotation about y axis (order "xyz", only second angle)
         angles_y90 = np.array([0.0, 90.0, 0.0])
         v_A = np.array([0.0, 0.0, 1.0])
         v_B_expected = np.array([-1.0, 0.0, 0.0])
@@ -228,7 +228,7 @@ class TestGenerateRotT(unittest.TestCase):
         v_B = R_pas_y90 @ v_A
         npt.assert_allclose(v_B, v_B_expected, atol=1e-14)
 
-        # Test 90-degree rotation about z-axis (order "xyz", only third angle)
+        # Test 90-degree rotation about z axis (order "xyz", only third angle)
         angles_z90 = np.array([0.0, 0.0, 90.0])
         v_A = np.array([1.0, 0.0, 0.0])
         v_B_expected = np.array([0.0, -1.0, 0])
@@ -623,7 +623,7 @@ class TestGenerateReflectT(unittest.TestCase):
 
         :return: None
         """
-        # Test reflection about xy-plane (z=0, normal=[0,0,1])
+        # Test reflection about xy plane (z=0, normal=[0,0,1])
         plane_point = np.array([0.0, 0.0, 0.0])
         plane_normal = np.array([0.0, 0.0, 1.0])
 
@@ -640,7 +640,7 @@ class TestGenerateReflectT(unittest.TestCase):
         expected_reflected = np.array([1.0, 2.0, -3.0])
         npt.assert_allclose(reflected_point, expected_reflected, atol=1e-14)
 
-        # Test reflection about xz-plane (y=0, normal=[0,1,0])
+        # Test reflection about xz plane (y=0, normal=[0,1,0])
         plane_normal_y = np.array([0.0, 1.0, 0.0])
         T_reflect_act_y = _transformations.generate_reflect_T(
             plane_point, plane_normal_y, False
@@ -2256,7 +2256,7 @@ class TestComputeOffsetRotationAdjustment(unittest.TestCase):
         npt.assert_allclose(adjustment, np.zeros(3), atol=1e-14)
 
     def test_known_rotation(self) -> None:
-        """Test adjustment for a known rotation (90 deg about z-axis)."""
+        """Test adjustment for a known rotation (90 deg about z axis)."""
         angles = np.array([0.0, 0.0, 90.0])
 
         rot_T = _transformations.generate_rot_T(

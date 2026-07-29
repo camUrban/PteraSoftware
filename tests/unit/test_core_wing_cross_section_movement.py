@@ -122,7 +122,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-positions from generated WingCrossSections.
+        # Extract x positions from generated WingCrossSections.
         x_positions = np.array(
             [
                 wing_cross_section.Lp_Wcsp_Lpp[0]
@@ -147,7 +147,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             delta_time=delta_time,
         )
 
-        # Extract x-positions from generated WingCrossSections.
+        # Extract x positions from generated WingCrossSections.
         x_positions = np.array(
             [
                 wing_cross_section.Lp_Wcsp_Lpp[0]
@@ -1206,7 +1206,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
         )
 
-        # Extract x-positions.
+        # Extract x positions.
         x_positions = np.array(
             [
                 wing_cross_section.Lp_Wcsp_Lpp[0]
@@ -1233,7 +1233,7 @@ class TestCoreWingCrossSectionMovement(unittest.TestCase):
             )
         )
 
-        # Extract z-angles.
+        # Extract z angles.
         angles_z = np.array(
             [
                 wing_cross_section.angles_Wcsp_to_Wcs_ixyz[0]

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.colors
 import matplotlib.image
+import matplotlib.layout_engine
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as npt
@@ -146,7 +147,7 @@ class TestCsvHeaders(unittest.TestCase):
         )
 
     def test_omits_the_unit_when_the_y_label_has_none(self) -> None:
-        """Test that a header carries no unit when the y-axis label names none."""
+        """Test that a header carries no unit when the y axis label names none."""
         headers = _output_plotting.csv_headers(
             ["Induced Drag Coefficient"], "(in Wind Axes)", "Force Coefficient"
         )
@@ -160,7 +161,7 @@ class TestCsvHeaders(unittest.TestCase):
         self.assertEqual(headers, ["Angle of Attack (deg)", "Sideslip Angle (deg)"])
 
     def test_substitutes_the_quantity_for_a_component_label(self) -> None:
-        """Test that a component label takes its quantity from the y-axis label.
+        """Test that a component label takes its quantity from the y axis label.
 
         A figure that labels its series by component alone names the quantity in its
         title, which a column has no room for.
@@ -467,6 +468,54 @@ class TestPlotTimeHistory(unittest.TestCase):
             300.0,
         )
         npt.assert_allclose(plt.gcf().get_size_inches(), figure_size_in)
+
+    def test_uses_the_constrained_layout_engine(self) -> None:
+        """Test that the figure lays itself out with the constrained layout engine.
+
+        Without a layout engine, matplotlib reserves fixed-fraction margins that wide
+        tick labels can overflow, which pushes the axis labels off the canvas.
+        """
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+        )
+        self.assertIsInstance(
+            plt.gcf().get_layout_engine(),
+            matplotlib.layout_engine.ConstrainedLayoutEngine,
+        )
+
+    def test_pads_the_y_axis_with_the_module_level_margin(self) -> None:
+        """Test that the plot takes the module-level y axis margin.
+
+        The margin is padding for the legend, which sits inside the axes at its best-
+        effort position and needs empty space to land in.
+        """
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+        )
+        self.assertEqual(
+            plt.gcf().axes[0].margins(),
+            (plt.rcParams["axes.xmargin"], _output_plotting._Y_AXIS_MARGIN),
+        )
 
     def test_hides_the_top_and_right_spines(self) -> None:
         """Test that the plot keeps only the spines its axis labels sit beside."""

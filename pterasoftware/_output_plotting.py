@@ -27,6 +27,11 @@ _MAX_LINE_WIDTH = 3.5
 _MIN_LINE_WIDTH = 1.5
 _LEGEND_LINE_WIDTH = (_MAX_LINE_WIDTH + _MIN_LINE_WIDTH) / 2
 
+# The fraction of the data's span added as padding on each side of the y axis. It is
+# three times matplotlib's default so the legend, which sits inside the axes at its
+# best-effort position, usually has empty space to land in.
+_Y_AXIS_MARGIN = 0.15
+
 
 def get_operating_point_velocity(
     this_operating_point: operating_point_mod.OperatingPoint,
@@ -56,17 +61,17 @@ def csv_headers(labels: list[str], subtitle: str, y_label: str) -> list[str]:
     carries.
 
     A header is a transformed form of three pieces of a figure: the quantity from the
-    legend label, the axes, point, and frame from the subtitle, and the unit from the
-    y-axis label. Deriving them rather than writing them out a second time is what keeps
-    a column and the figure beside it describing the same quantity the same way.
+    legend label, the axes, point, and frame from the subtitle, and the unit from the y
+    axis label. Deriving them rather than writing them out a second time is what keeps a
+    column and the figure beside it describing the same quantity the same way.
 
     :param labels: The figure's legend labels, one per series.
     :param subtitle: The figure's subtitle, parenthesized as the figure carries it. Pass
         an empty string for a figure that has none.
-    :param y_label: The figure's y-axis label.
+    :param y_label: The figure's y axis label.
     :return: A list of column headers, one per label.
     """
-    # A y-axis label pairs a quantity with an optional unit, as in "Position (m)" or
+    # A y axis label pairs a quantity with an optional unit, as in "Position (m)" or
     # "Force Coefficient".
     if y_label.endswith(")"):
         quantity, _, unit = y_label.rpartition(" (")
@@ -86,7 +91,7 @@ def csv_headers(labels: list[str], subtitle: str, y_label: str) -> list[str]:
     headers = []
     for label in labels:
         # A figure that labels its series by component alone names the quantity in its
-        # title. A column has no title, so the y-axis label's quantity stands in.
+        # title. A column has no title, so the y axis label's quantity stands in.
         if label.endswith(" Component"):
             label = label.replace("Component", quantity)
         headers.append(" ".join(piece for piece in (label, context, unit) if piece))
@@ -104,7 +109,7 @@ def write_time_history_csv(
     The columns arrive already carrying the signs and the selection that the figures
     plot, so a row reads the same way the corresponding figure does. The headers are
     composed by the caller alongside the figures, since they are drawn from the same
-    legend labels, titles, subtitles, and y-axis labels that the figures use.
+    legend labels, titles, subtitles, and y axis labels that the figures use.
 
     :param times: A (num_steps,) ndarray of floats representing the time, in seconds, at
         each time step.
@@ -141,7 +146,7 @@ def plot_time_history(
     save_path: Path,
     resolution_dpi: float,
 ) -> None:
-    """Plots one time-history figure, which is a set of series that share a y-axis and
+    """Plots one time-history figure, which is a set of series that share a y axis and
     are plotted against time.
 
     Every figure that plot_results_versus_time produces is drawn through this function,
@@ -156,7 +161,7 @@ def plot_time_history(
     :param title: The figure's title.
     :param subtitle: A smaller line below the title describing the axes, points, and
         frames of the plotted quantity. Pass an empty string to omit.
-    :param y_label: The figure's y-axis label.
+    :param y_label: The figure's y axis label.
     :param figure_size_in: The figure's width and height in inches.
     :param save: Set this to True to save the figure as a PNG.
     :param save_path: The fully resolved file path to save the figure to if save is
@@ -165,7 +170,7 @@ def plot_time_history(
     :param resolution_dpi: The dots per inch at which to save the PNG if save is True.
     :return: None
     """
-    figure, axes = plt.subplots(figsize=figure_size_in)
+    figure, axes = plt.subplots(figsize=figure_size_in, layout="constrained")
 
     # Remove the plot's top and right spines.
     axes.spines.right.set_visible(False)
@@ -200,6 +205,10 @@ def plot_time_history(
             linewidth=widths[series_id],
             solid_capstyle="butt",
         )
+
+    # Pad the y axis beyond matplotlib's default so the legend usually has empty space
+    # to land in.
+    axes.margins(y=_Y_AXIS_MARGIN)
 
     # Name the plot's axis labels, title, and subtitle.
     axes.set_xlabel("Time (s)", color=_TEXT_COLOR_NORMALIZED)

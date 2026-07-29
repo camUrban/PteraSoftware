@@ -6,7 +6,8 @@ satisfied, run finalize_and_save_hero.py to promote the previews to the permanen
 graphics.
 
 Any WebP file larger than the size ceiling is re-rendered at progressively lower quality
-(dropping by 35 each attempt) until it fits.
+until it fits, though never below the quality floor where the visualizations' text stops
+being readable.
 """
 
 from collections.abc import Callable
@@ -21,7 +22,11 @@ _hero_graphics_dir = (
 
 _MAX_WEBP_BYTES = 5 * 1024 * 1024
 _INITIAL_QUALITY = 75.0
-_QUALITY_STEP = 35.0
+_QUALITY_STEP = 25.0
+# The lowest quality a re-render will try. Below this, WebP compression makes the
+# visualizations' overlay text hard to read. The floor was chosen by inspecting the
+# aeroelastic example's animation rendered at qualities from 5 to 95.
+_MIN_QUALITY = 25.0
 _MAX_RERENDER_ATTEMPTS = 2
 
 _DRAW_KWARGS: dict[str, Any] = {
@@ -72,7 +77,7 @@ for name, render_func, render_kwargs in _RENDER_TARGETS:
 
     quality = _INITIAL_QUALITY
     for _ in range(_MAX_RERENDER_ATTEMPTS):
-        quality -= _QUALITY_STEP
+        quality = max(quality - _QUALITY_STEP, _MIN_QUALITY)
         print(
             f"  {name} is {original_bytes / 1024:.0f} KB, "
             f"re-rendering at quality={quality:.0f}..."
@@ -80,17 +85,20 @@ for name, render_func, render_kwargs in _RENDER_TARGETS:
         render_func(**render_kwargs, save=True, quality=quality)
 
         new_bytes = webp_path.stat().st_size
-        if new_bytes <= _MAX_WEBP_BYTES:
-            print(
-                f"Re-rendered {name}: "
-                f"{original_bytes / 1024:.0f} KB -> {new_bytes / 1024:.0f} KB "
-                f"(quality={quality:.0f})"
-            )
+        if new_bytes <= _MAX_WEBP_BYTES or quality == _MIN_QUALITY:
             break
-    else:
-        final_bytes = webp_path.stat().st_size
+
+    new_bytes = webp_path.stat().st_size
+    if new_bytes <= _MAX_WEBP_BYTES:
         print(
-            f"Warning: {name} is still {final_bytes / 1024:.0f} KB "
-            f"after {_MAX_RERENDER_ATTEMPTS} re-render attempts "
-            f"(final quality={quality:.0f})."
+            f"Re-rendered {name}: "
+            f"{original_bytes / 1024:.0f} KB -> {new_bytes / 1024:.0f} KB "
+            f"(quality={quality:.0f})"
+        )
+    else:
+        print(
+            f"Warning: {name} is still {new_bytes / 1024:.0f} KB after "
+            f"re-rendering down to quality={quality:.0f}. Quality is never "
+            f"reduced below {_MIN_QUALITY:.0f}, where the text stops being "
+            f"readable."
         )

@@ -331,8 +331,8 @@ ps.output.draw(
     save=True,
 )
 
-# Call the animate function on the loaded solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press any key, after
+# Call the animate function on the loaded solver. This produces an animated WebP of the
+# wake being shed, saved in the same directory as this script. Press any key, after
 # orienting the view, to begin the animation.
 ps.output.animate(
     unsteady_solver=loaded_solver,

@@ -5,6 +5,7 @@ The script will log simulation results in a log file.
 """
 
 import logging
+from pathlib import Path
 
 # First, import the software's main package. Note that if you wished to import this
 # software into another package, you would first install it by running "pip install
@@ -306,30 +307,45 @@ assert isinstance(
 
 ps.output.log_results(solver=loaded_solver)
 
-# Call the draw function on the loaded solver. Press any key to close the plotter after
-# it draws the output.
+# Choose where the output files will go. Each output function writes to the working
+# directory by default, which is fine for a script that produces a file or two, but this
+# one produces six. Sorting them into their own directories keeps them together and
+# keeps them from crowding whatever else is in the working directory. The output
+# functions do not create a directory that does not exist, so that a mistyped
+# destination is reported rather than silently scattering files, which means the script
+# creates them itself.
+Path("renders").mkdir(exist_ok=True)
+Path("plots").mkdir(exist_ok=True)
+
+# Call the draw function on the loaded solver. The path parameter names the file to save
+# the drawing to. Press any key to close the plotter after it draws the output.
 ps.output.draw(
     solver=loaded_solver,
     scalar_type="lift",
     show_streamlines=True,
     show_wake_vortices=False,
     save=True,
+    path="renders/draw.webp",
 )
 
-# Call the animate function on the loaded solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press any key, after
-# orienting the view, to begin the animation.
+# Call the animate function on the loaded solver. This produces an animated WebP of the
+# wake being shed, saved to the path given below. Press any key, after orienting the
+# view, to begin the animation.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,
+    path="renders/animate.webp",
 )
 
 # Call the plotting function on the solver. This produces graphs of the loads with
-# respect to time.
+# respect to time. It writes several files whose names it derives from each Airplane's
+# name and the quantity plotted, so it takes the directory to write them into rather
+# than a single path.
 ps.output.plot_results_versus_time(
     unsteady_solver=loaded_solver,
     show=True,
     save=True,
+    directory="plots",
 )

@@ -349,12 +349,18 @@ assert isinstance(
 )
 print("Finished loading the saved solver.")
 
-# Call the animate function on the loaded solver. This produces a GIF of the wake being
-# shed. The GIF is saved in the same directory as this script. Press any key, after
+# Call the animate function on the loaded solver. This produces an animated WebP of the
+# wake being shed, saved in the same directory as this script. Press any key, after
 # orienting the view, to begin the animation.
+#
+# The speed parameter plays the saved animation back at a fraction of real time. A
+# quarter speed is slow enough to follow a single flap, which is what makes the wake
+# readable: at true speed each stroke of this airplane's one second flapping cycle
+# passes too quickly to see where the vortices are shed.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,
+    speed=0.25,
 )

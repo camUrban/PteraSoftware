@@ -1,5 +1,5 @@
 INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (891800 bytes)
+INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (891799 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -23,7 +23,7 @@ INFO    |output                                      |    cMX_G_Cg:   -1.73E-18
 INFO    |output                                      |    cMY_G_Cg:      -0.225
 INFO    |output                                      |    cMZ_G_Cg:    1.12E-17
 INFO    |output                                      |  Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:           -10.1 N     Drag:                   10.1 N
+INFO    |output                                      |    fX_W:           -10.1 N     Induced Drag:           10.1 N
 INFO    |output                                      |    fY_W:       -4.77E-15 N     Side Force:        -4.77E-15 N
 INFO    |output                                      |    fZ_W:           -508. N     Lift:                   508. N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):

@@ -10,13 +10,13 @@ INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |    Chordwise Panels: 3
 INFO    |convergence                                 |      Iteration number: 1/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0257 s
+INFO    |convergence                                 |      Simulation completed in 0.0222 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |    Chordwise Panels: 4
 INFO    |convergence                                 |      Iteration number: 2/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0204 s
+INFO    |convergence                                 |      Simulation completed in 0.0199 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -28,7 +28,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 5
 INFO    |convergence                                 |      Iteration number: 3/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0314 s
+INFO    |convergence                                 |      Simulation completed in 0.0311 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -40,7 +40,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 6
 INFO    |convergence                                 |      Iteration number: 4/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0501 s
+INFO    |convergence                                 |      Simulation completed in 0.0499 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -52,7 +52,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 7
 INFO    |convergence                                 |      Iteration number: 5/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0739 s
+INFO    |convergence                                 |      Simulation completed in 0.0780 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -77,7 +77,7 @@ INFO    |convergence                                 |  Panel aspect ratio: 3
 INFO    |convergence                                 |    Chordwise Panels: 3
 INFO    |convergence                                 |      Iteration number: 7/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0136 s
+INFO    |convergence                                 |      Simulation completed in 0.0157 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -89,7 +89,7 @@ INFO    |convergence                                 |      Number of chordwise 
 INFO    |convergence                                 |    Chordwise Panels: 4
 INFO    |convergence                                 |      Iteration number: 8/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0235 s
+INFO    |convergence                                 |      Simulation completed in 0.0266 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -107,7 +107,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 5
 INFO    |convergence                                 |      Iteration number: 9/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0383 s
+INFO    |convergence                                 |      Simulation completed in 0.0400 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -125,7 +125,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |The analysis found a converged case:
 INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |  Chordwise Panels: 4
-INFO    |convergence                                 |  Simulation time: 0.0204 s
+INFO    |convergence                                 |  Simulation time: 0.0199 s
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Leading Airplane:
 INFO    |convergence                                 |      Main Wing:
@@ -143,4 +143,4 @@ INFO    |convergence                                 |        WingCrossSection 3
 INFO    |convergence                                 |      Tail:
 INFO    |convergence                                 |        WingCrossSection 1: 5
 INFO    |convergence                                 |        WingCrossSection 2: None
-INFO    |convergence                                 |Convergence analysis completed in 0.751 s
+INFO    |convergence                                 |Convergence analysis completed in 0.772 s

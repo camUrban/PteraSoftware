@@ -421,9 +421,9 @@ ps.output.draw(
 )
 
 # Call the animate function on the loaded solver. For a free flight solver, this flies
-# the Airplane through the scene along its computed trajectory, producing a GIF saved in
-# the same directory as this script. Press any key, after orienting the view, to begin
-# the animation.
+# the Airplane through the scene along its computed trajectory, producing an animated
+# WebP saved in the same directory as this script. Press any key, after orienting the
+# view, to begin the animation.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",

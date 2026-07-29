@@ -23,7 +23,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0256 s
+INFO    |convergence                                 |          Simulation completed in 0.0244 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -39,7 +39,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0202 s
+INFO    |convergence                                 |          Simulation completed in 0.0207 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -61,7 +61,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0405 s
+INFO    |convergence                                 |          Simulation completed in 0.0414 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -83,7 +83,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0759 s
+INFO    |convergence                                 |          Simulation completed in 0.0782 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -106,7 +106,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0119 s
+INFO    |convergence                                 |          Simulation completed in 0.0123 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -156,7 +156,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0510 s
+INFO    |convergence                                 |          Simulation completed in 0.0514 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -184,7 +184,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0905 s
+INFO    |convergence                                 |          Simulation completed in 0.0899 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -213,7 +213,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0208 s
+INFO    |convergence                                 |          Simulation completed in 0.0210 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -235,7 +235,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0398 s
+INFO    |convergence                                 |          Simulation completed in 0.0400 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -263,7 +263,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0822 s
+INFO    |convergence                                 |          Simulation completed in 0.0836 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -291,7 +291,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.135 s
+INFO    |convergence                                 |          Simulation completed in 0.136 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -320,7 +320,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0339 s
+INFO    |convergence                                 |          Simulation completed in 0.0346 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -342,7 +342,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0799 s
+INFO    |convergence                                 |          Simulation completed in 0.0813 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -370,7 +370,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.152 s
+INFO    |convergence                                 |          Simulation completed in 0.159 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -398,7 +398,7 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.272 s
+INFO    |convergence                                 |          Simulation completed in 0.275 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -421,7 +421,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 17/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0115 s
+INFO    |convergence                                 |          Simulation completed in 0.0120 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -436,7 +436,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 18/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0253 s
+INFO    |convergence                                 |          Simulation completed in 0.0259 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -457,7 +457,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 19/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0516 s
+INFO    |convergence                                 |          Simulation completed in 0.0523 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -478,7 +478,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 20/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0955 s
+INFO    |convergence                                 |          Simulation completed in 0.0979 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -500,7 +500,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 21/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0147 s
+INFO    |convergence                                 |          Simulation completed in 0.0155 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -521,7 +521,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 22/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0332 s
+INFO    |convergence                                 |          Simulation completed in 0.0338 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -548,7 +548,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 23/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0638 s
+INFO    |convergence                                 |          Simulation completed in 0.0653 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -575,7 +575,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 24/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.110 s
+INFO    |convergence                                 |          Simulation completed in 0.112 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -603,7 +603,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 25/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0256 s
+INFO    |convergence                                 |          Simulation completed in 0.0260 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -624,7 +624,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 26/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0497 s
+INFO    |convergence                                 |          Simulation completed in 0.0506 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -706,7 +706,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 29/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0430 s
+INFO    |convergence                                 |          Simulation completed in 0.0436 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -727,7 +727,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 30/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0990 s
+INFO    |convergence                                 |          Simulation completed in 0.101 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -754,7 +754,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 31/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.194 s
+INFO    |convergence                                 |          Simulation completed in 0.202 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -781,7 +781,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 32/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.348 s
+INFO    |convergence                                 |          Simulation completed in 0.406 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -810,7 +810,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 33/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0135 s
+INFO    |convergence                                 |          Simulation completed in 0.0141 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -825,7 +825,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 34/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0305 s
+INFO    |convergence                                 |          Simulation completed in 0.0318 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -846,7 +846,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 35/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0623 s
+INFO    |convergence                                 |          Simulation completed in 0.0631 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -867,7 +867,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 36/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.114 s
+INFO    |convergence                                 |          Simulation completed in 0.116 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -889,7 +889,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 37/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0179 s
+INFO    |convergence                                 |          Simulation completed in 0.0195 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -910,7 +910,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 38/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0394 s
+INFO    |convergence                                 |          Simulation completed in 0.0403 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -937,7 +937,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 39/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0802 s
+INFO    |convergence                                 |          Simulation completed in 0.0814 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -964,7 +964,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 40/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.133 s
+INFO    |convergence                                 |          Simulation completed in 0.136 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -992,7 +992,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 41/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0299 s
+INFO    |convergence                                 |          Simulation completed in 0.0307 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1013,7 +1013,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 42/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0603 s
+INFO    |convergence                                 |          Simulation completed in 0.0610 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1040,7 +1040,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 43/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.122 s
+INFO    |convergence                                 |          Simulation completed in 0.126 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1067,7 +1067,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 44/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.200 s
+INFO    |convergence                                 |          Simulation completed in 0.203 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1095,7 +1095,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 45/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0526 s
+INFO    |convergence                                 |          Simulation completed in 0.0529 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1116,7 +1116,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 46/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.119 s
+INFO    |convergence                                 |          Simulation completed in 0.122 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1143,7 +1143,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 47/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.237 s
+INFO    |convergence                                 |          Simulation completed in 0.249 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1170,7 +1170,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 48/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.424 s
+INFO    |convergence                                 |          Simulation completed in 0.439 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1199,7 +1199,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 49/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0156 s
+INFO    |convergence                                 |          Simulation completed in 0.0162 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1214,7 +1214,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 50/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0357 s
+INFO    |convergence                                 |          Simulation completed in 0.0363 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1235,7 +1235,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 51/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0733 s
+INFO    |convergence                                 |          Simulation completed in 0.0739 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1256,7 +1256,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 52/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.135 s
+INFO    |convergence                                 |          Simulation completed in 0.138 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1278,7 +1278,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 53/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0211 s
+INFO    |convergence                                 |          Simulation completed in 0.0213 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1299,7 +1299,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 54/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0470 s
+INFO    |convergence                                 |          Simulation completed in 0.0471 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1326,7 +1326,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 55/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0919 s
+INFO    |convergence                                 |          Simulation completed in 0.0920 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1353,7 +1353,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 56/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.156 s
+INFO    |convergence                                 |          Simulation completed in 0.157 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1381,7 +1381,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 57/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0350 s
+INFO    |convergence                                 |          Simulation completed in 0.0357 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1402,7 +1402,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 58/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0711 s
+INFO    |convergence                                 |          Simulation completed in 0.0718 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1429,7 +1429,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 59/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.145 s
+INFO    |convergence                                 |          Simulation completed in 0.152 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1456,7 +1456,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 60/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.249 s
+INFO    |convergence                                 |          Simulation completed in 0.241 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1484,7 +1484,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 61/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0611 s
+INFO    |convergence                                 |          Simulation completed in 0.0617 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1505,7 +1505,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 62/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.140 s
+INFO    |convergence                                 |          Simulation completed in 0.142 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1532,7 +1532,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 63/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.269 s
+INFO    |convergence                                 |          Simulation completed in 0.277 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1559,7 +1559,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 64/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.495 s
+INFO    |convergence                                 |          Simulation completed in 0.506 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1588,7 +1588,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 65/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0177 s
+INFO    |convergence                                 |          Simulation completed in 0.0187 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1603,7 +1603,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 66/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0406 s
+INFO    |convergence                                 |          Simulation completed in 0.0425 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1624,7 +1624,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 67/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0829 s
+INFO    |convergence                                 |          Simulation completed in 0.0861 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1645,7 +1645,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 68/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.154 s
+INFO    |convergence                                 |          Simulation completed in 0.157 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1667,7 +1667,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 69/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0238 s
+INFO    |convergence                                 |          Simulation completed in 0.0247 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1688,7 +1688,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 70/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0539 s
+INFO    |convergence                                 |          Simulation completed in 0.0553 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1715,7 +1715,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 71/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.106 s
+INFO    |convergence                                 |          Simulation completed in 0.108 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1742,7 +1742,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 72/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.184 s
+INFO    |convergence                                 |          Simulation completed in 0.182 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1770,7 +1770,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 73/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0402 s
+INFO    |convergence                                 |          Simulation completed in 0.0412 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1791,7 +1791,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 74/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0813 s
+INFO    |convergence                                 |          Simulation completed in 0.0834 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1818,7 +1818,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 75/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.171 s
+INFO    |convergence                                 |          Simulation completed in 0.169 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1845,7 +1845,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 76/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.275 s
+INFO    |convergence                                 |          Simulation completed in 0.280 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1873,7 +1873,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 77/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0690 s
+INFO    |convergence                                 |          Simulation completed in 0.0709 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1894,7 +1894,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 78/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.161 s
+INFO    |convergence                                 |          Simulation completed in 0.165 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1921,7 +1921,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 79/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.309 s
+INFO    |convergence                                 |          Simulation completed in 0.324 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1948,7 +1948,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 80/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.567 s
+INFO    |convergence                                 |          Simulation completed in 0.586 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1978,7 +1978,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 81/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0103 s
+INFO    |convergence                                 |          Simulation completed in 0.0108 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -1993,7 +1993,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 82/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0223 s
+INFO    |convergence                                 |          Simulation completed in 0.0228 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2014,7 +2014,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 83/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0455 s
+INFO    |convergence                                 |          Simulation completed in 0.0472 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2035,7 +2035,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 84/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0914 s
+INFO    |convergence                                 |          Simulation completed in 0.0888 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2057,7 +2057,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 85/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0131 s
+INFO    |convergence                                 |          Simulation completed in 0.0133 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2078,7 +2078,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 86/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0294 s
+INFO    |convergence                                 |          Simulation completed in 0.0299 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2105,7 +2105,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 87/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0578 s
+INFO    |convergence                                 |          Simulation completed in 0.0584 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2132,7 +2132,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 88/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.103 s
+INFO    |convergence                                 |          Simulation completed in 0.102 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2160,7 +2160,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 89/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0227 s
+INFO    |convergence                                 |          Simulation completed in 0.0235 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2181,7 +2181,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 90/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0441 s
+INFO    |convergence                                 |          Simulation completed in 0.0454 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2208,7 +2208,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 91/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0924 s
+INFO    |convergence                                 |          Simulation completed in 0.0949 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2235,7 +2235,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 92/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.148 s
+INFO    |convergence                                 |          Simulation completed in 0.153 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2263,7 +2263,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 93/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0380 s
+INFO    |convergence                                 |          Simulation completed in 0.0391 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2284,7 +2284,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 94/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0881 s
+INFO    |convergence                                 |          Simulation completed in 0.0919 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2311,7 +2311,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 95/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.173 s
+INFO    |convergence                                 |          Simulation completed in 0.181 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2338,7 +2338,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 96/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.307 s
+INFO    |convergence                                 |          Simulation completed in 0.309 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2367,7 +2367,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 97/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0128 s
+INFO    |convergence                                 |          Simulation completed in 0.0132 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2388,7 +2388,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 98/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0286 s
+INFO    |convergence                                 |          Simulation completed in 0.0294 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2415,7 +2415,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 99/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0585 s
+INFO    |convergence                                 |          Simulation completed in 0.0597 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2442,7 +2442,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 100/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.119 s
+INFO    |convergence                                 |          Simulation completed in 0.112 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2470,7 +2470,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 101/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0167 s
+INFO    |convergence                                 |          Simulation completed in 0.0171 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2497,7 +2497,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 102/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0377 s
+INFO    |convergence                                 |          Simulation completed in 0.0391 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2530,7 +2530,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 103/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0745 s
+INFO    |convergence                                 |          Simulation completed in 0.0753 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2563,7 +2563,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 104/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.127 s
+INFO    |convergence                                 |          Simulation completed in 0.130 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2597,7 +2597,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 105/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0291 s
+INFO    |convergence                                 |          Simulation completed in 0.0299 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2624,7 +2624,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 106/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0571 s
+INFO    |convergence                                 |          Simulation completed in 0.0585 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2657,7 +2657,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 107/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.117 s
+INFO    |convergence                                 |          Simulation completed in 0.120 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2690,7 +2690,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 108/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.196 s
+INFO    |convergence                                 |          Simulation completed in 0.203 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2724,7 +2724,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 109/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0499 s
+INFO    |convergence                                 |          Simulation completed in 0.0503 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2751,7 +2751,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 110/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.115 s
+INFO    |convergence                                 |          Simulation completed in 0.116 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2784,7 +2784,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 111/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.222 s
+INFO    |convergence                                 |          Simulation completed in 0.228 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2817,7 +2817,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 112/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.392 s
+INFO    |convergence                                 |          Simulation completed in 0.402 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2852,7 +2852,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 113/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0154 s
+INFO    |convergence                                 |          Simulation completed in 0.0159 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2873,7 +2873,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 114/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0357 s
+INFO    |convergence                                 |          Simulation completed in 0.0372 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2900,7 +2900,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 115/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0723 s
+INFO    |convergence                                 |          Simulation completed in 0.0742 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2927,7 +2927,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 116/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.134 s
+INFO    |convergence                                 |          Simulation completed in 0.138 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2955,7 +2955,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 117/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0203 s
+INFO    |convergence                                 |          Simulation completed in 0.0211 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2982,7 +2982,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 118/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0465 s
+INFO    |convergence                                 |          Simulation completed in 0.0480 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3015,7 +3015,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 119/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |convergence                                 |          Simulation completed in 0.0939 s
+INFO    |convergence                                 |          Simulation completed in 0.0973 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3049,10 +3049,10 @@ INFO    |convergence                                 |  Wake type: prescribed
 INFO    |convergence                                 |  Chord lengths: 5
 INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |  Chordwise Panels: 4
-INFO    |convergence                                 |  Simulation completed in 0.0253 s
+INFO    |convergence                                 |  Simulation completed in 0.0259 s
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Example Airplane:
 INFO    |convergence                                 |      Main Wing:
 INFO    |convergence                                 |        WingCrossSection 1: 3
 INFO    |convergence                                 |        WingCrossSection 2: None
-INFO    |convergence                                 |Convergence analysis completed in 15.3 s
+INFO    |convergence                                 |Convergence analysis completed in 15.7 s

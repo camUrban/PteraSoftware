@@ -118,9 +118,11 @@ def write_time_history_csv(
         raise ValueError("headers and columns must be the same length.")
 
     # newline="" is what the csv module requires so that it controls the line endings
-    # itself rather than having the text layer translate them a second time.
+    # itself rather than having the text layer translate them a second time. The module
+    # then writes RFC 4180's CRLF unless told otherwise, so the terminator is set to LF
+    # to match every other text file this project writes.
     with open(save_path, "w", newline="", encoding="utf-8") as csv_file:
-        writer = csv.writer(csv_file)
+        writer = csv.writer(csv_file, lineterminator="\n")
         writer.writerow(["Time (s)"] + headers)
         for step, time_value in enumerate(times):
             writer.writerow([time_value] + [column[step] for column in columns])

@@ -174,7 +174,6 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 ## Contributors
 
 * Cameron Urban ([camUrban](https://github.com/camUrban))
-* w3lld1 ([w3lld1](https://github.com/w3lld1))
 * Zach Tait ([Zach10a](https://github.com/Zach10a))
 * Jonah Jaffe ([JonahJ27](https://github.com/JonahJ27))
 * Venkata Akhil Mettu ([AKHIL-149](https://github.com/AKHIL-149))
@@ -185,6 +184,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Monisha Sikka ([20086080](https://github.com/20086080))
 * Cameron Hendrikse ([MonoChromatical](https://github.com/MonoChromatical))
 * Abdullah Imran ([codexabdullah](https://github.com/codexabdullah))
+* [w3lld1](https://github.com/w3lld1)
 
 ### Supporters
 

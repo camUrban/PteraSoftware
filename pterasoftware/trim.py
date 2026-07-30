@@ -470,9 +470,9 @@ def analyze_unsteady_trim(
     **Procedure:**
 
     Trim is found by minimizing an objective function that combines the net final load
-    coefficients' magnitudes. For problems with non static geometry, the final load
-    coefficients are the RMS values from the final motion cycle. For problems with
-    static geometry, they are the load coefficients at the final time step.
+    coefficients' magnitudes. For problems with non static movement, the final load
+    coefficients are the mean values from the final motion cycle. For problems with
+    static movement, they are the load coefficients at the final time step.
 
     The optimization process varies four of the base OperatingPoint's parameters
     (vCg__E, alpha, beta, externalFX_W) within their specified bounds. At each
@@ -576,6 +576,11 @@ def analyze_unsteady_trim(
         )
     if boundsVCg__E[0] <= 0:
         raise ValueError("Both values in boundsVCg__E must be positive.")
+    if boundsVCg__E[0] <= problem.movement.operating_point_movement.ampVCg__E:
+        raise ValueError(
+            "The lower vCg__E bound must be greater than the OperatingPointMovement's "
+            "ampVCg__E so every trial speed remains positive throughout its cycle."
+        )
 
     # Validate the alpha_bounds parameter.
     if not (isinstance(alpha_bounds, tuple) and len(alpha_bounds) == 2):
@@ -677,6 +682,7 @@ def analyze_unsteady_trim(
     base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
     base_g_E = base_operating_point.g_E
     base_omegas_BP1__E = base_operating_point.omegas_BP1__E
+    reference_operating_point_movement = problem.movement.operating_point_movement
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -733,7 +739,6 @@ def analyze_unsteady_trim(
         externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
-        reference_operating_point_movement = problem.movement.operating_point_movement
         this_operating_point_movement = (
             movements.operating_point_movement.OperatingPointMovement(
                 base_operating_point=trial_operating_point,
@@ -769,13 +774,20 @@ def analyze_unsteady_trim(
             force_method=force_method,
         )
 
-        finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
-        assert finalForceCoefficients_W is not None
-
-        finalMomentCoefficients_W_Cg = (
-            this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
-        )
-        assert finalMomentCoefficients_W_Cg is not None
+        if this_movement.static:
+            finalForceCoefficients_W = (
+                this_solver.unsteady_problem.finalForceCoefficients_W
+            )
+            finalMomentCoefficients_W_Cg = (
+                this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
+            )
+        else:
+            finalForceCoefficients_W = (
+                this_solver.unsteady_problem.finalMeanForceCoefficients_W
+            )
+            finalMomentCoefficients_W_Cg = (
+                this_solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg
+            )
 
         netForceCoefficients_W = float(
             np.linalg.norm(finalForceCoefficients_W + externalForceCoefficients_W)

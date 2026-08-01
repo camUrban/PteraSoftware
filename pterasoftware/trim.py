@@ -493,8 +493,10 @@ def analyze_unsteady_trim(
         AeroelasticUnsteadyProblem, neither of which is supported. The UnsteadyProblem's
         Movement must contain exactly one AirplaneMovement. The problem's Movement must
         define its duration with num_cycles or num_chords, rather than an explicit
-        num_steps. If its wake is truncated, the maximum wake length must likewise be
-        defined with max_wake_cycles or max_wake_chords, rather than an explicit
+        num_steps, because delta_time is re-estimated at each trial speed and a fixed
+        num_steps would change the simulated duration from trial to trial. If its wake is
+        truncated, the maximum wake length must likewise be defined with max_wake_cycles
+        or max_wake_chords, rather than an explicit
         max_wake_rows. The problem's OperatingPointMovement's base OperatingPoint will
         be modified during the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending

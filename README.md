@@ -184,6 +184,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Monisha Sikka ([20086080](https://github.com/20086080))
 * Cameron Hendrikse ([MonoChromatical](https://github.com/MonoChromatical))
 * Abdullah Imran ([codexabdullah](https://github.com/codexabdullah))
+* [w3lld1](https://github.com/w3lld1)
 
 ### Supporters
 

@@ -422,8 +422,12 @@ def draw(
         window_scale,
     )
 
-    # For a free flight solver, add the MuJoCo geometry that extra_xml injects, with the
-    # body geoms posed at the drawn time step.
+    # For a free flight solver, gather the MuJoCo geometry that extra_xml injects. The
+    # geom actors are added later, between the camera's framing fit and its clipping
+    # fit, so the body geoms can join the framing bounds while the worldbody geoms join
+    # only the clipping range.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
     if is_free_flight:
         assert isinstance(
             solver,
@@ -431,13 +435,6 @@ def draw(
         )
         worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
             solver
-        )
-        _output_rendering.add_mujoco_geometry(
-            plotter,
-            worldbody_geoms,
-            body_geoms,
-            _output_rendering.get_free_flight_body_transformation(draw_operating_point),
-            T_reflect,
         )
 
     # If showing streamlines, plot them.
@@ -545,7 +542,56 @@ def draw(
             center_E_Eo + 3.0 * airplane_diagonal * _freeFlightViewDirection_E
         )
         plotter.camera.up = _freeFlightViewUp_E
-        plotter.reset_camera()  # type: ignore[call-arg]
+
+        if worldbody_geoms or body_geoms:
+            # Fit the camera to explicit framing bounds: every actor already present,
+            # plus the body geoms posed at the drawn time step, plus their reflections
+            # when an image surface is defined. The fit re-centers the focal point on
+            # those bounds and keeps the view direction and up set above.
+            T_pas_BP1_CgP1_to_E_Eo = (
+                _output_rendering.get_free_flight_body_transformation(
+                    draw_operating_point
+                )
+            )
+            posed_body_geom_meshes = [
+                _output_rendering.transform_mesh(
+                    render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
+                )
+                for render_geom in body_geoms
+            ]
+            if T_reflect is not None:
+                posed_body_geom_meshes += [
+                    _output_rendering.transform_mesh(posed_body_geom_mesh, T_reflect)
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ]
+            all_bounds = np.array(
+                [plotter.bounds]
+                + [
+                    posed_body_geom_mesh.bounds
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ],
+                dtype=float,
+            )
+            framing_bounds = np.empty(6, dtype=float)
+            framing_bounds[0::2] = all_bounds[:, 0::2].min(axis=0)
+            framing_bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
+            plotter.reset_camera(bounds=tuple(framing_bounds))  # type: ignore[call-arg]
+
+            # Add the geom actors only now, so the worldbody geoms stay out of the
+            # framing fit and a worldbody geom that is much larger than the body, like a
+            # ground plane, cannot dominate it. Then re-fit only the clipping range to
+            # all actors, which keeps the fitted framing while ensuring the worldbody
+            # geoms are not cut off.
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                T_pas_BP1_CgP1_to_E_Eo,
+                T_reflect,
+            )
+            plotter.reset_camera_clipping_range()
+        else:
+            plotter.reset_camera()  # type: ignore[call-arg]
         draw_cpos = None
     elif image_surface_mesh is None:
         draw_cpos = (-1, -1, 1)
@@ -912,6 +958,27 @@ def animate(
             if last_step_wake_surfaces.n_points > 0:
                 framing_meshes.append(last_step_wake_surfaces)
                 free_flight_clip_meshes.append(last_step_wake_surfaces)
+
+        # The body geoms fly with the body, so they join the framing fit posed at both
+        # ends of the trajectory, keeping a geom that extends past the Panel surfaces
+        # from being cropped. Only the last time step's posed copies join the clipping
+        # meshes, since the first time step's geom actors are already present when the
+        # clipping range is sized. The worldbody geoms join neither: their actors are
+        # also present when the clipping range is sized, which keeps them visible
+        # without letting a worldbody geom that is much larger than the body, like a
+        # ground plane, dominate the framing fit.
+        first_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(render_geom.mesh, step_body_transforms[0])
+            for render_geom in body_geoms
+        ]
+        last_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(
+                render_geom.mesh, step_body_transforms[last_step]
+            )
+            for render_geom in body_geoms
+        ]
+        framing_meshes += first_step_body_geom_meshes + last_step_body_geom_meshes
+        free_flight_clip_meshes += last_step_body_geom_meshes
 
         # Fit the parallel scale (half the viewport height in world units, since the
         # projection is parallel) to the projected extent of that geometry about the

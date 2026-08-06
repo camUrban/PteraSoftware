@@ -6,9 +6,10 @@ import unittest
 import mujoco
 import numpy as np
 import numpy.testing as npt
+import pyvista as pv
 
 # noinspection PyProtectedMember
-from pterasoftware import _mujoco_model
+from pterasoftware import _mujoco_model, _transformations
 from tests.unit.fixtures import mujoco_model_fixtures
 
 
@@ -743,3 +744,209 @@ class TestMuJoCoModelConventions(unittest.TestCase):
         self.assertGreater(velocity_E__E[0], 0.0)
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[1]))
         self.assertGreater(abs(velocity_E__E[0]), 10.0 * abs(velocity_E__E[2]))
+
+
+class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
+    """This class contains methods for testing MuJoCoModel.get_render_geometry.
+
+    The shared fixture's geoms arrive in document order: the worldbody plane, then the
+    body's box, sphere, capsule, cylinder, ellipsoid, and tetrahedron mesh. The
+    tessellated primitives (the sphere, capsule, cylinder, and ellipsoid) inscribe their
+    ideal surfaces, so their bounds are compared with a loose tolerance, while the box,
+    plane, and mesh vertices are exact.
+    """
+
+    render_geoms: list[_mujoco_model.RenderGeom]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up the shared test fixtures."""
+        cls.render_geoms = (
+            mujoco_model_fixtures.make_render_geometry_mujoco_model_fixture()
+        ).get_render_geometry()
+
+    def test_returns_one_render_geom_per_drawable_geom(self) -> None:
+        """Test that every drawable geom produces one RenderGeom."""
+        self.assertEqual(len(self.render_geoms), 7)
+        for render_geom in self.render_geoms:
+            self.assertIsInstance(render_geom, _mujoco_model.RenderGeom)
+
+    def test_meshes_are_polydata(self) -> None:
+        """Test that every RenderGeom's mesh is a PolyData."""
+        for render_geom in self.render_geoms:
+            self.assertIsInstance(render_geom.mesh, pv.PolyData)
+
+    def test_model_without_extra_geometry_returns_empty_list(self) -> None:
+        """Test that a model with no extra_xml geoms returns an empty list."""
+        model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
+        self.assertEqual(model.get_render_geometry(), [])
+
+    def test_worldbody_geoms_are_not_body_attached(self) -> None:
+        """Test that a worldbody geom's body_attached flag is False."""
+        self.assertFalse(self.render_geoms[0].body_attached)
+
+    def test_body_geoms_are_body_attached(self) -> None:
+        """Test that every body geom's body_attached flag is True."""
+        for render_geom in self.render_geoms[1:]:
+            self.assertTrue(render_geom.body_attached)
+
+    def test_rgba_defaults_to_the_geoms_rgba(self) -> None:
+        """Test that a geom without a material takes its own rgba."""
+        npt.assert_allclose(
+            self.render_geoms[1].rgba, np.array([0.1, 0.2, 0.3, 0.4]), atol=1e-6
+        )
+
+    def test_rgba_uses_the_material_when_assigned(self) -> None:
+        """Test that a geom with a material takes the material's rgba."""
+        npt.assert_allclose(
+            self.render_geoms[2].rgba, np.array([1.0, 0.0, 0.0, 1.0]), atol=1e-6
+        )
+
+    def test_plane_quad_matches_half_extents_and_position(self) -> None:
+        """Test that a finite plane becomes a quad spanning its half-extents at its
+        authored position."""
+        npt.assert_allclose(
+            self.render_geoms[0].mesh.bounds,
+            (-5.0, 5.0, -4.0, 4.0, 2.0, 2.0),
+            atol=1e-6,
+        )
+
+    def test_box_bounds_match_half_extents_and_position(self) -> None:
+        """Test that a box's bounds span its half-extents about its authored
+        position."""
+        npt.assert_allclose(
+            self.render_geoms[1].mesh.bounds,
+            (0.9, 1.1, 1.8, 2.2, 2.7, 3.3),
+            atol=1e-6,
+        )
+
+    def test_sphere_bounds_match_radius(self) -> None:
+        """Test that a sphere's bounds span its radius."""
+        npt.assert_allclose(
+            self.render_geoms[2].mesh.bounds,
+            (-0.5, 0.5, -0.5, 0.5, -0.5, 0.5),
+            atol=1e-2,
+        )
+
+    def test_capsule_bounds_match_radius_and_half_length(self) -> None:
+        """Test that a capsule's axis is the local z axis, with bounds spanning its
+        radius laterally and its half-length plus its radius axially."""
+        npt.assert_allclose(
+            self.render_geoms[3].mesh.bounds,
+            (-0.1, 0.1, -0.1, 0.1, -0.5, 0.5),
+            atol=1e-2,
+        )
+
+    def test_cylinder_bounds_match_radius_and_half_length(self) -> None:
+        """Test that a cylinder's axis is the local z axis, with bounds spanning its
+        radius laterally and its half-length axially."""
+        npt.assert_allclose(
+            self.render_geoms[4].mesh.bounds,
+            (-0.2, 0.2, -0.2, 0.2, -0.5, 0.5),
+            atol=1e-2,
+        )
+
+    def test_ellipsoid_bounds_match_radii(self) -> None:
+        """Test that an ellipsoid's bounds span its three radii."""
+        npt.assert_allclose(
+            self.render_geoms[5].mesh.bounds,
+            (-0.1, 0.1, -0.2, 0.2, -0.3, 0.3),
+            atol=1e-2,
+        )
+
+    def test_mesh_geom_reconstructs_the_authored_placement(self) -> None:
+        """Test that a mesh geom's points match the authored vertices under the authored
+        pose.
+
+        The compiler re-centers and re-orients a mesh's stored vertices and folds the
+        offset into the geom's position and orientation, so recovering the authored
+        placement proves that get_render_geometry composes the stored vertices with the
+        compiled pose correctly. The fixture poses the tetrahedron with a 90 degree
+        rotation about its parent's y axis followed by a translation of (1.0, 2.0, 3.0),
+        and the mesh geom is attached to the body, so the expected points are in the
+        first Airplane's body axes, relative to the first Airplane's CG.
+        """
+        rotate_T_act = _transformations.generate_rot_T(
+            angles=np.array([0.0, 90.0, 0.0]),
+            passive=False,
+            intrinsic=False,
+            order="xyz",
+        )
+        translate_T_act = _transformations.generate_trans_T(
+            translations=np.array([1.0, 2.0, 3.0]), passive=False
+        )
+        pose_T_act = _transformations.compose_T_act(rotate_T_act, translate_T_act)
+        stackExpectedPoints_BP1_CgP1 = _transformations.apply_T_to_vectors(
+            pose_T_act,
+            mujoco_model_fixtures.make_tetrahedron_vertices_fixture(),
+            is_position=True,
+        )
+
+        stackRebuiltPoints_BP1_CgP1 = np.asarray(
+            self.render_geoms[6].mesh.points, dtype=float
+        )
+
+        # The compiler may reorder the vertices, so match each authored vertex to its
+        # nearest rebuilt point rather than comparing row by row. The authored vertices
+        # are pairwise distinct, so requiring every one of them to sit within tolerance
+        # of a rebuilt point, with the counts equal, proves the two sets match.
+        self.assertEqual(
+            len(stackRebuiltPoints_BP1_CgP1), len(stackExpectedPoints_BP1_CgP1)
+        )
+        for expectedPoint_BP1_CgP1 in stackExpectedPoints_BP1_CgP1:
+            distances = np.linalg.norm(
+                stackRebuiltPoints_BP1_CgP1 - expectedPoint_BP1_CgP1, axis=1
+            )
+            self.assertLess(float(distances.min()), 1e-6)
+
+    def test_skips_infinite_plane_with_warning(self) -> None:
+        """Test that an infinite plane is skipped with a warning naming the geom and
+        stating that it still participates in the dynamics."""
+        model = _mujoco_model.MuJoCoModel(
+            name="infinite_plane_airplane",
+            mass=1.0,
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            extra_xml={"worldbody": '<geom name="endless" type="plane" size="0 0 1"/>'},
+        )
+
+        with self.assertLogs("pterasoftware._mujoco_model", level="WARNING") as logs:
+            render_geoms = model.get_render_geometry()
+
+        self.assertEqual(render_geoms, [])
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn("'endless'", logs.output[0])
+        self.assertIn("an infinite plane", logs.output[0])
+        self.assertIn("still participates in the dynamics", logs.output[0])
+
+    def test_skips_heightfield_with_warning(self) -> None:
+        """Test that a heightfield is skipped with a warning naming the geom and stating
+        that it still participates in the dynamics."""
+        model = _mujoco_model.MuJoCoModel(
+            name="heightfield_airplane",
+            mass=1.0,
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            extra_xml={
+                "asset": (
+                    '<asset><hfield name="terrain" nrow="2" ncol="2" '
+                    'size="1 1 0.1 0.01"/></asset>'
+                ),
+                "worldbody": '<geom name="rough" type="hfield" hfield="terrain"/>',
+            },
+        )
+
+        with self.assertLogs("pterasoftware._mujoco_model", level="WARNING") as logs:
+            render_geoms = model.get_render_geometry()
+
+        self.assertEqual(render_geoms, [])
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn("'rough'", logs.output[0])
+        self.assertIn("a heightfield", logs.output[0])
+        self.assertIn("still participates in the dynamics", logs.output[0])

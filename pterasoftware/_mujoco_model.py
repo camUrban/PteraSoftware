@@ -502,9 +502,9 @@ class MuJoCoModel:
                 geom_label = f"'{geom_name}'" if geom_name else f"with ID {geom_id}"
                 _logger.warning(
                     _logging.indent()
-                    + "Not drawing the MuJoCo geom %s because it is %s, which has no "
-                    "finite surface to triangulate. The skipped shape still "
-                    "participates in the dynamics: it is just not drawn.",
+                    + "Not drawing the MuJoCo geom %s because it is %s, which this "
+                    "renderer does not support. The skipped shape still participates "
+                    "in the dynamics: it is just not drawn.",
                     geom_label,
                     shape_description,
                 )

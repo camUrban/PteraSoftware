@@ -286,18 +286,23 @@ def make_unsteady_ring_vortex_lattice_method_free_air_solver() -> (
     return solver
 
 
-def make_simple_glider_free_flight_solver() -> (
+def make_simple_glider_free_flight_solver(
+    extra_xml: dict[str, str] | None = None,
+) -> (
     ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
 ):
     """This function creates the simple glider's free flight solver to be used as a
     fixture.
 
+    :param extra_xml: dict or None A dict mapping injection point names to XML fragment
+        strings to inject into the FreeFlightUnsteadyProblem's generated MuJoCo XML. If
+        None, no extra XML is injected. The default is None.
     :return simple_glider_free_flight_solver:
         FreeFlightUnsteadyRingVortexLatticeMethodSolver This is the simple glider
         FreeFlightUnsteadyRingVortexLatticeMethodSolver fixture.
     """
     simple_glider_free_flight_problem = (
-        problem_fixtures.make_simple_glider_free_flight_problem()
+        problem_fixtures.make_simple_glider_free_flight_problem(extra_xml=extra_xml)
     )
 
     simple_glider_free_flight_solver = ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver(

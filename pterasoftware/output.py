@@ -161,6 +161,7 @@ def draw(
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool_ = False,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "draw.webp",
@@ -200,6 +201,12 @@ def draw(
         the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
         already been run. Can be a bool or a numpy bool and will be converted internally
         to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms
+        posed at the drawn time step and worldbody geoms static in Earth axes. If True,
+        the solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can be a
+        bool or a numpy bool and will be converted internally to a bool. The default is
+        False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -275,6 +282,18 @@ def draw(
     if show_wake_vortices and not solver.ran:
         raise RuntimeError(
             "solver must have run before drawing with show_wake_vortices set to True."
+        )
+
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when drawing a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
@@ -422,13 +441,13 @@ def draw(
         window_scale,
     )
 
-    # For a free flight solver, gather the MuJoCo geometry that extra_xml injects. The
-    # geom actors are added later, between the camera's framing fit and its clipping
-    # fit, so the body geoms can join the framing bounds while the worldbody geoms join
-    # only the clipping range.
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
+    # actors are added later, between the camera's framing fit and its clipping fit, so
+    # the body geoms can join the framing bounds while the worldbody geoms join only the
+    # clipping range.
     worldbody_geoms: list[_mujoco_model.RenderGeom] = []
     body_geoms: list[_mujoco_model.RenderGeom] = []
-    if is_free_flight:
+    if show_mujoco_geometry:
         assert isinstance(
             solver,
             free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -640,6 +659,7 @@ def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "animate.webp",
@@ -666,6 +686,12 @@ def animate(
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms re-
+        posed every time step and worldbody geoms static in Earth axes. If True, the
+        unsteady_solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can
+        be a bool or a numpy bool and will be converted internally to a bool. The
+        default is False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -730,6 +756,18 @@ def animate(
             " to True."
         )
 
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        unsteady_solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when animating a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
+        )
+
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
         raise ValueError("window_size must be a sequence of two ints.")
     window_width = _parameter_validation.int_in_range_return_int(
@@ -777,13 +815,13 @@ def animate(
             for steady_problem in unsteady_solver.steady_problems
         ]
 
-    # For a free flight solver, gather the MuJoCo geometry that extra_xml injects, along
-    # with each time step's body axes to Earth axes transformation. The worldbody geoms
-    # stay fixed in Earth axes while the body geoms are re-posed every frame.
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects, along with
+    # each time step's body axes to Earth axes transformation. The worldbody geoms stay
+    # fixed in Earth axes while the body geoms are re-posed every frame.
     worldbody_geoms: list[_mujoco_model.RenderGeom] = []
     body_geoms: list[_mujoco_model.RenderGeom] = []
     step_body_transforms: list[np.ndarray] = []
-    if is_free_flight:
+    if show_mujoco_geometry:
         assert isinstance(
             unsteady_solver,
             free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
@@ -1034,8 +1072,8 @@ def animate(
         plotter, panel_surfaces, None, coloring, T_reflect, window_scale
     )
 
-    # For a free flight solver, add the MuJoCo geometry at the first time step's pose.
-    if is_free_flight:
+    # If showing MuJoCo geometry, add it at the first time step's pose.
+    if show_mujoco_geometry:
         _output_rendering.add_mujoco_geometry(
             plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
         )
@@ -1205,8 +1243,8 @@ def animate(
             window_scale,
         )
 
-        # For a free flight solver, add the MuJoCo geometry at this time step's pose.
-        if is_free_flight:
+        # If showing MuJoCo geometry, add it at this time step's pose.
+        if show_mujoco_geometry:
             _output_rendering.add_mujoco_geometry(
                 plotter,
                 worldbody_geoms,

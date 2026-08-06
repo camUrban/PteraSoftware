@@ -776,6 +776,16 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         for render_geom in self.render_geoms:
             self.assertIsInstance(render_geom.mesh, pv.PolyData)
 
+    def test_meshes_carry_point_normals(self) -> None:
+        """Test that every RenderGeom's mesh carries point normals.
+
+        The rendering layer lights the geom actors, and a lit actor's shading reads the
+        stored normals, so every returned mesh must carry them, including the
+        tetrahedron mesh, whose compiled vertex and face arrays hold none.
+        """
+        for render_geom in self.render_geoms:
+            self.assertIn("Normals", render_geom.mesh.point_data)
+
     def test_model_without_extra_geometry_returns_empty_list(self) -> None:
         """Test that a model with no extra_xml geoms returns an empty list."""
         model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()

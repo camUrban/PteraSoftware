@@ -4,16 +4,27 @@ visualizations with PyVista."""
 from __future__ import annotations
 
 import math
-from typing import NamedTuple
+from typing import NamedTuple, cast
 
 import matplotlib.colors
 import numpy as np
 import pyvista as pv
 import webp
 
-from . import _colormaps, _logging, _transformations, geometry
+from . import (
+    _colormaps,
+    _logging,
+    _mujoco_model,
+    _private_access,
+    _transformations,
+    free_flight_unsteady_ring_vortex_lattice_method,
+    geometry,
+)
 from . import operating_point as operating_point_mod
-from . import unsteady_ring_vortex_lattice_method
+from . import (
+    problems,
+    unsteady_ring_vortex_lattice_method,
+)
 
 _logger = _logging.get_logger("output")
 
@@ -33,6 +44,16 @@ _IMAGE_SURFACE_COLOR_B = np.array([80, 80, 80], dtype=np.uint8)
 TEXT_COLOR = (129, 129, 129)
 TEXT_COLOR_SURFACE = (220, 220, 220)
 PLOTTER_BACKGROUND_COLOR = "black"
+
+# Define the shading coefficients for the MuJoCo geom actors, which are the only lit
+# actors in any scene. Every other actor is added with lighting disabled, so the
+# headlight that add_mujoco_geometry brings into a scene shades the geoms alone, and a
+# scene without MuJoCo geoms never carries a light at all. An actor with lighting
+# disabled renders identically whether or not the scene holds a light, so the geoms'
+# shading leaves every other actor's appearance untouched. The ambient floor keeps the
+# faces the headlight misses from going black.
+_MUJOCO_GEOMETRY_AMBIENT = 0.3
+_MUJOCO_GEOMETRY_DIFFUSE = 0.7
 
 # Define the window length used to measure the largest window a window manager will
 # grant. X11 window dimensions are 16 bit, so this is the largest a window can ask to be
@@ -574,12 +595,75 @@ def get_free_flight_transformation(
     )
 
 
+def get_free_flight_body_transformation(
+    this_operating_point: operating_point_mod.OperatingPoint,
+) -> np.ndarray:
+    """Returns the passive transformation from the first Airplane's body axes, relative
+    to the first Airplane's CG, to Earth axes, relative to the Earth origin.
+
+    Body-attached MuJoCo geoms are rigid in the first Airplane's body axes, so posing
+    them for a time step chains the constant body axes to geometry axes rotation with
+    the same geometry axes to Earth axes transformation that the Panel meshes are mapped
+    through.
+
+    :param this_operating_point: The OperatingPoint whose Earth-frame position and
+        orientation define the transformation.
+    :return: A (4,4) ndarray of floats representing the passive transformation from the
+        first Airplane's body axes, relative to the first Airplane's CG, to Earth axes,
+        relative to the Earth origin.
+    """
+    return _transformations.compose_T_pas(
+        this_operating_point.T_pas_BP1_CgP1_to_GP1_CgP1,
+        get_free_flight_transformation(this_operating_point),
+    )
+
+
+def get_mujoco_render_geometry(
+    free_flight_solver: free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+) -> tuple[list[_mujoco_model.RenderGeom], list[_mujoco_model.RenderGeom]]:
+    """Returns a free flight solver's MuJoCo render geometry, split into worldbody geoms
+    and body geoms.
+
+    The geometry comes from the compiled MuJoCo model held by the solver's
+    FreeFlightUnsteadyProblem, reached through the registration pattern in
+    _private_access.
+
+    :param free_flight_solver: The FreeFlightUnsteadyRingVortexLatticeMethodSolver whose
+        MuJoCo geometry will be returned.
+    :return: A tuple of two lists of RenderGeoms. The first holds the worldbody geoms,
+        whose meshes are in Earth axes, relative to the Earth origin. The second holds
+        the body geoms, whose meshes are in the first Airplane's body axes, relative to
+        the first Airplane's CG.
+    """
+    # The solver stores its problem widened to the core type, and its initialization
+    # validates that the problem is a FreeFlightUnsteadyProblem, so the cast narrows
+    # without a runtime check.
+    free_flight_unsteady_problem = cast(
+        problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
+    )
+    render_geoms = _private_access.get_mujoco_model(
+        free_flight_unsteady_problem
+    ).get_render_geometry()
+
+    worldbody_geoms = [
+        render_geom for render_geom in render_geoms if not render_geom.body_attached
+    ]
+    body_geoms = [
+        render_geom for render_geom in render_geoms if render_geom.body_attached
+    ]
+    return worldbody_geoms, body_geoms
+
+
 def transform_mesh(
     mesh: pv.PolyData,
     T_pas: np.ndarray,
 ) -> pv.PolyData:
     """Returns a copy of a PolyData mesh with its points mapped through a passive
     transformation.
+
+    Any point normals the mesh carries are mapped as directions through the same
+    transformation. A lit actor's shading reads the stored normals, so leaving them
+    behind would light a transformed mesh as if it still sat in its original pose.
 
     :param mesh: The PolyData mesh to transform.
     :param T_pas: A (4,4) ndarray of floats representing the passive transformation to
@@ -592,6 +676,12 @@ def transform_mesh(
         mesh.points,
         is_position=True,
     )
+    if "Normals" in transformed.point_data:
+        transformed.point_data["Normals"] = _transformations.apply_T_to_vectors(
+            T_pas,
+            np.asarray(mesh.point_data["Normals"], dtype=float),
+            is_position=False,
+        )
     return transformed
 
 
@@ -971,6 +1061,7 @@ def _plot_scalars(
         scalars=these_scalars,
         smooth_shading=False,
         scalar_bar_args=scalar_bar_args,  # type: ignore[arg-type]
+        lighting=False,
         render=False,
     )
 
@@ -1057,6 +1148,7 @@ def add_frame_geometry(
             line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
             smooth_shading=False,
             color=_WAKE_VORTEX_COLOR,
+            lighting=False,
             render=False,
         )
 
@@ -1082,6 +1174,7 @@ def add_frame_geometry(
             line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
             color=_PANEL_COLOR,
             smooth_shading=False,
+            lighting=False,
             render=False,
         )
 
@@ -1106,6 +1199,7 @@ def add_frame_geometry(
             scalars=coloring.scalars,
             smooth_shading=False,
             show_scalar_bar=False,
+            lighting=False,
             render=False,
         )
     else:
@@ -1116,6 +1210,7 @@ def add_frame_geometry(
             edge_color=muted_edge_color,
             color=mute_color(_PANEL_COLOR, mute),
             smooth_shading=False,
+            lighting=False,
             render=False,
         )
 
@@ -1128,5 +1223,82 @@ def add_frame_geometry(
             edge_color=muted_edge_color,
             smooth_shading=False,
             color=mute_color(_WAKE_VORTEX_COLOR, mute),
+            lighting=False,
             render=False,
         )
+
+
+def add_mujoco_geometry(
+    plotter: pv.Plotter,
+    worldbody_geoms: list[_mujoco_model.RenderGeom],
+    body_geoms: list[_mujoco_model.RenderGeom],
+    T_pas_BP1_CgP1_to_E_Eo: np.ndarray,
+    T_reflect: np.ndarray | None,
+) -> None:
+    """Adds one frame's MuJoCo geometry to a Plotter, alongside muted reflected copies
+    when an image surface is defined.
+
+    Worldbody geoms arrive with their meshes already in Earth axes, relative to the
+    Earth origin, where MuJoCo holds them static, so they are added as they are. Body
+    geoms arrive rigid in the first Airplane's body axes, relative to the first
+    Airplane's CG, so each frame maps them through that time step's transformation to
+    fly them along with the Panel meshes. The reflected copies are muted toward gray,
+    matching the Panel treatment, so they read as reflections rather than as more
+    geometry.
+
+    The geom actors are the only lit actors in any scene. When there is geometry to add,
+    a headlight comes with it, and every other actor disables its lighting, which
+    renders identically with or without a light present, so the shading reaches the
+    geoms alone and every scene without MuJoCo geometry stays free of lights entirely.
+
+    :param plotter: The Plotter to add the geometry to.
+    :param worldbody_geoms: The RenderGeoms attached to the worldbody.
+    :param body_geoms: The RenderGeoms attached to the body.
+    :param T_pas_BP1_CgP1_to_E_Eo: A (4,4) ndarray of floats representing the passive
+        transformation from the first Airplane's body axes, relative to the first
+        Airplane's CG, to Earth axes, relative to the Earth origin, at the frame's time
+        step.
+    :param T_reflect: A (4,4) ndarray of floats representing the active transformation
+        (in Earth axes) that reflects geometry across the image surface, or None when no
+        image surface is defined, in which case no reflected copies are added.
+    :return: None
+    """
+    posed_meshes = [
+        (render_geom.mesh, render_geom.rgba) for render_geom in worldbody_geoms
+    ] + [
+        (transform_mesh(render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo), render_geom.rgba)
+        for render_geom in body_geoms
+    ]
+    if not posed_meshes:
+        return
+
+    # Add the headlight that shades the geom actors, which follows the camera so the
+    # geoms stay legible from any orientation the user chooses. Every non-geom actor is
+    # added with lighting disabled, which renders identically with or without a light in
+    # the scene, so the headlight changes nothing else. An animation clears the
+    # Plotter's lights along with its actors between frames, so the light is added here,
+    # once per assembled frame.
+    plotter.add_light(pv.Light(light_type="headlight"))
+
+    for posed_mesh, rgba in posed_meshes:
+        color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))
+        opacity = float(rgba[3])
+        plotter.add_mesh(
+            posed_mesh,
+            color=color,
+            opacity=opacity,
+            smooth_shading=True,
+            ambient=_MUJOCO_GEOMETRY_AMBIENT,
+            diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
+            render=False,
+        )
+        if T_reflect is not None:
+            plotter.add_mesh(
+                _reflect_mesh(posed_mesh, T_reflect),
+                color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
+                opacity=opacity,
+                smooth_shading=True,
+                ambient=_MUJOCO_GEOMETRY_AMBIENT,
+                diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
+                render=False,
+            )

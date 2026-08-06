@@ -89,7 +89,7 @@ The generated model XML contains no geoms of its own, so every geom in the compi
 
 ### Informal Axes and Point IDs (geom, geomOrigin, parent, and parentOrigin)
 
-The geom arrays involve two systems that are MuJoCo-internal, so their variables take informal lowercase IDs rather than IDs registered in AXES_POINTS_AND_FRAMES.md. The axes ID geom denotes a geom's own local axes, and the point ID geomOrigin denotes the geom frame's origin. The axes ID parent denotes the axes of the geom's parent body's frame, and the point ID parentOrigin denotes that frame's origin. For a geom attached to the free-jointed body, parent axes are the first Airplane's body axes and parentOrigin is the first Airplane's CG, since the generated body frame's origin coincides with the CG. For a worldbody geom, parent axes are Earth axes and parentOrigin is the Earth origin. A single variable over the geom arrays spans both cases, which is why no registered ID can be pinned on it.
+The geom arrays involve two systems that are MuJoCo-internal, so their variables take informal lowercase IDs rather than IDs registered in AXES_POINTS_AND_FRAMES.md. The axes ID geom denotes a geom's own local axes, and the point ID geomOrigin denotes the geom origin, the point where MuJoCo anchors the geom's local coordinates. The axes ID parent denotes the parent body's axes, and the point ID parentOrigin denotes the parent origin, the point where MuJoCo anchors the parent body's coordinates. For a geom attached to the free-jointed body, parent axes are the first Airplane's body axes and the parent origin is the first Airplane's CG, since the generated body is anchored at the CG. For a worldbody geom, parent axes are Earth axes and the parent origin is the Earth origin. A single variable over the geom arrays spans both cases, which is why no registered ID can be pinned on it.
 
 ### Geom Ownership (geom_bodyid)
 
@@ -97,7 +97,7 @@ The geom arrays involve two systems that are MuJoCo-internal, so their variables
 
 ### Geom Pose (geom_pos and geom_quat)
 
-`geom_pos` and `geom_quat` give the pose of the geom's frame relative to its parent body's frame. `geom_pos` is geomOrigin_parent_parentOrigin, the position of the geom frame's origin (in parent axes, relative to the parent frame's origin). `geom_quat` is scalar first, [w, x, y, z], and `mju_quat2Mat` converts it to R_pas_geom_to_parent, the passive rotation matrix which maps from geom axes to parent axes. Together they build the passive transformation which maps in homogeneous coordinates from geom axes relative to the geom frame's origin to parent axes relative to the parent frame's origin:
+`geom_pos` and `geom_quat` give the geom's position and orientation relative to its parent body. `geom_pos` is geomOrigin_parent_parentOrigin, the position of the geom origin (in parent axes, relative to the parent origin). `geom_quat` is scalar first, [w, x, y, z], and `mju_quat2Mat` converts it to R_pas_geom_to_parent, the passive rotation matrix which maps from geom axes to parent axes. Together they build the passive transformation which maps in homogeneous coordinates from geom axes relative to the geom origin to parent axes relative to the parent origin:
 
 ```python
 R_pas_geom_to_parent = np.zeros(9, dtype=float)

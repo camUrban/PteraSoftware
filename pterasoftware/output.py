@@ -37,6 +37,7 @@ import webp
 from . import (
     _colormaps,
     _logging,
+    _mujoco_model,
     _output_plotting,
     _output_rendering,
     _parameter_validation,
@@ -421,6 +422,24 @@ def draw(
         window_scale,
     )
 
+    # For a free flight solver, add the MuJoCo geometry that extra_xml injects, with the
+    # body geoms posed at the drawn time step.
+    if is_free_flight:
+        assert isinstance(
+            solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            solver
+        )
+        _output_rendering.add_mujoco_geometry(
+            plotter,
+            worldbody_geoms,
+            body_geoms,
+            _output_rendering.get_free_flight_body_transformation(draw_operating_point),
+            T_reflect,
+        )
+
     # If showing streamlines, plot them.
     if show_streamlines:
         streamline_surfaces = _output_rendering.get_streamline_surfaces(
@@ -439,6 +458,7 @@ def draw(
             color=_STREAMLINE_COLOR,
             line_width=_STREAMLINE_LINE_WIDTH * window_scale,
             smooth_shading=False,
+            lighting=False,
             render=False,
         )
 
@@ -453,6 +473,7 @@ def draw(
                 ),
                 line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
+                lighting=False,
                 render=False,
             )
 
@@ -490,6 +511,7 @@ def draw(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -704,6 +726,27 @@ def animate(
     if is_free_flight:
         step_transforms = [
             _output_rendering.get_free_flight_transformation(
+                steady_problem.operating_point
+            )
+            for steady_problem in unsteady_solver.steady_problems
+        ]
+
+    # For a free flight solver, gather the MuJoCo geometry that extra_xml injects, along
+    # with each time step's body axes to Earth axes transformation. The worldbody geoms
+    # stay fixed in Earth axes while the body geoms are re-posed every frame.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
+    step_body_transforms: list[np.ndarray] = []
+    if is_free_flight:
+        assert isinstance(
+            unsteady_solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            unsteady_solver
+        )
+        step_body_transforms = [
+            _output_rendering.get_free_flight_body_transformation(
                 steady_problem.operating_point
             )
             for steady_problem in unsteady_solver.steady_problems
@@ -924,6 +967,12 @@ def animate(
         plotter, panel_surfaces, None, coloring, T_reflect, window_scale
     )
 
+    # For a free flight solver, add the MuJoCo geometry at the first time step's pose.
+    if is_free_flight:
+        _output_rendering.add_mujoco_geometry(
+            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
+        )
+
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
     # is not dominated by the much larger image surface plane. When an image surface is
@@ -938,6 +987,7 @@ def animate(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -1007,7 +1057,7 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh, render=False)
+            plotter.add_mesh(clip_mesh, lighting=False, render=False)
             for clip_mesh in free_flight_clip_meshes
         ]
         plotter.reset_camera_clipping_range()
@@ -1088,6 +1138,16 @@ def animate(
             window_scale,
         )
 
+        # For a free flight solver, add the MuJoCo geometry at this time step's pose.
+        if is_free_flight:
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                step_body_transforms[current_step],
+                T_reflect,
+            )
+
         # If an image surface is defined, add the pre-computed image surface plane.
         if T_reflect is not None:
             assert image_surface_mesh is not None
@@ -1096,6 +1156,7 @@ def animate(
                 texture=image_surface_texture,
                 opacity=_IMAGE_SURFACE_OPACITY,
                 smooth_shading=True,
+                lighting=False,
                 render=False,
             )
 

@@ -661,10 +661,6 @@ def transform_mesh(
     """Returns a copy of a PolyData mesh with its points mapped through a passive
     transformation.
 
-    Any point normals the mesh carries are mapped as directions through the same
-    transformation. A lit actor's shading reads the stored normals, so leaving them
-    behind would light a transformed mesh as if it still sat in its original pose.
-
     :param mesh: The PolyData mesh to transform.
     :param T_pas: A (4,4) ndarray of floats representing the passive transformation to
         apply to the mesh's points.
@@ -676,12 +672,6 @@ def transform_mesh(
         mesh.points,
         is_position=True,
     )
-    if "Normals" in transformed.point_data:
-        transformed.point_data["Normals"] = _transformations.apply_T_to_vectors(
-            T_pas,
-            np.asarray(mesh.point_data["Normals"], dtype=float),
-            is_position=False,
-        )
     return transformed
 
 
@@ -1283,21 +1273,32 @@ def add_mujoco_geometry(
     for posed_mesh, rgba in posed_meshes:
         color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))
         opacity = float(rgba[3])
+
+        # Split the sharp edges so the shading stays crisp across creases. The split
+        # duplicates the points along edges sharper than PyVista's feature angle,
+        # letting each face shade with its own normal, where plain smooth shading would
+        # average one normal across the crease and smear it.
         plotter.add_mesh(
             posed_mesh,
             color=color,
             opacity=opacity,
             smooth_shading=True,
+            split_sharp_edges=True,
             ambient=_MUJOCO_GEOMETRY_AMBIENT,
             diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
             render=False,
         )
         if T_reflect is not None:
+            # Splitting the sharp edges recomputes the normals from the triangle
+            # winding, and a reflection inverts the winding's outward sense. Flip the
+            # reflected copy's faces so the recomputed normals point outward again
+            # instead of inverting the shading.
             plotter.add_mesh(
-                _reflect_mesh(posed_mesh, T_reflect),
+                _reflect_mesh(posed_mesh, T_reflect).flip_faces(),
                 color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
                 opacity=opacity,
                 smooth_shading=True,
+                split_sharp_edges=True,
                 ambient=_MUJOCO_GEOMETRY_AMBIENT,
                 diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
                 render=False,

@@ -555,34 +555,6 @@ class TestTransformMesh(unittest.TestCase):
         transformed = _output_rendering.transform_mesh(mesh, np.eye(4, dtype=float))
         npt.assert_array_equal(transformed.faces, mesh.faces)
 
-    def test_maps_the_normals_as_directions(self) -> None:
-        """Test that point normals rotate with the mesh and ignore the translation.
-
-        A lit actor's shading reads the stored normals, so a mesh whose normals stayed
-        behind would be lit as if it still sat in its original pose. A direction has no
-        reference point, so the translation must not reach the normals.
-        """
-        mesh = pv.Plane(direction=(0.0, 0.0, 1.0), i_size=2.0, j_size=2.0)
-        rotate_T_pas = _transformations.generate_rot_T(
-            angles=np.array([180.0, 0.0, 0.0]),
-            passive=True,
-            intrinsic=False,
-            order="xyz",
-        )
-        translate_T_pas = _transformations.generate_trans_T(
-            translations=np.array([1.0, 2.0, 3.0], dtype=float), passive=True
-        )
-        T_pas = _transformations.compose_T_pas(rotate_T_pas, translate_T_pas)
-
-        transformed = _output_rendering.transform_mesh(mesh, T_pas)
-
-        expected_normals = np.tile(
-            np.array([0.0, 0.0, -1.0], dtype=float), (mesh.n_points, 1)
-        )
-        npt.assert_allclose(
-            transformed.point_data["Normals"], expected_normals, atol=1e-12
-        )
-
 
 class TestGetFreeFlightFitParallelScale(unittest.TestCase):
     """This class contains methods for testing

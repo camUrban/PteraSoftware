@@ -550,14 +550,12 @@ class MuJoCoModel:
                 is_position=True,
             )
 
-            # Map the point normals as directions through the same transformation. A lit
-            # actor's shading reads the stored normals, so leaving them behind would
-            # light the geom as if it were unrotated.
-            geom_mesh.point_data["Normals"] = _transformations.apply_T_to_vectors(
-                T_pas_geom_geomOrigin_to_parent_parentOrigin,
-                np.asarray(geom_mesh.point_data["Normals"], dtype=float),
-                is_position=False,
-            )
+            # Drop any point normals the mesh's PyVista source attached. The rendering
+            # layer recomputes shading normals from the posed triangles when it adds
+            # each geom actor, so stored normals are never read, and ones left behind
+            # here would sit stale against the posed points.
+            if "Normals" in geom_mesh.point_data:
+                del geom_mesh.point_data["Normals"]
 
             # Take the display color from the geom's material when one is assigned and
             # from the geom's own rgba otherwise.
@@ -591,9 +589,9 @@ class MuJoCoModel:
         and face arrays instead.
 
         :param geom_id: The index of the geom in the compiled model's geom arrays.
-        :return: The geom's surface as a PolyData carrying point normals, with its
-            points (in geom axes, relative to the geom origin), or None for an infinite
-            plane, a heightfield, a signed distance field, or an unrecognized geom type.
+        :return: The geom's surface as a PolyData with its points (in geom axes,
+            relative to the geom origin), or None for an infinite plane, a heightfield,
+            a signed distance field, or an unrecognized geom type.
         """
         geom_type = int(self._model.geom_type[geom_id])
         geom_size = self._model.geom_size[geom_id]
@@ -633,10 +631,7 @@ class MuJoCoModel:
             )
 
         if geom_type == mujoco.mjtGeom.mjGEOM_BOX:
-            # The box is the one primitive source that carries no point normals, so
-            # compute them here. Splitting the vertices keeps each face's normals its
-            # own, so the faces shade crisply instead of rounding over at the corners.
-            box_mesh: pv.PolyData = pv.Box(
+            return pv.Box(
                 bounds=(
                     -float(geom_size[0]),
                     float(geom_size[0]),
@@ -645,8 +640,7 @@ class MuJoCoModel:
                     -float(geom_size[2]),
                     float(geom_size[2]),
                 )
-            ).compute_normals(cell_normals=False, split_vertices=True)
-            return box_mesh
+            )
 
         if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
             mesh_id = int(self._model.geom_dataid[geom_id])
@@ -666,13 +660,7 @@ class MuJoCoModel:
             ].astype(int)
             faces = np.hstack((np.full((face_count, 1), 3, dtype=int), triangles))
 
-            # PyVista's primitive sources come with point normals, which the mesh geom's
-            # raw PolyData lacks, so compute them here to hold up get_render_geometry's
-            # guarantee that every returned mesh carries normals for lit rendering.
-            geom_mesh: pv.PolyData = pv.PolyData(
-                vertices, faces.ravel()
-            ).compute_normals(cell_normals=False)
-            return geom_mesh
+            return pv.PolyData(vertices, faces.ravel())
 
         return None
 

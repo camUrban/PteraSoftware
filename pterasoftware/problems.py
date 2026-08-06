@@ -33,6 +33,7 @@ from . import (
     _logging,
     _mujoco_model,
     _parameter_validation,
+    _private_access,
     _transformations,
     geometry,
     movements,
@@ -2218,3 +2219,24 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         final_theta_derivative_rad = float(sol.y[1][-1])
 
         return final_theta_rad, final_theta_derivative_rad
+
+
+def _get_mujoco_model(
+    problem: FreeFlightUnsteadyProblem,
+) -> _mujoco_model.MuJoCoModel:
+    """Returns a FreeFlightUnsteadyProblem's MuJoCoModel.
+
+    Defined here so the read of the FreeFlightUnsteadyProblem's private slot stays
+    inside the module that owns it. Registering it with _private_access at import time
+    lets the rendering layer reach the MuJoCoModel without any cross-module private
+    access.
+
+    :param problem: The FreeFlightUnsteadyProblem whose MuJoCoModel will be returned.
+    :return: The FreeFlightUnsteadyProblem's MuJoCoModel.
+    """
+    return problem._mujoco_model
+
+
+# Register the getter at import time so the rendering layer can look up a
+# FreeFlightUnsteadyProblem's MuJoCoModel through _private_access.
+_private_access.register_mujoco_model_getter(_get_mujoco_model)

@@ -217,6 +217,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
         | None
     ) = None,
     mujoco_assets: dict[str, bytes] | None = None,
+    extra_xml: dict[str, str] | None = None,
 ) -> ps.problems.FreeFlightUnsteadyProblem:
     """This method makes a fixture that is a FreeFlightUnsteadyProblem for general
     testing.
@@ -230,6 +231,9 @@ def make_basic_free_flight_unsteady_problem_fixture(
     :param mujoco_assets: dict or None A dict mapping virtual filenames to their binary
         contents for the MuJoCo model. If None, no extra assets are provided. The
         default is None.
+    :param extra_xml: dict or None A dict mapping injection point names to XML fragment
+        strings to inject into the generated MuJoCo XML. If None, no extra XML is
+        injected. The default is None.
     :return basic_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem This
         is the FreeFlightUnsteadyProblem configured for general testing.
     """
@@ -303,6 +307,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
         I_BP1_CgP1=np.diag([1.0, 1.0, 1.0]),
         external_loads_fn=external_loads_fn,
         mujoco_assets=mujoco_assets,
+        extra_xml=extra_xml,
     )
 
     return basic_free_flight_unsteady_problem_fixture

@@ -37,6 +37,7 @@ import webp
 from . import (
     _colormaps,
     _logging,
+    _mujoco_model,
     _output_plotting,
     _output_rendering,
     _parameter_validation,
@@ -160,6 +161,7 @@ def draw(
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool_ = False,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "draw.webp",
@@ -199,6 +201,12 @@ def draw(
         the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
         already been run. Can be a bool or a numpy bool and will be converted internally
         to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms
+        posed at the drawn time step and worldbody geoms static in Earth axes. If True,
+        the solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can be a
+        bool or a numpy bool and will be converted internally to a bool. The default is
+        False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -274,6 +282,18 @@ def draw(
     if show_wake_vortices and not solver.ran:
         raise RuntimeError(
             "solver must have run before drawing with show_wake_vortices set to True."
+        )
+
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when drawing a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
@@ -421,6 +441,21 @@ def draw(
         window_scale,
     )
 
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
+    # actors are added later, between the camera's framing fit and its clipping fit, so
+    # the body geoms can join the framing bounds while the worldbody geoms join only the
+    # clipping range.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
+    if show_mujoco_geometry:
+        assert isinstance(
+            solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            solver
+        )
+
     # If showing streamlines, plot them.
     if show_streamlines:
         streamline_surfaces = _output_rendering.get_streamline_surfaces(
@@ -439,6 +474,7 @@ def draw(
             color=_STREAMLINE_COLOR,
             line_width=_STREAMLINE_LINE_WIDTH * window_scale,
             smooth_shading=False,
+            lighting=False,
             render=False,
         )
 
@@ -453,6 +489,7 @@ def draw(
                 ),
                 line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
+                lighting=False,
                 render=False,
             )
 
@@ -490,6 +527,7 @@ def draw(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -523,7 +561,56 @@ def draw(
             center_E_Eo + 3.0 * airplane_diagonal * _freeFlightViewDirection_E
         )
         plotter.camera.up = _freeFlightViewUp_E
-        plotter.reset_camera()  # type: ignore[call-arg]
+
+        if worldbody_geoms or body_geoms:
+            # Fit the camera to explicit framing bounds: every actor already present,
+            # plus the body geoms posed at the drawn time step, plus their reflections
+            # when an image surface is defined. The fit re-centers the focal point on
+            # those bounds and keeps the view direction and up set above.
+            T_pas_BP1_CgP1_to_E_Eo = (
+                _output_rendering.get_free_flight_body_transformation(
+                    draw_operating_point
+                )
+            )
+            posed_body_geom_meshes = [
+                _output_rendering.transform_mesh(
+                    render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
+                )
+                for render_geom in body_geoms
+            ]
+            if T_reflect is not None:
+                posed_body_geom_meshes += [
+                    _output_rendering.transform_mesh(posed_body_geom_mesh, T_reflect)
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ]
+            all_bounds = np.array(
+                [plotter.bounds]
+                + [
+                    posed_body_geom_mesh.bounds
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ],
+                dtype=float,
+            )
+            framing_bounds = np.empty(6, dtype=float)
+            framing_bounds[0::2] = all_bounds[:, 0::2].min(axis=0)
+            framing_bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
+            plotter.reset_camera(bounds=tuple(framing_bounds))  # type: ignore[call-arg]
+
+            # Add the geom actors only now, so the worldbody geoms stay out of the
+            # framing fit and a worldbody geom that is much larger than the body, like a
+            # ground plane, cannot dominate it. Then re-fit only the clipping range to
+            # all actors, which keeps the fitted framing while ensuring the worldbody
+            # geoms are not cut off.
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                T_pas_BP1_CgP1_to_E_Eo,
+                T_reflect,
+            )
+            plotter.reset_camera_clipping_range()
+        else:
+            plotter.reset_camera()  # type: ignore[call-arg]
         draw_cpos = None
     elif image_surface_mesh is None:
         draw_cpos = (-1, -1, 1)
@@ -572,6 +659,7 @@ def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "animate.webp",
@@ -598,6 +686,12 @@ def animate(
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms re-
+        posed every time step and worldbody geoms static in Earth axes. If True, the
+        unsteady_solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can
+        be a bool or a numpy bool and will be converted internally to a bool. The
+        default is False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -662,6 +756,18 @@ def animate(
             " to True."
         )
 
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        unsteady_solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when animating a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
+        )
+
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
         raise ValueError("window_size must be a sequence of two ints.")
     window_width = _parameter_validation.int_in_range_return_int(
@@ -704,6 +810,27 @@ def animate(
     if is_free_flight:
         step_transforms = [
             _output_rendering.get_free_flight_transformation(
+                steady_problem.operating_point
+            )
+            for steady_problem in unsteady_solver.steady_problems
+        ]
+
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects, along with
+    # each time step's body axes to Earth axes transformation. The worldbody geoms stay
+    # fixed in Earth axes while the body geoms are re-posed every frame.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
+    step_body_transforms: list[np.ndarray] = []
+    if show_mujoco_geometry:
+        assert isinstance(
+            unsteady_solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            unsteady_solver
+        )
+        step_body_transforms = [
+            _output_rendering.get_free_flight_body_transformation(
                 steady_problem.operating_point
             )
             for steady_problem in unsteady_solver.steady_problems
@@ -870,6 +997,27 @@ def animate(
                 framing_meshes.append(last_step_wake_surfaces)
                 free_flight_clip_meshes.append(last_step_wake_surfaces)
 
+        # The body geoms fly with the body, so they join the framing fit posed at both
+        # ends of the trajectory, keeping a geom that extends past the Panel surfaces
+        # from being cropped. Only the last time step's posed copies join the clipping
+        # meshes, since the first time step's geom actors are already present when the
+        # clipping range is sized. The worldbody geoms join neither: their actors are
+        # also present when the clipping range is sized, which keeps them visible
+        # without letting a worldbody geom that is much larger than the body, like a
+        # ground plane, dominate the framing fit.
+        first_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(render_geom.mesh, step_body_transforms[0])
+            for render_geom in body_geoms
+        ]
+        last_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(
+                render_geom.mesh, step_body_transforms[last_step]
+            )
+            for render_geom in body_geoms
+        ]
+        framing_meshes += first_step_body_geom_meshes + last_step_body_geom_meshes
+        free_flight_clip_meshes += last_step_body_geom_meshes
+
         # Fit the parallel scale (half the viewport height in world units, since the
         # projection is parallel) to the projected extent of that geometry about the
         # focal point. This frames the glide snugly. The user can rescale interactively
@@ -924,6 +1072,12 @@ def animate(
         plotter, panel_surfaces, None, coloring, T_reflect, window_scale
     )
 
+    # If showing MuJoCo geometry, add it at the first time step's pose.
+    if show_mujoco_geometry:
+        _output_rendering.add_mujoco_geometry(
+            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
+        )
+
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
     # is not dominated by the much larger image surface plane. When an image surface is
@@ -938,6 +1092,7 @@ def animate(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -1007,7 +1162,7 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh, render=False)
+            plotter.add_mesh(clip_mesh, lighting=False, render=False)
             for clip_mesh in free_flight_clip_meshes
         ]
         plotter.reset_camera_clipping_range()
@@ -1088,6 +1243,16 @@ def animate(
             window_scale,
         )
 
+        # If showing MuJoCo geometry, add it at this time step's pose.
+        if show_mujoco_geometry:
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                step_body_transforms[current_step],
+                T_reflect,
+            )
+
         # If an image surface is defined, add the pre-computed image surface plane.
         if T_reflect is not None:
             assert image_surface_mesh is not None
@@ -1096,6 +1261,7 @@ def animate(
                 texture=image_surface_texture,
                 opacity=_IMAGE_SURFACE_OPACITY,
                 smooth_shading=True,
+                lighting=False,
                 render=False,
             )
 

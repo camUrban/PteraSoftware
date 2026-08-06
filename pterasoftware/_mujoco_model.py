@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import NamedTuple, TypedDict
 
 import mujoco
 import numpy as np
+import pyvista as pv
 
-from . import _transformations
+from . import _logging, _transformations
+
+_logger = _logging.get_logger("_mujoco_model")
 
 
 class MuJoCoState(TypedDict):
@@ -18,6 +21,23 @@ class MuJoCoState(TypedDict):
     velocity_E__E: np.ndarray
     omegas_BP1__E: np.ndarray
     time: float
+
+
+class RenderGeom(NamedTuple):
+    """One geom's renderable form, extracted from the compiled MuJoCo model by
+    MuJoCoModel.get_render_geometry.
+
+    mesh holds the geom's surface with its points posed in the axes of the geom's
+    parent: the first Airplane's body axes (relative to the first Airplane's CG) when
+    body_attached is True, and Earth axes (relative to the Earth origin) when it is
+    False. rgba holds the geom's display color as a (4,) ndarray of floats in the range
+    [0.0, 1.0], taken from the geom's material when one is assigned and from the geom's
+    own rgba otherwise.
+    """
+
+    mesh: pv.PolyData
+    rgba: np.ndarray
+    body_attached: bool
 
 
 class MuJoCoModel:
@@ -38,6 +58,9 @@ class MuJoCoModel:
     save_state: Saves and returns a snapshot of the model's current integration state.
 
     restore_state: Restores the model to a previously saved integration state.
+
+    get_render_geometry: Extracts the renderable geometry of every geom in the compiled
+    model.
 
     **Notes:**
 
@@ -431,6 +454,215 @@ class MuJoCoModel:
 
         # Run forward kinematics to update dependent quantities.
         mujoco.mj_forward(self._model, self._data)
+
+    def get_render_geometry(self) -> list[RenderGeom]:
+        """Extracts the renderable geometry of every geom in the compiled model.
+
+        **Notes:**
+
+        The generated model XML contains no geoms of its own, so every geom in the
+        compiled model comes from the extra_xml fragments, and any mesh assets have
+        already been decoded by MuJoCo's compiler into flat vertex and face arrays. The
+        returned meshes are therefore rebuilt from the compiled model alone, without
+        parsing XML or re-reading asset bytes.
+
+        Each geom's points are posed in the axes of its parent. For geoms attached to
+        the body, that is the first Airplane's body axes, relative to the first
+        Airplane's CG. For geoms attached to the worldbody, that is Earth axes, relative
+        to the Earth origin, since MuJoCo's world coordinates are defined to be
+        identical to Earth axes.
+
+        Infinite planes, heightfields, and signed distance field geoms have no finite
+        surface to triangulate, so they are skipped with a logged warning. A skipped
+        geom still participates in the dynamics: it is just not drawn.
+
+        :return: A list of RenderGeoms, one per drawable geom, in the compiled model's
+            geom order.
+        """
+        render_geoms: list[RenderGeom] = []
+        for geom_id in range(self._model.ngeom):
+            geom_mesh = self._get_local_geom_mesh(geom_id)
+
+            if geom_mesh is None:
+                geom_type = int(self._model.geom_type[geom_id])
+                if geom_type == mujoco.mjtGeom.mjGEOM_PLANE:
+                    shape_description = "an infinite plane"
+                elif geom_type == mujoco.mjtGeom.mjGEOM_HFIELD:
+                    shape_description = "a heightfield"
+                elif geom_type == mujoco.mjtGeom.mjGEOM_SDF:
+                    shape_description = "a signed distance field"
+                else:
+                    shape_description = "an unsupported geom type"
+
+                # Describe the skipped geom by its name when it has one and by its ID
+                # otherwise.
+                geom_name = mujoco.mj_id2name(
+                    self._model, mujoco.mjtObj.mjOBJ_GEOM, geom_id
+                )
+                geom_label = f"'{geom_name}'" if geom_name else f"with ID {geom_id}"
+                _logger.warning(
+                    _logging.indent()
+                    + "Not drawing the MuJoCo geom %s because it is %s, which this "
+                    "renderer does not support. The skipped shape still participates "
+                    "in the dynamics: it is just not drawn.",
+                    geom_label,
+                    shape_description,
+                )
+                continue
+
+            # The geom's stored orientation quaternion (scalar first) encodes
+            # R_pas_geom_to_parent, the passive rotation from the geom's local axes to
+            # the axes of its parent. MUJOCO_CONVENTIONS.md declares the informal geom,
+            # geomOrigin, parent, and parentOrigin IDs used here. For a mesh geom, the
+            # compiler has already folded the mesh's re-centering and re-orientation
+            # into the stored pose, so applying it to the stored vertices reconstructs
+            # the authored placement.
+            R_pas_geom_to_parent: np.ndarray = np.zeros(9, dtype=float)
+            mujoco.mju_quat2Mat(R_pas_geom_to_parent, self._model.geom_quat[geom_id])
+            R_pas_geom_to_parent = R_pas_geom_to_parent.reshape(3, 3)
+
+            # Lift the rotation into the transformation that maps from geom axes to
+            # parent axes while holding the reference point at the geom origin.
+            T_pas_geom_geomOrigin_to_parent_geomOrigin = np.eye(4, dtype=float)
+            T_pas_geom_geomOrigin_to_parent_geomOrigin[:3, :3] = R_pas_geom_to_parent
+
+            # The geom's stored position is geomOrigin_parent_parentOrigin, the position
+            # of the geom origin (in parent axes, relative to the parent origin). For a
+            # passive translation, the parameter is the position of the final reference
+            # point (the parent origin) relative to the initial one (the geom origin),
+            # which is its negative.
+            geomOrigin_parent_parentOrigin = self._model.geom_pos[geom_id]
+            T_pas_parent_geomOrigin_to_parent_parentOrigin = (
+                _transformations.generate_trans_T(
+                    translations=-geomOrigin_parent_parentOrigin, passive=True
+                )
+            )
+
+            T_pas_geom_geomOrigin_to_parent_parentOrigin = (
+                _transformations.compose_T_pas(
+                    T_pas_geom_geomOrigin_to_parent_geomOrigin,
+                    T_pas_parent_geomOrigin_to_parent_parentOrigin,
+                )
+            )
+            geom_mesh.points = _transformations.apply_T_to_vectors(
+                T_pas_geom_geomOrigin_to_parent_parentOrigin,
+                geom_mesh.points,
+                is_position=True,
+            )
+
+            # Drop any point normals the mesh's PyVista source attached. The rendering
+            # layer recomputes shading normals from the posed triangles when it adds
+            # each geom actor, so stored normals are never read, and ones left behind
+            # here would sit stale against the posed points.
+            if "Normals" in geom_mesh.point_data:
+                del geom_mesh.point_data["Normals"]
+
+            # Take the display color from the geom's material when one is assigned and
+            # from the geom's own rgba otherwise.
+            mat_id = int(self._model.geom_matid[geom_id])
+            if mat_id >= 0:
+                rgba = self._model.mat_rgba[mat_id].astype(float)
+            else:
+                rgba = self._model.geom_rgba[geom_id].astype(float)
+
+            render_geoms.append(
+                RenderGeom(
+                    mesh=geom_mesh,
+                    rgba=rgba,
+                    body_attached=int(self._model.geom_bodyid[geom_id])
+                    == self._body_id,
+                )
+            )
+
+        return render_geoms
+
+    def _get_local_geom_mesh(self, geom_id: int) -> pv.PolyData | None:
+        """Builds one geom's surface mesh (in geom axes, relative to the geom origin),
+        or returns None for a geom with no finite surface to triangulate.
+
+        MuJoCo's geom_size semantics differ per geom type, so each supported type reads
+        its own slots: a plane's first two sizes are the half-extents of its rendered
+        rectangle (zero meaning infinite), a sphere's first size is its radius, a
+        capsule's and a cylinder's are their radius and half-length (with their axis
+        along the local z axis), an ellipsoid's are its three radii, and a box's are its
+        three half-extents. A mesh geom ignores geom_size and reads the compiled vertex
+        and face arrays instead.
+
+        :param geom_id: The index of the geom in the compiled model's geom arrays.
+        :return: The geom's surface as a PolyData with its points (in geom axes,
+            relative to the geom origin), or None for an infinite plane, a heightfield,
+            a signed distance field, or an unrecognized geom type.
+        """
+        geom_type = int(self._model.geom_type[geom_id])
+        geom_size = self._model.geom_size[geom_id]
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_PLANE:
+            # A zero half-extent marks the plane as infinite in that direction.
+            if geom_size[0] <= 0.0 or geom_size[1] <= 0.0:
+                return None
+            return pv.Plane(
+                direction=(0.0, 0.0, 1.0),
+                i_size=2.0 * float(geom_size[0]),
+                j_size=2.0 * float(geom_size[1]),
+            )
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_SPHERE:
+            return pv.Sphere(radius=float(geom_size[0]))
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE:
+            return pv.Capsule(
+                direction=(0.0, 0.0, 1.0),
+                radius=float(geom_size[0]),
+                cylinder_length=2.0 * float(geom_size[1]),
+            )
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_ELLIPSOID:
+            return pv.ParametricEllipsoid(
+                xradius=float(geom_size[0]),
+                yradius=float(geom_size[1]),
+                zradius=float(geom_size[2]),
+            )
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_CYLINDER:
+            return pv.Cylinder(
+                direction=(0.0, 0.0, 1.0),
+                radius=float(geom_size[0]),
+                height=2.0 * float(geom_size[1]),
+            )
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_BOX:
+            return pv.Box(
+                bounds=(
+                    -float(geom_size[0]),
+                    float(geom_size[0]),
+                    -float(geom_size[1]),
+                    float(geom_size[1]),
+                    -float(geom_size[2]),
+                    float(geom_size[2]),
+                )
+            )
+
+        if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
+            mesh_id = int(self._model.geom_dataid[geom_id])
+            vert_start = int(self._model.mesh_vertadr[mesh_id])
+            vert_count = int(self._model.mesh_vertnum[mesh_id])
+            face_start = int(self._model.mesh_faceadr[mesh_id])
+            face_count = int(self._model.mesh_facenum[mesh_id])
+            vertices = self._model.mesh_vert[
+                vert_start : vert_start + vert_count
+            ].astype(float)
+
+            # The compiled face array holds each triangle's three vertex indices, local
+            # to the mesh's own vertex block. VTK's flat cell format prefixes each face
+            # with its point count.
+            triangles = self._model.mesh_face[
+                face_start : face_start + face_count
+            ].astype(int)
+            faces = np.hstack((np.full((face_count, 1), 3, dtype=int), triangles))
+
+            return pv.PolyData(vertices, faces.ravel())
+
+        return None
 
     def _rebuild_engine(self) -> None:
         """Rebuilds the native MuJoCo model and data objects from the stored XML string.

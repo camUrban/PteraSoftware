@@ -93,6 +93,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
+    - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a FreeFlightUnsteadyProblem's MuJoCoModel for the rendering layer
     - `_serialization.py`: JSON serialization and deserialization (save/load)
     - `_transformations.py`: Coordinate transformations and rotations
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation

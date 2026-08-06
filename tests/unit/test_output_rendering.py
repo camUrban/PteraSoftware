@@ -17,7 +17,11 @@ import pterasoftware as ps
 
 # noinspection PyProtectedMember
 from pterasoftware import _colormaps, _output_rendering, _transformations
-from tests.unit.fixtures import operating_point_fixtures, output_rendering_fixtures
+from tests.unit.fixtures import (
+    operating_point_fixtures,
+    output_rendering_fixtures,
+    solver_fixtures,
+)
 
 
 class TestGetWindowScale(unittest.TestCase):
@@ -254,6 +258,100 @@ class TestGetFreeFlightTransformation(unittest.TestCase):
             ),
             atol=1e-12,
         )
+
+
+class TestGetFreeFlightBodyTransformation(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.get_free_flight_body_transformation."""
+
+    def test_maps_the_cg_onto_its_earth_position(self) -> None:
+        """Test that the first Airplane's CG lands at its position in Earth axes.
+
+        The CG is the origin of the body axes the transformation maps out of, so
+        wherever the first Airplane has flown to, the CG maps onto that position.
+        """
+        operating_point = (
+            operating_point_fixtures.make_with_cg_position_operating_point_fixture()
+        )
+        T_pas = _output_rendering.get_free_flight_body_transformation(operating_point)
+        Cg_E_Eo = _transformations.apply_T_to_vectors(
+            T_pas, np.zeros(3, dtype=float), is_position=True
+        )
+        npt.assert_allclose(Cg_E_Eo, operating_point.CgP1_E_Eo, atol=1e-12)
+
+    def test_aligns_body_axes_with_earth_axes_at_zero_body_angles(self) -> None:
+        """Test that the transformation is the identity for a first Airplane at the
+        Earth origin with zero body angles.
+
+        At zero body angles, the geometry axes to Earth axes rotation is the same 180
+        degree rotation about the y axis as the constant body axes to geometry axes
+        rotation, so chaining the two cancels them and the body axes coincide with Earth
+        axes.
+        """
+        operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
+        npt.assert_allclose(
+            _output_rendering.get_free_flight_body_transformation(operating_point),
+            np.eye(4, dtype=float),
+            atol=1e-12,
+        )
+
+    def test_leaves_directions_untranslated(self) -> None:
+        """Test that the translation reaches positions alone.
+
+        A direction has no reference point, so mapping one through this transformation
+        must give what chaining the body axes to geometry axes and geometry axes to
+        Earth axes rotations alone gives.
+        """
+        operating_point = (
+            operating_point_fixtures.make_with_cg_position_operating_point_fixture()
+        )
+        direction_BP1 = np.array([1.0, 2.0, 3.0], dtype=float)
+        direction_GP1 = _transformations.apply_T_to_vectors(
+            operating_point.T_pas_BP1_CgP1_to_GP1_CgP1,
+            direction_BP1,
+            is_position=False,
+        )
+        npt.assert_allclose(
+            _transformations.apply_T_to_vectors(
+                _output_rendering.get_free_flight_body_transformation(operating_point),
+                direction_BP1,
+                is_position=False,
+            ),
+            _transformations.apply_T_to_vectors(
+                operating_point.T_pas_GP1_CgP1_to_E_CgP1,
+                direction_GP1,
+                is_position=False,
+            ),
+            atol=1e-12,
+        )
+
+
+class TestGetMuJoCoRenderGeometry(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.get_mujoco_render_geometry."""
+
+    def test_splits_worldbody_and_body_geoms(self) -> None:
+        """Test that worldbody geoms and body geoms land in their own lists."""
+        solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture(
+            extra_xml={
+                "worldbody": '<geom name="ground" type="plane" size="5 4 0.1"/>',
+                "body": '<geom name="box_geom" type="box" size="0.1 0.2 0.3"/>',
+            }
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            solver
+        )
+
+        self.assertEqual(len(worldbody_geoms), 1)
+        self.assertFalse(worldbody_geoms[0].body_attached)
+        self.assertEqual(len(body_geoms), 1)
+        self.assertTrue(body_geoms[0].body_attached)
+
+    def test_returns_empty_lists_without_extra_geometry(self) -> None:
+        """Test that a solver whose model carries no extra geoms returns two empty
+        lists."""
+        solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
+        self.assertEqual(_output_rendering.get_mujoco_render_geometry(solver), ([], []))
 
 
 class TestGetPanelSurfaces(unittest.TestCase):

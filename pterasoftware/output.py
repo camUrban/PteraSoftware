@@ -332,6 +332,11 @@ def draw(
     if not pv.OFF_SCREEN:
         render_window = plotter.ren_win
         assert render_window is not None
+        if plotter.iren is not None:
+            plotter.iren.add_observer(
+                "ConfigureEvent",
+                lambda *args: render_window.SetSize(window_width, window_height),
+            )
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
@@ -646,6 +651,10 @@ def draw(
 
     # If saving, take a screenshot and save it as a WebP.
     if save:
+        # Re-assert the requested render window size before taking the screenshot.
+        assert plotter.ren_win is not None
+        plotter.ren_win.SetSize(window_width, window_height)
+        
         image = _output_rendering.screenshot_image(plotter)
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.
@@ -860,6 +869,11 @@ def animate(
     if not pv.OFF_SCREEN:
         render_window = plotter.ren_win
         assert render_window is not None
+        if plotter.iren is not None:
+            plotter.iren.add_observer(
+                "ConfigureEvent",
+                lambda *args: render_window.SetSize(window_width, window_height),
+            )
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
@@ -1171,6 +1185,10 @@ def animate(
             plotter.remove_actor(temporary_actor, render=False)
         plotter.camera.clipping_range = free_flight_clipping_range
 
+    # Re-assert the requested render window size before capturing the first frame.
+    assert plotter.ren_win is not None
+    plotter.ren_win.SetSize(window_width, window_height)
+
     # Start a list to hold a WebP Image of each frame, beginning with this first frame.
     images = [_output_rendering.screenshot_image(plotter)]
 
@@ -1269,6 +1287,10 @@ def animate(
         # is displayed, leaving the second of its two passes to the render below.
         if T_reflect is not None:
             _output_rendering.settle_scalar_bar_layout(plotter)
+
+        # Re-assert the requested render window size before rendering this frame.
+        assert plotter.ren_win is not None
+        plotter.ren_win.SetSize(window_width, window_height)
 
         # Render the assembled frame. Every add above is made with render=False, so
         # without this the frame would never reach the screen. Rendering once the frame

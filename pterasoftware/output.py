@@ -654,7 +654,7 @@ def draw(
         # Re-assert the requested render window size before taking the screenshot.
         assert plotter.ren_win is not None
         plotter.ren_win.SetSize(window_width, window_height)
-        
+
         image = _output_rendering.screenshot_image(plotter)
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.

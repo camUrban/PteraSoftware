@@ -4,7 +4,7 @@
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.19229119-blue)](https://doi.org/10.5281/zenodo.19229119)
 ![license](https://img.shields.io/badge/license-MIT-blue)
-![build](https://github.com/camUrban/PteraSoftware/actions/workflows/tests.yml/badge.svg?branch=main)
+![build](https://github.com/camUrban/PteraSoftware/actions/workflows/ci.yml/badge.svg?branch=main)
 ![coverage](https://img.shields.io/codecov/c/gh/camUrban/PteraSoftware)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
 ![types](https://img.shields.io/badge/types-typed-blue)

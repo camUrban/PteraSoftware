@@ -82,6 +82,11 @@ repos:
         # the base64 stream collide with codespell's small typo dictionary (e.g., AEr,
         # ABL, gEs), so exclude the reports tree where these blobs live.
         exclude: ^docs/_static/benchmarks/.*\.html$
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 067260dc5fe6ea86b7551bfd6f8b3ba4e6c93129  # frozen: v1.28.0
+    hooks:
+      - id: zizmor
+        name: checker  zizmor
   - repo: local
     hooks:
       # The hooks in this repo run with language: system, so pre-commit executes
@@ -108,7 +113,7 @@ repos:
         entry: python scripts/check_ascii_only.py
         language: system
         types: [text]
-        exclude: '\.ui$'
+        exclude: '\.(svg|ui)$'
       - id: mypy
         name: checker  mypy
         entry: mypy pterasoftware examples scripts tests validation docs/website

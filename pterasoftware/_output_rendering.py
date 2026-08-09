@@ -1055,7 +1055,6 @@ def _plot_scalars(
         render=False,
     )
 
-
     max_label = plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
         position=_TEXT_MAX_POSITION,
@@ -1236,7 +1235,6 @@ def add_frame_geometry(
     return actors
 
 
-
 def add_mujoco_geometry(
     plotter: pv.Plotter,
     worldbody_geoms: list[_mujoco_model.RenderGeom],
@@ -1272,7 +1270,6 @@ def add_mujoco_geometry(
         image surface is defined, in which case no reflected copies are added.
     :return: A list of the actors added to the plotter.
     """
-
     actors: list[pv.Actor] = []
     posed_meshes = [
         (render_geom.mesh, render_geom.rgba) for render_geom in worldbody_geoms

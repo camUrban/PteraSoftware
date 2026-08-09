@@ -73,6 +73,7 @@ def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
     for actor in actors:
         actor.prop.opacity = opacity
 
+
 # Define the colors of the series in the results plots.
 [
     _ALPHA_COLOR,
@@ -450,7 +451,6 @@ def draw(
         T_reflect,
         window_scale,
     )
-
 
     # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
     # actors are added later, between the camera's framing fit and its clipping fit, so
@@ -1054,8 +1054,8 @@ def animate(
     preview_actors: list[pv.Actor] = []
 
     # Show the first and last time steps together during framing. This gives the user
-    # both the initial body pose and the final wake/trajectory extent without multiplying
-    # actors across every time step of a long simulation.
+    # both the initial body pose and the final wake/trajectory extent without
+    # multiplying actors across every time step of a long simulation.
     first_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
     if is_free_flight:
         first_panel_surfaces = _output_rendering.transform_mesh(
@@ -1081,7 +1081,9 @@ def animate(
         preview_actors.extend(first_mujoco_actors)
 
     if last_step != 0:
-        last_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[last_step])
+        last_panel_surfaces = _output_rendering.get_panel_surfaces(
+            step_airplanes[last_step]
+        )
         if is_free_flight:
             last_panel_surfaces = _output_rendering.transform_mesh(
                 last_panel_surfaces, step_transforms[last_step]

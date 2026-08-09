@@ -185,6 +185,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * Cameron Hendrikse ([MonoChromatical](https://github.com/MonoChromatical))
 * Abdullah Imran ([codexabdullah](https://github.com/codexabdullah))
 * [w3lld1](https://github.com/w3lld1)
+* Shaziya Hussain ([ShaziyaHussain](https://github.com/ShaziyaHussain))
 
 ### Supporters
 

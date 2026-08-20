@@ -1286,7 +1286,8 @@ def add_mujoco_geometry(
     # the scene, so the headlight changes nothing else. An animation clears the
     # Plotter's lights along with its actors between frames, so the light is added here,
     # once per assembled frame.
-    plotter.add_light(pv.Light(light_type="headlight"))
+    if not plotter.renderer.lights:
+        plotter.add_light(pv.Light(light_type="headlight"))
 
     for posed_mesh, rgba in posed_meshes:
         color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))

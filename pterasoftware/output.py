@@ -67,13 +67,6 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # visualizations pin it rather than take the default.
 _MULTI_SAMPLES = 4
 
-
-def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
-    """Sets the opacity of temporary animation-preview actors."""
-    for actor in actors:
-        actor.prop.opacity = opacity
-
-
 # Define the colors of the series in the results plots.
 [
     _ALPHA_COLOR,
@@ -159,6 +152,18 @@ _freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
 _freeFlightViewDirection_E = _freeFlightViewDirection_E / np.linalg.norm(
     _freeFlightViewDirection_E
 )
+
+
+def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
+    """Sets the opacity of temporary animation-preview actors.
+
+    :param actors: The actors whose opacity should be changed.
+    :param opacity: The opacity to apply to the actors.
+    :return: None.
+    """
+    for actor in actors:
+        if isinstance(actor, pv.Actor):
+            actor.prop.opacity = opacity
 
 
 def draw(
@@ -648,6 +653,7 @@ def draw(
         # Show the Plotter for 1 second, then proceed automatically. This is useful for
         # testing.
         plotter.show(
+            title="Testing. Please wait.",
             cpos=draw_cpos,
             full_screen=False,
             interactive=False,
@@ -1062,6 +1068,10 @@ def animate(
             first_panel_surfaces, step_transforms[0]
         )
 
+    plotter.enable_depth_peeling(
+        number_of_peels=8, occlusion_ratio=0.0
+    )  # type: ignore[call-arg]
+
     first_preview_actors = _output_rendering.add_frame_geometry(
         plotter,
         first_panel_surfaces,
@@ -1099,11 +1109,29 @@ def animate(
                     last_wake_surfaces, step_transforms[last_step]
                 )
 
+        last_coloring: _output_rendering.ScalarColoring | None = None
+        if scalar_type is not None:
+            assert color_map is not None
+            assert muted_color_map is not None
+            last_coloring = _output_rendering.ScalarColoring(
+                _output_rendering.get_scalars(
+                    step_airplanes[last_step],
+                    scalar_type,
+                    unsteady_solver.steady_problems[last_step].operating_point.qInf__E,
+                ),
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                muted_color_map,
+                c_min,
+                c_max,
+            )
         last_preview_actors = _output_rendering.add_frame_geometry(
             plotter,
             last_panel_surfaces,
             last_wake_surfaces,
-            None,
+            last_coloring,
             T_reflect,
             window_scale,
         )
@@ -1181,9 +1209,8 @@ def animate(
     if not testing:
         plotter.show(
             title=(
-                "Orient the view using the first/last ghost preview, "
-                "then press any key to produce the animation. "
-                "The ghost preview will not appear in the saved animation."
+                "Orient the view, then press any key. "
+                "The ghosts preview the animation and are not saved."
             ),
             cpos=animate_cpos,
             full_screen=False,
@@ -1205,27 +1232,11 @@ def animate(
         )
         time.sleep(1)
 
+    plotter.disable_depth_peeling()  # type: ignore[call-arg]
+
     # Remove the temporary preview actors before the animation begins.
     for actor in preview_actors:
         plotter.remove_actor(actor, render=False)
-
-    # The user may have reoriented or rescaled the view during the held first frame.
-    # Preserve that camera and only size the clipping range so every frame stays
-    # visible: temporarily add the last frame's geometry (the first frame's is already
-    # present), fit the clipping range to both, then remove the temporary actors. The
-    # body moves through the scene, so a clipping range fit to the first frame alone
-    # would clip later frames.
-    if is_free_flight:
-        temporary_actors = [
-            plotter.add_mesh(clip_mesh, lighting=False, render=False)
-            for clip_mesh in free_flight_clip_meshes
-        ]
-        plotter.reset_camera_clipping_range()
-        free_flight_clipping_range = plotter.camera.clipping_range
-        for temporary_actor in temporary_actors:
-            plotter.remove_actor(temporary_actor, render=False)
-        plotter.camera.clipping_range = free_flight_clipping_range
-
     # Rebuild the first frame as the actual animation frame after removing the preview.
     # The preview is intentionally uncolored and translucent, so the first saved frame
     # must be assembled again with its real scalar coloring and full opacity.
@@ -1234,7 +1245,6 @@ def animate(
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
-
     first_frame_wake_surfaces = None
     first_frame_coloring: _output_rendering.ScalarColoring | None = None
     if scalar_type is not None and first_results_step == 0:
@@ -1254,7 +1264,6 @@ def animate(
             c_min,
             c_max,
         )
-
     _output_rendering.add_frame_geometry(
         plotter,
         first_frame_panel_surfaces,
@@ -1274,6 +1283,23 @@ def animate(
     if T_reflect is not None:
         assert image_surface_mesh is not None
         _output_rendering.settle_scalar_bar_layout(plotter)
+
+    # The user may have reoriented or rescaled the view during the held first frame.
+    # Preserve that camera and only size the clipping range so every frame stays
+    # visible: temporarily add the last frame's geometry (the first frame's is already
+    # present), fit the clipping range to both, then remove the temporary actors. The
+    # body moves through the scene, so a clipping range fit to the first frame alone
+    # would clip later frames.
+    if is_free_flight:
+        temporary_actors = [
+            plotter.add_mesh(clip_mesh, lighting=False, render=False)
+            for clip_mesh in free_flight_clip_meshes
+        ]
+        plotter.reset_camera_clipping_range()
+        free_flight_clipping_range = plotter.camera.clipping_range
+        for temporary_actor in temporary_actors:
+            plotter.remove_actor(temporary_actor, render=False)
+        plotter.camera.clipping_range = free_flight_clipping_range
 
     plotter.render()
 

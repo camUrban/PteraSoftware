@@ -13,6 +13,7 @@ None
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Sequence
 from typing import cast
 
@@ -168,6 +169,8 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             calculate_streamlines, "calculate_streamlines"
         )
 
+        run_start_time = time.time()
+
         # Report the thread dispatch settings this run's kernel launches will operate
         # under, and warn if Numba's threading layer will make them slow.
         _aerodynamics_functions.report_thread_settings()
@@ -209,6 +212,12 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         if calculate_streamlines:
             _logger.debug(_logging.indent() + "Calculating streamlines")
             _functions.calculate_streamlines(self)
+
+        _logger.info(
+            _logging.indent()
+            + "Steady horseshoe vortex lattice method solver completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
 
         # Mark that the solver has run.
         self._ran = True

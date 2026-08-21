@@ -17,6 +17,7 @@ varying the base operating conditions until the net loads are sufficiently low.
 from __future__ import annotations
 
 import copy
+import time
 from collections.abc import Sequence
 from typing import Any
 
@@ -24,6 +25,7 @@ import numpy as np
 import scipy.optimize as sp_opt
 
 from . import (
+    _functions,
     _logging,
     _parameter_validation,
     movements,
@@ -356,6 +358,8 @@ def analyze_steady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
+    run_start_time = time.time()
+
     _logger.info(_logging.indent() + "Beginning trim analysis")
 
     # Report which variables this analysis searches and their bounds. The state messages
@@ -406,6 +410,11 @@ def analyze_steady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable value reached with local search")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -432,6 +441,11 @@ def analyze_steady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -442,6 +456,11 @@ def analyze_steady_trim(
     _logger.critical(
         _logging.indent()
         + "No trim condition found, increase bounds or maximum iterations"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Trim analysis completed in "
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None
 
@@ -825,6 +844,8 @@ def analyze_unsteady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
+    run_start_time = time.time()
+
     _logger.info(_logging.indent() + "Beginning trim analysis")
 
     # Report which variables this analysis searches and their bounds. The state messages
@@ -875,6 +896,11 @@ def analyze_unsteady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable value reached with local search")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -901,6 +927,11 @@ def analyze_unsteady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -911,5 +942,10 @@ def analyze_unsteady_trim(
     _logger.critical(
         _logging.indent()
         + "No trim condition found, increase bounds or maximum iterations"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Trim analysis completed in "
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None

@@ -1067,27 +1067,46 @@ def animate(
         first_panel_surfaces = _output_rendering.transform_mesh(
             first_panel_surfaces, step_transforms[0]
         )
-
+    first_frame_coloring: _output_rendering.ScalarColoring | None = None
+    if scalar_type is not None and first_results_step == 0:
+        assert color_map is not None
+        assert muted_color_map is not None
+        first_frame_coloring = _output_rendering.ScalarColoring(
+            _output_rendering.get_scalars(
+                step_airplanes[0],
+                scalar_type,
+                unsteady_solver.steady_problems[0].operating_point.qInf__E,
+            ),
+            scalar_type,
+            min_scalar,
+            max_scalar,
+            color_map,
+            muted_color_map,
+            c_min,
+            c_max,
+        )
     plotter.enable_depth_peeling(
-        number_of_peels=8, occlusion_ratio=0.0
+        number_of_peels=0, occlusion_ratio=0.0
     )  # type: ignore[call-arg]
 
     first_preview_actors = _output_rendering.add_frame_geometry(
         plotter,
         first_panel_surfaces,
         None,
-        None,
+        first_frame_coloring,
         T_reflect,
         window_scale,
     )
-    _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+    if last_step != 0:
+        _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
     preview_actors.extend(first_preview_actors)
 
     if show_mujoco_geometry:
         first_mujoco_actors = _output_rendering.add_mujoco_geometry(
             plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
         )
-        _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+        if last_step != 0:
+            _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
         preview_actors.extend(first_mujoco_actors)
 
     if last_step != 0:
@@ -1207,30 +1226,30 @@ def animate(
     # and proceed. If testing, show the Plotter with the first time step for 1 second,
     # and start the animation with the current window view.
     if not testing:
+        title = "Orient the view, then press any key."
+        if last_step != 0:
+            title += " The ghosts preview the animation and are not saved."
         plotter.show(
-            title=(
-                "Orient the view, then press any key. "
-                "The ghosts preview the animation and are not saved."
-            ),
+            title=title,
             cpos=animate_cpos,
             full_screen=False,
             auto_close=False,
         )
-        assert plotter.ren_win is not None
-        plotter.ren_win.SetWindowName(
-            "Rendering animation. Please leave the window open until rendering finishes."
-        )
-        plotter.render()
 
     else:
         plotter.show(
-            title="Rendering animation. Please leave the window open until rendering finishes.",
+            title="Testing. Please wait.",
             cpos=animate_cpos,
             full_screen=False,
             interactive=False,
             auto_close=False,
         )
         time.sleep(1)
+    assert plotter.ren_win is not None
+    plotter.ren_win.SetWindowName(
+        "Rendering animation. Please leave the window open until rendering finishes."
+    )
+    plotter.render()
 
     plotter.disable_depth_peeling()  # type: ignore[call-arg]
 
@@ -1238,32 +1257,12 @@ def animate(
     for actor in preview_actors:
         plotter.remove_actor(actor, render=False)
     # Rebuild the first frame as the actual animation frame after removing the preview.
-    # The preview is intentionally uncolored and translucent, so the first saved frame
-    # must be assembled again with its real scalar coloring and full opacity.
     first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
     if is_free_flight:
         first_frame_panel_surfaces = _output_rendering.transform_mesh(
             first_frame_panel_surfaces, step_transforms[0]
         )
     first_frame_wake_surfaces = None
-    first_frame_coloring: _output_rendering.ScalarColoring | None = None
-    if scalar_type is not None and first_results_step == 0:
-        assert color_map is not None
-        assert muted_color_map is not None
-        first_frame_coloring = _output_rendering.ScalarColoring(
-            _output_rendering.get_scalars(
-                step_airplanes[0],
-                scalar_type,
-                unsteady_solver.steady_problems[0].operating_point.qInf__E,
-            ),
-            scalar_type,
-            min_scalar,
-            max_scalar,
-            color_map,
-            muted_color_map,
-            c_min,
-            c_max,
-        )
     _output_rendering.add_frame_geometry(
         plotter,
         first_frame_panel_surfaces,

@@ -57,6 +57,8 @@ _logger = _logging.get_logger("output")
 _STREAMLINE_COLOR = "orchid"
 _STREAMLINE_LINE_WIDTH = 2.0
 _IMAGE_SURFACE_OPACITY = 0.5
+_ANIMATE_PREVIEW_FIRST_OPACITY = 0.10
+_ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
@@ -150,6 +152,18 @@ _freeFlightViewDirection_E = np.array([1.0, -1.0, -1.0], dtype=float)
 _freeFlightViewDirection_E = _freeFlightViewDirection_E / np.linalg.norm(
     _freeFlightViewDirection_E
 )
+
+
+def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
+    """Sets the opacity of temporary animation-preview actors.
+
+    :param actors: The actors whose opacity should be changed.
+    :param opacity: The opacity to apply to the actors.
+    :return: None.
+    """
+    for actor in actors:
+        if isinstance(actor, pv.Actor):
+            actor.prop.opacity = opacity
 
 
 def draw(
@@ -332,6 +346,8 @@ def draw(
     if not pv.OFF_SCREEN:
         render_window = plotter.ren_win
         assert render_window is not None
+        render_window.Render()
+        render_window.SetWindowName("Assembling the scene. Please wait.")
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
@@ -637,6 +653,7 @@ def draw(
         # Show the Plotter for 1 second, then proceed automatically. This is useful for
         # testing.
         plotter.show(
+            title="Testing. Please wait.",
             cpos=draw_cpos,
             full_screen=False,
             interactive=False,
@@ -861,6 +878,8 @@ def animate(
         render_window = plotter.ren_win
         assert render_window is not None
         render_window.Render()
+        render_window.SetWindowName("Assembling the scene. Please wait.")
+        render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
             pv.close_all()
@@ -1037,21 +1056,22 @@ def animate(
             plotter, playback, window_scale, animate_text_color
         )
 
-    # Get the Panel surfaces of the first time step's Airplane(s), mapping them into
-    # Earth axes for free flight.
-    panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
-    if is_free_flight:
-        panel_surfaces = _output_rendering.transform_mesh(
-            panel_surfaces, step_transforms[0]
-        )
+    # Hold the temporary preview actors shown during the framing phase.
+    preview_actors: list[pv.Actor] = []
 
-    # Choose the first time step's scalar coloring, leaving it None to color the Panels
-    # uniformly.
-    coloring: _output_rendering.ScalarColoring | None = None
+    # Show the first and last time steps together during framing. This gives the user
+    # both the initial body pose and the final wake/trajectory extent without
+    # multiplying actors across every time step of a long simulation.
+    first_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
+    if is_free_flight:
+        first_panel_surfaces = _output_rendering.transform_mesh(
+            first_panel_surfaces, step_transforms[0]
+        )
+    first_frame_coloring: _output_rendering.ScalarColoring | None = None
     if scalar_type is not None and first_results_step == 0:
         assert color_map is not None
         assert muted_color_map is not None
-        coloring = _output_rendering.ScalarColoring(
+        first_frame_coloring = _output_rendering.ScalarColoring(
             _output_rendering.get_scalars(
                 step_airplanes[0],
                 scalar_type,
@@ -1065,18 +1085,88 @@ def animate(
             c_min,
             c_max,
         )
+    plotter.enable_depth_peeling(
+        number_of_peels=0, occlusion_ratio=0.0
+    )  # type: ignore[call-arg]
 
-    # Add the first time step's geometry. No wake is passed, since the first time step
-    # has not shed one yet.
-    _output_rendering.add_frame_geometry(
-        plotter, panel_surfaces, None, coloring, T_reflect, window_scale
+    first_preview_actors = _output_rendering.add_frame_geometry(
+        plotter,
+        first_panel_surfaces,
+        None,
+        first_frame_coloring,
+        T_reflect,
+        window_scale,
     )
+    if last_step != 0:
+        _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+    preview_actors.extend(first_preview_actors)
 
-    # If showing MuJoCo geometry, add it at the first time step's pose.
     if show_mujoco_geometry:
-        _output_rendering.add_mujoco_geometry(
+        first_mujoco_actors = _output_rendering.add_mujoco_geometry(
             plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
         )
+        if last_step != 0:
+            _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+        preview_actors.extend(first_mujoco_actors)
+
+    if last_step != 0:
+        last_panel_surfaces = _output_rendering.get_panel_surfaces(
+            step_airplanes[last_step]
+        )
+        if is_free_flight:
+            last_panel_surfaces = _output_rendering.transform_mesh(
+                last_panel_surfaces, step_transforms[last_step]
+            )
+
+        last_wake_surfaces = None
+        if show_wake_vortices:
+            last_wake_surfaces = _output_rendering.get_wake_ring_vortex_surfaces(
+                unsteady_solver, last_step
+            )
+            if is_free_flight:
+                last_wake_surfaces = _output_rendering.transform_mesh(
+                    last_wake_surfaces, step_transforms[last_step]
+                )
+
+        last_coloring: _output_rendering.ScalarColoring | None = None
+        if scalar_type is not None:
+            assert color_map is not None
+            assert muted_color_map is not None
+            last_coloring = _output_rendering.ScalarColoring(
+                _output_rendering.get_scalars(
+                    step_airplanes[last_step],
+                    scalar_type,
+                    unsteady_solver.steady_problems[last_step].operating_point.qInf__E,
+                ),
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                muted_color_map,
+                c_min,
+                c_max,
+            )
+        last_preview_actors = _output_rendering.add_frame_geometry(
+            plotter,
+            last_panel_surfaces,
+            last_wake_surfaces,
+            last_coloring,
+            T_reflect,
+            window_scale,
+        )
+        _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+        preview_actors.extend(last_preview_actors)
+
+        if show_mujoco_geometry:
+            last_mujoco_actors = _output_rendering.add_mujoco_geometry(
+                plotter,
+                [],
+                body_geoms,
+                step_body_transforms[last_step],
+                T_reflect,
+            )
+            _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+            preview_actors.extend(last_mujoco_actors)
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
@@ -1136,23 +1226,62 @@ def animate(
     # and proceed. If testing, show the Plotter with the first time step for 1 second,
     # and start the animation with the current window view.
     if not testing:
+        title = "Orient the view, then press any key."
+        if last_step != 0:
+            title += " The ghosts preview the animation and are not saved."
         plotter.show(
-            title="Orient the view, then press any key to produce the animation.",
+            title=title,
             cpos=animate_cpos,
             full_screen=False,
             auto_close=False,
         )
-        assert plotter.ren_win is not None
-        plotter.ren_win.SetWindowName("Rendering speed not to scale.")
+
     else:
         plotter.show(
-            title="Rendering speed not to scale.",
+            title="Testing. Please wait.",
             cpos=animate_cpos,
             full_screen=False,
             interactive=False,
             auto_close=False,
         )
         time.sleep(1)
+    assert plotter.ren_win is not None
+    plotter.ren_win.SetWindowName(
+        "Rendering animation. Please leave the window open until rendering finishes."
+    )
+    plotter.render()
+
+    plotter.disable_depth_peeling()  # type: ignore[call-arg]
+
+    # Remove the temporary preview actors before the animation begins.
+    for actor in preview_actors:
+        plotter.remove_actor(actor, render=False)
+    # Rebuild the first frame as the actual animation frame after removing the preview.
+    first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
+    if is_free_flight:
+        first_frame_panel_surfaces = _output_rendering.transform_mesh(
+            first_frame_panel_surfaces, step_transforms[0]
+        )
+    first_frame_wake_surfaces = None
+    _output_rendering.add_frame_geometry(
+        plotter,
+        first_frame_panel_surfaces,
+        first_frame_wake_surfaces,
+        first_frame_coloring,
+        T_reflect,
+        window_scale,
+    )
+    if show_mujoco_geometry:
+        _output_rendering.add_mujoco_geometry(
+            plotter,
+            worldbody_geoms,
+            body_geoms,
+            step_body_transforms[0],
+            T_reflect,
+        )
+    if T_reflect is not None:
+        assert image_surface_mesh is not None
+        _output_rendering.settle_scalar_bar_layout(plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
     # Preserve that camera and only size the clipping range so every frame stays
@@ -1170,6 +1299,8 @@ def animate(
         for temporary_actor in temporary_actors:
             plotter.remove_actor(temporary_actor, render=False)
         plotter.camera.clipping_range = free_flight_clipping_range
+
+    plotter.render()
 
     # Start a list to hold a WebP Image of each frame, beginning with this first frame.
     images = [_output_rendering.screenshot_image(plotter)]

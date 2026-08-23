@@ -999,7 +999,7 @@ def _plot_scalars(
     panel_surfaces: pv.PolyData,
     window_scale: float,
     text_color: tuple[int, int, int] = TEXT_COLOR,
-) -> None:
+) -> list[pv.Actor]:
     """Plots a scalar bar, the surfaces of a set of Panels with particular scalars, and
     labels for the minimum and maximum scalar values.
 
@@ -1018,7 +1018,7 @@ def _plot_scalars(
         get_window_scale.
     :param text_color: The color used for the scalar bar and label text. The default is
         TEXT_COLOR.
-    :return: None
+    :return: A list of the actors added to the plotter.
     """
     scalar_bar_args = dict(
         title=scalar_type.title() + " Coefficient",
@@ -1038,7 +1038,7 @@ def _plot_scalars(
         # once whole, which reads on screen as the scalar bar and the labels flashing.
         render=False,
     )
-    plotter.add_mesh(
+    panel_actor = plotter.add_mesh(
         panel_surfaces,
         show_edges=True,
         line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
@@ -1070,6 +1070,8 @@ def _plot_scalars(
     for label in (max_label, min_label):
         label.prop.justification_horizontal = "right"
 
+    return [panel_actor, max_label, min_label]
+
 
 class ScalarColoring(NamedTuple):
     """Everything needed to color one frame's Panels by a scalar, and to color their
@@ -1100,7 +1102,7 @@ def add_frame_geometry(
     coloring: ScalarColoring | None,
     T_reflect: np.ndarray | None,
     window_scale: float,
-) -> None:
+) -> list[pv.Actor]:
     """Adds one frame's geometry to a Plotter, which is the wake, the Panels, and, when
     an image surface is defined, a muted reflected copy of both.
 
@@ -1124,48 +1126,55 @@ def add_frame_geometry(
         is defined, in which case no reflected geometry is added.
     :param window_scale: The factor by which to scale the scalar bar and label font
         sizes, as returned by get_window_scale.
-    :return: None
+    :return: A list of the actors added to the plotter.
     """
+    actors: list[pv.Actor] = []
     # Add the wake ring vortex surfaces if they are being shown.
     if wake_surfaces is not None:
-        plotter.add_mesh(
-            wake_surfaces,
-            show_edges=True,
-            line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
-            smooth_shading=False,
-            color=_WAKE_VORTEX_COLOR,
-            lighting=False,
-            render=False,
+        actors.append(
+            plotter.add_mesh(
+                wake_surfaces,
+                show_edges=True,
+                line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
+                smooth_shading=False,
+                color=_WAKE_VORTEX_COLOR,
+                lighting=False,
+                render=False,
+            )
         )
 
     # Plot the Panels either with scalar coloring or with a uniform color.
     if coloring is not None:
-        _plot_scalars(
-            plotter,
-            coloring.scalars,
-            coloring.scalar_type,
-            coloring.min_scalar,
-            coloring.max_scalar,
-            coloring.color_map,
-            coloring.c_min,
-            coloring.c_max,
-            panel_surfaces,
-            window_scale,
-            text_color=TEXT_COLOR_SURFACE if T_reflect is not None else TEXT_COLOR,
+        actors.extend(
+            _plot_scalars(
+                plotter,
+                coloring.scalars,
+                coloring.scalar_type,
+                coloring.min_scalar,
+                coloring.max_scalar,
+                coloring.color_map,
+                coloring.c_min,
+                coloring.c_max,
+                panel_surfaces,
+                window_scale,
+                text_color=TEXT_COLOR_SURFACE if T_reflect is not None else TEXT_COLOR,
+            )
         )
     else:
-        plotter.add_mesh(
-            panel_surfaces,
-            show_edges=True,
-            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
-            color=_PANEL_COLOR,
-            smooth_shading=False,
-            lighting=False,
-            render=False,
+        actors.append(
+            plotter.add_mesh(
+                panel_surfaces,
+                show_edges=True,
+                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+                color=_PANEL_COLOR,
+                smooth_shading=False,
+                lighting=False,
+                render=False,
+            )
         )
 
     if T_reflect is None:
-        return
+        return actors
 
     # An image surface is defined, so add the reflected geometry. It is muted toward
     # gray so that it reads as a reflection rather than as more geometry.
@@ -1175,43 +1184,51 @@ def add_frame_geometry(
     # Add reflected Panel surfaces with muted coloring.
     reflected_panel_surfaces = _reflect_mesh(panel_surfaces, T_reflect)
     if coloring is not None:
-        plotter.add_mesh(
-            reflected_panel_surfaces,
-            show_edges=True,
-            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
-            edge_color=muted_edge_color,
-            cmap=coloring.muted_color_map,
-            clim=[coloring.c_min, coloring.c_max],
-            scalars=coloring.scalars,
-            smooth_shading=False,
-            show_scalar_bar=False,
-            lighting=False,
-            render=False,
+        actors.append(
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+                edge_color=muted_edge_color,
+                cmap=coloring.muted_color_map,
+                clim=[coloring.c_min, coloring.c_max],
+                scalars=coloring.scalars,
+                smooth_shading=False,
+                show_scalar_bar=False,
+                lighting=False,
+                render=False,
+            )
         )
+
     else:
-        plotter.add_mesh(
-            reflected_panel_surfaces,
-            show_edges=True,
-            line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
-            edge_color=muted_edge_color,
-            color=mute_color(_PANEL_COLOR, mute),
-            smooth_shading=False,
-            lighting=False,
-            render=False,
+        actors.append(
+            plotter.add_mesh(
+                reflected_panel_surfaces,
+                show_edges=True,
+                line_width=_PANEL_EDGE_LINE_WIDTH * window_scale,
+                edge_color=muted_edge_color,
+                color=mute_color(_PANEL_COLOR, mute),
+                smooth_shading=False,
+                lighting=False,
+                render=False,
+            )
         )
 
     # Add reflected wake ring vortex surfaces if they are being shown.
     if wake_surfaces is not None:
-        plotter.add_mesh(
-            _reflect_mesh(wake_surfaces, T_reflect),
-            show_edges=True,
-            line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
-            edge_color=muted_edge_color,
-            smooth_shading=False,
-            color=mute_color(_WAKE_VORTEX_COLOR, mute),
-            lighting=False,
-            render=False,
+        actors.append(
+            plotter.add_mesh(
+                _reflect_mesh(wake_surfaces, T_reflect),
+                show_edges=True,
+                line_width=_WAKE_VORTEX_EDGE_LINE_WIDTH * window_scale,
+                edge_color=muted_edge_color,
+                smooth_shading=False,
+                color=mute_color(_WAKE_VORTEX_COLOR, mute),
+                lighting=False,
+                render=False,
+            )
         )
+    return actors
 
 
 def add_mujoco_geometry(
@@ -1220,7 +1237,7 @@ def add_mujoco_geometry(
     body_geoms: list[_mujoco_model.RenderGeom],
     T_pas_BP1_CgP1_to_E_Eo: np.ndarray,
     T_reflect: np.ndarray | None,
-) -> None:
+) -> list[pv.Actor]:
     """Adds one frame's MuJoCo geometry to a Plotter, alongside muted reflected copies
     when an image surface is defined.
 
@@ -1247,8 +1264,9 @@ def add_mujoco_geometry(
     :param T_reflect: A (4,4) ndarray of floats representing the active transformation
         (in Earth axes) that reflects geometry across the image surface, or None when no
         image surface is defined, in which case no reflected copies are added.
-    :return: None
+    :return: A list of the actors added to the plotter.
     """
+    actors: list[pv.Actor] = []
     posed_meshes = [
         (render_geom.mesh, render_geom.rgba) for render_geom in worldbody_geoms
     ] + [
@@ -1256,7 +1274,7 @@ def add_mujoco_geometry(
         for render_geom in body_geoms
     ]
     if not posed_meshes:
-        return
+        return actors
 
     # Add the headlight that shades the geom actors, which follows the camera so the
     # geoms stay legible from any orientation the user chooses. Every non-geom actor is
@@ -1264,7 +1282,8 @@ def add_mujoco_geometry(
     # the scene, so the headlight changes nothing else. An animation clears the
     # Plotter's lights along with its actors between frames, so the light is added here,
     # once per assembled frame.
-    plotter.add_light(pv.Light(light_type="headlight"))
+    if not plotter.renderer.lights:
+        plotter.add_light(pv.Light(light_type="headlight"))
 
     for posed_mesh, rgba in posed_meshes:
         color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))
@@ -1274,7 +1293,7 @@ def add_mujoco_geometry(
         # duplicates the points along edges sharper than PyVista's feature angle,
         # letting each face shade with its own normal, where plain smooth shading would
         # average one normal across the crease and smear it.
-        plotter.add_mesh(
+        actor = plotter.add_mesh(
             posed_mesh,
             color=color,
             opacity=opacity,
@@ -1284,12 +1303,13 @@ def add_mujoco_geometry(
             diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
             render=False,
         )
+        actors.append(actor)
         if T_reflect is not None:
             # Splitting the sharp edges recomputes the normals from the triangle
             # winding, and a reflection inverts the winding's outward sense. Flip the
             # reflected copy's faces so the recomputed normals point outward again
             # instead of inverting the shading.
-            plotter.add_mesh(
+            actor = plotter.add_mesh(
                 _reflect_mesh(posed_mesh, T_reflect).flip_faces(),
                 color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
                 opacity=opacity,
@@ -1299,3 +1319,5 @@ def add_mujoco_geometry(
                 diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
                 render=False,
             )
+            actors.append(actor)
+    return actors

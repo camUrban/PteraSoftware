@@ -448,6 +448,89 @@ class Airplane:
             self._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
         return self._T_pas_G_Cg_to_GP1_CgP1
 
+    # --- Named Wind Axes Force Components and Coefficients ---
+    @property
+    def induced_drag_W(self) -> float | None:
+        """The total induced drag force experienced by this Airplane (in wind axes).
+
+        Induced drag points opposite the wind axes x axis, so it is the negative of the
+        wind axes x force component.
+
+        :return: The induced drag force in Newtons, or None if forces_W has not been
+            set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[0])
+
+    @property
+    def side_force_W(self) -> float | None:
+        """The total side force experienced by this Airplane (in wind axes).
+
+        Side force points along the wind axes y axis, so it equals the wind axes y force
+        component.
+
+        :return: The side force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(self.forces_W[1])
+
+    @property
+    def lift_W(self) -> float | None:
+        """The total lift force experienced by this Airplane (in wind axes).
+
+        Lift points opposite the wind axes z axis, so it is the negative of the wind
+        axes z force component.
+
+        :return: The lift force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[2])
+
+    @property
+    def induced_drag_coefficient_W(self) -> float | None:
+        """The total induced drag force coefficient experienced by this Airplane (in
+        wind axes).
+
+        The induced drag coefficient points opposite the wind axes x axis, so it is the
+        negative of the wind axes x force coefficient component.
+
+        :return: The induced drag coefficient, or None if forceCoefficients_W has not
+            been set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(-self.forceCoefficients_W[0])
+
+    @property
+    def side_force_coefficient_W(self) -> float | None:
+        """The total side force coefficient experienced by this Airplane (in wind axes).
+
+        The side force coefficient points along the wind axes y axis, so it equals the
+        wind axes y force coefficient component.
+
+        :return: The side force coefficient, or None if forceCoefficients_W has not been
+            set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(self.forceCoefficients_W[1])
+
+    @property
+    def lift_coefficient_W(self) -> float | None:
+        """The total lift force coefficient experienced by this Airplane (in wind axes).
+
+        The lift coefficient points opposite the wind axes z axis, so it is the
+        negative of the wind axes z force coefficient component.
+
+        :return: The lift coefficient, or None if forceCoefficients_W has not been set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(-self.forceCoefficients_W[2])
+
     # --- Other methods ---
     def draw(
         self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False

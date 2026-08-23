@@ -172,6 +172,10 @@ The standard abbreviations and names are given below for reference. See the sect
 * Non-local reference examples
     * Text: ...in the first Problem's wind axes...
     * Variables: ...\_WPr1...
+* Named force components and coefficients
+    * Induced drag: The aerodynamic force component in the wind axes' -x basis direction (opposing freestream velocity). It is the negative of the wind axes x force component (`-fX_W`) or force coefficient (`-cFX_W`), denoted in code by `induced_drag_W` and `induced_drag_coefficient_W` (or `CDi`).
+    * Side force: The aerodynamic force component along the wind axes' +y basis direction (towards starboard). It equals the wind axes y force component (`fY_W`) or force coefficient (`cFY_W`), denoted in code by `side_force_W` and `side_force_coefficient_W` (or `CY`).
+    * Lift: The aerodynamic force component in the wind axes' -z basis direction (pointing upwards in the symmetry plane). It is the negative of the wind axes z force component (`-fZ_W`) or force coefficient (`-cFZ_W`), denoted in code by `lift_W` and `lift_coefficient_W` (or `CL`).
 
 ### 4. Geometry axes
 

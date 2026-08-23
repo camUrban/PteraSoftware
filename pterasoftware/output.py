@@ -249,10 +249,12 @@ def draw(
             )
 
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
-        if scalar_type not in ("induced drag", "side force", "lift"):
+        if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
+            valid_types = ", ".join(
+                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+            )
             raise ValueError(
-                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
-                f"got '{scalar_type}'."
+                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
             )
 
     show_streamlines = _parameter_validation.boolLike_return_bool(
@@ -741,10 +743,12 @@ def animate(
             )
 
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
-        if scalar_type not in ("induced drag", "side force", "lift"):
+        if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
+            valid_types = ", ".join(
+                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+            )
             raise ValueError(
-                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
-                f"got '{scalar_type}'."
+                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
             )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
@@ -1468,9 +1472,17 @@ def plot_results_versus_time(
 
         # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            forces_W[airplane_id, :, results_step] = airplane.forces_W
-            forceCoefficients_W[airplane_id, :, results_step] = (
-                airplane.forceCoefficients_W
+            forces_W[airplane_id, 0, results_step] = airplane.induced_drag_W
+            forces_W[airplane_id, 1, results_step] = airplane.side_force_W
+            forces_W[airplane_id, 2, results_step] = airplane.lift_W
+            forceCoefficients_W[airplane_id, 0, results_step] = (
+                airplane.induced_drag_coefficient_W
+            )
+            forceCoefficients_W[airplane_id, 1, results_step] = (
+                airplane.side_force_coefficient_W
+            )
+            forceCoefficients_W[airplane_id, 2, results_step] = (
+                airplane.lift_coefficient_W
             )
             moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
             momentCoefficients_W_Cg[airplane_id, :, results_step] = (
@@ -1492,15 +1504,13 @@ def plot_results_versus_time(
         if prefix:
             file_stem = prefix + "_" + airplane_name_snake
 
-        # Plot this Airplane's four load figures. The wind axes x and z force components
-        # are negated so the series read as induced drag and lift, which point opposite
-        # those axes.
+        # Plot this Airplane's four load figures.
         _output_plotting.plot_time_history(
             times,
             [
-                -forces_W[airplane_id, 0],
+                forces_W[airplane_id, 0],
                 forces_W[airplane_id, 1],
-                -forces_W[airplane_id, 2],
+                forces_W[airplane_id, 2],
             ],
             _FORCE_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1515,9 +1525,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                -forceCoefficients_W[airplane_id, 0],
+                forceCoefficients_W[airplane_id, 0],
                 forceCoefficients_W[airplane_id, 1],
-                -forceCoefficients_W[airplane_id, 2],
+                forceCoefficients_W[airplane_id, 2],
             ],
             _FORCE_COEFFICIENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1590,12 +1600,12 @@ def plot_results_versus_time(
                     _MOMENT_COEFFICIENT_Y_LABEL,
                 ),
                 [
-                    -forces_W[airplane_id, 0],
+                    forces_W[airplane_id, 0],
                     forces_W[airplane_id, 1],
-                    -forces_W[airplane_id, 2],
-                    -forceCoefficients_W[airplane_id, 0],
+                    forces_W[airplane_id, 2],
+                    forceCoefficients_W[airplane_id, 0],
                     forceCoefficients_W[airplane_id, 1],
-                    -forceCoefficients_W[airplane_id, 2],
+                    forceCoefficients_W[airplane_id, 2],
                     moments_W_Cg[airplane_id, 0],
                     moments_W_Cg[airplane_id, 1],
                     moments_W_Cg[airplane_id, 2],

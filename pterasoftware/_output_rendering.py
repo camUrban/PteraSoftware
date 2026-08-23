@@ -45,6 +45,9 @@ TEXT_COLOR = (129, 129, 129)
 TEXT_COLOR_SURFACE = (220, 220, 220)
 PLOTTER_BACKGROUND_COLOR = "black"
 
+# Define the valid scalar types for coloring Panels.
+VALID_SCALAR_TYPES = ("induced drag", "side force", "lift")
+
 # Define the shading coefficients for the MuJoCo geom actors, which are the only lit
 # actors in any scene. Every other actor is added with lighting disabled, so the
 # headlight that add_mujoco_geometry brings into a scene shades the geoms alone, and a
@@ -869,37 +872,30 @@ def get_scalars(
     """
     scalars = np.empty(0, dtype=float)
 
+    # Map the scalar type string to the corresponding Panel named force attribute.
+    panel_force_attributes = {
+        "induced drag": "induced_drag_W",
+        "side force": "side_force_W",
+        "lift": "lift_W",
+    }
+
+    attribute_name = panel_force_attributes.get(scalar_type)
+    if attribute_name is None:
+        return scalars
+
     # Iterate through the Airplanes' Wings.
     for airplane in airplanes:
         for wing in airplane.wings:
             _panels = wing.panels
             assert _panels is not None
 
-            # Unravel this Wing's ndarray of Panels iterate through them.
+            # Unravel this Wing's ndarray of Panels and iterate through them.
             these_panels = np.ravel(_panels)
             for this_panel in these_panels:
-
-                # Stack this Panel's scalars.
-                if scalar_type == "induced drag":
-                    this_induced_drag_coefficient = (
-                        -this_panel.forces_W[0] / qInf__E / this_panel.area
-                    )
-
-                    scalars = np.hstack((scalars, this_induced_drag_coefficient))
-
-                if scalar_type == "side force":
-                    this_side_force_coefficient = (
-                        this_panel.forces_W[1] / qInf__E / this_panel.area
-                    )
-
-                    scalars = np.hstack((scalars, this_side_force_coefficient))
-
-                if scalar_type == "lift":
-                    this_lift_coefficient = (
-                        -this_panel.forces_W[2] / qInf__E / this_panel.area
-                    )
-
-                    scalars = np.hstack((scalars, this_lift_coefficient))
+                force = getattr(this_panel, attribute_name)
+                assert force is not None
+                coefficient = force / qInf__E / this_panel.area
+                scalars = np.hstack((scalars, coefficient))
 
     # Return the resulting ndarray of scalars.
     return scalars

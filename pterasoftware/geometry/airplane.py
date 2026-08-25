@@ -522,8 +522,8 @@ class Airplane:
     def lift_coefficient_W(self) -> float | None:
         """The total lift force coefficient experienced by this Airplane (in wind axes).
 
-        The lift coefficient points opposite the wind axes z axis, so it is the
-        negative of the wind axes z force coefficient component.
+        The lift coefficient points opposite the wind axes z axis, so it is the negative
+        of the wind axes z force coefficient component.
 
         :return: The lift coefficient, or None if forceCoefficients_W has not been set.
         """

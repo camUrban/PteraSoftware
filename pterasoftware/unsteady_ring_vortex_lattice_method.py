@@ -13,6 +13,7 @@ None
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Sequence
 from typing import cast
 
@@ -468,6 +469,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
         self._force_method = force_method
 
+        run_start_time = time.time()
+
         # Report the thread dispatch settings this run's kernel launches will operate
         # under, and warn if Numba's threading layer will make them slow.
         _aerodynamics_functions.report_thread_settings()
@@ -587,6 +590,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         if calculate_streamlines:
             _logger.debug(_logging.indent() + "Calculating streamlines")
             _functions.calculate_streamlines(self)
+
+        _logger.info(
+            _logging.indent()
+            + "Unsteady ring vortex lattice method solver completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
 
         # Mark that the solver has run.
         self._ran = True

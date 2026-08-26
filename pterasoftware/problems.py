@@ -580,6 +580,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             floating point tolerance, where weight is the Airplane's weight and g_E is
             the OperatingPoint's gravitational acceleration, which keeps the Airplane's
             weight, the supplied mass, and the gravitational field mutually consistent.
+            A zero g_E satisfies that requirement with the Airplane's zero weight
+            default, so it is accepted but logs a warning that the run models a
+            weightless body in a gravity-free world.
         :param I_BP1_CgP1: An array-like object of numbers (int or float) with shape
             (3,3) representing the inertia matrix of the Airplane (in the first
             Airplane's body axes, relative to the first Airplane's CG). It must be
@@ -675,9 +678,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         # silent modeling error. g_E is constant across the run, so checking the initial
         # OperatingPoint suffices. A zero g_E (the default, no gravitational field)
         # consistently requires a zero weight.
-        expected_weight = self._mass * float(
-            np.linalg.norm(initial_operating_point.g_E)
-        )
+        g_magnitude = float(np.linalg.norm(initial_operating_point.g_E))
+        expected_weight = self._mass * g_magnitude
         if not np.isclose(initial_airplane.weight, expected_weight):
             raise ValueError(
                 "The Airplane's weight must equal mass * |g_E| within floating point "
@@ -685,6 +687,25 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 f"mass * |g_E| is {expected_weight} N. Set the Airplane's weight, the "
                 "mass, and the OperatingPoint's g_E so they agree (for a zero-gravity "
                 "simulation, leave both g_E and the weight at zero)."
+            )
+
+        # A zero g_E is the consistency check's one silent path, because the zero
+        # expected weight it produces is satisfied by the Airplane's own zero weight
+        # default. An all-defaults free flight run therefore models a weightless body in
+        # a gravity-free world, which is rarely what a free-flight run intends. Keep the
+        # configuration expressible, since a genuinely weightless body is a valid thing
+        # to model, but say so rather than proceeding silently.
+        if g_magnitude == 0.0:
+            _logger.warning(
+                _logging.indent()
+                + "The OperatingPoint's g_E is (0.0, 0.0, 0.0), so this free flight "
+                "run models a weightless body in a gravity-free world"
+            )
+            _logger.warning(
+                _logging.indent()
+                + "Set g_E to model a gravitational field (for example, to "
+                "(0.0, 0.0, 9.80665) for standard gravity) and set the Airplane's "
+                "weight to mass * |g_E|"
             )
 
         # The free-flight dynamics never apply externalFX_W: Non-aerodynamic loads enter

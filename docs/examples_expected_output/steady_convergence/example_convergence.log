@@ -10,13 +10,15 @@ INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |    Chordwise Panels: 3
 INFO    |convergence                                 |      Iteration number: 1/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0224 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0223 s
+INFO    |convergence                                 |      Simulation completed in 0.0225 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |    Chordwise Panels: 4
 INFO    |convergence                                 |      Iteration number: 2/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0197 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0198 s
+INFO    |convergence                                 |      Simulation completed in 0.0199 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -28,7 +30,8 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 5
 INFO    |convergence                                 |      Iteration number: 3/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0309 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0318 s
+INFO    |convergence                                 |      Simulation completed in 0.0320 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -40,6 +43,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 6
 INFO    |convergence                                 |      Iteration number: 4/24
 INFO    |convergence                                 |      Starting simulation
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0506 s
 INFO    |convergence                                 |      Simulation completed in 0.0508 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
@@ -52,7 +56,8 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 7
 INFO    |convergence                                 |      Iteration number: 5/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0752 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0882 s
+INFO    |convergence                                 |      Simulation completed in 0.0885 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -64,7 +69,8 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 8
 INFO    |convergence                                 |      Iteration number: 6/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.114 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.119 s
+INFO    |convergence                                 |      Simulation completed in 0.119 s
 INFO    |convergence                                 |      Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |      Number of chordwise Panels convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
@@ -77,7 +83,8 @@ INFO    |convergence                                 |  Panel aspect ratio: 3
 INFO    |convergence                                 |    Chordwise Panels: 3
 INFO    |convergence                                 |      Iteration number: 7/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0139 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0157 s
+INFO    |convergence                                 |      Simulation completed in 0.0159 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -89,7 +96,8 @@ INFO    |convergence                                 |      Number of chordwise 
 INFO    |convergence                                 |    Chordwise Panels: 4
 INFO    |convergence                                 |      Iteration number: 8/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0243 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0266 s
+INFO    |convergence                                 |      Simulation completed in 0.0268 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -107,7 +115,8 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |    Chordwise Panels: 5
 INFO    |convergence                                 |      Iteration number: 9/24
 INFO    |convergence                                 |      Starting simulation
-INFO    |convergence                                 |      Simulation completed in 0.0392 s
+INFO    |steady_ring_vortex_lattice_method           |        Steady ring vortex lattice method solver completed in 0.0408 s
+INFO    |convergence                                 |      Simulation completed in 0.0410 s
 INFO    |convergence                                 |      Panel aspect ratio convergence:
 INFO    |convergence                                 |        cFX_W: 100.0%
 INFO    |convergence                                 |        cFY_W: 100.0%
@@ -125,7 +134,7 @@ INFO    |convergence                                 |        cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |The analysis found a converged case:
 INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |  Chordwise Panels: 4
-INFO    |convergence                                 |  Simulation time: 0.0197 s
+INFO    |convergence                                 |  Simulation time: 0.0199 s
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Leading Airplane:
 INFO    |convergence                                 |      Main Wing:
@@ -143,4 +152,4 @@ INFO    |convergence                                 |        WingCrossSection 3
 INFO    |convergence                                 |      Tail:
 INFO    |convergence                                 |        WingCrossSection 1: 5
 INFO    |convergence                                 |        WingCrossSection 2: None
-INFO    |convergence                                 |Convergence analysis completed in 0.756 s
+INFO    |convergence                                 |Convergence analysis completed in 0.787 s

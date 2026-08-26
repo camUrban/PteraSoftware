@@ -1,5 +1,6 @@
+INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0374 s
 INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (891801 bytes)
+INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (891802 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -23,18 +24,18 @@ INFO    |output                                      |    cMX_G_Cg:   -1.73E-18
 INFO    |output                                      |    cMY_G_Cg:      -0.225
 INFO    |output                                      |    cMZ_G_Cg:    1.12E-17
 INFO    |output                                      |  Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:           -10.1 N     Induced Drag:           10.1 N
-INFO    |output                                      |    fY_W:       -4.77E-15 N     Side Force:        -4.77E-15 N
-INFO    |output                                      |    fZ_W:           -508. N     Lift:                   508. N
+INFO    |output                                      |    fX_W:           -10.1 N     Induced Drag:                       10.1 N
+INFO    |output                                      |    fY_W:       -4.77E-15 N     Side Force:                    -4.77E-15 N
+INFO    |output                                      |    fZ_W:           -508. N     Lift:                               508. N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    mX_W_Cg:     7.29E-15 Nm    Rolling Moment:     7.29E-15 Nm
-INFO    |output                                      |    mY_W_Cg:        -247. Nm    Pitching Moment:       -247. Nm
-INFO    |output                                      |    mZ_W_Cg:    -1.10E-13 Nm    Yawing Moment:     -1.10E-13 Nm
+INFO    |output                                      |    mX_W_Cg:     7.29E-15 Nm    Rolling Moment:                 7.29E-15 Nm
+INFO    |output                                      |    mY_W_Cg:        -247. Nm    Pitching Moment:                   -247. Nm
+INFO    |output                                      |    mZ_W_Cg:    -1.10E-13 Nm    Yawing Moment:                 -1.10E-13 Nm
 INFO    |output                                      |  Force Coefficients (in Wind Axes):
-INFO    |output                                      |    cFX_W:        -0.0118       CDi:                  0.0118
-INFO    |output                                      |    cFY_W:      -5.59E-18       CY:                -5.59E-18
-INFO    |output                                      |    cFZ_W:         -0.595       CL:                    0.595
+INFO    |output                                      |    cFX_W:        -0.0118       Induced Drag Coefficient:         0.0118
+INFO    |output                                      |    cFY_W:      -5.59E-18       Side Force Coefficient:        -5.59E-18
+INFO    |output                                      |    cFZ_W:         -0.595       Lift Coefficient:                  0.595
 INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    cMX_W_Cg:    7.49E-19       Cl:                 7.49E-19
-INFO    |output                                      |    cMY_W_Cg:      -0.225       Cm:                   -0.225
-INFO    |output                                      |    cMZ_W_Cg:   -1.13E-17       Cn:                -1.13E-17
+INFO    |output                                      |    cMX_W_Cg:    7.49E-19       Rolling Moment Coefficient:     7.49E-19
+INFO    |output                                      |    cMY_W_Cg:      -0.225       Pitching Moment Coefficient:      -0.225
+INFO    |output                                      |    cMZ_W_Cg:   -1.13E-17       Yawing Moment Coefficient:     -1.13E-17

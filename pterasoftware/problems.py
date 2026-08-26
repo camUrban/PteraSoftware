@@ -197,6 +197,76 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
 
     steady_problems: A tuple of SteadyProblems, one for each time step.
 
+    finalInducedDrags_W: The final induced drag force experienced by each Airplane (in
+    wind axes).
+
+    finalSideForces_W: The final side force experienced by each Airplane (in wind axes).
+
+    finalLifts_W: The final lift force experienced by each Airplane (in wind axes).
+
+    finalInducedDragCoefficients_W: The final induced drag force coefficient experienced
+    by each Airplane (in wind axes).
+
+    finalSideForceCoefficients_W: The final side force coefficient experienced by each
+    Airplane (in wind axes).
+
+    finalLiftCoefficients_W: The final lift force coefficient experienced by each
+    Airplane (in wind axes).
+
+    finalRollingMoments_W_Cg: The final rolling moment experienced by each Airplane (in
+    wind axes, relative to its own CG).
+
+    finalPitchingMoments_W_Cg: The final pitching moment experienced by each Airplane
+    (in wind axes, relative to its own CG).
+
+    finalYawingMoments_W_Cg: The final yawing moment experienced by each Airplane (in
+    wind axes, relative to its own CG).
+
+    finalRollingMomentCoefficients_W_Cg: The final rolling moment coefficient
+    experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalPitchingMomentCoefficients_W_Cg: The final pitching moment coefficient
+    experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalYawingMomentCoefficients_W_Cg: The final yawing moment coefficient experienced
+    by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanInducedDrags_W: The final cycle averaged induced drag force experienced by
+    each Airplane (in wind axes).
+
+    finalMeanSideForces_W: The final cycle averaged side force experienced by each
+    Airplane (in wind axes).
+
+    finalMeanLifts_W: The final cycle averaged lift force experienced by each Airplane
+    (in wind axes).
+
+    finalMeanInducedDragCoefficients_W: The final cycle averaged induced drag force
+    coefficient experienced by each Airplane (in wind axes).
+
+    finalMeanSideForceCoefficients_W: The final cycle averaged side force coefficient
+    experienced by each Airplane (in wind axes).
+
+    finalMeanLiftCoefficients_W: The final cycle averaged lift force coefficient
+    experienced by each Airplane (in wind axes).
+
+    finalMeanRollingMoments_W_Cg: The final cycle averaged rolling moment experienced by
+    each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanPitchingMoments_W_Cg: The final cycle averaged pitching moment experienced
+    by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanYawingMoments_W_Cg: The final cycle averaged yawing moment experienced by
+    each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanRollingMomentCoefficients_W_Cg: The final cycle averaged rolling moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanPitchingMomentCoefficients_W_Cg: The final cycle averaged pitching moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanYawingMomentCoefficients_W_Cg: The final cycle averaged yawing moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
     **Notes:**
 
     The solver populates the mutable load lists during simulation, with one entry per
@@ -214,6 +284,10 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     "relative to the entry's own Airplane's CG". For the first Airplane's entries, the
     Moments_W_Cg and MomentCoefficients_W_Cg lists equal the Moments_W_CgP1 and
     MomentCoefficients_W_CgP1 lists.
+
+    The named load properties derive the named load components and coefficients, as
+    defined in AXES_POINTS_AND_FRAMES.md, from the wind axes lists. Each returns one
+    float per Airplane, or an empty list until its source list has been populated.
     """
 
     __slots__ = (

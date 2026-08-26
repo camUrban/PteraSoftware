@@ -382,6 +382,27 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=np.eye(3, dtype=float),
             )
 
+    def test_zero_gravity_warns_that_the_body_is_weightless(self) -> None:
+        """Test that a zero g_E warns that the run models a weightless body."""
+        with self.assertLogs("pterasoftware.problems", level="WARNING") as caught:
+            problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+                weightless=True
+            )
+
+        self.assertTrue(
+            any("weightless body" in message for message in caught.output),
+            "The zero g_E warning should say that the body is weightless.",
+        )
+        self.assertTrue(
+            any("9.80665" in message for message in caught.output),
+            "The zero g_E warning should show how to set standard gravity.",
+        )
+
+    def test_non_zero_gravity_does_not_warn(self) -> None:
+        """Test that a non zero g_E does not warn about a weightless body."""
+        with self.assertNoLogs("pterasoftware.problems", level="WARNING"):
+            problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+
 
 class TestFreeFlightUnsteadyProblemInitializeNextProblem(unittest.TestCase):
     """Tests for FreeFlightUnsteadyProblem.initialize_next_problem."""

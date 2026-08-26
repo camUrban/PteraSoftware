@@ -218,6 +218,7 @@ def make_basic_free_flight_unsteady_problem_fixture(
     ) = None,
     mujoco_assets: dict[str, bytes] | None = None,
     extra_xml: dict[str, str] | None = None,
+    weightless: bool = False,
 ) -> ps.problems.FreeFlightUnsteadyProblem:
     """This method makes a fixture that is a FreeFlightUnsteadyProblem for general
     testing.
@@ -234,11 +235,25 @@ def make_basic_free_flight_unsteady_problem_fixture(
     :param extra_xml: dict or None A dict mapping injection point names to XML fragment
         strings to inject into the generated MuJoCo XML. If None, no extra XML is
         injected. The default is None.
+    :param weightless: bool Whether to configure the fixture with no gravitational
+        field. If True, the Airplane keeps its 0.0 weight default and the OperatingPoint
+        keeps its (0.0, 0.0, 0.0) g_E default, which is the all-defaults configuration
+        that FreeFlightUnsteadyProblem warns about. The default is False.
     :return basic_free_flight_unsteady_problem_fixture: FreeFlightUnsteadyProblem This
         is the FreeFlightUnsteadyProblem configured for general testing.
     """
-    # Build the FreeFlightMovement using a static motion configuration.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Build the FreeFlightMovement using a static motion configuration. A weightless
+    # fixture builds its Airplane from the Wing fixture directly, since the shared
+    # Airplane fixture carries a non zero weight that a zero gravitational field cannot
+    # be consistent with.
+    if weightless:
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_type_4_wing_fixture()],
+            name="First Test Airplane",
+            Cg_GP1_CgP1=[0.0, 0.0, 0.0],
+        )
+    else:
+        base_airplane = geometry_fixtures.make_first_airplane_fixture()
     base_wing = base_airplane.wings[0]
 
     # Create WingCrossSectionMovements (one per WingCrossSection in the Wing).
@@ -265,12 +280,13 @@ def make_basic_free_flight_unsteady_problem_fixture(
     # Create the FreeFlightOperatingPointMovement. Free flight requires the Airplane's
     # weight, the mass, and the gravitational field to agree (weight == mass * |g_E|).
     # The shared OperatingPoint fixtures default to no gravity, so rebuild the
-    # OperatingPoint with standard gravity here (preserving every other field) and
+    # OperatingPoint with the requested gravity here (preserving every other field) and
     # derive the matching mass from the Airplane's weight.
     if base_operating_point is None:
         base_operating_point = (
             operating_point_fixtures.make_basic_operating_point_fixture()
         )
+    g_E = (0.0, 0.0, 0.0) if weightless else (0.0, 0.0, 9.80665)
     base_operating_point = ps.operating_point.OperatingPoint(
         rho=base_operating_point.rho,
         vCg__E=base_operating_point.vCg__E,
@@ -282,10 +298,12 @@ def make_basic_free_flight_unsteady_problem_fixture(
         surfacePoint_E_Eo=base_operating_point.surfacePoint_E_Eo,
         externalFX_W=base_operating_point.externalFX_W,
         nu=base_operating_point.nu,
-        g_E=(0.0, 0.0, 9.80665),
+        g_E=g_E,
         omegas_BP1__E=base_operating_point.omegas_BP1__E,
     )
-    mass = base_airplane.weight / 9.80665
+    # A zero gravitational field makes mass * |g_E| zero for any mass, so the Airplane's
+    # zero weight is consistent with any positive value.
+    mass = 1.0 if weightless else base_airplane.weight / 9.80665
     op_movement = ps.movements.free_flight_operating_point_movement.FreeFlightOperatingPointMovement(
         base_operating_point=base_operating_point,
     )

@@ -874,8 +874,8 @@ def get_scalars(
 
     # Map the scalar type string to the corresponding Panel named force attribute.
     panel_force_attributes = {
-        "induced drag": "induced_drag_W",
-        "side force": "side_force_W",
+        "induced drag": "inducedDrag_W",
+        "side force": "sideForce_W",
         "lift": "lift_W",
     }
 

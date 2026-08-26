@@ -1581,14 +1581,14 @@ def plot_results_versus_time(
         endpoint=True,
     )
 
-    # Initialize matrices to hold the loads and load coefficients at every time step
-    # that has results.
-    forces_W = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    forceCoefficients_W = np.zeros(
+    # Initialize matrices to hold the named loads and named load coefficients at every
+    # time step that has results.
+    namedForces_W = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    namedForceCoefficients_W = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
-    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    momentCoefficients_W_Cg = np.zeros(
+    namedMoments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    namedMomentCoefficients_W_Cg = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
 
@@ -1603,21 +1603,33 @@ def plot_results_versus_time(
 
         # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            forces_W[airplane_id, 0, results_step] = airplane.induced_drag_W
-            forces_W[airplane_id, 1, results_step] = airplane.side_force_W
-            forces_W[airplane_id, 2, results_step] = airplane.lift_W
-            forceCoefficients_W[airplane_id, 0, results_step] = (
-                airplane.induced_drag_coefficient_W
+            namedForces_W[airplane_id, 0, results_step] = airplane.inducedDrag_W
+            namedForces_W[airplane_id, 1, results_step] = airplane.sideForce_W
+            namedForces_W[airplane_id, 2, results_step] = airplane.lift_W
+            namedForceCoefficients_W[airplane_id, 0, results_step] = (
+                airplane.inducedDragCoefficient_W
             )
-            forceCoefficients_W[airplane_id, 1, results_step] = (
-                airplane.side_force_coefficient_W
+            namedForceCoefficients_W[airplane_id, 1, results_step] = (
+                airplane.sideForceCoefficient_W
             )
-            forceCoefficients_W[airplane_id, 2, results_step] = (
-                airplane.lift_coefficient_W
+            namedForceCoefficients_W[airplane_id, 2, results_step] = (
+                airplane.liftCoefficient_W
             )
-            moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
-            momentCoefficients_W_Cg[airplane_id, :, results_step] = (
-                airplane.momentCoefficients_W_Cg
+            namedMoments_W_Cg[airplane_id, 0, results_step] = (
+                airplane.rollingMoment_W_Cg
+            )
+            namedMoments_W_Cg[airplane_id, 1, results_step] = (
+                airplane.pitchingMoment_W_Cg
+            )
+            namedMoments_W_Cg[airplane_id, 2, results_step] = airplane.yawingMoment_W_Cg
+            namedMomentCoefficients_W_Cg[airplane_id, 0, results_step] = (
+                airplane.rollingMomentCoefficient_W_Cg
+            )
+            namedMomentCoefficients_W_Cg[airplane_id, 1, results_step] = (
+                airplane.pitchingMomentCoefficient_W_Cg
+            )
+            namedMomentCoefficients_W_Cg[airplane_id, 2, results_step] = (
+                airplane.yawingMomentCoefficient_W_Cg
             )
 
         results_step += 1
@@ -1639,9 +1651,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                forces_W[airplane_id, 0],
-                forces_W[airplane_id, 1],
-                forces_W[airplane_id, 2],
+                namedForces_W[airplane_id, 0],
+                namedForces_W[airplane_id, 1],
+                namedForces_W[airplane_id, 2],
             ],
             _FORCE_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1656,9 +1668,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                forceCoefficients_W[airplane_id, 0],
-                forceCoefficients_W[airplane_id, 1],
-                forceCoefficients_W[airplane_id, 2],
+                namedForceCoefficients_W[airplane_id, 0],
+                namedForceCoefficients_W[airplane_id, 1],
+                namedForceCoefficients_W[airplane_id, 2],
             ],
             _FORCE_COEFFICIENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1673,9 +1685,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                moments_W_Cg[airplane_id, 0],
-                moments_W_Cg[airplane_id, 1],
-                moments_W_Cg[airplane_id, 2],
+                namedMoments_W_Cg[airplane_id, 0],
+                namedMoments_W_Cg[airplane_id, 1],
+                namedMoments_W_Cg[airplane_id, 2],
             ],
             _MOMENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
@@ -1690,9 +1702,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                momentCoefficients_W_Cg[airplane_id, 0],
-                momentCoefficients_W_Cg[airplane_id, 1],
-                momentCoefficients_W_Cg[airplane_id, 2],
+                namedMomentCoefficients_W_Cg[airplane_id, 0],
+                namedMomentCoefficients_W_Cg[airplane_id, 1],
+                namedMomentCoefficients_W_Cg[airplane_id, 2],
             ],
             _MOMENT_COEFFICIENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
@@ -1731,18 +1743,18 @@ def plot_results_versus_time(
                     _MOMENT_COEFFICIENT_Y_LABEL,
                 ),
                 [
-                    forces_W[airplane_id, 0],
-                    forces_W[airplane_id, 1],
-                    forces_W[airplane_id, 2],
-                    forceCoefficients_W[airplane_id, 0],
-                    forceCoefficients_W[airplane_id, 1],
-                    forceCoefficients_W[airplane_id, 2],
-                    moments_W_Cg[airplane_id, 0],
-                    moments_W_Cg[airplane_id, 1],
-                    moments_W_Cg[airplane_id, 2],
-                    momentCoefficients_W_Cg[airplane_id, 0],
-                    momentCoefficients_W_Cg[airplane_id, 1],
-                    momentCoefficients_W_Cg[airplane_id, 2],
+                    namedForces_W[airplane_id, 0],
+                    namedForces_W[airplane_id, 1],
+                    namedForces_W[airplane_id, 2],
+                    namedForceCoefficients_W[airplane_id, 0],
+                    namedForceCoefficients_W[airplane_id, 1],
+                    namedForceCoefficients_W[airplane_id, 2],
+                    namedMoments_W_Cg[airplane_id, 0],
+                    namedMoments_W_Cg[airplane_id, 1],
+                    namedMoments_W_Cg[airplane_id, 2],
+                    namedMomentCoefficients_W_Cg[airplane_id, 0],
+                    namedMomentCoefficients_W_Cg[airplane_id, 1],
+                    namedMomentCoefficients_W_Cg[airplane_id, 2],
                 ],
                 directory / (file_stem + "_loads.csv"),
             )
@@ -2012,21 +2024,13 @@ def log_results(
     col1_space = max(len(elem) for elem in col1) + padding_spaces
 
     # Named load labels for the wind axes rows only, because names like induced drag and
-    # lift are wind axes concepts with no geometry axes counterparts. The forces and
-    # moments are named the way the figures that plot them are, while the coefficients
-    # go by their symbols, which are shorter than their names and unambiguous in a table
-    # whose rows are already labeled by variable name.
+    # lift are wind axes concepts with no geometry axes counterparts. All four load
+    # groups are named the way the figures that plot them are.
     col3 = (
         _FORCE_LABELS
         + _MOMENT_LABELS
-        + [
-            "CDi",
-            "CY",
-            "CL",
-            "Cl",
-            "Cm",
-            "Cn",
-        ]
+        + _FORCE_COEFFICIENT_LABELS
+        + _MOMENT_COEFFICIENT_LABELS
     )
     col3 = [label + ":" for label in col3]
     col3_space = max(len(elem) for elem in col3) + padding_spaces

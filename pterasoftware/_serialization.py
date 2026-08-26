@@ -370,24 +370,29 @@ def _get_provenance() -> dict[str, str | bool | None]:
 
     commit = None
     dirty = None
+    package_dir = Path(__file__).resolve().parent
     try:
         commit = (
             subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+                ["git", "rev-parse", "HEAD"],
+                cwd=package_dir,
+                stderr=subprocess.DEVNULL,
             )
             .decode("ascii")
             .strip()
         )
         status = (
             subprocess.check_output(
-                ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+                ["git", "status", "--porcelain"],
+                cwd=package_dir,
+                stderr=subprocess.DEVNULL,
             )
             .decode("ascii")
             .strip()
         )
         dirty = len(status) > 0
     except (FileNotFoundError, subprocess.CalledProcessError):  # pragma: no cover
-        _logger.warning(
+        _logger.debug(
             _logging.indent()
             + "Git is not available, so the provenance fields will be null"
         )
@@ -416,9 +421,12 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
     file_commit = data.get("_commit")
     if file_commit is not None:
         try:
+            package_dir = Path(__file__).resolve().parent
             current_commit = (
                 subprocess.check_output(
-                    ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+                    ["git", "rev-parse", "HEAD"],
+                    cwd=package_dir,
+                    stderr=subprocess.DEVNULL,
                 )
                 .decode("ascii")
                 .strip()
@@ -432,7 +440,9 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
                 )
             current_status = (
                 subprocess.check_output(
-                    ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+                    ["git", "status", "--porcelain"],
+                    cwd=package_dir,
+                    stderr=subprocess.DEVNULL,
                 )
                 .decode("ascii")
                 .strip()

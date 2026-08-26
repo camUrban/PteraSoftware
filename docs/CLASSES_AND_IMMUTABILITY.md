@@ -26,7 +26,7 @@ The `Core*` classes live in `pterasoftware/_core.py` and own the shared slots an
 
 ### Class Attribute Categories
 
-Most attribute falls into one of these categories:
+Most attributes fall into one of these categories:
 
 | Category                | Pattern                                                          |
 |-------------------------|------------------------------------------------------------------|
@@ -35,6 +35,7 @@ Most attribute falls into one of these categories:
 | **Set Once**            | Property with setter that raises `AttributeError` if already set |
 | **Mutable**             | Property with setter, or plain attribute                         |
 | **Derived (Set Once)**  | Manual lazy caching, depends on set once attributes              |
+| **Derived (Mutable)**   | Read-only property, no backing slot, recomputed on every access  |
 
 ### Construction-Only Parameters
 
@@ -48,7 +49,7 @@ A constructor parameter is not always retained as an attribute. Some parameters 
 
 2. **Enforce set once semantics at runtime**: Set once properties raise `AttributeError` if assigned a second time. This catches bugs early where code incorrectly attempts to modify values that should be immutable after initial assignment.
 
-3. **Use manual lazy caching for all derived properties**: This approach:
+3. **Use manual lazy caching for all cached derived properties**: This approach:
     - Works consistently for properties derived from both immutable and set once attributes
     - Is compatible with `__slots__` (no dependency on `__dict__`)
     - Simplifies `__deepcopy__` (cache variables can be copied directly)
@@ -503,6 +504,25 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `moments_W_Cg`              | `np.ndarray \| None` | Wind-axes rotation of `moments_G_Cg`        |
 | `momentCoefficients_W_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
 
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of its source array, or None while the source is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source arrays.
+
+| Property                         | Depends On                | Notes                       |
+|----------------------------------|---------------------------|-----------------------------|
+| `inducedDrag_W`                  | `forces_W`                | Negative of the x component |
+| `sideForce_W`                    | `forces_W`                | The y component             |
+| `lift_W`                         | `forces_W`                | Negative of the z component |
+| `inducedDragCoefficient_W`       | `forceCoefficients_W`     | Negative of the x component |
+| `sideForceCoefficient_W`         | `forceCoefficients_W`     | The y component             |
+| `liftCoefficient_W`              | `forceCoefficients_W`     | Negative of the z component |
+| `rollingMoment_W_Cg`             | `moments_W_Cg`            | The x component             |
+| `pitchingMoment_W_Cg`            | `moments_W_Cg`            | The y component             |
+| `yawingMoment_W_Cg`              | `moments_W_Cg`            | The z component             |
+| `rollingMomentCoefficient_W_Cg`  | `momentCoefficients_W_Cg` | The x component             |
+| `pitchingMomentCoefficient_W_Cg` | `momentCoefficients_W_Cg` | The y component             |
+| `yawingMomentCoefficient_W_Cg`   | `momentCoefficients_W_Cg` | The z component             |
+
 ---
 
 ## Wing Class (`geometry/wing.py`)
@@ -700,6 +720,16 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `moments_GP1_CgP1` | `np.ndarray \| None`      | Computed moments     |
 | `forces_W`         | `np.ndarray \| None`      | Forces in wind axes  |
 | `moments_W_CgP1`   | `np.ndarray \| None`      | Moments in wind axes |
+
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named force components defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of `forces_W`, or None while it is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates `forces_W`.
+
+| Property        | Depends On | Notes                       |
+|-----------------|------------|-----------------------------|
+| `inducedDrag_W` | `forces_W` | Negative of the x component |
+| `sideForce_W`   | `forces_W` | The y component             |
+| `lift_W`        | `forces_W` | Negative of the z component |
 
 ---
 

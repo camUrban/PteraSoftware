@@ -2,7 +2,7 @@
 
 import unittest
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 
@@ -187,3 +187,174 @@ class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
         self.assertIs(
             self.solver._apply_body_rate(points, base_velocity), base_velocity
         )
+
+
+class TestUnsteadyRingVortexLatticeMethodSolverFinalizeLoads(unittest.TestCase):
+    """Tests for the trapezoid rule mean and RMS load averaging in _finalize_loads."""
+
+    # The Airplane attributes that _finalize_loads reads at each time step in the
+    # averaging window. Every one of them has to be present on the stand-in Airplanes,
+    # since _finalize_loads collects all of them on every call.
+    _LOAD_ATTRIBUTES = (
+        "forces_W",
+        "forceCoefficients_W",
+        "moments_W_CgP1",
+        "momentCoefficients_W_CgP1",
+        "forces_G",
+        "forceCoefficients_G",
+        "moments_G_Cg",
+        "momentCoefficients_G_Cg",
+        "moments_W_Cg",
+        "momentCoefficients_W_Cg",
+    )
+
+    def setUp(self) -> None:
+        """Set up a fresh solver whose movement is variable, which is the case that
+        averages over the final cycle."""
+        self.solver = solver_fixtures.make_unsteady_ring_solver_fixture()
+        self.assertFalse(self.solver.unsteady_problem.movement.static)
+
+    def _finalize_with_history(self, history: np.ndarray) -> None:
+        """Run _finalize_loads over a prescribed single Airplane load history.
+
+        Every load quantity is given the same history, so any of the UnsteadyProblem's
+        mean and RMS lists reflects it.
+
+        :param history: An ndarray of floats with shape (3, num_steps) holding the
+            Airplane's load vector at each time step in the averaging window.
+        :return: None
+        """
+        num_steps = history.shape[1]
+        self.solver.num_steps = num_steps
+        self.solver._first_averaging_step = 0
+
+        steady_problems = [
+            MagicMock(
+                airplanes=[
+                    MagicMock(
+                        **{name: history[:, step] for name in self._LOAD_ATTRIBUTES}
+                    )
+                ]
+            )
+            for step in range(num_steps)
+        ]
+
+        with patch.object(
+            type(self.solver),
+            "_get_steady_problem_at",
+            autospec=True,
+            side_effect=lambda solver, step: steady_problems[step],
+        ):
+            self.solver._finalize_loads()
+
+    def test_mean_loads_use_the_trapezoid_rule(self) -> None:
+        """Test that the mean loads are the trapezoid rule integral of the load history
+        divided by the number of intervals."""
+        history = np.array(
+            [
+                [1.0, 2.0, 3.0, 4.0, 5.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [2.0, 2.0, 2.0, 2.0, 2.0],
+            ],
+            dtype=float,
+        )
+
+        self._finalize_with_history(history)
+
+        # Over five evenly spaced samples the trapezoid rule halves the two endpoints,
+        # so the ramp integrates to (0.5 * 1 + 2 + 3 + 4 + 0.5 * 5) / 4 = 3.0 and each
+        # constant integrates to itself.
+        np.testing.assert_allclose(
+            self.solver.unsteady_problem.finalMeanForces_W[0],
+            np.array([3.0, 0.0, 2.0], dtype=float),
+        )
+
+    def test_rms_loads_use_the_trapezoid_rule(self) -> None:
+        """Test that the RMS loads are the square root of the trapezoid rule integral of
+        the squared load history divided by the number of intervals."""
+        history = np.array(
+            [
+                [1.0, 2.0, 3.0, 4.0, 5.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [2.0, 2.0, 2.0, 2.0, 2.0],
+            ],
+            dtype=float,
+        )
+
+        self._finalize_with_history(history)
+
+        # The squared ramp integrates to (0.5 * 1 + 4 + 9 + 16 + 0.5 * 25) / 4 = 10.5,
+        # so its RMS is sqrt(10.5). A constant's RMS is its own magnitude.
+        np.testing.assert_allclose(
+            self.solver.unsteady_problem.finalRmsForces_W[0],
+            np.array([np.sqrt(10.5), 0.0, 2.0], dtype=float),
+        )
+
+    def test_mean_load_over_a_full_cycle_recovers_the_cycle_average(self) -> None:
+        """Test that averaging a sinusoid sampled over exactly one cycle recovers the
+        sinusoid's offset, since its oscillating part integrates to zero."""
+        offset = 3.0
+        amplitude = 7.0
+        phases_rad = np.linspace(0.0, 2.0 * np.pi, 9, dtype=float)
+        oscillation = offset + amplitude * np.sin(phases_rad)
+        history = np.vstack([oscillation, oscillation, oscillation])
+
+        self._finalize_with_history(history)
+
+        np.testing.assert_allclose(
+            self.solver.unsteady_problem.finalMeanForces_W[0],
+            np.full(3, offset, dtype=float),
+            atol=1e-12,
+        )
+
+    def test_single_sample_window_reports_that_sample(self) -> None:
+        """Test that an averaging window holding one time step reports that step's loads
+        as the mean and its magnitude as the RMS, rather than dividing by zero intervals
+        and reporting NaN."""
+        history = np.array([[-2.0], [0.0], [4.0]], dtype=float)
+
+        with self.assertLogs(
+            "pterasoftware.unsteady_ring_vortex_lattice_method", level="WARNING"
+        ):
+            self._finalize_with_history(history)
+
+        np.testing.assert_allclose(
+            self.solver.unsteady_problem.finalMeanForces_W[0],
+            np.array([-2.0, 0.0, 4.0], dtype=float),
+        )
+        np.testing.assert_allclose(
+            self.solver.unsteady_problem.finalRmsForces_W[0],
+            np.array([2.0, 0.0, 4.0], dtype=float),
+        )
+
+    def test_single_sample_window_warns(self) -> None:
+        """Test that a single time step averaging window warns that the loads are that
+        step's values and says how to resolve the cycle."""
+        history = np.array([[-2.0], [0.0], [4.0]], dtype=float)
+
+        with self.assertLogs(
+            "pterasoftware.unsteady_ring_vortex_lattice_method", level="WARNING"
+        ) as caught:
+            self._finalize_with_history(history)
+
+        self.assertTrue(
+            any("single time step" in message for message in caught.output),
+            "The single sample warning should name the collapsed averaging window.",
+        )
+        self.assertTrue(
+            any("delta_time" in message for message in caught.output),
+            "The single sample warning should say how to resolve the cycle.",
+        )
+
+    def test_multiple_sample_window_does_not_warn(self) -> None:
+        """Test that an averaging window holding more than one time step does not warn
+        about a collapsed window."""
+        history = np.array(
+            [[1.0, 2.0], [0.0, 0.0], [2.0, 2.0]],
+            dtype=float,
+        )
+
+        with self.assertNoLogs(
+            "pterasoftware.unsteady_ring_vortex_lattice_method", level="WARNING"
+        ):
+            self._finalize_with_history(history)

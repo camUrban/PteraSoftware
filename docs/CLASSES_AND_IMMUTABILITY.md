@@ -151,6 +151,37 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 **Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-Airplane lists, the G and Cg IDs are used without an Airplane index to implicitly mean "in the entry's own Airplane's geometry axes" and "relative to the entry's own Airplane's CG".
 
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md` for the wind axes lists. Each returns one signed component per Airplane, or an empty list while its source list is empty, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source lists.
+
+| Property                                    | Depends On                     | Notes                                    |
+|---------------------------------------------|--------------------------------|------------------------------------------|
+| `finalInducedDrags_W`                       | `finalForces_W`                | Negatives of the x components            |
+| `finalSideForces_W`                         | `finalForces_W`                | The y components                         |
+| `finalLifts_W`                              | `finalForces_W`                | Negatives of the z components            |
+| `finalInducedDragCoefficients_W`            | `finalForceCoefficients_W`     | Negatives of the x components            |
+| `finalSideForceCoefficients_W`              | `finalForceCoefficients_W`     | The y components                         |
+| `finalLiftCoefficients_W`                   | `finalForceCoefficients_W`     | Negatives of the z components            |
+| `finalRollingMoments_W_Cg`                  | `finalMoments_W_Cg`            | The x components                         |
+| `finalPitchingMoments_W_Cg`                 | `finalMoments_W_Cg`            | The y components                         |
+| `finalYawingMoments_W_Cg`                   | `finalMoments_W_Cg`            | The z components                         |
+| `finalRollingMomentCoefficients_W_Cg`       | `finalMomentCoefficients_W_Cg` | The x components                         |
+| `finalPitchingMomentCoefficients_W_Cg`      | `finalMomentCoefficients_W_Cg` | The y components                         |
+| `finalYawingMomentCoefficients_W_Cg`        | `finalMomentCoefficients_W_Cg` | The z components                         |
+| `finalMeanInducedDrags_W`                   | `finalMeanForces_W`            | Cycle averaged counterparts of the above |
+| `finalMeanSideForces_W`                     | `finalMeanForces_W`            |                                          |
+| `finalMeanLifts_W`                          | `finalMeanForces_W`            |                                          |
+| `finalMeanInducedDragCoefficients_W`        | `finalMeanForceCoefficients_W` |                                          |
+| `finalMeanSideForceCoefficients_W`          | `finalMeanForceCoefficients_W` |                                          |
+| `finalMeanLiftCoefficients_W`               | `finalMeanForceCoefficients_W` |                                          |
+| `finalMeanRollingMoments_W_Cg`              | `finalMeanMoments_W_Cg`        |                                          |
+| `finalMeanPitchingMoments_W_Cg`             | `finalMeanMoments_W_Cg`        |                                          |
+| `finalMeanYawingMoments_W_Cg`               | `finalMeanMoments_W_Cg`        |                                          |
+| `finalMeanRollingMomentCoefficients_W_Cg`   | `finalMeanMomentCoefficients_W_Cg` |                                      |
+| `finalMeanPitchingMomentCoefficients_W_Cg`  | `finalMeanMomentCoefficients_W_Cg` |                                      |
+| `finalMeanYawingMomentCoefficients_W_Cg`    | `finalMeanMomentCoefficients_W_Cg` |                                      |
+
 ## _CoupledUnsteadyProblem Class (`problems.py`)
 
 `_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`, both documented below) whose per-step `SteadyProblem` depends on the solver's results from the previous step: deformed wing geometry for aeroelasticity, updated rigid body state for free flight. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.

@@ -2045,6 +2045,10 @@ def log_results(
         theseMoments_W_Cg: np.ndarray = np.empty(0, dtype=float)
         theseForceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
         theseMomentCoefficients_W_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseNamedForces_W: list[float | None] = []
+        theseNamedMoments_W_Cg: list[float | None] = []
+        theseNamedForceCoefficients_W: list[float | None] = []
+        theseNamedMomentCoefficients_W_Cg: list[float | None] = []
 
         match solver_type:
             case "steady":
@@ -2090,64 +2094,123 @@ def log_results(
 
                 theseMomentCoefficients_W_Cg = _momentCoefficients_W_Cg
 
+                theseNamedForces_W = [
+                    airplane.inducedDrag_W,
+                    airplane.sideForce_W,
+                    airplane.lift_W,
+                ]
+                theseNamedMoments_W_Cg = [
+                    airplane.rollingMoment_W_Cg,
+                    airplane.pitchingMoment_W_Cg,
+                    airplane.yawingMoment_W_Cg,
+                ]
+                theseNamedForceCoefficients_W = [
+                    airplane.inducedDragCoefficient_W,
+                    airplane.sideForceCoefficient_W,
+                    airplane.liftCoefficient_W,
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    airplane.rollingMomentCoefficient_W_Cg,
+                    airplane.pitchingMomentCoefficient_W_Cg,
+                    airplane.yawingMomentCoefficient_W_Cg,
+                ]
+
             case "static geometry unsteady":
                 assert isinstance(
                     solver,
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
+                unsteady_problem = solver.unsteady_problem
+
                 title_prefix = "Final "
-                theseForces_G = solver.unsteady_problem.finalForces_G[airplane_num]
-                theseMoments_G_Cg = solver.unsteady_problem.finalMoments_G_Cg[
+                theseForces_G = unsteady_problem.finalForces_G[airplane_num]
+                theseMoments_G_Cg = unsteady_problem.finalMoments_G_Cg[airplane_num]
+                theseForceCoefficients_G = unsteady_problem.finalForceCoefficients_G[
                     airplane_num
                 ]
-                theseForceCoefficients_G = (
-                    solver.unsteady_problem.finalForceCoefficients_G[airplane_num]
-                )
                 theseMomentCoefficients_G_Cg = (
-                    solver.unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
+                    unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
                 )
-                theseForces_W = solver.unsteady_problem.finalForces_W[airplane_num]
-                theseMoments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
+                theseForces_W = unsteady_problem.finalForces_W[airplane_num]
+                theseMoments_W_Cg = unsteady_problem.finalMoments_W_Cg[airplane_num]
+                theseForceCoefficients_W = unsteady_problem.finalForceCoefficients_W[
                     airplane_num
                 ]
-                theseForceCoefficients_W = (
-                    solver.unsteady_problem.finalForceCoefficients_W[airplane_num]
-                )
                 theseMomentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
+                    unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
                 )
+                theseNamedForces_W = [
+                    unsteady_problem.finalInducedDrags_W[airplane_num],
+                    unsteady_problem.finalSideForces_W[airplane_num],
+                    unsteady_problem.finalLifts_W[airplane_num],
+                ]
+                theseNamedMoments_W_Cg = [
+                    unsteady_problem.finalRollingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalPitchingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalYawingMoments_W_Cg[airplane_num],
+                ]
+                theseNamedForceCoefficients_W = [
+                    unsteady_problem.finalInducedDragCoefficients_W[airplane_num],
+                    unsteady_problem.finalSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalLiftCoefficients_W[airplane_num],
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    unsteady_problem.finalRollingMomentCoefficients_W_Cg[airplane_num],
+                    unsteady_problem.finalPitchingMomentCoefficients_W_Cg[airplane_num],
+                    unsteady_problem.finalYawingMomentCoefficients_W_Cg[airplane_num],
+                ]
             case "variable geometry unsteady":
                 assert isinstance(
                     solver,
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
+                unsteady_problem = solver.unsteady_problem
+
                 title_prefix = "Final Cycle-Averaged "
-                theseForces_G = solver.unsteady_problem.finalMeanForces_G[airplane_num]
-                theseMoments_G_Cg = solver.unsteady_problem.finalMeanMoments_G_Cg[
-                    airplane_num
-                ]
+                theseForces_G = unsteady_problem.finalMeanForces_G[airplane_num]
+                theseMoments_G_Cg = unsteady_problem.finalMeanMoments_G_Cg[airplane_num]
                 theseForceCoefficients_G = (
-                    solver.unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
+                    unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
                 )
                 theseMomentCoefficients_G_Cg = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_G_Cg[
-                        airplane_num
-                    ]
+                    unsteady_problem.finalMeanMomentCoefficients_G_Cg[airplane_num]
                 )
-                theseForces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
-                theseMoments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
-                    airplane_num
-                ]
+                theseForces_W = unsteady_problem.finalMeanForces_W[airplane_num]
+                theseMoments_W_Cg = unsteady_problem.finalMeanMoments_W_Cg[airplane_num]
                 theseForceCoefficients_W = (
-                    solver.unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
+                    unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
                 )
                 theseMomentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg[
-                        airplane_num
-                    ]
+                    unsteady_problem.finalMeanMomentCoefficients_W_Cg[airplane_num]
                 )
+                theseNamedForces_W = [
+                    unsteady_problem.finalMeanInducedDrags_W[airplane_num],
+                    unsteady_problem.finalMeanSideForces_W[airplane_num],
+                    unsteady_problem.finalMeanLifts_W[airplane_num],
+                ]
+                theseNamedMoments_W_Cg = [
+                    unsteady_problem.finalMeanRollingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalMeanPitchingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalMeanYawingMoments_W_Cg[airplane_num],
+                ]
+                theseNamedForceCoefficients_W = [
+                    unsteady_problem.finalMeanInducedDragCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanLiftCoefficients_W[airplane_num],
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    unsteady_problem.finalMeanRollingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                    unsteady_problem.finalMeanPitchingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                    unsteady_problem.finalMeanYawingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                ]
             case _:
                 raise ValueError(f"Unknown solver type: {solver_type}")
 
@@ -2207,21 +2270,16 @@ def log_results(
         ]
         col2_space = max(len(elem) for elem in col2) + 2 * padding_spaces
 
-        col4 = [
-            -theseForces_W[0],
-            theseForces_W[1],
-            -theseForces_W[2],
-            theseMoments_W_Cg[0],
-            theseMoments_W_Cg[1],
-            theseMoments_W_Cg[2],
-            -theseForceCoefficients_W[0],
-            theseForceCoefficients_W[1],
-            -theseForceCoefficients_W[2],
-            theseMomentCoefficients_W_Cg[0],
-            theseMomentCoefficients_W_Cg[1],
-            theseMomentCoefficients_W_Cg[2],
-        ]
-        col4 = [f"{val:#10.3G}" for val in col4]
+        # Assemble the named load values for the wind axes rows. Each branch above reads
+        # these from named load properties, so the mapping from raw components to named
+        # loads lives with the loads classes rather than here.
+        col4_values = (
+            theseNamedForces_W
+            + theseNamedMoments_W_Cg
+            + theseNamedForceCoefficients_W
+            + theseNamedMomentCoefficients_W_Cg
+        )
+        col4 = [f"{val:#10.3G}" for val in col4_values]
         col4 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col4)

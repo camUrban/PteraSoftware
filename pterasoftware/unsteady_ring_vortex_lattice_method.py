@@ -36,8 +36,6 @@ from . import (
 _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 
 
-# TODO: Add unit tests for trapezoid-rule-based averages for the mean and RMS loads and
-#  load coefficients.
 # TEST: Assess how comprehensive this function's integration tests are and update or
 #  extend them if needed.
 class UnsteadyRingVortexLatticeMethodSolver:
@@ -3145,11 +3143,35 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # number of intervals for the trapezoidal rule is one less than the number of
         # samples.
         num_intervals = num_steps_to_average - 1
+
+        # A delta_time at or above the LCM period leaves a single sample in the
+        # averaging window, which the trapezoidal rule has no interval to integrate
+        # over. The mean of one sample is that sample and its RMS is that sample's
+        # magnitude, so use those limiting values. Dividing by the zero intervals
+        # instead yields NaN loads with no error, which is a silent modeling failure.
+        single_sample = not static and num_intervals == 0
+        if single_sample:
+            _logger.warning(
+                _logging.indent()
+                + "The averaging window holds a single time step, so the mean and RMS "
+                "loads are that step's values"
+            )
+            _logger.warning(
+                _logging.indent()
+                + "Set delta_time below the movement's LCM period to average over a "
+                "resolved cycle"
+            )
+
         for airplane_id in range(self.num_airplanes):
             for name, final_name, mean_name, rms_name in load_names:
                 history = load_histories[name][airplane_id]
                 if static:
                     getattr(self.unsteady_problem, final_name).append(history[:, -1])
+                elif single_sample:
+                    getattr(self.unsteady_problem, mean_name).append(history[:, -1])
+                    getattr(self.unsteady_problem, rms_name).append(
+                        np.abs(history[:, -1])
+                    )
                 else:
                     getattr(self.unsteady_problem, mean_name).append(
                         np.trapezoid(history, axis=-1) / num_intervals

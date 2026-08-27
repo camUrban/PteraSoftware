@@ -17,7 +17,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
 
 - `git push` is denied in this environment, so this command cannot push the branch. The branch must already exist on the remote and be up to date. If it is not, stop and ask the user to push, then re-run.
 - `gh api` is denied. Use only the `gh pr` porcelain subcommands. Do not fall back to the REST or GraphQL API.
-- The title and body must contain only printable ASCII characters. Do not add a footer or any "Generated with" or "Co-Authored-By" line.
+- The title and body must contain only printable ASCII characters. Do not add a footer or any "Generated with" or "Co-Authored-By" line. The only permitted trailing line is the AI-use policy's `Assisted-by:` disclosure described in step 3.
 
 ## Steps
 
@@ -62,6 +62,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
     - **Dependency Updates**: List any new or version-changed runtime or dev dependencies with their constraints, derived from changes to `requirements*.txt`, `setup.cfg`, or `pyproject.toml`. If none changed, write `None.`
     - **Change Magnitude**: Choose exactly one of Major, Moderate, or Minor by the nature of the change, not its line count. Major is significant new functionality, a behavior change, or broad impact. Moderate is a medium feature or refactor without large-scale impact (even a large refactor that preserves behavior is Moderate). Minor is a bug fix, small enhancement, or documentation update. Keep only the chosen bolded line and its description; delete the other two lines and the instruction sentence.
     - **Checklist**: Reproduce every item. Mark `[x]` only for items that are genuinely satisfied or not applicable; never blanket-check. Verify each locally checkable item against the actual state (for example, formatting, docstrings, type hints, and, only if you actually ran them, the local test suite). Always leave unchecked (`[ ]`) every item that asserts a GitHub action or the ReadTheDocs build check passes (the `ascii-only`, `black`, `codespell`, `docformatter`, `isort`, and `pre-commit-hooks` actions; the `mypy` action; the `tests` actions; and the ReadTheDocs build check). Those workflows are not triggered until the PR is created, so however certain you are that they will pass, they have not actually run yet and the box stays empty. If the listed set of actions does not match the repository's actual workflows, edit the affected line to match reality, but still leave it unchecked.
+   Always end the body with the AI-use policy's disclosure (docs/AI_USE_POLICY.md): a final line of the form `Assisted-by: MODEL_OR_TOOL_NAME`, separated from the last section by a single blank line. Running this command is AI drafting assistance by definition, so the line is unconditional. Write the tag's casing exactly as shown, include no email address, and use your own model name.
 4. **Choose labels, assignee, and draft status**:
     - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. If the title carries a `[FEATURE]` or `[BUG]` prefix, include the matching `feature` or `bug` label accordingly.
     - Always assign the PR to the current user with `--assignee "@me"`. The `@me` token resolves to whoever `gh` is authenticated as.
@@ -92,7 +93,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
 - Follow `.github/pull_request_template.md` exactly: every section, in order, with real content.
 - Set the title prefix from the branch name (`feature/` gives `[FEATURE]`, `bug/` gives `[BUG]`, otherwise none), and keep the whole title, prefix included, to at most 42 characters, verified with the awk check.
 - Never check a checklist item that asserts a GitHub action or the ReadTheDocs build passes; those run only after the PR is created, so they have not run yet. Leave every such item `[ ]`, no matter how certain the outcome.
-- Keep the title and body ASCII-only, with no footer or co-authorship line.
+- Keep the title and body ASCII-only, with no footer beyond the policy's `Assisted-by:` disclosure line.
 - The body is Markdown: do not hard-wrap it, follow `docs/WRITING_STYLE.md`, and backtick every identifier, path, and inline code span.
 - Do not open a PR from the base branch, and do not open a duplicate when one already exists for the branch.
 - Do not attach a milestone or project, and do not request reviewers. Always self-assign with `--assignee "@me"`, which targets whoever `gh` is authenticated as.

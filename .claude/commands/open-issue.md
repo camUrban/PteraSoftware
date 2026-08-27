@@ -13,7 +13,7 @@ The argument is a short description of what the issue is about. If its first tok
 ## Environment constraints
 
 - `gh api` is denied. Use only the `gh issue` porcelain (`gh issue list`, `gh issue view`, `gh issue create`).
-- The title and body must contain only printable ASCII characters. Do not add a footer or any "Generated with" or "Co-Authored-By" line.
+- The title and body must contain only printable ASCII characters. Do not add a footer or any "Generated with" or "Co-Authored-By" line. The only permitted trailing line is the AI-use policy's `Assisted-by:` disclosure described in step 4.
 - No git state is needed: an issue is not tied to a branch or commit, so do not run push or diff commands and do not require a pushed branch.
 
 ## Steps
@@ -45,6 +45,7 @@ The argument is a short description of what the issue is about. If its first tok
         - `## Proposed Solution`: the fix or next step, as a short paragraph or a numbered list.
         - `## Additional Context` (optional): extra notes, including any referencing `TODO`, `TEST`, or `TEMP` comment.
     - If the `gfi` keyword was given, append a `## Hints for New Contributors` section: remind the contributor to read `CONTRIBUTING.md` and set up the development environment, point to the specific files and any relevant docs (for example, `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md` for running tests, or the convention docs when relevant), give a short numbered plan, and remind them to run the tests afterward.
+    - Always end the body with the AI-use policy's disclosure (docs/AI_USE_POLICY.md): a final line of the form `Assisted-by: MODEL_OR_TOOL_NAME`, separated from the last section by a single blank line. Running this command is AI drafting assistance by definition, so the line is unconditional. Write the tag's casing exactly as shown, include no email address, and use your own model name.
 5. **Choose labels and assignment**:
     - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. Include `bug` for a bug or `feature` for a feature so the label matches any title prefix, and add `maintenance`, `question`, `performance`, and so on as the topic warrants, matching the combinations seen in existing issues (for example, `maintenance` with `question` for an open-ended investigation).
     - If the `gfi` keyword was given, include the `good_first_issue` label.
@@ -70,7 +71,7 @@ The argument is a short description of what the issue is about. If its first tok
 
 - Draw the issue's substance from the conversation and the argument; never fabricate. If context is too thin, stop and ask for specifics.
 - Follow the lived, streamlined convention, not the verbose `.github/ISSUE_TEMPLATE/` forms: include the `**Location(s):**` line, and omit `Reproduction`, `Screenshots`, `Desktop`, and `Alternative Solutions`.
-- Keep the title and body ASCII-only and unwrapped, with backticked identifiers and no footer.
+- Keep the title and body ASCII-only and unwrapped, with backticked identifiers and no footer beyond the policy's `Assisted-by:` disclosure line.
 - Never use `gh api`; use only the `gh issue` porcelain.
 - Never assign the issue, and never attach a milestone or project.
 - Add the `good_first_issue` label and a `## Hints for New Contributors` section only when the `gfi` keyword is given.

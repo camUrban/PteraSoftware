@@ -45,3 +45,5 @@ Identify the option that best describes the impact of your change, then delete t
 * [ ] This PR passes the `ascii-only`, `pre-commit-hooks`, and `zizmor` GitHub actions.
 * [ ] This PR passes the `lint` job of the `CI` GitHub action.
 * [ ] This PR passes the `test` jobs of the `CI` GitHub action.
+
+Assisted-by: MODEL_OR_TOOL_NAME (delete this entire line if not applicable, or update the placeholder and delete just this parenthetical note if applicable, and see the [AI-use policy](https://github.com/camUrban/PteraSoftware/blob/main/docs/AI_USE_POLICY.md) if anything is unclear)

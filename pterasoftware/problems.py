@@ -786,6 +786,22 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             mujoco_assets=mujoco_assets,
         )
 
+        # A file reference that mujoco_assets does not cover was resolved from the local
+        # filesystem when the model compiled, which ties the simulation to a
+        # machine-specific path and would make it unsaveable. Reject it now, before an
+        # expensive run, rather than surprising the user at save time. This check has to
+        # run after the MuJoCoModel is constructed because the references live in the
+        # generated model XML.
+        uncovered_file_references = self._mujoco_model.uncovered_file_references()
+        if uncovered_file_references:
+            raise ValueError(
+                "The MuJoCo model XML references files that mujoco_assets does not "
+                f"cover: {uncovered_file_references}. Supply each referenced file's "
+                "contents through mujoco_assets instead of referencing it by path, "
+                "which would tie the simulation to files on this machine and make it "
+                "unsaveable."
+            )
+
     # --- Immutable: read only properties ---
     @property
     def I_BP1_CgP1(self) -> np.ndarray:

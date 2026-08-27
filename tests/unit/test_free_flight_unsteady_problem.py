@@ -1,7 +1,9 @@
 """This module contains classes to test FreeFlightUnsteadyProblems."""
 
+import tempfile
 import unittest
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -11,7 +13,7 @@ import pterasoftware as ps
 
 # noinspection PyProtectedMember
 from pterasoftware import _mujoco_model, _transformations
-from tests.unit.fixtures import problem_fixtures
+from tests.unit.fixtures import mujoco_model_fixtures, problem_fixtures
 
 
 def _movement_and_mass() -> (
@@ -179,6 +181,48 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 I_BP1_CgP1=np.eye(3, dtype=float),
                 mujoco_assets=bad_mujoco_assets,
             )
+
+    def test_uncovered_file_reference_validation(self) -> None:
+        """Test that extra_xml referencing an on-disk file that mujoco_assets does not
+        cover is rejected."""
+        movement, mass = _movement_and_mass()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            stl_path = Path(temp_dir) / "tetrahedron.stl"
+            stl_path.write_bytes(
+                mujoco_model_fixtures.make_tetrahedron_stl_bytes_fixture()
+            )
+            with self.assertRaises(ValueError):
+                ps.problems.FreeFlightUnsteadyProblem(
+                    movement=movement,
+                    mass=mass,
+                    I_BP1_CgP1=np.eye(3, dtype=float),
+                    extra_xml={
+                        "asset": (
+                            f'<asset><mesh name="tetrahedron" file="{stl_path}"/>'
+                            "</asset>"
+                        ),
+                        "body": '<geom type="mesh" mesh="tetrahedron"/>',
+                    },
+                )
+
+    def test_covered_file_reference_accepted(self) -> None:
+        """Test that a file reference covered by mujoco_assets is accepted."""
+        movement, mass = _movement_and_mass()
+        problem = ps.problems.FreeFlightUnsteadyProblem(
+            movement=movement,
+            mass=mass,
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            extra_xml={
+                "asset": '<asset><mesh name="tetrahedron" file="tetrahedron.stl"/></asset>',
+                "body": '<geom type="mesh" mesh="tetrahedron"/>',
+            },
+            mujoco_assets={
+                "tetrahedron.stl": (
+                    mujoco_model_fixtures.make_tetrahedron_stl_bytes_fixture()
+                )
+            },
+        )
+        self.assertIsInstance(problem, ps.problems.FreeFlightUnsteadyProblem)
 
     def test_integrator_type_validation(self) -> None:
         """Test that integrator must be a str."""

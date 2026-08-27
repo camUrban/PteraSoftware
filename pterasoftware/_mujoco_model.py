@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import NamedTuple, TypedDict
+from xml.etree import ElementTree
 
 import mujoco
 import numpy as np
@@ -61,6 +62,9 @@ class MuJoCoModel:
 
     get_render_geometry: Extracts the renderable geometry of every geom in the compiled
     model.
+
+    uncovered_file_references: Returns the file references in the model XML that the
+    assets dict does not cover.
 
     **Notes:**
 
@@ -664,6 +668,32 @@ class MuJoCoModel:
             return pv.PolyData(vertices, faces.ravel())
 
         return None
+
+    def uncovered_file_references(self) -> list[str]:
+        """Returns the file references in the model XML that the assets dict does not
+        cover.
+
+        MuJoCo resolves a file attribute from the assets dict when the attribute's value
+        matches a key, and falls back to the local filesystem otherwise. A reference
+        resolved from the filesystem ties the model to a machine-specific path and could
+        not survive a save and load round trip, so FreeFlightUnsteadyProblem rejects a
+        model for which this method returns a nonempty list at construction time. Every
+        file attribute in the XML is collected regardless of its element, which covers
+        meshes, heightfields, textures, skins, and includes.
+
+        :return: A list of strs representing the file references that the assets dict
+            does not cover, in document order and without duplicates.
+        """
+        covered = self._mujoco_assets if self._mujoco_assets is not None else {}
+        uncovered: list[str] = []
+        for element in ElementTree.fromstring(self._xml_str).iter():
+            file_reference = element.get("file")
+            if file_reference is None:
+                continue
+            if file_reference in covered or file_reference in uncovered:
+                continue
+            uncovered.append(file_reference)
+        return uncovered
 
     def _rebuild_engine(self) -> None:
         """Rebuilds the native MuJoCo model and data objects from the stored XML string

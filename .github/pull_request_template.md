@@ -1,6 +1,6 @@
 # Description
 
-Provide a concise description of the changes in this pull request. Appropriate titles for PRs use sentence-case and no trailing period. Also, add applicable labels and assign the PR to yourself. If using the `bug` or `feature` label, prefix your title with [BUG] or [FEATURE]. If a first-time contributor, welcome! If you'd like, feel free to add yourself to the end of the list of contributors in the [README](https://github.com/camUrban/PteraSoftware/blob/main/README.md), following one of the styles shown.
+Provide a concise description of the changes in this pull request. Appropriate titles for PRs use sentence-case and no trailing period. Also, add applicable labels and assign the PR to yourself. If a first-time contributor, welcome! If you'd like, feel free to add yourself to the end of the list of contributors in the [README](https://github.com/camUrban/PteraSoftware/blob/main/README.md), following one of the styles shown.
 
 ## Motivation
 

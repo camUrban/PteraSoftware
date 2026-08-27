@@ -27,7 +27,7 @@ The argument is a short description of what the issue is about. If its first tok
     - If any look like plausible duplicates, list them (number, state, title, and URL) in your draft and ask the user whether to proceed before creating anything.
 3. **Choose the title** following the repository's issue conventions:
     - Sentence case, no trailing period. The title may contain backticked identifiers, and there is no length limit for issue titles.
-    - Set the prefix from the issue type and label: if it warrants the `bug` label, prefix with `[BUG] `; if it warrants the `feature` label, prefix with `[FEATURE] `; otherwise use no prefix. Issues have no branch, so the prefix is label-driven, unlike pull request titles.
+    - Do not prefix the title with `[BUG]`, `[FEATURE]`, or any other bracketed tag, even though older issues carry such prefixes. Classification lives in the labels, not the title.
 4. **Draft the body** following the lived, streamlined convention. Do not copy the verbose `.github/ISSUE_TEMPLATE/` placeholder prose, the end-user-reporter sections (`Reproduction`, `Screenshots`, `Desktop`), or `Alternative Solutions`. Keep each section to a few concise sentences.
 
    Apply these writing conventions throughout the body:
@@ -47,7 +47,7 @@ The argument is a short description of what the issue is about. If its first tok
     - If the `gfi` keyword was given, append a `## Hints for New Contributors` section: remind the contributor to read `CONTRIBUTING.md` and set up the development environment, point to the specific files and any relevant docs (for example, `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md` for running tests, or the convention docs when relevant), give a short numbered plan, and remind them to run the tests afterward.
     - Always end the body with the AI-use policy's disclosure (docs/AI_USE_POLICY.md): a final line of the form `Assisted-by: MODEL_OR_TOOL_NAME`, separated from the last section by a single blank line. Running this command is AI drafting assistance by definition, so the line is unconditional. Write the tag's casing exactly as shown, include no email address, and use your own model name.
 5. **Choose labels and assignment**:
-    - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. Include `bug` for a bug or `feature` for a feature so the label matches any title prefix, and add `maintenance`, `question`, `performance`, and so on as the topic warrants, matching the combinations seen in existing issues (for example, `maintenance` with `question` for an open-ended investigation).
+    - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. Include `bug` for a bug or `feature` for a feature, and add `maintenance`, `question`, `performance`, and so on as the topic warrants, matching the combinations seen in existing issues (for example, `maintenance` with `question` for an open-ended investigation).
     - If the `gfi` keyword was given, include the `good_first_issue` label.
     - Never assign the issue to anyone; do not pass `--assignee`. Leave it unassigned so it can be picked up, which matters especially for good first issues.
     - Do not attach a milestone or project. Never pass `--milestone` or `--project`.

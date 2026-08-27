@@ -34,9 +34,9 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
     - Read `.github/pull_request_template.md` so the body reproduces its exact, current section structure.
 2. **Choose and verify the title** following the template's title rules and this repository's conventions:
     - Sentence case, no trailing period.
-    - Set the prefix from the current branch name: if it begins with `feature/`, prefix the title with `[FEATURE] `; if it begins with `bug/`, prefix it with `[BUG] `; otherwise use no prefix. Each prefix applies if and only if the branch carries the matching prefix, and these are the only two prefixes.
-    - A title may state an outcome (e.g., "[FEATURE] Add free flight simulations").
-    - The entire title, including any `[FEATURE]` or `[BUG]` prefix, must be at most 42 characters. Verify its length and ASCII-only content with a single awk call (this runs without a permission prompt, so it costs the user nothing):
+    - Do not prefix the title with `[FEATURE]`, `[BUG]`, or any other bracketed tag. Classification lives in the labels, not the title.
+    - A title may state an outcome (e.g., "Add free flight simulations").
+    - The entire title must be at most 42 characters. Verify its length and ASCII-only content with a single awk call (this runs without a permission prompt, so it costs the user nothing):
       ```bash
       title="Your title here"
       awk -v s="$title" 'BEGIN {
@@ -64,7 +64,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
     - **Checklist**: Reproduce every item. Mark `[x]` only for items that are genuinely satisfied or not applicable; never blanket-check. Verify each locally checkable item against the actual state (for example, formatting, docstrings, type hints, and, only if you actually ran them, the local test suite). Always leave unchecked (`[ ]`) every item that asserts a GitHub action or the ReadTheDocs build check passes (the `ascii-only`, `black`, `codespell`, `docformatter`, `isort`, and `pre-commit-hooks` actions; the `mypy` action; the `tests` actions; and the ReadTheDocs build check). Those workflows are not triggered until the PR is created, so however certain you are that they will pass, they have not actually run yet and the box stays empty. If the listed set of actions does not match the repository's actual workflows, edit the affected line to match reality, but still leave it unchecked.
    Always end the body with the AI-use policy's disclosure (docs/AI_USE_POLICY.md): a final line of the form `Assisted-by: MODEL_OR_TOOL_NAME`, separated from the last section by a single blank line. Running this command is AI drafting assistance by definition, so the line is unconditional. Write the tag's casing exactly as shown, include no email address, and use your own model name.
 4. **Choose labels, assignee, and draft status**:
-    - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. If the title carries a `[FEATURE]` or `[BUG]` prefix, include the matching `feature` or `bug` label accordingly.
+    - Read `.github/labels.yml`, the canonical label set, and pick the applicable labels from it. Include `feature` or `bug` (or both) when the change warrants them, since the labels alone carry the classification.
     - Always assign the PR to the current user with `--assignee "@me"`. The `@me` token resolves to whoever `gh` is authenticated as.
     - Do not attach a milestone or a project, and do not request any reviewers. Never pass `--milestone`, `--project`, or `--reviewer`.
     - Open the PR as a draft only if the argument requested it; otherwise open it ready for review.
@@ -91,7 +91,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
 - Never push, and never use `--no-verify` or any flag that bypasses checks. If the branch is not pushed and current, stop and ask the user to push.
 - Never use `gh api`; stick to the `gh pr` porcelain.
 - Follow `.github/pull_request_template.md` exactly: every section, in order, with real content.
-- Set the title prefix from the branch name (`feature/` gives `[FEATURE]`, `bug/` gives `[BUG]`, otherwise none), and keep the whole title, prefix included, to at most 42 characters, verified with the awk check.
+- Never prefix the title with `[FEATURE]`, `[BUG]`, or any other bracketed tag (classification lives in the labels), and keep the whole title to at most 42 characters, verified with the awk check.
 - Never check a checklist item that asserts a GitHub action or the ReadTheDocs build passes; those run only after the PR is created, so they have not run yet. Leave every such item `[ ]`, no matter how certain the outcome.
 - Keep the title and body ASCII-only, with no footer beyond the policy's `Assisted-by:` disclosure line.
 - The body is Markdown: do not hard-wrap it, follow `docs/WRITING_STYLE.md`, and backtick every identifier, path, and inline code span.

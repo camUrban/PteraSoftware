@@ -138,7 +138,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
    The hooks in `.pre-commit-config.yaml` are SHA-pinned with `# frozen: <tag>` comments, so Dependabot can manage bumps with a 7-day cooldown that gives the community time to catch a malicious release before it reaches us. Do not run `pre-commit autoupdate` directly: it rewrites every `rev:` field back to a moving tag and undoes the pinning.
 3. **Create a new branch**
     - Branch from main for each change.
-    - Use descriptive branch names, such as `feature/add_new_plot` or `bug/fix_units`.
+    - Use descriptive branch names, such as `add_new_plot` or `fix_units`.
     ```shell
     git switch main
     git switch -c <branch_name>

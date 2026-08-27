@@ -1,6 +1,7 @@
 """Tests for the test environment's serialization warning suppression."""
 
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 # noinspection PyProtectedMember
@@ -24,14 +25,21 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
 
     def test_dirty_working_tree_load_warning_is_suppressed(self) -> None:
         """Loading with a dirty working tree should log no warning."""
-        # The first check_output call is git rev-parse HEAD, and the second is git
-        # status --porcelain. Matching the stored and current commits keeps the
-        # unrelated commit-mismatch warning out of this test, and the non-empty status
-        # triggers the dirty working tree warning.
+        # The check_output calls are git rev-parse --show-toplevel, git rev-parse
+        # HEAD, and git status --porcelain. Matching the stored and current commits
+        # keeps the unrelated commit-mismatch warning out of this test, and the
+        # non-empty status triggers the dirty working tree warning.
+        package_parent = str(
+            Path(_serialization.__file__).resolve().parent.parent
+        )
         with patch.object(
             _serialization.subprocess,
             "check_output",
-            side_effect=[b"abc123\n", b" M some_file.py\n"],
+            side_effect=[
+                (package_parent + "\n").encode("ascii"),
+                b"abc123\n",
+                b" M some_file.py\n",
+            ],
         ):
             with self.assertNoLogs("pterasoftware._serialization", level="WARNING"):
                 _serialization._log_load_warnings(
@@ -42,10 +50,17 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
         """The filter should not suppress other serialization warnings."""
         # The commit-mismatch warning shares the provenance path but is deliberately
         # outside the suppression's scope.
+        package_parent = str(
+            Path(_serialization.__file__).resolve().parent.parent
+        )
         with patch.object(
             _serialization.subprocess,
             "check_output",
-            side_effect=[b"def456\n", b""],
+            side_effect=[
+                (package_parent + "\n").encode("ascii"),
+                b"def456\n",
+                b"",
+            ],
         ):
             with self.assertLogs(
                 "pterasoftware._serialization", level="WARNING"

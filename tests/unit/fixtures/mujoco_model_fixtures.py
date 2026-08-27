@@ -1,7 +1,9 @@
 """This module contains functions to create MuJoCoModels for use in tests."""
 
 import struct
+import tempfile
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 
@@ -183,6 +185,39 @@ def make_render_geometry_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
     )
 
     return render_geometry_mujoco_model_fixture
+
+
+def make_disk_mesh_mujoco_model_fixture() -> _mujoco_model.MuJoCoModel:
+    """This method makes a fixture that is a MuJoCoModel whose XML references a mesh by
+    an absolute on-disk path instead of through mujoco_assets.
+
+    The tetrahedron STL bytes are written to a temporary file that MuJoCo reads at
+    compile time, and the file is deleted before returning, which leaves the model
+    holding a file reference that resolved only while the file existed on this machine.
+
+    :return disk_mesh_mujoco_model_fixture: MuJoCoModel This is the MuJoCoModel whose
+        XML references a mesh by an absolute on-disk path.
+    """
+    with tempfile.TemporaryDirectory() as temp_dir:
+        stl_path = Path(temp_dir) / "tetrahedron.stl"
+        stl_path.write_bytes(make_tetrahedron_stl_bytes_fixture())
+
+        extra_xml = {
+            "asset": f'<asset><mesh name="tetrahedron" file="{stl_path}"/></asset>',
+            "body": '<geom name="mesh_geom" type="mesh" mesh="tetrahedron"/>',
+        }
+        disk_mesh_mujoco_model_fixture = _mujoco_model.MuJoCoModel(
+            name="disk_mesh_airplane",
+            mass=1.0,
+            omegas_BP1__E=np.array((0.0, 0.0, 0.0)),
+            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
+            vCg_E__E=np.array((10.0, 0.0, 0.0)),
+            I_BP1_CgP1=np.eye(3, dtype=float),
+            delta_time=0.01,
+            extra_xml=extra_xml,
+        )
+
+    return disk_mesh_mujoco_model_fixture
 
 
 def make_basic_mujoco_model_name_fixture() -> str:

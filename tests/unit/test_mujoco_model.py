@@ -960,3 +960,25 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
         self.assertIn("'rough'", logs.output[0])
         self.assertIn("a heightfield", logs.output[0])
         self.assertIn("still participates in the dynamics", logs.output[0])
+
+
+class TestMuJoCoModelUncoveredFileReferences(unittest.TestCase):
+    """This class contains methods for testing MuJoCoModel.uncovered_file_references."""
+
+    def test_no_file_references_returns_empty_list(self) -> None:
+        """Test that a model whose XML has no file references returns an empty list."""
+        model = mujoco_model_fixtures.make_basic_mujoco_model_fixture()
+        self.assertEqual(model.uncovered_file_references(), [])
+
+    def test_covered_reference_returns_empty_list(self) -> None:
+        """Test that a mesh reference covered by the assets dict returns an empty
+        list."""
+        model = mujoco_model_fixtures.make_render_geometry_mujoco_model_fixture()
+        self.assertEqual(model.uncovered_file_references(), [])
+
+    def test_disk_reference_is_returned(self) -> None:
+        """Test that a mesh referenced by an absolute on-disk path is returned."""
+        model = mujoco_model_fixtures.make_disk_mesh_mujoco_model_fixture()
+        uncovered = model.uncovered_file_references()
+        self.assertEqual(len(uncovered), 1)
+        self.assertTrue(uncovered[0].endswith("tetrahedron.stl"))

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import NamedTuple, TypedDict
+from xml.etree import ElementTree
 
 import mujoco
 import numpy as np
@@ -61,6 +62,9 @@ class MuJoCoModel:
 
     get_render_geometry: Extracts the renderable geometry of every geom in the compiled
     model.
+
+    uncovered_file_references: Returns the file references in the model XML that the
+    assets dict does not cover.
 
     **Notes:**
 
@@ -141,9 +145,10 @@ class MuJoCoModel:
             contents. These are passed to MuJoCo's from_xml_string as the assets
             parameter, allowing meshes and other binary files to be loaded without
             writing to disk. The dict is retained, which lets the serialization layer
-            refuse to save an asset-based model. Validated by FreeFlightUnsteadyProblem
-            before being passed here. The default is None, which provides no extra
-            assets.
+            save it alongside the XML string and lets _rebuild_engine resolve the XML
+            string's asset references after a load. Validated by
+            FreeFlightUnsteadyProblem before being passed here. The default is None,
+            which provides no extra assets.
         :return: None
         """
         start_key_frame_name: str = "start"
@@ -238,9 +243,9 @@ class MuJoCoModel:
             # noinspection PyArgumentList
             self._model = mujoco.MjModel.from_xml_string(self._xml_str)
 
-        # Retain the assets dict so the serialization layer can refuse to save an
-        # asset-based model: the engine is rebuilt on load from the stored XML alone,
-        # whose asset references would be unresolvable.
+        # Retain the assets dict so the serialization layer can save it alongside the
+        # XML string, which lets _rebuild_engine resolve the XML string's asset
+        # references after a load without touching the filesystem.
         self._mujoco_assets: dict[str, bytes] | None = mujoco_assets
 
         # Set the internal model's time step to be the same as the simulation's.
@@ -664,23 +669,57 @@ class MuJoCoModel:
 
         return None
 
-    def _rebuild_engine(self) -> None:
-        """Rebuilds the native MuJoCo model and data objects from the stored XML string.
+    def uncovered_file_references(self) -> list[str]:
+        """Returns the file references in the model XML that the assets dict does not
+        cover.
 
-        The serialization layer restores the picklable slots (the XML string, the body
-        and keyframe ids, and the initial qpos and qvel) but cannot restore the live
-        MuJoCo model and data objects, which wrap native MuJoCo state. This recreates
-        them from the XML string and resets the data to the initial keyframe, matching
-        the state established at construction. The live, post-run data state is not
-        restored: the canonical per-step state lives in the FreeFlightUnsteadyProblem's
-        steady problems. Models built with mujoco_assets (such as meshes) never reach
-        this method: the serialization layer refuses to save them, since the rebuilt
-        engine could not resolve the XML string's asset references.
+        MuJoCo resolves a file attribute from the assets dict when the attribute's value
+        matches a key, and falls back to the local filesystem otherwise. A reference
+        resolved from the filesystem ties the model to a machine-specific path and could
+        not survive a save and load round trip, so FreeFlightUnsteadyProblem rejects a
+        model for which this method returns a nonempty list at construction time. Every
+        file attribute in the XML is collected regardless of its element, which covers
+        meshes, heightfields, textures, skins, and includes.
+
+        :return: A list of strs representing the file references that the assets dict
+            does not cover, in document order and without duplicates.
+        """
+        covered = self._mujoco_assets if self._mujoco_assets is not None else {}
+        uncovered: list[str] = []
+        for element in ElementTree.fromstring(self._xml_str).iter():
+            file_reference = element.get("file")
+            if file_reference is None:
+                continue
+            if file_reference in covered or file_reference in uncovered:
+                continue
+            uncovered.append(file_reference)
+        return uncovered
+
+    def _rebuild_engine(self) -> None:
+        """Rebuilds the native MuJoCo model and data objects from the stored XML string
+        and the stored assets dict.
+
+        The serialization layer restores the serializable slots (the XML string, the
+        assets dict, the body and keyframe ids, and the initial qpos and qvel) but
+        cannot restore the live MuJoCo model and data objects, which wrap native MuJoCo
+        state. This recreates them from the XML string and resets the data to the
+        initial keyframe, matching the state established at construction. The restored
+        assets dict is passed to MuJoCo so the rebuilt engine can resolve the XML
+        string's asset references (such as meshes) without touching the filesystem,
+        mirroring the construction path. The live, post-run data state is not restored:
+        the canonical per-step state lives in the FreeFlightUnsteadyProblem's steady
+        problems.
 
         :return: None
         """
         # noinspection PyArgumentList
-        model = mujoco.MjModel.from_xml_string(self._xml_str)
+        if self._mujoco_assets is not None:
+            model = mujoco.MjModel.from_xml_string(
+                self._xml_str, assets=self._mujoco_assets
+            )
+        else:
+            # noinspection PyArgumentList
+            model = mujoco.MjModel.from_xml_string(self._xml_str)
         data = mujoco.MjData(model)
         mujoco.mj_resetDataKeyframe(model, data, self._initial_key_frame_id)
         mujoco.mj_forward(model, data)

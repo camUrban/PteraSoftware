@@ -80,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 23
+_FORMAT_VERSION = 24
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -187,12 +187,9 @@ _UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
 _MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
 
 # These are the slots on MuJoCoModel that are serialized as null. _model and _data wrap
-# native MuJoCo state and are rebuilt from the serialized XML string on deserialization
-# via MuJoCoModel._rebuild_engine. _mujoco_assets holds raw bytes and is only ever falsy
-# when serialization succeeds, because a MuJoCoModel with assets raises on save.
-_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset(
-    {"_model", "_data", "_mujoco_assets"}
-)
+# native MuJoCo state and are rebuilt from the serialized XML string and the serialized
+# _mujoco_assets dict on deserialization via MuJoCoModel._rebuild_engine.
+_MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
 
 
 def save(path: str | Path, obj: object) -> None:
@@ -526,20 +523,8 @@ def _object_to_dict(
         _skip_slots = _skip_slots | _UNSTEADY_SOLVER_SKIP_SLOTS
 
     # The MuJoCoModel's native model and data objects cannot be serialized. They are
-    # rebuilt from the XML string on deserialization.
+    # rebuilt from the XML string and the assets dict on deserialization.
     if isinstance(obj, MuJoCoModel):
-        # An asset-based MuJoCoModel cannot survive that rebuild. The engine is
-        # recreated from the stored XML alone, whose asset references would be
-        # unresolvable. Refuse to save rather than produce a file that fails on load.
-        # This module is inherently coupled to class internals, so reading a private
-        # attribute directly is acceptable here.
-        # noinspection PyProtectedMember
-        if obj._mujoco_assets:
-            raise ValueError(
-                "A MuJoCoModel built with mujoco_assets cannot be saved: the engine "
-                "is rebuilt on load from the stored XML alone, so the asset "
-                "references would be unresolvable."
-            )
         _skip_slots = _skip_slots | _MUJOCO_MODEL_SKIP_SLOTS
 
     result: dict[str, Any] = {"_type": class_name}
@@ -753,11 +738,13 @@ def _serialize_value(value: object) -> object:
     """Serializes a single value based on its runtime type.
 
     Dispatch order: None, bool (before int since bool is a subclass of int), int, float,
-    str, ndarray, tuple, list, callable. int and float are wrapped in {"_type": ...,
-    "value": ...} dicts rather than serialized as bare JSON numbers to eliminate the
-    int/float ambiguity that arises because JSON has a single number type. None, bool,
-    and str remain bare JSON values because they map to unambiguous JSON types (null,
-    boolean, string).
+    str, bytes, ndarray, tuple, list, dict, callable. int and float are wrapped in
+    {"_type": ..., "value": ...} dicts rather than serialized as bare JSON numbers to
+    eliminate the int/float ambiguity that arises because JSON has a single number type.
+    None, bool, and str remain bare JSON values because they map to unambiguous JSON
+    types (null, boolean, string). bytes are encoded as base64 strings, the same
+    encoding _ndarray_to_dict uses for array buffers. dicts must have str keys because
+    JSON object keys are strings, and a lossy key coercion would break the round trip.
 
     :param value: The value to serialize.
     :return: The JSON serializable representation of the value.
@@ -781,6 +768,12 @@ def _serialize_value(value: object) -> object:
     if isinstance(value, str):
         return value
 
+    if isinstance(value, bytes):
+        return {
+            "_type": "bytes",
+            "data": base64.b64encode(value).decode("ascii"),
+        }
+
     if isinstance(value, np.ndarray):
         return _ndarray_to_dict(value)
 
@@ -794,6 +787,18 @@ def _serialize_value(value: object) -> object:
         return {
             "_type": "list",
             "items": [_serialize_value(item) for item in value],
+        }
+
+    if isinstance(value, dict):
+        for key in value:
+            if not isinstance(key, str):
+                raise TypeError(
+                    "_serialize_value only handles dicts with str keys, not "
+                    f"{type(key).__name__} keys."
+                )
+        return {
+            "_type": "dict",
+            "items": {key: _serialize_value(item) for key, item in value.items()},
         }
 
     if type(value).__name__ in _CLASS_REGISTRY:
@@ -841,12 +846,18 @@ def _deserialize_value(data: object) -> object:
             return int(data["value"])
         if type_tag == "float":
             return float(data["value"])
+        if type_tag == "bytes":
+            return base64.b64decode(data["data"])
         if type_tag == "ndarray":
             return _ndarray_from_dict(data)
         if type_tag == "tuple":
             return tuple(_deserialize_value(item) for item in data["items"])
         if type_tag == "list":
             return [_deserialize_value(item) for item in data["items"]]
+        if type_tag == "dict":
+            return {
+                key: _deserialize_value(item) for key, item in data["items"].items()
+            }
         if type_tag == "callable":
             name = data["name"]
             func = _CALLABLE_NAME_TO_FUNC.get(name)

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable, Sequence
+from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -617,15 +618,21 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra XML. The default is None. The argument is checked to be a dict (or
             None) whose keys are supported injection points and whose values are
             strings; the XML fragments themselves are not validated, which is left to
-            MuJoCo, so this is an advanced-user parameter.
+            MuJoCo, so this is an advanced-user parameter. Any file a fragment
+            references (such as a mesh) must be supplied through mujoco_assets, and
+            construction raises a ValueError if a fragment references an on-disk path
+            instead.
         :param mujoco_assets: A dict mapping virtual filenames to their binary contents
             for the MuJoCo model. Setting this to None provides no extra assets. The
-            default is None. The argument is checked to be a dict (or None) mapping
-            string filenames to bytes; whether a referenced asset is actually supplied
-            is left to MuJoCo, so this is an advanced-user parameter. A
-            FreeFlightUnsteadyProblem built with mujoco_assets cannot be saved: save()
-            raises, because the saved engine is rebuilt on load from the stored XML
-            alone, whose asset references would be unresolvable.
+            default is None. Each key must be a bare filename with a nonempty extension
+            (for example "body.stl"), with no path separators or drive prefixes, because
+            MuJoCo selects its asset decoder from the extension and machine-specific
+            paths must stay out of saved files. Supply a file by reading its bytes (for
+            example Path("body.stl").read_bytes()) under the virtual filename that the
+            extra_xml fragments reference. Whether a referenced asset is actually
+            supplied is left to MuJoCo, so this is an advanced-user parameter. The
+            assets are serialized into saved files, so a FreeFlightUnsteadyProblem built
+            with mujoco_assets saves and loads without touching the filesystem.
         :return: None
         """
         if not isinstance(movement, free_flight_movement.FreeFlightMovement):
@@ -751,8 +758,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml = validated_extra_xml
 
         # Validate the mujoco_assets dict (it must be a dict, or None, mapping str
-        # filenames to bytes). Whether a referenced asset is actually supplied is left
-        # to MuJoCo's own parser.
+        # filenames to bytes, where each filename is a bare basename with a nonempty
+        # extension). Whether a referenced asset is actually supplied is left to
+        # MuJoCo's own parser.
         if mujoco_assets is not None:
             if not isinstance(mujoco_assets, dict):
                 raise TypeError("mujoco_assets must be a dict or None.")
@@ -762,6 +770,27 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                         "mujoco_assets keys must be str filenames, not "
                         f"{type(filename).__name__}."
                     )
+
+                # Windows path rules recognize both separator styles and drive prefixes,
+                # so a single PureWindowsPath check rejects every path shape on all
+                # platforms. The basename requirement keeps machine-specific paths out
+                # of saved files.
+                if PureWindowsPath(filename).name != filename:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a bare filename "
+                        "with no path separators or drive prefixes."
+                    )
+
+                # MuJoCo selects its asset decoder from the extension, so an
+                # extension-less virtual filename fails to compile even with an explicit
+                # content_type attribute.
+                stem, _, extension = filename.rpartition(".")
+                if not stem or not extension:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a filename with a "
+                        "nonempty extension."
+                    )
+
                 if not isinstance(contents, bytes):
                     raise TypeError(
                         f"mujoco_assets['{filename}'] must be bytes, not "
@@ -785,6 +814,22 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml=extra_xml,
             mujoco_assets=mujoco_assets,
         )
+
+        # A file reference that mujoco_assets does not cover was resolved from the local
+        # filesystem when the model compiled, which ties the simulation to a
+        # machine-specific path and would make it unsaveable. Reject it now, before an
+        # expensive run, rather than surprising the user at save time. This check has to
+        # run after the MuJoCoModel is constructed because the references live in the
+        # generated model XML.
+        uncovered_file_references = self._mujoco_model.uncovered_file_references()
+        if uncovered_file_references:
+            raise ValueError(
+                "The MuJoCo model XML references files that mujoco_assets does not "
+                f"cover: {uncovered_file_references}. Supply each referenced file's "
+                "contents through mujoco_assets instead of referencing it by path, "
+                "which would tie the simulation to files on this machine and make it "
+                "unsaveable."
+            )
 
     # --- Immutable: read only properties ---
     @property

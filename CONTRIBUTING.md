@@ -9,9 +9,10 @@ We are excited that you are interested in contributing to **Ptera Software**! Th
 Please review the following documents before making contributions. These documents are also available on the [Ptera Software documentation website](https://docs.pterasoftware.com/).
 
 1. [README](README.md)
-2. [Code of Conduct](CODE_OF_CONDUCT.md)
-3. [Security Policy](SECURITY.md)
-4. [License](LICENSE.md)
+2. [AI-Use Policy](docs/AI_USE_POLICY.md)
+3. [Code of Conduct](CODE_OF_CONDUCT.md)
+4. [Security Policy](SECURITY.md)
+5. [License](LICENSE.md)
 
 ---
 

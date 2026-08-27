@@ -358,8 +358,10 @@ def _get_provenance() -> dict[str, str | bool | None]:
     """Returns a dict of provenance metadata for the serialized file.
 
     The provenance fields are informational only and are never checked at load time. The
-    git derived fields (_commit and _dirty) are best effort and are set to None if the
-    code is running outside a git repository.
+    git derived fields (_commit and _dirty) are best effort and are set to None unless
+    the package directory sits inside a Ptera Software development checkout (its parent
+    is the repository toplevel), which covers both installs outside any git repository
+    and installs whose venv lives inside an unrelated repository.
 
     :return: A dict with provenance metadata.
     """
@@ -372,6 +374,22 @@ def _get_provenance() -> dict[str, str | bool | None]:
     dirty = None
     package_dir = Path(__file__).resolve().parent
     try:
+        toplevel = (
+            subprocess.check_output(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=package_dir,
+                stderr=subprocess.DEVNULL,
+            )
+            .decode("ascii")
+            .strip()
+        )
+        if Path(toplevel).resolve() != package_dir.parent.resolve():
+            return {
+                "_pterasoftware_version": pkg_version,
+                "_commit": None,
+                "_dirty": None,
+                "_saved_at": datetime.now(timezone.utc).isoformat(),
+            }
         commit = (
             subprocess.check_output(
                 ["git", "rev-parse", "HEAD"],
@@ -422,6 +440,17 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
     if file_commit is not None:
         try:
             package_dir = Path(__file__).resolve().parent
+            toplevel = (
+                subprocess.check_output(
+                    ["git", "rev-parse", "--show-toplevel"],
+                    cwd=package_dir,
+                    stderr=subprocess.DEVNULL,
+                )
+                .decode("ascii")
+                .strip()
+            )
+            if Path(toplevel).resolve() != package_dir.parent.resolve():
+                return
             current_commit = (
                 subprocess.check_output(
                     ["git", "rev-parse", "HEAD"],

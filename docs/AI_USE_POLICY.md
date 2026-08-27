@@ -6,7 +6,7 @@
 * Disclosure is strongly encouraged for commits, issue descriptions, and PRDs. Disclosure should not be included for review comments or security reports.
 * This policy covers generative AI and LLM tools only. Deterministic automation using tools such as Dependabot and GitHub Actions is out of scope. The disclosure section notes how their trailers are handled.
 * These rules apply to all contributors, including the maintainer(s).
-* These rules are effective for commits merged after `POLICY_COMMIT_SHA`. Earlier history is unchanged.
+* These rules are effective for commits merged after [7e84ae05c](https://github.com/camUrban/PteraSoftware/commit/7e84ae05ca20e9f5eff75a03b71beef385a49124). Earlier history is unchanged.
 
 ## Principles
 

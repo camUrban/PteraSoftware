@@ -618,15 +618,21 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra XML. The default is None. The argument is checked to be a dict (or
             None) whose keys are supported injection points and whose values are
             strings; the XML fragments themselves are not validated, which is left to
-            MuJoCo, so this is an advanced-user parameter.
+            MuJoCo, so this is an advanced-user parameter. Any file a fragment
+            references (such as a mesh) must be supplied through mujoco_assets, and
+            construction raises a ValueError if a fragment references an on-disk path
+            instead.
         :param mujoco_assets: A dict mapping virtual filenames to their binary contents
             for the MuJoCo model. Setting this to None provides no extra assets. The
-            default is None. The argument is checked to be a dict (or None) mapping
-            string filenames to bytes; whether a referenced asset is actually supplied
-            is left to MuJoCo, so this is an advanced-user parameter. A
-            FreeFlightUnsteadyProblem built with mujoco_assets cannot be saved: save()
-            raises, because the saved engine is rebuilt on load from the stored XML
-            alone, whose asset references would be unresolvable.
+            default is None. Each key must be a bare filename with a nonempty extension
+            (for example "body.stl"), with no path separators or drive prefixes, because
+            MuJoCo selects its asset decoder from the extension and machine-specific
+            paths must stay out of saved files. Supply a file by reading its bytes (for
+            example Path("body.stl").read_bytes()) under the virtual filename that the
+            extra_xml fragments reference. Whether a referenced asset is actually
+            supplied is left to MuJoCo, so this is an advanced-user parameter. The
+            assets are serialized into saved files, so a FreeFlightUnsteadyProblem built
+            with mujoco_assets saves and loads without touching the filesystem.
         :return: None
         """
         if not isinstance(movement, free_flight_movement.FreeFlightMovement):

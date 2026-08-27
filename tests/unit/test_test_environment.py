@@ -29,9 +29,7 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
         # HEAD, and git status --porcelain. Matching the stored and current commits
         # keeps the unrelated commit-mismatch warning out of this test, and the
         # non-empty status triggers the dirty working tree warning.
-        package_parent = str(
-            Path(_serialization.__file__).resolve().parent.parent
-        )
+        package_parent = str(Path(_serialization.__file__).resolve().parent.parent)
         with patch.object(
             _serialization.subprocess,
             "check_output",
@@ -50,9 +48,7 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
         """The filter should not suppress other serialization warnings."""
         # The commit-mismatch warning shares the provenance path but is deliberately
         # outside the suppression's scope.
-        package_parent = str(
-            Path(_serialization.__file__).resolve().parent.parent
-        )
+        package_parent = str(Path(_serialization.__file__).resolve().parent.parent)
         with patch.object(
             _serialization.subprocess,
             "check_output",

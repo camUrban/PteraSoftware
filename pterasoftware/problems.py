@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable, Sequence
+from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -751,8 +752,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml = validated_extra_xml
 
         # Validate the mujoco_assets dict (it must be a dict, or None, mapping str
-        # filenames to bytes). Whether a referenced asset is actually supplied is left
-        # to MuJoCo's own parser.
+        # filenames to bytes, where each filename is a bare basename with a nonempty
+        # extension). Whether a referenced asset is actually supplied is left to
+        # MuJoCo's own parser.
         if mujoco_assets is not None:
             if not isinstance(mujoco_assets, dict):
                 raise TypeError("mujoco_assets must be a dict or None.")
@@ -762,6 +764,27 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                         "mujoco_assets keys must be str filenames, not "
                         f"{type(filename).__name__}."
                     )
+
+                # Windows path rules recognize both separator styles and drive prefixes,
+                # so a single PureWindowsPath check rejects every path shape on all
+                # platforms. The basename requirement keeps machine-specific paths out
+                # of saved files.
+                if PureWindowsPath(filename).name != filename:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a bare filename "
+                        "with no path separators or drive prefixes."
+                    )
+
+                # MuJoCo selects its asset decoder from the extension, so an
+                # extension-less virtual filename fails to compile even with an explicit
+                # content_type attribute.
+                stem, _, extension = filename.rpartition(".")
+                if not stem or not extension:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a filename with a "
+                        "nonempty extension."
+                    )
+
                 if not isinstance(contents, bytes):
                     raise TypeError(
                         f"mujoco_assets['{filename}'] must be bytes, not "

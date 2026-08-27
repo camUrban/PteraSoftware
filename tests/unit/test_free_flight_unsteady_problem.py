@@ -170,6 +170,40 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 mujoco_assets=bad_mujoco_assets,
             )
 
+    def test_mujoco_assets_key_basename_validation(self) -> None:
+        """Test that a mujoco_assets key must be a bare filename without path separators
+        or drive prefixes."""
+        movement, mass = _movement_and_mass()
+        path_shaped_keys = [
+            "meshes/file.stl",
+            "meshes\\file.stl",
+            "/abs/file.stl",
+            "C:\\abs\\file.stl",
+        ]
+        for key in path_shaped_keys:
+            with self.subTest(key=key):
+                with self.assertRaises(ValueError):
+                    ps.problems.FreeFlightUnsteadyProblem(
+                        movement=movement,
+                        mass=mass,
+                        I_BP1_CgP1=np.eye(3, dtype=float),
+                        mujoco_assets={key: b"data"},
+                    )
+
+    def test_mujoco_assets_key_extension_validation(self) -> None:
+        """Test that a mujoco_assets key must have a nonempty extension."""
+        movement, mass = _movement_and_mass()
+        extension_less_keys = ["file", "file.", ".stl", ""]
+        for key in extension_less_keys:
+            with self.subTest(key=key):
+                with self.assertRaises(ValueError):
+                    ps.problems.FreeFlightUnsteadyProblem(
+                        movement=movement,
+                        mass=mass,
+                        I_BP1_CgP1=np.eye(3, dtype=float),
+                        mujoco_assets={key: b"data"},
+                    )
+
     def test_mujoco_assets_value_validation(self) -> None:
         """Test that a mujoco_assets value must be bytes."""
         movement, mass = _movement_and_mass()

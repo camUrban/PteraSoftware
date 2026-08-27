@@ -83,6 +83,7 @@ from pterasoftware.unsteady_ring_vortex_lattice_method import (
     UnsteadyRingVortexLatticeMethodSolver,
 )
 from tests.unit.fixtures import (
+    mujoco_model_fixtures,
     problem_fixtures,
     serialization_fixtures,
     solver_fixtures,
@@ -401,6 +402,16 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value("hello")
         self.assertEqual(result, "hello")
 
+    def test_bytes(self) -> None:
+        """Tests that bytes serialize to a dict with a base64 string.
+
+        :return: None
+        """
+        result = _serialize_value(b"\x00\x01binary")
+        assert isinstance(result, dict)
+        self.assertEqual(result["_type"], "bytes")
+        self.assertIsInstance(result["data"], str)
+
     def test_ndarray(self) -> None:
         """Tests that a numpy array delegates to _ndarray_to_dict.
 
@@ -446,6 +457,32 @@ class TestSerializeValue(unittest.TestCase):
         """
         result = _serialize_value([])
         self.assertEqual(result, {"_type": "list", "items": []})
+
+    def test_dict(self) -> None:
+        """Tests that a dict serializes to a dict with items.
+
+        :return: None
+        """
+        result = _serialize_value({"a": 1, "b": 2.0, "c": "three"})
+        assert isinstance(result, dict)
+        self.assertEqual(result["_type"], "dict")
+        self.assertEqual(len(result["items"]), 3)
+
+    def test_dict_empty(self) -> None:
+        """Tests that an empty dict serializes correctly.
+
+        :return: None
+        """
+        result = _serialize_value({})
+        self.assertEqual(result, {"_type": "dict", "items": {}})
+
+    def test_dict_non_str_key_raises(self) -> None:
+        """Tests that a dict with a non-str key raises a TypeError.
+
+        :return: None
+        """
+        with self.assertRaises(TypeError):
+            _serialize_value({1: "one"})
 
     def test_nested_tuple(self) -> None:
         """Tests that a nested tuple serializes recursively.
@@ -524,6 +561,15 @@ class TestDeserializeValue(unittest.TestCase):
         """
         self.assertEqual(_deserialize_value("hello"), "hello")
 
+    def test_bytes(self) -> None:
+        """Tests that a bytes dict deserializes to bytes.
+
+        :return: None
+        """
+        result = _deserialize_value({"_type": "bytes", "data": "AAFiaW5hcnk="})
+        self.assertEqual(result, b"\x00\x01binary")
+        self.assertIsInstance(result, bytes)
+
     def test_int(self) -> None:
         """Tests that a wrapped int dict deserializes to an int.
 
@@ -584,6 +630,22 @@ class TestDeserializeValue(unittest.TestCase):
         result = _deserialize_value(data)
         self.assertEqual(result, [1, 2.0])
         self.assertIsInstance(result, list)
+
+    def test_dict(self) -> None:
+        """Tests that a dict dict deserializes to a dict.
+
+        :return: None
+        """
+        data = {
+            "_type": "dict",
+            "items": {
+                "a": {"_type": "int", "value": 1},
+                "b": {"_type": "float", "value": 2.0},
+            },
+        }
+        result = _deserialize_value(data)
+        self.assertEqual(result, {"a": 1, "b": 2.0})
+        self.assertIsInstance(result, dict)
 
     def test_callable_sine(self) -> None:
         """Tests that a callable dict with name "sine" deserializes to
@@ -713,6 +775,17 @@ class TestValueRoundTrip(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(_deserialize_value(_serialize_value(value)), value)
 
+    def test_bytes(self) -> None:
+        """Tests round trip for bytes values.
+
+        :return: None
+        """
+        for value in [b"", b"hello", b"\x00\x01\xff"]:
+            with self.subTest(value=value):
+                result = _deserialize_value(_serialize_value(value))
+                self.assertEqual(result, value)
+                self.assertIsInstance(result, bytes)
+
     def test_tuple(self) -> None:
         """Tests round trip for a tuple with mixed types.
 
@@ -732,6 +805,16 @@ class TestValueRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(value))
         self.assertEqual(result, value)
         self.assertIsInstance(result, list)
+
+    def test_dict(self) -> None:
+        """Tests round trip for a dict with mixed value types.
+
+        :return: None
+        """
+        value = {"a": 1, "b": 2.0, "c": "three", "d": None, "e": b"bytes"}
+        result = _deserialize_value(_serialize_value(value))
+        self.assertEqual(result, value)
+        self.assertIsInstance(result, dict)
 
     def test_nested_containers(self) -> None:
         """Tests round trip for nested tuples and lists.
@@ -2175,24 +2258,20 @@ class TestMuJoCoModelRoundTrip(unittest.TestCase):
         npt.assert_array_equal(result.initial_qpos, model.initial_qpos)
         npt.assert_array_equal(result.initial_qvel, model.initial_qvel)
 
-    def test_mujoco_assets_model_is_not_serializable(self) -> None:
-        """Tests that a MuJoCoModel built with mujoco_assets raises on serialization,
-        since the engine rebuilt on load could not resolve the asset references.
+    def test_mujoco_assets_model_round_trip(self) -> None:
+        """Tests that a MuJoCoModel built with mujoco_assets survives a round trip, with
+        the rebuilt engine resolving the XML string's mesh reference from the restored
+        assets dict.
 
         :return: None
         """
-        model = MuJoCoModel(
-            name="assets_test",
-            mass=1.0,
-            omegas_BP1__E=np.zeros(3, dtype=float),
-            T_pas_BP1_CgP1_to_E_CgP1=np.eye(4, dtype=float),
-            vCg_E__E=np.array([10.0, 0.0, 0.0]),
-            I_BP1_CgP1=np.eye(3, dtype=float),
-            delta_time=0.01,
-            mujoco_assets={"dummy.txt": b"placeholder"},
-        )
-        with self.assertRaises(ValueError):
-            _serialize_value(model)
+        model = mujoco_model_fixtures.make_render_geometry_mujoco_model_fixture()
+        result = _deserialize_value(_serialize_value(model))
+        assert isinstance(result, MuJoCoModel)
+        self.assertEqual(result.xml_str, model.xml_str)
+        self.assertEqual(result._mujoco_assets, model._mujoco_assets)
+        # Stepping is another verification that the deserialized MuJoCoModel is usable.
+        result.step()
 
     def test_rebuilt_engine_is_functional(self) -> None:
         """Tests that a round-tripped MuJoCoModel can be queried and stepped, confirming
@@ -2316,18 +2395,25 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         with self.assertRaises(ValueError):
             _serialize_value(problem)
 
-    def test_mujoco_assets_problem_is_not_serializable(self) -> None:
+    def test_mujoco_assets_problem_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem whose MuJoCoModel was built with
-        mujoco_assets raises on serialization, matching the external_loads_fn
-        disposition.
+        mujoco_assets survives a full round trip, preserving the assets dict.
 
         :return: None
         """
+        mujoco_assets = {
+            "tetrahedron.stl": (
+                mujoco_model_fixtures.make_tetrahedron_stl_bytes_fixture()
+            )
+        }
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
-            mujoco_assets={"dummy.txt": b"placeholder"}
+            mujoco_assets=mujoco_assets
         )
-        with self.assertRaises(ValueError):
-            _serialize_value(problem)
+        result = _deserialize_value(_serialize_value(problem))
+        assert isinstance(result, FreeFlightUnsteadyProblem)
+        self.assertEqual(result._mujoco_model._mujoco_assets, mujoco_assets)
+        # The rebuilt MuJoCoModel is functional.
+        result._mujoco_model.step()
 
     def test_save_load_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem survives a save/load round trip.

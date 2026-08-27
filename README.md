@@ -149,12 +149,14 @@ This package currently supports five different solvers, a steady horseshoe VLM, 
 
 ### Unsteady Ring VLM
 
-![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/animate.webp)
+![Example Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/unsteady_ring_vortex_lattice_method_solver_static/renders/animate.webp)
 
 ### Aeroelastic Unsteady Ring VLM
+
 ![Example Aeroelastic Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/aeroelastic_unsteady_first_order_deformation/animate.webp)
 
 ### Free Flight Unsteady Ring VLM
+
 ![Example Free Flight Unsteady Ring VLM Animation Output](https://raw.githubusercontent.com/camUrban/PteraSoftware/main/docs/examples_expected_output/free_flight_unsteady_ring_vortex_lattice_method_solver_flapping/animate.webp)
 
 ## Validation

@@ -25,10 +25,10 @@ class TestSuppressDirtyProvenanceWarnings(unittest.TestCase):
 
     def test_dirty_working_tree_load_warning_is_suppressed(self) -> None:
         """Loading with a dirty working tree should log no warning."""
-        # The check_output calls are git rev-parse --show-toplevel, git rev-parse
-        # HEAD, and git status --porcelain. Matching the stored and current commits
-        # keeps the unrelated commit-mismatch warning out of this test, and the
-        # non-empty status triggers the dirty working tree warning.
+        # The check_output calls are git rev-parse --show-toplevel, git rev-parse HEAD,
+        # and git status --porcelain. Matching the stored and current commits keeps the
+        # unrelated commit-mismatch warning out of this test, and the non-empty status
+        # triggers the dirty working tree warning.
         package_parent = str(Path(_serialization.__file__).resolve().parent.parent)
         with patch.object(
             _serialization.subprocess,

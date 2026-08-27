@@ -409,10 +409,15 @@ def _get_provenance() -> dict[str, str | bool | None]:
             .strip()
         )
         dirty = len(status) > 0
-    except (FileNotFoundError, subprocess.CalledProcessError):  # pragma: no cover
+    except (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+        UnicodeDecodeError,
+    ):  # pragma: no cover
         _logger.debug(
             _logging.indent()
-            + "Git is not available, so the provenance fields will be null"
+            + "The package git state could not be read, so the provenance fields "
+            "will be null"
         )
 
     return {
@@ -481,7 +486,11 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
                     _logging.indent()
                     + "The current working tree has uncommitted changes"
                 )
-        except (FileNotFoundError, subprocess.CalledProcessError):  # pragma: no cover
+        except (
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+            UnicodeDecodeError,
+        ):  # pragma: no cover
             pass
 
 

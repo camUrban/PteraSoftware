@@ -92,6 +92,8 @@ Generate a commit message for the current staged changes, then create the commit
    EOF
    )"
    ```
+   Invoke it as plain `git commit` from the repository root, never with global options between `git` and the subcommand (e.g., `-C`, `-c`, or `--git-dir`).
+
    The step 3 output has already displayed the full message to the user. The permission prompt for `git commit` shows the exact heredoc and serves as the user's review gate: approving it creates the commit. If the user denies the prompt, treat any feedback they give as revision input, update the message accordingly, and repeat from step 3. If they deny without feedback, stop and inform the user that the commit was cancelled.
 
 ## Important Reminders

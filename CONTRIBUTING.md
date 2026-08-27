@@ -9,9 +9,10 @@ We are excited that you are interested in contributing to **Ptera Software**! Th
 Please review the following documents before making contributions. These documents are also available on the [Ptera Software documentation website](https://docs.pterasoftware.com/).
 
 1. [README](README.md)
-2. [Code of Conduct](CODE_OF_CONDUCT.md)
-3. [Security Policy](SECURITY.md)
-4. [License](LICENSE.md)
+2. [AI-Use Policy](docs/AI_USE_POLICY.md)
+3. [Code of Conduct](CODE_OF_CONDUCT.md)
+4. [Security Policy](SECURITY.md)
+5. [License](LICENSE.md)
 
 ---
 
@@ -137,7 +138,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
    The hooks in `.pre-commit-config.yaml` are SHA-pinned with `# frozen: <tag>` comments, so Dependabot can manage bumps with a 7-day cooldown that gives the community time to catch a malicious release before it reaches us. Do not run `pre-commit autoupdate` directly: it rewrites every `rev:` field back to a moving tag and undoes the pinning.
 3. **Create a new branch**
     - Branch from main for each change.
-    - Use descriptive branch names, such as `feature/add_new_plot` or `bug/fix_units`.
+    - Use descriptive branch names, such as `add_new_plot` or `fix_units`.
     ```shell
     git switch main
     git switch -c <branch_name>

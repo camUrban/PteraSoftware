@@ -80,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 24
+_FORMAT_VERSION = 25
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -208,6 +208,10 @@ def save(path: str | Path, obj: object) -> None:
     unmeshed geometry objects. Gzip compression typically reduces file sizes by 10x or
     more, and plain ".json" files use indented formatting that further increases their
     size.
+
+    Shared references are preserved. An object referenced from many places (e.g., an
+    Airfoil shared by every per step WingCrossSection) is written once, every other
+    reference is written as a pointer to it, and load() restores the sharing.
 
     The file records an internal serialization format version. load() accepts a file
     only when that format version matches the running code's exactly, and there is no
@@ -358,11 +362,15 @@ def hash_object(obj: object) -> str:
 
     The digest is the SHA-256 hash of the object's JSON serialization, computed over
     every serialized slot (including cache slots) and folded together with the current
-    serialization format version. Two objects with identical serialized content produce
-    the same digest regardless of instance identity, and any difference in serialized
-    content produces a different digest. The digest survives a save and load round trip,
-    but it is only stable within a single serialization format version, because a format
-    version change is folded into the hash and shifts every digest.
+    serialization format version. Two object graphs with identical content and identical
+    internal sharing structure produce the same digest regardless of instance identity,
+    and any difference in serialized content produces a different digest. Because shared
+    references serialize as refs, two graphs whose contents are equal but whose aliasing
+    differs (e.g., one Airfoil shared by every WingCrossSection versus an equal but
+    distinct Airfoil per WingCrossSection) produce different digests. The digest
+    survives a save and load round trip, but it is only stable within a single
+    serialization format version, because a format version change is folded into the
+    hash and shifts every digest.
 
     :param obj: The Ptera Software object to hash. Must be an instance of a class
         registered for serialization; an unregistered type raises a TypeError.
@@ -515,7 +523,10 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
 
 
 def _object_to_dict(
-    obj: object, *, _skip_slots: frozenset[str] = frozenset()
+    obj: object,
+    *,
+    _skip_slots: frozenset[str] = frozenset(),
+    memo: dict[int, tuple[int, object]] | None = None,
 ) -> dict[str, Any]:
     """Generically serializes a Ptera Software object to a dict.
 
@@ -524,14 +535,33 @@ def _object_to_dict(
     Slots listed in _skip_slots are serialized as null (used by the shared reference
     optimization for UnsteadyProblem and solver classes).
 
+    Shared references are preserved via an identity memo. The first encounter of each
+    object serializes it fully and stamps the dict with an "_id" key holding a small
+    integer. Every later encounter of the same object (by identity) serializes as a
+    {"_type": "ref", "id": ...} dict pointing at that integer, so an object that is
+    referenced from many places (e.g., an Airfoil shared by every per step
+    WingCrossSection) is stored only once and its sharing survives the round trip.
+
     :param obj: The Ptera Software object to serialize.
     :param _skip_slots: A frozenset of slot names to serialize as null.
-    :return: A dict with "_type" set to the class name and one key per slot.
+    :param memo: The identity memo mapping an object's id() to its "_id" integer and the
+        object itself (held to keep its id() from being recycled during the walk). If
+        None, a fresh memo is created, making this a top level call.
+    :return: A dict with "_type" set to the class name, "_id" set to the memo integer,
+        and one key per slot, or a {"_type": "ref", "id": ...} dict if the object was
+        already serialized under this memo.
     """
     cls = type(obj)
     class_name = cls.__name__
     if class_name not in _CLASS_REGISTRY:
         raise TypeError(f"_object_to_dict does not handle {class_name}.")
+
+    if memo is None:
+        memo = {}
+
+    memoized = memo.get(id(obj))
+    if memoized is not None:
+        return {"_type": "ref", "id": memoized[0]}
 
     _logger.debug(_logging.indent() + "Serializing %s", class_name)
 
@@ -550,7 +580,12 @@ def _object_to_dict(
     if isinstance(obj, MuJoCoModel):
         _skip_slots = _skip_slots | _MUJOCO_MODEL_SKIP_SLOTS
 
-    result: dict[str, Any] = {"_type": class_name}
+    # Register the object in the memo before serializing its slots so that any reference
+    # back to it from within its own subtree serializes as a ref.
+    ref_id = len(memo)
+    memo[id(obj)] = (ref_id, obj)
+
+    result: dict[str, Any] = {"_type": class_name, "_id": ref_id}
     is_unsteady_problem = isinstance(obj, UnsteadyProblem)
     for slot_name in _all_slots(cls):
         if slot_name in _skip_slots:
@@ -559,14 +594,16 @@ def _object_to_dict(
             # Pass _MOVEMENT_SKIP_SLOTS to the Movement child so that _airplanes and
             # _operating_points are serialized as null.
             result[slot_name] = _object_to_dict(
-                getattr(obj, slot_name), _skip_slots=_MOVEMENT_SKIP_SLOTS
+                getattr(obj, slot_name), _skip_slots=_MOVEMENT_SKIP_SLOTS, memo=memo
             )
         else:
-            result[slot_name] = _serialize_value(getattr(obj, slot_name))
+            result[slot_name] = _serialize_value(getattr(obj, slot_name), memo=memo)
     return result
 
 
-def _object_from_dict(data: dict[str, Any]) -> object:
+def _object_from_dict(
+    data: dict[str, Any], *, table: dict[int, object] | None = None
+) -> object:
     """Generically deserializes a Ptera Software object from a dict.
 
     Uses the "_type" tag to look up the class in the registry. Creates an empty instance
@@ -575,7 +612,13 @@ def _object_from_dict(data: dict[str, Any]) -> object:
     calls _reconstruct_shared_references() to rebuild any slots that were skipped during
     serialization.
 
+    The instance is registered in the table under the dict's "_id" integer before its
+    slots are restored, so {"_type": "ref", "id": ...} dicts elsewhere in the data
+    resolve to the same instance and shared references survive the round trip.
+
     :param data: The dict produced by _object_to_dict.
+    :param table: The reference table mapping "_id" integers to their reconstructed
+        instances. If None, a fresh table is created, making this a top level call.
     :return: The reconstructed Ptera Software object.
     """
     type_tag = data["_type"]
@@ -583,11 +626,17 @@ def _object_from_dict(data: dict[str, Any]) -> object:
     if cls is None:
         raise TypeError(f"Unknown class in _object_from_dict: '{type_tag}'.")
 
+    if table is None:
+        table = {}
+
     _logger.debug(_logging.indent() + "Deserializing %s", type_tag)
 
     obj: object = object.__new__(cls)
+    table[data["_id"]] = obj
     for slot_name in _all_slots(cls):
-        object.__setattr__(obj, slot_name, _deserialize_value(data[slot_name]))
+        object.__setattr__(
+            obj, slot_name, _deserialize_value(data[slot_name], table=table)
+        )
     _reconstruct_shared_references(obj)
     return obj
 
@@ -693,7 +742,9 @@ def _reconstruct_shared_references(obj: object) -> None:
             object.__setattr__(obj, "panels", np.empty(0, dtype=object))
 
 
-def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
+def _ndarray_to_dict(
+    arr: np.ndarray, *, memo: dict[int, tuple[int, object]] | None = None
+) -> dict[str, Any]:
     """Converts a NumPy ndarray to a JSON serializable dict.
 
     For numeric and bool dtypes, the array data is encoded as a base64 string with dtype
@@ -703,14 +754,18 @@ def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
     the original mutability.
 
     :param arr: The ndarray to serialize.
+    :param memo: The identity memo threaded through to _serialize_value for dtype=object
+        elements. If None, a fresh memo is created.
     :return: A dict representing the serialized ndarray.
     """
     if arr.dtype == object:
+        if memo is None:
+            memo = {}
         return {
             "_type": "ndarray",
             "dtype": "object",
             "shape": list(arr.shape),
-            "items": [_serialize_value(item) for item in arr.ravel()],
+            "items": [_serialize_value(item, memo=memo) for item in arr.ravel()],
             "writeable": bool(arr.flags.writeable),
         }
 
@@ -723,7 +778,9 @@ def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
     }
 
 
-def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
+def _ndarray_from_dict(
+    array_dict: dict[str, Any], *, table: dict[int, object] | None = None
+) -> np.ndarray:
     """Reconstructs a NumPy ndarray from a dict produced by _ndarray_to_dict.
 
     Dispatches on dtype: base64 decode for numeric and bool dtypes, element by element
@@ -732,13 +789,17 @@ def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
     the field is absent, the array defaults to writeable.
 
     :param array_dict: The dict produced by _ndarray_to_dict.
+    :param table: The reference table threaded through to _deserialize_value for
+        dtype=object elements. If None, a fresh table is created.
     :return: The reconstructed ndarray.
     """
     shape = array_dict["shape"]
     writeable = array_dict.get("writeable", True)
 
     if array_dict["dtype"] == "object":
-        items = [_deserialize_value(item) for item in array_dict["items"]]
+        if table is None:
+            table = {}
+        items = [_deserialize_value(item, table=table) for item in array_dict["items"]]
         arr = np.empty(len(items), dtype=object)
         for i, item in enumerate(items):
             arr[i] = item
@@ -757,7 +818,9 @@ def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
     return arr
 
 
-def _serialize_value(value: object) -> object:
+def _serialize_value(
+    value: object, *, memo: dict[int, tuple[int, object]] | None = None
+) -> object:
     """Serializes a single value based on its runtime type.
 
     Dispatch order: None, bool (before int since bool is a subclass of int), int, float,
@@ -770,8 +833,14 @@ def _serialize_value(value: object) -> object:
     JSON object keys are strings, and a lossy key coercion would break the round trip.
 
     :param value: The value to serialize.
+    :param memo: The identity memo threaded through to _object_to_dict for registered
+        class instances, so shared references serialize once. If None, a fresh memo is
+        created, making this a top level call.
     :return: The JSON serializable representation of the value.
     """
+    if memo is None:
+        memo = {}
+
     if value is None:
         return None
 
@@ -798,18 +867,18 @@ def _serialize_value(value: object) -> object:
         }
 
     if isinstance(value, np.ndarray):
-        return _ndarray_to_dict(value)
+        return _ndarray_to_dict(value, memo=memo)
 
     if isinstance(value, tuple):
         return {
             "_type": "tuple",
-            "items": [_serialize_value(item) for item in value],
+            "items": [_serialize_value(item, memo=memo) for item in value],
         }
 
     if isinstance(value, list):
         return {
             "_type": "list",
-            "items": [_serialize_value(item) for item in value],
+            "items": [_serialize_value(item, memo=memo) for item in value],
         }
 
     if isinstance(value, dict):
@@ -821,11 +890,13 @@ def _serialize_value(value: object) -> object:
                 )
         return {
             "_type": "dict",
-            "items": {key: _serialize_value(item) for key, item in value.items()},
+            "items": {
+                key: _serialize_value(item, memo=memo) for key, item in value.items()
+            },
         }
 
     if type(value).__name__ in _CLASS_REGISTRY:
-        return _object_to_dict(value)
+        return _object_to_dict(value, memo=memo)
 
     if callable(value):
         name = _CALLABLE_FUNC_TO_NAME.get(value)
@@ -839,7 +910,9 @@ def _serialize_value(value: object) -> object:
     raise TypeError(f"_serialize_value does not handle {type(value).__name__}.")
 
 
-def _deserialize_value(data: object) -> object:
+def _deserialize_value(
+    data: object, *, table: dict[int, object] | None = None
+) -> object:
     """Deserializes a single value from its JSON representation.
 
     The format is self describing via _type tags. None, bool, and str are bare JSON
@@ -848,8 +921,14 @@ def _deserialize_value(data: object) -> object:
     are wrapped during serialization.
 
     :param data: The serialized data.
+    :param table: The reference table mapping "_id" integers to their reconstructed
+        instances, used to resolve {"_type": "ref", "id": ...} dicts. If None, a fresh
+        table is created, making this a top level call.
     :return: The deserialized value.
     """
+    if table is None:
+        table = {}
+
     if data is None:
         return None
 
@@ -872,14 +951,25 @@ def _deserialize_value(data: object) -> object:
         if type_tag == "bytes":
             return base64.b64decode(data["data"])
         if type_tag == "ndarray":
-            return _ndarray_from_dict(data)
+            return _ndarray_from_dict(data, table=table)
+        if type_tag == "ref":
+            ref_id = data["id"]
+            if ref_id not in table:
+                raise ValueError(
+                    f"Reference to unknown shared object id {ref_id} encountered "
+                    "during deserialization."
+                )
+            return table[ref_id]
         if type_tag == "tuple":
-            return tuple(_deserialize_value(item) for item in data["items"])
+            return tuple(
+                _deserialize_value(item, table=table) for item in data["items"]
+            )
         if type_tag == "list":
-            return [_deserialize_value(item) for item in data["items"]]
+            return [_deserialize_value(item, table=table) for item in data["items"]]
         if type_tag == "dict":
             return {
-                key: _deserialize_value(item) for key, item in data["items"].items()
+                key: _deserialize_value(item, table=table)
+                for key, item in data["items"].items()
             }
         if type_tag == "callable":
             name = data["name"]
@@ -888,7 +978,7 @@ def _deserialize_value(data: object) -> object:
                 raise ValueError(f"Unknown callable name: '{name}'.")
             return func
         if type_tag in _CLASS_REGISTRY:
-            return _object_from_dict(data)
+            return _object_from_dict(data, table=table)
         raise TypeError(f"Unknown _type tag: '{type_tag}'.")
 
     if isinstance(data, (int, float)):

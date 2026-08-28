@@ -105,6 +105,14 @@ def _all_slots(cls: type) -> list[str]:
 # parameter on load().
 _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
 
+# This is the maximum read size in bytes for decompressing gzip files during load().
+# Each read is sized to this value or to the remaining allowance under the maximum
+# allowed size, whichever is smaller. Reading in bounded chunks matters because the
+# buffered reader preallocates the requested size, so a single read call sized to the
+# maximum allowed size would spike memory by the full cap (4 GB by default) on every
+# load.
+_GZIP_READ_CHUNK_SIZE = 16_777_216  # 16 MiB
+
 # Maps class names to their types for deserialization dispatch.
 _CLASS_REGISTRY: dict[str, type] = {
     "Airfoil": Airfoil,
@@ -287,13 +295,28 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
 
     if lowered_name.endswith(".json.gz"):
+        # Decompress in chunks and stop as soon as the accumulated size exceeds the cap.
+        # A single f.read(max_size + 1) call would make the buffered reader preallocate
+        # max_size + 1 bytes up front, so every load would spike memory by the full cap
+        # regardless of the actual decompressed size.
+        decompressed = bytearray()
         with gzip.open(path, "rb") as f:
-            raw = f.read(max_size + 1)
-            if len(raw) > max_size:
-                raise ValueError(
-                    f"Decompressed file exceeds the maximum allowed size of "
-                    f"{max_size} bytes."
-                )
+            while True:
+                # Each read is also capped at the remaining allowance so that neither
+                # the read buffer nor the total decompressed data ever exceeds the cap
+                # by more than one byte, even when max_size is smaller than the chunk
+                # size.
+                remaining = max_size + 1 - len(decompressed)
+                chunk = f.read(min(_GZIP_READ_CHUNK_SIZE, remaining))
+                if not chunk:
+                    break
+                decompressed += chunk
+                if len(decompressed) > max_size:
+                    raise ValueError(
+                        f"Decompressed file exceeds the maximum allowed size of "
+                        f"{max_size} bytes."
+                    )
+        raw: bytes | bytearray = decompressed
     else:
         with open(path, "rb") as f:
             raw = f.read()

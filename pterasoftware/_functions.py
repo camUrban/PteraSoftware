@@ -847,6 +847,6 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                         )
 
                     if _original_fork is not None:
-                        os.fork = _fork_guard  # type: ignore[attr-defined]
+                        setattr(os, "fork", _fork_guard)
                     if _original_forkpty is not None:
-                        os.forkpty = _forkpty_guard  # type: ignore[attr-defined]
+                        setattr(os, "forkpty", _forkpty_guard)

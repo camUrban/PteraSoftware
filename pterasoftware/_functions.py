@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
+import numba
 import numpy as np
 import threadpoolctl
 from numba import njit
@@ -741,6 +743,9 @@ _SOLVE_THREAD_THRESHOLD = 3_000
 _solve_loop_lock = threading.Lock()
 _solve_loop_owner: str | None = None
 _solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
+_fork_guard_installed = False
+_original_fork = None
+_original_forkpty = None
 
 
 @contextmanager
@@ -805,3 +810,43 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 _solve_loop_limiter.restore_original_limits()
                 _solve_loop_limiter = None
             _solve_loop_owner = None
+
+            global _fork_guard_installed, _original_fork, _original_forkpty
+            if not _fork_guard_installed:
+                try:
+                    threading_layer = numba.threading_layer()
+                except Exception:
+                    threading_layer = None
+                if threading_layer == "omp":
+                    _fork_guard_installed = True
+                    _original_fork = getattr(os, "fork", None)
+                    _original_forkpty = getattr(os, "forkpty", None)
+
+                    def _fork_guard(*args, **kwargs):  # type: ignore[no-untyped-def]
+                        raise RuntimeError(
+                            "Forking after a solver run has completed in this "
+                            "process is not safe and would abort at the C level "
+                            "(GNU OpenMP). Fork-method multiprocessing cannot be "
+                            "used after a solve has run in this process. Use the "
+                            "'spawn' or 'forkserver' start method instead, for "
+                            "example mp_context=multiprocessing.get_context('spawn') "
+                            "for ProcessPoolExecutor, or create worker processes "
+                            "before the first solve."
+                        )
+
+                    def _forkpty_guard(*args, **kwargs):  # type: ignore[no-untyped-def]
+                        raise RuntimeError(
+                            "Forking after a solver run has completed in this "
+                            "process is not safe and would abort at the C level "
+                            "(GNU OpenMP). Fork-method multiprocessing cannot be "
+                            "used after a solve has run in this process. Use the "
+                            "'spawn' or 'forkserver' start method instead, for "
+                            "example mp_context=multiprocessing.get_context('spawn') "
+                            "for ProcessPoolExecutor, or create worker processes "
+                            "before the first solve."
+                        )
+
+                    if _original_fork is not None:
+                        os.fork = _fork_guard  # type: ignore[attr-defined]
+                    if _original_forkpty is not None:
+                        os.forkpty = _forkpty_guard  # type: ignore[attr-defined]

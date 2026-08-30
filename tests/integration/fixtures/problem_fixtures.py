@@ -302,7 +302,9 @@ def make_surface_effect_free_air_unsteady_problem() -> ps.problems.UnsteadyProbl
     return free_air_unsteady_problem
 
 
-def make_simple_glider_free_flight_problem() -> ps.problems.FreeFlightUnsteadyProblem:
+def make_simple_glider_free_flight_problem(
+    extra_xml: dict[str, str] | None = None,
+) -> ps.problems.FreeFlightUnsteadyProblem:
     """This function creates the simple glider's FreeFlightUnsteadyProblem to be used as
     a fixture.
 
@@ -313,6 +315,9 @@ def make_simple_glider_free_flight_problem() -> ps.problems.FreeFlightUnsteadyPr
     loads are applied, so the glider flies an unpowered glide driven only by its
     aerodynamics, gravity, and inertia.
 
+    :param extra_xml: dict or None A dict mapping injection point names to XML fragment
+        strings to inject into the FreeFlightUnsteadyProblem's generated MuJoCo XML. If
+        None, no extra XML is injected. The default is None.
     :return simple_glider_free_flight_problem: FreeFlightUnsteadyProblem This is the
         simple glider FreeFlightUnsteadyProblem fixture.
     """
@@ -345,6 +350,7 @@ def make_simple_glider_free_flight_problem() -> ps.problems.FreeFlightUnsteadyPr
         mass=mass,
         I_BP1_CgP1=I_BP1_CgP1,
         external_loads_fn=None,
+        extra_xml=extra_xml,
     )
 
     return simple_glider_free_flight_problem

@@ -42,6 +42,40 @@ class Airplane:
     geometry axes, relative to this Airplane's CG to the first Airplane's geometry axes,
     relative to the first Airplane's CG.
 
+    inducedDrag_W: The total induced drag force experienced by this Airplane (in wind
+    axes).
+
+    sideForce_W: The total side force experienced by this Airplane (in wind axes).
+
+    lift_W: The total lift force experienced by this Airplane (in wind axes).
+
+    inducedDragCoefficient_W: The total induced drag force coefficient experienced by
+    this Airplane (in wind axes).
+
+    sideForceCoefficient_W: The total side force coefficient experienced by this
+    Airplane (in wind axes).
+
+    liftCoefficient_W: The total lift force coefficient experienced by this Airplane (in
+    wind axes).
+
+    rollingMoment_W_Cg: The total rolling moment experienced by this Airplane (in wind
+    axes, relative to the CG).
+
+    pitchingMoment_W_Cg: The total pitching moment experienced by this Airplane (in wind
+    axes, relative to the CG).
+
+    yawingMoment_W_Cg: The total yawing moment experienced by this Airplane (in wind
+    axes, relative to the CG).
+
+    rollingMomentCoefficient_W_Cg: The total rolling moment coefficient experienced by
+    this Airplane (in wind axes, relative to the CG).
+
+    pitchingMomentCoefficient_W_Cg: The total pitching moment coefficient experienced by
+    this Airplane (in wind axes, relative to the CG).
+
+    yawingMomentCoefficient_W_Cg: The total yawing moment coefficient experienced by
+    this Airplane (in wind axes, relative to the CG).
+
     draw: Draws the 3D geometry of this Airplane.
 
     get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
@@ -447,6 +481,179 @@ class Airplane:
             )
             self._T_pas_G_Cg_to_GP1_CgP1.flags.writeable = False
         return self._T_pas_G_Cg_to_GP1_CgP1
+
+    # --- Mutable derived: read only properties, no backing slots ---
+    @property
+    def inducedDrag_W(self) -> float | None:
+        """The total induced drag force experienced by this Airplane (in wind axes).
+
+        Induced drag points along the wind axes' -x basis direction, so it is the
+        negative of the wind axes' x force component.
+
+        :return: The induced drag force in Newtons, or None if forces_W has not been
+            set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[0])
+
+    @property
+    def sideForce_W(self) -> float | None:
+        """The total side force experienced by this Airplane (in wind axes).
+
+        Side force points along the wind axes' +y basis direction, so it equals the wind
+        axes' y force component.
+
+        :return: The side force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(self.forces_W[1])
+
+    @property
+    def lift_W(self) -> float | None:
+        """The total lift force experienced by this Airplane (in wind axes).
+
+        Lift points along the wind axes' -z basis direction, so it is the negative of
+        the wind axes' z force component.
+
+        :return: The lift force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[2])
+
+    @property
+    def inducedDragCoefficient_W(self) -> float | None:
+        """The total induced drag force coefficient experienced by this Airplane (in
+        wind axes).
+
+        Induced drag coefficient corresponds to the wind axes' -x basis direction, so it
+        is the negative of the wind axes' x force coefficient component.
+
+        :return: The induced drag coefficient, or None if forceCoefficients_W has not
+            been set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(-self.forceCoefficients_W[0])
+
+    @property
+    def sideForceCoefficient_W(self) -> float | None:
+        """The total side force coefficient experienced by this Airplane (in wind axes).
+
+        Side force coefficient corresponds to the wind axes' +y basis direction, so it
+        equals the wind axes' y force coefficient component.
+
+        :return: The side force coefficient, or None if forceCoefficients_W has not been
+            set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(self.forceCoefficients_W[1])
+
+    @property
+    def liftCoefficient_W(self) -> float | None:
+        """The total lift force coefficient experienced by this Airplane (in wind axes).
+
+        Lift coefficient corresponds to the wind axes' -z basis direction, so it is the
+        negative of the wind axes' z force coefficient component.
+
+        :return: The lift coefficient, or None if forceCoefficients_W has not been set.
+        """
+        if self.forceCoefficients_W is None:
+            return None
+        return float(-self.forceCoefficients_W[2])
+
+    @property
+    def rollingMoment_W_Cg(self) -> float | None:
+        """The total rolling moment experienced by this Airplane (in wind axes, relative
+        to the CG).
+
+        Rolling moment acts about the wind axes' +x basis direction, so it equals the
+        wind axes' x moment component.
+
+        :return: The rolling moment in Newton-meters, or None if moments_W_Cg has not
+            been set.
+        """
+        if self.moments_W_Cg is None:
+            return None
+        return float(self.moments_W_Cg[0])
+
+    @property
+    def pitchingMoment_W_Cg(self) -> float | None:
+        """The total pitching moment experienced by this Airplane (in wind axes,
+        relative to the CG).
+
+        Pitching moment acts about the wind axes' +y basis direction, so it equals the
+        wind axes' y moment component.
+
+        :return: The pitching moment in Newton-meters, or None if moments_W_Cg has not
+            been set.
+        """
+        if self.moments_W_Cg is None:
+            return None
+        return float(self.moments_W_Cg[1])
+
+    @property
+    def yawingMoment_W_Cg(self) -> float | None:
+        """The total yawing moment experienced by this Airplane (in wind axes, relative
+        to the CG).
+
+        Yawing moment acts about the wind axes' +z basis direction, so it equals the
+        wind axes' z moment component.
+
+        :return: The yawing moment in Newton-meters, or None if moments_W_Cg has not
+            been set.
+        """
+        if self.moments_W_Cg is None:
+            return None
+        return float(self.moments_W_Cg[2])
+
+    @property
+    def rollingMomentCoefficient_W_Cg(self) -> float | None:
+        """The total rolling moment coefficient experienced by this Airplane (in wind
+        axes, relative to the CG).
+
+        Rolling moment coefficient corresponds to the wind axes' +x basis direction, so
+        it equals the wind axes' x moment coefficient component.
+
+        :return: The rolling moment coefficient, or None if momentCoefficients_W_Cg has
+            not been set.
+        """
+        if self.momentCoefficients_W_Cg is None:
+            return None
+        return float(self.momentCoefficients_W_Cg[0])
+
+    @property
+    def pitchingMomentCoefficient_W_Cg(self) -> float | None:
+        """The total pitching moment coefficient experienced by this Airplane (in wind
+        axes, relative to the CG).
+
+        Pitching moment coefficient corresponds to the wind axes' +y basis direction, so
+        it equals the wind axes' y moment coefficient component.
+
+        :return: The pitching moment coefficient, or None if momentCoefficients_W_Cg has
+            not been set.
+        """
+        if self.momentCoefficients_W_Cg is None:
+            return None
+        return float(self.momentCoefficients_W_Cg[1])
+
+    @property
+    def yawingMomentCoefficient_W_Cg(self) -> float | None:
+        """The total yawing moment coefficient experienced by this Airplane (in wind
+        axes, relative to the CG).
+
+        Yawing moment coefficient corresponds to the wind axes' +z basis direction, so
+        it equals the wind axes' z moment coefficient component.
+
+        :return: The yawing moment coefficient, or None if momentCoefficients_W_Cg has
+            not been set.
+        """
+        if self.momentCoefficients_W_Cg is None:
+            return None
+        return float(self.momentCoefficients_W_Cg[2])
 
     # --- Other methods ---
     def draw(

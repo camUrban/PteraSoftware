@@ -82,6 +82,13 @@ class Panel:
     unitNormal_GP1: An estimate of this Panel's unit normal vector (in the first
     Airplane's geometry axes).
 
+    inducedDrag_W: The total induced drag force experienced by this Panel (in wind
+    axes).
+
+    sideForce_W: The total side force experienced by this Panel (in wind axes).
+
+    lift_W: The total lift force experienced by this Panel (in wind axes).
+
     calculate_projected_area: The area of this Panel projected on a plane defined by a
     given normal vector (in geometry axes).
 
@@ -866,6 +873,47 @@ class Panel:
             )
             self._unitNormal_GP1.flags.writeable = False
         return self._unitNormal_GP1
+
+    # --- Mutable derived: read only properties, no backing slots ---
+    @property
+    def inducedDrag_W(self) -> float | None:
+        """The total induced drag force experienced by this Panel (in wind axes).
+
+        Induced drag points along the wind axes' -x basis direction, so it is the
+        negative of the wind axes' x force component.
+
+        :return: The induced drag force in Newtons, or None if forces_W has not been
+            set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[0])
+
+    @property
+    def sideForce_W(self) -> float | None:
+        """The total side force experienced by this Panel (in wind axes).
+
+        Side force points along the wind axes' +y basis direction, so it equals the wind
+        axes' y force component.
+
+        :return: The side force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(self.forces_W[1])
+
+    @property
+    def lift_W(self) -> float | None:
+        """The total lift force experienced by this Panel (in wind axes).
+
+        Lift points along the wind axes' -z basis direction, so it is the negative of
+        the wind axes' z force component.
+
+        :return: The lift force in Newtons, or None if forces_W has not been set.
+        """
+        if self.forces_W is None:
+            return None
+        return float(-self.forces_W[2])
 
     # --- Other methods ---
     def calculate_projected_area(self, normal_G: np.ndarray) -> float:

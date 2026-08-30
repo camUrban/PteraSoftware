@@ -34,7 +34,7 @@ Requires Python 3.11, but active development is done in 3.14
 
 ### Relevant Directories, Packages, and Files
 
-- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (one per pre-commit hook or hook group, except the local-only pinned-versions hook, plus `label-sync.yml`, `publish.yml`, and `tests.yml`)
+- `.github/`: Directory with GitHub configuration files: the issue and pull request templates, the label definitions (`labels.yml`), the Dependabot, funding, and code-owner configuration, and the GitHub Actions workflows (`ascii-only.yml`, `ci.yml`, `label-sync.yml`, `pre-commit-hooks.yml`, `publish.yml`, and `zizmor.yml`)
 - `.venv/`: Directory for the Python virtual environment, configured for the host machine's OS (not included in version control)
 - `.venv-wsl/`: Directory for the Python virtual environment configured for a WSL OS (not included in version control, may be missing if host machine doesn't use WSL for development)
 - `experimental/`: Directory with experimental scripts and prototypes (not included in version control)
@@ -93,6 +93,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
+    - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a FreeFlightUnsteadyProblem's MuJoCoModel for the rendering layer
     - `_serialization.py`: JSON serialization and deserialization (save/load)
     - `_transformations.py`: Coordinate transformations and rotations
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation

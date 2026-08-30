@@ -1,5 +1,6 @@
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 1 min and 35.1 s
 INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (291504573 bytes)
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (291504534 bytes)
 INFO    |_serialization                              |Loading from example_solver.json.gz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
@@ -22,21 +23,21 @@ INFO    |output                                      |    cMX_G_Cg:   -8.49E-07
 INFO    |output                                      |    cMY_G_Cg:     0.00731
 INFO    |output                                      |    cMZ_G_Cg:    1.60E-07
 INFO    |output                                      |  Final Cycle-Averaged Forces (in Wind Axes):
-INFO    |output                                      |    fX_W:            166. N     Induced Drag:          -166. N
-INFO    |output                                      |    fY_W:        0.000425 N     Side Force:         0.000425 N
-INFO    |output                                      |    fZ_W:           -475. N     Lift:                   475. N
+INFO    |output                                      |    fX_W:            166. N     Induced Drag:                      -166. N
+INFO    |output                                      |    fY_W:        0.000425 N     Side Force:                     0.000425 N
+INFO    |output                                      |    fZ_W:           -475. N     Lift:                               475. N
 INFO    |output                                      |  Final Cycle-Averaged Moments (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    mX_W_Cg:      0.00824 Nm    Rolling Moment:      0.00824 Nm
-INFO    |output                                      |    mY_W_Cg:         8.90 Nm    Pitching Moment:        8.90 Nm
-INFO    |output                                      |    mZ_W_Cg:     -0.00158 Nm    Yawing Moment:      -0.00158 Nm
+INFO    |output                                      |    mX_W_Cg:      0.00824 Nm    Rolling Moment:                  0.00824 Nm
+INFO    |output                                      |    mY_W_Cg:         8.90 Nm    Pitching Moment:                    8.90 Nm
+INFO    |output                                      |    mZ_W_Cg:     -0.00158 Nm    Yawing Moment:                  -0.00158 Nm
 INFO    |output                                      |  Final Cycle-Averaged Force Coefficients (in Wind Axes):
-INFO    |output                                      |    cFX_W:         0.0995       CDi:                 -0.0995
-INFO    |output                                      |    cFY_W:       2.49E-07       CY:                 2.49E-07
-INFO    |output                                      |    cFZ_W:         -0.293       CL:                    0.293
+INFO    |output                                      |    cFX_W:         0.0995       Induced Drag Coefficient:        -0.0995
+INFO    |output                                      |    cFY_W:       2.49E-07       Side Force Coefficient:         2.49E-07
+INFO    |output                                      |    cFZ_W:         -0.293       Lift Coefficient:                  0.293
 INFO    |output                                      |  Final Cycle-Averaged Moment Coefficients (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    cMX_W_Cg:    8.24E-07       Cl:                 8.24E-07
-INFO    |output                                      |    cMY_W_Cg:     0.00731       Cm:                  0.00731
-INFO    |output                                      |    cMZ_W_Cg:   -1.54E-07       Cn:                -1.54E-07
+INFO    |output                                      |    cMX_W_Cg:    8.24E-07       Rolling Moment Coefficient:     8.24E-07
+INFO    |output                                      |    cMY_W_Cg:     0.00731       Pitching Moment Coefficient:     0.00731
+INFO    |output                                      |    cMZ_W_Cg:   -1.54E-07       Yawing Moment Coefficient:     -1.54E-07
 INFO    |output                                      |The First Airplane's Free Flight State History:
 INFO    |output                                      |  Initial State (at t = 0.00 s):
 INFO    |output                                      |    Position (of the First Airplane's CG, in Earth Axes, Relative to the Earth Origin):

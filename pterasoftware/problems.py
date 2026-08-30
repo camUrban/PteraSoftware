@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable, Sequence
+from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -33,6 +34,7 @@ from . import (
     _logging,
     _mujoco_model,
     _parameter_validation,
+    _private_access,
     _transformations,
     geometry,
     movements,
@@ -196,6 +198,76 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
 
     steady_problems: A tuple of SteadyProblems, one for each time step.
 
+    finalInducedDrags_W: The final induced drag force experienced by each Airplane (in
+    wind axes).
+
+    finalSideForces_W: The final side force experienced by each Airplane (in wind axes).
+
+    finalLifts_W: The final lift force experienced by each Airplane (in wind axes).
+
+    finalInducedDragCoefficients_W: The final induced drag force coefficient experienced
+    by each Airplane (in wind axes).
+
+    finalSideForceCoefficients_W: The final side force coefficient experienced by each
+    Airplane (in wind axes).
+
+    finalLiftCoefficients_W: The final lift force coefficient experienced by each
+    Airplane (in wind axes).
+
+    finalRollingMoments_W_Cg: The final rolling moment experienced by each Airplane (in
+    wind axes, relative to its own CG).
+
+    finalPitchingMoments_W_Cg: The final pitching moment experienced by each Airplane
+    (in wind axes, relative to its own CG).
+
+    finalYawingMoments_W_Cg: The final yawing moment experienced by each Airplane (in
+    wind axes, relative to its own CG).
+
+    finalRollingMomentCoefficients_W_Cg: The final rolling moment coefficient
+    experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalPitchingMomentCoefficients_W_Cg: The final pitching moment coefficient
+    experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalYawingMomentCoefficients_W_Cg: The final yawing moment coefficient experienced
+    by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanInducedDrags_W: The final cycle averaged induced drag force experienced by
+    each Airplane (in wind axes).
+
+    finalMeanSideForces_W: The final cycle averaged side force experienced by each
+    Airplane (in wind axes).
+
+    finalMeanLifts_W: The final cycle averaged lift force experienced by each Airplane
+    (in wind axes).
+
+    finalMeanInducedDragCoefficients_W: The final cycle averaged induced drag force
+    coefficient experienced by each Airplane (in wind axes).
+
+    finalMeanSideForceCoefficients_W: The final cycle averaged side force coefficient
+    experienced by each Airplane (in wind axes).
+
+    finalMeanLiftCoefficients_W: The final cycle averaged lift force coefficient
+    experienced by each Airplane (in wind axes).
+
+    finalMeanRollingMoments_W_Cg: The final cycle averaged rolling moment experienced by
+    each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanPitchingMoments_W_Cg: The final cycle averaged pitching moment experienced
+    by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanYawingMoments_W_Cg: The final cycle averaged yawing moment experienced by
+    each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanRollingMomentCoefficients_W_Cg: The final cycle averaged rolling moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanPitchingMomentCoefficients_W_Cg: The final cycle averaged pitching moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
+    finalMeanYawingMomentCoefficients_W_Cg: The final cycle averaged yawing moment
+    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
+
     **Notes:**
 
     The solver populates the mutable load lists during simulation, with one entry per
@@ -213,6 +285,10 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     "relative to the entry's own Airplane's CG". For the first Airplane's entries, the
     Moments_W_Cg and MomentCoefficients_W_Cg lists equal the Moments_W_CgP1 and
     MomentCoefficients_W_CgP1 lists.
+
+    The named load properties derive the named load components and coefficients, as
+    defined in AXES_POINTS_AND_FRAMES.md, from the wind axes lists. Each returns one
+    float per Airplane, or an empty list until its source list has been populated.
     """
 
     __slots__ = (
@@ -542,15 +618,21 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra XML. The default is None. The argument is checked to be a dict (or
             None) whose keys are supported injection points and whose values are
             strings; the XML fragments themselves are not validated, which is left to
-            MuJoCo, so this is an advanced-user parameter.
+            MuJoCo, so this is an advanced-user parameter. Any file a fragment
+            references (such as a mesh) must be supplied through mujoco_assets, and
+            construction raises a ValueError if a fragment references an on-disk path
+            instead.
         :param mujoco_assets: A dict mapping virtual filenames to their binary contents
             for the MuJoCo model. Setting this to None provides no extra assets. The
-            default is None. The argument is checked to be a dict (or None) mapping
-            string filenames to bytes; whether a referenced asset is actually supplied
-            is left to MuJoCo, so this is an advanced-user parameter. A
-            FreeFlightUnsteadyProblem built with mujoco_assets cannot be saved: save()
-            raises, because the saved engine is rebuilt on load from the stored XML
-            alone, whose asset references would be unresolvable.
+            default is None. Each key must be a bare filename with a nonempty extension
+            (for example "body.stl"), with no path separators or drive prefixes, because
+            MuJoCo selects its asset decoder from the extension and machine-specific
+            paths must stay out of saved files. Supply a file by reading its bytes (for
+            example Path("body.stl").read_bytes()) under the virtual filename that the
+            extra_xml fragments reference. Whether a referenced asset is actually
+            supplied is left to MuJoCo, so this is an advanced-user parameter. The
+            assets are serialized into saved files, so a FreeFlightUnsteadyProblem built
+            with mujoco_assets saves and loads without touching the filesystem.
         :return: None
         """
         if not isinstance(movement, free_flight_movement.FreeFlightMovement):
@@ -676,8 +758,9 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml = validated_extra_xml
 
         # Validate the mujoco_assets dict (it must be a dict, or None, mapping str
-        # filenames to bytes). Whether a referenced asset is actually supplied is left
-        # to MuJoCo's own parser.
+        # filenames to bytes, where each filename is a bare basename with a nonempty
+        # extension). Whether a referenced asset is actually supplied is left to
+        # MuJoCo's own parser.
         if mujoco_assets is not None:
             if not isinstance(mujoco_assets, dict):
                 raise TypeError("mujoco_assets must be a dict or None.")
@@ -687,6 +770,27 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                         "mujoco_assets keys must be str filenames, not "
                         f"{type(filename).__name__}."
                     )
+
+                # Windows path rules recognize both separator styles and drive prefixes,
+                # so a single PureWindowsPath check rejects every path shape on all
+                # platforms. The basename requirement keeps machine-specific paths out
+                # of saved files.
+                if PureWindowsPath(filename).name != filename:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a bare filename "
+                        "with no path separators or drive prefixes."
+                    )
+
+                # MuJoCo selects its asset decoder from the extension, so an
+                # extension-less virtual filename fails to compile even with an explicit
+                # content_type attribute.
+                stem, _, extension = filename.rpartition(".")
+                if not stem or not extension:
+                    raise ValueError(
+                        f"mujoco_assets key '{filename}' must be a filename with a "
+                        "nonempty extension."
+                    )
+
                 if not isinstance(contents, bytes):
                     raise TypeError(
                         f"mujoco_assets['{filename}'] must be bytes, not "
@@ -710,6 +814,22 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             extra_xml=extra_xml,
             mujoco_assets=mujoco_assets,
         )
+
+        # A file reference that mujoco_assets does not cover was resolved from the local
+        # filesystem when the model compiled, which ties the simulation to a
+        # machine-specific path and would make it unsaveable. Reject it now, before an
+        # expensive run, rather than surprising the user at save time. This check has to
+        # run after the MuJoCoModel is constructed because the references live in the
+        # generated model XML.
+        uncovered_file_references = self._mujoco_model.uncovered_file_references()
+        if uncovered_file_references:
+            raise ValueError(
+                "The MuJoCo model XML references files that mujoco_assets does not "
+                f"cover: {uncovered_file_references}. Supply each referenced file's "
+                "contents through mujoco_assets instead of referencing it by path, "
+                "which would tie the simulation to files on this machine and make it "
+                "unsaveable."
+            )
 
     # --- Immutable: read only properties ---
     @property
@@ -2218,3 +2338,24 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         final_theta_derivative_rad = float(sol.y[1][-1])
 
         return final_theta_rad, final_theta_derivative_rad
+
+
+def _get_mujoco_model(
+    problem: FreeFlightUnsteadyProblem,
+) -> _mujoco_model.MuJoCoModel:
+    """Returns a FreeFlightUnsteadyProblem's MuJoCoModel.
+
+    Defined here so the read of the FreeFlightUnsteadyProblem's private slot stays
+    inside the module that owns it. Registering it with _private_access at import time
+    lets the rendering layer reach the MuJoCoModel without any cross-module private
+    access.
+
+    :param problem: The FreeFlightUnsteadyProblem whose MuJoCoModel will be returned.
+    :return: The FreeFlightUnsteadyProblem's MuJoCoModel.
+    """
+    return problem._mujoco_model
+
+
+# Register the getter at import time so the rendering layer can look up a
+# FreeFlightUnsteadyProblem's MuJoCoModel through _private_access.
+_private_access.register_mujoco_model_getter(_get_mujoco_model)

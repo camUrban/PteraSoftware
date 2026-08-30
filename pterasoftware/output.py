@@ -37,6 +37,7 @@ import webp
 from . import (
     _colormaps,
     _logging,
+    _mujoco_model,
     _output_plotting,
     _output_rendering,
     _parameter_validation,
@@ -56,6 +57,8 @@ _logger = _logging.get_logger("output")
 _STREAMLINE_COLOR = "orchid"
 _STREAMLINE_LINE_WIDTH = 2.0
 _IMAGE_SURFACE_OPACITY = 0.5
+_ANIMATE_PREVIEW_FIRST_OPACITY = 0.10
+_ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
@@ -151,6 +154,18 @@ _freeFlightViewDirection_E = _freeFlightViewDirection_E / np.linalg.norm(
 )
 
 
+def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
+    """Sets the opacity of temporary animation-preview actors.
+
+    :param actors: The actors whose opacity should be changed.
+    :param opacity: The opacity to apply to the actors.
+    :return: None.
+    """
+    for actor in actors:
+        if isinstance(actor, pv.Actor):
+            actor.prop.opacity = opacity
+
+
 def draw(
     solver: (
         steady_horseshoe_vortex_lattice_method.SteadyHorseshoeVortexLatticeMethodSolver
@@ -160,6 +175,7 @@ def draw(
     scalar_type: str | None = None,
     show_streamlines: bool | np.bool_ = False,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "draw.webp",
@@ -199,6 +215,12 @@ def draw(
         the solver must be an UnsteadyRingVortexLatticeMethodSolver and must have
         already been run. Can be a bool or a numpy bool and will be converted internally
         to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms
+        posed at the drawn time step and worldbody geoms static in Earth axes. If True,
+        the solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can be a
+        bool or a numpy bool and will be converted internally to a bool. The default is
+        False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -241,10 +263,12 @@ def draw(
             )
 
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
-        if scalar_type not in ("induced drag", "side force", "lift"):
+        if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
+            valid_types = ", ".join(
+                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+            )
             raise ValueError(
-                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
-                f"got '{scalar_type}'."
+                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
             )
 
     show_streamlines = _parameter_validation.boolLike_return_bool(
@@ -274,6 +298,18 @@ def draw(
     if show_wake_vortices and not solver.ran:
         raise RuntimeError(
             "solver must have run before drawing with show_wake_vortices set to True."
+        )
+
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when drawing a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
@@ -312,6 +348,8 @@ def draw(
     if not pv.OFF_SCREEN:
         render_window = plotter.ren_win
         assert render_window is not None
+        render_window.Render()
+        render_window.SetWindowName("Assembling the scene. Please wait.")
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
@@ -421,6 +459,21 @@ def draw(
         window_scale,
     )
 
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects. The geom
+    # actors are added later, between the camera's framing fit and its clipping fit, so
+    # the body geoms can join the framing bounds while the worldbody geoms join only the
+    # clipping range.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
+    if show_mujoco_geometry:
+        assert isinstance(
+            solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            solver
+        )
+
     # If showing streamlines, plot them.
     if show_streamlines:
         streamline_surfaces = _output_rendering.get_streamline_surfaces(
@@ -439,6 +492,7 @@ def draw(
             color=_STREAMLINE_COLOR,
             line_width=_STREAMLINE_LINE_WIDTH * window_scale,
             smooth_shading=False,
+            lighting=False,
             render=False,
         )
 
@@ -453,6 +507,7 @@ def draw(
                 ),
                 line_width=_STREAMLINE_LINE_WIDTH * window_scale,
                 smooth_shading=False,
+                lighting=False,
                 render=False,
             )
 
@@ -490,6 +545,7 @@ def draw(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -523,7 +579,56 @@ def draw(
             center_E_Eo + 3.0 * airplane_diagonal * _freeFlightViewDirection_E
         )
         plotter.camera.up = _freeFlightViewUp_E
-        plotter.reset_camera()  # type: ignore[call-arg]
+
+        if worldbody_geoms or body_geoms:
+            # Fit the camera to explicit framing bounds: every actor already present,
+            # plus the body geoms posed at the drawn time step, plus their reflections
+            # when an image surface is defined. The fit re-centers the focal point on
+            # those bounds and keeps the view direction and up set above.
+            T_pas_BP1_CgP1_to_E_Eo = (
+                _output_rendering.get_free_flight_body_transformation(
+                    draw_operating_point
+                )
+            )
+            posed_body_geom_meshes = [
+                _output_rendering.transform_mesh(
+                    render_geom.mesh, T_pas_BP1_CgP1_to_E_Eo
+                )
+                for render_geom in body_geoms
+            ]
+            if T_reflect is not None:
+                posed_body_geom_meshes += [
+                    _output_rendering.transform_mesh(posed_body_geom_mesh, T_reflect)
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ]
+            all_bounds = np.array(
+                [plotter.bounds]
+                + [
+                    posed_body_geom_mesh.bounds
+                    for posed_body_geom_mesh in posed_body_geom_meshes
+                ],
+                dtype=float,
+            )
+            framing_bounds = np.empty(6, dtype=float)
+            framing_bounds[0::2] = all_bounds[:, 0::2].min(axis=0)
+            framing_bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
+            plotter.reset_camera(bounds=tuple(framing_bounds))  # type: ignore[call-arg]
+
+            # Add the geom actors only now, so the worldbody geoms stay out of the
+            # framing fit and a worldbody geom that is much larger than the body, like a
+            # ground plane, cannot dominate it. Then re-fit only the clipping range to
+            # all actors, which keeps the fitted framing while ensuring the worldbody
+            # geoms are not cut off.
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                T_pas_BP1_CgP1_to_E_Eo,
+                T_reflect,
+            )
+            plotter.reset_camera_clipping_range()
+        else:
+            plotter.reset_camera()  # type: ignore[call-arg]
         draw_cpos = None
     elif image_surface_mesh is None:
         draw_cpos = (-1, -1, 1)
@@ -550,6 +655,7 @@ def draw(
         # Show the Plotter for 1 second, then proceed automatically. This is useful for
         # testing.
         plotter.show(
+            title="Testing. Please wait.",
             cpos=draw_cpos,
             full_screen=False,
             interactive=False,
@@ -572,6 +678,7 @@ def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
     show_wake_vortices: bool | np.bool_ = False,
+    show_mujoco_geometry: bool | np.bool_ = False,
     window_size: Sequence[int] = (1024, 768),
     save: bool | np.bool_ = False,
     path: str | Path = "animate.webp",
@@ -598,6 +705,12 @@ def animate(
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
+    :param show_mujoco_geometry: Set this to True to show the MuJoCo geometry that
+        extra_xml and mujoco_assets inject into the solver's model, with body geoms re-
+        posed every time step and worldbody geoms static in Earth axes. If True, the
+        unsteady_solver must be a FreeFlightUnsteadyRingVortexLatticeMethodSolver. Can
+        be a bool or a numpy bool and will be converted internally to a bool. The
+        default is False.
     :param window_size: The width and height, in pixels, of the render window. This also
         sets the resolution of the saved WebP. It must be a sequence of two positive
         ints, and, when rendering on screen, must fit within the area the window manager
@@ -647,10 +760,12 @@ def animate(
             )
 
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
-        if scalar_type not in ("induced drag", "side force", "lift"):
+        if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
+            valid_types = ", ".join(
+                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+            )
             raise ValueError(
-                "scalar_type must be None, 'induced drag', 'side force', or 'lift', "
-                f"got '{scalar_type}'."
+                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
             )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
@@ -660,6 +775,18 @@ def animate(
         raise RuntimeError(
             "unsteady_solver must have run before animating with show_wake_vortices set"
             " to True."
+        )
+
+    show_mujoco_geometry = _parameter_validation.boolLike_return_bool(
+        show_mujoco_geometry, "show_mujoco_geometry"
+    )
+    if show_mujoco_geometry and not isinstance(
+        unsteady_solver,
+        free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+    ):
+        raise ValueError(
+            "show_mujoco_geometry can only be True when animating a "
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver."
         )
 
     if not isinstance(window_size, Sequence) or len(window_size) != 2:
@@ -709,6 +836,27 @@ def animate(
             for steady_problem in unsteady_solver.steady_problems
         ]
 
+    # If showing MuJoCo geometry, gather the geoms that extra_xml injects, along with
+    # each time step's body axes to Earth axes transformation. The worldbody geoms stay
+    # fixed in Earth axes while the body geoms are re-posed every frame.
+    worldbody_geoms: list[_mujoco_model.RenderGeom] = []
+    body_geoms: list[_mujoco_model.RenderGeom] = []
+    step_body_transforms: list[np.ndarray] = []
+    if show_mujoco_geometry:
+        assert isinstance(
+            unsteady_solver,
+            free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver,
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            unsteady_solver
+        )
+        step_body_transforms = [
+            _output_rendering.get_free_flight_body_transformation(
+                steady_problem.operating_point
+            )
+            for steady_problem in unsteady_solver.steady_problems
+        ]
+
     # Resolve the playback speed into the frame stride, frame rate, and text overlays
     # that describe how the saved animation steps through the time steps.
     playback = _output_rendering.resolve_playback(unsteady_solver, speed, save)
@@ -733,6 +881,8 @@ def animate(
     if not pv.OFF_SCREEN:
         render_window = plotter.ren_win
         assert render_window is not None
+        render_window.Render()
+        render_window.SetWindowName("Assembling the scene. Please wait.")
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
@@ -870,6 +1020,27 @@ def animate(
                 framing_meshes.append(last_step_wake_surfaces)
                 free_flight_clip_meshes.append(last_step_wake_surfaces)
 
+        # The body geoms fly with the body, so they join the framing fit posed at both
+        # ends of the trajectory, keeping a geom that extends past the Panel surfaces
+        # from being cropped. Only the last time step's posed copies join the clipping
+        # meshes, since the first time step's geom actors are already present when the
+        # clipping range is sized. The worldbody geoms join neither: their actors are
+        # also present when the clipping range is sized, which keeps them visible
+        # without letting a worldbody geom that is much larger than the body, like a
+        # ground plane, dominate the framing fit.
+        first_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(render_geom.mesh, step_body_transforms[0])
+            for render_geom in body_geoms
+        ]
+        last_step_body_geom_meshes = [
+            _output_rendering.transform_mesh(
+                render_geom.mesh, step_body_transforms[last_step]
+            )
+            for render_geom in body_geoms
+        ]
+        framing_meshes += first_step_body_geom_meshes + last_step_body_geom_meshes
+        free_flight_clip_meshes += last_step_body_geom_meshes
+
         # Fit the parallel scale (half the viewport height in world units, since the
         # projection is parallel) to the projected extent of that geometry about the
         # focal point. This frames the glide snugly. The user can rescale interactively
@@ -889,21 +1060,22 @@ def animate(
             plotter, playback, window_scale, animate_text_color
         )
 
-    # Get the Panel surfaces of the first time step's Airplane(s), mapping them into
-    # Earth axes for free flight.
-    panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
-    if is_free_flight:
-        panel_surfaces = _output_rendering.transform_mesh(
-            panel_surfaces, step_transforms[0]
-        )
+    # Hold the temporary preview actors shown during the framing phase.
+    preview_actors: list[pv.Actor] = []
 
-    # Choose the first time step's scalar coloring, leaving it None to color the Panels
-    # uniformly.
-    coloring: _output_rendering.ScalarColoring | None = None
+    # Show the first and last time steps together during framing. This gives the user
+    # both the initial body pose and the final wake/trajectory extent without
+    # multiplying actors across every time step of a long simulation.
+    first_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
+    if is_free_flight:
+        first_panel_surfaces = _output_rendering.transform_mesh(
+            first_panel_surfaces, step_transforms[0]
+        )
+    first_frame_coloring: _output_rendering.ScalarColoring | None = None
     if scalar_type is not None and first_results_step == 0:
         assert color_map is not None
         assert muted_color_map is not None
-        coloring = _output_rendering.ScalarColoring(
+        first_frame_coloring = _output_rendering.ScalarColoring(
             _output_rendering.get_scalars(
                 step_airplanes[0],
                 scalar_type,
@@ -917,12 +1089,88 @@ def animate(
             c_min,
             c_max,
         )
+    plotter.enable_depth_peeling(
+        number_of_peels=0, occlusion_ratio=0.0
+    )  # type: ignore[call-arg]
 
-    # Add the first time step's geometry. No wake is passed, since the first time step
-    # has not shed one yet.
-    _output_rendering.add_frame_geometry(
-        plotter, panel_surfaces, None, coloring, T_reflect, window_scale
+    first_preview_actors = _output_rendering.add_frame_geometry(
+        plotter,
+        first_panel_surfaces,
+        None,
+        first_frame_coloring,
+        T_reflect,
+        window_scale,
     )
+    if last_step != 0:
+        _set_preview_opacity(first_preview_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+    preview_actors.extend(first_preview_actors)
+
+    if show_mujoco_geometry:
+        first_mujoco_actors = _output_rendering.add_mujoco_geometry(
+            plotter, worldbody_geoms, body_geoms, step_body_transforms[0], T_reflect
+        )
+        if last_step != 0:
+            _set_preview_opacity(first_mujoco_actors, _ANIMATE_PREVIEW_FIRST_OPACITY)
+        preview_actors.extend(first_mujoco_actors)
+
+    if last_step != 0:
+        last_panel_surfaces = _output_rendering.get_panel_surfaces(
+            step_airplanes[last_step]
+        )
+        if is_free_flight:
+            last_panel_surfaces = _output_rendering.transform_mesh(
+                last_panel_surfaces, step_transforms[last_step]
+            )
+
+        last_wake_surfaces = None
+        if show_wake_vortices:
+            last_wake_surfaces = _output_rendering.get_wake_ring_vortex_surfaces(
+                unsteady_solver, last_step
+            )
+            if is_free_flight:
+                last_wake_surfaces = _output_rendering.transform_mesh(
+                    last_wake_surfaces, step_transforms[last_step]
+                )
+
+        last_coloring: _output_rendering.ScalarColoring | None = None
+        if scalar_type is not None:
+            assert color_map is not None
+            assert muted_color_map is not None
+            last_coloring = _output_rendering.ScalarColoring(
+                _output_rendering.get_scalars(
+                    step_airplanes[last_step],
+                    scalar_type,
+                    unsteady_solver.steady_problems[last_step].operating_point.qInf__E,
+                ),
+                scalar_type,
+                min_scalar,
+                max_scalar,
+                color_map,
+                muted_color_map,
+                c_min,
+                c_max,
+            )
+        last_preview_actors = _output_rendering.add_frame_geometry(
+            plotter,
+            last_panel_surfaces,
+            last_wake_surfaces,
+            last_coloring,
+            T_reflect,
+            window_scale,
+        )
+        _set_preview_opacity(last_preview_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+        preview_actors.extend(last_preview_actors)
+
+        if show_mujoco_geometry:
+            last_mujoco_actors = _output_rendering.add_mujoco_geometry(
+                plotter,
+                [],
+                body_geoms,
+                step_body_transforms[last_step],
+                T_reflect,
+            )
+            _set_preview_opacity(last_mujoco_actors, _ANIMATE_PREVIEW_LAST_OPACITY)
+            preview_actors.extend(last_mujoco_actors)
 
     # If an image surface is defined, plot the pre-computed plane, set the camera
     # direction, and fit the camera to the last time step's geometry bounds so the view
@@ -938,6 +1186,7 @@ def animate(
             texture=image_surface_texture,
             opacity=_IMAGE_SURFACE_OPACITY,
             smooth_shading=True,
+            lighting=False,
             render=False,
         )
 
@@ -981,23 +1230,62 @@ def animate(
     # and proceed. If testing, show the Plotter with the first time step for 1 second,
     # and start the animation with the current window view.
     if not testing:
+        title = "Orient the view, then press any key."
+        if last_step != 0:
+            title += " The ghosts preview the animation and are not saved."
         plotter.show(
-            title="Orient the view, then press any key to produce the animation.",
+            title=title,
             cpos=animate_cpos,
             full_screen=False,
             auto_close=False,
         )
-        assert plotter.ren_win is not None
-        plotter.ren_win.SetWindowName("Rendering speed not to scale.")
+
     else:
         plotter.show(
-            title="Rendering speed not to scale.",
+            title="Testing. Please wait.",
             cpos=animate_cpos,
             full_screen=False,
             interactive=False,
             auto_close=False,
         )
         time.sleep(1)
+    assert plotter.ren_win is not None
+    plotter.ren_win.SetWindowName(
+        "Rendering animation. Please leave the window open until rendering finishes."
+    )
+    plotter.render()
+
+    plotter.disable_depth_peeling()  # type: ignore[call-arg]
+
+    # Remove the temporary preview actors before the animation begins.
+    for actor in preview_actors:
+        plotter.remove_actor(actor, render=False)
+    # Rebuild the first frame as the actual animation frame after removing the preview.
+    first_frame_panel_surfaces = _output_rendering.get_panel_surfaces(step_airplanes[0])
+    if is_free_flight:
+        first_frame_panel_surfaces = _output_rendering.transform_mesh(
+            first_frame_panel_surfaces, step_transforms[0]
+        )
+    first_frame_wake_surfaces = None
+    _output_rendering.add_frame_geometry(
+        plotter,
+        first_frame_panel_surfaces,
+        first_frame_wake_surfaces,
+        first_frame_coloring,
+        T_reflect,
+        window_scale,
+    )
+    if show_mujoco_geometry:
+        _output_rendering.add_mujoco_geometry(
+            plotter,
+            worldbody_geoms,
+            body_geoms,
+            step_body_transforms[0],
+            T_reflect,
+        )
+    if T_reflect is not None:
+        assert image_surface_mesh is not None
+        _output_rendering.settle_scalar_bar_layout(plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
     # Preserve that camera and only size the clipping range so every frame stays
@@ -1007,7 +1295,7 @@ def animate(
     # would clip later frames.
     if is_free_flight:
         temporary_actors = [
-            plotter.add_mesh(clip_mesh, render=False)
+            plotter.add_mesh(clip_mesh, lighting=False, render=False)
             for clip_mesh in free_flight_clip_meshes
         ]
         plotter.reset_camera_clipping_range()
@@ -1015,6 +1303,8 @@ def animate(
         for temporary_actor in temporary_actors:
             plotter.remove_actor(temporary_actor, render=False)
         plotter.camera.clipping_range = free_flight_clipping_range
+
+    plotter.render()
 
     # Start a list to hold a WebP Image of each frame, beginning with this first frame.
     images = [_output_rendering.screenshot_image(plotter)]
@@ -1088,6 +1378,16 @@ def animate(
             window_scale,
         )
 
+        # If showing MuJoCo geometry, add it at this time step's pose.
+        if show_mujoco_geometry:
+            _output_rendering.add_mujoco_geometry(
+                plotter,
+                worldbody_geoms,
+                body_geoms,
+                step_body_transforms[current_step],
+                T_reflect,
+            )
+
         # If an image surface is defined, add the pre-computed image surface plane.
         if T_reflect is not None:
             assert image_surface_mesh is not None
@@ -1096,6 +1396,7 @@ def animate(
                 texture=image_surface_texture,
                 opacity=_IMAGE_SURFACE_OPACITY,
                 smooth_shading=True,
+                lighting=False,
                 render=False,
             )
 
@@ -1280,14 +1581,14 @@ def plot_results_versus_time(
         endpoint=True,
     )
 
-    # Initialize matrices to hold the loads and load coefficients at every time step
-    # that has results.
-    forces_W = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    forceCoefficients_W = np.zeros(
+    # Initialize matrices to hold the named loads and named load coefficients at every
+    # time step that has results.
+    namedForces_W = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    namedForceCoefficients_W = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
-    moments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
-    momentCoefficients_W_Cg = np.zeros(
+    namedMoments_W_Cg = np.zeros((num_airplanes, 3, num_steps_to_average), dtype=float)
+    namedMomentCoefficients_W_Cg = np.zeros(
         (num_airplanes, 3, num_steps_to_average), dtype=float
     )
 
@@ -1302,13 +1603,33 @@ def plot_results_versus_time(
 
         # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
-            forces_W[airplane_id, :, results_step] = airplane.forces_W
-            forceCoefficients_W[airplane_id, :, results_step] = (
-                airplane.forceCoefficients_W
+            namedForces_W[airplane_id, 0, results_step] = airplane.inducedDrag_W
+            namedForces_W[airplane_id, 1, results_step] = airplane.sideForce_W
+            namedForces_W[airplane_id, 2, results_step] = airplane.lift_W
+            namedForceCoefficients_W[airplane_id, 0, results_step] = (
+                airplane.inducedDragCoefficient_W
             )
-            moments_W_Cg[airplane_id, :, results_step] = airplane.moments_W_Cg
-            momentCoefficients_W_Cg[airplane_id, :, results_step] = (
-                airplane.momentCoefficients_W_Cg
+            namedForceCoefficients_W[airplane_id, 1, results_step] = (
+                airplane.sideForceCoefficient_W
+            )
+            namedForceCoefficients_W[airplane_id, 2, results_step] = (
+                airplane.liftCoefficient_W
+            )
+            namedMoments_W_Cg[airplane_id, 0, results_step] = (
+                airplane.rollingMoment_W_Cg
+            )
+            namedMoments_W_Cg[airplane_id, 1, results_step] = (
+                airplane.pitchingMoment_W_Cg
+            )
+            namedMoments_W_Cg[airplane_id, 2, results_step] = airplane.yawingMoment_W_Cg
+            namedMomentCoefficients_W_Cg[airplane_id, 0, results_step] = (
+                airplane.rollingMomentCoefficient_W_Cg
+            )
+            namedMomentCoefficients_W_Cg[airplane_id, 1, results_step] = (
+                airplane.pitchingMomentCoefficient_W_Cg
+            )
+            namedMomentCoefficients_W_Cg[airplane_id, 2, results_step] = (
+                airplane.yawingMomentCoefficient_W_Cg
             )
 
         results_step += 1
@@ -1326,15 +1647,13 @@ def plot_results_versus_time(
         if prefix:
             file_stem = prefix + "_" + airplane_name_snake
 
-        # Plot this Airplane's four load figures. The wind axes x and z force components
-        # are negated so the series read as induced drag and lift, which point opposite
-        # those axes.
+        # Plot this Airplane's four load figures.
         _output_plotting.plot_time_history(
             times,
             [
-                -forces_W[airplane_id, 0],
-                forces_W[airplane_id, 1],
-                -forces_W[airplane_id, 2],
+                namedForces_W[airplane_id, 0],
+                namedForces_W[airplane_id, 1],
+                namedForces_W[airplane_id, 2],
             ],
             _FORCE_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1349,9 +1668,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                -forceCoefficients_W[airplane_id, 0],
-                forceCoefficients_W[airplane_id, 1],
-                -forceCoefficients_W[airplane_id, 2],
+                namedForceCoefficients_W[airplane_id, 0],
+                namedForceCoefficients_W[airplane_id, 1],
+                namedForceCoefficients_W[airplane_id, 2],
             ],
             _FORCE_COEFFICIENT_LABELS,
             [_LINEAR_X_COLOR, _LINEAR_Y_COLOR, _LINEAR_Z_COLOR],
@@ -1366,9 +1685,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                moments_W_Cg[airplane_id, 0],
-                moments_W_Cg[airplane_id, 1],
-                moments_W_Cg[airplane_id, 2],
+                namedMoments_W_Cg[airplane_id, 0],
+                namedMoments_W_Cg[airplane_id, 1],
+                namedMoments_W_Cg[airplane_id, 2],
             ],
             _MOMENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
@@ -1383,9 +1702,9 @@ def plot_results_versus_time(
         _output_plotting.plot_time_history(
             times,
             [
-                momentCoefficients_W_Cg[airplane_id, 0],
-                momentCoefficients_W_Cg[airplane_id, 1],
-                momentCoefficients_W_Cg[airplane_id, 2],
+                namedMomentCoefficients_W_Cg[airplane_id, 0],
+                namedMomentCoefficients_W_Cg[airplane_id, 1],
+                namedMomentCoefficients_W_Cg[airplane_id, 2],
             ],
             _MOMENT_COEFFICIENT_LABELS,
             [_ANGULAR_X_COLOR, _ANGULAR_Y_COLOR, _ANGULAR_Z_COLOR],
@@ -1424,18 +1743,18 @@ def plot_results_versus_time(
                     _MOMENT_COEFFICIENT_Y_LABEL,
                 ),
                 [
-                    -forces_W[airplane_id, 0],
-                    forces_W[airplane_id, 1],
-                    -forces_W[airplane_id, 2],
-                    -forceCoefficients_W[airplane_id, 0],
-                    forceCoefficients_W[airplane_id, 1],
-                    -forceCoefficients_W[airplane_id, 2],
-                    moments_W_Cg[airplane_id, 0],
-                    moments_W_Cg[airplane_id, 1],
-                    moments_W_Cg[airplane_id, 2],
-                    momentCoefficients_W_Cg[airplane_id, 0],
-                    momentCoefficients_W_Cg[airplane_id, 1],
-                    momentCoefficients_W_Cg[airplane_id, 2],
+                    namedForces_W[airplane_id, 0],
+                    namedForces_W[airplane_id, 1],
+                    namedForces_W[airplane_id, 2],
+                    namedForceCoefficients_W[airplane_id, 0],
+                    namedForceCoefficients_W[airplane_id, 1],
+                    namedForceCoefficients_W[airplane_id, 2],
+                    namedMoments_W_Cg[airplane_id, 0],
+                    namedMoments_W_Cg[airplane_id, 1],
+                    namedMoments_W_Cg[airplane_id, 2],
+                    namedMomentCoefficients_W_Cg[airplane_id, 0],
+                    namedMomentCoefficients_W_Cg[airplane_id, 1],
+                    namedMomentCoefficients_W_Cg[airplane_id, 2],
                 ],
                 directory / (file_stem + "_loads.csv"),
             )
@@ -1705,21 +2024,13 @@ def log_results(
     col1_space = max(len(elem) for elem in col1) + padding_spaces
 
     # Named load labels for the wind axes rows only, because names like induced drag and
-    # lift are wind axes concepts with no geometry axes counterparts. The forces and
-    # moments are named the way the figures that plot them are, while the coefficients
-    # go by their symbols, which are shorter than their names and unambiguous in a table
-    # whose rows are already labeled by variable name.
+    # lift are wind axes concepts with no geometry axes counterparts. All four load
+    # groups are named the way the figures that plot them are.
     col3 = (
         _FORCE_LABELS
         + _MOMENT_LABELS
-        + [
-            "CDi",
-            "CY",
-            "CL",
-            "Cl",
-            "Cm",
-            "Cn",
-        ]
+        + _FORCE_COEFFICIENT_LABELS
+        + _MOMENT_COEFFICIENT_LABELS
     )
     col3 = [label + ":" for label in col3]
     col3_space = max(len(elem) for elem in col3) + padding_spaces
@@ -1734,6 +2045,10 @@ def log_results(
         theseMoments_W_Cg: np.ndarray = np.empty(0, dtype=float)
         theseForceCoefficients_W: np.ndarray = np.empty(0, dtype=float)
         theseMomentCoefficients_W_Cg: np.ndarray = np.empty(0, dtype=float)
+        theseNamedForces_W: list[float | None] = []
+        theseNamedMoments_W_Cg: list[float | None] = []
+        theseNamedForceCoefficients_W: list[float | None] = []
+        theseNamedMomentCoefficients_W_Cg: list[float | None] = []
 
         match solver_type:
             case "steady":
@@ -1779,64 +2094,123 @@ def log_results(
 
                 theseMomentCoefficients_W_Cg = _momentCoefficients_W_Cg
 
+                theseNamedForces_W = [
+                    airplane.inducedDrag_W,
+                    airplane.sideForce_W,
+                    airplane.lift_W,
+                ]
+                theseNamedMoments_W_Cg = [
+                    airplane.rollingMoment_W_Cg,
+                    airplane.pitchingMoment_W_Cg,
+                    airplane.yawingMoment_W_Cg,
+                ]
+                theseNamedForceCoefficients_W = [
+                    airplane.inducedDragCoefficient_W,
+                    airplane.sideForceCoefficient_W,
+                    airplane.liftCoefficient_W,
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    airplane.rollingMomentCoefficient_W_Cg,
+                    airplane.pitchingMomentCoefficient_W_Cg,
+                    airplane.yawingMomentCoefficient_W_Cg,
+                ]
+
             case "static geometry unsteady":
                 assert isinstance(
                     solver,
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
+                unsteady_problem = solver.unsteady_problem
+
                 title_prefix = "Final "
-                theseForces_G = solver.unsteady_problem.finalForces_G[airplane_num]
-                theseMoments_G_Cg = solver.unsteady_problem.finalMoments_G_Cg[
+                theseForces_G = unsteady_problem.finalForces_G[airplane_num]
+                theseMoments_G_Cg = unsteady_problem.finalMoments_G_Cg[airplane_num]
+                theseForceCoefficients_G = unsteady_problem.finalForceCoefficients_G[
                     airplane_num
                 ]
-                theseForceCoefficients_G = (
-                    solver.unsteady_problem.finalForceCoefficients_G[airplane_num]
-                )
                 theseMomentCoefficients_G_Cg = (
-                    solver.unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
+                    unsteady_problem.finalMomentCoefficients_G_Cg[airplane_num]
                 )
-                theseForces_W = solver.unsteady_problem.finalForces_W[airplane_num]
-                theseMoments_W_Cg = solver.unsteady_problem.finalMoments_W_Cg[
+                theseForces_W = unsteady_problem.finalForces_W[airplane_num]
+                theseMoments_W_Cg = unsteady_problem.finalMoments_W_Cg[airplane_num]
+                theseForceCoefficients_W = unsteady_problem.finalForceCoefficients_W[
                     airplane_num
                 ]
-                theseForceCoefficients_W = (
-                    solver.unsteady_problem.finalForceCoefficients_W[airplane_num]
-                )
                 theseMomentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
+                    unsteady_problem.finalMomentCoefficients_W_Cg[airplane_num]
                 )
+                theseNamedForces_W = [
+                    unsteady_problem.finalInducedDrags_W[airplane_num],
+                    unsteady_problem.finalSideForces_W[airplane_num],
+                    unsteady_problem.finalLifts_W[airplane_num],
+                ]
+                theseNamedMoments_W_Cg = [
+                    unsteady_problem.finalRollingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalPitchingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalYawingMoments_W_Cg[airplane_num],
+                ]
+                theseNamedForceCoefficients_W = [
+                    unsteady_problem.finalInducedDragCoefficients_W[airplane_num],
+                    unsteady_problem.finalSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalLiftCoefficients_W[airplane_num],
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    unsteady_problem.finalRollingMomentCoefficients_W_Cg[airplane_num],
+                    unsteady_problem.finalPitchingMomentCoefficients_W_Cg[airplane_num],
+                    unsteady_problem.finalYawingMomentCoefficients_W_Cg[airplane_num],
+                ]
             case "variable geometry unsteady":
                 assert isinstance(
                     solver,
                     unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
                 )
 
+                unsteady_problem = solver.unsteady_problem
+
                 title_prefix = "Final Cycle-Averaged "
-                theseForces_G = solver.unsteady_problem.finalMeanForces_G[airplane_num]
-                theseMoments_G_Cg = solver.unsteady_problem.finalMeanMoments_G_Cg[
-                    airplane_num
-                ]
+                theseForces_G = unsteady_problem.finalMeanForces_G[airplane_num]
+                theseMoments_G_Cg = unsteady_problem.finalMeanMoments_G_Cg[airplane_num]
                 theseForceCoefficients_G = (
-                    solver.unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
+                    unsteady_problem.finalMeanForceCoefficients_G[airplane_num]
                 )
                 theseMomentCoefficients_G_Cg = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_G_Cg[
-                        airplane_num
-                    ]
+                    unsteady_problem.finalMeanMomentCoefficients_G_Cg[airplane_num]
                 )
-                theseForces_W = solver.unsteady_problem.finalMeanForces_W[airplane_num]
-                theseMoments_W_Cg = solver.unsteady_problem.finalMeanMoments_W_Cg[
-                    airplane_num
-                ]
+                theseForces_W = unsteady_problem.finalMeanForces_W[airplane_num]
+                theseMoments_W_Cg = unsteady_problem.finalMeanMoments_W_Cg[airplane_num]
                 theseForceCoefficients_W = (
-                    solver.unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
+                    unsteady_problem.finalMeanForceCoefficients_W[airplane_num]
                 )
                 theseMomentCoefficients_W_Cg = (
-                    solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg[
-                        airplane_num
-                    ]
+                    unsteady_problem.finalMeanMomentCoefficients_W_Cg[airplane_num]
                 )
+                theseNamedForces_W = [
+                    unsteady_problem.finalMeanInducedDrags_W[airplane_num],
+                    unsteady_problem.finalMeanSideForces_W[airplane_num],
+                    unsteady_problem.finalMeanLifts_W[airplane_num],
+                ]
+                theseNamedMoments_W_Cg = [
+                    unsteady_problem.finalMeanRollingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalMeanPitchingMoments_W_Cg[airplane_num],
+                    unsteady_problem.finalMeanYawingMoments_W_Cg[airplane_num],
+                ]
+                theseNamedForceCoefficients_W = [
+                    unsteady_problem.finalMeanInducedDragCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanLiftCoefficients_W[airplane_num],
+                ]
+                theseNamedMomentCoefficients_W_Cg = [
+                    unsteady_problem.finalMeanRollingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                    unsteady_problem.finalMeanPitchingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                    unsteady_problem.finalMeanYawingMomentCoefficients_W_Cg[
+                        airplane_num
+                    ],
+                ]
             case _:
                 raise ValueError(f"Unknown solver type: {solver_type}")
 
@@ -1896,21 +2270,16 @@ def log_results(
         ]
         col2_space = max(len(elem) for elem in col2) + 2 * padding_spaces
 
-        col4 = [
-            -theseForces_W[0],
-            theseForces_W[1],
-            -theseForces_W[2],
-            theseMoments_W_Cg[0],
-            theseMoments_W_Cg[1],
-            theseMoments_W_Cg[2],
-            -theseForceCoefficients_W[0],
-            theseForceCoefficients_W[1],
-            -theseForceCoefficients_W[2],
-            theseMomentCoefficients_W_Cg[0],
-            theseMomentCoefficients_W_Cg[1],
-            theseMomentCoefficients_W_Cg[2],
-        ]
-        col4 = [f"{val:#10.3G}" for val in col4]
+        # Assemble the named load values for the wind axes rows. Each branch above reads
+        # these from named load properties, so the mapping from raw components to named
+        # loads lives with the loads classes rather than here.
+        col4_values = (
+            theseNamedForces_W
+            + theseNamedMoments_W_Cg
+            + theseNamedForceCoefficients_W
+            + theseNamedMomentCoefficients_W_Cg
+        )
+        col4 = [f"{val:#10.3G}" for val in col4_values]
         col4 = [
             val + " N" if i < 3 else val + " Nm" if i < 6 else val
             for i, val in enumerate(col4)

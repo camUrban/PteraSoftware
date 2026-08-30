@@ -172,6 +172,13 @@ The standard abbreviations and names are given below for reference. See the sect
 * Non-local reference examples
     * Text: ...in the first Problem's wind axes...
     * Variables: ...\_WPr1...
+* Named load components and coefficients
+    * Induced drag and induced drag coefficient: The aerodynamic force component in the wind axes' -x basis direction. It is the negative of the wind axes' x force component (`-fX_W`) or force coefficient (`-cFX_W`), denoted in code by `inducedDrag_W` and `inducedDragCoefficient_W`.
+    * Side force and side force coefficient: The aerodynamic force component in the wind axes' +y basis direction. It equals the wind axes' y force component (`fY_W`) or force coefficient (`cFY_W`), denoted in code by `sideForce_W` and `sideForceCoefficient_W`.
+    * Lift and lift coefficient: The aerodynamic force component in the wind axes' -z basis direction. It is the negative of the wind axes' z force component (`-fZ_W`) or force coefficient (`-cFZ_W`), denoted in code by `lift_W` and `liftCoefficient_W`.
+    * Rolling moment and rolling moment coefficient: The aerodynamic moment component about the wind axes' +x basis direction, relative to the CG. It equals the wind axes' x moment component (`mX_W_Cg`) or moment coefficient (`cMX_W_Cg`), denoted in code by `rollingMoment_W_Cg` and `rollingMomentCoefficient_W_Cg`.
+    * Pitching moment and pitching moment coefficient: The aerodynamic moment component about the wind axes' +y basis direction, relative to the CG. It equals the wind axes' y moment component (`mY_W_Cg`) or moment coefficient (`cMY_W_Cg`), denoted in code by `pitchingMoment_W_Cg` and `pitchingMomentCoefficient_W_Cg`.
+    * Yawing moment and yawing moment coefficient: The aerodynamic moment component about the wind axes' +z basis direction, relative to the CG. It equals the wind axes' z moment component (`mZ_W_Cg`) or moment coefficient (`cMZ_W_Cg`), denoted in code by `yawingMoment_W_Cg` and `yawingMomentCoefficient_W_Cg`.
 
 ### 4. Geometry axes
 

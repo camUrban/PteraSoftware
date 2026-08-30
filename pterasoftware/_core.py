@@ -2206,10 +2206,12 @@ class CoreUnsteadyProblem:
     See UnsteadyProblem for full documentation of the shared interface.
 
     CoreUnsteadyProblem holds the time stepping parameters, wake truncation setting,
-    result storage mode, and the mutable load result lists that the solver populates.
-    Unlike UnsteadyProblem, it does not take a Movement or pre create SteadyProblems.
-    Feature variants (FreeFlightUnsteadyProblem, AeroelasticUnsteadyProblem) extend this
-    class and provide SteadyProblems dynamically at each time step.
+    result storage mode, and the mutable load result lists that the solver populates,
+    along with read only properties that derive the named load quantities from the wind
+    axes lists. Unlike UnsteadyProblem, it does not take a Movement or pre create
+    SteadyProblems. Feature variants (FreeFlightUnsteadyProblem,
+    AeroelasticUnsteadyProblem) extend this class and provide SteadyProblems dynamically
+    at each time step.
     """
 
     __slots__ = (
@@ -2419,3 +2421,321 @@ class CoreUnsteadyProblem:
             "Subclasses of CoreUnsteadyProblem must override the steady_problems "
             "property."
         )
+
+    # --- Mutable derived: read only properties, no backing slots ---
+    @property
+    def finalInducedDrags_W(self) -> list[float]:
+        """The final induced drag force experienced by each Airplane (in wind axes).
+
+        Induced drag points along the wind axes' -x basis direction, so each entry is
+        the negative of the corresponding finalForces_W entry's x component.
+
+        :return: The final induced drag forces in Newtons, one entry per Airplane. Empty
+            if finalForces_W has not been populated.
+        """
+        return [float(-entry[0]) for entry in self.finalForces_W]
+
+    @property
+    def finalSideForces_W(self) -> list[float]:
+        """The final side force experienced by each Airplane (in wind axes).
+
+        Side force points along the wind axes' +y basis direction, so each entry equals
+        the corresponding finalForces_W entry's y component.
+
+        :return: The final side forces in Newtons, one entry per Airplane. Empty if
+            finalForces_W has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalForces_W]
+
+    @property
+    def finalLifts_W(self) -> list[float]:
+        """The final lift force experienced by each Airplane (in wind axes).
+
+        Lift points along the wind axes' -z basis direction, so each entry is the
+        negative of the corresponding finalForces_W entry's z component.
+
+        :return: The final lift forces in Newtons, one entry per Airplane. Empty if
+            finalForces_W has not been populated.
+        """
+        return [float(-entry[2]) for entry in self.finalForces_W]
+
+    @property
+    def finalInducedDragCoefficients_W(self) -> list[float]:
+        """The final induced drag force coefficient experienced by each Airplane (in
+        wind axes).
+
+        Induced drag coefficient corresponds to the wind axes' -x basis direction, so
+        each entry is the negative of the corresponding finalForceCoefficients_W entry's
+        x component.
+
+        :return: The final induced drag coefficients, one entry per Airplane. Empty if
+            finalForceCoefficients_W has not been populated.
+        """
+        return [float(-entry[0]) for entry in self.finalForceCoefficients_W]
+
+    @property
+    def finalSideForceCoefficients_W(self) -> list[float]:
+        """The final side force coefficient experienced by each Airplane (in wind axes).
+
+        Side force coefficient corresponds to the wind axes' +y basis direction, so each
+        entry equals the corresponding finalForceCoefficients_W entry's y component.
+
+        :return: The final side force coefficients, one entry per Airplane. Empty if
+            finalForceCoefficients_W has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalForceCoefficients_W]
+
+    @property
+    def finalLiftCoefficients_W(self) -> list[float]:
+        """The final lift force coefficient experienced by each Airplane (in wind axes).
+
+        Lift coefficient corresponds to the wind axes' -z basis direction, so each entry
+        is the negative of the corresponding finalForceCoefficients_W entry's z
+        component.
+
+        :return: The final lift coefficients, one entry per Airplane. Empty if
+            finalForceCoefficients_W has not been populated.
+        """
+        return [float(-entry[2]) for entry in self.finalForceCoefficients_W]
+
+    @property
+    def finalRollingMoments_W_Cg(self) -> list[float]:
+        """The final rolling moment experienced by each Airplane (in wind axes, relative
+        to its own CG).
+
+        Rolling moment acts about the wind axes' +x basis direction, so each entry
+        equals the corresponding finalMoments_W_Cg entry's x component.
+
+        :return: The final rolling moments in Newton-meters, one entry per Airplane.
+            Empty if finalMoments_W_Cg has not been populated.
+        """
+        return [float(entry[0]) for entry in self.finalMoments_W_Cg]
+
+    @property
+    def finalPitchingMoments_W_Cg(self) -> list[float]:
+        """The final pitching moment experienced by each Airplane (in wind axes,
+        relative to its own CG).
+
+        Pitching moment acts about the wind axes' +y basis direction, so each entry
+        equals the corresponding finalMoments_W_Cg entry's y component.
+
+        :return: The final pitching moments in Newton-meters, one entry per Airplane.
+            Empty if finalMoments_W_Cg has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMoments_W_Cg]
+
+    @property
+    def finalYawingMoments_W_Cg(self) -> list[float]:
+        """The final yawing moment experienced by each Airplane (in wind axes, relative
+        to its own CG).
+
+        Yawing moment acts about the wind axes' +z basis direction, so each entry equals
+        the corresponding finalMoments_W_Cg entry's z component.
+
+        :return: The final yawing moments in Newton-meters, one entry per Airplane.
+            Empty if finalMoments_W_Cg has not been populated.
+        """
+        return [float(entry[2]) for entry in self.finalMoments_W_Cg]
+
+    @property
+    def finalRollingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final rolling moment coefficient experienced by each Airplane (in wind
+        axes, relative to its own CG).
+
+        Rolling moment coefficient corresponds to the wind axes' +x basis direction, so
+        each entry equals the corresponding finalMomentCoefficients_W_Cg entry's x
+        component.
+
+        :return: The final rolling moment coefficients, one entry per Airplane. Empty if
+            finalMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[0]) for entry in self.finalMomentCoefficients_W_Cg]
+
+    @property
+    def finalPitchingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final pitching moment coefficient experienced by each Airplane (in wind
+        axes, relative to its own CG).
+
+        Pitching moment coefficient corresponds to the wind axes' +y basis direction, so
+        each entry equals the corresponding finalMomentCoefficients_W_Cg entry's y
+        component.
+
+        :return: The final pitching moment coefficients, one entry per Airplane. Empty
+            if finalMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMomentCoefficients_W_Cg]
+
+    @property
+    def finalYawingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final yawing moment coefficient experienced by each Airplane (in wind
+        axes, relative to its own CG).
+
+        Yawing moment coefficient corresponds to the wind axes' +z basis direction, so
+        each entry equals the corresponding finalMomentCoefficients_W_Cg entry's z
+        component.
+
+        :return: The final yawing moment coefficients, one entry per Airplane. Empty if
+            finalMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[2]) for entry in self.finalMomentCoefficients_W_Cg]
+
+    @property
+    def finalMeanInducedDrags_W(self) -> list[float]:
+        """The final cycle averaged induced drag force experienced by each Airplane (in
+        wind axes).
+
+        Induced drag points along the wind axes' -x basis direction, so each entry is
+        the negative of the corresponding finalMeanForces_W entry's x component.
+
+        :return: The final cycle averaged induced drag forces in Newtons, one entry per
+            Airplane. Empty if finalMeanForces_W has not been populated.
+        """
+        return [float(-entry[0]) for entry in self.finalMeanForces_W]
+
+    @property
+    def finalMeanSideForces_W(self) -> list[float]:
+        """The final cycle averaged side force experienced by each Airplane (in wind
+        axes).
+
+        Side force points along the wind axes' +y basis direction, so each entry equals
+        the corresponding finalMeanForces_W entry's y component.
+
+        :return: The final cycle averaged side forces in Newtons, one entry per
+            Airplane. Empty if finalMeanForces_W has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMeanForces_W]
+
+    @property
+    def finalMeanLifts_W(self) -> list[float]:
+        """The final cycle averaged lift force experienced by each Airplane (in wind
+        axes).
+
+        Lift points along the wind axes' -z basis direction, so each entry is the
+        negative of the corresponding finalMeanForces_W entry's z component.
+
+        :return: The final cycle averaged lift forces in Newtons, one entry per
+            Airplane. Empty if finalMeanForces_W has not been populated.
+        """
+        return [float(-entry[2]) for entry in self.finalMeanForces_W]
+
+    @property
+    def finalMeanInducedDragCoefficients_W(self) -> list[float]:
+        """The final cycle averaged induced drag force coefficient experienced by each
+        Airplane (in wind axes).
+
+        Induced drag coefficient corresponds to the wind axes' -x basis direction, so
+        each entry is the negative of the corresponding finalMeanForceCoefficients_W
+        entry's x component.
+
+        :return: The final cycle averaged induced drag coefficients, one entry per
+            Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
+        """
+        return [float(-entry[0]) for entry in self.finalMeanForceCoefficients_W]
+
+    @property
+    def finalMeanSideForceCoefficients_W(self) -> list[float]:
+        """The final cycle averaged side force coefficient experienced by each Airplane
+        (in wind axes).
+
+        Side force coefficient corresponds to the wind axes' +y basis direction, so each
+        entry equals the corresponding finalMeanForceCoefficients_W entry's y component.
+
+        :return: The final cycle averaged side force coefficients, one entry per
+            Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMeanForceCoefficients_W]
+
+    @property
+    def finalMeanLiftCoefficients_W(self) -> list[float]:
+        """The final cycle averaged lift force coefficient experienced by each Airplane
+        (in wind axes).
+
+        Lift coefficient corresponds to the wind axes' -z basis direction, so each entry
+        is the negative of the corresponding finalMeanForceCoefficients_W entry's z
+        component.
+
+        :return: The final cycle averaged lift coefficients, one entry per Airplane.
+            Empty if finalMeanForceCoefficients_W has not been populated.
+        """
+        return [float(-entry[2]) for entry in self.finalMeanForceCoefficients_W]
+
+    @property
+    def finalMeanRollingMoments_W_Cg(self) -> list[float]:
+        """The final cycle averaged rolling moment experienced by each Airplane (in wind
+        axes, relative to its own CG).
+
+        Rolling moment acts about the wind axes' +x basis direction, so each entry
+        equals the corresponding finalMeanMoments_W_Cg entry's x component.
+
+        :return: The final cycle averaged rolling moments in Newton-meters, one entry
+            per Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
+        """
+        return [float(entry[0]) for entry in self.finalMeanMoments_W_Cg]
+
+    @property
+    def finalMeanPitchingMoments_W_Cg(self) -> list[float]:
+        """The final cycle averaged pitching moment experienced by each Airplane (in
+        wind axes, relative to its own CG).
+
+        Pitching moment acts about the wind axes' +y basis direction, so each entry
+        equals the corresponding finalMeanMoments_W_Cg entry's y component.
+
+        :return: The final cycle averaged pitching moments in Newton-meters, one entry
+            per Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMeanMoments_W_Cg]
+
+    @property
+    def finalMeanYawingMoments_W_Cg(self) -> list[float]:
+        """The final cycle averaged yawing moment experienced by each Airplane (in wind
+        axes, relative to its own CG).
+
+        Yawing moment acts about the wind axes' +z basis direction, so each entry equals
+        the corresponding finalMeanMoments_W_Cg entry's z component.
+
+        :return: The final cycle averaged yawing moments in Newton-meters, one entry per
+            Airplane. Empty if finalMeanMoments_W_Cg has not been populated.
+        """
+        return [float(entry[2]) for entry in self.finalMeanMoments_W_Cg]
+
+    @property
+    def finalMeanRollingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final cycle averaged rolling moment coefficient experienced by each
+        Airplane (in wind axes, relative to its own CG).
+
+        Rolling moment coefficient corresponds to the wind axes' +x basis direction, so
+        each entry equals the corresponding finalMeanMomentCoefficients_W_Cg entry's x
+        component.
+
+        :return: The final cycle averaged rolling moment coefficients, one entry per
+            Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[0]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+
+    @property
+    def finalMeanPitchingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final cycle averaged pitching moment coefficient experienced by each
+        Airplane (in wind axes, relative to its own CG).
+
+        Pitching moment coefficient corresponds to the wind axes' +y basis direction, so
+        each entry equals the corresponding finalMeanMomentCoefficients_W_Cg entry's y
+        component.
+
+        :return: The final cycle averaged pitching moment coefficients, one entry per
+            Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[1]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+
+    @property
+    def finalMeanYawingMomentCoefficients_W_Cg(self) -> list[float]:
+        """The final cycle averaged yawing moment coefficient experienced by each
+        Airplane (in wind axes, relative to its own CG).
+
+        Yawing moment coefficient corresponds to the wind axes' +z basis direction, so
+        each entry equals the corresponding finalMeanMomentCoefficients_W_Cg entry's z
+        component.
+
+        :return: The final cycle averaged yawing moment coefficients, one entry per
+            Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
+        """
+        return [float(entry[2]) for entry in self.finalMeanMomentCoefficients_W_Cg]

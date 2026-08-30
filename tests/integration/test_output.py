@@ -244,6 +244,9 @@ class TestFreeFlightOutput(unittest.TestCase):
     free_flight_solver: (
         ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
     )
+    mujoco_geometry_solver: (
+        ps.free_flight_unsteady_ring_vortex_lattice_method.FreeFlightUnsteadyRingVortexLatticeMethodSolver
+    )
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -253,6 +256,28 @@ class TestFreeFlightOutput(unittest.TestCase):
         """
         cls.free_flight_solver = solver_fixtures.make_simple_glider_free_flight_solver()
         cls.free_flight_solver.run(show_progress=False)
+
+        # This solver's problem injects a worldbody ground plane and two body geoms, so
+        # the tests can exercise the MuJoCo geometry rendering. The plane sits 50 meters
+        # below the glide with its contact side facing up, so it never touches the body
+        # geoms during the short simulation.
+        cls.mujoco_geometry_solver = (
+            solver_fixtures.make_simple_glider_free_flight_solver(
+                extra_xml={
+                    "worldbody": (
+                        '<geom name="ground" type="plane" size="50 50 1" pos="0 0 50" '
+                        'euler="180 0 0" rgba="0.6 0.5 0.3 1"/>'
+                    ),
+                    "body": (
+                        '<geom name="fuselage" type="box" size="0.2 0.05 0.05" '
+                        'rgba="0.2 0.4 0.8 1"/>'
+                        '<geom name="nose" type="sphere" size="0.06" pos="0.2 0 0" '
+                        'rgba="0.8 0.1 0.1 1"/>'
+                    ),
+                }
+            )
+        )
+        cls.mujoco_geometry_solver.run(show_progress=False)
 
     def test_draw_does_not_throw(self) -> None:
         """This method tests that the draw function does not throw any errors for a free
@@ -282,6 +307,21 @@ class TestFreeFlightOutput(unittest.TestCase):
             testing=True,
         )
 
+    def test_draw_with_mujoco_geometry_does_not_throw(self) -> None:
+        """This method tests that the draw function does not throw any errors for a free
+        flight solver when MuJoCo geometry is shown.
+
+        :return: None
+        """
+        ps.output.draw(
+            solver=self.mujoco_geometry_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_streamlines=False,
+            show_mujoco_geometry=True,
+            testing=True,
+        )
+
     def test_animate_does_not_throw(self) -> None:
         """This method tests that the animate function does not throw any errors for a
         free flight solver.
@@ -306,6 +346,21 @@ class TestFreeFlightOutput(unittest.TestCase):
             unsteady_solver=self.free_flight_solver,
             scalar_type=None,
             show_wake_vortices=True,
+            save=False,
+            testing=True,
+        )
+
+    def test_animate_with_mujoco_geometry_does_not_throw(self) -> None:
+        """This method tests that the animate function does not throw any errors for a
+        free flight solver when MuJoCo geometry is shown.
+
+        :return: None
+        """
+        ps.output.animate(
+            unsteady_solver=self.mujoco_geometry_solver,
+            scalar_type=None,
+            show_wake_vortices=False,
+            show_mujoco_geometry=True,
             save=False,
             testing=True,
         )

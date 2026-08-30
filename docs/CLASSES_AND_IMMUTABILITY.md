@@ -26,7 +26,7 @@ The `Core*` classes live in `pterasoftware/_core.py` and own the shared slots an
 
 ### Class Attribute Categories
 
-Most attribute falls into one of these categories:
+Most attributes fall into one of these categories:
 
 | Category                | Pattern                                                          |
 |-------------------------|------------------------------------------------------------------|
@@ -35,6 +35,7 @@ Most attribute falls into one of these categories:
 | **Set Once**            | Property with setter that raises `AttributeError` if already set |
 | **Mutable**             | Property with setter, or plain attribute                         |
 | **Derived (Set Once)**  | Manual lazy caching, depends on set once attributes              |
+| **Derived (Mutable)**   | Read-only property, no backing slot, recomputed on every access  |
 
 ### Construction-Only Parameters
 
@@ -48,7 +49,7 @@ A constructor parameter is not always retained as an attribute. Some parameters 
 
 2. **Enforce set once semantics at runtime**: Set once properties raise `AttributeError` if assigned a second time. This catches bugs early where code incorrectly attempts to modify values that should be immutable after initial assignment.
 
-3. **Use manual lazy caching for all derived properties**: This approach:
+3. **Use manual lazy caching for all cached derived properties**: This approach:
     - Works consistently for properties derived from both immutable and set once attributes
     - Is compatible with `__slots__` (no dependency on `__dict__`)
     - Simplifies `__deepcopy__` (cache variables can be copied directly)
@@ -150,6 +151,37 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 **Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-Airplane lists, the G and Cg IDs are used without an Airplane index to implicitly mean "in the entry's own Airplane's geometry axes" and "relative to the entry's own Airplane's CG".
 
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md` for the wind axes lists. Each returns one signed component per Airplane, or an empty list while its source list is empty, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source lists.
+
+| Property                                   | Depends On                         | Notes                                    |
+|--------------------------------------------|------------------------------------|------------------------------------------|
+| `finalInducedDrags_W`                      | `finalForces_W`                    | Negatives of the x components            |
+| `finalSideForces_W`                        | `finalForces_W`                    | The y components                         |
+| `finalLifts_W`                             | `finalForces_W`                    | Negatives of the z components            |
+| `finalInducedDragCoefficients_W`           | `finalForceCoefficients_W`         | Negatives of the x components            |
+| `finalSideForceCoefficients_W`             | `finalForceCoefficients_W`         | The y components                         |
+| `finalLiftCoefficients_W`                  | `finalForceCoefficients_W`         | Negatives of the z components            |
+| `finalRollingMoments_W_Cg`                 | `finalMoments_W_Cg`                | The x components                         |
+| `finalPitchingMoments_W_Cg`                | `finalMoments_W_Cg`                | The y components                         |
+| `finalYawingMoments_W_Cg`                  | `finalMoments_W_Cg`                | The z components                         |
+| `finalRollingMomentCoefficients_W_Cg`      | `finalMomentCoefficients_W_Cg`     | The x components                         |
+| `finalPitchingMomentCoefficients_W_Cg`     | `finalMomentCoefficients_W_Cg`     | The y components                         |
+| `finalYawingMomentCoefficients_W_Cg`       | `finalMomentCoefficients_W_Cg`     | The z components                         |
+| `finalMeanInducedDrags_W`                  | `finalMeanForces_W`                | Cycle averaged counterparts of the above |
+| `finalMeanSideForces_W`                    | `finalMeanForces_W`                |                                          |
+| `finalMeanLifts_W`                         | `finalMeanForces_W`                |                                          |
+| `finalMeanInducedDragCoefficients_W`       | `finalMeanForceCoefficients_W`     |                                          |
+| `finalMeanSideForceCoefficients_W`         | `finalMeanForceCoefficients_W`     |                                          |
+| `finalMeanLiftCoefficients_W`              | `finalMeanForceCoefficients_W`     |                                          |
+| `finalMeanRollingMoments_W_Cg`             | `finalMeanMoments_W_Cg`            |                                          |
+| `finalMeanPitchingMoments_W_Cg`            | `finalMeanMoments_W_Cg`            |                                          |
+| `finalMeanYawingMoments_W_Cg`              | `finalMeanMoments_W_Cg`            |                                          |
+| `finalMeanRollingMomentCoefficients_W_Cg`  | `finalMeanMomentCoefficients_W_Cg` |                                          |
+| `finalMeanPitchingMomentCoefficients_W_Cg` | `finalMeanMomentCoefficients_W_Cg` |                                          |
+| `finalMeanYawingMomentCoefficients_W_Cg`   | `finalMeanMomentCoefficients_W_Cg` |                                          |
+
 ## _CoupledUnsteadyProblem Class (`problems.py`)
 
 `_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`, both documented below) whose per-step `SteadyProblem` depends on the solver's results from the previous step: deformed wing geometry for aeroelasticity, updated rigid body state for free flight. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
@@ -234,7 +266,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Construction-only parameters
 
-`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo. A problem built with `mujoco_assets` cannot be saved: the `MuJoCoModel` retains the assets dict, and the serialization layer raises rather than write a file whose rebuilt engine could not resolve the asset references. See Construction-Only Parameters under Design Principles.
+`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes, where each filename must be a bare basename with a nonempty extension), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo, except that construction raises if the generated model XML references files that `mujoco_assets` does not cover, which keeps machine-specific paths out of saved files and every constructed problem saveable. See Construction-Only Parameters under Design Principles.
 
 ## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
 
@@ -503,6 +535,25 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `moments_W_Cg`              | `np.ndarray \| None` | Wind-axes rotation of `moments_G_Cg`        |
 | `momentCoefficients_W_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
 
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of its source array, or None while the source is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source arrays.
+
+| Property                         | Depends On                | Notes                       |
+|----------------------------------|---------------------------|-----------------------------|
+| `inducedDrag_W`                  | `forces_W`                | Negative of the x component |
+| `sideForce_W`                    | `forces_W`                | The y component             |
+| `lift_W`                         | `forces_W`                | Negative of the z component |
+| `inducedDragCoefficient_W`       | `forceCoefficients_W`     | Negative of the x component |
+| `sideForceCoefficient_W`         | `forceCoefficients_W`     | The y component             |
+| `liftCoefficient_W`              | `forceCoefficients_W`     | Negative of the z component |
+| `rollingMoment_W_Cg`             | `moments_W_Cg`            | The x component             |
+| `pitchingMoment_W_Cg`            | `moments_W_Cg`            | The y component             |
+| `yawingMoment_W_Cg`              | `moments_W_Cg`            | The z component             |
+| `rollingMomentCoefficient_W_Cg`  | `momentCoefficients_W_Cg` | The x component             |
+| `pitchingMomentCoefficient_W_Cg` | `momentCoefficients_W_Cg` | The y component             |
+| `yawingMomentCoefficient_W_Cg`   | `momentCoefficients_W_Cg` | The z component             |
+
 ---
 
 ## Wing Class (`geometry/wing.py`)
@@ -701,6 +752,16 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `forces_W`         | `np.ndarray \| None`      | Forces in wind axes  |
 | `moments_W_CgP1`   | `np.ndarray \| None`      | Moments in wind axes |
 
+#### Derived from Mutable (read-only property, no backing slot)
+
+These read-only properties expose the named force components defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of `forces_W`, or None while it is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates `forces_W`.
+
+| Property        | Depends On | Notes                       |
+|-----------------|------------|-----------------------------|
+| `inducedDrag_W` | `forces_W` | Negative of the x component |
+| `sideForce_W`   | `forces_W` | The y component             |
+| `lift_W`        | `forces_W` | Negative of the z component |
+
 ---
 
 ## MuJoCoModel Class (`_mujoco_model.py`)
@@ -711,15 +772,15 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute              | Type                       | Notes                                                                                                    |
-|------------------------|----------------------------|----------------------------------------------------------------------------------------------------------|
-| `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                     |
-| `_model`               | `mujoco.MjModel`           | Compiled MuJoCo model; private slot with no property                                                     |
-| `body_id`              | `int`                      | MuJoCo body ID for the Airplane                                                                          |
-| `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                               |
-| `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                     |
-| `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                    |
-| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or None); private slot with no property; a truthy value makes the model unsaveable |
+| Attribute              | Type                       | Notes                                                                                                                                        |
+|------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                                                         |
+| `_model`               | `mujoco.MjModel`           | Compiled MuJoCo model; private slot with no property                                                                                         |
+| `body_id`              | `int`                      | MuJoCo body ID for the Airplane                                                                                                              |
+| `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                                                                   |
+| `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                                                         |
+| `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                                                        |
+| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or None); private slot with no property; serialized into saved files so `_rebuild_engine` can resolve asset references |
 
 #### Mutable
 
@@ -729,7 +790,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Construction-only parameters
 
-`integrator` and `extra_xml` are constructor parameters, not attributes: both shape the generated model during initialization, are folded into `xml_str` (so their content survives indirectly through the stored XML), and are then discarded, so neither has a slot or an attribute-category entry above. `mujoco_assets`, by contrast, is retained in the `_mujoco_assets` slot after being passed to MuJoCo's `from_xml_string`: an asset-based model cannot be rebuilt from `xml_str` alone, so the serialization layer reads the slot and raises on save rather than write a file that fails on load (the slot itself is serialized as null, since it can only ever be falsy when saving succeeds). `MuJoCoModel` does not validate any of the three: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo. See Construction-Only Parameters under Design Principles.
+`integrator` and `extra_xml` are constructor parameters, not attributes: both shape the generated model during initialization, are folded into `xml_str` (so their content survives indirectly through the stored XML), and are then discarded, so neither has a slot or an attribute-category entry above. `mujoco_assets`, by contrast, is retained in the `_mujoco_assets` slot after being passed to MuJoCo's `from_xml_string`: an asset-based model cannot be rebuilt from `xml_str` alone, so the slot is serialized alongside the XML string (with the asset bytes encoded as base64) and `_rebuild_engine` passes the restored dict back to MuJoCo, which keeps saved files self-contained and load off the filesystem. `MuJoCoModel` does not validate any of the three: it is private and validates nothing, so they arrive already validated from `FreeFlightUnsteadyProblem` (the only constructor), with deeper XML and asset-reference correctness left to MuJoCo, except that `FreeFlightUnsteadyProblem` calls the model's `uncovered_file_references` method after construction and raises if the XML references files that the assets dict does not cover. See Construction-Only Parameters under Design Principles.
 
 ---
 

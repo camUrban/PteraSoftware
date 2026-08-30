@@ -108,17 +108,22 @@ def make_coupled_unsteady_ring_solver_fixture() -> (
     return solver
 
 
-def make_free_flight_unsteady_ring_solver_fixture() -> (
-    FreeFlightUnsteadyRingVortexLatticeMethodSolver
-):
+def make_free_flight_unsteady_ring_solver_fixture(
+    extra_xml: dict[str, str] | None = None,
+) -> FreeFlightUnsteadyRingVortexLatticeMethodSolver:
     """This method makes a fixture that is a
     FreeFlightUnsteadyRingVortexLatticeMethodSolver for general testing.
 
+    :param extra_xml: dict or None A dict mapping injection point names to XML fragment
+        strings to inject into the FreeFlightUnsteadyProblem's generated MuJoCo XML. If
+        None, no extra XML is injected. The default is None.
     :return solver: FreeFlightUnsteadyRingVortexLatticeMethodSolver This is the
         FreeFlightUnsteadyRingVortexLatticeMethodSolver fixture.
     """
     free_flight_unsteady_problem = (
-        problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
+        problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
+            extra_xml=extra_xml
+        )
     )
 
     solver = FreeFlightUnsteadyRingVortexLatticeMethodSolver(

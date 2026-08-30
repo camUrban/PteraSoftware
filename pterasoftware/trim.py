@@ -17,6 +17,7 @@ varying the base operating conditions until the net loads are sufficiently low.
 from __future__ import annotations
 
 import copy
+import time
 from collections.abc import Sequence
 from typing import Any
 
@@ -24,6 +25,7 @@ import numpy as np
 import scipy.optimize as sp_opt
 
 from . import (
+    _functions,
     _logging,
     _parameter_validation,
     movements,
@@ -356,6 +358,8 @@ def analyze_steady_trim(
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
 
+    run_start_time = time.time()
+
     _logger.info(_logging.indent() + "Beginning trim analysis")
 
     # Report which variables this analysis searches and their bounds. The state messages
@@ -406,6 +410,11 @@ def analyze_steady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable value reached with local search")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -432,6 +441,11 @@ def analyze_steady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -442,6 +456,11 @@ def analyze_steady_trim(
     _logger.critical(
         _logging.indent()
         + "No trim condition found, increase bounds or maximum iterations"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Trim analysis completed in "
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None
 
@@ -470,9 +489,9 @@ def analyze_unsteady_trim(
     **Procedure:**
 
     Trim is found by minimizing an objective function that combines the net final load
-    coefficients' magnitudes. For problems with non static geometry, the final load
-    coefficients are the RMS values from the final motion cycle. For problems with
-    static geometry, they are the load coefficients at the final time step.
+    coefficients' magnitudes. For problems with non static movement, the final load
+    coefficients are the mean values from the final motion cycle. For problems with
+    static movement, they are the load coefficients at the final time step.
 
     The optimization process varies four of the base OperatingPoint's parameters
     (vCg__E, alpha, beta, externalFX_W) within their specified bounds. At each
@@ -491,9 +510,14 @@ def analyze_unsteady_trim(
     :param problem: The UnsteadyProblem whose trim condition will be found. This must be
         a standard UnsteadyProblem, not a FreeFlightUnsteadyProblem or an
         AeroelasticUnsteadyProblem, neither of which is supported. The UnsteadyProblem's
-        Movement must contain exactly one AirplaneMovement. The problem's
-        OperatingPointMovement's base OperatingPoint will be modified during the trim
-        search.
+        Movement must contain exactly one AirplaneMovement. The problem's Movement must
+        define its duration with num_cycles or num_chords, rather than an explicit
+        num_steps, because delta_time is re-estimated at each trial speed and a fixed
+        num_steps would change the simulated duration from trial to trial. If its wake
+        is truncated, the maximum wake length must likewise be defined with
+        max_wake_cycles or max_wake_chords, rather than an explicit max_wake_rows. The
+        problem's OperatingPointMovement's base OperatingPoint will be modified during
+        the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
@@ -545,6 +569,21 @@ def analyze_unsteady_trim(
             "The UnsteadyProblem's Movement must contain exactly one AirplaneMovement "
             "for trim analysis."
         )
+    if problem.movement.num_cycles is None and problem.movement.num_chords is None:
+        raise ValueError(
+            "The UnsteadyProblem's Movement must define its duration with num_cycles "
+            "or num_chords for trim analysis, rather than an explicit num_steps."
+        )
+    if (
+        problem.movement.max_wake_rows is not None
+        and problem.movement.max_wake_chords is None
+        and problem.movement.max_wake_cycles is None
+    ):
+        raise ValueError(
+            "The UnsteadyProblem's Movement must define its maximum wake length with "
+            "max_wake_chords or max_wake_cycles for trim analysis, rather than an "
+            "explicit max_wake_rows."
+        )
 
     # Validate the boundsVCg__E parameter.
     if not (isinstance(boundsVCg__E, tuple) and len(boundsVCg__E) == 2):
@@ -558,6 +597,11 @@ def analyze_unsteady_trim(
         )
     if boundsVCg__E[0] <= 0:
         raise ValueError("Both values in boundsVCg__E must be positive.")
+    if boundsVCg__E[0] <= problem.movement.operating_point_movement.ampVCg__E:
+        raise ValueError(
+            "The lower vCg__E bound must be greater than the OperatingPointMovement's "
+            "ampVCg__E so every trial speed remains positive throughout its cycle."
+        )
 
     # Validate the alpha_bounds parameter.
     if not (isinstance(alpha_bounds, tuple) and len(alpha_bounds) == 2):
@@ -659,6 +703,7 @@ def analyze_unsteady_trim(
     base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
     base_g_E = base_operating_point.g_E
     base_omegas_BP1__E = base_operating_point.omegas_BP1__E
+    reference_operating_point_movement = problem.movement.operating_point_movement
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -717,14 +762,21 @@ def analyze_unsteady_trim(
 
         this_operating_point_movement = (
             movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=trial_operating_point
+                base_operating_point=trial_operating_point,
+                ampVCg__E=reference_operating_point_movement.ampVCg__E,
+                periodVCg__E=reference_operating_point_movement.periodVCg__E,
+                spacingVCg__E=reference_operating_point_movement.spacingVCg__E,
+                phaseVCg__E=reference_operating_point_movement.phaseVCg__E,
             )
         )
 
         this_movement = movements.movement.Movement(
             airplane_movements=[problem.movement.airplane_movements[0]],
             operating_point_movement=this_operating_point_movement,
-            num_steps=problem.movement.num_steps,
+            num_cycles=problem.movement.num_cycles,
+            num_chords=problem.movement.num_chords,
+            max_wake_chords=problem.movement.max_wake_chords,
+            max_wake_cycles=problem.movement.max_wake_cycles,
         )
 
         this_problem = problems.UnsteadyProblem(
@@ -743,13 +795,20 @@ def analyze_unsteady_trim(
             force_method=force_method,
         )
 
-        finalForceCoefficients_W = this_solver.unsteady_problem.finalForceCoefficients_W
-        assert finalForceCoefficients_W is not None
-
-        finalMomentCoefficients_W_Cg = (
-            this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
-        )
-        assert finalMomentCoefficients_W_Cg is not None
+        if this_movement.static:
+            finalForceCoefficients_W = (
+                this_solver.unsteady_problem.finalForceCoefficients_W
+            )
+            finalMomentCoefficients_W_Cg = (
+                this_solver.unsteady_problem.finalMomentCoefficients_W_Cg
+            )
+        else:
+            finalForceCoefficients_W = (
+                this_solver.unsteady_problem.finalMeanForceCoefficients_W
+            )
+            finalMomentCoefficients_W_Cg = (
+                this_solver.unsteady_problem.finalMeanMomentCoefficients_W_Cg
+            )
 
         netForceCoefficients_W = float(
             np.linalg.norm(finalForceCoefficients_W + externalForceCoefficients_W)
@@ -784,6 +843,8 @@ def analyze_unsteady_trim(
         (beta_bounds[0], beta_bounds[1]),
         (boundsExternalFX_W[0], boundsExternalFX_W[1]),
     ]
+
+    run_start_time = time.time()
 
     _logger.info(_logging.indent() + "Beginning trim analysis")
 
@@ -835,6 +896,11 @@ def analyze_unsteady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable value reached with local search")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -861,6 +927,11 @@ def analyze_unsteady_trim(
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")
+        _logger.info(
+            _logging.indent()
+            + "Trim analysis completed in "
+            + _functions.format_duration(time.time() - run_start_time)
+        )
         return (
             current_arguments[0],
             current_arguments[1],
@@ -871,5 +942,10 @@ def analyze_unsteady_trim(
     _logger.critical(
         _logging.indent()
         + "No trim condition found, increase bounds or maximum iterations"
+    )
+    _logger.info(
+        _logging.indent()
+        + "Trim analysis completed in "
+        + _functions.format_duration(time.time() - run_start_time)
     )
     return None, None, None, None

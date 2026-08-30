@@ -9,6 +9,7 @@ import numpy.testing as npt
 
 # noinspection PyProtectedMember
 from pterasoftware import _mujoco_model
+from pterasoftware._transformations import apply_R_to_vectors, invert_R_pas
 from tests.unit.fixtures import mujoco_model_fixtures
 
 
@@ -691,8 +692,8 @@ class TestMuJoCoModelConventions(unittest.TestCase):
             model.step()
 
         state = model.get_state()
-        R_pas_BP1_to_E = state["R_pas_E_to_BP1"].T
-        omegas_E__E = R_pas_BP1_to_E @ state["omegas_BP1__E"]
+        R_pas_BP1_to_E = invert_R_pas(state["R_pas_E_to_BP1"])
+        omegas_E__E = apply_R_to_vectors(R_pas_BP1_to_E, state["omegas_BP1__E"])
 
         # The spin is about Earth -z, so the Earth-axes angular velocity is dominated by
         # a negative z component with negligible x and y components.

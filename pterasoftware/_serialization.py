@@ -80,7 +80,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 25
+_FORMAT_VERSION = 26
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -177,22 +177,6 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
         "FreeFlightUnsteadyRingVortexLatticeMethodSolver",
     }
 )
-
-# These are the slots on steady solvers that are aliases into the SteadyProblem graph.
-_STEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
-    {"airplanes", "operating_point", "reynolds_numbers", "vInf_GP1__E", "panels"}
-)
-
-# These are the slots on the unsteady solver that are aliases into the UnsteadyProblem
-# graph.
-_UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
-    {"current_airplanes", "current_operating_point", "panels"}
-)
-
-# These are the slots on Movement that are redundant when serialized inside an
-# UnsteadyProblem. The canonical data lives in the SteadyProblems. These are
-# reconstructed on deserialization to preserve object identity.
-_MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
 
 # These are the slots on MuJoCoModel that are serialized as null. _model and _data wrap
 # native MuJoCo state and are rebuilt from the serialized XML string and the serialized
@@ -523,17 +507,14 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
 
 
 def _object_to_dict(
-    obj: object,
-    *,
-    _skip_slots: frozenset[str] = frozenset(),
-    memo: dict[int, tuple[int, object]] | None = None,
+    obj: object, *, memo: dict[int, tuple[int, object]] | None = None
 ) -> dict[str, Any]:
     """Generically serializes a Ptera Software object to a dict.
 
     Iterates over the class's __slots__ to discover all attributes, including cache
     slots. JSON keys are the slot names themselves (e.g., "_rho", "_name", "forces_W").
-    Slots listed in _skip_slots are serialized as null (used by the shared reference
-    optimization for UnsteadyProblem and solver classes).
+    The MuJoCoModel's native engine objects are serialized as null and rebuilt on
+    deserialization.
 
     Shared references are preserved via an identity memo. The first encounter of each
     object serializes it fully and stamps the dict with an "_id" key holding a small
@@ -543,7 +524,6 @@ def _object_to_dict(
     WingCrossSection) is stored only once and its sharing survives the round trip.
 
     :param obj: The Ptera Software object to serialize.
-    :param _skip_slots: A frozenset of slot names to serialize as null.
     :param memo: The identity memo mapping an object's id() to its "_id" integer and the
         object itself (held to keep its id() from being recycled during the walk). If
         None, a fresh memo is created, making this a top level call.
@@ -565,20 +545,11 @@ def _object_to_dict(
 
     _logger.debug(_logging.indent() + "Serializing %s", class_name)
 
-    # Solver skip slots always apply because the aliases are always redundant with
-    # solver._steady_problem or solver.unsteady_problem.
-    if isinstance(
-        obj,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
-    ):
-        _skip_slots = _skip_slots | _STEADY_SOLVER_SKIP_SLOTS
-    elif isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
-        _skip_slots = _skip_slots | _UNSTEADY_SOLVER_SKIP_SLOTS
-
-    # The MuJoCoModel's native model and data objects cannot be serialized. They are
+    # The MuJoCoModel's native model and data objects cannot be serialized, so they are
     # rebuilt from the XML string and the assets dict on deserialization.
+    skip_slots: frozenset[str] = frozenset()
     if isinstance(obj, MuJoCoModel):
-        _skip_slots = _skip_slots | _MUJOCO_MODEL_SKIP_SLOTS
+        skip_slots = _MUJOCO_MODEL_SKIP_SLOTS
 
     # Register the object in the memo before serializing its slots so that any reference
     # back to it from within its own subtree serializes as a ref.
@@ -586,16 +557,9 @@ def _object_to_dict(
     memo[id(obj)] = (ref_id, obj)
 
     result: dict[str, Any] = {"_type": class_name, "_id": ref_id}
-    is_unsteady_problem = isinstance(obj, UnsteadyProblem)
     for slot_name in _all_slots(cls):
-        if slot_name in _skip_slots:
+        if slot_name in skip_slots:
             result[slot_name] = None
-        elif is_unsteady_problem and slot_name == "_movement":
-            # Pass _MOVEMENT_SKIP_SLOTS to the Movement child so that _airplanes and
-            # _operating_points are serialized as null.
-            result[slot_name] = _object_to_dict(
-                getattr(obj, slot_name), _skip_slots=_MOVEMENT_SKIP_SLOTS, memo=memo
-            )
         else:
             result[slot_name] = _serialize_value(getattr(obj, slot_name), memo=memo)
     return result
@@ -608,9 +572,8 @@ def _object_from_dict(
 
     Uses the "_type" tag to look up the class in the registry. Creates an empty instance
     via object.__new__(cls), bypassing __init__ entirely. Then restores every serialized
-    attribute (including caches) via object.__setattr__(). After restoring all slots,
-    calls _reconstruct_shared_references() to rebuild any slots that were skipped during
-    serialization.
+    attribute (including caches) via object.__setattr__(). For a MuJoCoModel, rebuilds
+    the native engine objects that were serialized as null.
 
     The instance is registered in the table under the dict's "_id" integer before its
     slots are restored, so {"_type": "ref", "id": ...} dicts elsewhere in the data
@@ -637,109 +600,14 @@ def _object_from_dict(
         object.__setattr__(
             obj, slot_name, _deserialize_value(data[slot_name], table=table)
         )
-    _reconstruct_shared_references(obj)
-    return obj
 
-
-def _reconstruct_shared_references(obj: object) -> None:
-    """Rebuilds shared references that were skipped during serialization.
-
-    Called after _object_from_dict restores all serialized slots. Handles
-    UnsteadyProblem (Movement <-> SteadyProblem aliases), steady solvers (solver ->
-    SteadyProblem aliases), and the unsteady solver (solver -> UnsteadyProblem aliases).
-
-    :param obj: The deserialized Ptera Software object.
-    :return: None
-    """
     if isinstance(obj, MuJoCoModel):
         # The native model and data objects were skipped during serialization. Rebuild
         # them from the deserialized XML string. This module is inherently coupled to
         # class internals, so calling a private method directly is acceptable here.
         # noinspection PyProtectedMember
         obj._rebuild_engine()
-
-    if isinstance(
-        obj,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
-    ):
-        # This module is inherently coupled to class internals (it reads __slots__ and
-        # writes private backing stores for all classes), so accessing a private
-        # attribute directly is acceptable here.
-        # noinspection PyProtectedMember
-        problem = obj._steady_problem
-        object.__setattr__(obj, "airplanes", problem.airplanes)
-        object.__setattr__(obj, "operating_point", problem.operating_point)
-        object.__setattr__(obj, "reynolds_numbers", problem.reynolds_numbers)
-        object.__setattr__(obj, "vInf_GP1__E", problem.operating_point.vInf_GP1__E)
-
-        if obj.ran:
-            # Reconstruct the flattened panels array (same order as _collapse_geometry).
-            panels_list: list[Panel] = []
-            for airplane in problem.airplanes:
-                for wing in airplane.wings:
-                    assert wing.panels is not None
-                    panels_list.extend(np.ravel(wing.panels))
-            object.__setattr__(obj, "panels", np.array(panels_list, dtype=object))
-        else:
-            # Pre run: panels is an uninitialized object array sized to num_panels.
-            object.__setattr__(obj, "panels", np.empty(obj.num_panels, dtype=object))
-
-    if isinstance(obj, UnsteadyProblem):
-        movement = obj.movement
-        steady_problems = obj.steady_problems
-        num_steps = len(steady_problems)
-        num_airplane_movements = len(movement.airplane_movements)
-
-        # Reconstruct Movement._airplanes as a tuple[tuple[Airplane, ...], ...]. The
-        # outer index is the AirplaneMovement, and the inner index is the time step.
-        airplanes = tuple(
-            tuple(
-                steady_problems[step].airplanes[airplane_movement_index]
-                for step in range(num_steps)
-            )
-            for airplane_movement_index in range(num_airplane_movements)
-        )
-        object.__setattr__(movement, "_airplanes", airplanes)
-
-        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...]. It is
-        # indexed by time step.
-        operating_points = tuple(
-            steady_problems[step].operating_point for step in range(num_steps)
-        )
-        object.__setattr__(movement, "_operating_points", operating_points)
-
-    if isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
-        unsteady_problem = obj.unsteady_problem
-
-        # This module is inherently coupled to class internals (it reads __slots__ and
-        # writes private backing stores for all classes), so accessing a private
-        # attribute directly is acceptable here.
-        # noinspection PyProtectedMember
-        current_step = obj._current_step
-        current_steady_problem = unsteady_problem.steady_problems[current_step]
-        object.__setattr__(
-            obj, "current_operating_point", current_steady_problem.operating_point
-        )
-
-        if obj.ran:
-            object.__setattr__(
-                obj, "current_airplanes", current_steady_problem.airplanes
-            )
-
-            # Reconstruct flattened panels from current step's airplanes.
-            current_panels_list: list[Panel] = []
-            for airplane in current_steady_problem.airplanes:
-                for wing in airplane.wings:
-                    assert wing.panels is not None
-                    current_panels_list.extend(np.ravel(wing.panels))
-            object.__setattr__(
-                obj, "panels", np.array(current_panels_list, dtype=object)
-            )
-        else:
-            # Pre run: current_airplanes is an empty tuple and panels is an empty object
-            # array.
-            object.__setattr__(obj, "current_airplanes", ())
-            object.__setattr__(obj, "panels", np.empty(0, dtype=object))
+    return obj
 
 
 def _ndarray_to_dict(

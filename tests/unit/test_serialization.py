@@ -1720,7 +1720,10 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         solver.run()
         result = _deserialize_value(_serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
-        self.assertIs(result.airplanes, result._steady_problem.airplanes)
+        for solver_airplane, problem_airplane in zip(
+            result.airplanes, result._steady_problem.airplanes, strict=True
+        ):
+            self.assertIs(solver_airplane, problem_airplane)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
     def test_pre_run_round_trip(self) -> None:
@@ -1782,7 +1785,10 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         solver.run()
         result = _deserialize_value(_serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
-        self.assertIs(result.airplanes, result._steady_problem.airplanes)
+        for solver_airplane, problem_airplane in zip(
+            result.airplanes, result._steady_problem.airplanes, strict=True
+        ):
+            self.assertIs(solver_airplane, problem_airplane)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
     def test_pre_run_round_trip(self) -> None:

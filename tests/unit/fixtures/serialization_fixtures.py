@@ -1,9 +1,15 @@
 """This module contains functions to create objects for use in serialization tests."""
 
+import hashlib
+from collections.abc import Callable
+
 import numpy as np
 
 # noinspection PyProtectedMember
 from pterasoftware._panel import Panel
+
+# noinspection PyProtectedMember
+from pterasoftware._serialization import UnboundCallable
 
 # noinspection PyProtectedMember
 from pterasoftware.geometry.airfoil import Airfoil
@@ -271,3 +277,75 @@ def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
         num_steps=3,
     )
     return UnsteadyProblem(movement=movement)
+
+
+def make_custom_spacing_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is a custom spacing function for serialization
+    testing.
+
+    Each call returns a new function object, but every returned function has identical
+    source text, so two fixtures serialize to identical markers.
+
+    :return custom_spacing_fixture: Callable This is a function of one float argument
+        that returns the sine of that argument as a float.
+    """
+
+    def custom_spacing(time: float) -> float:
+        return float(np.sin(time))
+
+    return custom_spacing
+
+
+def make_other_custom_spacing_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is a custom spacing function whose source text
+    differs from make_custom_spacing_fixture's, for serialization testing.
+
+    :return other_custom_spacing_fixture: Callable This is a function of one float
+        argument that returns the cosine of that argument as a float.
+    """
+
+    def other_custom_spacing(time: float) -> float:
+        return float(np.cos(time))
+
+    return other_custom_spacing
+
+
+def make_custom_second_derivative_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is the second derivative of
+    make_custom_spacing_fixture's function, for serialization testing.
+
+    :return custom_second_derivative_fixture: Callable This is a function of one float
+        argument that returns the negated sine of that argument as a float.
+    """
+
+    def custom_second_derivative(time: float) -> float:
+        return -float(np.sin(time))
+
+    return custom_second_derivative
+
+
+def make_unbound_callable_fixture() -> UnboundCallable:
+    """This method makes a fixture that is an UnboundCallable with source text, for
+    serialization testing.
+
+    :return unbound_callable_fixture: UnboundCallable This is an UnboundCallable
+        standing in for a function named my_module.my_spacing whose source text and
+        matching SHA-256 source hash are recorded.
+    """
+    source = "def my_spacing(time: float) -> float:\n    return 0.0\n"
+    return UnboundCallable(
+        qualname="my_module.my_spacing",
+        source=source,
+        source_hash=hashlib.sha256(source.encode("utf-8")).hexdigest(),
+    )
+
+
+def make_sourceless_unbound_callable_fixture() -> UnboundCallable:
+    """This method makes a fixture that is an UnboundCallable without source text, for
+    serialization testing.
+
+    :return sourceless_unbound_callable_fixture: UnboundCallable This is an
+        UnboundCallable standing in for the built in len function, whose source text
+        could not be retrieved when it was saved.
+    """
+    return UnboundCallable(qualname="builtins.len", source=None, source_hash=None)

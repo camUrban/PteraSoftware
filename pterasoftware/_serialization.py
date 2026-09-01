@@ -5,8 +5,11 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
+import inspect
 import json
 import subprocess
+import textwrap
+from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -80,7 +83,107 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 24
+_FORMAT_VERSION = 27
+
+
+class UnboundCallable:
+    """A placeholder standing in for a custom callable that could not be rebuilt when a
+    saved object was loaded.
+
+    **Contains the following methods:**
+
+    None
+
+    **Notes:**
+
+    Saved files store a custom callable (a custom spacing function, an
+    AeroelasticWingMovement's second-derivative function, or a
+    FreeFlightUnsteadyProblem's external_loads_fn) as an inert marker holding the
+    callable's qualified name, its source text when that could be retrieved, and a
+    SHA-256 hash of that text. Nothing in the file is ever executed, so loading rebuilds
+    the marker as an UnboundCallable rather than as the original function.
+
+    An UnboundCallable passes callable checks, so a loaded object keeps the same
+    structure as the one that was saved, and saving it again writes the same marker back
+    out. It cannot be invoked: calling it raises a RuntimeError that names the original
+    function and prints its recorded source. Loading a solved simulation never invokes
+    these callables, so a file holding them loads and can be visualized without any of
+    them. A user who needs to re-solve or regenerate motion passes the original
+    functions to load's callables argument, keyed by the qualified names recorded in the
+    file, and load restores them in place of the placeholders.
+    """
+
+    __slots__ = ("_qualname", "_source", "_source_hash")
+
+    def __init__(
+        self, qualname: str, source: str | None, source_hash: str | None
+    ) -> None:
+        """The initialization method.
+
+        :param qualname: The original callable's qualified name, including its module.
+        :param source: The original callable's dedented source text, or None if it could
+            not be retrieved when the object was saved.
+        :param source_hash: The lowercase hexadecimal SHA-256 digest of source encoded
+            as UTF-8, or None if source is None.
+        :return: None
+        """
+        if not isinstance(qualname, str):
+            raise TypeError(f"qualname must be a str, got {type(qualname).__name__}.")
+        self._qualname = qualname
+
+        if source is not None and not isinstance(source, str):
+            raise TypeError(
+                f"source must be a str or None, got {type(source).__name__}."
+            )
+        self._source = source
+
+        if source_hash is not None and not isinstance(source_hash, str):
+            raise TypeError(
+                f"source_hash must be a str or None, got {type(source_hash).__name__}."
+            )
+        self._source_hash = source_hash
+
+    # --- Immutable: read only properties ---
+    @property
+    def qualname(self) -> str:
+        return self._qualname
+
+    @property
+    def source(self) -> str | None:
+        return self._source
+
+    @property
+    def source_hash(self) -> str | None:
+        return self._source_hash
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        """Raises a RuntimeError naming the original callable and its source.
+
+        :param args: Ignored positional arguments, accepted so the placeholder can stand
+            wherever the original callable stood.
+        :param kwargs: Ignored keyword arguments, accepted for the same reason.
+        :return: Never returns.
+        """
+        if self._source is None:
+            source_note = (
+                "Its source text could not be retrieved when the object was saved."
+            )
+        else:
+            source_note = "Its recorded source is:\n\n" + self._source
+        raise RuntimeError(
+            f"The custom callable {self._qualname} was replaced by a placeholder when "
+            "the object was loaded, because saved files store only a callable's name "
+            "and source text and never execute anything they contain. To use it, load "
+            "the file again and pass the function as load(path, callables="
+            f"{{{self._qualname!r}: function}}). {source_note}"
+        )
+
+    def __repr__(self) -> str:
+        """Returns a string naming the original callable.
+
+        :return: The repr string.
+        """
+        return f"UnboundCallable(qualname={self._qualname!r})"
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -104,6 +207,14 @@ def _all_slots(cls: type) -> list[str]:
 # Prevents gzip bombs from exhausting memory. Users can override this via the max_size
 # parameter on load().
 _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
+
+# This is the maximum read size in bytes for decompressing gzip files during load().
+# Each read is sized to this value or to the remaining allowance under the maximum
+# allowed size, whichever is smaller. Reading in bounded chunks matters because the
+# buffered reader preallocates the requested size, so a single read call sized to the
+# maximum allowed size would spike memory by the full cap (4 GB by default) on every
+# load.
+_GZIP_READ_CHUNK_SIZE = 16_777_216  # 16 MiB
 
 # Maps class names to their types for deserialization dispatch.
 _CLASS_REGISTRY: dict[str, type] = {
@@ -170,22 +281,6 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
     }
 )
 
-# These are the slots on steady solvers that are aliases into the SteadyProblem graph.
-_STEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
-    {"airplanes", "operating_point", "reynolds_numbers", "vInf_GP1__E", "panels"}
-)
-
-# These are the slots on the unsteady solver that are aliases into the UnsteadyProblem
-# graph.
-_UNSTEADY_SOLVER_SKIP_SLOTS: frozenset[str] = frozenset(
-    {"current_airplanes", "current_operating_point", "panels"}
-)
-
-# These are the slots on Movement that are redundant when serialized inside an
-# UnsteadyProblem. The canonical data lives in the SteadyProblems. These are
-# reconstructed on deserialization to preserve object identity.
-_MOVEMENT_SKIP_SLOTS: frozenset[str] = frozenset({"_airplanes", "_operating_points"})
-
 # These are the slots on MuJoCoModel that are serialized as null. _model and _data wrap
 # native MuJoCo state and are rebuilt from the serialized XML string and the serialized
 # _mujoco_assets dict on deserialization via MuJoCoModel._rebuild_engine.
@@ -200,6 +295,17 @@ def save(path: str | Path, obj: object) -> None:
     unmeshed geometry objects. Gzip compression typically reduces file sizes by 10x or
     more, and plain ".json" files use indented formatting that further increases their
     size.
+
+    Shared references are preserved. An object referenced from many places (e.g., an
+    Airfoil shared by every per step WingCrossSection) is written once, every other
+    reference is written as a pointer to it, and load() restores the sharing.
+
+    Custom callables (custom spacing functions, an AeroelasticWingMovement's second-
+    derivative functions, and a FreeFlightUnsteadyProblem's external_loads_fn) cannot be
+    written to JSON as code. Each is stored as an inert marker holding its qualified
+    name, its source text when that can be retrieved, and a hash of that text. The built
+    in "sine" and "uniform" spacings are stored by name and restored exactly. See load()
+    for how the markers are restored.
 
     The file records an internal serialization format version. load() accepts a file
     only when that format version matches the running code's exactly, and there is no
@@ -255,11 +361,28 @@ def save(path: str | Path, obj: object) -> None:
     )
 
 
-def load(path: str | Path, max_size: int | None = None) -> object:
+def load(
+    path: str | Path,
+    max_size: int | None = None,
+    callables: Mapping[str, Callable[..., object]] | None = None,
+) -> object:
     """Loads a Ptera Software object from a JSON file.
 
     If the path ends with ".json.gz", ignoring case, the input is gzip decompressed
     automatically.
+
+    Nothing in the file is ever executed. A custom callable stored by save() as an inert
+    marker is restored as an UnboundCallable, a placeholder that passes callable checks
+    but raises a RuntimeError naming the original function and printing its recorded
+    source if it is ever invoked. Loading a solved simulation never invokes these
+    callables, so such a file loads and can be visualized as usual. To re-solve or
+    regenerate motion, pass the original functions in callables, keyed by the qualified
+    names the markers recorded (the names the RuntimeError and the file report), and
+    they are restored in place of the placeholders. Every key must match a marker in the
+    file, so a misspelled key raises rather than silently leaving a placeholder behind.
+    When a marker recorded a source hash and the supplied function's own source does not
+    hash to the same value (or cannot be retrieved), a warning is logged naming the
+    function, because the file was saved with a different definition.
 
     The file records an internal serialization format version. A file is accepted only
     when that format version matches the running code's exactly, and there is no
@@ -271,6 +394,9 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     :param max_size: The maximum decompressed size in bytes for gzip files. If None, the
         default of 4 GB is used. Set this to a larger value if loading very large
         simulation results. Only applies to ".json.gz" files.
+    :param callables: A mapping from the qualified names of custom callables recorded in
+        the file to the functions to restore in their place, or None to restore every
+        custom callable as an UnboundCallable. The default is None.
     :return: The deserialized Ptera Software object.
     """
     path = Path(path)
@@ -281,19 +407,49 @@ def load(path: str | Path, max_size: int | None = None) -> object:
         )
     if path.is_dir():
         raise ValueError(f"Path must be a file path, got directory '{path}'.")
+    if callables is not None:
+        if not isinstance(callables, Mapping):
+            raise TypeError(
+                f"callables must be a mapping or None, got {type(callables).__name__}."
+            )
+        for key, func in callables.items():
+            if not isinstance(key, str):
+                raise TypeError(
+                    f"callables keys must be str, got {type(key).__name__}."
+                )
+            if not callable(func):
+                raise TypeError(
+                    f"callables values must be callable, but the value for '{key}' is "
+                    f"{type(func).__name__}."
+                )
     _logger.info(_logging.indent() + "Loading from %s", path)
 
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
 
     if lowered_name.endswith(".json.gz"):
+        # Decompress in chunks and stop as soon as the accumulated size exceeds the cap.
+        # A single f.read(max_size + 1) call would make the buffered reader preallocate
+        # max_size + 1 bytes up front, so every load would spike memory by the full cap
+        # regardless of the actual decompressed size.
+        decompressed = bytearray()
         with gzip.open(path, "rb") as f:
-            raw = f.read(max_size + 1)
-            if len(raw) > max_size:
-                raise ValueError(
-                    f"Decompressed file exceeds the maximum allowed size of "
-                    f"{max_size} bytes."
-                )
+            while True:
+                # Each read is also capped at the remaining allowance so that neither
+                # the read buffer nor the total decompressed data ever exceeds the cap
+                # by more than one byte, even when max_size is smaller than the chunk
+                # size.
+                remaining = max_size + 1 - len(decompressed)
+                chunk = f.read(min(_GZIP_READ_CHUNK_SIZE, remaining))
+                if not chunk:
+                    break
+                decompressed += chunk
+                if len(decompressed) > max_size:
+                    raise ValueError(
+                        f"Decompressed file exceeds the maximum allowed size of "
+                        f"{max_size} bytes."
+                    )
+        raw: bytes | bytearray = decompressed
     else:
         with open(path, "rb") as f:
             raw = f.read()
@@ -325,9 +481,67 @@ def load(path: str | Path, max_size: int | None = None) -> object:
     # Log provenance warnings.
     _log_load_warnings(data)
 
-    obj = _object_from_dict(data)
+    if callables is not None:
+        _check_callables_against_markers(data, callables)
+
+    obj = _object_from_dict(data, callables=callables)
     _logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
     return obj
+
+
+def _check_callables_against_markers(
+    data: dict[str, Any], callables: Mapping[str, Callable[..., object]]
+) -> None:
+    """Checks a callables mapping against the custom callable markers in loaded data.
+
+    Walks the parsed JSON before anything is constructed, collecting the recorded source
+    hashes of every custom callable marker by qualified name. A key that matches no
+    marker raises, so a typo fails fast instead of leaving a placeholder in place. A key
+    whose function does not hash to a recorded hash (including a function whose source
+    cannot be retrieved) logs one warning naming the function. A marker that recorded no
+    hash gives nothing to check against, so it never warns.
+
+    :param data: The top level dict loaded from the JSON file.
+    :param callables: The validated mapping passed to load().
+    :return: None
+    """
+    recorded_hashes: dict[str, set[str | None]] = {}
+    pending: list[object] = [data]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            if node.get("_type") == "custom_callable":
+                recorded_hashes.setdefault(node["qualname"], set()).add(
+                    node["source_hash"]
+                )
+            else:
+                pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
+
+    unused = sorted(key for key in callables if key not in recorded_hashes)
+    if unused:
+        raise ValueError(
+            "callables has keys that match no custom callable in the file: "
+            + ", ".join(f"'{key}'" for key in unused)
+            + ". The file's custom callables are: "
+            + ", ".join(f"'{key}'" for key in sorted(recorded_hashes))
+            + "."
+        )
+
+    for qualname, func in callables.items():
+        rebound_hash = _custom_callable_to_dict(func)["source_hash"]
+        recorded = recorded_hashes[qualname]
+        if any(
+            this_hash is not None and this_hash != rebound_hash
+            for this_hash in recorded
+        ):
+            _logger.warning(
+                _logging.indent()
+                + "The function supplied for %s does not match the source the file "
+                "recorded for it, so the file was saved with a different definition",
+                qualname,
+            )
 
 
 def hash_object(obj: object) -> str:
@@ -335,11 +549,15 @@ def hash_object(obj: object) -> str:
 
     The digest is the SHA-256 hash of the object's JSON serialization, computed over
     every serialized slot (including cache slots) and folded together with the current
-    serialization format version. Two objects with identical serialized content produce
-    the same digest regardless of instance identity, and any difference in serialized
-    content produces a different digest. The digest survives a save and load round trip,
-    but it is only stable within a single serialization format version, because a format
-    version change is folded into the hash and shifts every digest.
+    serialization format version. Two object graphs with identical content and identical
+    internal sharing structure produce the same digest regardless of instance identity,
+    and any difference in serialized content produces a different digest. Because shared
+    references serialize as refs, two graphs whose contents are equal but whose aliasing
+    differs (e.g., one Airfoil shared by every WingCrossSection versus an equal but
+    distinct Airfoil per WingCrossSection) produce different digests. The digest
+    survives a save and load round trip, but it is only stable within a single
+    serialization format version, because a format version change is folded into the
+    hash and shifts every digest.
 
     :param obj: The Ptera Software object to hash. Must be an instance of a class
         registered for serialization; an unregistered type raises a TypeError.
@@ -492,67 +710,87 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
 
 
 def _object_to_dict(
-    obj: object, *, _skip_slots: frozenset[str] = frozenset()
+    obj: object, *, memo: dict[int, tuple[int, object]] | None = None
 ) -> dict[str, Any]:
     """Generically serializes a Ptera Software object to a dict.
 
     Iterates over the class's __slots__ to discover all attributes, including cache
     slots. JSON keys are the slot names themselves (e.g., "_rho", "_name", "forces_W").
-    Slots listed in _skip_slots are serialized as null (used by the shared reference
-    optimization for UnsteadyProblem and solver classes).
+    The MuJoCoModel's native engine objects are serialized as null and rebuilt on
+    deserialization.
+
+    Shared references are preserved via an identity memo. The first encounter of each
+    object serializes it fully and stamps the dict with an "_id" key holding a small
+    integer. Every later encounter of the same object (by identity) serializes as a
+    {"_type": "ref", "id": ...} dict pointing at that integer, so an object that is
+    referenced from many places (e.g., an Airfoil shared by every per step
+    WingCrossSection) is stored only once and its sharing survives the round trip.
 
     :param obj: The Ptera Software object to serialize.
-    :param _skip_slots: A frozenset of slot names to serialize as null.
-    :return: A dict with "_type" set to the class name and one key per slot.
+    :param memo: The identity memo mapping an object's id() to its "_id" integer and the
+        object itself (held to keep its id() from being recycled during the walk). If
+        None, a fresh memo is created, making this a top level call.
+    :return: A dict with "_type" set to the class name, "_id" set to the memo integer,
+        and one key per slot, or a {"_type": "ref", "id": ...} dict if the object was
+        already serialized under this memo.
     """
     cls = type(obj)
     class_name = cls.__name__
     if class_name not in _CLASS_REGISTRY:
         raise TypeError(f"_object_to_dict does not handle {class_name}.")
 
+    if memo is None:
+        memo = {}
+
+    memoized = memo.get(id(obj))
+    if memoized is not None:
+        return {"_type": "ref", "id": memoized[0]}
+
     _logger.debug(_logging.indent() + "Serializing %s", class_name)
 
-    # Solver skip slots always apply because the aliases are always redundant with
-    # solver._steady_problem or solver.unsteady_problem.
-    if isinstance(
-        obj,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
-    ):
-        _skip_slots = _skip_slots | _STEADY_SOLVER_SKIP_SLOTS
-    elif isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
-        _skip_slots = _skip_slots | _UNSTEADY_SOLVER_SKIP_SLOTS
-
-    # The MuJoCoModel's native model and data objects cannot be serialized. They are
+    # The MuJoCoModel's native model and data objects cannot be serialized, so they are
     # rebuilt from the XML string and the assets dict on deserialization.
+    skip_slots: frozenset[str] = frozenset()
     if isinstance(obj, MuJoCoModel):
-        _skip_slots = _skip_slots | _MUJOCO_MODEL_SKIP_SLOTS
+        skip_slots = _MUJOCO_MODEL_SKIP_SLOTS
 
-    result: dict[str, Any] = {"_type": class_name}
-    is_unsteady_problem = isinstance(obj, UnsteadyProblem)
+    # Register the object in the memo before serializing its slots so that any reference
+    # back to it from within its own subtree serializes as a ref.
+    ref_id = len(memo)
+    memo[id(obj)] = (ref_id, obj)
+
+    result: dict[str, Any] = {"_type": class_name, "_id": ref_id}
     for slot_name in _all_slots(cls):
-        if slot_name in _skip_slots:
+        if slot_name in skip_slots:
             result[slot_name] = None
-        elif is_unsteady_problem and slot_name == "_movement":
-            # Pass _MOVEMENT_SKIP_SLOTS to the Movement child so that _airplanes and
-            # _operating_points are serialized as null.
-            result[slot_name] = _object_to_dict(
-                getattr(obj, slot_name), _skip_slots=_MOVEMENT_SKIP_SLOTS
-            )
         else:
-            result[slot_name] = _serialize_value(getattr(obj, slot_name))
+            result[slot_name] = _serialize_value(getattr(obj, slot_name), memo=memo)
     return result
 
 
-def _object_from_dict(data: dict[str, Any]) -> object:
+def _object_from_dict(
+    data: dict[str, Any],
+    *,
+    table: dict[int, object] | None = None,
+    callables: Mapping[str, Callable[..., object]] | None = None,
+) -> object:
     """Generically deserializes a Ptera Software object from a dict.
 
     Uses the "_type" tag to look up the class in the registry. Creates an empty instance
     via object.__new__(cls), bypassing __init__ entirely. Then restores every serialized
-    attribute (including caches) via object.__setattr__(). After restoring all slots,
-    calls _reconstruct_shared_references() to rebuild any slots that were skipped during
-    serialization.
+    attribute (including caches) via object.__setattr__(). For a MuJoCoModel, rebuilds
+    the native engine objects that were serialized as null.
+
+    The instance is registered in the table under the dict's "_id" integer before its
+    slots are restored, so {"_type": "ref", "id": ...} dicts elsewhere in the data
+    resolve to the same instance and shared references survive the round trip.
 
     :param data: The dict produced by _object_to_dict.
+    :param table: The reference table mapping "_id" integers to their reconstructed
+        instances. If None, a fresh table is created, making this a top level call.
+    :param callables: The mapping from qualified names to functions threaded through to
+        _deserialize_value so custom callable markers can be rebound. If None, every
+        marker deserializes to an UnboundCallable.
     :return: The reconstructed Ptera Software object.
     """
     type_tag = data["_type"]
@@ -560,117 +798,32 @@ def _object_from_dict(data: dict[str, Any]) -> object:
     if cls is None:
         raise TypeError(f"Unknown class in _object_from_dict: '{type_tag}'.")
 
+    if table is None:
+        table = {}
+
     _logger.debug(_logging.indent() + "Deserializing %s", type_tag)
 
     obj: object = object.__new__(cls)
+    table[data["_id"]] = obj
     for slot_name in _all_slots(cls):
-        object.__setattr__(obj, slot_name, _deserialize_value(data[slot_name]))
-    _reconstruct_shared_references(obj)
-    return obj
+        object.__setattr__(
+            obj,
+            slot_name,
+            _deserialize_value(data[slot_name], table=table, callables=callables),
+        )
 
-
-def _reconstruct_shared_references(obj: object) -> None:
-    """Rebuilds shared references that were skipped during serialization.
-
-    Called after _object_from_dict restores all serialized slots. Handles
-    UnsteadyProblem (Movement <-> SteadyProblem aliases), steady solvers (solver ->
-    SteadyProblem aliases), and the unsteady solver (solver -> UnsteadyProblem aliases).
-
-    :param obj: The deserialized Ptera Software object.
-    :return: None
-    """
     if isinstance(obj, MuJoCoModel):
         # The native model and data objects were skipped during serialization. Rebuild
         # them from the deserialized XML string. This module is inherently coupled to
         # class internals, so calling a private method directly is acceptable here.
         # noinspection PyProtectedMember
         obj._rebuild_engine()
-
-    if isinstance(
-        obj,
-        (SteadyHorseshoeVortexLatticeMethodSolver, SteadyRingVortexLatticeMethodSolver),
-    ):
-        # This module is inherently coupled to class internals (it reads __slots__ and
-        # writes private backing stores for all classes), so accessing a private
-        # attribute directly is acceptable here.
-        # noinspection PyProtectedMember
-        problem = obj._steady_problem
-        object.__setattr__(obj, "airplanes", problem.airplanes)
-        object.__setattr__(obj, "operating_point", problem.operating_point)
-        object.__setattr__(obj, "reynolds_numbers", problem.reynolds_numbers)
-        object.__setattr__(obj, "vInf_GP1__E", problem.operating_point.vInf_GP1__E)
-
-        if obj.ran:
-            # Reconstruct the flattened panels array (same order as _collapse_geometry).
-            panels_list: list[Panel] = []
-            for airplane in problem.airplanes:
-                for wing in airplane.wings:
-                    assert wing.panels is not None
-                    panels_list.extend(np.ravel(wing.panels))
-            object.__setattr__(obj, "panels", np.array(panels_list, dtype=object))
-        else:
-            # Pre run: panels is an uninitialized object array sized to num_panels.
-            object.__setattr__(obj, "panels", np.empty(obj.num_panels, dtype=object))
-
-    if isinstance(obj, UnsteadyProblem):
-        movement = obj.movement
-        steady_problems = obj.steady_problems
-        num_steps = len(steady_problems)
-        num_airplane_movements = len(movement.airplane_movements)
-
-        # Reconstruct Movement._airplanes as a tuple[tuple[Airplane, ...], ...]. The
-        # outer index is the AirplaneMovement, and the inner index is the time step.
-        airplanes = tuple(
-            tuple(
-                steady_problems[step].airplanes[airplane_movement_index]
-                for step in range(num_steps)
-            )
-            for airplane_movement_index in range(num_airplane_movements)
-        )
-        object.__setattr__(movement, "_airplanes", airplanes)
-
-        # Reconstruct Movement._operating_points: tuple[OperatingPoint, ...]. It is
-        # indexed by time step.
-        operating_points = tuple(
-            steady_problems[step].operating_point for step in range(num_steps)
-        )
-        object.__setattr__(movement, "_operating_points", operating_points)
-
-    if isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
-        unsteady_problem = obj.unsteady_problem
-
-        # This module is inherently coupled to class internals (it reads __slots__ and
-        # writes private backing stores for all classes), so accessing a private
-        # attribute directly is acceptable here.
-        # noinspection PyProtectedMember
-        current_step = obj._current_step
-        current_steady_problem = unsteady_problem.steady_problems[current_step]
-        object.__setattr__(
-            obj, "current_operating_point", current_steady_problem.operating_point
-        )
-
-        if obj.ran:
-            object.__setattr__(
-                obj, "current_airplanes", current_steady_problem.airplanes
-            )
-
-            # Reconstruct flattened panels from current step's airplanes.
-            current_panels_list: list[Panel] = []
-            for airplane in current_steady_problem.airplanes:
-                for wing in airplane.wings:
-                    assert wing.panels is not None
-                    current_panels_list.extend(np.ravel(wing.panels))
-            object.__setattr__(
-                obj, "panels", np.array(current_panels_list, dtype=object)
-            )
-        else:
-            # Pre run: current_airplanes is an empty tuple and panels is an empty object
-            # array.
-            object.__setattr__(obj, "current_airplanes", ())
-            object.__setattr__(obj, "panels", np.empty(0, dtype=object))
+    return obj
 
 
-def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
+def _ndarray_to_dict(
+    arr: np.ndarray, *, memo: dict[int, tuple[int, object]] | None = None
+) -> dict[str, Any]:
     """Converts a NumPy ndarray to a JSON serializable dict.
 
     For numeric and bool dtypes, the array data is encoded as a base64 string with dtype
@@ -680,14 +833,18 @@ def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
     the original mutability.
 
     :param arr: The ndarray to serialize.
+    :param memo: The identity memo threaded through to _serialize_value for dtype=object
+        elements. If None, a fresh memo is created.
     :return: A dict representing the serialized ndarray.
     """
     if arr.dtype == object:
+        if memo is None:
+            memo = {}
         return {
             "_type": "ndarray",
             "dtype": "object",
             "shape": list(arr.shape),
-            "items": [_serialize_value(item) for item in arr.ravel()],
+            "items": [_serialize_value(item, memo=memo) for item in arr.ravel()],
             "writeable": bool(arr.flags.writeable),
         }
 
@@ -700,7 +857,12 @@ def _ndarray_to_dict(arr: np.ndarray) -> dict[str, Any]:
     }
 
 
-def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
+def _ndarray_from_dict(
+    array_dict: dict[str, Any],
+    *,
+    table: dict[int, object] | None = None,
+    callables: Mapping[str, Callable[..., object]] | None = None,
+) -> np.ndarray:
     """Reconstructs a NumPy ndarray from a dict produced by _ndarray_to_dict.
 
     Dispatches on dtype: base64 decode for numeric and bool dtypes, element by element
@@ -709,13 +871,23 @@ def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
     the field is absent, the array defaults to writeable.
 
     :param array_dict: The dict produced by _ndarray_to_dict.
+    :param table: The reference table threaded through to _deserialize_value for
+        dtype=object elements. If None, a fresh table is created.
+    :param callables: The mapping from qualified names to functions threaded through to
+        _deserialize_value for dtype=object elements. If None, every custom callable
+        marker deserializes to an UnboundCallable.
     :return: The reconstructed ndarray.
     """
     shape = array_dict["shape"]
     writeable = array_dict.get("writeable", True)
 
     if array_dict["dtype"] == "object":
-        items = [_deserialize_value(item) for item in array_dict["items"]]
+        if table is None:
+            table = {}
+        items = [
+            _deserialize_value(item, table=table, callables=callables)
+            for item in array_dict["items"]
+        ]
         arr = np.empty(len(items), dtype=object)
         for i, item in enumerate(items):
             arr[i] = item
@@ -734,21 +906,32 @@ def _ndarray_from_dict(array_dict: dict[str, Any]) -> np.ndarray:
     return arr
 
 
-def _serialize_value(value: object) -> object:
+def _serialize_value(
+    value: object, *, memo: dict[int, tuple[int, object]] | None = None
+) -> object:
     """Serializes a single value based on its runtime type.
 
     Dispatch order: None, bool (before int since bool is a subclass of int), int, float,
-    str, bytes, ndarray, tuple, list, dict, callable. int and float are wrapped in
-    {"_type": ..., "value": ...} dicts rather than serialized as bare JSON numbers to
-    eliminate the int/float ambiguity that arises because JSON has a single number type.
-    None, bool, and str remain bare JSON values because they map to unambiguous JSON
-    types (null, boolean, string). bytes are encoded as base64 strings, the same
-    encoding _ndarray_to_dict uses for array buffers. dicts must have str keys because
-    JSON object keys are strings, and a lossy key coercion would break the round trip.
+    str, bytes, ndarray, tuple, list, dict, registered class instance, UnboundCallable,
+    callable. The built in "sine" and "uniform" spacing functions serialize by name, and
+    every other callable serializes as an inert custom callable marker (see
+    _custom_callable_to_dict). int and float are wrapped in {"_type": ..., "value": ...}
+    dicts rather than serialized as bare JSON numbers to eliminate the int/float
+    ambiguity that arises because JSON has a single number type. None, bool, and str
+    remain bare JSON values because they map to unambiguous JSON types (null, boolean,
+    string). bytes are encoded as base64 strings, the same encoding _ndarray_to_dict
+    uses for array buffers. dicts must have str keys because JSON object keys are
+    strings, and a lossy key coercion would break the round trip.
 
     :param value: The value to serialize.
+    :param memo: The identity memo threaded through to _object_to_dict for registered
+        class instances, so shared references serialize once. If None, a fresh memo is
+        created, making this a top level call.
     :return: The JSON serializable representation of the value.
     """
+    if memo is None:
+        memo = {}
+
     if value is None:
         return None
 
@@ -775,18 +958,18 @@ def _serialize_value(value: object) -> object:
         }
 
     if isinstance(value, np.ndarray):
-        return _ndarray_to_dict(value)
+        return _ndarray_to_dict(value, memo=memo)
 
     if isinstance(value, tuple):
         return {
             "_type": "tuple",
-            "items": [_serialize_value(item) for item in value],
+            "items": [_serialize_value(item, memo=memo) for item in value],
         }
 
     if isinstance(value, list):
         return {
             "_type": "list",
-            "items": [_serialize_value(item) for item in value],
+            "items": [_serialize_value(item, memo=memo) for item in value],
         }
 
     if isinstance(value, dict):
@@ -798,25 +981,79 @@ def _serialize_value(value: object) -> object:
                 )
         return {
             "_type": "dict",
-            "items": {key: _serialize_value(item) for key, item in value.items()},
+            "items": {
+                key: _serialize_value(item, memo=memo) for key, item in value.items()
+            },
         }
 
     if type(value).__name__ in _CLASS_REGISTRY:
-        return _object_to_dict(value)
+        return _object_to_dict(value, memo=memo)
+
+    # An UnboundCallable re-emits the marker it was loaded from, so a loaded object
+    # saves and hashes identically to the original without re-inspecting anything.
+    if isinstance(value, UnboundCallable):
+        return {
+            "_type": "custom_callable",
+            "qualname": value.qualname,
+            "source": value.source,
+            "source_hash": value.source_hash,
+        }
 
     if callable(value):
         name = _CALLABLE_FUNC_TO_NAME.get(value)
         if name is None:
-            raise ValueError(
-                "Only 'sine' and 'uniform' spacing functions are serializable. Custom "
-                "callables cannot be serialized."
-            )
+            return _custom_callable_to_dict(value)
         return {"_type": "callable", "name": name}
 
     raise TypeError(f"_serialize_value does not handle {type(value).__name__}.")
 
 
-def _deserialize_value(data: object) -> object:
+def _custom_callable_to_dict(value: Callable[..., object]) -> dict[str, Any]:
+    """Serializes a custom callable as an inert marker.
+
+    The marker records the callable's qualified name, its dedented source text when
+    inspect.getsource can retrieve it, and the SHA-256 hash of that text. A callable
+    without a __qualname__ of its own (a functools.partial or an instance of a class
+    defining __call__) is named after its type. Source retrieval fails for builtins,
+    partials, callable instances, and functions defined in a REPL or by exec, in which
+    case the source and its hash are both null. The marker is deserialized as an
+    UnboundCallable, and nothing stored in it is ever executed.
+
+    :param value: The custom callable to serialize.
+    :return: The marker dict.
+    """
+    qualname = getattr(value, "__qualname__", None)
+    if isinstance(qualname, str):
+        module = getattr(value, "__module__", None)
+    else:
+        qualname = type(value).__qualname__
+        module = type(value).__module__
+    if isinstance(module, str):
+        qualname = f"{module}.{qualname}"
+
+    try:
+        source: str | None = textwrap.dedent(inspect.getsource(value))
+    except (OSError, TypeError):
+        source = None
+
+    source_hash = None
+    if source is not None:
+        source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+    return {
+        "_type": "custom_callable",
+        "qualname": qualname,
+        "source": source,
+        "source_hash": source_hash,
+    }
+
+
+def _deserialize_value(
+    data: object,
+    *,
+    table: dict[int, object] | None = None,
+    callables: Mapping[str, Callable[..., object]] | None = None,
+) -> object:
     """Deserializes a single value from its JSON representation.
 
     The format is self describing via _type tags. None, bool, and str are bare JSON
@@ -825,8 +1062,19 @@ def _deserialize_value(data: object) -> object:
     are wrapped during serialization.
 
     :param data: The serialized data.
+    :param table: The reference table mapping "_id" integers to their reconstructed
+        instances, used to resolve {"_type": "ref", "id": ...} dicts. If None, a fresh
+        table is created, making this a top level call.
+    :param callables: A mapping from qualified names to functions. A custom callable
+        marker whose qualified name is a key deserializes to that key's function, and
+        every other marker deserializes to an UnboundCallable. Keys that match no marker
+        are ignored here, because only load() sees the whole file and can tell that a
+        key went unused. If None, every marker deserializes to an UnboundCallable.
     :return: The deserialized value.
     """
+    if table is None:
+        table = {}
+
     if data is None:
         return None
 
@@ -849,14 +1097,29 @@ def _deserialize_value(data: object) -> object:
         if type_tag == "bytes":
             return base64.b64decode(data["data"])
         if type_tag == "ndarray":
-            return _ndarray_from_dict(data)
+            return _ndarray_from_dict(data, table=table, callables=callables)
+        if type_tag == "ref":
+            ref_id = data["id"]
+            if ref_id not in table:
+                raise ValueError(
+                    f"Reference to unknown shared object id {ref_id} encountered "
+                    "during deserialization."
+                )
+            return table[ref_id]
         if type_tag == "tuple":
-            return tuple(_deserialize_value(item) for item in data["items"])
+            return tuple(
+                _deserialize_value(item, table=table, callables=callables)
+                for item in data["items"]
+            )
         if type_tag == "list":
-            return [_deserialize_value(item) for item in data["items"]]
+            return [
+                _deserialize_value(item, table=table, callables=callables)
+                for item in data["items"]
+            ]
         if type_tag == "dict":
             return {
-                key: _deserialize_value(item) for key, item in data["items"].items()
+                key: _deserialize_value(item, table=table, callables=callables)
+                for key, item in data["items"].items()
             }
         if type_tag == "callable":
             name = data["name"]
@@ -864,8 +1127,17 @@ def _deserialize_value(data: object) -> object:
             if func is None:
                 raise ValueError(f"Unknown callable name: '{name}'.")
             return func
+        if type_tag == "custom_callable":
+            qualname = data["qualname"]
+            if callables is not None and qualname in callables:
+                return callables[qualname]
+            return UnboundCallable(
+                qualname=qualname,
+                source=data["source"],
+                source_hash=data["source_hash"],
+            )
         if type_tag in _CLASS_REGISTRY:
-            return _object_from_dict(data)
+            return _object_from_dict(data, table=table, callables=callables)
         raise TypeError(f"Unknown _type tag: '{type_tag}'.")
 
     if isinstance(data, (int, float)):

@@ -6,6 +6,7 @@
 
 self
 examples
+tutorials
 api
 performance
 ```

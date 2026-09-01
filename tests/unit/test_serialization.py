@@ -7,6 +7,7 @@ import json
 import tempfile
 import textwrap
 import unittest
+import zipfile
 from pathlib import Path
 from typing import Any, cast
 from unittest import mock
@@ -93,6 +94,45 @@ from tests.unit.fixtures import (
     serialization_fixtures,
     solver_fixtures,
 )
+
+
+def rewrite_archive(path: Path, replacements: dict[str, bytes | None]) -> None:
+    """Rewrites a saved archive in place with some of its members replaced, dropped, or
+    added.
+
+    :param path: The path of the archive to rewrite.
+    :param replacements: A dict mapping member names to their new contents, or to None
+        to drop the member. Members that are not named keep their contents, the
+        archive's member order is preserved, and a named member that the archive does
+        not hold is appended after the existing members.
+    :return: None
+    """
+    with zipfile.ZipFile(path) as archive:
+        members = [(info.filename, archive.read(info)) for info in archive.infolist()]
+    existing_names = {name for name, _ in members}
+    for name, content in replacements.items():
+        if name not in existing_names and content is not None:
+            members.append((name, content))
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, content in members:
+            if name in replacements:
+                replacement = replacements[name]
+                if replacement is None:
+                    continue
+                content = replacement
+            archive.writestr(name, content)
+
+
+def read_header(path: Path) -> dict[str, Any]:
+    """Reads the header member of a saved archive.
+
+    :param path: The path of the archive to read.
+    :return: The dict parsed from the archive's header member.
+    """
+    with zipfile.ZipFile(path) as archive:
+        header = json.loads(archive.read("header.json"))
+    assert isinstance(header, dict)
+    return header
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
@@ -1264,7 +1304,7 @@ class TestHashObject(unittest.TestCase):
         problem = serialization_fixtures.make_steady_problem_fixture()
         original_hash = hash_object(problem)
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "problem.json"
+            path = Path(tmp) / "problem.psz"
             save(path, problem)
             loaded = load(path)
         assert isinstance(loaded, SteadyProblem)
@@ -1338,7 +1378,7 @@ class TestHashObject(unittest.TestCase):
         )
         original_hash = hash_object(operating_point_movement)
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "operating_point_movement.json"
+            path = Path(tmp) / "operating_point_movement.psz"
             save(path, operating_point_movement)
             loaded = load(path)
         assert isinstance(loaded, OperatingPointMovement)
@@ -1357,33 +1397,52 @@ class TestSaveLoad(unittest.TestCase):
     """This class contains methods for testing save and load."""
 
     def test_file_contains_format_version(self) -> None:
-        """Tests that the saved file contains the format version.
+        """Tests that the saved archive's header contains the format version.
 
         :return: None
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json"
+            path = Path(tmp) / "test.psz"
             save(path, operating_point)
-            with open(path) as f:
-                data = json.load(f)
-        self.assertEqual(data["_format_version"], _FORMAT_VERSION)
+            header = read_header(path)
+        self.assertEqual(header["_format_version"], _FORMAT_VERSION)
 
     def test_file_contains_provenance(self) -> None:
-        """Tests that the saved file contains provenance metadata.
+        """Tests that the saved archive's header contains provenance metadata.
 
         :return: None
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json"
+            path = Path(tmp) / "test.psz"
             save(path, operating_point)
-            with open(path) as f:
-                data = json.load(f)
-        self.assertIn("_saved_at", data)
-        self.assertIn("_pterasoftware_version", data)
-        self.assertIn("_commit", data)
-        self.assertIn("_dirty", data)
+            header = read_header(path)
+        self.assertIn("_saved_at", header)
+        self.assertIn("_pterasoftware_version", header)
+        self.assertIn("_commit", header)
+        self.assertIn("_dirty", header)
+
+    def test_archive_layout(self) -> None:
+        """Tests that a saved archive holds a header member followed by a root member,
+        and that the header names the saved class and lists the root member as the only
+        data member.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            with zipfile.ZipFile(path) as archive:
+                names = archive.namelist()
+                root = json.loads(archive.read("root.json"))
+            header = read_header(path)
+        self.assertEqual(names, ["header.json", "root.json"])
+        self.assertEqual(header["_type"], "OperatingPoint")
+        self.assertEqual(header["num_chunks"], 0)
+        self.assertEqual(header["members"], ["root.json"])
+        self.assertEqual(root["_type"], "OperatingPoint")
 
     def test_format_version_mismatch_raises(self) -> None:
         """Tests that loading a file with a mismatched format version raises, reporting
@@ -1393,20 +1452,136 @@ class TestSaveLoad(unittest.TestCase):
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json"
+            path = Path(tmp) / "test.psz"
             save(path, operating_point)
-            with open(path) as f:
-                data = json.load(f)
-            data["_format_version"] = 9999
-            data["_pterasoftware_version"] = "4.0.0"
-            with open(path, "w") as f:
-                json.dump(data, f)
+            header = read_header(path)
+            header["_format_version"] = 9999
+            header["_pterasoftware_version"] = "4.0.0"
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
             with self.assertRaises(ValueError) as context:
                 load(path)
         message = str(context.exception)
         self.assertIn("9999", message)
         self.assertIn(str(_FORMAT_VERSION), message)
         self.assertNotIn("4.0.0", message)
+
+    def test_non_public_header_type_raises(self) -> None:
+        """Tests that loading an archive whose header names a class that is not a public
+        saveable class raises a TypeError before any data is read.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            header = read_header(path)
+            header["_type"] = "Panel"
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+            with self.assertRaises(TypeError):
+                load(path)
+
+    def test_root_type_mismatch_raises(self) -> None:
+        """Tests that loading an archive whose root member holds a different class than
+        the header names raises a ValueError.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            header = read_header(path)
+            header["_type"] = "Airfoil"
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+            with self.assertRaises(ValueError):
+                load(path)
+
+    def test_missing_manifest_member_raises(self) -> None:
+        """Tests that loading an archive that lacks a member its header lists raises a
+        ValueError.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            rewrite_archive(path, {"root.json": None})
+            with self.assertRaises(ValueError):
+                load(path)
+
+    def test_manifest_not_ending_in_root_raises(self) -> None:
+        """Tests that loading an archive whose manifest does not end with the root
+        member raises a ValueError.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            header = read_header(path)
+            header["members"] = ["root.json", "extra.json"]
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+            with self.assertRaises(ValueError):
+                load(path)
+
+    def test_empty_manifest_raises(self) -> None:
+        """Tests that loading an archive whose manifest is empty raises a ValueError.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            header = read_header(path)
+            header["members"] = []
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+            with self.assertRaises(ValueError):
+                load(path)
+
+    def test_duplicate_manifest_entries_raise(self) -> None:
+        """Tests that loading an archive whose manifest lists a member twice raises a
+        ValueError.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            header = read_header(path)
+            header["members"] = ["root.json", "root.json"]
+            rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+            with self.assertRaises(ValueError):
+                load(path)
+
+    def test_unlisted_members_are_ignored(self) -> None:
+        """Tests that an archive member the manifest does not list does not affect a
+        load.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            rewrite_archive(path, {"extra.json": b"{not valid json"})
+            result = load(path)
+        assert isinstance(result, OperatingPoint)
+
+    def test_non_zip_file_raises(self) -> None:
+        """Tests that loading a .psz file that is not a zip archive raises a ValueError.
+
+        :return: None
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            path.write_bytes(b"not a zip archive")
+            with self.assertRaises(ValueError):
+                load(path)
 
     def test_save_accepts_string_path(self) -> None:
         """Tests that save accepts a string path in addition to a Path object.
@@ -1415,27 +1590,33 @@ class TestSaveLoad(unittest.TestCase):
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = str(Path(tmp) / "test.json")
+            path = str(Path(tmp) / "test.psz")
             save(path, operating_point)
             result = load(path)
         assert isinstance(result, OperatingPoint)
 
     def test_save_invalid_extension_raises(self) -> None:
-        """Tests that save raises a ValueError for an unsupported file extension.
+        """Tests that save raises a ValueError for an unsupported file extension,
+        including the retired JSON extensions.
 
         :return: None
         """
         operating_point = OperatingPoint()
-        with self.assertRaises(ValueError):
-            save("test.txt", operating_point)
+        for name in ["test.txt", "test.json", "test.json.gz"]:
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError):
+                    save(name, operating_point)
 
     def test_load_invalid_extension_raises(self) -> None:
-        """Tests that load raises a ValueError for an unsupported file extension.
+        """Tests that load raises a ValueError for an unsupported file extension,
+        including the retired JSON extensions.
 
         :return: None
         """
-        with self.assertRaises(ValueError):
-            load("test.dat")
+        for name in ["test.dat", "test.json", "test.json.gz"]:
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError):
+                    load(name)
 
     def test_save_directory_raises(self) -> None:
         """Tests that save raises a ValueError when the path is an existing directory.
@@ -1444,7 +1625,7 @@ class TestSaveLoad(unittest.TestCase):
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json"
+            path = Path(tmp) / "test.psz"
             path.mkdir()
             with self.assertRaises(ValueError):
                 save(path, operating_point)
@@ -1455,22 +1636,42 @@ class TestSaveLoad(unittest.TestCase):
         :return: None
         """
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json"
+            path = Path(tmp) / "test.psz"
             path.mkdir()
             with self.assertRaises(ValueError):
                 load(path)
 
-    def test_gzip_bomb_protection(self) -> None:
-        """Tests that the max_size parameter on load controls the size limit.
+    def test_max_size_caps_decompressed_size(self) -> None:
+        """Tests that the max_size parameter on load caps the decompressed size.
 
         :return: None
         """
         operating_point = OperatingPoint()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "test.json.gz"
+            path = Path(tmp) / "test.psz"
             save(path, operating_point)
             with self.assertRaises(ValueError):
                 load(path, max_size=10)
+
+    def test_max_size_is_cumulative_across_members(self) -> None:
+        """Tests that max_size caps the total decompressed size of every member read, so
+        members that each fit under the cap still raise when their total exceeds it, and
+        a cap equal to their total loads.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.psz"
+            save(path, operating_point)
+            with zipfile.ZipFile(path) as archive:
+                header_size = len(archive.read("header.json"))
+                root_size = len(archive.read("root.json"))
+            self.assertLess(header_size, root_size)
+            with self.assertRaises(ValueError):
+                load(path, max_size=header_size + root_size - 1)
+            result = load(path, max_size=header_size + root_size)
+        assert isinstance(result, OperatingPoint)
 
 
 class TestLoadCallables(unittest.TestCase):
@@ -1495,7 +1696,7 @@ class TestLoadCallables(unittest.TestCase):
         )
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.path = Path(self.tmp.name) / "operating_point_movement.json"
+        self.path = Path(self.tmp.name) / "operating_point_movement.psz"
         save(self.path, self.operating_point_movement)
 
     def test_rebinds_custom_callable(self) -> None:
@@ -1563,7 +1764,7 @@ class TestLoadCallables(unittest.TestCase):
             periodVCg__E=1.0,
             spacingVCg__E=sourceless_spacing,
         )
-        path = Path(self.tmp.name) / "sourceless.json"
+        path = Path(self.tmp.name) / "sourceless.psz"
         save(path, operating_point_movement)
         with self.assertNoLogs("pterasoftware._serialization", level="WARNING"):
             result = load(path, callables={"builtins.len": self.custom_spacing})
@@ -1677,7 +1878,7 @@ class TestAirfoilRoundTrip(unittest.TestCase):
         """
         airfoil = Airfoil(name="NACA0012")
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "airfoil.json"
+            path = Path(tmp) / "airfoil.psz"
             save(path, airfoil)
             result = load(path)
         assert isinstance(result, Airfoil)
@@ -1753,7 +1954,7 @@ class TestOperatingPointRoundTrip(unittest.TestCase):
         """
         operating_point = OperatingPoint(rho=1.225, vCg__E=10.0, alpha=5.0)
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "operating_point.json"
+            path = Path(tmp) / "operating_point.psz"
             save(path, operating_point)
             result = load(path)
         assert isinstance(result, OperatingPoint)
@@ -1820,7 +2021,7 @@ class TestWingCrossSectionRoundTrip(unittest.TestCase):
             chord=1.0,
         )
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "wing_cross_section.json"
+            path = Path(tmp) / "wing_cross_section.psz"
             save(path, wing_cross_section)
             result = load(path)
         assert isinstance(result, WingCrossSection)
@@ -1984,7 +2185,7 @@ class TestWingRoundTrip(unittest.TestCase):
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         wing = airplane.wings[0]
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "wing.json"
+            path = Path(tmp) / "wing.psz"
             save(path, wing)
             result = load(path)
         assert isinstance(result, Wing)
@@ -2086,7 +2287,7 @@ class TestAirplaneRoundTrip(unittest.TestCase):
         """
         airplane = serialization_fixtures.make_meshed_airplane_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "airplane.json"
+            path = Path(tmp) / "airplane.psz"
             save(path, airplane)
             result = load(path)
         assert isinstance(result, Airplane)
@@ -2138,7 +2339,7 @@ class TestSteadyProblemRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_steady_problem_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "problem.json"
+            path = Path(tmp) / "problem.psz"
             save(path, problem)
             result = load(path)
         assert isinstance(result, SteadyProblem)
@@ -2237,7 +2438,7 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         solver = SteadyHorseshoeVortexLatticeMethodSolver(problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "solver.json"
+            path = Path(tmp) / "solver.psz"
             save(path, solver)
             result = load(path)
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
@@ -2302,7 +2503,7 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         solver = SteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "solver.json"
+            path = Path(tmp) / "solver.psz"
             save(path, solver)
             result = load(path)
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
@@ -2391,7 +2592,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             base_operating_point=OperatingPoint(),
         )
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "operating_point_movement.json"
+            path = Path(tmp) / "operating_point_movement.psz"
             save(path, operating_point_movement)
             result = load(path)
         assert isinstance(result, OperatingPointMovement)
@@ -2459,7 +2660,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             spacingVCg__E=custom_spacing,
         )
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "operating_point_movement.json"
+            path = Path(tmp) / "operating_point_movement.psz"
             save(path, operating_point_movement)
             result = load(path)
         assert isinstance(result, OperatingPointMovement)
@@ -2482,7 +2683,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
             ),
         )
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "wing_cross_section_movement.json"
+            path = Path(tmp) / "wing_cross_section_movement.psz"
             save(path, wing_cross_section_movement)
             result = load(path)
         assert isinstance(result, WingCrossSectionMovement)
@@ -2496,7 +2697,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         wing_movement = problem.movement.airplane_movements[0].wing_movements[0]
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "wing_movement.json"
+            path = Path(tmp) / "wing_movement.psz"
             save(path, wing_movement)
             result = load(path)
         assert isinstance(result, WingMovement)
@@ -2510,7 +2711,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         airplane_movement = problem.movement.airplane_movements[0]
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "airplane_movement.json"
+            path = Path(tmp) / "airplane_movement.psz"
             save(path, airplane_movement)
             result = load(path)
         assert isinstance(result, AirplaneMovement)
@@ -2526,7 +2727,7 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         movement = problem.movement
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "movement.json"
+            path = Path(tmp) / "movement.psz"
             save(path, movement)
             result = load(path)
         assert isinstance(result, Movement)
@@ -2588,7 +2789,7 @@ class TestUnsteadyProblemRoundTrip(unittest.TestCase):
         """
         problem = serialization_fixtures.make_unsteady_problem_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "unsteady.json"
+            path = Path(tmp) / "unsteady.psz"
             save(path, problem)
             result = load(path)
         assert isinstance(result, UnsteadyProblem)
@@ -2692,7 +2893,7 @@ class TestUnsteadySolverRoundTrip(unittest.TestCase):
         solver = UnsteadyRingVortexLatticeMethodSolver(problem)
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "solver.json"
+            path = Path(tmp) / "solver.psz"
             save(path, solver)
             result = load(path)
         assert isinstance(result, UnsteadyRingVortexLatticeMethodSolver)
@@ -2881,7 +3082,7 @@ class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
         """
         problem = problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "aeroelastic.json"
+            path = Path(tmp) / "aeroelastic.psz"
             save(path, problem)
             result = load(path)
         assert isinstance(result, AeroelasticUnsteadyProblem)
@@ -2979,7 +3180,7 @@ class TestAeroelasticUnsteadySolverRoundTrip(unittest.TestCase):
         solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
         solver.run()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "aeroelastic_solver.json"
+            path = Path(tmp) / "aeroelastic_solver.psz"
             save(path, solver)
             result = load(path)
         assert isinstance(result, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
@@ -3207,7 +3408,7 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         """
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "free_flight.json"
+            path = Path(tmp) / "free_flight.psz"
             save(path, problem)
             result = load(path)
         assert isinstance(result, FreeFlightUnsteadyProblem)
@@ -3250,7 +3451,7 @@ class TestFreeFlightUnsteadySolverRoundTrip(unittest.TestCase):
         """
         solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "free_flight_solver.json"
+            path = Path(tmp) / "free_flight_solver.psz"
             save(path, solver)
             result = load(path)
         assert isinstance(result, FreeFlightUnsteadyRingVortexLatticeMethodSolver)

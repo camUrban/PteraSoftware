@@ -166,6 +166,7 @@ draw.webp
 # These are serialization output files to ignore.
 *.json
 *.json.gz
+*.psz
 
 # The benchmark archive publishes a redacted host snapshot here. It is a real
 # tracked artifact, not serialization output, so re-include it past the *.json

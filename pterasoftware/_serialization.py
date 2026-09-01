@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import base64
-import gzip
 import hashlib
 import inspect
 import json
 import subprocess
 import textwrap
-from collections.abc import Callable, Mapping
+import zipfile
+from collections.abc import Callable, Iterator, Mapping
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -83,7 +83,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 27
+_FORMAT_VERSION = 28
 
 
 class UnboundCallable:
@@ -203,18 +203,23 @@ def _all_slots(cls: type) -> list[str]:
     return slots
 
 
-# This is the default maximum decompressed size in bytes when reading gzip files.
-# Prevents gzip bombs from exhausting memory. Users can override this via the max_size
-# parameter on load().
+# This is the default maximum decompressed size in bytes when reading archives. The cap
+# is cumulative across every member read during one load(). Prevents zip bombs from
+# exhausting memory. Users can override this via the max_size parameter on load().
 _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
 
-# This is the maximum read size in bytes for decompressing gzip files during load().
-# Each read is sized to this value or to the remaining allowance under the maximum
-# allowed size, whichever is smaller. Reading in bounded chunks matters because the
-# buffered reader preallocates the requested size, so a single read call sized to the
-# maximum allowed size would spike memory by the full cap (4 GB by default) on every
-# load.
-_GZIP_READ_CHUNK_SIZE = 16_777_216  # 16 MiB
+# This is the maximum read size in bytes for decompressing archive members during
+# load(). Each read is sized to this value or to the remaining allowance under the
+# maximum allowed size, whichever is smaller. Reading in bounded chunks lets the
+# cumulative decompressed size be checked as each chunk arrives, so a member that
+# decompresses far beyond the cap is abandoned after at most one extra chunk instead of
+# being decompressed in full.
+_MEMBER_READ_CHUNK_SIZE = 16_777_216  # 16 MiB
+
+# These are the names of the archive members that every saved file holds. The header is
+# written first and the root object last.
+_HEADER_MEMBER_NAME = "header.json"
+_ROOT_MEMBER_NAME = "root.json"
 
 # Maps class names to their types for deserialization dispatch.
 _CLASS_REGISTRY: dict[str, type] = {
@@ -288,13 +293,12 @@ _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
 
 
 def save(path: str | Path, obj: object) -> None:
-    """Saves a Ptera Software object to a JSON file.
+    """Saves a Ptera Software object to a .psz file.
 
-    If the path ends with ".json.gz", ignoring case, the output is gzip compressed
-    automatically. Using ".json.gz" is highly recommended for all but the smallest
-    unmeshed geometry objects. Gzip compression typically reduces file sizes by 10x or
-    more, and plain ".json" files use indented formatting that further increases their
-    size.
+    A .psz file is a zip archive of compressed JSON members. The first member is a
+    header holding the serialization format version, provenance metadata, the saved
+    object's class name, and a manifest of the members that follow. The last member
+    holds the object itself.
 
     Shared references are preserved. An object referenced from many places (e.g., an
     Airfoil shared by every per step WingCrossSection) is written once, every other
@@ -307,22 +311,20 @@ def save(path: str | Path, obj: object) -> None:
     in "sine" and "uniform" spacings are stored by name and restored exactly. See load()
     for how the markers are restored.
 
-    The file records an internal serialization format version. load() accepts a file
+    The archive records an internal serialization format version. load() accepts a file
     only when that format version matches the running code's exactly, and there is no
     migration of files written under a different format version. The format version is
     independent of the package version and bumps whenever the serialized structure
     changes. To read a saved file later, run a build of Ptera Software whose format
     version matches the file's.
 
-    :param path: The file path to save to. Should end with ".json" or ".json.gz".
+    :param path: The file path to save to. Should end with ".psz".
     :param obj: The Ptera Software object to save. Must be a public Ptera Software class
         (e.g., Airplane, SteadyProblem, or a solver). Internal classes such as Panel
         cannot be saved directly.
     :return: None
     """
-    path = _parameter_validation.pathLike_return_path(
-        path, "path", (".json", ".json.gz")
-    )
+    path = _parameter_validation.pathLike_return_path(path, "path", (".psz",))
 
     class_name = type(obj).__name__
     if class_name not in _PUBLIC_SAVEABLE_CLASSES:
@@ -333,24 +335,26 @@ def save(path: str | Path, obj: object) -> None:
 
     _logger.info(_logging.indent() + "Saving %s to %s", class_name, path)
 
-    data = _object_to_dict(obj)
+    header = {
+        "_format_version": _FORMAT_VERSION,
+        **_get_provenance(),
+        "_type": class_name,
+        "num_chunks": 0,
+        "members": [_ROOT_MEMBER_NAME],
+    }
 
-    # Add the metadata header fields to the serialized dict.
-    provenance = _get_provenance()
-    header = {"_format_version": _FORMAT_VERSION, **provenance}
-    data = {**header, **data}
-
-    if path.name.lower().endswith(".json.gz"):
-        # Use compact format for gzip since readability does not matter and whitespace
-        # would increase the pre-compression size.
-        json_bytes = json.dumps(data).encode("utf-8")
-        with gzip.open(path, "wb") as f:
-            f.write(json_bytes)
-    else:
-        # Use indented format for plain JSON for human readability.
-        json_bytes = json.dumps(data, indent=2).encode("utf-8")
-        with open(path, "wb") as f:
-            f.write(json_bytes)
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(_HEADER_MEMBER_NAME, json.dumps(header))
+        for member_name, payload in _emit_members(obj):
+            # Members are dumped without sort_keys and without indent. load() resolves
+            # refs in the order the keys appear in the member's text, and sorting the
+            # keys could move a ref ahead of the record it points at. Only hash_object
+            # sorts keys, because it never resolves refs. Indentation would only inflate
+            # the pre-compression size.
+            archive.writestr(member_name, json.dumps(payload))
+            # Drop the payload before the emitter builds the next one so that only one
+            # member's dict tree is alive at a time.
+            del payload
 
     file_size = path.stat().st_size
     _logger.info(
@@ -366,10 +370,13 @@ def load(
     max_size: int | None = None,
     callables: Mapping[str, Callable[..., object]] | None = None,
 ) -> object:
-    """Loads a Ptera Software object from a JSON file.
+    """Loads a Ptera Software object from a .psz file.
 
-    If the path ends with ".json.gz", ignoring case, the input is gzip decompressed
-    automatically.
+    The archive's header is read first, and its format version and class name are
+    checked before any of the object's data is decompressed. The members are then read
+    one at a time in the order the header's manifest lists them, and each is
+    decompressed in bounded chunks so that the cumulative decompressed size can be
+    checked against max_size as it grows.
 
     Nothing in the file is ever executed. A custom callable stored by save() as an inert
     marker is restored as an UnboundCallable, a placeholder that passes callable checks
@@ -390,21 +397,18 @@ def load(
     ValueError reporting the file's format version and the running code's. To read the
     file, run a build of Ptera Software whose format version matches the file's.
 
-    :param path: The file path to load from.
-    :param max_size: The maximum decompressed size in bytes for gzip files. If None, the
-        default of 4 GB is used. Set this to a larger value if loading very large
-        simulation results. Only applies to ".json.gz" files.
+    :param path: The file path to load from. Should end with ".psz".
+    :param max_size: The maximum cumulative decompressed size in bytes of every member
+        read from the archive. If None, the default of 4 GB is used. Set this to a
+        larger value if loading very large simulation results.
     :param callables: A mapping from the qualified names of custom callables recorded in
         the file to the functions to restore in their place, or None to restore every
         custom callable as an UnboundCallable. The default is None.
     :return: The deserialized Ptera Software object.
     """
     path = Path(path)
-    lowered_name = path.name.lower()
-    if not lowered_name.endswith(".json") and not lowered_name.endswith(".json.gz"):
-        raise ValueError(
-            f"Path must end with '.json' or '.json.gz', got '{path.name}'."
-        )
+    if not path.name.lower().endswith(".psz"):
+        raise ValueError(f"Path must end with '.psz', got '{path.name}'.")
     if path.is_dir():
         raise ValueError(f"Path must be a file path, got directory '{path}'.")
     if callables is not None:
@@ -427,66 +431,146 @@ def load(
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
 
-    if lowered_name.endswith(".json.gz"):
-        # Decompress in chunks and stop as soon as the accumulated size exceeds the cap.
-        # A single f.read(max_size + 1) call would make the buffered reader preallocate
-        # max_size + 1 bytes up front, so every load would spike memory by the full cap
-        # regardless of the actual decompressed size.
-        decompressed = bytearray()
-        with gzip.open(path, "rb") as f:
-            while True:
-                # Each read is also capped at the remaining allowance so that neither
-                # the read buffer nor the total decompressed data ever exceeds the cap
-                # by more than one byte, even when max_size is smaller than the chunk
-                # size.
-                remaining = max_size + 1 - len(decompressed)
-                chunk = f.read(min(_GZIP_READ_CHUNK_SIZE, remaining))
-                if not chunk:
-                    break
-                decompressed += chunk
-                if len(decompressed) > max_size:
-                    raise ValueError(
-                        f"Decompressed file exceeds the maximum allowed size of "
-                        f"{max_size} bytes."
-                    )
-        raw: bytes | bytearray = decompressed
-    else:
-        with open(path, "rb") as f:
-            raw = f.read()
+    try:
+        with zipfile.ZipFile(path) as archive:
+            header_bytes = _read_member_bytes(archive, _HEADER_MEMBER_NAME, max_size, 0)
+            consumed = len(header_bytes)
+            header = json.loads(header_bytes)
+            del header_bytes
+            if not isinstance(header, dict):
+                raise ValueError(
+                    f"The file's {_HEADER_MEMBER_NAME} member must hold a JSON "
+                    f"object, got {type(header).__name__}."
+                )
 
-    data = json.loads(raw)
+            # Check format version compatibility. A file loads only when its stored
+            # format version matches the running code's, and there is no migration path,
+            # so a mismatch is unrecoverable under the running code. The error reports
+            # both format versions only. It names no package version to install. The
+            # gate keys on the format integer, not the package version, and the stored
+            # _pterasoftware_version is provenance that does not reliably identify a
+            # build at the file's format version.
+            file_version = header.get("_format_version")
+            if file_version != _FORMAT_VERSION:
+                raise ValueError(
+                    f"Format version mismatch: file has format version {file_version}, "
+                    f"but the current code uses format version {_FORMAT_VERSION}. A "
+                    f"file loads only under a build of Ptera Software whose format "
+                    f"version matches the file's."
+                )
 
-    # Check format version compatibility. A file loads only when its stored format
-    # version matches the running code's, and there is no migration path, so a mismatch
-    # is unrecoverable under the running code. The error reports both format versions
-    # only. It names no package version to install. The gate keys on the format integer,
-    # not the package version, and the stored _pterasoftware_version is provenance that
-    # does not reliably identify a build at the file's format version.
-    file_version = data.get("_format_version")
-    if file_version != _FORMAT_VERSION:
+            # Validate that the top level type is a public saveable class. The header
+            # carries the class name, so this check happens before any of the object's
+            # data is decompressed.
+            top_level_type = header.get("_type")
+            if top_level_type not in _PUBLIC_SAVEABLE_CLASSES:
+                raise TypeError(
+                    f"'{top_level_type}' is not a public saveable class. Only files "
+                    f"containing public Ptera Software classes can be loaded via "
+                    f"load()."
+                )
+
+            # Log provenance warnings.
+            _log_load_warnings(header)
+
+            # Validate the manifest. Archive entries that the manifest does not list are
+            # ignored, so an archive can carry extra members without affecting a load.
+            member_names = header.get("members")
+            if (
+                not isinstance(member_names, list)
+                or not member_names
+                or not all(isinstance(name, str) for name in member_names)
+            ):
+                raise ValueError(
+                    "The file's header must list its members as a non empty list of "
+                    "member names."
+                )
+            if len(set(member_names)) != len(member_names):
+                raise ValueError("The file's header lists a member more than once.")
+            if member_names[-1] != _ROOT_MEMBER_NAME:
+                raise ValueError(
+                    f"The file's header must list {_ROOT_MEMBER_NAME} as its last "
+                    f"member, got '{member_names[-1]}'."
+                )
+
+            root_bytes = _read_member_bytes(
+                archive, _ROOT_MEMBER_NAME, max_size, consumed
+            )
+            root_data = json.loads(root_bytes)
+            del root_bytes
+    except zipfile.BadZipFile as error:
+        raise ValueError(f"'{path}' is not a valid .psz file: {error}") from error
+
+    if not isinstance(root_data, dict) or root_data.get("_type") != top_level_type:
         raise ValueError(
-            f"Format version mismatch: file has format version {file_version}, but the "
-            f"current code uses format version {_FORMAT_VERSION}. A file loads only "
-            f"under a build of Ptera Software whose format version matches the file's."
+            f"The file's {_ROOT_MEMBER_NAME} member must hold a '{top_level_type}' "
+            f"record to match its header."
         )
-
-    # Validate that the top level type is a public saveable class.
-    top_level_type = data.get("_type")
-    if top_level_type not in _PUBLIC_SAVEABLE_CLASSES:
-        raise TypeError(
-            f"'{top_level_type}' is not a public saveable class. Only files containing "
-            f"public Ptera Software classes can be loaded via load()."
-        )
-
-    # Log provenance warnings.
-    _log_load_warnings(data)
 
     if callables is not None:
-        _check_callables_against_markers(data, callables)
+        _check_callables_against_markers(root_data, callables)
 
-    obj = _object_from_dict(data, callables=callables)
+    obj = _object_from_dict(root_data, callables=callables)
     _logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
     return obj
+
+
+def _read_member_bytes(
+    archive: zipfile.ZipFile, member_name: str, max_size: int, consumed: int
+) -> bytearray:
+    """Reads and decompresses one archive member under a cumulative size cap.
+
+    The member is decompressed in bounded chunks, and the read stops as soon as the
+    bytes read so far, together with the bytes consumed by earlier members, exceed
+    max_size. The sizes recorded in the archive's directory are never trusted, because a
+    crafted archive can misstate them, so the bounded reads are the only enforcement.
+
+    :param archive: The open archive to read from.
+    :param member_name: The name of the member to read.
+    :param max_size: The maximum cumulative decompressed size in bytes across every
+        member read during this load.
+    :param consumed: The decompressed size in bytes of the members read so far.
+    :return: The member's decompressed bytes.
+    """
+    try:
+        member = archive.open(member_name)
+    except KeyError:
+        raise ValueError(f"The file is missing the member '{member_name}'.") from None
+
+    decompressed = bytearray()
+    with member:
+        while True:
+            # Each read is also capped at the remaining allowance so that the total
+            # decompressed data never exceeds the cap by more than one byte, even when
+            # the allowance is smaller than the chunk size.
+            remaining = max_size + 1 - consumed - len(decompressed)
+            chunk = member.read(min(_MEMBER_READ_CHUNK_SIZE, remaining))
+            if not chunk:
+                break
+            decompressed += chunk
+            if consumed + len(decompressed) > max_size:
+                raise ValueError(
+                    f"The file's decompressed size exceeds the maximum allowed size "
+                    f"of {max_size} bytes."
+                )
+    return decompressed
+
+
+def _emit_members(obj: object) -> Iterator[tuple[str, dict[str, Any]]]:
+    """Yields the data members of an archive holding a Ptera Software object, in write
+    order.
+
+    One identity memo threads across every member, so a ref always points at a record in
+    the same member or an earlier one. save() writes the members in this order, and
+    hash_object() folds them into its digest in this order, so the two agree on the memo
+    ids that the refs carry.
+
+    :param obj: The Ptera Software object to serialize.
+    :return: An iterator of (member name, member payload) tuples ending with the root
+        member, which holds the object's own record.
+    """
+    memo: dict[int, tuple[int, object]] = {}
+    yield _ROOT_MEMBER_NAME, _object_to_dict(obj, memo=memo)
 
 
 def _check_callables_against_markers(
@@ -501,7 +585,7 @@ def _check_callables_against_markers(
     cannot be retrieved) logs one warning naming the function. A marker that recorded no
     hash gives nothing to check against, so it never warns.
 
-    :param data: The top level dict loaded from the JSON file.
+    :param data: The dict loaded from the archive's root member.
     :param callables: The validated mapping passed to load().
     :return: None
     """
@@ -549,7 +633,10 @@ def hash_object(obj: object) -> str:
 
     The digest is the SHA-256 hash of the object's JSON serialization, computed over
     every serialized slot (including cache slots) and folded together with the current
-    serialization format version. Two object graphs with identical content and identical
+    serialization format version. The serialization is folded in member by member, in
+    the same order save() writes the members, with each member's name delimiting its
+    payload. Provenance metadata is never part of the digest, because the header member
+    is not a data member. Two object graphs with identical content and identical
     internal sharing structure produce the same digest regardless of instance identity,
     and any difference in serialized content produces a different digest. Because shared
     references serialize as refs, two graphs whose contents are equal but whose aliasing
@@ -564,9 +651,16 @@ def hash_object(obj: object) -> str:
     :return: A 64 character lowercase hexadecimal string holding the SHA-256 digest of
         the object's content.
     """
-    payload = {"_format_version": _FORMAT_VERSION, "data": _object_to_dict(obj)}
-    encoded = json.dumps(payload, sort_keys=True).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    digest = hashlib.sha256()
+    digest.update(json.dumps({"_format_version": _FORMAT_VERSION}).encode("utf-8"))
+    for member_name, payload in _emit_members(obj):
+        # Sorting the keys here is safe because hashing never resolves refs, unlike
+        # save(), which must dump each member in insertion order so that every ref
+        # follows the record it points at.
+        digest.update(member_name.encode("utf-8"))
+        digest.update(json.dumps(payload, sort_keys=True).encode("utf-8"))
+        del payload
+    return digest.hexdigest()
 
 
 def _get_provenance() -> dict[str, str | bool | None]:
@@ -646,7 +740,7 @@ def _get_provenance() -> dict[str, str | bool | None]:
 def _log_load_warnings(data: dict[str, Any]) -> None:
     """Logs warnings about provenance metadata during deserialization.
 
-    :param data: The top level dict loaded from the JSON file.
+    :param data: The dict loaded from the archive's header member.
     :return: None
     """
     if data.get("_dirty"):  # pragma: no branch

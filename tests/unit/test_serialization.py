@@ -123,16 +123,46 @@ def rewrite_archive(path: Path, replacements: dict[str, bytes | None]) -> None:
             archive.writestr(name, content)
 
 
+def read_member(path: Path, name: str) -> dict[str, Any]:
+    """Reads one JSON member of a saved archive.
+
+    :param path: The path of the archive to read.
+    :param name: The name of the member to read.
+    :return: The dict parsed from the member.
+    """
+    with zipfile.ZipFile(path) as archive:
+        member = json.loads(archive.read(name))
+    assert isinstance(member, dict)
+    return member
+
+
 def read_header(path: Path) -> dict[str, Any]:
     """Reads the header member of a saved archive.
 
     :param path: The path of the archive to read.
     :return: The dict parsed from the archive's header member.
     """
-    with zipfile.ZipFile(path) as archive:
-        header = json.loads(archive.read("header.json"))
-    assert isinstance(header, dict)
-    return header
+    return read_member(path, "header.json")
+
+
+def count_records(data: object, type_name: str) -> int:
+    """Counts the full records of one class in parsed member data, ignoring refs.
+
+    :param data: The parsed JSON of one archive member.
+    :param type_name: The class name to count records of.
+    :return: The number of dicts tagged with the class name that carry an "_id" key.
+    """
+    count = 0
+    pending: list[object] = [data]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            if node.get("_type") == type_name and "_id" in node:
+                count += 1
+            pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
+    return count
 
 
 class TestNdarrayRoundTrip(unittest.TestCase):
@@ -913,6 +943,21 @@ class TestDeserializeValue(unittest.TestCase):
         with self.assertRaises(TypeError):
             _deserialize_value({"_type": "unknown"})
 
+    def test_chunked_placeholder_without_chunk_values_raises(self) -> None:
+        """Tests that a chunked slot placeholder raises a ValueError when no chunk
+        values are supplied, since only load holds the step members it splices from.
+
+        :return: None
+        """
+        placeholder = {
+            "_type": "chunked",
+            "key": "list_num_wake_vortices",
+            "container": "list",
+            "length": 0,
+        }
+        with self.assertRaises(ValueError):
+            _deserialize_value(placeholder)
+
     def test_unknown_ref_id_raises(self) -> None:
         """Tests that a ref to an id absent from the reference table raises a
         ValueError.
@@ -1392,6 +1437,39 @@ class TestHashObject(unittest.TestCase):
         with self.assertRaises(TypeError):
             hash_object("not a Ptera Software object")
 
+    def test_stable_across_save_load_round_trip_for_unsteady_solver(self) -> None:
+        """Tests that a save and load round trip preserves a solved unsteady solver's
+        digest, even though its per step data is split across step members.
+
+        :return: None
+        """
+        solver = UnsteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_unsteady_problem_fixture()
+        )
+        solver.run()
+        original_hash = hash_object(solver)
+        self.assertEqual(hash_object(solver), original_hash)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "solver.psz"
+            save(path, solver)
+            loaded = load(path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        self.assertEqual(hash_object(loaded), original_hash)
+
+    def test_differs_for_different_step_content(self) -> None:
+        """Tests that changing a value inside one time step's chunked data changes the
+        digest.
+
+        :return: None
+        """
+        solver = UnsteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_unsteady_problem_fixture()
+        )
+        solver.run()
+        original_hash = hash_object(solver)
+        solver.listStackBrwrvp_GP1_CgP1[-1][0, 0] += 1.0
+        self.assertNotEqual(hash_object(solver), original_hash)
+
 
 class TestSaveLoad(unittest.TestCase):
     """This class contains methods for testing save and load."""
@@ -1672,6 +1750,338 @@ class TestSaveLoad(unittest.TestCase):
                 load(path, max_size=header_size + root_size - 1)
             result = load(path, max_size=header_size + root_size)
         assert isinstance(result, OperatingPoint)
+
+
+class TestChunkedSaveLoad(unittest.TestCase):
+    """This class contains methods for testing how save splits an unsteady solver's per
+    step data across the archive's step members, and how load splices it back."""
+
+    solver_slot_keys = [
+        "_listStackBrbrvp_GP1_CgP1",
+        "_listStackFrbrvp_GP1_CgP1",
+        "_listStackFlbrvp_GP1_CgP1",
+        "_listStackBlbrvp_GP1_CgP1",
+        "list_num_wake_vortices",
+        "_list_wake_vortex_strengths",
+        "listStackBrwrvp_GP1_CgP1",
+        "listStackFrwrvp_GP1_CgP1",
+        "listStackFlwrvp_GP1_CgP1",
+        "listStackBlwrvp_GP1_CgP1",
+    ]
+    problem_key = "unsteady_problem/_steady_problems"
+
+    def setUp(self) -> None:
+        """Solve an unsteady solver and save it to a temporary file.
+
+        :return: None
+        """
+        self.solver = UnsteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_unsteady_problem_fixture()
+        )
+        self.solver.run()
+        self.num_steps = self.solver.num_steps
+        self.step_names = [f"steps/{step:08d}.json" for step in range(self.num_steps)]
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "solver.psz"
+        save(self.path, self.solver)
+
+    def test_unsteady_solver_archive_layout(self) -> None:
+        """Tests that a solved unsteady solver's archive holds a header, one step member
+        per time step, and a root member, in that order, and that the header describes
+        that layout.
+
+        :return: None
+        """
+        with zipfile.ZipFile(self.path) as archive:
+            names = archive.namelist()
+        header = read_header(self.path)
+        self.assertEqual(names, ["header.json", *self.step_names, "root.json"])
+        self.assertEqual(header["_type"], "UnsteadyRingVortexLatticeMethodSolver")
+        self.assertEqual(header["num_chunks"], self.num_steps)
+        self.assertEqual(header["members"], [*self.step_names, "root.json"])
+
+    def test_steady_solver_archive_layout(self) -> None:
+        """Tests that a steady solver's archive has no step members and a manifest
+        holding only the root member.
+
+        :return: None
+        """
+        solver = SteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_steady_problem_fixture()
+        )
+        solver.run()
+        path = Path(self.tmp.name) / "steady_solver.psz"
+        save(path, solver)
+        with zipfile.ZipFile(path) as archive:
+            names = archive.namelist()
+        header = read_header(path)
+        self.assertEqual(names, ["header.json", "root.json"])
+        self.assertEqual(header["num_chunks"], 0)
+        self.assertEqual(header["members"], ["root.json"])
+
+    def test_step_member_keys(self) -> None:
+        """Tests that every step member holds exactly one entry per chunked sequence,
+        keyed by the slot name for the solver's own sequences and by the qualified key
+        for its UnsteadyProblem's SteadyProblems.
+
+        :return: None
+        """
+        for name in self.step_names:
+            with self.subTest(member=name):
+                member = read_member(self.path, name)
+                self.assertEqual(
+                    list(member), [*self.solver_slot_keys, self.problem_key]
+                )
+                self.assertEqual(member[self.problem_key]["_type"], "SteadyProblem")
+
+    def test_root_placeholders(self) -> None:
+        """Tests that the root member replaces each chunked slot with a placeholder that
+        names its key, its container type, and its length.
+
+        :return: None
+        """
+        root = read_member(self.path, "root.json")
+        for key in self.solver_slot_keys:
+            with self.subTest(slot=key):
+                self.assertEqual(
+                    root[key],
+                    {
+                        "_type": "chunked",
+                        "key": key,
+                        "container": "list",
+                        "length": self.num_steps,
+                    },
+                )
+        self.assertEqual(
+            root["unsteady_problem"]["_steady_problems"],
+            {
+                "_type": "chunked",
+                "key": self.problem_key,
+                "container": "tuple",
+                "length": self.num_steps,
+            },
+        )
+
+    def test_per_step_records_written_once(self) -> None:
+        """Tests that every distinct Airplane is written as a full record exactly once
+        across all members, so the root member's other references to the per step
+        Airplanes are refs into the step members.
+
+        :return: None
+        """
+        distinct_airplanes = {
+            id(airplane)
+            for steady_problem in self.solver.steady_problems
+            for airplane in steady_problem.airplanes
+        }
+        for (
+            airplane_movement
+        ) in self.solver.unsteady_problem.movement.airplane_movements:
+            distinct_airplanes.add(id(airplane_movement.base_airplane))
+        total = sum(
+            count_records(read_member(self.path, name), "Airplane")
+            for name in [*self.step_names, "root.json"]
+        )
+        self.assertEqual(total, len(distinct_airplanes))
+        for name in self.step_names:
+            with self.subTest(member=name):
+                self.assertEqual(
+                    count_records(read_member(self.path, name), "Airplane"), 1
+                )
+
+    def test_containers_restored(self) -> None:
+        """Tests that the UnsteadyProblem's SteadyProblems load as a tuple and the
+        solver's per step sequences load as lists.
+
+        :return: None
+        """
+        loaded = load(self.path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        self.assertIsInstance(loaded.unsteady_problem.steady_problems, tuple)
+        for key in self.solver_slot_keys:
+            with self.subTest(slot=key):
+                self.assertIsInstance(getattr(loaded, key), list)
+                self.assertEqual(len(getattr(loaded, key)), self.num_steps)
+
+    def test_step_values_round_trip(self) -> None:
+        """Tests that the per step wake data loads with the same values it was saved
+        with.
+
+        :return: None
+        """
+        loaded = load(self.path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        self.assertEqual(
+            loaded.list_num_wake_vortices, self.solver.list_num_wake_vortices
+        )
+        for step in range(self.num_steps):
+            npt.assert_array_equal(
+                loaded.listStackBrwrvp_GP1_CgP1[step],
+                self.solver.listStackBrwrvp_GP1_CgP1[step],
+            )
+
+    def test_solver_aliases_hold_after_load(self) -> None:
+        """Tests that the solver's current Airplanes and OperatingPoint are the same
+        objects as the current step's SteadyProblem's after load, even though they are
+        written in different members.
+
+        :return: None
+        """
+        loaded = load(self.path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        current_problem = loaded.steady_problems[loaded._current_step]
+        self.assertEqual(len(loaded.current_airplanes), len(current_problem.airplanes))
+        for loaded_airplane, problem_airplane in zip(
+            loaded.current_airplanes, current_problem.airplanes
+        ):
+            self.assertIs(loaded_airplane, problem_airplane)
+        self.assertIs(loaded.current_operating_point, current_problem.operating_point)
+        self.assertIs(loaded.steady_problems, loaded.unsteady_problem.steady_problems)
+
+    def test_movement_refs_resolve_into_step_members(self) -> None:
+        """Tests that the Movement's per step Airplanes and OperatingPoints are the same
+        objects as the SteadyProblems' after load.
+
+        :return: None
+        """
+        loaded = load(self.path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        unsteady_problem = loaded.unsteady_problem
+        assert isinstance(unsteady_problem, UnsteadyProblem)
+        movement = unsteady_problem.movement
+        for step in range(self.num_steps):
+            self.assertIs(
+                movement.airplanes[0][step], loaded.steady_problems[step].airplanes[0]
+            )
+            self.assertIs(
+                movement.operating_points[step],
+                loaded.steady_problems[step].operating_point,
+            )
+
+    def test_ragged_sequences_round_trip(self) -> None:
+        """Tests that a coupled problem whose SteadyProblems list is shorter than the
+        solver's per step lists is saved with the shorter sequence absent from the later
+        step members and loads with both lengths preserved.
+
+        :return: None
+        """
+        solver = solver_fixtures.make_aeroelastic_unsteady_ring_solver_fixture()
+        num_problems = len(solver.unsteady_problem.steady_problems)
+        self.assertLess(num_problems, solver.num_steps)
+        path = Path(self.tmp.name) / "ragged.psz"
+        save(path, solver)
+        self.assertEqual(read_header(path)["num_chunks"], solver.num_steps)
+        for step in range(solver.num_steps):
+            with self.subTest(step=step):
+                member = read_member(path, f"steps/{step:08d}.json")
+                self.assertEqual(self.problem_key in member, step < num_problems)
+        loaded = load(path)
+        assert isinstance(loaded, AeroelasticUnsteadyRingVortexLatticeMethodSolver)
+        self.assertEqual(len(loaded.unsteady_problem.steady_problems), num_problems)
+        self.assertEqual(len(loaded.list_num_wake_vortices), solver.num_steps)
+
+    def test_shared_airfoil_written_once_across_members(self) -> None:
+        """Tests that an Airfoil shared by every step's WingCrossSections and by the
+        base geometry is written as a full record in the first step member only, and
+        loads as one object shared across every step and the base geometry.
+
+        :return: None
+        """
+        solver = UnsteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_variable_unsteady_problem_fixture()
+        )
+        solver.run()
+        path = Path(self.tmp.name) / "variable.psz"
+        save(path, solver)
+        step_names = [f"steps/{step:08d}.json" for step in range(solver.num_steps)]
+        for name in [*step_names, "root.json"]:
+            with self.subTest(member=name):
+                self.assertEqual(
+                    count_records(read_member(path, name), "Airfoil"),
+                    2 if name == step_names[0] else 0,
+                )
+        loaded = load(path)
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+        unsteady_problem = loaded.unsteady_problem
+        assert isinstance(unsteady_problem, UnsteadyProblem)
+        base_wing = unsteady_problem.movement.airplane_movements[0].base_airplane.wings[
+            0
+        ]
+        for step in range(solver.num_steps):
+            wing = loaded.steady_problems[step].airplanes[0].wings[0]
+            for section, base_section in zip(
+                wing.wing_cross_sections, base_wing.wing_cross_sections
+            ):
+                self.assertIs(section.airfoil, base_section.airfoil)
+
+    def test_reordered_manifest_raises(self) -> None:
+        """Tests that a manifest listing a step member ahead of the member holding a
+        record it refs raises a ValueError instead of loading.
+
+        :return: None
+        """
+        solver = UnsteadyRingVortexLatticeMethodSolver(
+            serialization_fixtures.make_variable_unsteady_problem_fixture()
+        )
+        path = Path(self.tmp.name) / "variable.psz"
+        save(path, solver)
+        header = read_header(path)
+        members = header["members"]
+        members[0], members[1] = members[1], members[0]
+        rewrite_archive(path, {"header.json": json.dumps(header).encode()})
+        with self.assertRaises(ValueError):
+            load(path)
+
+    def test_max_size_is_cumulative_across_step_members(self) -> None:
+        """Tests that a max_size every member fits under on its own still raises when
+        the members' total exceeds it, and that a max_size equal to the total loads.
+
+        :return: None
+        """
+        with zipfile.ZipFile(self.path) as archive:
+            sizes = [len(archive.read(name)) for name in archive.namelist()]
+        with self.assertRaises(ValueError):
+            load(self.path, max_size=max(sizes))
+        with self.assertRaises(ValueError):
+            load(self.path, max_size=sum(sizes) - 1)
+        loaded = load(self.path, max_size=sum(sizes))
+        assert isinstance(loaded, UnsteadyRingVortexLatticeMethodSolver)
+
+    def test_corrupted_placeholder_length_raises(self) -> None:
+        """Tests that a placeholder whose length disagrees with the number of elements
+        the step members hold raises a ValueError.
+
+        :return: None
+        """
+        root = read_member(self.path, "root.json")
+        root["list_num_wake_vortices"]["length"] += 1
+        rewrite_archive(self.path, {"root.json": json.dumps(root).encode()})
+        with self.assertRaises(ValueError):
+            load(self.path)
+
+    def test_unknown_step_key_raises(self) -> None:
+        """Tests that a step member key that no chunked slot claims raises a ValueError
+        naming the key.
+
+        :return: None
+        """
+        member = read_member(self.path, self.step_names[0])
+        member["bogus"] = None
+        rewrite_archive(self.path, {self.step_names[0]: json.dumps(member).encode()})
+        with self.assertRaises(ValueError) as context:
+            load(self.path)
+        self.assertIn("bogus", str(context.exception))
+
+    def test_missing_step_member_raises(self) -> None:
+        """Tests that an archive lacking a step member its manifest lists raises a
+        ValueError.
+
+        :return: None
+        """
+        rewrite_archive(self.path, {self.step_names[-1]: None})
+        with self.assertRaises(ValueError):
+            load(self.path)
 
 
 class TestLoadCallables(unittest.TestCase):

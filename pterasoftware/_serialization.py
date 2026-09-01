@@ -58,11 +58,14 @@ from .movements.operating_point_movement import OperatingPointMovement
 from .movements.wing_cross_section_movement import WingCrossSectionMovement
 from .movements.wing_movement import WingMovement
 from .operating_point import OperatingPoint
+
+# noinspection PyProtectedMember
 from .problems import (
     AeroelasticUnsteadyProblem,
     FreeFlightUnsteadyProblem,
     SteadyProblem,
     UnsteadyProblem,
+    _CoupledUnsteadyProblem,
 )
 from .steady_horseshoe_vortex_lattice_method import (
     SteadyHorseshoeVortexLatticeMethodSolver,
@@ -217,9 +220,11 @@ _DEFAULT_MAX_DECOMPRESSED_SIZE = 4_000_000_000  # 4 GB
 _MEMBER_READ_CHUNK_SIZE = 16_777_216  # 16 MiB
 
 # These are the names of the archive members that every saved file holds. The header is
-# written first and the root object last.
+# written first and the root object last. Between them, an object with per step
+# sequences gets one step member per time step, named by the zero padded step index.
 _HEADER_MEMBER_NAME = "header.json"
 _ROOT_MEMBER_NAME = "root.json"
+_STEP_MEMBER_NAME_FORMAT = "steps/{:08d}.json"
 
 # Maps class names to their types for deserialization dispatch.
 _CLASS_REGISTRY: dict[str, type] = {
@@ -291,6 +296,37 @@ _PUBLIC_SAVEABLE_CLASSES: frozenset[str] = frozenset(
 # _mujoco_assets dict on deserialization via MuJoCoModel._rebuild_engine.
 _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
 
+# These are the per step sequences that save() splits across the step members instead of
+# writing inline in the root member, keyed by the class that owns them. Owners are
+# matched by isinstance, so subclasses inherit their parent's entries. The unsteady
+# solver's ten lists hold one ndarray or int per time step, and an unsteady problem's
+# _steady_problems holds one SteadyProblem per time step, which is where the per step
+# Airplanes and their Panels live. UnsteadyProblem and _CoupledUnsteadyProblem are
+# siblings that each declare their own _steady_problems slot, so both need an entry.
+# Everything else stays inline in the root member on purpose: an UnsteadyProblem's per
+# Airplane final load lists and the aeroelastic deformation lists are small, and the
+# coupled movements' per step Airplane and OperatingPoint lists serialize as refs into
+# the step members because the root member is written last.
+_CHUNKED_SLOTS: tuple[tuple[type, tuple[str, ...]], ...] = (
+    (
+        UnsteadyRingVortexLatticeMethodSolver,
+        (
+            "_listStackBrbrvp_GP1_CgP1",
+            "_listStackFrbrvp_GP1_CgP1",
+            "_listStackFlbrvp_GP1_CgP1",
+            "_listStackBlbrvp_GP1_CgP1",
+            "list_num_wake_vortices",
+            "_list_wake_vortex_strengths",
+            "listStackBrwrvp_GP1_CgP1",
+            "listStackFrwrvp_GP1_CgP1",
+            "listStackFlwrvp_GP1_CgP1",
+            "listStackBlwrvp_GP1_CgP1",
+        ),
+    ),
+    (UnsteadyProblem, ("_steady_problems",)),
+    (_CoupledUnsteadyProblem, ("_steady_problems",)),
+)
+
 
 def save(path: str | Path, obj: object) -> None:
     """Saves a Ptera Software object to a .psz file.
@@ -298,7 +334,11 @@ def save(path: str | Path, obj: object) -> None:
     A .psz file is a zip archive of compressed JSON members. The first member is a
     header holding the serialization format version, provenance metadata, the saved
     object's class name, and a manifest of the members that follow. The last member
-    holds the object itself.
+    holds the object itself. For an unsteady solver or an unsteady problem, the per time
+    step data (each step's SteadyProblem and the solver's per step bound and wake vortex
+    arrays) is split out of the last member into one member per time step, so that
+    saving never holds more than one time step's worth of serialized data in memory at
+    once on top of the object itself.
 
     Shared references are preserved. An object referenced from many places (e.g., an
     Airfoil shared by every per step WingCrossSection) is written once, every other
@@ -335,12 +375,22 @@ def save(path: str | Path, obj: object) -> None:
 
     _logger.info(_logging.indent() + "Saving %s to %s", class_name, path)
 
+    num_chunks = max(
+        (
+            len(getattr(owner, slot_name))
+            for _, owner, slot_name in _collect_chunked_sequences(obj)
+        ),
+        default=0,
+    )
     header = {
         "_format_version": _FORMAT_VERSION,
         **_get_provenance(),
         "_type": class_name,
-        "num_chunks": 0,
-        "members": [_ROOT_MEMBER_NAME],
+        "num_chunks": num_chunks,
+        "members": [
+            *(_STEP_MEMBER_NAME_FORMAT.format(step) for step in range(num_chunks)),
+            _ROOT_MEMBER_NAME,
+        ],
     }
 
     with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -376,7 +426,10 @@ def load(
     checked before any of the object's data is decompressed. The members are then read
     one at a time in the order the header's manifest lists them, and each is
     decompressed in bounded chunks so that the cumulative decompressed size can be
-    checked against max_size as it grows.
+    checked against max_size as it grows. Each step member's data is deserialized and
+    the member's text dropped before the next member is read, so loading never holds
+    more than one member's worth of text and parsed JSON in memory at once on top of the
+    object being rebuilt.
 
     Nothing in the file is ever executed. A custom callable stored by save() as an inert
     marker is restored as an UnboundCallable, a placeholder that passes callable checks
@@ -430,6 +483,13 @@ def load(
 
     if max_size is None:
         max_size = _DEFAULT_MAX_DECOMPRESSED_SIZE
+
+    # The reference table, the chunked sequence elements, and the custom callable hashes
+    # accumulate across every member, because a step member's records are referenced
+    # from later members and the root member's placeholders splice the elements back in.
+    table: dict[int, object] = {}
+    chunk_values: dict[str, list[object]] = {}
+    recorded_hashes: dict[str, set[str | None]] = {}
 
     try:
         with zipfile.ZipFile(path) as archive:
@@ -493,6 +553,35 @@ def load(
                     f"member, got '{member_names[-1]}'."
                 )
 
+            # Stream the step members in manifest order. Each member maps the key of
+            # every chunked sequence with an element at that step to that element, and
+            # JSON preserves the key order, so refs within a member resolve in the order
+            # they were written.
+            for member_name in member_names[:-1]:
+                member_bytes = _read_member_bytes(
+                    archive, member_name, max_size, consumed
+                )
+                consumed += len(member_bytes)
+                member_data = json.loads(member_bytes)
+                del member_bytes
+                if not isinstance(member_data, dict):
+                    raise ValueError(
+                        f"The file's {member_name} member must hold a JSON object, got "
+                        f"{type(member_data).__name__}."
+                    )
+                if callables is not None:
+                    _collect_custom_callable_hashes(member_data, recorded_hashes)
+                for key, value in member_data.items():
+                    chunk_values.setdefault(key, []).append(
+                        _deserialize_value(
+                            value,
+                            table=table,
+                            callables=callables,
+                            chunk_values=chunk_values,
+                        )
+                    )
+                del member_data
+
             root_bytes = _read_member_bytes(
                 archive, _ROOT_MEMBER_NAME, max_size, consumed
             )
@@ -508,9 +597,22 @@ def load(
         )
 
     if callables is not None:
-        _check_callables_against_markers(root_data, callables)
+        _collect_custom_callable_hashes(root_data, recorded_hashes)
+        _check_callables_against_markers(recorded_hashes, callables)
 
-    obj = _object_from_dict(root_data, callables=callables)
+    obj = _object_from_dict(
+        root_data, table=table, callables=callables, chunk_values=chunk_values
+    )
+
+    # Splicing a chunked slot removes its key, so any key left over came from a step
+    # member and was claimed by no slot in the root member.
+    if chunk_values:
+        raise ValueError(
+            "The file's step members hold keys that no chunked slot claimed: "
+            + ", ".join(f"'{key}'" for key in sorted(chunk_values))
+            + "."
+        )
+
     _logger.info(_logging.indent() + "Loaded %s from %s", type(obj).__name__, path)
     return obj
 
@@ -556,40 +658,120 @@ def _read_member_bytes(
     return decompressed
 
 
+def _collect_chunked_sequences(obj: object) -> list[tuple[str, object, str]]:
+    """Collects the per step sequences that are split across step members when a Ptera
+    Software object is saved.
+
+    The owners are the object itself and, when the object is an unsteady solver, its
+    UnsteadyProblem. Each owner contributes the slots that _CHUNKED_SLOTS declares for
+    its class. The order is fixed (the object's own slots first, then its
+    UnsteadyProblem's) because it decides the order the sequences' elements are
+    serialized in, and with it the memo ids that refs carry and the digest hash_object
+    computes.
+
+    :param obj: The Ptera Software object being saved.
+    :return: A list of (key, owner, slot name) tuples, one per sequence. The key is the
+        slot name when the owner is the object itself, and the owner's path from the
+        object joined to the slot name with a slash otherwise. Step members use the key
+        to label each sequence's element, and the root member's placeholder for the slot
+        carries the same key.
+    """
+    owners: list[tuple[str, object]] = [("", obj)]
+    if isinstance(obj, UnsteadyRingVortexLatticeMethodSolver):
+        owners.append(("unsteady_problem", obj.unsteady_problem))
+
+    sequences: list[tuple[str, object, str]] = []
+    for owner_path, owner in owners:
+        for owner_type, slot_names in _CHUNKED_SLOTS:
+            if isinstance(owner, owner_type):
+                for slot_name in slot_names:
+                    key = slot_name if owner_path == "" else f"{owner_path}/{slot_name}"
+                    sequences.append((key, owner, slot_name))
+    return sequences
+
+
 def _emit_members(obj: object) -> Iterator[tuple[str, dict[str, Any]]]:
     """Yields the data members of an archive holding a Ptera Software object, in write
     order.
 
+    The step members come first, one per time step, each mapping the key of every
+    chunked sequence that has an element at that step to that element's serialized form.
+    A sequence shorter than the longest one simply has no key in the later step members.
+    The root member comes last and holds the object's own record, with each chunked slot
+    replaced by a placeholder naming its key, its container type, and its length.
+
     One identity memo threads across every member, so a ref always points at a record in
-    the same member or an earlier one. save() writes the members in this order, and
-    hash_object() folds them into its digest in this order, so the two agree on the memo
-    ids that the refs carry.
+    the same member or an earlier one. Writing the root member last is what lets the
+    object's other references to per step data (a solver's current Airplanes, or a
+    Movement's per step Airplane lists) serialize as cheap refs into the step members.
+    save() writes the members in this order, and hash_object() folds them into its
+    digest in this order, so the two agree on the memo ids that the refs carry.
 
     :param obj: The Ptera Software object to serialize.
     :return: An iterator of (member name, member payload) tuples ending with the root
         member, which holds the object's own record.
     """
+    sequences = _collect_chunked_sequences(obj)
+    named_sequences = [
+        (key, owner, slot_name, getattr(owner, slot_name))
+        for key, owner, slot_name in sequences
+    ]
+    num_chunks = max((len(sequence) for *_, sequence in named_sequences), default=0)
+
     memo: dict[int, tuple[int, object]] = {}
-    yield _ROOT_MEMBER_NAME, _object_to_dict(obj, memo=memo)
+    for step in range(num_chunks):
+        yield _STEP_MEMBER_NAME_FORMAT.format(step), {
+            key: _serialize_value(sequence[step], memo=memo)
+            for key, _, _, sequence in named_sequences
+            if step < len(sequence)
+        }
+
+    # Nothing reachable from a per step element refers back to a chunked slot's owner,
+    # so no owner can have been serialized inside a step member. If one had been, its
+    # chunked slots would have been written inline there, and the root member's
+    # placeholders for them would splice nothing.
+    chunk_placeholders: dict[int, dict[str, dict[str, Any]]] = {}
+    for key, owner, slot_name, sequence in named_sequences:
+        if id(owner) in memo:
+            raise RuntimeError(
+                f"The owner of the chunked slot '{key}' was reached from a step member "
+                "before the root member was written."
+            )
+        if isinstance(sequence, tuple):
+            container = "tuple"
+        elif isinstance(sequence, list):
+            container = "list"
+        else:
+            raise TypeError(
+                f"The chunked slot '{key}' must hold a tuple or a list, got "
+                f"{type(sequence).__name__}."
+            )
+        chunk_placeholders.setdefault(id(owner), {})[slot_name] = {
+            "_type": "chunked",
+            "key": key,
+            "container": container,
+            "length": len(sequence),
+        }
+    yield _ROOT_MEMBER_NAME, _object_to_dict(
+        obj, memo=memo, chunk_placeholders=chunk_placeholders
+    )
 
 
-def _check_callables_against_markers(
-    data: dict[str, Any], callables: Mapping[str, Callable[..., object]]
+def _collect_custom_callable_hashes(
+    data: object, recorded_hashes: dict[str, set[str | None]]
 ) -> None:
-    """Checks a callables mapping against the custom callable markers in loaded data.
+    """Collects the recorded source hashes of every custom callable marker in one parsed
+    member, keyed by qualified name.
 
-    Walks the parsed JSON before anything is constructed, collecting the recorded source
-    hashes of every custom callable marker by qualified name. A key that matches no
-    marker raises, so a typo fails fast instead of leaving a placeholder in place. A key
-    whose function does not hash to a recorded hash (including a function whose source
-    cannot be retrieved) logs one warning naming the function. A marker that recorded no
-    hash gives nothing to check against, so it never warns.
+    Walks the parsed JSON without constructing anything. The hashes accumulate across
+    members so that _check_callables_against_markers can see every marker in the file
+    even though each member's parsed data is dropped after it is deserialized.
 
-    :param data: The dict loaded from the archive's root member.
-    :param callables: The validated mapping passed to load().
+    :param data: The parsed JSON of one archive member.
+    :param recorded_hashes: The dict mapping each marker's qualified name to the set of
+        source hashes recorded for it, which this call adds to.
     :return: None
     """
-    recorded_hashes: dict[str, set[str | None]] = {}
     pending: list[object] = [data]
     while pending:
         node = pending.pop()
@@ -603,6 +785,25 @@ def _check_callables_against_markers(
         elif isinstance(node, list):
             pending.extend(node)
 
+
+def _check_callables_against_markers(
+    recorded_hashes: dict[str, set[str | None]],
+    callables: Mapping[str, Callable[..., object]],
+) -> None:
+    """Checks a callables mapping against the custom callable markers a file recorded.
+
+    A key that matches no marker raises, so a typo fails fast instead of leaving a
+    placeholder in place. A key whose function does not hash to a recorded hash
+    (including a function whose source cannot be retrieved) logs one warning naming the
+    function. A marker that recorded no hash gives nothing to check against, so it never
+    warns.
+
+    :param recorded_hashes: The dict mapping each marker's qualified name to the set of
+        source hashes recorded for it across every member of the file, as built by
+        _collect_custom_callable_hashes.
+    :param callables: The validated mapping passed to load().
+    :return: None
+    """
     unused = sorted(key for key in callables if key not in recorded_hashes)
     if unused:
         raise ValueError(
@@ -804,14 +1005,19 @@ def _log_load_warnings(data: dict[str, Any]) -> None:
 
 
 def _object_to_dict(
-    obj: object, *, memo: dict[int, tuple[int, object]] | None = None
+    obj: object,
+    *,
+    memo: dict[int, tuple[int, object]] | None = None,
+    chunk_placeholders: dict[int, dict[str, dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """Generically serializes a Ptera Software object to a dict.
 
     Iterates over the class's __slots__ to discover all attributes, including cache
     slots. JSON keys are the slot names themselves (e.g., "_rho", "_name", "forces_W").
     The MuJoCoModel's native engine objects are serialized as null and rebuilt on
-    deserialization.
+    deserialization. A slot that chunk_placeholders names for this object is written as
+    its placeholder instead of being serialized, because its elements were already
+    written to the step members.
 
     Shared references are preserved via an identity memo. The first encounter of each
     object serializes it fully and stamps the dict with an "_id" key holding a small
@@ -824,6 +1030,11 @@ def _object_to_dict(
     :param memo: The identity memo mapping an object's id() to its "_id" integer and the
         object itself (held to keep its id() from being recycled during the walk). If
         None, a fresh memo is created, making this a top level call.
+    :param chunk_placeholders: A dict mapping the id() of each object that owns chunked
+        sequences to a dict mapping each chunked slot's name to the placeholder dict to
+        write in its place. It is threaded through every recursion so that an owner
+        nested anywhere in the graph is found. If None, no slot is replaced, which is
+        the case for every in memory conversion outside of save() and hash_object().
     :return: A dict with "_type" set to the class name, "_id" set to the memo integer,
         and one key per slot, or a {"_type": "ref", "id": ...} dict if the object was
         already serialized under this memo.
@@ -848,6 +1059,10 @@ def _object_to_dict(
     if isinstance(obj, MuJoCoModel):
         skip_slots = _MUJOCO_MODEL_SKIP_SLOTS
 
+    placeholders: dict[str, dict[str, Any]] = {}
+    if chunk_placeholders is not None:
+        placeholders = chunk_placeholders.get(id(obj), {})
+
     # Register the object in the memo before serializing its slots so that any reference
     # back to it from within its own subtree serializes as a ref.
     ref_id = len(memo)
@@ -855,10 +1070,16 @@ def _object_to_dict(
 
     result: dict[str, Any] = {"_type": class_name, "_id": ref_id}
     for slot_name in _all_slots(cls):
-        if slot_name in skip_slots:
+        if slot_name in placeholders:
+            result[slot_name] = placeholders[slot_name]
+        elif slot_name in skip_slots:
             result[slot_name] = None
         else:
-            result[slot_name] = _serialize_value(getattr(obj, slot_name), memo=memo)
+            result[slot_name] = _serialize_value(
+                getattr(obj, slot_name),
+                memo=memo,
+                chunk_placeholders=chunk_placeholders,
+            )
     return result
 
 
@@ -867,6 +1088,7 @@ def _object_from_dict(
     *,
     table: dict[int, object] | None = None,
     callables: Mapping[str, Callable[..., object]] | None = None,
+    chunk_values: dict[str, list[object]] | None = None,
 ) -> object:
     """Generically deserializes a Ptera Software object from a dict.
 
@@ -885,6 +1107,11 @@ def _object_from_dict(
     :param callables: The mapping from qualified names to functions threaded through to
         _deserialize_value so custom callable markers can be rebound. If None, every
         marker deserializes to an UnboundCallable.
+    :param chunk_values: The dict mapping each chunked sequence's key to the elements
+        already deserialized from the step members, threaded through to
+        _deserialize_value so a chunked slot's placeholder can be spliced. If None, a
+        placeholder raises, which is the case for every in memory conversion outside of
+        load().
     :return: The reconstructed Ptera Software object.
     """
     type_tag = data["_type"]
@@ -903,7 +1130,12 @@ def _object_from_dict(
         object.__setattr__(
             obj,
             slot_name,
-            _deserialize_value(data[slot_name], table=table, callables=callables),
+            _deserialize_value(
+                data[slot_name],
+                table=table,
+                callables=callables,
+                chunk_values=chunk_values,
+            ),
         )
 
     if isinstance(obj, MuJoCoModel):
@@ -916,7 +1148,10 @@ def _object_from_dict(
 
 
 def _ndarray_to_dict(
-    arr: np.ndarray, *, memo: dict[int, tuple[int, object]] | None = None
+    arr: np.ndarray,
+    *,
+    memo: dict[int, tuple[int, object]] | None = None,
+    chunk_placeholders: dict[int, dict[str, dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """Converts a NumPy ndarray to a JSON serializable dict.
 
@@ -929,6 +1164,8 @@ def _ndarray_to_dict(
     :param arr: The ndarray to serialize.
     :param memo: The identity memo threaded through to _serialize_value for dtype=object
         elements. If None, a fresh memo is created.
+    :param chunk_placeholders: The chunked slot placeholders threaded through to
+        _serialize_value for dtype=object elements. If None, no slot is replaced.
     :return: A dict representing the serialized ndarray.
     """
     if arr.dtype == object:
@@ -938,7 +1175,10 @@ def _ndarray_to_dict(
             "_type": "ndarray",
             "dtype": "object",
             "shape": list(arr.shape),
-            "items": [_serialize_value(item, memo=memo) for item in arr.ravel()],
+            "items": [
+                _serialize_value(item, memo=memo, chunk_placeholders=chunk_placeholders)
+                for item in arr.ravel()
+            ],
             "writeable": bool(arr.flags.writeable),
         }
 
@@ -956,6 +1196,7 @@ def _ndarray_from_dict(
     *,
     table: dict[int, object] | None = None,
     callables: Mapping[str, Callable[..., object]] | None = None,
+    chunk_values: dict[str, list[object]] | None = None,
 ) -> np.ndarray:
     """Reconstructs a NumPy ndarray from a dict produced by _ndarray_to_dict.
 
@@ -970,6 +1211,9 @@ def _ndarray_from_dict(
     :param callables: The mapping from qualified names to functions threaded through to
         _deserialize_value for dtype=object elements. If None, every custom callable
         marker deserializes to an UnboundCallable.
+    :param chunk_values: The chunked sequence elements threaded through to
+        _deserialize_value for dtype=object elements. If None, a chunked slot
+        placeholder raises.
     :return: The reconstructed ndarray.
     """
     shape = array_dict["shape"]
@@ -979,7 +1223,9 @@ def _ndarray_from_dict(
         if table is None:
             table = {}
         items = [
-            _deserialize_value(item, table=table, callables=callables)
+            _deserialize_value(
+                item, table=table, callables=callables, chunk_values=chunk_values
+            )
             for item in array_dict["items"]
         ]
         arr = np.empty(len(items), dtype=object)
@@ -1001,7 +1247,10 @@ def _ndarray_from_dict(
 
 
 def _serialize_value(
-    value: object, *, memo: dict[int, tuple[int, object]] | None = None
+    value: object,
+    *,
+    memo: dict[int, tuple[int, object]] | None = None,
+    chunk_placeholders: dict[int, dict[str, dict[str, Any]]] | None = None,
 ) -> object:
     """Serializes a single value based on its runtime type.
 
@@ -1021,6 +1270,9 @@ def _serialize_value(
     :param memo: The identity memo threaded through to _object_to_dict for registered
         class instances, so shared references serialize once. If None, a fresh memo is
         created, making this a top level call.
+    :param chunk_placeholders: The chunked slot placeholders threaded through to
+        _object_to_dict for registered class instances and through every container
+        recursion. If None, no slot is replaced.
     :return: The JSON serializable representation of the value.
     """
     if memo is None:
@@ -1052,18 +1304,24 @@ def _serialize_value(
         }
 
     if isinstance(value, np.ndarray):
-        return _ndarray_to_dict(value, memo=memo)
+        return _ndarray_to_dict(value, memo=memo, chunk_placeholders=chunk_placeholders)
 
     if isinstance(value, tuple):
         return {
             "_type": "tuple",
-            "items": [_serialize_value(item, memo=memo) for item in value],
+            "items": [
+                _serialize_value(item, memo=memo, chunk_placeholders=chunk_placeholders)
+                for item in value
+            ],
         }
 
     if isinstance(value, list):
         return {
             "_type": "list",
-            "items": [_serialize_value(item, memo=memo) for item in value],
+            "items": [
+                _serialize_value(item, memo=memo, chunk_placeholders=chunk_placeholders)
+                for item in value
+            ],
         }
 
     if isinstance(value, dict):
@@ -1076,12 +1334,15 @@ def _serialize_value(
         return {
             "_type": "dict",
             "items": {
-                key: _serialize_value(item, memo=memo) for key, item in value.items()
+                key: _serialize_value(
+                    item, memo=memo, chunk_placeholders=chunk_placeholders
+                )
+                for key, item in value.items()
             },
         }
 
     if type(value).__name__ in _CLASS_REGISTRY:
-        return _object_to_dict(value, memo=memo)
+        return _object_to_dict(value, memo=memo, chunk_placeholders=chunk_placeholders)
 
     # An UnboundCallable re-emits the marker it was loaded from, so a loaded object
     # saves and hashes identically to the original without re-inspecting anything.
@@ -1147,13 +1408,16 @@ def _deserialize_value(
     *,
     table: dict[int, object] | None = None,
     callables: Mapping[str, Callable[..., object]] | None = None,
+    chunk_values: dict[str, list[object]] | None = None,
 ) -> object:
     """Deserializes a single value from its JSON representation.
 
     The format is self describing via _type tags. None, bool, and str are bare JSON
     values. All other types are wrapped in dicts with a _type key. Bare JSON numbers
     (int or float without a _type wrapper) raise a ValueError because all numeric values
-    are wrapped during serialization.
+    are wrapped during serialization. A "chunked" placeholder, which stands in for a per
+    step sequence that save() split across the step members, is spliced back together
+    from chunk_values.
 
     :param data: The serialized data.
     :param table: The reference table mapping "_id" integers to their reconstructed
@@ -1164,6 +1428,11 @@ def _deserialize_value(
         every other marker deserializes to an UnboundCallable. Keys that match no marker
         are ignored here, because only load() sees the whole file and can tell that a
         key went unused. If None, every marker deserializes to an UnboundCallable.
+    :param chunk_values: A dict mapping each chunked sequence's key to the elements
+        already deserialized from the step members, in step order. Splicing a
+        placeholder removes its key, so load() can tell afterwards whether any step
+        member held a key that no slot claimed. If None, a placeholder raises, because
+        only load() holds the step members it splices from.
     :return: The deserialized value.
     """
     if table is None:
@@ -1191,7 +1460,9 @@ def _deserialize_value(
         if type_tag == "bytes":
             return base64.b64decode(data["data"])
         if type_tag == "ndarray":
-            return _ndarray_from_dict(data, table=table, callables=callables)
+            return _ndarray_from_dict(
+                data, table=table, callables=callables, chunk_values=chunk_values
+            )
         if type_tag == "ref":
             ref_id = data["id"]
             if ref_id not in table:
@@ -1202,19 +1473,45 @@ def _deserialize_value(
             return table[ref_id]
         if type_tag == "tuple":
             return tuple(
-                _deserialize_value(item, table=table, callables=callables)
+                _deserialize_value(
+                    item, table=table, callables=callables, chunk_values=chunk_values
+                )
                 for item in data["items"]
             )
         if type_tag == "list":
             return [
-                _deserialize_value(item, table=table, callables=callables)
+                _deserialize_value(
+                    item, table=table, callables=callables, chunk_values=chunk_values
+                )
                 for item in data["items"]
             ]
         if type_tag == "dict":
             return {
-                key: _deserialize_value(item, table=table, callables=callables)
+                key: _deserialize_value(
+                    item, table=table, callables=callables, chunk_values=chunk_values
+                )
                 for key, item in data["items"].items()
             }
+        if type_tag == "chunked":
+            if chunk_values is None:
+                raise ValueError(
+                    "A chunked slot placeholder was encountered outside of load(), "
+                    "which is the only reader that holds the step members it splices "
+                    "from."
+                )
+            key = data["key"]
+            items = chunk_values.pop(key, [])
+            if len(items) != data["length"]:
+                raise ValueError(
+                    f"The chunked slot '{key}' should hold {data['length']} elements, "
+                    f"but the file's step members hold {len(items)}."
+                )
+            container = data["container"]
+            if container == "tuple":
+                return tuple(items)
+            if container == "list":
+                return items
+            raise ValueError(f"Unknown chunked container: '{container}'.")
         if type_tag == "callable":
             name = data["name"]
             func = _CALLABLE_NAME_TO_FUNC.get(name)
@@ -1231,7 +1528,9 @@ def _deserialize_value(
                 source_hash=data["source_hash"],
             )
         if type_tag in _CLASS_REGISTRY:
-            return _object_from_dict(data, table=table, callables=callables)
+            return _object_from_dict(
+                data, table=table, callables=callables, chunk_values=chunk_values
+            )
         raise TypeError(f"Unknown _type tag: '{type_tag}'.")
 
     if isinstance(data, (int, float)):

@@ -1,10 +1,10 @@
-INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0374 s
-INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.json.gz (891802 bytes)
-INFO    |_serialization                              |Loading from example_solver.json.gz
+INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0368 s
+INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.psz
+INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.psz (892901 bytes)
+INFO    |_serialization                              |Loading from example_solver.psz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
-INFO    |_serialization                              |Loaded SteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |_serialization                              |Loaded SteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Reynolds Number: 8.53E+05
 INFO    |output                                      |  Forces (in Geometry Axes):

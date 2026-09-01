@@ -23,8 +23,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0248 s
-INFO    |convergence                                 |          Simulation completed in 0.0250 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0247 s
+INFO    |convergence                                 |          Simulation completed in 0.0249 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -40,8 +40,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0223 s
-INFO    |convergence                                 |          Simulation completed in 0.0225 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0207 s
+INFO    |convergence                                 |          Simulation completed in 0.0208 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -64,7 +64,7 @@ INFO    |movements.movement                          |          Acceptable value
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0417 s
-INFO    |convergence                                 |          Simulation completed in 0.0419 s
+INFO    |convergence                                 |          Simulation completed in 0.0420 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -86,8 +86,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0767 s
-INFO    |convergence                                 |          Simulation completed in 0.0769 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0788 s
+INFO    |convergence                                 |          Simulation completed in 0.0791 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -110,8 +110,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0122 s
-INFO    |convergence                                 |          Simulation completed in 0.0123 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0123 s
+INFO    |convergence                                 |          Simulation completed in 0.0124 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -133,8 +133,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0269 s
-INFO    |convergence                                 |          Simulation completed in 0.0271 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0271 s
+INFO    |convergence                                 |          Simulation completed in 0.0273 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -162,8 +162,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0532 s
-INFO    |convergence                                 |          Simulation completed in 0.0534 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0517 s
+INFO    |convergence                                 |          Simulation completed in 0.0519 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -191,8 +191,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0904 s
-INFO    |convergence                                 |          Simulation completed in 0.0906 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0905 s
+INFO    |convergence                                 |          Simulation completed in 0.0907 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -221,8 +221,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0209 s
-INFO    |convergence                                 |          Simulation completed in 0.0211 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0210 s
+INFO    |convergence                                 |          Simulation completed in 0.0212 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -244,8 +244,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0400 s
-INFO    |convergence                                 |          Simulation completed in 0.0402 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0403 s
+INFO    |convergence                                 |          Simulation completed in 0.0405 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -273,8 +273,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0832 s
-INFO    |convergence                                 |          Simulation completed in 0.0834 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0839 s
+INFO    |convergence                                 |          Simulation completed in 0.0841 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -302,8 +302,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.138 s
-INFO    |convergence                                 |          Simulation completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |convergence                                 |          Simulation completed in 0.137 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -332,8 +332,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0347 s
-INFO    |convergence                                 |          Simulation completed in 0.0349 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0349 s
+INFO    |convergence                                 |          Simulation completed in 0.0350 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -355,8 +355,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0819 s
-INFO    |convergence                                 |          Simulation completed in 0.0821 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0816 s
+INFO    |convergence                                 |          Simulation completed in 0.0818 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -384,8 +384,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.162 s
-INFO    |convergence                                 |          Simulation completed in 0.163 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.160 s
+INFO    |convergence                                 |          Simulation completed in 0.160 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -413,8 +413,8 @@ INFO    |movements.movement                          |              Mismatch: 0.
 INFO    |movements.movement                          |          Acceptable value reached
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.281 s
-INFO    |convergence                                 |          Simulation completed in 0.281 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.278 s
+INFO    |convergence                                 |          Simulation completed in 0.278 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
@@ -437,7 +437,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 17/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0118 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0119 s
 INFO    |convergence                                 |          Simulation completed in 0.0120 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
@@ -454,7 +454,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0258 s
-INFO    |convergence                                 |          Simulation completed in 0.0259 s
+INFO    |convergence                                 |          Simulation completed in 0.0260 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -476,7 +476,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0521 s
-INFO    |convergence                                 |          Simulation completed in 0.0524 s
+INFO    |convergence                                 |          Simulation completed in 0.0523 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -497,8 +497,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 20/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0968 s
-INFO    |convergence                                 |          Simulation completed in 0.0971 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0972 s
+INFO    |convergence                                 |          Simulation completed in 0.0975 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -520,8 +520,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 21/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0154 s
-INFO    |convergence                                 |          Simulation completed in 0.0156 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0152 s
+INFO    |convergence                                 |          Simulation completed in 0.0153 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -542,7 +542,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 22/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0336 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0337 s
 INFO    |convergence                                 |          Simulation completed in 0.0338 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
@@ -570,8 +570,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 23/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0650 s
-INFO    |convergence                                 |          Simulation completed in 0.0652 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0653 s
+INFO    |convergence                                 |          Simulation completed in 0.0654 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -627,8 +627,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 25/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0258 s
-INFO    |convergence                                 |          Simulation completed in 0.0259 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0260 s
+INFO    |convergence                                 |          Simulation completed in 0.0261 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -650,7 +650,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0505 s
-INFO    |convergence                                 |          Simulation completed in 0.0506 s
+INFO    |convergence                                 |          Simulation completed in 0.0507 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -677,8 +677,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 27/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.105 s
-INFO    |convergence                                 |          Simulation completed in 0.105 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.104 s
+INFO    |convergence                                 |          Simulation completed in 0.104 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -734,8 +734,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 29/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0433 s
-INFO    |convergence                                 |          Simulation completed in 0.0435 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0436 s
+INFO    |convergence                                 |          Simulation completed in 0.0438 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -756,8 +756,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 30/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.101 s
-INFO    |convergence                                 |          Simulation completed in 0.101 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.100 s
+INFO    |convergence                                 |          Simulation completed in 0.100 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -784,8 +784,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 31/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.201 s
-INFO    |convergence                                 |          Simulation completed in 0.201 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.195 s
+INFO    |convergence                                 |          Simulation completed in 0.195 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -812,8 +812,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 32/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.357 s
-INFO    |convergence                                 |          Simulation completed in 0.357 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.356 s
+INFO    |convergence                                 |          Simulation completed in 0.356 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -842,7 +842,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 33/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0140 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0141 s
 INFO    |convergence                                 |          Simulation completed in 0.0142 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
@@ -859,7 +859,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0312 s
-INFO    |convergence                                 |          Simulation completed in 0.0314 s
+INFO    |convergence                                 |          Simulation completed in 0.0313 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -880,8 +880,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 35/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0631 s
-INFO    |convergence                                 |          Simulation completed in 0.0633 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0632 s
+INFO    |convergence                                 |          Simulation completed in 0.0634 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -925,8 +925,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 37/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0182 s
-INFO    |convergence                                 |          Simulation completed in 0.0184 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0184 s
+INFO    |convergence                                 |          Simulation completed in 0.0185 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -947,8 +947,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 38/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0406 s
-INFO    |convergence                                 |          Simulation completed in 0.0407 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0409 s
+INFO    |convergence                                 |          Simulation completed in 0.0410 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -976,7 +976,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0818 s
-INFO    |convergence                                 |          Simulation completed in 0.0820 s
+INFO    |convergence                                 |          Simulation completed in 0.0821 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1032,8 +1032,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 41/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0309 s
-INFO    |convergence                                 |          Simulation completed in 0.0310 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0307 s
+INFO    |convergence                                 |          Simulation completed in 0.0309 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1054,8 +1054,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 42/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0611 s
-INFO    |convergence                                 |          Simulation completed in 0.0613 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0610 s
+INFO    |convergence                                 |          Simulation completed in 0.0612 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1082,7 +1082,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 43/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.126 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.125 s
 INFO    |convergence                                 |          Simulation completed in 0.126 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
@@ -1110,8 +1110,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 44/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.207 s
-INFO    |convergence                                 |          Simulation completed in 0.208 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.205 s
+INFO    |convergence                                 |          Simulation completed in 0.205 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1139,8 +1139,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 45/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0532 s
-INFO    |convergence                                 |          Simulation completed in 0.0535 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0531 s
+INFO    |convergence                                 |          Simulation completed in 0.0533 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1189,8 +1189,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 47/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.252 s
-INFO    |convergence                                 |          Simulation completed in 0.252 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.245 s
+INFO    |convergence                                 |          Simulation completed in 0.246 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1217,8 +1217,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 48/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.434 s
-INFO    |convergence                                 |          Simulation completed in 0.435 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.427 s
+INFO    |convergence                                 |          Simulation completed in 0.428 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1247,8 +1247,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 49/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0163 s
-INFO    |convergence                                 |          Simulation completed in 0.0165 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0162 s
+INFO    |convergence                                 |          Simulation completed in 0.0163 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1263,8 +1263,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 50/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0365 s
-INFO    |convergence                                 |          Simulation completed in 0.0367 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0364 s
+INFO    |convergence                                 |          Simulation completed in 0.0366 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1285,8 +1285,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 51/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0743 s
-INFO    |convergence                                 |          Simulation completed in 0.0746 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0742 s
+INFO    |convergence                                 |          Simulation completed in 0.0744 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1307,8 +1307,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 52/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.140 s
-INFO    |convergence                                 |          Simulation completed in 0.141 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |convergence                                 |          Simulation completed in 0.136 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1330,8 +1330,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 53/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0217 s
-INFO    |convergence                                 |          Simulation completed in 0.0218 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0215 s
+INFO    |convergence                                 |          Simulation completed in 0.0217 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1352,8 +1352,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 54/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0479 s
-INFO    |convergence                                 |          Simulation completed in 0.0481 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0478 s
+INFO    |convergence                                 |          Simulation completed in 0.0480 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1380,8 +1380,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 55/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0928 s
-INFO    |convergence                                 |          Simulation completed in 0.0930 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0933 s
+INFO    |convergence                                 |          Simulation completed in 0.0935 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1409,7 +1409,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.158 s
-INFO    |convergence                                 |          Simulation completed in 0.158 s
+INFO    |convergence                                 |          Simulation completed in 0.159 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1437,8 +1437,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 57/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0355 s
-INFO    |convergence                                 |          Simulation completed in 0.0357 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0357 s
+INFO    |convergence                                 |          Simulation completed in 0.0359 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1459,8 +1459,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 58/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0724 s
-INFO    |convergence                                 |          Simulation completed in 0.0726 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0717 s
+INFO    |convergence                                 |          Simulation completed in 0.0719 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1487,8 +1487,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 59/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.149 s
-INFO    |convergence                                 |          Simulation completed in 0.149 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.146 s
+INFO    |convergence                                 |          Simulation completed in 0.146 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1515,8 +1515,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 60/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.249 s
-INFO    |convergence                                 |          Simulation completed in 0.249 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.241 s
+INFO    |convergence                                 |          Simulation completed in 0.241 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1567,7 +1567,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.142 s
-INFO    |convergence                                 |          Simulation completed in 0.143 s
+INFO    |convergence                                 |          Simulation completed in 0.142 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1594,7 +1594,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 63/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.276 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.277 s
 INFO    |convergence                                 |          Simulation completed in 0.277 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
@@ -1622,8 +1622,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 64/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.509 s
-INFO    |convergence                                 |          Simulation completed in 0.510 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.511 s
+INFO    |convergence                                 |          Simulation completed in 0.511 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1652,8 +1652,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 65/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0183 s
-INFO    |convergence                                 |          Simulation completed in 0.0185 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0185 s
+INFO    |convergence                                 |          Simulation completed in 0.0187 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1668,8 +1668,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 66/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0420 s
-INFO    |convergence                                 |          Simulation completed in 0.0422 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0418 s
+INFO    |convergence                                 |          Simulation completed in 0.0421 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1690,8 +1690,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 67/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0856 s
-INFO    |convergence                                 |          Simulation completed in 0.0859 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0855 s
+INFO    |convergence                                 |          Simulation completed in 0.0858 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1712,8 +1712,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 68/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.156 s
-INFO    |convergence                                 |          Simulation completed in 0.156 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.155 s
+INFO    |convergence                                 |          Simulation completed in 0.155 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1735,8 +1735,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 69/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0243 s
-INFO    |convergence                                 |          Simulation completed in 0.0245 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0244 s
+INFO    |convergence                                 |          Simulation completed in 0.0246 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1757,8 +1757,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 70/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0547 s
-INFO    |convergence                                 |          Simulation completed in 0.0549 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0550 s
+INFO    |convergence                                 |          Simulation completed in 0.0552 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1785,8 +1785,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 71/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.107 s
-INFO    |convergence                                 |          Simulation completed in 0.107 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.108 s
+INFO    |convergence                                 |          Simulation completed in 0.108 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1813,8 +1813,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 72/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.183 s
-INFO    |convergence                                 |          Simulation completed in 0.183 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.181 s
+INFO    |convergence                                 |          Simulation completed in 0.181 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1842,8 +1842,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 73/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0409 s
-INFO    |convergence                                 |          Simulation completed in 0.0411 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0410 s
+INFO    |convergence                                 |          Simulation completed in 0.0412 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1864,8 +1864,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 74/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0831 s
-INFO    |convergence                                 |          Simulation completed in 0.0834 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0829 s
+INFO    |convergence                                 |          Simulation completed in 0.0831 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1893,7 +1893,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.168 s
-INFO    |convergence                                 |          Simulation completed in 0.169 s
+INFO    |convergence                                 |          Simulation completed in 0.168 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1920,8 +1920,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 76/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.277 s
-INFO    |convergence                                 |          Simulation completed in 0.278 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.276 s
+INFO    |convergence                                 |          Simulation completed in 0.277 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1949,8 +1949,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 77/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0703 s
-INFO    |convergence                                 |          Simulation completed in 0.0706 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0707 s
+INFO    |convergence                                 |          Simulation completed in 0.0710 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1971,8 +1971,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 78/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.162 s
-INFO    |convergence                                 |          Simulation completed in 0.162 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.164 s
+INFO    |convergence                                 |          Simulation completed in 0.164 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1999,8 +1999,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 79/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.320 s
-INFO    |convergence                                 |          Simulation completed in 0.321 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.319 s
+INFO    |convergence                                 |          Simulation completed in 0.320 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2027,8 +2027,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 80/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.619 s
-INFO    |convergence                                 |          Simulation completed in 0.619 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.590 s
+INFO    |convergence                                 |          Simulation completed in 0.590 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2058,8 +2058,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 81/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0108 s
-INFO    |convergence                                 |          Simulation completed in 0.0109 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0110 s
+INFO    |convergence                                 |          Simulation completed in 0.0112 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2074,8 +2074,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 82/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0229 s
-INFO    |convergence                                 |          Simulation completed in 0.0231 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0232 s
+INFO    |convergence                                 |          Simulation completed in 0.0234 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2096,8 +2096,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 83/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0469 s
-INFO    |convergence                                 |          Simulation completed in 0.0471 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0472 s
+INFO    |convergence                                 |          Simulation completed in 0.0474 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2118,8 +2118,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 84/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0889 s
-INFO    |convergence                                 |          Simulation completed in 0.0892 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0892 s
+INFO    |convergence                                 |          Simulation completed in 0.0895 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2141,7 +2141,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 85/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0133 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0134 s
 INFO    |convergence                                 |          Simulation completed in 0.0135 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2164,7 +2164,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0300 s
-INFO    |convergence                                 |          Simulation completed in 0.0301 s
+INFO    |convergence                                 |          Simulation completed in 0.0302 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2191,8 +2191,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 87/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0591 s
-INFO    |convergence                                 |          Simulation completed in 0.0593 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0585 s
+INFO    |convergence                                 |          Simulation completed in 0.0586 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2219,7 +2219,7 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 88/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.103 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.102 s
 INFO    |convergence                                 |          Simulation completed in 0.103 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2248,8 +2248,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 89/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0235 s
-INFO    |convergence                                 |          Simulation completed in 0.0237 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0234 s
+INFO    |convergence                                 |          Simulation completed in 0.0236 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2271,7 +2271,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0451 s
-INFO    |convergence                                 |          Simulation completed in 0.0453 s
+INFO    |convergence                                 |          Simulation completed in 0.0452 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2298,8 +2298,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 91/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0956 s
-INFO    |convergence                                 |          Simulation completed in 0.0958 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0943 s
+INFO    |convergence                                 |          Simulation completed in 0.0945 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2326,8 +2326,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 92/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.153 s
-INFO    |convergence                                 |          Simulation completed in 0.154 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.152 s
+INFO    |convergence                                 |          Simulation completed in 0.152 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2355,8 +2355,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 93/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0389 s
-INFO    |convergence                                 |          Simulation completed in 0.0391 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0387 s
+INFO    |convergence                                 |          Simulation completed in 0.0389 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2377,8 +2377,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 94/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0905 s
-INFO    |convergence                                 |          Simulation completed in 0.0907 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0906 s
+INFO    |convergence                                 |          Simulation completed in 0.0908 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2405,8 +2405,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 95/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.181 s
-INFO    |convergence                                 |          Simulation completed in 0.181 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.176 s
+INFO    |convergence                                 |          Simulation completed in 0.177 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2434,7 +2434,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.312 s
-INFO    |convergence                                 |          Simulation completed in 0.313 s
+INFO    |convergence                                 |          Simulation completed in 0.312 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2463,8 +2463,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 97/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0131 s
-INFO    |convergence                                 |          Simulation completed in 0.0133 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0135 s
+INFO    |convergence                                 |          Simulation completed in 0.0137 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2485,8 +2485,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 98/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0297 s
-INFO    |convergence                                 |          Simulation completed in 0.0299 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0294 s
+INFO    |convergence                                 |          Simulation completed in 0.0296 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2513,8 +2513,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 99/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0605 s
-INFO    |convergence                                 |          Simulation completed in 0.0607 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0602 s
+INFO    |convergence                                 |          Simulation completed in 0.0604 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2541,8 +2541,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 100/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.115 s
-INFO    |convergence                                 |          Simulation completed in 0.115 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.117 s
+INFO    |convergence                                 |          Simulation completed in 0.117 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2570,8 +2570,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 101/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0172 s
-INFO    |convergence                                 |          Simulation completed in 0.0173 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0169 s
+INFO    |convergence                                 |          Simulation completed in 0.0171 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2598,8 +2598,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 102/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0393 s
-INFO    |convergence                                 |          Simulation completed in 0.0394 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0387 s
+INFO    |convergence                                 |          Simulation completed in 0.0389 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2633,7 +2633,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0756 s
-INFO    |convergence                                 |          Simulation completed in 0.0758 s
+INFO    |convergence                                 |          Simulation completed in 0.0757 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2667,7 +2667,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.129 s
-INFO    |convergence                                 |          Simulation completed in 0.130 s
+INFO    |convergence                                 |          Simulation completed in 0.129 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2701,8 +2701,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 105/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0299 s
-INFO    |convergence                                 |          Simulation completed in 0.0300 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0298 s
+INFO    |convergence                                 |          Simulation completed in 0.0299 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2729,8 +2729,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 106/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0584 s
-INFO    |convergence                                 |          Simulation completed in 0.0586 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0579 s
+INFO    |convergence                                 |          Simulation completed in 0.0581 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2894,8 +2894,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 111/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.234 s
-INFO    |convergence                                 |          Simulation completed in 0.235 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.226 s
+INFO    |convergence                                 |          Simulation completed in 0.227 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2928,8 +2928,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 112/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.417 s
-INFO    |convergence                                 |          Simulation completed in 0.417 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.451 s
+INFO    |convergence                                 |          Simulation completed in 0.451 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2964,8 +2964,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 113/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0156 s
-INFO    |convergence                                 |          Simulation completed in 0.0158 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0159 s
+INFO    |convergence                                 |          Simulation completed in 0.0160 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -2986,8 +2986,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 114/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0374 s
-INFO    |convergence                                 |          Simulation completed in 0.0376 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0366 s
+INFO    |convergence                                 |          Simulation completed in 0.0368 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3014,8 +3014,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 115/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0735 s
-INFO    |convergence                                 |          Simulation completed in 0.0738 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0740 s
+INFO    |convergence                                 |          Simulation completed in 0.0742 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3042,8 +3042,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 116/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0167 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.136 s
-INFO    |convergence                                 |          Simulation completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.151 s
+INFO    |convergence                                 |          Simulation completed in 0.151 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3071,8 +3071,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 117/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0210 s
-INFO    |convergence                                 |          Simulation completed in 0.0212 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0208 s
+INFO    |convergence                                 |          Simulation completed in 0.0210 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3099,8 +3099,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 118/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0477 s
-INFO    |convergence                                 |          Simulation completed in 0.0479 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0476 s
+INFO    |convergence                                 |          Simulation completed in 0.0478 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3133,8 +3133,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 119/160
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0968 s
-INFO    |convergence                                 |          Simulation completed in 0.0970 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0969 s
+INFO    |convergence                                 |          Simulation completed in 0.0971 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3168,10 +3168,10 @@ INFO    |convergence                                 |  Wake type: prescribed
 INFO    |convergence                                 |  Chord lengths: 5
 INFO    |convergence                                 |  Panel aspect ratio: 4
 INFO    |convergence                                 |  Chordwise Panels: 4
-INFO    |convergence                                 |  Simulation completed in 0.0259 s
+INFO    |convergence                                 |  Simulation completed in 0.0260 s
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Example Airplane:
 INFO    |convergence                                 |      Main Wing:
 INFO    |convergence                                 |        WingCrossSection 1: 3
 INFO    |convergence                                 |        WingCrossSection 2: None
-INFO    |convergence                                 |Convergence analysis completed in 15.7 s
+INFO    |convergence                                 |Convergence analysis completed in 15.6 s

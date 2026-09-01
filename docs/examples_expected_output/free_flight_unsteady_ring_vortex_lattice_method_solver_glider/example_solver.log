@@ -1,10 +1,10 @@
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 30.6 s
-INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (125680987 bytes)
-INFO    |_serialization                              |Loading from example_solver.json.gz
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 30.7 s
+INFO    |_serialization                              |Saving FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.psz
+INFO    |_serialization                              |Saved FreeFlightUnsteadyRingVortexLatticeMethodSolver to example_solver.psz (94597979 bytes)
+INFO    |_serialization                              |Loading from example_solver.psz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
-INFO    |_serialization                              |Loaded FreeFlightUnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |_serialization                              |Loaded FreeFlightUnsteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Forces (in Geometry Axes):
 INFO    |output                                      |    fX_G:           -17.1 N

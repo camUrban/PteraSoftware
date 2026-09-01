@@ -5,8 +5,11 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
+import inspect
 import json
 import subprocess
+import textwrap
+from collections.abc import Callable
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
@@ -80,7 +83,105 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 
 # Increments only when the serialization structure changes (slots added/removed/
 # renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 26
+_FORMAT_VERSION = 27
+
+
+class UnboundCallable:
+    """A placeholder standing in for a custom callable that could not be rebuilt when a
+    saved object was loaded.
+
+    **Contains the following methods:**
+
+    None
+
+    **Notes:**
+
+    Saved files store a custom callable (a custom spacing function, an
+    AeroelasticWingMovement's second-derivative function, or a
+    FreeFlightUnsteadyProblem's external_loads_fn) as an inert marker holding the
+    callable's qualified name, its source text when that could be retrieved, and a
+    SHA-256 hash of that text. Nothing in the file is ever executed, so loading rebuilds
+    the marker as an UnboundCallable rather than as the original function.
+
+    An UnboundCallable passes callable checks, so a loaded object keeps the same
+    structure as the one that was saved, and saving it again writes the same marker back
+    out. It cannot be invoked: calling it raises a RuntimeError that names the original
+    function and prints its recorded source, so a user who needs to re-solve or
+    regenerate motion can reconstruct the function. Loading a solved simulation never
+    invokes these callables, so a file holding them loads and can be visualized without
+    any of them.
+    """
+
+    __slots__ = ("_qualname", "_source", "_source_hash")
+
+    def __init__(
+        self, qualname: str, source: str | None, source_hash: str | None
+    ) -> None:
+        """The initialization method.
+
+        :param qualname: The original callable's qualified name, including its module.
+        :param source: The original callable's dedented source text, or None if it could
+            not be retrieved when the object was saved.
+        :param source_hash: The lowercase hexadecimal SHA-256 digest of source encoded
+            as UTF-8, or None if source is None.
+        :return: None
+        """
+        if not isinstance(qualname, str):
+            raise TypeError(f"qualname must be a str, got {type(qualname).__name__}.")
+        self._qualname = qualname
+
+        if source is not None and not isinstance(source, str):
+            raise TypeError(
+                f"source must be a str or None, got {type(source).__name__}."
+            )
+        self._source = source
+
+        if source_hash is not None and not isinstance(source_hash, str):
+            raise TypeError(
+                f"source_hash must be a str or None, got {type(source_hash).__name__}."
+            )
+        self._source_hash = source_hash
+
+    # --- Immutable: read only properties ---
+    @property
+    def qualname(self) -> str:
+        return self._qualname
+
+    @property
+    def source(self) -> str | None:
+        return self._source
+
+    @property
+    def source_hash(self) -> str | None:
+        return self._source_hash
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        """Raises a RuntimeError naming the original callable and its source.
+
+        :param args: Ignored positional arguments, accepted so the placeholder can stand
+            wherever the original callable stood.
+        :param kwargs: Ignored keyword arguments, accepted for the same reason.
+        :return: Never returns.
+        """
+        if self._source is None:
+            source_note = (
+                "Its source text could not be retrieved when the object was saved."
+            )
+        else:
+            source_note = "Its recorded source is:\n\n" + self._source
+        raise RuntimeError(
+            f"The custom callable {self._qualname} was replaced by a placeholder when "
+            "the object was loaded, because saved files store only a callable's name "
+            "and source text and never execute anything they contain. Reconstruct the "
+            f"function and rebuild the object with it to use it again. {source_note}"
+        )
+
+    def __repr__(self) -> str:
+        """Returns a string naming the original callable.
+
+        :return: The repr string.
+        """
+        return f"UnboundCallable(qualname={self._qualname!r})"
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -197,6 +298,13 @@ def save(path: str | Path, obj: object) -> None:
     Airfoil shared by every per step WingCrossSection) is written once, every other
     reference is written as a pointer to it, and load() restores the sharing.
 
+    Custom callables (custom spacing functions, an AeroelasticWingMovement's second-
+    derivative functions, and a FreeFlightUnsteadyProblem's external_loads_fn) cannot be
+    written to JSON as code. Each is stored as an inert marker holding its qualified
+    name, its source text when that can be retrieved, and a hash of that text. The built
+    in "sine" and "uniform" spacings are stored by name and restored exactly. See load()
+    for how the markers are restored.
+
     The file records an internal serialization format version. load() accepts a file
     only when that format version matches the running code's exactly, and there is no
     migration of files written under a different format version. The format version is
@@ -256,6 +364,13 @@ def load(path: str | Path, max_size: int | None = None) -> object:
 
     If the path ends with ".json.gz", ignoring case, the input is gzip decompressed
     automatically.
+
+    Nothing in the file is ever executed. A custom callable stored by save() as an inert
+    marker is restored as an UnboundCallable, a placeholder that passes callable checks
+    but raises a RuntimeError naming the original function and printing its recorded
+    source if it is ever invoked. Loading a solved simulation never invokes these
+    callables, so such a file loads and can be visualized as usual. Re-solving or
+    regenerating motion from it requires reconstructing the original functions.
 
     The file records an internal serialization format version. A file is accepted only
     when that format version matches the running code's exactly, and there is no
@@ -692,13 +807,16 @@ def _serialize_value(
     """Serializes a single value based on its runtime type.
 
     Dispatch order: None, bool (before int since bool is a subclass of int), int, float,
-    str, bytes, ndarray, tuple, list, dict, callable. int and float are wrapped in
-    {"_type": ..., "value": ...} dicts rather than serialized as bare JSON numbers to
-    eliminate the int/float ambiguity that arises because JSON has a single number type.
-    None, bool, and str remain bare JSON values because they map to unambiguous JSON
-    types (null, boolean, string). bytes are encoded as base64 strings, the same
-    encoding _ndarray_to_dict uses for array buffers. dicts must have str keys because
-    JSON object keys are strings, and a lossy key coercion would break the round trip.
+    str, bytes, ndarray, tuple, list, dict, registered class instance, UnboundCallable,
+    callable. The built in "sine" and "uniform" spacing functions serialize by name, and
+    every other callable serializes as an inert custom callable marker (see
+    _custom_callable_to_dict). int and float are wrapped in {"_type": ..., "value": ...}
+    dicts rather than serialized as bare JSON numbers to eliminate the int/float
+    ambiguity that arises because JSON has a single number type. None, bool, and str
+    remain bare JSON values because they map to unambiguous JSON types (null, boolean,
+    string). bytes are encoded as base64 strings, the same encoding _ndarray_to_dict
+    uses for array buffers. dicts must have str keys because JSON object keys are
+    strings, and a lossy key coercion would break the round trip.
 
     :param value: The value to serialize.
     :param memo: The identity memo threaded through to _object_to_dict for registered
@@ -766,16 +884,63 @@ def _serialize_value(
     if type(value).__name__ in _CLASS_REGISTRY:
         return _object_to_dict(value, memo=memo)
 
+    # An UnboundCallable re-emits the marker it was loaded from, so a loaded object
+    # saves and hashes identically to the original without re-inspecting anything.
+    if isinstance(value, UnboundCallable):
+        return {
+            "_type": "custom_callable",
+            "qualname": value.qualname,
+            "source": value.source,
+            "source_hash": value.source_hash,
+        }
+
     if callable(value):
         name = _CALLABLE_FUNC_TO_NAME.get(value)
         if name is None:
-            raise ValueError(
-                "Only 'sine' and 'uniform' spacing functions are serializable. Custom "
-                "callables cannot be serialized."
-            )
+            return _custom_callable_to_dict(value)
         return {"_type": "callable", "name": name}
 
     raise TypeError(f"_serialize_value does not handle {type(value).__name__}.")
+
+
+def _custom_callable_to_dict(value: Callable[..., object]) -> dict[str, Any]:
+    """Serializes a custom callable as an inert marker.
+
+    The marker records the callable's qualified name, its dedented source text when
+    inspect.getsource can retrieve it, and the SHA-256 hash of that text. A callable
+    without a __qualname__ of its own (a functools.partial or an instance of a class
+    defining __call__) is named after its type. Source retrieval fails for builtins,
+    partials, callable instances, and functions defined in a REPL or by exec, in which
+    case the source and its hash are both null. The marker is deserialized as an
+    UnboundCallable, and nothing stored in it is ever executed.
+
+    :param value: The custom callable to serialize.
+    :return: The marker dict.
+    """
+    qualname = getattr(value, "__qualname__", None)
+    if isinstance(qualname, str):
+        module = getattr(value, "__module__", None)
+    else:
+        qualname = type(value).__qualname__
+        module = type(value).__module__
+    if isinstance(module, str):
+        qualname = f"{module}.{qualname}"
+
+    try:
+        source: str | None = textwrap.dedent(inspect.getsource(value))
+    except (OSError, TypeError):
+        source = None
+
+    source_hash = None
+    if source is not None:
+        source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+    return {
+        "_type": "custom_callable",
+        "qualname": qualname,
+        "source": source,
+        "source_hash": source_hash,
+    }
 
 
 def _deserialize_value(
@@ -845,6 +1010,12 @@ def _deserialize_value(
             if func is None:
                 raise ValueError(f"Unknown callable name: '{name}'.")
             return func
+        if type_tag == "custom_callable":
+            return UnboundCallable(
+                qualname=data["qualname"],
+                source=data["source"],
+                source_hash=data["source_hash"],
+            )
         if type_tag in _CLASS_REGISTRY:
             return _object_from_dict(data, table=table)
         raise TypeError(f"Unknown _type tag: '{type_tag}'.")

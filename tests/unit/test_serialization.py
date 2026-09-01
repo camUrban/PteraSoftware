@@ -1,10 +1,14 @@
 """This module contains classes to test functions in the serialization module."""
 
+import functools
+import hashlib
+import inspect
 import json
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 from unittest import mock
 
 import numpy as np
@@ -25,6 +29,7 @@ from pterasoftware._panel import Panel
 # noinspection PyProtectedMember
 from pterasoftware._serialization import (
     _FORMAT_VERSION,
+    UnboundCallable,
     _deserialize_value,
     _ndarray_from_dict,
     _ndarray_to_dict,
@@ -513,13 +518,95 @@ class TestSerializeValue(unittest.TestCase):
         result = _serialize_value(oscillating_lin_at_time)
         self.assertEqual(result, {"_type": "callable", "name": "uniform"})
 
-    def test_callable_custom_raises(self) -> None:
-        """Tests that a custom callable raises a ValueError.
+    def test_custom_callable_serializes_as_marker(self) -> None:
+        """Tests that a custom callable serializes as an inert marker holding its
+        qualified name, its dedented source text, and the SHA-256 hash of that text.
 
         :return: None
         """
-        with self.assertRaises(ValueError):
-            _serialize_value(lambda x: x)
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        source = textwrap.dedent(inspect.getsource(custom_spacing))
+        result = _serialize_value(custom_spacing)
+        self.assertEqual(
+            result,
+            {
+                "_type": "custom_callable",
+                "qualname": (
+                    "tests.unit.fixtures.serialization_fixtures."
+                    "make_custom_spacing_fixture.<locals>.custom_spacing"
+                ),
+                "source": source,
+                "source_hash": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+            },
+        )
+
+    def test_custom_callable_lambda_serializes_as_marker(self) -> None:
+        """Tests that a lambda serializes as a marker whose source is the enclosing
+        statement.
+
+        :return: None
+        """
+        result = _serialize_value(lambda time: 0.0)
+        assert isinstance(result, dict)
+        self.assertEqual(result["_type"], "custom_callable")
+        self.assertTrue(result["qualname"].endswith(".<locals>.<lambda>"))
+        self.assertIn("lambda time: 0.0", result["source"])
+        self.assertEqual(
+            result["source_hash"],
+            hashlib.sha256(result["source"].encode("utf-8")).hexdigest(),
+        )
+
+    def test_custom_callable_without_source_serializes_as_marker(self) -> None:
+        """Tests that a callable whose source cannot be retrieved serializes as a marker
+        with null source and source hash rather than raising.
+
+        :return: None
+        """
+        result = _serialize_value(len)
+        self.assertEqual(
+            result,
+            {
+                "_type": "custom_callable",
+                "qualname": "builtins.len",
+                "source": None,
+                "source_hash": None,
+            },
+        )
+
+    def test_custom_callable_partial_serializes_as_marker(self) -> None:
+        """Tests that a functools.partial, which has no __qualname__ of its own,
+        serializes as a marker named after its type.
+
+        :return: None
+        """
+        result = _serialize_value(functools.partial(max, 0.0))
+        self.assertEqual(
+            result,
+            {
+                "_type": "custom_callable",
+                "qualname": "functools.partial",
+                "source": None,
+                "source_hash": None,
+            },
+        )
+
+    def test_unbound_callable_serializes_as_its_marker(self) -> None:
+        """Tests that an UnboundCallable serializes back to the marker it was loaded
+        from, without re-inspecting anything.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_unbound_callable_fixture()
+        result = _serialize_value(unbound)
+        self.assertEqual(
+            result,
+            {
+                "_type": "custom_callable",
+                "qualname": unbound.qualname,
+                "source": unbound.source,
+                "source_hash": unbound.source_hash,
+            },
+        )
 
     def test_unsupported_type_raises(self) -> None:
         """Tests that an unsupported type raises a TypeError.
@@ -684,6 +771,46 @@ class TestDeserializeValue(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             _deserialize_value({"_type": "callable", "name": "unknown"})
+
+    def test_custom_callable_deserializes_to_unbound_callable(self) -> None:
+        """Tests that a custom callable marker deserializes to an UnboundCallable
+        carrying the marker's fields.
+
+        :return: None
+        """
+        source = "def my_spacing(time: float) -> float:\n    return 0.0\n"
+        source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
+        result = _deserialize_value(
+            {
+                "_type": "custom_callable",
+                "qualname": "my_module.my_spacing",
+                "source": source,
+                "source_hash": source_hash,
+            }
+        )
+        assert isinstance(result, UnboundCallable)
+        self.assertEqual(result.qualname, "my_module.my_spacing")
+        self.assertEqual(result.source, source)
+        self.assertEqual(result.source_hash, source_hash)
+
+    def test_custom_callable_without_source_deserializes(self) -> None:
+        """Tests that a custom callable marker with null source and source hash
+        deserializes to an UnboundCallable with None for both.
+
+        :return: None
+        """
+        result = _deserialize_value(
+            {
+                "_type": "custom_callable",
+                "qualname": "builtins.len",
+                "source": None,
+                "source_hash": None,
+            }
+        )
+        assert isinstance(result, UnboundCallable)
+        self.assertEqual(result.qualname, "builtins.len")
+        self.assertIsNone(result.source)
+        self.assertIsNone(result.source_hash)
 
     def test_bare_int_raises(self) -> None:
         """Tests that a bare JSON int raises a ValueError.
@@ -870,6 +997,121 @@ class TestValueRoundTrip(unittest.TestCase):
             oscillating_lin_at_time,
         )
 
+    def test_custom_callable(self) -> None:
+        """Tests that a custom callable round trips to an UnboundCallable whose own
+        serialization is the identical marker, so a loaded object can be saved again.
+
+        :return: None
+        """
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        marker = _serialize_value(custom_spacing)
+        result = _deserialize_value(marker)
+        assert isinstance(result, UnboundCallable)
+        self.assertEqual(_serialize_value(result), marker)
+
+
+class TestUnboundCallable(unittest.TestCase):
+    """This class contains methods for testing UnboundCallable."""
+
+    def test_is_callable(self) -> None:
+        """Tests that an UnboundCallable passes the callable checks the movement and
+        problem classes dispatch on.
+
+        :return: None
+        """
+        self.assertTrue(
+            callable(serialization_fixtures.make_unbound_callable_fixture())
+        )
+
+    def test_properties(self) -> None:
+        """Tests that the constructor arguments are exposed as properties.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_unbound_callable_fixture()
+        self.assertEqual(unbound.qualname, "my_module.my_spacing")
+        self.assertEqual(
+            unbound.source, "def my_spacing(time: float) -> float:\n    return 0.0\n"
+        )
+        assert unbound.source is not None
+        self.assertEqual(
+            unbound.source_hash,
+            hashlib.sha256(unbound.source.encode("utf-8")).hexdigest(),
+        )
+
+    def test_properties_are_read_only(self) -> None:
+        """Tests that the properties cannot be reassigned.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_unbound_callable_fixture()
+        for name in ("qualname", "source", "source_hash"):
+            with self.subTest(name=name):
+                with self.assertRaises(AttributeError):
+                    setattr(unbound, name, "changed")
+
+    def test_qualname_validation(self) -> None:
+        """Tests that a non-str qualname is rejected.
+
+        :return: None
+        """
+        bad_qualname: Any = 42
+        with self.assertRaises(TypeError):
+            UnboundCallable(qualname=bad_qualname, source=None, source_hash=None)
+
+    def test_source_validation(self) -> None:
+        """Tests that a source that is neither a str nor None is rejected.
+
+        :return: None
+        """
+        bad_source: Any = 42
+        with self.assertRaises(TypeError):
+            UnboundCallable(qualname="my_module.f", source=bad_source, source_hash=None)
+
+    def test_source_hash_validation(self) -> None:
+        """Tests that a source hash that is neither a str nor None is rejected.
+
+        :return: None
+        """
+        bad_source_hash: Any = 42
+        with self.assertRaises(TypeError):
+            UnboundCallable(
+                qualname="my_module.f", source=None, source_hash=bad_source_hash
+            )
+
+    def test_call_raises_naming_function_and_source(self) -> None:
+        """Tests that invoking an UnboundCallable raises a RuntimeError that names the
+        original function and includes its stored source text.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_unbound_callable_fixture()
+        assert unbound.source is not None
+        with self.assertRaises(RuntimeError) as context:
+            unbound(0.5)
+        message = str(context.exception)
+        self.assertIn(unbound.qualname, message)
+        self.assertIn(unbound.source, message)
+
+    def test_call_raises_without_source(self) -> None:
+        """Tests that invoking an UnboundCallable with no stored source still raises a
+        RuntimeError that names the original function.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_sourceless_unbound_callable_fixture()
+        with self.assertRaises(RuntimeError) as context:
+            unbound(0.5)
+        self.assertIn(unbound.qualname, str(context.exception))
+
+    def test_repr_names_function(self) -> None:
+        """Tests that the repr names the original function.
+
+        :return: None
+        """
+        unbound = serialization_fixtures.make_unbound_callable_fixture()
+        self.assertIn(unbound.qualname, repr(unbound))
+
 
 class TestObjectToDict(unittest.TestCase):
     """This class contains methods for testing _object_to_dict."""
@@ -1011,6 +1253,67 @@ class TestHashObject(unittest.TestCase):
         ):
             bumped_hash = hash_object(operating_point)
         self.assertNotEqual(base_hash, bumped_hash)
+
+    def test_equal_for_custom_callables_with_same_source(self) -> None:
+        """Tests that two distinct function objects with identical source text hash
+        identically.
+
+        :return: None
+        """
+        first = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=serialization_fixtures.make_custom_spacing_fixture(),
+        )
+        second = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=serialization_fixtures.make_custom_spacing_fixture(),
+        )
+        self.assertIsNot(first.spacingVCg__E, second.spacingVCg__E)
+        self.assertEqual(hash_object(first), hash_object(second))
+
+    def test_differs_for_custom_callables_with_different_source(self) -> None:
+        """Tests that custom callables with different source text hash differently, so
+        editing a custom spacing function invalidates cached results.
+
+        :return: None
+        """
+        first = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=serialization_fixtures.make_custom_spacing_fixture(),
+        )
+        second = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=serialization_fixtures.make_other_custom_spacing_fixture(),
+        )
+        self.assertNotEqual(hash_object(first), hash_object(second))
+
+    def test_stable_across_save_load_round_trip_with_custom_callable(self) -> None:
+        """Tests that a save and load round trip preserves the digest of an object
+        holding a custom callable, even though the callable loads as an UnboundCallable.
+
+        :return: None
+        """
+        operating_point_movement = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=serialization_fixtures.make_custom_spacing_fixture(),
+        )
+        original_hash = hash_object(operating_point_movement)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "operating_point_movement.json"
+            save(path, operating_point_movement)
+            loaded = load(path)
+        assert isinstance(loaded, OperatingPointMovement)
+        self.assertEqual(hash_object(loaded), original_hash)
 
     def test_unregistered_object_raises(self) -> None:
         """Tests that hashing an unregistered object raises a TypeError.
@@ -1906,6 +2209,78 @@ class TestMovementClassesRoundTrip(unittest.TestCase):
         assert isinstance(result, OperatingPointMovement)
         self.assertEqual(result.base_operating_point.vCg__E, 10.0)
 
+    def test_custom_spacing_operating_point_movement(self) -> None:
+        """Tests that an OperatingPointMovement with a custom spacing function round
+        trips with the function replaced by an UnboundCallable.
+
+        :return: None
+        """
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        operating_point_movement = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=custom_spacing,
+        )
+        result = _deserialize_value(_serialize_value(operating_point_movement))
+        assert isinstance(result, OperatingPointMovement)
+        assert isinstance(result.spacingVCg__E, UnboundCallable)
+        self.assertEqual(
+            result.spacingVCg__E.qualname,
+            custom_spacing.__module__ + "." + custom_spacing.__qualname__,
+        )
+        self.assertEqual(result.ampVCg__E, 1.0)
+        self.assertEqual(result.periodVCg__E, 1.0)
+
+    def test_custom_spacing_operating_point_movement_raises_when_regenerated(
+        self,
+    ) -> None:
+        """Tests that a round tripped OperatingPointMovement with a custom spacing
+        function raises only when it is asked to generate motion, which invokes the
+        UnboundCallable. The custom spacing validator wraps the UnboundCallable's
+        RuntimeError in a ValueError, so the ValueError's message names the function and
+        its chained context is the RuntimeError.
+
+        :return: None
+        """
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        operating_point_movement = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=custom_spacing,
+        )
+        result = _deserialize_value(_serialize_value(operating_point_movement))
+        assert isinstance(result, OperatingPointMovement)
+        with self.assertRaises(ValueError) as context:
+            result.generate_operating_point_at_time_step(1, 0.1)
+        self.assertIn(custom_spacing.__qualname__, str(context.exception))
+        self.assertIsInstance(context.exception.__context__, RuntimeError)
+
+    def test_save_load_custom_spacing_operating_point_movement(self) -> None:
+        """Tests that an OperatingPointMovement with a custom spacing function survives
+        a save/load round trip with the function replaced by an UnboundCallable.
+
+        :return: None
+        """
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        operating_point_movement = OperatingPointMovement(
+            base_operating_point=OperatingPoint(),
+            ampVCg__E=1.0,
+            periodVCg__E=1.0,
+            spacingVCg__E=custom_spacing,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "operating_point_movement.json"
+            save(path, operating_point_movement)
+            result = load(path)
+        assert isinstance(result, OperatingPointMovement)
+        assert isinstance(result.spacingVCg__E, UnboundCallable)
+        self.assertEqual(
+            result.spacingVCg__E.qualname,
+            custom_spacing.__module__ + "." + custom_spacing.__qualname__,
+        )
+
     def test_save_load_wing_cross_section_movement(self) -> None:
         """Tests that a WingCrossSectionMovement survives a save/load round trip.
 
@@ -2201,12 +2576,17 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
         result = _deserialize_value(_serialize_value(wing_cross_section_movement))
         assert isinstance(result, AeroelasticWingCrossSectionMovement)
 
-    def test_custom_callable_spacing_is_not_serializable(self) -> None:
+    def test_custom_callable_spacing_round_trip(self) -> None:
         """Tests that an AeroelasticWingMovement with a custom callable angular spacing
-        raises on serialization, matching the standard movement-class behavior.
+        and its second-derivative companion round trips with both callables replaced by
+        UnboundCallables and the named spacings untouched.
 
         :return: None
         """
+        custom_spacing = serialization_fixtures.make_custom_spacing_fixture()
+        custom_second_derivative = (
+            serialization_fixtures.make_custom_second_derivative_fixture()
+        )
         wing_movement = self.problem.movement.airplane_movements[0].wing_movements[0]
         custom_wing_movement = AeroelasticWingMovement(
             base_wing=wing_movement.base_wing,
@@ -2216,12 +2596,36 @@ class TestAeroelasticMovementClassesRoundTrip(unittest.TestCase):
             ),
             ampAngles_Gs_to_Wn_ixyz=(10.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
-            spacingAngles_Gs_to_Wn_ixyz=(lambda time: 0.0, "sine", "sine"),
+            spacingAngles_Gs_to_Wn_ixyz=(custom_spacing, "sine", "sine"),
             phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[lambda time: 0.0, None, None],
+            spacingAnglesSecondDerivative_Gs_to_Wn_ixyz=[
+                custom_second_derivative,
+                None,
+                None,
+            ],
         )
-        with self.assertRaises(ValueError):
-            _serialize_value(custom_wing_movement)
+        result = _deserialize_value(_serialize_value(custom_wing_movement))
+        assert isinstance(result, AeroelasticWingMovement)
+
+        spacing = result.spacingAngles_Gs_to_Wn_ixyz[0]
+        assert isinstance(spacing, UnboundCallable)
+        self.assertEqual(
+            spacing.qualname,
+            custom_spacing.__module__ + "." + custom_spacing.__qualname__,
+        )
+        self.assertEqual(result.spacingAngles_Gs_to_Wn_ixyz[1:], ("sine", "sine"))
+
+        second_derivative = result.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[0]
+        assert isinstance(second_derivative, UnboundCallable)
+        self.assertEqual(
+            second_derivative.qualname,
+            custom_second_derivative.__module__
+            + "."
+            + custom_second_derivative.__qualname__,
+        )
+        self.assertEqual(
+            result.spacingAnglesSecondDerivative_Gs_to_Wn_ixyz[1:], (None, None)
+        )
 
 
 class TestAeroelasticUnsteadyProblemRoundTrip(unittest.TestCase):
@@ -2499,9 +2903,10 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         assert isinstance(result, FreeFlightUnsteadyProblem)
         self.assertEqual(result.k_max, 5)
 
-    def test_custom_external_loads_fn_is_not_serializable(self) -> None:
-        """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn raises
-        on serialization, matching the custom-callable disposition used elsewhere.
+    def test_custom_external_loads_fn_round_trip(self) -> None:
+        """Tests that a FreeFlightUnsteadyProblem with a custom external_loads_fn round
+        trips with the function replaced by an UnboundCallable and its MuJoCoModel
+        rebuilt and functional.
 
         :return: None
         """
@@ -2515,8 +2920,15 @@ class TestFreeFlightUnsteadyProblemRoundTrip(unittest.TestCase):
         problem = problem_fixtures.make_basic_free_flight_unsteady_problem_fixture(
             external_loads_fn=external_loads_fn
         )
-        with self.assertRaises(ValueError):
-            _serialize_value(problem)
+        result = _deserialize_value(_serialize_value(problem))
+        assert isinstance(result, FreeFlightUnsteadyProblem)
+        assert isinstance(result.external_loads_fn, UnboundCallable)
+        self.assertEqual(
+            result.external_loads_fn.qualname,
+            external_loads_fn.__module__ + "." + external_loads_fn.__qualname__,
+        )
+        # The rebuilt MuJoCoModel is functional.
+        result._mujoco_model.step()
 
     def test_mujoco_assets_problem_round_trip(self) -> None:
         """Tests that a FreeFlightUnsteadyProblem whose MuJoCoModel was built with

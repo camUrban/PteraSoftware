@@ -21,7 +21,7 @@ INFO    |trim                                        |  Objective: 0.156
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.143 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.140 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.0 m/s
 INFO    |trim                                        |    alpha: 5.00 deg
@@ -31,7 +31,7 @@ INFO    |trim                                        |  Objective: 0.155
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.139 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.0 m/s
 INFO    |trim                                        |    alpha: 5.01 deg
@@ -41,7 +41,7 @@ INFO    |trim                                        |  Objective: 0.156
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.0 m/s
 INFO    |trim                                        |    alpha: 5.00 deg
@@ -51,7 +51,7 @@ INFO    |trim                                        |  Objective: 0.156
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.0 m/s
 INFO    |trim                                        |    alpha: 5.00 deg
@@ -61,7 +61,7 @@ INFO    |trim                                        |  Objective: 0.156
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.1 m/s
 INFO    |trim                                        |    alpha: 4.99 deg
@@ -71,7 +71,7 @@ INFO    |trim                                        |  Objective: 0.150
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.1 m/s
 INFO    |trim                                        |    alpha: 4.99 deg
@@ -81,7 +81,7 @@ INFO    |trim                                        |  Objective: 0.149
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.1 m/s
 INFO    |trim                                        |    alpha: 5.00 deg
@@ -91,7 +91,7 @@ INFO    |trim                                        |  Objective: 0.150
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.1 m/s
 INFO    |trim                                        |    alpha: 4.99 deg
@@ -101,7 +101,7 @@ INFO    |trim                                        |  Objective: 0.150
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.1 m/s
 INFO    |trim                                        |    alpha: 4.99 deg
@@ -111,7 +111,7 @@ INFO    |trim                                        |  Objective: 0.150
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.4 m/s
 INFO    |trim                                        |    alpha: 4.88 deg
@@ -121,7 +121,7 @@ INFO    |trim                                        |  Objective: 0.129
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.4 m/s
 INFO    |trim                                        |    alpha: 4.88 deg
@@ -131,7 +131,7 @@ INFO    |trim                                        |  Objective: 0.128
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.4 m/s
 INFO    |trim                                        |    alpha: 4.89 deg
@@ -141,7 +141,7 @@ INFO    |trim                                        |  Objective: 0.129
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.133 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.4 m/s
 INFO    |trim                                        |    alpha: 4.88 deg
@@ -151,7 +151,7 @@ INFO    |trim                                        |  Objective: 0.129
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.4 m/s
 INFO    |trim                                        |    alpha: 4.88 deg
@@ -161,7 +161,7 @@ INFO    |trim                                        |  Objective: 0.129
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 11.6 m/s
 INFO    |trim                                        |    alpha: 4.46 deg
@@ -171,7 +171,7 @@ INFO    |trim                                        |  Objective: 0.0851
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.142 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.139 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 11.6 m/s
 INFO    |trim                                        |    alpha: 4.46 deg
@@ -181,7 +181,7 @@ INFO    |trim                                        |  Objective: 0.0874
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 11.6 m/s
 INFO    |trim                                        |    alpha: 4.47 deg
@@ -191,7 +191,7 @@ INFO    |trim                                        |  Objective: 0.0862
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 11.6 m/s
 INFO    |trim                                        |    alpha: 4.46 deg
@@ -201,7 +201,7 @@ INFO    |trim                                        |  Objective: 0.0851
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 11.6 m/s
 INFO    |trim                                        |    alpha: 4.46 deg
@@ -211,7 +211,7 @@ INFO    |trim                                        |  Objective: 0.0851
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.7 m/s
 INFO    |trim                                        |    alpha: 4.78 deg
@@ -221,7 +221,7 @@ INFO    |trim                                        |  Objective: 0.109
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.7 m/s
 INFO    |trim                                        |    alpha: 4.78 deg
@@ -231,7 +231,7 @@ INFO    |trim                                        |  Objective: 0.108
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.7 m/s
 INFO    |trim                                        |    alpha: 4.79 deg
@@ -241,7 +241,7 @@ INFO    |trim                                        |  Objective: 0.109
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.7 m/s
 INFO    |trim                                        |    alpha: 4.78 deg
@@ -251,7 +251,7 @@ INFO    |trim                                        |  Objective: 0.109
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 10.7 m/s
 INFO    |trim                                        |    alpha: 4.78 deg
@@ -261,7 +261,7 @@ INFO    |trim                                        |  Objective: 0.109
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 14.1 m/s
 INFO    |trim                                        |    alpha: 2.84 deg
@@ -271,7 +271,7 @@ INFO    |trim                                        |  Objective: 0.0422
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 14.1 m/s
 INFO    |trim                                        |    alpha: 2.84 deg
@@ -281,7 +281,7 @@ INFO    |trim                                        |  Objective: 0.0424
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 14.1 m/s
 INFO    |trim                                        |    alpha: 2.85 deg
@@ -291,7 +291,7 @@ INFO    |trim                                        |  Objective: 0.0420
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 14.1 m/s
 INFO    |trim                                        |    alpha: 2.84 deg
@@ -301,7 +301,7 @@ INFO    |trim                                        |  Objective: 0.0422
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 14.1 m/s
 INFO    |trim                                        |    alpha: 2.84 deg
@@ -311,7 +311,7 @@ INFO    |trim                                        |  Objective: 0.0422
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.0 m/s
 INFO    |trim                                        |    alpha: 3.65 deg
@@ -321,7 +321,7 @@ INFO    |trim                                        |  Objective: 0.0485
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.0 m/s
 INFO    |trim                                        |    alpha: 3.65 deg
@@ -331,7 +331,7 @@ INFO    |trim                                        |  Objective: 0.0488
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.0 m/s
 INFO    |trim                                        |    alpha: 3.66 deg
@@ -341,7 +341,7 @@ INFO    |trim                                        |  Objective: 0.0496
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.0 m/s
 INFO    |trim                                        |    alpha: 3.65 deg
@@ -351,7 +351,7 @@ INFO    |trim                                        |  Objective: 0.0485
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.0 m/s
 INFO    |trim                                        |    alpha: 3.65 deg
@@ -371,7 +371,7 @@ INFO    |trim                                        |  Objective: 0.0256
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.6 m/s
 INFO    |trim                                        |    alpha: 3.19 deg
@@ -381,7 +381,7 @@ INFO    |trim                                        |  Objective: 0.0258
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.6 m/s
 INFO    |trim                                        |    alpha: 3.20 deg
@@ -391,7 +391,7 @@ INFO    |trim                                        |  Objective: 0.0254
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.134 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.6 m/s
 INFO    |trim                                        |    alpha: 3.19 deg
@@ -401,7 +401,7 @@ INFO    |trim                                        |  Objective: 0.0256
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.135 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.6 m/s
 INFO    |trim                                        |    alpha: 3.19 deg
@@ -411,7 +411,7 @@ INFO    |trim                                        |  Objective: 0.0256
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.138 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.136 s
 INFO    |trim                                        |  State:
 INFO    |trim                                        |    vCg__E: 13.5 m/s
 INFO    |trim                                        |    alpha: 3.26 deg
@@ -419,4 +419,4 @@ INFO    |trim                                        |    beta: -3.41E-05 deg
 INFO    |trim                                        |    externalFX_W: 7.51 N
 INFO    |trim                                        |  Objective: 0.0222
 INFO    |trim                                        |Acceptable value reached with local search
-INFO    |trim                                        |Trim analysis completed in 6.78 s
+INFO    |trim                                        |Trim analysis completed in 6.71 s

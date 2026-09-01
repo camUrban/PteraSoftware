@@ -381,17 +381,16 @@ example_solver.run(
 )
 print("The simulation has finished.")
 
-# Save the solved solver to a compressed JSON file. This allows us to load the results
-# later without re-running the simulation. Use ".json.gz" for gzip compression, which is
-# recommended over plain JSONs for all but the smallest, unmeshed geometry objects.
+# Save the solved solver to a .psz file. This allows us to load the results later
+# without re-running the simulation.
 print("Saving the solver...")
-ps.save("example_solver.json.gz", example_solver)
+ps.save("example_solver.psz", example_solver)
 print("Finished saving the solver.")
 
 # Load the saved solver. The loaded object is identical to the original and can be
 # passed to any output function.
 print("Loading the saved solver...")
-loaded_solver = ps.load("example_solver.json.gz")
+loaded_solver = ps.load("example_solver.psz")
 
 # The load function is annotated as returning object because a saved file can hold any
 # Ptera Software object. This assert narrows the type for type checkers and guards

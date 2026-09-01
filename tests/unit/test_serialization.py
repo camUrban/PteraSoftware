@@ -529,6 +529,18 @@ class TestSerializeValue(unittest.TestCase):
         with self.assertRaises(TypeError):
             _serialize_value(set())
 
+    def test_shared_object_serializes_as_ref(self) -> None:
+        """Tests that the second encounter of one object serializes as a ref dict.
+
+        :return: None
+        """
+        operating_point = OperatingPoint()
+        result = _serialize_value((operating_point, operating_point))
+        assert isinstance(result, dict)
+        first, second = result["items"]
+        self.assertEqual(first["_type"], "OperatingPoint")
+        self.assertEqual(second, {"_type": "ref", "id": first["_id"]})
+
 
 class TestDeserializeValue(unittest.TestCase):
     """This class contains methods for testing _deserialize_value."""
@@ -704,6 +716,15 @@ class TestDeserializeValue(unittest.TestCase):
         """
         with self.assertRaises(TypeError):
             _deserialize_value({"_type": "unknown"})
+
+    def test_unknown_ref_id_raises(self) -> None:
+        """Tests that a ref to an id absent from the reference table raises a
+        ValueError.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            _deserialize_value({"_type": "ref", "id": 0})
 
 
 class TestValueRoundTrip(unittest.TestCase):
@@ -923,6 +944,46 @@ class TestHashObject(unittest.TestCase):
             hash_object(OperatingPoint()),
             hash_object(Airfoil(name="NACA0012")),
         )
+
+    def test_differs_for_different_aliasing(self) -> None:
+        """Tests that graphs with equal content but different sharing hash differently.
+
+        :return: None
+        """
+        shared_airfoil = Airfoil(name="naca2412")
+        shared_wing = Wing(
+            wing_cross_sections=[
+                WingCrossSection(
+                    airfoil=shared_airfoil,
+                    num_spanwise_panels=3,
+                    chord=1.0,
+                    spanwise_spacing="uniform",
+                ),
+                WingCrossSection(
+                    airfoil=shared_airfoil,
+                    num_spanwise_panels=None,
+                    chord=0.5,
+                    Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+                ),
+            ],
+        )
+        distinct_wing = Wing(
+            wing_cross_sections=[
+                WingCrossSection(
+                    airfoil=Airfoil(name="naca2412"),
+                    num_spanwise_panels=3,
+                    chord=1.0,
+                    spanwise_spacing="uniform",
+                ),
+                WingCrossSection(
+                    airfoil=Airfoil(name="naca2412"),
+                    num_spanwise_panels=None,
+                    chord=0.5,
+                    Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+                ),
+            ],
+        )
+        self.assertNotEqual(hash_object(shared_wing), hash_object(distinct_wing))
 
     def test_stable_across_save_load_round_trip(self) -> None:
         """Tests that a save and load round trip preserves an object's digest.
@@ -1439,6 +1500,62 @@ class TestWingRoundTrip(unittest.TestCase):
         self.assertEqual(result.name, wing.name)
         self.assertEqual(result.num_chordwise_panels, wing.num_chordwise_panels)
 
+    def test_shared_airfoil_identity_round_trip(self) -> None:
+        """Tests that one Airfoil shared by both WingCrossSections is still one shared
+        Airfoil after a round trip.
+
+        :return: None
+        """
+        airfoil = Airfoil(name="naca2412")
+        root_wing_cross_section = WingCrossSection(
+            airfoil=airfoil,
+            num_spanwise_panels=3,
+            chord=1.0,
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = WingCrossSection(
+            airfoil=airfoil,
+            num_spanwise_panels=None,
+            chord=0.5,
+            Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+        )
+        wing = Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+        )
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertIs(
+            result.wing_cross_sections[0].airfoil,
+            result.wing_cross_sections[1].airfoil,
+        )
+
+    def test_distinct_airfoils_identity_round_trip(self) -> None:
+        """Tests that equal but distinct Airfoils are still distinct after a round trip.
+
+        :return: None
+        """
+        root_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=3,
+            chord=1.0,
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = WingCrossSection(
+            airfoil=Airfoil(name="naca2412"),
+            num_spanwise_panels=None,
+            chord=0.5,
+            Lp_Wcsp_Lpp=(0.0, 0.5, 0.0),
+        )
+        wing = Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+        )
+        result = _deserialize_value(_serialize_value(wing))
+        assert isinstance(result, Wing)
+        self.assertIsNot(
+            result.wing_cross_sections[0].airfoil,
+            result.wing_cross_sections[1].airfoil,
+        )
+
 
 class TestAirplaneRoundTrip(unittest.TestCase):
     """This class contains methods for testing Airplane serialization round trips."""
@@ -1603,7 +1720,10 @@ class TestSteadyHorseshoeSolverRoundTrip(unittest.TestCase):
         solver.run()
         result = _deserialize_value(_serialize_value(solver))
         assert isinstance(result, SteadyHorseshoeVortexLatticeMethodSolver)
-        self.assertIs(result.airplanes, result._steady_problem.airplanes)
+        for solver_airplane, problem_airplane in zip(
+            result.airplanes, result._steady_problem.airplanes, strict=True
+        ):
+            self.assertIs(solver_airplane, problem_airplane)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
     def test_pre_run_round_trip(self) -> None:
@@ -1665,7 +1785,10 @@ class TestSteadyRingSolverRoundTrip(unittest.TestCase):
         solver.run()
         result = _deserialize_value(_serialize_value(solver))
         assert isinstance(result, SteadyRingVortexLatticeMethodSolver)
-        self.assertIs(result.airplanes, result._steady_problem.airplanes)
+        for solver_airplane, problem_airplane in zip(
+            result.airplanes, result._steady_problem.airplanes, strict=True
+        ):
+            self.assertIs(solver_airplane, problem_airplane)
         self.assertIs(result.operating_point, result._steady_problem.operating_point)
 
     def test_pre_run_round_trip(self) -> None:

@@ -79,15 +79,15 @@ When implementing `__deepcopy__`, handle cached derived properties based on thei
 
 The `_serialization` module uses the same `object.__new__()` + `object.__setattr__()` pattern as the `__deepcopy__` methods but with a simpler strategy: the logical state of each object is preserved exactly as it was at save time, including all cached values on primary slots. For these primary attributes, no values are reset to `None` during deserialization.
 
-Some redundant or alias slots (for example, solver alias slots and `Movement._airplanes` / `Movement._operating_points`) are treated specially: they are serialized as `null` and then deterministically rebuilt from their canonical sources during deserialization. This preserves object graph identity and avoids duplicating equivalent objects while still yielding the same effective state as the original instance.
+Shared references are preserved by an identity memo: the first encounter of an object serializes it in full, and every later encounter (for example, a solver's `airplanes` alias into its `SteadyProblem`, or `Movement._airplanes` inside an `UnsteadyProblem`) serializes as a reference to it. Deserialization resolves those references to the same rebuilt instance, so object graph identity survives the round trip without duplicating equivalent objects. The one exception is `MuJoCoModel`'s native engine objects, which cannot be serialized at all, so they are serialized as `null` and rebuilt from the model's XML string on deserialization.
 
 This works because:
 
 1. Deserialized objects are fully formed snapshots. There is no subsequent `__init__`, solver run, or meshing step that would populate set once attributes, so there is no conflict with set once guards.
-2. Cached derived values remain valid because the immutable and set once attributes they depend on are also restored with their original values, and any alias slots are rebuilt to match.
+2. Cached derived values remain valid because the immutable and set once attributes they depend on are also restored with their original values, and alias slots resolve to the same restored objects as their canonical sources.
 3. NumPy array writeable flags are preserved through serialization, maintaining the same mutability guarantees as the original objects.
 
-When adding or renaming `__slots__` on any class, both `__deepcopy__` and `_serialization` are affected. The serialization module discovers attributes generically via `__slots__`, so new slots are automatically serialized (subject to the intentional omission of redundant/alias slots described above). However, adding or removing slots requires incrementing `_FORMAT_VERSION` in `_serialization.py` to ensure old files are not loaded with incompatible code.
+When adding or renaming `__slots__` on any class, both `__deepcopy__` and `_serialization` are affected. The serialization module discovers attributes generically via `__slots__`, so new slots are automatically serialized (subject to the `MuJoCoModel` exception described above). However, adding or removing slots requires incrementing `_FORMAT_VERSION` in `_serialization.py` to ensure old files are not loaded with incompatible code.
 
 ### List Collection Immutability
 

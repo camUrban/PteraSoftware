@@ -193,6 +193,65 @@ def make_unsteady_problem_fixture() -> UnsteadyProblem:
     return UnsteadyProblem(movement=movement)
 
 
+def make_variable_unsteady_problem_fixture() -> UnsteadyProblem:
+    """This method makes a fixture that is an UnsteadyProblem with variable geometry for
+    serialization testing.
+
+    The tip WingCrossSection heaves with a period that is not a whole number of time
+    steps, which sends Airplane generation down the standard variable geometry path.
+    That path builds every step's WingCrossSections around the base WingCrossSections'
+    Airfoils, so each Airfoil is shared by every step and by the base geometry.
+
+    :return variable_unsteady_problem_fixture: UnsteadyProblem This is an
+        UnsteadyProblem with a heaving tip, 4 time steps, and 2 x 2 Panels.
+    """
+    wing_cross_section_movement_root = WingCrossSectionMovement(
+        base_wing_cross_section=WingCrossSection(
+            airfoil=Airfoil(name="NACA0012"),
+            num_spanwise_panels=2,
+            chord=1.0,
+        ),
+    )
+    wing_cross_section_movement_tip = WingCrossSectionMovement(
+        base_wing_cross_section=WingCrossSection(
+            airfoil=Airfoil(name="NACA0012"),
+            num_spanwise_panels=None,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+        ),
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.5),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 1.0),
+    )
+    wing_movement = WingMovement(
+        base_wing=Wing(
+            wing_cross_sections=[
+                wing_cross_section_movement_root.base_wing_cross_section,
+                wing_cross_section_movement_tip.base_wing_cross_section,
+            ],
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+        ),
+        wing_cross_section_movements=[
+            wing_cross_section_movement_root,
+            wing_cross_section_movement_tip,
+        ],
+    )
+    airplane_movement = AirplaneMovement(
+        base_airplane=Airplane(wings=[wing_movement.base_wing]),
+        wing_movements=[wing_movement],
+    )
+    operating_point_movement = OperatingPointMovement(
+        base_operating_point=OperatingPoint(),
+    )
+    movement = Movement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        num_steps=4,
+        delta_time=0.3,
+    )
+    return UnsteadyProblem(movement=movement)
+
+
 def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with two Airplanes for
     formation flight serialization testing.

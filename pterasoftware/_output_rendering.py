@@ -1139,14 +1139,15 @@ def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:
     """Runs the render pass that settles a Plotter's scalar bar layout, without
     displaying its result.
 
-    Adding an image surface mesh with an opacity leaves VTK's UnconstrainedFontSize
-    layout with the scalar bar's labels off their bar edges (PyVista issue #7516). The
-    layout only settles once the bar has been rendered again, so this marks the bars
-    modified and renders. The result of that render is the mispositioned layout, so the
-    buffers are held back from swapping, which keeps it off the screen and leaves the
-    settled layout to the caller's next render. The render window is driven directly
-    rather than through the Plotter, since the Plotter's render does nothing before its
-    first show.
+    Any actor with an opacity below one in the scene, such as the image surface plane, a
+    preview ghost, or a translucent MuJoCo geom, leaves VTK's UnconstrainedFontSize
+    layout with the scalar bar's labels off their bar edges on the first render after
+    the scene is assembled (PyVista issue #7516). The layout only settles once the bar
+    has been rendered again, so this marks the bars modified and renders. The result of
+    that render is the mispositioned layout, so the buffers are held back from swapping,
+    which keeps it off the screen and leaves the settled layout to the caller's next
+    render. The render window is driven directly rather than through the Plotter, since
+    the Plotter's render does nothing before its first show.
 
     :param plotter: The Plotter whose scalar bar layout to settle.
     :return: None

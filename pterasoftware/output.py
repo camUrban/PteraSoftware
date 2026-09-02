@@ -635,10 +635,14 @@ def draw(
     else:
         draw_cpos = None
 
-    # Settle the scalar bar layout before the drawing is displayed. This is the first of
-    # the two passes it takes, and show below is the second, so the labels are in place
-    # by the time the user sees anything.
-    if T_reflect is not None:
+    # The scene is translucent when it holds the image surface plane or a geom whose
+    # rgba has an alpha below one. Settle the scalar bar layout before such a drawing is
+    # displayed. This is the first of the two passes it takes, and show below is the
+    # second, so the labels are in place by the time the user sees anything.
+    scene_is_translucent = T_reflect is not None or any(
+        float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
+    )
+    if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     if not testing:
@@ -1224,11 +1228,17 @@ def animate(
     else:
         animate_cpos = None
 
-    # Give the first frame the scalar bar layout pass that the frames in the loop get,
-    # so the view held for the user matches the animation that follows it. This is the
-    # first of the two passes the layout takes to settle, and show below is the second,
-    # so the labels are in place by the time the user sees anything.
-    if T_reflect is not None:
+    # The frames are translucent when the scene holds the image surface plane or a geom
+    # whose rgba has an alpha below one, and the held first frame is translucent
+    # whenever it has ghosts as well. Give a translucent held frame the scalar bar
+    # layout pass that translucent frames in the loop get, so the view held for the user
+    # matches the animation that follows it. This is the first of the two passes the
+    # layout takes to settle, and show below is the second, so the labels are in place
+    # by the time the user sees anything.
+    scene_is_translucent = T_reflect is not None or any(
+        float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
+    )
+    if scene_is_translucent or last_step != 0:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     # If not testing, show the Plotter with the first time step so the user can orient
@@ -1289,8 +1299,7 @@ def animate(
             step_body_transforms[0],
             T_reflect,
         )
-    if T_reflect is not None:
-        assert image_surface_mesh is not None
+    if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
@@ -1422,9 +1431,9 @@ def animate(
                 render=False,
             )
 
-        # If an image surface is present, settle the scalar bar layout before the frame
-        # is displayed, leaving the second of its two passes to the render below.
-        if T_reflect is not None:
+        # If the frame is translucent, settle the scalar bar layout before it is
+        # displayed, leaving the second of its two passes to the render below.
+        if scene_is_translucent:
             _output_rendering.settle_scalar_bar_layout(plotter)
 
         # Render the assembled frame. Every add above is made with render=False, so

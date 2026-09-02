@@ -770,11 +770,15 @@ class Airplane:
             image = webp.Image.fromarray(
                 cast(np.ndarray[Any, Any], screenshot),
             )
+            # The compression method matches _output_rendering.WEBP_METHOD, which this
+            # module cannot import without a circular import. It trades file size for
+            # encode time and leaves the image quality alone.
             webp.save_image(
                 img=image,
                 file_path=f"{self._name.lower().replace(' ', '_')}_geometry.webp",
                 lossless=False,
                 quality=quality,
+                method=0,
             )
 
         # Close all the plotters.

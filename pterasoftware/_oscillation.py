@@ -200,9 +200,13 @@ def _validate_custom_spacing_function(
         for this_test_time_id, this_test_time in enumerate(test_times):
             test_output[this_test_time_id] = custom_function(this_test_time)
     except Exception as e:
+        # Omit a trailing period because the wrapped message supplies its own
+        # punctuation, and a multi-line message (an UnboundCallable's, which ends with a
+        # source block) would otherwise end with a stray period on its own line.
         raise ValueError(
-            f"The custom spacing function failed when called with test input: {e}."
-        )
+            "The custom spacing function raised an exception when it was called with "
+            f"a test input. {type(e).__name__}: {e}"
+        ) from e
 
     for this_output_id, this_output in enumerate(test_output):
         if not isinstance(this_output, float):

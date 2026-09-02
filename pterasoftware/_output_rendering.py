@@ -4,6 +4,9 @@ visualizations with PyVista."""
 from __future__ import annotations
 
 import math
+import queue
+import threading
+from pathlib import Path
 from typing import NamedTuple, cast
 
 import matplotlib.colors
@@ -96,6 +99,22 @@ REFERENCE_WINDOW_SIZE = (1024, 768)
 # Define the highest frame rate, in frames per second, that an animation is saved at.
 # Some programs will not render a WebP any faster than this.
 _MAX_FRAME_RATE = 50.0
+
+# Define the libwebp compression method that every saved WebP is encoded with, from 0
+# (the fastest) to 6 (the slowest). The method sets how hard the encoder works to shrink
+# the file at a given quality, so it trades encode time for file size and leaves the
+# image quality alone. The fastest method encodes about twice as fast as the default of
+# 4 for a file about a fifth larger, which is the better side of that trade for
+# animations, whose save time is otherwise dominated by the encode.
+WEBP_METHOD = 0
+
+# Define the number of captured frames an AnimationWriter holds while they wait to be
+# encoded. When frames are captured faster than they are encoded, the capture loop
+# blocks once this many are waiting, which bounds the raw frames in memory no matter how
+# many time steps an animation has. Each slot costs one raw frame of memory, and the
+# slower of the two stages sets the pace whatever the depth, so a deeper queue buys
+# nothing. Two slots let one frame wait while another is encoded.
+_ANIMATION_WRITER_QUEUE_DEPTH = 2
 
 # Define the fewest frames per cycle of the fastest prescribed motion that a saved
 # animation can show before it stops resolving that motion. The Nyquist floor is 2.0
@@ -303,53 +322,53 @@ def get_panel_surfaces(
         returned.
     :return: A PolyData representation of the Airplanes' Wings' Panels' surfaces.
     """
-    # Initialize empty ndarrays to hold the Panels' vertices and faces.
-    panel_vertices = np.empty((0, 3), dtype=float)
-    panel_faces = np.empty(0, dtype=int)
-
-    # Initialize a variable to keep track of how many Panels have been added thus far.
-    panel_num = 0
-
-    # Increment through the Airplanes' Wing(s).
+    # Gather every Wing's Panels in order, so the vertex and face ndarrays can be sized
+    # once rather than grown by stacking a Panel at a time, which is called once per
+    # time step of an animation.
+    wing_panels = []
     for airplane in airplanes:
         for wing in airplane.wings:
             _panels = wing.panels
             assert _panels is not None
+            wing_panels.append(np.ravel(_panels))
+    num_panels = sum(panels.size for panels in wing_panels)
 
-            # Unravel this Wing's ndarray of Panels iterate through it.
-            panels = np.ravel(_panels)
-            for panel in panels:
-                # Arrange this Panel's vertices and faces into ndarrays in the proper
-                # form to represent PolyData surfaces.
-                panel_vertices_to_add = np.vstack(
-                    (
-                        panel.Flpp_GP1_CgP1,
-                        panel.Frpp_GP1_CgP1,
-                        panel.Brpp_GP1_CgP1,
-                        panel.Blpp_GP1_CgP1,
-                    )
-                )
-                panel_face_to_add = np.array(
-                    [
-                        4,
-                        (panel_num * 4),
-                        (panel_num * 4) + 1,
-                        (panel_num * 4) + 2,
-                        (panel_num * 4) + 3,
-                    ],
-                    dtype=int,
-                )
-
-                # Add this Panel's vertices and faces to the ndarray of all vertices and
-                # faces.
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
-
-                # Update the number of Panels.
-                panel_num += 1
+    # Fill each Panel's four vertices, wound front left, front right, back right, and
+    # back left so the cell traces the Panel's outline.
+    panel_vertices = np.empty((num_panels * 4, 3), dtype=float)
+    panel_num = 0
+    for panels in wing_panels:
+        for panel in panels:
+            base_vertex = panel_num * 4
+            panel_vertices[base_vertex] = panel.Flpp_GP1_CgP1
+            panel_vertices[base_vertex + 1] = panel.Frpp_GP1_CgP1
+            panel_vertices[base_vertex + 2] = panel.Brpp_GP1_CgP1
+            panel_vertices[base_vertex + 3] = panel.Blpp_GP1_CgP1
+            panel_num += 1
 
     # Return the Panels' surfaces.
-    return pv.PolyData(panel_vertices, panel_faces)
+    return pv.PolyData(panel_vertices, _get_quadrilateral_faces(num_panels))
+
+
+def _get_quadrilateral_faces(num_quadrilaterals: int) -> np.ndarray:
+    """Returns the faces ndarray of a PolyData made of consecutive quadrilaterals.
+
+    The faces are in PolyData's padded form, where each face is its vertex count
+    followed by its vertex indices. Face i covers vertices 4i through 4i + 3, so this is
+    the faces ndarray for any mesh whose vertices are stored four to a cell in cell
+    order.
+
+    :param num_quadrilaterals: The number of quadrilateral faces.
+    :return: A (num_quadrilaterals * 5,) ndarray of ints representing the faces.
+    """
+    base_vertices = np.arange(num_quadrilaterals, dtype=int) * 4
+    faces = np.empty((num_quadrilaterals, 5), dtype=int)
+    faces[:, 0] = 4
+    faces[:, 1] = base_vertices
+    faces[:, 2] = base_vertices + 1
+    faces[:, 3] = base_vertices + 2
+    faces[:, 4] = base_vertices + 3
+    return np.ravel(faces)
 
 
 def get_streamline_surfaces(
@@ -644,9 +663,35 @@ def get_mujoco_render_geometry(
     free_flight_unsteady_problem = cast(
         problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
     )
-    render_geoms = _private_access.get_mujoco_model(
+    extracted_render_geoms = _private_access.get_mujoco_model(
         free_flight_unsteady_problem
     ).get_render_geometry()
+
+    # Compute each geom's shading normals here, once, splitting the sharp edges so the
+    # shading stays crisp across creases. The split duplicates the points along edges
+    # sharper than PyVista's feature angle, letting each face shade with its own normal,
+    # where plain smooth shading would average one normal across the crease and smear
+    # it. The geoms are rigid, so transform_mesh carries the normals along with the
+    # points, and add_mujoco_geometry hands PyVista a mesh that already has them rather
+    # than having it split the edges again for every frame of an animation, which costs
+    # more than the rest of the frame put together for a detailed mesh. The split leaves
+    # behind a point id array that nothing reads, so it is dropped.
+    render_geoms = []
+    for render_geom in extracted_render_geoms:
+        mesh = render_geom.mesh.compute_normals(
+            cell_normals=False,
+            split_vertices=True,
+            feature_angle=pv.global_theme.sharp_edges_feature_angle,
+        )
+        if "pyvistaOriginalPointIds" in mesh.point_data:
+            del mesh.point_data["pyvistaOriginalPointIds"]
+        render_geoms.append(
+            _mujoco_model.RenderGeom(
+                mesh=mesh,
+                rgba=render_geom.rgba,
+                body_attached=render_geom.body_attached,
+            )
+        )
 
     worldbody_geoms = [
         render_geom for render_geom in render_geoms if not render_geom.body_attached
@@ -667,7 +712,8 @@ def transform_mesh(
     :param mesh: The PolyData mesh to transform.
     :param T_pas: A (4,4) ndarray of floats representing the passive transformation to
         apply to the mesh's points.
-    :return: A new PolyData mesh with all points mapped through the transformation.
+    :return: A new PolyData mesh with all points mapped through the transformation,
+        along with its active point normals, if it has any, mapped as directions.
     """
     transformed = mesh.copy()
     transformed.points = _transformations.apply_T_to_vectors(
@@ -675,6 +721,17 @@ def transform_mesh(
         mesh.points,
         is_position=True,
     )
+
+    # Carry any shading normals along as directions, so they stay perpendicular to the
+    # faces they shade. Under a reflection, this maps an outward normal to the reflected
+    # face's outward normal, which is what the shading needs.
+    normals_name = mesh.point_data.active_normals_name
+    if normals_name is not None:
+        transformed.point_data[normals_name] = _transformations.apply_T_to_vectors(
+            T_pas,
+            mesh.point_data[normals_name],
+            is_position=False,
+        )
     return transformed
 
 
@@ -806,46 +863,21 @@ def get_wake_ring_vortex_surfaces(
     stackBlwrvp_GP1_CgP1 = solver.listStackBlwrvp_GP1_CgP1[step]
     stackBrwrvp_GP1_CgP1 = solver.listStackBrwrvp_GP1_CgP1[step]
 
-    # Initialize empty ndarrays to hold each wake ring vortex's vertices and face.
-    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
-    wake_ring_vortex_faces = np.zeros(0, dtype=int)
-
-    for wake_ring_vortex_num in range(num_wake_ring_vortices):
-        Frwrvp_GP1_CgP1 = stackFrwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Flwrvp_GP1_CgP1 = stackFlwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Blwrvp_GP1_CgP1 = stackBlwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Brwrvp_GP1_CgP1 = stackBrwrvp_GP1_CgP1[wake_ring_vortex_num]
-
-        wake_ring_vortex_vertices_to_add = np.vstack(
-            (
-                Flwrvp_GP1_CgP1,
-                Frwrvp_GP1_CgP1,
-                Brwrvp_GP1_CgP1,
-                Blwrvp_GP1_CgP1,
-            )
-        )
-        wake_ring_vortex_face_to_add = np.array(
-            [
-                4,
-                (wake_ring_vortex_num * 4),
-                (wake_ring_vortex_num * 4) + 1,
-                (wake_ring_vortex_num * 4) + 2,
-                (wake_ring_vortex_num * 4) + 3,
-            ],
-            dtype=int,
-        )
-
-        # Stack this wake ring vortex's vertices and faces to the ndarrays of all wake
-        # ring vortices' vertices and faces.
-        wake_ring_vortex_vertices = np.vstack(
-            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
-        )
-        wake_ring_vortex_faces = np.hstack(
-            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
-        )
+    # Interleave the four corner stacks so each wake ring vortex's vertices are wound
+    # front left, front right, back right, and back left. Every corner stack is a
+    # (num_wake_ring_vortices, 3) ndarray, so four strided assignments build the whole
+    # mesh at once rather than a wake ring vortex at a time, which matters because this
+    # is called once per time step of an animation.
+    wake_ring_vortex_vertices = np.empty((num_wake_ring_vortices * 4, 3), dtype=float)
+    wake_ring_vortex_vertices[0::4] = stackFlwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[1::4] = stackFrwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[2::4] = stackBrwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[3::4] = stackBlwrvp_GP1_CgP1[:num_wake_ring_vortices]
 
     # Return the wake ring vortex surfaces.
-    return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
+    return pv.PolyData(
+        wake_ring_vortex_vertices, _get_quadrilateral_faces(num_wake_ring_vortices)
+    )
 
 
 def get_scalars(
@@ -957,18 +989,165 @@ def screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
     )
 
 
+class AnimationWriter:
+    """Encodes an animation's frames into a WebP file as they are captured.
+
+    **Contains the following methods:**
+
+    add_frame: Hands a captured frame to the writer.
+
+    close: Finishes the animation and writes it to its file.
+
+    **Notes:**
+
+    The frames are handed to a background thread that feeds them to libwebp's animation
+    encoder one at a time, so the raw frames never accumulate. The queue between the
+    capture loop and the thread is bounded, so a capture loop that outruns the encode
+    blocks rather than piling frames up. The encode releases the global interpreter
+    lock, so it overlaps with the rendering on the main thread rather than following it.
+
+    The encoder lives on the background thread alone, from its creation through the
+    assembly of the file, so no two threads ever touch it. The thread is a daemon, so a
+    capture loop that raises and abandons the writer leaves nothing that could hold the
+    interpreter open at exit.
+
+    The file this writes is identical to the one the webp package's save_images produces
+    from the same frames, frame rate, quality, and compression method. It gives each
+    frame the same cumulative timestamp and uses the same encoder options.
+    """
+
+    def __init__(self, path: Path, frame_rate: float, quality: float) -> None:
+        """The initialization method.
+
+        :param path: The path of the WebP file to write. Its directory must already
+            exist.
+        :param frame_rate: The frame rate to play the animation back at, in frames per
+            second. It must be positive.
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest.
+        :return: None
+        """
+        self._path = path
+        self._frame_rate = frame_rate
+        self._quality = quality
+
+        # The queue carries the captured frames to the encoding thread, and None marks
+        # the end of the animation.
+        self._queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
+            maxsize=_ANIMATION_WRITER_QUEUE_DEPTH
+        )
+
+        # An exception the encoding thread raises is held here until close re-raises it
+        # on the calling thread.
+        self._error: Exception | None = None
+
+        self._thread = threading.Thread(
+            target=self._encode, name="animation-writer", daemon=True
+        )
+        self._thread.start()
+
+    def add_frame(self, image: webp.Image.Image) -> None:
+        """Hands a captured frame to the writer.
+
+        This blocks while the queue of frames waiting to be encoded is full. Every frame
+        must have the same size as the first.
+
+        :param image: The frame as an Image with a transparent background.
+        :return: None
+        """
+        self._queue.put(image)
+
+    def close(self) -> None:
+        """Finishes the animation and writes it to its file.
+
+        This blocks until every frame has been encoded and the file has been written.
+        Any exception the encoding raised is re-raised here.
+
+        :return: None
+        """
+        self._queue.put(None)
+        self._thread.join()
+        if self._error is not None:
+            raise self._error
+
+    def _encode(self) -> None:
+        """Encodes the frames from the queue into the WebP file, on the background
+        thread.
+
+        An exception is held for close to re-raise. If it was raised before the queue's
+        end marker was read, the queue is then drained through that marker so that
+        add_frame never blocks on a queue that nothing is emptying.
+
+        :return: None
+        """
+        ended = False
+        try:
+            config = webp.WebPConfig.new(
+                lossless=False, quality=self._quality, method=WEBP_METHOD
+            )
+            encoder = None
+            frame_size: tuple[int, int] | None = None
+            num_frames = 0
+            while True:
+                image = self._queue.get()
+                if image is None:
+                    ended = True
+                    break
+
+                # The encoder is sized to the first frame, since the frames are the size
+                # of the render window, which can be larger than the size that was asked
+                # for on a display that scales its pixels.
+                picture = webp.WebPPicture.from_pil(image)
+                picture_size = (int(picture.ptr.width), int(picture.ptr.height))
+                if encoder is None:
+                    encoder = webp.WebPAnimEncoder.new(
+                        picture_size[0],
+                        picture_size[1],
+                        webp.WebPAnimEncoderOptions.new(),
+                    )
+                    frame_size = picture_size
+                elif picture_size != frame_size:
+                    assert frame_size is not None
+                    raise ValueError(
+                        f"Every frame must have the same size as the first, which "
+                        f"was {frame_size[0]} by {frame_size[1]} pixels, but frame "
+                        f"{num_frames} was {picture_size[0]} by {picture_size[1]}."
+                    )
+
+                # Each frame starts at a cumulative timestamp, in whole milliseconds,
+                # rather than lasting a fixed duration, which plays a fractional frame
+                # rate back to within a small fraction of a percent.
+                encoder.encode_frame(
+                    picture, round((num_frames * 1000) / self._frame_rate), config
+                )
+                num_frames += 1
+
+            if encoder is None:
+                raise ValueError("An animation must have at least one frame.")
+
+            animation = encoder.assemble(round((num_frames * 1000) / self._frame_rate))
+            with open(self._path, "wb") as animation_file:
+                animation_file.write(animation.buffer())
+        except Exception as error:
+            self._error = error
+            while not ended:
+                ended = self._queue.get() is None
+
+
 def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:
     """Runs the render pass that settles a Plotter's scalar bar layout, without
     displaying its result.
 
-    Adding an image surface mesh with an opacity leaves VTK's UnconstrainedFontSize
-    layout with the scalar bar's labels off their bar edges (PyVista issue #7516). The
-    layout only settles once the bar has been rendered again, so this marks the bars
-    modified and renders. The result of that render is the mispositioned layout, so the
-    buffers are held back from swapping, which keeps it off the screen and leaves the
-    settled layout to the caller's next render. The render window is driven directly
-    rather than through the Plotter, since the Plotter's render does nothing before its
-    first show.
+    Any actor with an opacity below one in the scene, such as the image surface plane, a
+    preview ghost, or a translucent MuJoCo geom, leaves VTK's UnconstrainedFontSize
+    layout with the scalar bar's labels off their bar edges on the first render after
+    the scene is assembled (PyVista issue #7516). The layout only settles once the bar
+    has been rendered again, so this marks the bars modified and renders. The result of
+    that render is the mispositioned layout, so the buffers are held back from swapping,
+    which keeps it off the screen and leaves the settled layout to the caller's next
+    render. The render window is driven directly rather than through the Plotter, since
+    the Plotter's render does nothing before its first show.
 
     :param plotter: The Plotter whose scalar bar layout to settle.
     :return: None
@@ -1289,32 +1468,28 @@ def add_mujoco_geometry(
         color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))
         opacity = float(rgba[3])
 
-        # Split the sharp edges so the shading stays crisp across creases. The split
-        # duplicates the points along edges sharper than PyVista's feature angle,
-        # letting each face shade with its own normal, where plain smooth shading would
-        # average one normal across the crease and smear it.
+        # The mesh carries its shading normals, computed with the sharp edges split when
+        # get_mujoco_render_geometry extracted it, so PyVista passes them through here
+        # rather than recomputing them for every frame.
         actor = plotter.add_mesh(
             posed_mesh,
             color=color,
             opacity=opacity,
             smooth_shading=True,
-            split_sharp_edges=True,
             ambient=_MUJOCO_GEOMETRY_AMBIENT,
             diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
             render=False,
         )
         actors.append(actor)
         if T_reflect is not None:
-            # Splitting the sharp edges recomputes the normals from the triangle
-            # winding, and a reflection inverts the winding's outward sense. Flip the
-            # reflected copy's faces so the recomputed normals point outward again
-            # instead of inverting the shading.
+            # A reflection inverts the faces' winding. Flip the reflected copy's faces
+            # so they wind outward again, which the shading needs even though the
+            # reflected normals it carries already point outward.
             actor = plotter.add_mesh(
                 _reflect_mesh(posed_mesh, T_reflect).flip_faces(),
                 color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
                 opacity=opacity,
                 smooth_shading=True,
-                split_sharp_edges=True,
                 ambient=_MUJOCO_GEOMETRY_AMBIENT,
                 diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
                 render=False,

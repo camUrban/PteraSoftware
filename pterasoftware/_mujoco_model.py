@@ -556,9 +556,9 @@ class MuJoCoModel:
             )
 
             # Drop any point normals the mesh's PyVista source attached. The rendering
-            # layer recomputes shading normals from the posed triangles when it adds
-            # each geom actor, so stored normals are never read, and ones left behind
-            # here would sit stale against the posed points.
+            # layer computes shading normals from the posed triangles when it takes this
+            # geometry, so stored normals are never read, and ones left behind here
+            # would sit stale against the posed points.
             if "Normals" in geom_mesh.point_data:
                 del geom_mesh.point_data["Normals"]
 

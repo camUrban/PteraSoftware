@@ -5,8 +5,8 @@
 :hidden:
 
 self
-examples
 tutorials
+examples
 api
 performance
 ```

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
+import numba
 import numpy as np
 import threadpoolctl
 from numba import njit
@@ -738,9 +740,32 @@ _SOLVE_THREAD_THRESHOLD = 3_000
 # the process quietly, or serialize every run to accommodate a case that cannot pay off
 # anyway (the compiled kernels hold the GIL, so threads never speed the solvers up), a
 # second concurrent solve loop raises.
+#
+# Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at the
+# child kernel launch (omppool.cpp parallel_for, GCC off-Windows only). The child
+# survives fork, so the parent cannot veto via before-fork hooks; instead an
+# after_in_child hook flags children that inherited a live "omp" layer, and the solve
+# guard raises on entry in that child. Plain fork work and subprocess stay unaffected,
+# and the "omp" gate keeps the check off platforms where Numba would not abort (e.g.,
+# macOS clang wheels).
 _solve_loop_lock = threading.Lock()
 _solve_loop_owner: str | None = None
 _solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
+_forked_from_omp_process = False
+
+
+def _flag_forked_child() -> None:
+    global _forked_from_omp_process
+    try:
+        threading_layer = numba.threading_layer()
+    except ValueError:
+        return
+    if threading_layer == "omp":
+        _forked_from_omp_process = True
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_flag_forked_child)
 
 
 @contextmanager
@@ -760,7 +785,12 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
     Only one solve loop may be active per process. A second one entered while the first
     is still running raises, rather than silently corrupting the process-wide BLAS
     thread count that both would be saving and restoring. Run simulations in parallel
-    with separate processes rather than separate threads.
+    with separate processes using the 'spawn' or 'forkserver' start method (for example,
+    mp_context=multiprocessing.get_context('spawn') for ProcessPoolExecutor) rather than
+    with separate threads or with fork-method multiprocessing after a solve has run.
+    Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at
+    the child kernel launch on GCC Linux builds, so a forked child that inherited a live
+    "omp" layer raises here instead.
 
     threadpoolctl cannot control Apple's Accelerate BLAS, so the limit is a silent no-op
     there. This is acceptable because Accelerate parks idle threads quickly instead of
@@ -769,7 +799,8 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
     :param num_panels: A positive int representing the run's total Panel count, which is
         also the size of the linear system being solved (the system has one row per
         Panel).
-    :raises RuntimeError: If a solver run is already in progress in this process.
+    :raises RuntimeError: If a solver run is already in progress in this process, or if
+        the process is a forked child that inherited a live GNU OpenMP layer.
     :return: None
     """
     global _solve_loop_owner, _solve_loop_limiter
@@ -777,6 +808,18 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
     this_thread = threading.current_thread().name
 
     with _solve_loop_lock:
+        if _forked_from_omp_process:
+            raise RuntimeError(
+                "This process is a forked child that inherited a live GNU OpenMP "
+                "layer from its parent after a solver run. Fork-method "
+                "multiprocessing cannot be used after a solve has run in the "
+                "parent process, because the child would abort at its first "
+                "parallel kernel launch on GCC Linux builds. Use the 'spawn' or "
+                "'forkserver' start method instead, for example "
+                "mp_context=multiprocessing.get_context('spawn') for "
+                "ProcessPoolExecutor, or create worker processes before the first "
+                "solve."
+            )
         if _solve_loop_owner is not None:
             raise RuntimeError(
                 f"A solver run is already in progress in thread "
@@ -785,8 +828,11 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 f"process, because limiting the BLAS thread pool around a run's linear "
                 f"solves changes process-wide state that concurrent runs would corrupt, "
                 f"silently capping the process at a single BLAS thread. Run simulations "
-                f"in parallel with separate processes, for example with the "
-                f"multiprocessing module, rather than with separate threads. Threads "
+                f"in parallel with separate processes using the 'spawn' or "
+                f"'forkserver' start method, for example "
+                f"mp_context=multiprocessing.get_context('spawn') for "
+                f"ProcessPoolExecutor, rather than with separate threads or with "
+                f"fork-method multiprocessing after a solve has run. Threads "
                 f"would not speed the solvers up in any case, because the compiled "
                 f"Biot-Savart kernels hold the global interpreter lock."
             )

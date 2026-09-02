@@ -256,7 +256,12 @@ class TestAnimationWriter(unittest.TestCase):
 
         expected_path = self.animation_path.with_name("expected.webp")
         webp.save_images(
-            frames, str(expected_path), fps=30.0, lossless=False, quality=50.0
+            frames,
+            str(expected_path),
+            fps=30.0,
+            lossless=False,
+            quality=50.0,
+            method=_output_rendering.WEBP_METHOD,
         )
 
         self.assertEqual(self.animation_path.read_bytes(), expected_path.read_bytes())

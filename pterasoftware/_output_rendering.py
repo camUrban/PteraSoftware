@@ -100,6 +100,14 @@ REFERENCE_WINDOW_SIZE = (1024, 768)
 # Some programs will not render a WebP any faster than this.
 _MAX_FRAME_RATE = 50.0
 
+# Define the libwebp compression method that every saved WebP is encoded with, from 0
+# (the fastest) to 6 (the slowest). The method sets how hard the encoder works to shrink
+# the file at a given quality, so it trades encode time for file size and leaves the
+# image quality alone. The fastest method encodes about twice as fast as the default of
+# 4 for a file about a fifth larger, which is the better side of that trade for
+# animations, whose save time is otherwise dominated by the encode.
+WEBP_METHOD = 0
+
 # Define the number of captured frames an AnimationWriter holds while they wait to be
 # encoded. When frames are captured faster than they are encoded, the capture loop
 # blocks once this many are waiting, which bounds the raw frames in memory no matter how
@@ -991,8 +999,8 @@ class AnimationWriter:
     interpreter open at exit.
 
     The file this writes is identical to the one the webp package's save_images produces
-    from the same frames, frame rate, and quality. It gives each frame the same
-    cumulative timestamp and uses the same encoder options.
+    from the same frames, frame rate, quality, and compression method. It gives each
+    frame the same cumulative timestamp and uses the same encoder options.
     """
 
     def __init__(self, path: Path, frame_rate: float, quality: float) -> None:
@@ -1062,7 +1070,9 @@ class AnimationWriter:
         """
         ended = False
         try:
-            config = webp.WebPConfig.new(lossless=False, quality=self._quality)
+            config = webp.WebPConfig.new(
+                lossless=False, quality=self._quality, method=WEBP_METHOD
+            )
             encoder = None
             frame_size: tuple[int, int] | None = None
             num_frames = 0

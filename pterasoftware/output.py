@@ -668,7 +668,13 @@ def draw(
         image = _output_rendering.screenshot_image(plotter)
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.
-        webp.save_image(img=image, file_path=str(path), lossless=False, quality=quality)
+        webp.save_image(
+            img=image,
+            file_path=str(path),
+            lossless=False,
+            quality=quality,
+            method=_output_rendering.WEBP_METHOD,
+        )
 
     # Close all Plotters.
     pv.close_all()

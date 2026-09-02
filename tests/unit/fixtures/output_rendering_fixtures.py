@@ -2,6 +2,7 @@
 
 import numpy as np
 import pyvista as pv
+import webp
 
 import pterasoftware as ps
 
@@ -275,3 +276,26 @@ def make_outlier_scalars_fixture() -> np.ndarray:
     scalars = np.ones(101, dtype=float)
     scalars[-1] = 101.0
     return scalars
+
+
+def make_animation_frames_fixture(
+    num_frames: int, width: int = 16, height: int = 12
+) -> list[webp.Image.Image]:
+    """Makes a fixture that is a list of frames for an animation.
+
+    Each frame is filled with random colors from a fixed seed, so the frames differ from
+    one another and the encoder cannot merge any of them, while the list is the same on
+    every call.
+
+    :param num_frames: The number of frames to make.
+    :param width: The width of each frame in pixels. The default is 16.
+    :param height: The height of each frame in pixels. The default is 12.
+    :return: A list of num_frames Images with transparent backgrounds.
+    """
+    rng = np.random.default_rng(0)
+    return [
+        webp.Image.fromarray(
+            rng.integers(0, 255, size=(height, width, 4), dtype=np.uint8)
+        )
+        for _ in range(num_frames)
+    ]

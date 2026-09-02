@@ -4,6 +4,9 @@ visualizations with PyVista."""
 from __future__ import annotations
 
 import math
+import queue
+import threading
+from pathlib import Path
 from typing import NamedTuple, cast
 
 import matplotlib.colors
@@ -96,6 +99,14 @@ REFERENCE_WINDOW_SIZE = (1024, 768)
 # Define the highest frame rate, in frames per second, that an animation is saved at.
 # Some programs will not render a WebP any faster than this.
 _MAX_FRAME_RATE = 50.0
+
+# Define the number of captured frames an AnimationWriter holds while they wait to be
+# encoded. When frames are captured faster than they are encoded, the capture loop
+# blocks once this many are waiting, which bounds the raw frames in memory no matter how
+# many time steps an animation has. Each slot costs one raw frame of memory, and the
+# slower of the two stages sets the pace whatever the depth, so a deeper queue buys
+# nothing. Two slots let one frame wait while another is encoded.
+_ANIMATION_WRITER_QUEUE_DEPTH = 2
 
 # Define the fewest frames per cycle of the fastest prescribed motion that a saved
 # animation can show before it stops resolving that motion. The Nyquist floor is 2.0
@@ -955,6 +966,150 @@ def screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
             )
         )
     )
+
+
+class AnimationWriter:
+    """Encodes an animation's frames into a WebP file as they are captured.
+
+    **Contains the following methods:**
+
+    add_frame: Hands a captured frame to the writer.
+
+    close: Finishes the animation and writes it to its file.
+
+    **Notes:**
+
+    The frames are handed to a background thread that feeds them to libwebp's animation
+    encoder one at a time, so the raw frames never accumulate. The queue between the
+    capture loop and the thread is bounded, so a capture loop that outruns the encode
+    blocks rather than piling frames up. The encode releases the global interpreter
+    lock, so it overlaps with the rendering on the main thread rather than following it.
+
+    The encoder lives on the background thread alone, from its creation through the
+    assembly of the file, so no two threads ever touch it. The thread is a daemon, so a
+    capture loop that raises and abandons the writer leaves nothing that could hold the
+    interpreter open at exit.
+
+    The file this writes is identical to the one the webp package's save_images produces
+    from the same frames, frame rate, and quality. It gives each frame the same
+    cumulative timestamp and uses the same encoder options.
+    """
+
+    def __init__(self, path: Path, frame_rate: float, quality: float) -> None:
+        """The initialization method.
+
+        :param path: The path of the WebP file to write. Its directory must already
+            exist.
+        :param frame_rate: The frame rate to play the animation back at, in frames per
+            second. It must be positive.
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest.
+        :return: None
+        """
+        self._path = path
+        self._frame_rate = frame_rate
+        self._quality = quality
+
+        # The queue carries the captured frames to the encoding thread, and None marks
+        # the end of the animation.
+        self._queue: queue.Queue[webp.Image.Image | None] = queue.Queue(
+            maxsize=_ANIMATION_WRITER_QUEUE_DEPTH
+        )
+
+        # An exception the encoding thread raises is held here until close re-raises it
+        # on the calling thread.
+        self._error: Exception | None = None
+
+        self._thread = threading.Thread(
+            target=self._encode, name="animation-writer", daemon=True
+        )
+        self._thread.start()
+
+    def add_frame(self, image: webp.Image.Image) -> None:
+        """Hands a captured frame to the writer.
+
+        This blocks while the queue of frames waiting to be encoded is full. Every frame
+        must have the same size as the first.
+
+        :param image: The frame as an Image with a transparent background.
+        :return: None
+        """
+        self._queue.put(image)
+
+    def close(self) -> None:
+        """Finishes the animation and writes it to its file.
+
+        This blocks until every frame has been encoded and the file has been written.
+        Any exception the encoding raised is re-raised here.
+
+        :return: None
+        """
+        self._queue.put(None)
+        self._thread.join()
+        if self._error is not None:
+            raise self._error
+
+    def _encode(self) -> None:
+        """Encodes the frames from the queue into the WebP file, on the background
+        thread.
+
+        An exception is held for close to re-raise. If it was raised before the queue's
+        end marker was read, the queue is then drained through that marker so that
+        add_frame never blocks on a queue that nothing is emptying.
+
+        :return: None
+        """
+        ended = False
+        try:
+            config = webp.WebPConfig.new(lossless=False, quality=self._quality)
+            encoder = None
+            frame_size: tuple[int, int] | None = None
+            num_frames = 0
+            while True:
+                image = self._queue.get()
+                if image is None:
+                    ended = True
+                    break
+
+                # The encoder is sized to the first frame, since the frames are the size
+                # of the render window, which can be larger than the size that was asked
+                # for on a display that scales its pixels.
+                picture = webp.WebPPicture.from_pil(image)
+                picture_size = (int(picture.ptr.width), int(picture.ptr.height))
+                if encoder is None:
+                    encoder = webp.WebPAnimEncoder.new(
+                        picture_size[0],
+                        picture_size[1],
+                        webp.WebPAnimEncoderOptions.new(),
+                    )
+                    frame_size = picture_size
+                elif picture_size != frame_size:
+                    assert frame_size is not None
+                    raise ValueError(
+                        f"Every frame must have the same size as the first, which "
+                        f"was {frame_size[0]} by {frame_size[1]} pixels, but frame "
+                        f"{num_frames} was {picture_size[0]} by {picture_size[1]}."
+                    )
+
+                # Each frame starts at a cumulative timestamp, in whole milliseconds,
+                # rather than lasting a fixed duration, which plays a fractional frame
+                # rate back to within a small fraction of a percent.
+                encoder.encode_frame(
+                    picture, round((num_frames * 1000) / self._frame_rate), config
+                )
+                num_frames += 1
+
+            if encoder is None:
+                raise ValueError("An animation must have at least one frame.")
+
+            animation = encoder.assemble(round((num_frames * 1000) / self._frame_rate))
+            with open(self._path, "wb") as animation_file:
+                animation_file.write(animation.buffer())
+        except Exception as error:
+            self._error = error
+            while not ended:
+                ended = self._queue.get() is None
 
 
 def settle_scalar_bar_layout(plotter: pv.Plotter) -> None:

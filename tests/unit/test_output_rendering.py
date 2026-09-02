@@ -6,12 +6,15 @@ only a solved simulation carries. The classes here cover the computation and the
 geometry building that feed them, which are settled before any rendering begins.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 
 import matplotlib.colors
 import numpy as np
 import numpy.testing as npt
 import pyvista as pv
+import webp
 
 import pterasoftware as ps
 
@@ -201,6 +204,98 @@ class TestResolvePlaybackAliasingWarning(unittest.TestCase):
         """Test that a simulation whose geometry never moves is not warned about."""
         with self.assertNoLogs("pterasoftware.output", level="WARNING"):
             _output_rendering.resolve_playback(self.static_solver, 1.0, True)
+
+
+class TestAnimationWriter(unittest.TestCase):
+    """This class contains methods for testing _output_rendering.AnimationWriter."""
+
+    def setUp(self) -> None:
+        """Create a temporary directory to hold this test's animation."""
+        self.temporary_directory = tempfile.TemporaryDirectory()
+        self.animation_path = Path(self.temporary_directory.name) / "animation.webp"
+
+    def tearDown(self) -> None:
+        """Remove the temporary directory and the animation it holds."""
+        self.temporary_directory.cleanup()
+
+    def test_writes_every_frame_at_the_frame_rate(self) -> None:
+        """Test that the file holds every frame, each ending at its cumulative
+        timestamp.
+
+        At 25 frames per second, each frame lasts 40 milliseconds, so the five frames
+        end at 40, 80, 120, 160, and 200 milliseconds.
+        """
+        frames = output_rendering_fixtures.make_animation_frames_fixture(5)
+
+        writer = _output_rendering.AnimationWriter(self.animation_path, 25.0, 75.0)
+        for frame in frames:
+            writer.add_frame(frame)
+        writer.close()
+
+        with open(self.animation_path, "rb") as animation_file:
+            animation_data = webp.WebPData.from_buffer(animation_file.read())
+        decoder = webp.WebPAnimDecoder.new(animation_data)
+        self.assertEqual(decoder.anim_info.frame_count, 5)
+        self.assertEqual(
+            [timestamp for _, timestamp in decoder.frames()], [40, 80, 120, 160, 200]
+        )
+
+    def test_matches_the_webp_packages_own_encoder(self) -> None:
+        """Test that the file is byte for byte what the webp package's save_images
+        writes from the same frames.
+
+        save_images is what the animations were saved with before the writer existed, so
+        this is what keeps the saved animations unchanged.
+        """
+        frames = output_rendering_fixtures.make_animation_frames_fixture(5)
+
+        writer = _output_rendering.AnimationWriter(self.animation_path, 30.0, 50.0)
+        for frame in frames:
+            writer.add_frame(frame)
+        writer.close()
+
+        expected_path = self.animation_path.with_name("expected.webp")
+        webp.save_images(
+            frames, str(expected_path), fps=30.0, lossless=False, quality=50.0
+        )
+
+        self.assertEqual(self.animation_path.read_bytes(), expected_path.read_bytes())
+
+    def test_rejects_a_frame_of_a_different_size(self) -> None:
+        """Test that a frame whose size differs from the first's is rejected when the
+        writer is closed, and that the frames after it do not block the caller.
+
+        More frames follow the bad one than the writer's queue can hold, so the test
+        would hang rather than fail if the writer stopped emptying the queue.
+        """
+        frames = output_rendering_fixtures.make_animation_frames_fixture(2)
+        wrong_size_frame = output_rendering_fixtures.make_animation_frames_fixture(
+            1, width=32, height=24
+        )[0]
+        trailing_frames = output_rendering_fixtures.make_animation_frames_fixture(
+            _output_rendering._ANIMATION_WRITER_QUEUE_DEPTH + 2
+        )
+
+        writer = _output_rendering.AnimationWriter(self.animation_path, 25.0, 75.0)
+        for frame in frames:
+            writer.add_frame(frame)
+        writer.add_frame(wrong_size_frame)
+        for frame in trailing_frames:
+            writer.add_frame(frame)
+
+        with self.assertRaises(ValueError) as context:
+            writer.close()
+        self.assertIn("16 by 12", str(context.exception))
+        self.assertIn("32 by 24", str(context.exception))
+        self.assertFalse(self.animation_path.exists())
+
+    def test_rejects_an_animation_without_frames(self) -> None:
+        """Test that closing a writer that was given no frames is rejected."""
+        writer = _output_rendering.AnimationWriter(self.animation_path, 25.0, 75.0)
+
+        with self.assertRaises(ValueError):
+            writer.close()
+        self.assertFalse(self.animation_path.exists())
 
 
 class TestGetFreeFlightTransformation(unittest.TestCase):

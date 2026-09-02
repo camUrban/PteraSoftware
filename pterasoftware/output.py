@@ -1306,8 +1306,14 @@ def animate(
 
     plotter.render()
 
-    # Start a list to hold a WebP Image of each frame, beginning with this first frame.
-    images = [_output_rendering.screenshot_image(plotter)]
+    # If saving, start the writer that encodes each frame into the WebP as it is
+    # captured, so the frames never accumulate in memory, and hand it this first frame.
+    animation_writer = None
+    if save:
+        animation_writer = _output_rendering.AnimationWriter(
+            path, playback.frame_rate, quality
+        )
+        animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
 
     # Initialize a variable to keep track of the current time step.
     current_step = 1
@@ -1410,23 +1416,19 @@ def animate(
         # is whole is invisible, unlike the renders the adds used to trigger.
         plotter.render()
 
-        # If saving, append a WebP Image of this frame to the list of Images. Only the
-        # time steps that are multiples of the stride are saved, so a speed the maximum
-        # frame rate cannot carry drops the ones in between. The render above is not
-        # skipped, so the animation on screen still steps through every time step.
-        if save and current_step % playback.keep_every == 0:
-            images.append(_output_rendering.screenshot_image(plotter))
+        # If saving, hand a WebP Image of this frame to the writer. Only the time steps
+        # that are multiples of the stride are saved, so a speed the maximum frame rate
+        # cannot carry drops the ones in between. The render above is not skipped, so
+        # the animation on screen still steps through every time step.
+        if animation_writer is not None and current_step % playback.keep_every == 0:
+            animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
 
         # Increment the time step tracker.
         current_step += 1
 
-    # If saving, save the list of Images as an animated WebP.
-    if save:
-        # Convert the list of WebP Images to an WebP animation. webp annotates file_path
-        # as a str, so the Path is converted at the boundary.
-        webp.save_images(
-            images, str(path), fps=playback.frame_rate, lossless=False, quality=quality
-        )
+    # If saving, finish the animation and write it to its file.
+    if animation_writer is not None:
+        animation_writer.close()
 
     # Close all the Plotters.
     pv.close_all()

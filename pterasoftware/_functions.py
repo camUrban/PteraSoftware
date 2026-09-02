@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -743,11 +744,12 @@ _SOLVE_THREAD_THRESHOLD = 3_000
 #
 # Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at the
 # child kernel launch (omppool.cpp parallel_for, GCC off-Windows only). The child
-# survives fork, so the parent cannot veto via before-fork hooks; instead an
+# survives fork, so the parent cannot veto via before-fork hooks. Instead, an
 # after_in_child hook flags children that inherited a live "omp" layer, and the solve
-# guard raises on entry in that child. Plain fork work and subprocess stay unaffected,
-# and the "omp" gate keeps the check off platforms where Numba would not abort (e.g.,
-# macOS clang wheels).
+# guard raises on entry in that child. Plain fork work and subprocess stay unaffected.
+# The hook is registered only on Linux, the one platform whose Numba wheels build the
+# layer with GCC. The macOS wheels build it with clang against LLVM's libomp, which
+# resets itself in the child, and Windows has no fork.
 _solve_loop_lock = threading.Lock()
 _solve_loop_owner: str | None = None
 _solve_loop_limiter: threadpoolctl.threadpool_limits | None = None
@@ -764,7 +766,7 @@ def _flag_forked_child() -> None:
         _forked_from_omp_process = True
 
 
-if hasattr(os, "register_at_fork"):
+if sys.platform.startswith("linux"):
     os.register_at_fork(after_in_child=_flag_forked_child)
 
 

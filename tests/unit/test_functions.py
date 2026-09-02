@@ -2,6 +2,7 @@
 
 import threading
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import numpy.testing as npt
@@ -627,8 +628,6 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
 
     def test_flag_forked_child_sets_flag_only_for_omp(self) -> None:
         """The after_in_child hook should flag only when the layer is omp."""
-        from unittest.mock import patch
-
         original = _functions._forked_from_omp_process
         try:
             _functions._forked_from_omp_process = False

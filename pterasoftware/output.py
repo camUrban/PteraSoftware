@@ -1316,6 +1316,16 @@ def animate(
     # captured, so the frames never accumulate in memory, and hand it this first frame.
     animation_writer = None
     if save:
+        # Ask the driver not to wait for the display's vertical blank before each buffer
+        # swap. With the wait in place, every captured frame costs at least one refresh
+        # period however little work it holds, so capture speed follows the display's
+        # refresh rate. The frames are read back from the buffer, so the tearing the
+        # wait prevents never reaches the file. This is a request the platform may
+        # ignore, in which case capture simply keeps the refresh rate's pace. It is not
+        # made when not saving, since the window is then what the user watches, and the
+        # wait is the only pacing the playback has.
+        plotter.ren_win.SetSwapControl(0)
+
         animation_writer = _output_rendering.AnimationWriter(
             path, playback.frame_rate, quality
         )

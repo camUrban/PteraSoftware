@@ -610,6 +610,48 @@ class TestSolveLoopThreadLimits(unittest.TestCase):
         ):
             pass
 
+    def test_forked_child_with_omp_layer_raises(self) -> None:
+        """A forked child that inherited a live omp layer should be rejected."""
+        original = _functions._forked_from_omp_process
+        try:
+            _functions._forked_from_omp_process = True
+            with self.assertRaises(RuntimeError) as ctx:
+                with _functions.solve_loop_thread_limits(
+                    _functions._SOLVE_THREAD_THRESHOLD - 1
+                ):
+                    pass
+            self.assertIn("forked child", str(ctx.exception).lower())
+            self.assertIn("spawn", str(ctx.exception).lower())
+        finally:
+            _functions._forked_from_omp_process = original
+
+    def test_flag_forked_child_sets_flag_only_for_omp(self) -> None:
+        """The after_in_child hook should flag only when the layer is omp."""
+        from unittest.mock import patch
+
+        original = _functions._forked_from_omp_process
+        try:
+            _functions._forked_from_omp_process = False
+            with patch.object(_functions.numba, "threading_layer", return_value="omp"):
+                _functions._flag_forked_child()
+            self.assertTrue(_functions._forked_from_omp_process)
+
+            _functions._forked_from_omp_process = False
+            with patch.object(
+                _functions.numba, "threading_layer", return_value="workqueue"
+            ):
+                _functions._flag_forked_child()
+            self.assertFalse(_functions._forked_from_omp_process)
+
+            _functions._forked_from_omp_process = False
+            with patch.object(
+                _functions.numba, "threading_layer", side_effect=ValueError("no layer")
+            ):
+                _functions._flag_forked_child()
+            self.assertFalse(_functions._forked_from_omp_process)
+        finally:
+            _functions._forked_from_omp_process = original
+
 
 class TestProcessSolverLoads(unittest.TestCase):
     """Tests for the process_solver_loads function."""

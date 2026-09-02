@@ -322,53 +322,53 @@ def get_panel_surfaces(
         returned.
     :return: A PolyData representation of the Airplanes' Wings' Panels' surfaces.
     """
-    # Initialize empty ndarrays to hold the Panels' vertices and faces.
-    panel_vertices = np.empty((0, 3), dtype=float)
-    panel_faces = np.empty(0, dtype=int)
-
-    # Initialize a variable to keep track of how many Panels have been added thus far.
-    panel_num = 0
-
-    # Increment through the Airplanes' Wing(s).
+    # Gather every Wing's Panels in order, so the vertex and face ndarrays can be sized
+    # once rather than grown by stacking a Panel at a time, which is called once per
+    # time step of an animation.
+    wing_panels = []
     for airplane in airplanes:
         for wing in airplane.wings:
             _panels = wing.panels
             assert _panels is not None
+            wing_panels.append(np.ravel(_panels))
+    num_panels = sum(panels.size for panels in wing_panels)
 
-            # Unravel this Wing's ndarray of Panels iterate through it.
-            panels = np.ravel(_panels)
-            for panel in panels:
-                # Arrange this Panel's vertices and faces into ndarrays in the proper
-                # form to represent PolyData surfaces.
-                panel_vertices_to_add = np.vstack(
-                    (
-                        panel.Flpp_GP1_CgP1,
-                        panel.Frpp_GP1_CgP1,
-                        panel.Brpp_GP1_CgP1,
-                        panel.Blpp_GP1_CgP1,
-                    )
-                )
-                panel_face_to_add = np.array(
-                    [
-                        4,
-                        (panel_num * 4),
-                        (panel_num * 4) + 1,
-                        (panel_num * 4) + 2,
-                        (panel_num * 4) + 3,
-                    ],
-                    dtype=int,
-                )
-
-                # Add this Panel's vertices and faces to the ndarray of all vertices and
-                # faces.
-                panel_vertices = np.vstack((panel_vertices, panel_vertices_to_add))
-                panel_faces = np.hstack((panel_faces, panel_face_to_add))
-
-                # Update the number of Panels.
-                panel_num += 1
+    # Fill each Panel's four vertices, wound front left, front right, back right, and
+    # back left so the cell traces the Panel's outline.
+    panel_vertices = np.empty((num_panels * 4, 3), dtype=float)
+    panel_num = 0
+    for panels in wing_panels:
+        for panel in panels:
+            base_vertex = panel_num * 4
+            panel_vertices[base_vertex] = panel.Flpp_GP1_CgP1
+            panel_vertices[base_vertex + 1] = panel.Frpp_GP1_CgP1
+            panel_vertices[base_vertex + 2] = panel.Brpp_GP1_CgP1
+            panel_vertices[base_vertex + 3] = panel.Blpp_GP1_CgP1
+            panel_num += 1
 
     # Return the Panels' surfaces.
-    return pv.PolyData(panel_vertices, panel_faces)
+    return pv.PolyData(panel_vertices, _get_quadrilateral_faces(num_panels))
+
+
+def _get_quadrilateral_faces(num_quadrilaterals: int) -> np.ndarray:
+    """Returns the faces ndarray of a PolyData made of consecutive quadrilaterals.
+
+    The faces are in PolyData's padded form, where each face is its vertex count
+    followed by its vertex indices. Face i covers vertices 4i through 4i + 3, so this is
+    the faces ndarray for any mesh whose vertices are stored four to a cell in cell
+    order.
+
+    :param num_quadrilaterals: The number of quadrilateral faces.
+    :return: A (num_quadrilaterals * 5,) ndarray of ints representing the faces.
+    """
+    base_vertices = np.arange(num_quadrilaterals, dtype=int) * 4
+    faces = np.empty((num_quadrilaterals, 5), dtype=int)
+    faces[:, 0] = 4
+    faces[:, 1] = base_vertices
+    faces[:, 2] = base_vertices + 1
+    faces[:, 3] = base_vertices + 2
+    faces[:, 4] = base_vertices + 3
+    return np.ravel(faces)
 
 
 def get_streamline_surfaces(
@@ -825,46 +825,21 @@ def get_wake_ring_vortex_surfaces(
     stackBlwrvp_GP1_CgP1 = solver.listStackBlwrvp_GP1_CgP1[step]
     stackBrwrvp_GP1_CgP1 = solver.listStackBrwrvp_GP1_CgP1[step]
 
-    # Initialize empty ndarrays to hold each wake ring vortex's vertices and face.
-    wake_ring_vortex_vertices = np.zeros((0, 3), dtype=float)
-    wake_ring_vortex_faces = np.zeros(0, dtype=int)
-
-    for wake_ring_vortex_num in range(num_wake_ring_vortices):
-        Frwrvp_GP1_CgP1 = stackFrwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Flwrvp_GP1_CgP1 = stackFlwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Blwrvp_GP1_CgP1 = stackBlwrvp_GP1_CgP1[wake_ring_vortex_num]
-        Brwrvp_GP1_CgP1 = stackBrwrvp_GP1_CgP1[wake_ring_vortex_num]
-
-        wake_ring_vortex_vertices_to_add = np.vstack(
-            (
-                Flwrvp_GP1_CgP1,
-                Frwrvp_GP1_CgP1,
-                Brwrvp_GP1_CgP1,
-                Blwrvp_GP1_CgP1,
-            )
-        )
-        wake_ring_vortex_face_to_add = np.array(
-            [
-                4,
-                (wake_ring_vortex_num * 4),
-                (wake_ring_vortex_num * 4) + 1,
-                (wake_ring_vortex_num * 4) + 2,
-                (wake_ring_vortex_num * 4) + 3,
-            ],
-            dtype=int,
-        )
-
-        # Stack this wake ring vortex's vertices and faces to the ndarrays of all wake
-        # ring vortices' vertices and faces.
-        wake_ring_vortex_vertices = np.vstack(
-            (wake_ring_vortex_vertices, wake_ring_vortex_vertices_to_add)
-        )
-        wake_ring_vortex_faces = np.hstack(
-            (wake_ring_vortex_faces, wake_ring_vortex_face_to_add)
-        )
+    # Interleave the four corner stacks so each wake ring vortex's vertices are wound
+    # front left, front right, back right, and back left. Every corner stack is a
+    # (num_wake_ring_vortices, 3) ndarray, so four strided assignments build the whole
+    # mesh at once rather than a wake ring vortex at a time, which matters because this
+    # is called once per time step of an animation.
+    wake_ring_vortex_vertices = np.empty((num_wake_ring_vortices * 4, 3), dtype=float)
+    wake_ring_vortex_vertices[0::4] = stackFlwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[1::4] = stackFrwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[2::4] = stackBrwrvp_GP1_CgP1[:num_wake_ring_vortices]
+    wake_ring_vortex_vertices[3::4] = stackBlwrvp_GP1_CgP1[:num_wake_ring_vortices]
 
     # Return the wake ring vortex surfaces.
-    return pv.PolyData(wake_ring_vortex_vertices, wake_ring_vortex_faces)
+    return pv.PolyData(
+        wake_ring_vortex_vertices, _get_quadrilateral_faces(num_wake_ring_vortices)
+    )
 
 
 def get_scalars(

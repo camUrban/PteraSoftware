@@ -741,13 +741,13 @@ _SOLVE_THREAD_THRESHOLD = 3_000
 # anyway (the compiled kernels hold the GIL, so threads never speed the solvers up), a
 # second concurrent solve loop raises.
 #
-# Forking after a solve that has initialized Numba's GNU OpenMP layer would abort
-# at the child kernel launch (omppool.cpp parallel_for, GCC off-Windows only).
-# The child survives fork, so the parent cannot veto via before-fork hooks; instead
-# an after_in_child hook flags children that inherited a live "omp" layer, and the
-# solve guard raises on entry in that child. Plain fork work and subprocess stay
-# unaffected, and the "omp" gate keeps the check off platforms where Numba would not
-# abort (e.g., macOS clang wheels).
+# Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at the
+# child kernel launch (omppool.cpp parallel_for, GCC off-Windows only). The child
+# survives fork, so the parent cannot veto via before-fork hooks; instead an
+# after_in_child hook flags children that inherited a live "omp" layer, and the solve
+# guard raises on entry in that child. Plain fork work and subprocess stay unaffected,
+# and the "omp" gate keeps the check off platforms where Numba would not abort (e.g.,
+# macOS clang wheels).
 _solve_loop_lock = threading.Lock()
 _solve_loop_owner: str | None = None
 _solve_loop_limiter: threadpoolctl.threadpool_limits | None = None

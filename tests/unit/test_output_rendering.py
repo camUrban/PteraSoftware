@@ -447,6 +447,24 @@ class TestGetMuJoCoRenderGeometry(unittest.TestCase):
         self.assertEqual(len(body_geoms), 1)
         self.assertTrue(body_geoms[0].body_attached)
 
+    def test_meshes_carry_their_shading_normals(self) -> None:
+        """Test that every geom's mesh comes back with active point normals.
+
+        The normals are computed once here so that adding a geom to a frame does not
+        recompute them, which is the cost that dominates a frame for a detailed mesh.
+        """
+        solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture(
+            extra_xml={
+                "worldbody": '<geom name="ground" type="plane" size="5 4 0.1"/>',
+                "body": '<geom name="box_geom" type="box" size="0.1 0.2 0.3"/>',
+            }
+        )
+        worldbody_geoms, body_geoms = _output_rendering.get_mujoco_render_geometry(
+            solver
+        )
+        for render_geom in worldbody_geoms + body_geoms:
+            self.assertIsNotNone(render_geom.mesh.point_data.active_normals)
+
     def test_returns_empty_lists_without_extra_geometry(self) -> None:
         """Test that a solver whose model carries no extra geoms returns two empty
         lists."""
@@ -654,6 +672,34 @@ class TestTransformMesh(unittest.TestCase):
         mesh = output_rendering_fixtures.make_cube_mesh_fixture()
         transformed = _output_rendering.transform_mesh(mesh, np.eye(4, dtype=float))
         npt.assert_array_equal(transformed.faces, mesh.faces)
+
+    def test_maps_the_normals_as_directions(self) -> None:
+        """Test that a mesh's active point normals are rotated but not translated.
+
+        A body mesh carries its shading normals across the frames of an animation, so
+        they have to turn with the faces they shade while ignoring where those faces
+        move to.
+        """
+        mesh = output_rendering_fixtures.make_cube_mesh_fixture().compute_normals(
+            cell_normals=False
+        )
+        T_pas = _transformations.compose_T_pas(
+            _transformations.generate_rot_T(
+                angles=np.array([0.0, 0.0, np.pi / 2], dtype=float),
+                passive=True,
+                intrinsic=True,
+                order="xyz",
+            ),
+            _transformations.generate_trans_T(
+                translations=np.array([1.0, 2.0, 3.0], dtype=float), passive=True
+            ),
+        )
+        transformed = _output_rendering.transform_mesh(mesh, T_pas)
+        npt.assert_allclose(
+            transformed.point_data["Normals"],
+            np.array(mesh.point_data["Normals"]) @ T_pas[:3, :3].T,
+            atol=1e-12,
+        )
 
 
 class TestGetFreeFlightFitParallelScale(unittest.TestCase):

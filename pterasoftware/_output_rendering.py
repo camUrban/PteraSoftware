@@ -663,9 +663,35 @@ def get_mujoco_render_geometry(
     free_flight_unsteady_problem = cast(
         problems.FreeFlightUnsteadyProblem, free_flight_solver.unsteady_problem
     )
-    render_geoms = _private_access.get_mujoco_model(
+    extracted_render_geoms = _private_access.get_mujoco_model(
         free_flight_unsteady_problem
     ).get_render_geometry()
+
+    # Compute each geom's shading normals here, once, splitting the sharp edges so the
+    # shading stays crisp across creases. The split duplicates the points along edges
+    # sharper than PyVista's feature angle, letting each face shade with its own normal,
+    # where plain smooth shading would average one normal across the crease and smear
+    # it. The geoms are rigid, so transform_mesh carries the normals along with the
+    # points, and add_mujoco_geometry hands PyVista a mesh that already has them rather
+    # than having it split the edges again for every frame of an animation, which costs
+    # more than the rest of the frame put together for a detailed mesh. The split leaves
+    # behind a point id array that nothing reads, so it is dropped.
+    render_geoms = []
+    for render_geom in extracted_render_geoms:
+        mesh = render_geom.mesh.compute_normals(
+            cell_normals=False,
+            split_vertices=True,
+            feature_angle=pv.global_theme.sharp_edges_feature_angle,
+        )
+        if "pyvistaOriginalPointIds" in mesh.point_data:
+            del mesh.point_data["pyvistaOriginalPointIds"]
+        render_geoms.append(
+            _mujoco_model.RenderGeom(
+                mesh=mesh,
+                rgba=render_geom.rgba,
+                body_attached=render_geom.body_attached,
+            )
+        )
 
     worldbody_geoms = [
         render_geom for render_geom in render_geoms if not render_geom.body_attached
@@ -686,7 +712,8 @@ def transform_mesh(
     :param mesh: The PolyData mesh to transform.
     :param T_pas: A (4,4) ndarray of floats representing the passive transformation to
         apply to the mesh's points.
-    :return: A new PolyData mesh with all points mapped through the transformation.
+    :return: A new PolyData mesh with all points mapped through the transformation,
+        along with its active point normals, if it has any, mapped as directions.
     """
     transformed = mesh.copy()
     transformed.points = _transformations.apply_T_to_vectors(
@@ -694,6 +721,17 @@ def transform_mesh(
         mesh.points,
         is_position=True,
     )
+
+    # Carry any shading normals along as directions, so they stay perpendicular to the
+    # faces they shade. Under a reflection, this maps an outward normal to the reflected
+    # face's outward normal, which is what the shading needs.
+    normals_name = mesh.point_data.active_normals_name
+    if normals_name is not None:
+        transformed.point_data[normals_name] = _transformations.apply_T_to_vectors(
+            T_pas,
+            mesh.point_data[normals_name],
+            is_position=False,
+        )
     return transformed
 
 
@@ -1429,32 +1467,28 @@ def add_mujoco_geometry(
         color = (float(rgba[0]), float(rgba[1]), float(rgba[2]))
         opacity = float(rgba[3])
 
-        # Split the sharp edges so the shading stays crisp across creases. The split
-        # duplicates the points along edges sharper than PyVista's feature angle,
-        # letting each face shade with its own normal, where plain smooth shading would
-        # average one normal across the crease and smear it.
+        # The mesh carries its shading normals, computed with the sharp edges split when
+        # get_mujoco_render_geometry extracted it, so PyVista passes them through here
+        # rather than recomputing them for every frame.
         actor = plotter.add_mesh(
             posed_mesh,
             color=color,
             opacity=opacity,
             smooth_shading=True,
-            split_sharp_edges=True,
             ambient=_MUJOCO_GEOMETRY_AMBIENT,
             diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
             render=False,
         )
         actors.append(actor)
         if T_reflect is not None:
-            # Splitting the sharp edges recomputes the normals from the triangle
-            # winding, and a reflection inverts the winding's outward sense. Flip the
-            # reflected copy's faces so the recomputed normals point outward again
-            # instead of inverting the shading.
+            # A reflection inverts the faces' winding. Flip the reflected copy's faces
+            # so they wind outward again, which the shading needs even though the
+            # reflected normals it carries already point outward.
             actor = plotter.add_mesh(
                 _reflect_mesh(posed_mesh, T_reflect).flip_faces(),
                 color=mute_color(color, IMAGE_REFLECTION_MUTE_FACTOR),
                 opacity=opacity,
                 smooth_shading=True,
-                split_sharp_edges=True,
                 ambient=_MUJOCO_GEOMETRY_AMBIENT,
                 diffuse=_MUJOCO_GEOMETRY_DIFFUSE,
                 render=False,

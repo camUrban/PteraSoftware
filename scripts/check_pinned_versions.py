@@ -1,11 +1,10 @@
 """Verify that the environment holds the versions pinned in requirements_dev.txt.
 
-The octowrap and mypy hooks run with language: system, so pre-commit executes whatever
-tool versions the active virtual environment holds instead of managing pinned copies
-itself. This pre-commit hook closes that gap: it reads every exact pin (==) from
-requirements_dev.txt, compares each against the version installed in the running
-environment, and fails with a reinstall hint when any package is missing or has drifted
-from its pin.
+The mypy hook runs with language: system, so pre-commit executes whatever tool versions
+the active virtual environment holds instead of managing pinned copies itself. This hook
+closes that gap: it reads every exact pin (==) from requirements_dev.txt, compares each
+against the version installed in the running environment, and fails with a reinstall
+hint when any package is missing or has drifted from its pin.
 """
 
 import re

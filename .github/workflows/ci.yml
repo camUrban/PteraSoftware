@@ -83,9 +83,9 @@ jobs:
           pip install -r requirements.txt -r requirements_dev.txt
       # Run each linter and formatter through pre-commit so CI uses the exact
       # frozen hook versions from .pre-commit-config.yaml and only ever sees
-      # tracked files. The octowrap and mypy hooks run with language: system,
-      # so their versions come from the requirements_dev.txt install above
-      # rather than a frozen rev. The pinned-versions hook stays out of CI by
+      # tracked files. The mypy hook runs with language: system, so its
+      # version comes from the requirements_dev.txt install above rather
+      # than a frozen rev. The pinned-versions hook stays out of CI by
       # design: a fresh runner that just installed the requirements files
       # would pass it trivially.
       - name: isort
@@ -96,7 +96,7 @@ jobs:
         run: pre-commit run --all-files codespell
       - name: docformatter
         run: pre-commit run --all-files docformatter
-      - name: octowrap
-        run: pre-commit run --all-files octowrap
+      - name: octowrap-check
+        run: pre-commit run --all-files octowrap-check
       - name: mypy
         run: pre-commit run --all-files mypy

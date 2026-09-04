@@ -297,6 +297,48 @@ def validation_geometry_sweep_function(
     ) / 0.0174533
 
 
+def validation_flap_angle_series(
+    cycle_angle_rad: float | np.ndarray,
+) -> float | np.ndarray:
+    """Returns the flap angle in degrees at a position within one flap cycle.
+
+    The position is measured in cycle radians, so 0.0 is the start of a flap and 2.0 *
+    pi is the end of that same flap. This function contains no flapping frequency. The
+    frequency enters later, when the solver converts time in seconds to cycle radians.
+    The Fourier series is fourth order, and its coefficients were calculated by Yeo et
+    al., 2011.
+
+    :param cycle_angle_rad: A float or a (N,) ndarray of floats representing the
+        position or positions within a flap cycle at which to evaluate the flap angle.
+        The units are radians of flap cycle.
+    :return: A float or a (N,) ndarray of floats representing the flap angle or angles
+        at the given cycle positions. The units are degrees.
+    """
+    # Set the Fourier series coefficients.
+    a_0 = 0.0354
+    a_1 = 4.10e-5
+    b_1 = 0.3793
+    a_2 = -0.0322
+    b_2 = -1.95e-6
+    a_3 = -8.90e-7
+    b_3 = -0.0035
+    a_4 = 0.00046
+    b_4 = -3.60e-6
+
+    # Calculate and return the flap angle(s).
+    return np.rad2deg(
+        a_0
+        + a_1 * np.cos(1 * cycle_angle_rad)
+        + b_1 * np.sin(1 * cycle_angle_rad)
+        + a_2 * np.cos(2 * cycle_angle_rad)
+        + b_2 * np.sin(2 * cycle_angle_rad)
+        + a_3 * np.cos(3 * cycle_angle_rad)
+        + b_3 * np.sin(3 * cycle_angle_rad)
+        + a_4 * np.cos(4 * cycle_angle_rad)
+        + b_4 * np.sin(4 * cycle_angle_rad)
+    )
+
+
 def time_normalized_validation_geometry_sweep_function_rad(
     time: float | np.ndarray,
 ) -> float | np.ndarray:

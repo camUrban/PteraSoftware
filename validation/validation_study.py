@@ -75,16 +75,25 @@ stackPlanformPoints_YeoXReversed_Ler = stackPlanformPoints_Yeo_Ler * np.array(
 # root point.
 stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
-# Find the index of the point where the planform point's x component equals the half
+# Find the index of the point where the planform point's y component equals the half
 # span.
 tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
 
 # Using the tip index, split the points into two ndarrays of leading and trailing edge
 # points (in wing axes projected onto its xy plane, relative to the leading edge root
-# point).
-stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[:tip_index, :]
+# point). Both curves include the tip point so they span the same maximum y component.
+stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[: tip_index + 1, :]
 stackTrailingPointsXY_Wn_Ler = np.flip(
     stackPlanformPointsXY_Wn_Ler[tip_index:, :], axis=0
+)
+
+# Add zero z components so the curves are 3D points (in wing axes, relative to the
+# leading edge root point), which is the form that Wing.from_edge_points expects.
+leadingEdgePoints_Wn_Ler = np.column_stack(
+    (stackLeadingPointsXY_Wn_Ler, np.zeros(len(stackLeadingPointsXY_Wn_Ler)))
+)
+trailingEdgePoints_Wn_Ler = np.column_stack(
+    (stackTrailingPointsXY_Wn_Ler, np.zeros(len(stackTrailingPointsXY_Wn_Ler)))
 )
 
 # Set the number of flap cycles to run the simulation for. The converged result is 3
@@ -101,110 +110,6 @@ num_spanwise_sections = 18
 # Set the chordwise spacing scheme for the Panels. This is set to uniform, as is
 # standard for UVLM simulations.
 chordwise_spacing = "uniform"
-
-# Calculate the spanwise distance between the WingCrossSections.
-spanwise_step = (half_span - tip_inset) / num_spanwise_sections
-
-# Define four ndarrays to hold the leading and trailing points of each section's left
-# and right WingCrossSections (in wing axes projected onto its xy plane, relative to the
-# leading edge root point).
-stackLeftLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackLeftTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-
-# Iterate through the locations of the future sections to populate the left and right
-# WingCrossSection's leading and trailing points (in wing axes projected onto its xy
-# plane, relative to the leading edge root point).
-for spanwise_loc in range(num_spanwise_sections):
-    # Find the y component of the leading and trailing points (in wing axes projected
-    # onto its xy plane, relative to the leading edge root point).
-    stackLeftLpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackLeftTpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackRightLpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
-    stackRightTpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
-
-    # Interpolate between the points to find their x components (in wing axes projected
-    # onto its xy plane, relative to the leading edge root point).
-    stackLeftLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step,
-        stackLeadingPointsXY_Wn_Ler[:, 1],
-        stackLeadingPointsXY_Wn_Ler[:, 0],
-    )
-    stackLeftTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step,
-        stackTrailingPointsXY_Wn_Ler[:, 1],
-        stackTrailingPointsXY_Wn_Ler[:, 0],
-    )
-    stackRightLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step,
-        stackLeadingPointsXY_Wn_Ler[:, 1],
-        stackLeadingPointsXY_Wn_Ler[:, 0],
-    )
-    stackRightTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step,
-        stackTrailingPointsXY_Wn_Ler[:, 1],
-        stackTrailingPointsXY_Wn_Ler[:, 0],
-    )
-
-# Define an empty list to hold the WingCrossSections.
-validation_airplane_wing_cross_sections = []
-
-# Iterate through the leading and trailing point ndarrays to create the
-# WingCrossSections.
-for i in range(num_spanwise_sections):
-    if i == 0:
-        thisLpY_Wcsp_Lpp = 0.0
-        thisLpX_Wcsp_Lpp = 0.0
-    else:
-        thisLpY_Wcsp_Lpp = spanwise_step
-        thisLpX_Wcsp_Lpp = stackLeftLpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i - 1, 0]
-
-    this_chord = stackLeftTpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i, 0]
-
-    # Create this WingCrossSection.
-    this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
-        airfoil=ps.geometry.airfoil.Airfoil(
-            name="naca0012",
-        ),
-        num_spanwise_panels=1,
-        chord=this_chord,
-        Lp_Wcsp_Lpp=(thisLpX_Wcsp_Lpp, thisLpY_Wcsp_Lpp, 0.0),
-        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        control_surface_symmetry_type="symmetric",
-        control_surface_hinge_point=0.75,
-        control_surface_deflection=0.0,
-        spanwise_spacing="uniform",
-    )
-
-    # Append this WingCrossSection to the list of WingCrossSections.
-    validation_airplane_wing_cross_sections.append(this_wing_cross_section)
-
-    # If this is the last section, also create the right WingCrossSection and append it
-    # to the list.
-    if i == num_spanwise_sections - 1:
-        thisLpY_Wcsp_Lpp = spanwise_step
-        thisLpX_Wcsp_Lpp = (
-            stackRightLpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i - 1, 0]
-        )
-
-        this_chord = stackRightTpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i, 0]
-
-        this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=ps.geometry.airfoil.Airfoil(
-                name="naca0012",
-            ),
-            num_spanwise_panels=None,
-            chord=this_chord,
-            Lp_Wcsp_Lpp=(thisLpX_Wcsp_Lpp, thisLpY_Wcsp_Lpp, 0.0),
-            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            control_surface_symmetry_type="symmetric",
-            control_surface_hinge_point=0.75,
-            control_surface_deflection=0.0,
-            spanwise_spacing=None,
-        )
-
-        validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
 
 def validation_flap_angle_series(
@@ -284,14 +189,21 @@ def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
     )
 
 
-# Create the Airplane. The x component of the main Wing's angles describing the
+# Create the Airplane. The main Wing is built directly from the digitized leading and
+# trailing edge curves, resampled at uniformly spaced WingCrossSections and trimmed at
+# the tip by the inset. The x component of the main Wing's angles describing the
 # orientation of the wing axes relative to the geometry axes (after accounting for
 # symmetry) using an intrinsic xy'z" sequence is the flap angle at the start of a flap.
 # The WingMovements oscillate it about that value.
 validation_airplane = ps.geometry.airplane.Airplane(
     wings=[
-        ps.geometry.wing.Wing(
-            wing_cross_sections=validation_airplane_wing_cross_sections,
+        ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+            trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+            num_wing_cross_sections=num_spanwise_sections + 1,
+            airfoil=ps.geometry.airfoil.Airfoil(
+                name="naca0012",
+            ),
             name="Main Wing",
             Ler_Gs_Cgs=(0.0, wing_midline_offset / 2, 0.0),
             angles_Gs_to_Wn_ixyz=(validation_flap_angle_at_start, 0.0, 0.0),
@@ -301,13 +213,15 @@ validation_airplane = ps.geometry.airplane.Airplane(
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
+            tip_trim_fraction=tip_inset / half_span,
         ),
     ],
     name="Validation Airplane",
 )
 
-# Delete the extraneous pointer.
-del validation_airplane_wing_cross_sections
+# Delete the extraneous pointers.
+del leadingEdgePoints_Wn_Ler
+del trailingEdgePoints_Wn_Ler
 
 # Initialize empty lists to hold the WingCrossSectionMovements for the main and
 # reflected main Wings.

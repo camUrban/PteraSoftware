@@ -206,14 +206,95 @@ for i in range(num_spanwise_sections):
 
         validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
-# Create the Airplane.
+
+def validation_flap_angle_series(
+    cycle_angle_rad: float | np.ndarray,
+) -> float | np.ndarray:
+    """Returns the flap angle in degrees at a position within one flap cycle.
+
+    The position is measured in cycle radians, so 0.0 is the start of a flap and 2.0 *
+    pi is the end of that same flap. This function contains no flapping frequency. The
+    frequency enters later, when the solver converts time in seconds to cycle radians.
+    The Fourier series is fourth order, and its coefficients were calculated by Yeo et
+    al., 2011.
+
+    :param cycle_angle_rad: A float or a (N,) ndarray of floats representing the
+        position or positions within a flap cycle at which to evaluate the flap angle.
+        The units are radians of flap cycle.
+    :return: A float or a (N,) ndarray of floats representing the flap angle or angles
+        at the given cycle positions. The units are degrees.
+    """
+    # Set the Fourier series coefficients.
+    a_0 = 0.0354
+    a_1 = 4.10e-5
+    b_1 = 0.3793
+    a_2 = -0.0322
+    b_2 = -1.95e-6
+    a_3 = -8.90e-7
+    b_3 = -0.0035
+    a_4 = 0.00046
+    b_4 = -3.60e-6
+
+    # Calculate and return the flap angle(s).
+    return np.rad2deg(
+        a_0
+        + a_1 * np.cos(1 * cycle_angle_rad)
+        + b_1 * np.sin(1 * cycle_angle_rad)
+        + a_2 * np.cos(2 * cycle_angle_rad)
+        + b_2 * np.sin(2 * cycle_angle_rad)
+        + a_3 * np.cos(3 * cycle_angle_rad)
+        + b_3 * np.sin(3 * cycle_angle_rad)
+        + a_4 * np.cos(4 * cycle_angle_rad)
+        + b_4 * np.sin(4 * cycle_angle_rad)
+    )
+
+
+# The custom spacing API expects the flap angle split into three parts: the value at the
+# start of a flap, an amplitude, and a unit shape that starts at 0.0, returns to 0.0
+# after 2.0 * pi, and has an amplitude of 1.0. Sample the series over one flap cycle to
+# find the first two parts. The units are degrees.
+flap_cycle_angles_rad = np.linspace(0.0, 2.0 * np.pi, 10001, dtype=float)
+flap_angles = validation_flap_angle_series(flap_cycle_angles_rad)
+validation_flap_angle_at_start = float(validation_flap_angle_series(0.0))
+validation_flap_angle_amplitude = float(
+    (np.max(flap_angles) - np.min(flap_angles)) / 2.0
+)
+
+# Delete the extraneous pointers.
+del flap_cycle_angles_rad
+del flap_angles
+
+
+def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
+    """Returns the unit shape of the flap angle series at a position within one flap
+    cycle.
+
+    This is the third part of the split described above. It is the flap angle series
+    with its value at the start of a flap subtracted and its amplitude divided out, so
+    it meets the requirements for a custom spacing function.
+
+    :param cycle_angle_rad: A float representing the position within a flap cycle at
+        which to evaluate the shape. The units are radians of flap cycle.
+    :return: A float representing the unit shape at the given cycle position. It is
+        dimensionless.
+    """
+    return float(
+        (validation_flap_angle_series(cycle_angle_rad) - validation_flap_angle_at_start)
+        / validation_flap_angle_amplitude
+    )
+
+
+# Create the Airplane. The x component of the main Wing's angles describing the
+# orientation of the wing axes relative to the geometry axes (after accounting for
+# symmetry) using an intrinsic xy'z" sequence is the flap angle at the start of a flap.
+# The WingMovements oscillate it about that value.
 validation_airplane = ps.geometry.airplane.Airplane(
     wings=[
         ps.geometry.wing.Wing(
             wing_cross_sections=validation_airplane_wing_cross_sections,
             name="Main Wing",
             Ler_Gs_Cgs=(0.0, wing_midline_offset / 2, 0.0),
-            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(validation_flap_angle_at_start, 0.0, 0.0),
             symmetric=True,
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
@@ -297,83 +378,6 @@ def validation_geometry_sweep_function(
     ) / 0.0174533
 
 
-def validation_flap_angle_series(
-    cycle_angle_rad: float | np.ndarray,
-) -> float | np.ndarray:
-    """Returns the flap angle in degrees at a position within one flap cycle.
-
-    The position is measured in cycle radians, so 0.0 is the start of a flap and 2.0 *
-    pi is the end of that same flap. This function contains no flapping frequency. The
-    frequency enters later, when the solver converts time in seconds to cycle radians.
-    The Fourier series is fourth order, and its coefficients were calculated by Yeo et
-    al., 2011.
-
-    :param cycle_angle_rad: A float or a (N,) ndarray of floats representing the
-        position or positions within a flap cycle at which to evaluate the flap angle.
-        The units are radians of flap cycle.
-    :return: A float or a (N,) ndarray of floats representing the flap angle or angles
-        at the given cycle positions. The units are degrees.
-    """
-    # Set the Fourier series coefficients.
-    a_0 = 0.0354
-    a_1 = 4.10e-5
-    b_1 = 0.3793
-    a_2 = -0.0322
-    b_2 = -1.95e-6
-    a_3 = -8.90e-7
-    b_3 = -0.0035
-    a_4 = 0.00046
-    b_4 = -3.60e-6
-
-    # Calculate and return the flap angle(s).
-    return np.rad2deg(
-        a_0
-        + a_1 * np.cos(1 * cycle_angle_rad)
-        + b_1 * np.sin(1 * cycle_angle_rad)
-        + a_2 * np.cos(2 * cycle_angle_rad)
-        + b_2 * np.sin(2 * cycle_angle_rad)
-        + a_3 * np.cos(3 * cycle_angle_rad)
-        + b_3 * np.sin(3 * cycle_angle_rad)
-        + a_4 * np.cos(4 * cycle_angle_rad)
-        + b_4 * np.sin(4 * cycle_angle_rad)
-    )
-
-
-# The custom spacing API expects the flap angle split into three parts: the value at the
-# start of a flap, an amplitude, and a unit shape that starts at 0.0, returns to 0.0
-# after 2.0 * pi, and has an amplitude of 1.0. Sample the series over one flap cycle to
-# find the first two parts. The units are degrees.
-flap_cycle_angles_rad = np.linspace(0.0, 2.0 * np.pi, 10001, dtype=float)
-flap_angles = validation_flap_angle_series(flap_cycle_angles_rad)
-validation_flap_angle_at_start = float(validation_flap_angle_series(0.0))
-validation_flap_angle_amplitude = float(
-    (np.max(flap_angles) - np.min(flap_angles)) / 2.0
-)
-
-# Delete the extraneous pointers.
-del flap_cycle_angles_rad
-del flap_angles
-
-
-def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
-    """Returns the unit shape of the flap angle series at a position within one flap
-    cycle.
-
-    This is the third part of the split described above. It is the flap angle series
-    with its value at the start of a flap subtracted and its amplitude divided out, so
-    it meets the requirements for a custom spacing function.
-
-    :param cycle_angle_rad: A float representing the position within a flap cycle at
-        which to evaluate the shape. The units are radians of flap cycle.
-    :return: A float representing the unit shape at the given cycle position. It is
-        dimensionless.
-    """
-    return float(
-        (validation_flap_angle_series(cycle_angle_rad) - validation_flap_angle_at_start)
-        / validation_flap_angle_amplitude
-    )
-
-
 def time_normalized_validation_geometry_sweep_function_rad(
     time: float | np.ndarray,
 ) -> float | np.ndarray:
@@ -416,20 +420,18 @@ def time_normalized_validation_geometry_sweep_function_rad(
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_section_movements=main_wing_cross_section_movements,
-    # TODO: Replace with actual angle movement values.
-    ampAngles_Gs_to_Wn_ixyz=(22.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
 reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[1],
     wing_cross_section_movements=main_wing_cross_section_movements,
-    # TODO: Replace with actual angle movement values.
-    ampAngles_Gs_to_Wn_ixyz=(22.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
 
 # Delete the extraneous pointer.

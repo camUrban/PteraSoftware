@@ -338,46 +338,6 @@ del this_main_wing_cross_section_movement
 del this_reflected_main_wing_cross_section_movement
 
 
-def validation_geometry_sweep_function(
-    time: float | np.ndarray,
-) -> float | np.ndarray:
-    """This function takes in the time during a flap cycle and returns the flap angle in
-    degrees. It uses the flapping frequency defined in the encompassing script, and is
-    based on a fourth-order Fourier series. The coefficients were calculated by Yeo et
-    al., 2011.
-
-    :param time: float or a (N,) ndarray of floats This is a single time or a ndarray of
-        N times at which to calculate the flap angle. The units are seconds.
-    :return flap_angle: float a (N,) ndarray of floats This is a single flap angle or a
-        ndarray of N flap angles at the inputted time value or values. The units are
-        degrees.
-    """
-    # Set the Fourier series coefficients and the flapping frequency.
-    a_0 = 0.0354
-    a_1 = 4.10e-5
-    b_1 = 0.3793
-    a_2 = -0.0322
-    b_2 = -1.95e-6
-    a_3 = -8.90e-7
-    b_3 = -0.0035
-    a_4 = 0.00046
-    b_4 = -3.60e-6
-    f = 2 * math.pi * validation_flapping_frequency
-
-    # Calculate and return the flap angle(s).
-    return (
-        a_0
-        + a_1 * np.cos(1 * f * time)
-        + b_1 * np.sin(1 * f * time)
-        + a_2 * np.cos(2 * f * time)
-        + b_2 * np.sin(2 * f * time)
-        + a_3 * np.cos(3 * f * time)
-        + b_3 * np.sin(3 * f * time)
-        + a_4 * np.cos(4 * f * time)
-        + b_4 * np.sin(4 * f * time)
-    ) / 0.0174533
-
-
 def time_normalized_validation_geometry_sweep_function_rad(
     time: float | np.ndarray,
 ) -> float | np.ndarray:

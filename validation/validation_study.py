@@ -387,15 +387,16 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
 )
 reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[1],
-    wing_cross_section_movements=main_wing_cross_section_movements,
+    wing_cross_section_movements=reflected_main_wing_cross_section_movements,
     ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
 
-# Delete the extraneous pointer.
+# Delete the extraneous pointers.
 del main_wing_cross_section_movements
+del reflected_main_wing_cross_section_movements
 
 # Define the AirplaneMovement that contains the WingMovements.
 validation_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(

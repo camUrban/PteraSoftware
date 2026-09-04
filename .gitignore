@@ -148,6 +148,8 @@ draw.webp
 *_orientation.png
 *_angular_velocity.png
 *_aerodynamic_angles.png
+*_loads.csv
+*_state.csv
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores

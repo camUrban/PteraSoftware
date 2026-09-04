@@ -339,6 +339,41 @@ def validation_flap_angle_series(
     )
 
 
+# The custom spacing API expects the flap angle split into three parts: the value at the
+# start of a flap, an amplitude, and a unit shape that starts at 0.0, returns to 0.0
+# after 2.0 * pi, and has an amplitude of 1.0. Sample the series over one flap cycle to
+# find the first two parts. The units are degrees.
+flap_cycle_angles_rad = np.linspace(0.0, 2.0 * np.pi, 10001, dtype=float)
+flap_angles = validation_flap_angle_series(flap_cycle_angles_rad)
+validation_flap_angle_at_start = float(validation_flap_angle_series(0.0))
+validation_flap_angle_amplitude = float(
+    (np.max(flap_angles) - np.min(flap_angles)) / 2.0
+)
+
+# Delete the extraneous pointers.
+del flap_cycle_angles_rad
+del flap_angles
+
+
+def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
+    """Returns the unit shape of the flap angle series at a position within one flap
+    cycle.
+
+    This is the third part of the split described above. It is the flap angle series
+    with its value at the start of a flap subtracted and its amplitude divided out, so
+    it meets the requirements for a custom spacing function.
+
+    :param cycle_angle_rad: A float representing the position within a flap cycle at
+        which to evaluate the shape. The units are radians of flap cycle.
+    :return: A float representing the unit shape at the given cycle position. It is
+        dimensionless.
+    """
+    return float(
+        (validation_flap_angle_series(cycle_angle_rad) - validation_flap_angle_at_start)
+        / validation_flap_angle_amplitude
+    )
+
+
 def time_normalized_validation_geometry_sweep_function_rad(
     time: float | np.ndarray,
 ) -> float | np.ndarray:

@@ -14,7 +14,8 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's math and pathlib packages.
+# Import Python's logging, math, and pathlib packages.
+import logging
 import math
 from pathlib import Path
 
@@ -28,6 +29,15 @@ import pterasoftware as ps
 # Find this script's directory so that the data files it reads and the figure it saves
 # resolve correctly regardless of the current working directory.
 validation_directory = Path(__file__).resolve().parent
+
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument. Keep the
+# configured logger so this script can log its own results alongside the package's
+# messages.
+validation_logger = ps.set_up_logging(
+    level="Info",
+    handler=logging.FileHandler(validation_directory / "validation_study.log"),
+)
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -390,6 +400,10 @@ green_leading_area = 0.071 * 0.015
 # Run the validation solver using a prescribed wake.
 validation_solver.run(prescribed_wake=True)
 
+# Save the solved solver to a .psz file. This allows us to load the results later
+# without re-running the simulation.
+ps.save(validation_directory / "validation_solver.psz", validation_solver)
+
 # Extract the Movement's num_steps and delta_time attributes.
 validation_num_steps = validation_movement.num_steps
 validation_delta_time = validation_movement.delta_time
@@ -709,20 +723,26 @@ lift_mean_absolute_error = np.mean(lift_absolute_errors)
 sim_lift_rms = math.sqrt(np.mean(final_flap_sim_lifts**2))
 exp_lift_rms = math.sqrt(np.mean(exp_lifts**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
-print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
-print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
-print("Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N")
 
-# Print the MAE.
-print(
-    "\nMean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
+# Print and log the RMS lift results.
+lift_rmsape_message = (
+    "Lift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%"
 )
+sim_lift_rms_message = "Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N"
+exp_lift_rms_message = "Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N"
+print("\n" + lift_rmsape_message)
+print(sim_lift_rms_message)
+print(exp_lift_rms_message)
+validation_logger.info(lift_rmsape_message)
+validation_logger.info(sim_lift_rms_message)
+validation_logger.info(exp_lift_rms_message)
 
-# Calculate the experimental root-mean-square (RMS) lift.
-exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts, 2)))
-
-# Print the experimental RMS lift.
-print("Experimental RMS Lift: " + str(np.round(exp_rms_lift, 4)) + " N")
+# Print and log the MAE.
+lift_mean_absolute_error_message = (
+    "Mean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
+)
+print("\n" + lift_mean_absolute_error_message)
+validation_logger.info(lift_mean_absolute_error_message)
 
 ps.output.draw(
     solver=validation_solver,
@@ -742,4 +762,5 @@ ps.output.animate(
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
+    speed=0.2,
 )

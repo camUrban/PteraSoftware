@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +36,7 @@ copyright = f"{current_year}, {author}"
 # -- General configuration ---------------------------------------------------
 
 extensions = [
-    "myst_parser",
+    "myst_nb",
     "autoapi.extension",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
@@ -54,6 +55,11 @@ myst_enable_extensions = [
     "tasklist",
 ]
 myst_heading_anchors = 3
+
+# Render the tutorial notebooks from their committed outputs instead of executing them.
+# The docs build does not install pterasoftware or its runtime dependencies (see
+# autodoc_mock_imports above), so it cannot run the notebooks.
+nb_execution_mode = "off"
 
 
 def _load_benchmark_host_info() -> dict[str, str]:
@@ -205,6 +211,17 @@ html_theme_options = {
 }
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Sphinx only renders documents that live inside the source directory, so copy the
+# tutorial notebooks (and the images they embed) from the repo root's tutorials/
+# directory into docs/website/tutorials/. The copies are gitignored, and tutorials/
+# stays the single source of truth.
+_tutorials_source = REPO_ROOT / "tutorials"
+_tutorials_target = Path(__file__).resolve().parent / "tutorials"
+_tutorials_target.mkdir(exist_ok=True)
+for _tutorial_file in sorted(_tutorials_source.iterdir()):
+    if _tutorial_file.suffix in {".ipynb", ".png", ".webp"}:
+        shutil.copy2(_tutorial_file, _tutorials_target / _tutorial_file.name)
 
 
 def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:

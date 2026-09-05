@@ -1193,51 +1193,84 @@ class Airplane:
             wing.generate_mesh(symmetry_type)
             return [wing]
         else:
-            reflected_wing_cross_sections = []
-            for wing_cross_section in wing.wing_cross_sections:
-                airfoil = wing_cross_section.airfoil
-
-                reflected_airfoil = copy.deepcopy(airfoil)
-
-                if wing_cross_section.control_surface_symmetry_type == "asymmetric":
-                    reflected_control_surface_deflection = (
-                        -1 * wing_cross_section.control_surface_deflection
-                    )
-                else:
-                    reflected_control_surface_deflection = (
-                        wing_cross_section.control_surface_deflection
-                    )
-
-                reflected_wing_cross_sections.append(
-                    wing_cross_section_mod.WingCrossSection(
-                        airfoil=reflected_airfoil,
-                        num_spanwise_panels=wing_cross_section.num_spanwise_panels,
-                        chord=wing_cross_section.chord,
-                        Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
-                        angles_Wcsp_to_Wcs_ixyz=np.copy(
-                            wing_cross_section.angles_Wcsp_to_Wcs_ixyz
-                        ),
-                        control_surface_symmetry_type=None,
-                        control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
-                        control_surface_deflection=reflected_control_surface_deflection,
-                        spanwise_spacing=wing_cross_section.spanwise_spacing,
-                    )
-                )
-
             assert wing.symmetryNormal_G is not None
             assert wing.symmetryPoint_G_Cg is not None
-            reflected_wing = wing_mod.Wing(
-                wing_cross_sections=reflected_wing_cross_sections,
-                name=f"Reflected {wing.name}",
-                Ler_Gs_Cgs=np.copy(wing.Ler_Gs_Cgs),
-                angles_Gs_to_Wn_ixyz=np.copy(wing.angles_Gs_to_Wn_ixyz),
-                symmetric=False,
-                mirror_only=True,
-                symmetryNormal_G=np.copy(wing.symmetryNormal_G),
-                symmetryPoint_G_Cg=np.copy(wing.symmetryPoint_G_Cg),
-                num_chordwise_panels=wing.num_chordwise_panels,
-                chordwise_spacing=wing.chordwise_spacing,
-            )
+
+            # Build the reflected Wing the same way the original was built so it carries
+            # the same spanwise mesh provenance, which the convergence tools dispatch
+            # on.
+            if wing.spanwise_mesh == "edge_defined":
+                # The stored edge curves are in wing axes, which for a type 3 Wing
+                # already include the reflection, so they are reused verbatim.
+                leadingEdgePoints_Wn_Ler = wing.leadingEdgePoints_Wn_Ler
+                trailingEdgePoints_Wn_Ler = wing.trailingEdgePoints_Wn_Ler
+                tip_trim_fraction = wing.tip_trim_fraction
+                assert leadingEdgePoints_Wn_Ler is not None
+                assert trailingEdgePoints_Wn_Ler is not None
+                assert tip_trim_fraction is not None
+
+                reflected_wing = wing_mod.Wing.from_edge_points(
+                    leadingEdgePoints_Wn_Ler=np.copy(leadingEdgePoints_Wn_Ler),
+                    trailingEdgePoints_Wn_Ler=np.copy(trailingEdgePoints_Wn_Ler),
+                    num_wing_cross_sections=len(wing.wing_cross_sections),
+                    airfoil=copy.deepcopy(wing.wing_cross_sections[0].airfoil),
+                    name=f"Reflected {wing.name}",
+                    Ler_Gs_Cgs=np.copy(wing.Ler_Gs_Cgs),
+                    angles_Gs_to_Wn_ixyz=np.copy(wing.angles_Gs_to_Wn_ixyz),
+                    symmetric=False,
+                    mirror_only=True,
+                    symmetryNormal_G=np.copy(wing.symmetryNormal_G),
+                    symmetryPoint_G_Cg=np.copy(wing.symmetryPoint_G_Cg),
+                    num_chordwise_panels=wing.num_chordwise_panels,
+                    chordwise_spacing=wing.chordwise_spacing,
+                    tip_trim_fraction=tip_trim_fraction,
+                )
+            else:
+                reflected_wing_cross_sections = []
+                for wing_cross_section in wing.wing_cross_sections:
+                    airfoil = wing_cross_section.airfoil
+
+                    reflected_airfoil = copy.deepcopy(airfoil)
+
+                    if wing_cross_section.control_surface_symmetry_type == "asymmetric":
+                        reflected_control_surface_deflection = (
+                            -1 * wing_cross_section.control_surface_deflection
+                        )
+                    else:
+                        reflected_control_surface_deflection = (
+                            wing_cross_section.control_surface_deflection
+                        )
+
+                    reflected_wing_cross_sections.append(
+                        wing_cross_section_mod.WingCrossSection(
+                            airfoil=reflected_airfoil,
+                            num_spanwise_panels=wing_cross_section.num_spanwise_panels,
+                            chord=wing_cross_section.chord,
+                            Lp_Wcsp_Lpp=np.copy(wing_cross_section.Lp_Wcsp_Lpp),
+                            angles_Wcsp_to_Wcs_ixyz=np.copy(
+                                wing_cross_section.angles_Wcsp_to_Wcs_ixyz
+                            ),
+                            control_surface_symmetry_type=None,
+                            control_surface_hinge_point=wing_cross_section.control_surface_hinge_point,
+                            control_surface_deflection=reflected_control_surface_deflection,
+                            spanwise_spacing=wing_cross_section.spanwise_spacing,
+                        )
+                    )
+
+                # Re-exploding an already exploded Wing reproduces it exactly.
+                reflected_wing = wing_mod.Wing(
+                    wing_cross_sections=reflected_wing_cross_sections,
+                    name=f"Reflected {wing.name}",
+                    Ler_Gs_Cgs=np.copy(wing.Ler_Gs_Cgs),
+                    angles_Gs_to_Wn_ixyz=np.copy(wing.angles_Gs_to_Wn_ixyz),
+                    symmetric=False,
+                    mirror_only=True,
+                    symmetryNormal_G=np.copy(wing.symmetryNormal_G),
+                    symmetryPoint_G_Cg=np.copy(wing.symmetryPoint_G_Cg),
+                    explode_into_strips=wing.spanwise_mesh == "exploded",
+                    num_chordwise_panels=wing.num_chordwise_panels,
+                    chordwise_spacing=wing.chordwise_spacing,
+                )
 
             wing.symmetric = False
             wing.mirror_only = False

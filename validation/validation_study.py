@@ -14,8 +14,9 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's math package.
+# Import Python's math and pathlib packages.
 import math
+from pathlib import Path
 
 # Import NumPy and MatPlotLib's PyPlot package.
 import matplotlib.pyplot as plt
@@ -23,6 +24,10 @@ import numpy as np
 
 # Import the source package.
 import pterasoftware as ps
+
+# Find this script's directory so that the data files it reads and the figure it saves
+# resolve correctly regardless of the current working directory.
+validation_directory = Path(__file__).resolve().parent
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -54,7 +59,7 @@ wing_midline_offset = 0.005
 # positive chordwise axis from trailing edge to leading edge. The values are in
 # millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
-    "extracted_planform_coordinates.csv", delimiter=","
+    validation_directory / "extracted_planform_coordinates.csv", delimiter=","
 )
 
 # Convert the points to SI units.
@@ -413,31 +418,40 @@ normalized_times = np.linspace(0, 1, 100, endpoint=False)
 # sets are stored in CSV files in the same directory as this script. The pressure units
 # used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    "blue_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    "blue_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    "blue_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    "orange_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    "orange_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    "orange_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    "green_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    "green_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    "green_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 
 # Interpolate the experimental pressure data to ensure that they all reference the same
@@ -675,7 +689,7 @@ lift_axes.legend(
 
 # Save the lift comparison figure.
 lift_figure.savefig(
-    fname="Lift comparison.jpg",
+    fname=validation_directory / "lift_validation.png",
     dpi=300,
     bbox_inches="tight",
 )

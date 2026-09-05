@@ -150,6 +150,7 @@ draw.webp
 *_aerodynamic_angles.png
 *_loads.csv
 *_state.csv
+/validation/lift_validation.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores

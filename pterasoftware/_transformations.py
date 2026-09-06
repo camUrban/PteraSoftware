@@ -143,7 +143,7 @@ def generate_rot_T(
 
     R = R_act
     if passive:
-        R = R.T
+        R = invert_R_pas(R)
 
     T = np.eye(4, dtype=float)
 
@@ -729,3 +729,69 @@ def alpha_and_beta_from_vInf_BP1(
     alpha = float(np.rad2deg(np.arcsin(sin_alpha)))
     beta = float(np.rad2deg(np.arctan2(-vInfY_BP1__E, -vInfX_BP1__E)))
     return alpha, beta
+
+
+def invert_R_pas(R_pas: np.ndarray) -> np.ndarray:
+    """Inverts a passive rotation matrix.
+
+    A passive rotation matrix maps components of the same physical quantity between an
+    initial axis system and a target axis system. For example, if ``R_pas_A_to_B`` maps
+    components from "A" axes to "B" axes, then:
+
+    | ``R_pas_B_to_A=invert_R_pas(R_pas_A_to_B)``
+
+    | ``r_A=R_pas_B_to_A@r_B``
+
+    :param R_pas: A (3,3) ndarray of floats representing a passive rotation matrix
+        mapping from source axes to target axes.
+    :return: A (3,3) ndarray of floats representing the passive rotation matrix that
+        maps back from the target axes to the original axes.
+    """
+    return R_pas.T
+
+
+def invert_R_act(R_act: np.ndarray) -> np.ndarray:
+    """Inverts an active rotation matrix.
+
+    An active rotation matrix re-orients a quantity within the same axis system. For
+    example, if ``R_act`` transforms the non-position vector ``q_A`` (in "A" axes) to
+    the non-position vector ``qPrime_A`` (in "A" axes), then:
+
+    | ``q_A=apply_R_to_vectors(invert_R_act(R_act), qPrime_A)``
+
+    :param R_act: A (3,3) ndarray of floats representing an active rotation matrix that
+        operated within the current axis system.
+    :return: A (3,3) ndarray of floats representing the active rotation matrix that
+        exactly undoes R_act.
+    """
+    return np.linalg.inv(R_act).T
+
+
+def apply_R_to_vectors(
+    R: np.ndarray,
+    vectors_A: np.ndarray,
+) -> np.ndarray:
+    """Applies a rotation matrix to 3-element vector(s) and returns 3-element vector(s).
+
+    This function handles both single vectors and arrays of vectors efficiently using
+    einsum operations.
+
+    :param R: A (3,3) ndarray of floats representing a rotation matrix (active or
+        passive).
+    :param vectors_A: A (...,3) ndarray of floats representing the vector(s) to
+        transform. Can be a single (3,) vector or a (...,3) array of vectors.
+    :return: A ndarray of floats with same shape as ``vectors_A`` representing the
+        transformed vector(s).
+    """
+    return np.asarray(np.einsum("ij,...j->...i", R, vectors_A), dtype=float)
+
+
+def extract_R_from_T(T: np.ndarray) -> np.ndarray:
+    """Extracts the rotation matrix from a homogeneous transformation matrix.
+
+    :param T: A (4,4) ndarray of floats representing a homogeneous transformation
+        matrix.
+    :return: A (3,3) ndarray of floats representing the rotation matrix extracted from
+        the input transformation matrix.
+    """
+    return T[:3, :3]

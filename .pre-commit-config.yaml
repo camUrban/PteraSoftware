@@ -16,7 +16,7 @@ repos:
         name: fixer    requirements-txt
   # Auto-formatters: rewrite code on top of the normalized bytes.
   - repo: https://github.com/pycqa/isort
-    rev: a333737ed43df02b18e6c95477ea1b285b3de15a  # frozen: 8.0.1a3
+    rev: 131f4adcd5582bfc53928ab0d740eceb8b506b6c  # frozen: 9.0.1a3
     hooks:
       - id: isort
         name: fixer    isort

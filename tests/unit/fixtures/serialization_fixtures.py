@@ -1,9 +1,15 @@
 """This module contains functions to create objects for use in serialization tests."""
 
+import hashlib
+from collections.abc import Callable
+
 import numpy as np
 
 # noinspection PyProtectedMember
 from pterasoftware._panel import Panel
+
+# noinspection PyProtectedMember
+from pterasoftware._serialization import UnboundCallable
 
 # noinspection PyProtectedMember
 from pterasoftware.geometry.airfoil import Airfoil
@@ -187,6 +193,65 @@ def make_unsteady_problem_fixture() -> UnsteadyProblem:
     return UnsteadyProblem(movement=movement)
 
 
+def make_variable_unsteady_problem_fixture() -> UnsteadyProblem:
+    """This method makes a fixture that is an UnsteadyProblem with variable geometry for
+    serialization testing.
+
+    The tip WingCrossSection heaves with a period that is not a whole number of time
+    steps, which sends Airplane generation down the standard variable geometry path.
+    That path builds every step's WingCrossSections around the base WingCrossSections'
+    Airfoils, so each Airfoil is shared by every step and by the base geometry.
+
+    :return variable_unsteady_problem_fixture: UnsteadyProblem This is an
+        UnsteadyProblem with a heaving tip, 4 time steps, and 2 x 2 Panels.
+    """
+    wing_cross_section_movement_root = WingCrossSectionMovement(
+        base_wing_cross_section=WingCrossSection(
+            airfoil=Airfoil(name="NACA0012"),
+            num_spanwise_panels=2,
+            chord=1.0,
+        ),
+    )
+    wing_cross_section_movement_tip = WingCrossSectionMovement(
+        base_wing_cross_section=WingCrossSection(
+            airfoil=Airfoil(name="NACA0012"),
+            num_spanwise_panels=None,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+        ),
+        ampLp_Wcsp_Lpp=(0.0, 0.0, 0.5),
+        periodLp_Wcsp_Lpp=(0.0, 0.0, 1.0),
+    )
+    wing_movement = WingMovement(
+        base_wing=Wing(
+            wing_cross_sections=[
+                wing_cross_section_movement_root.base_wing_cross_section,
+                wing_cross_section_movement_tip.base_wing_cross_section,
+            ],
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+        ),
+        wing_cross_section_movements=[
+            wing_cross_section_movement_root,
+            wing_cross_section_movement_tip,
+        ],
+    )
+    airplane_movement = AirplaneMovement(
+        base_airplane=Airplane(wings=[wing_movement.base_wing]),
+        wing_movements=[wing_movement],
+    )
+    operating_point_movement = OperatingPointMovement(
+        base_operating_point=OperatingPoint(),
+    )
+    movement = Movement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        num_steps=4,
+        delta_time=0.3,
+    )
+    return UnsteadyProblem(movement=movement)
+
+
 def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
     """This method makes a fixture that is an UnsteadyProblem with two Airplanes for
     formation flight serialization testing.
@@ -271,3 +336,75 @@ def make_formation_unsteady_problem_fixture() -> UnsteadyProblem:
         num_steps=3,
     )
     return UnsteadyProblem(movement=movement)
+
+
+def make_custom_spacing_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is a custom spacing function for serialization
+    testing.
+
+    Each call returns a new function object, but every returned function has identical
+    source text, so two fixtures serialize to identical markers.
+
+    :return custom_spacing_fixture: Callable This is a function of one float argument
+        that returns the sine of that argument as a float.
+    """
+
+    def custom_spacing(time: float) -> float:
+        return float(np.sin(time))
+
+    return custom_spacing
+
+
+def make_other_custom_spacing_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is a custom spacing function whose source text
+    differs from make_custom_spacing_fixture's, for serialization testing.
+
+    :return other_custom_spacing_fixture: Callable This is a function of one float
+        argument that returns the cosine of that argument as a float.
+    """
+
+    def other_custom_spacing(time: float) -> float:
+        return float(np.cos(time))
+
+    return other_custom_spacing
+
+
+def make_custom_second_derivative_fixture() -> Callable[[float], float]:
+    """This method makes a fixture that is the second derivative of
+    make_custom_spacing_fixture's function, for serialization testing.
+
+    :return custom_second_derivative_fixture: Callable This is a function of one float
+        argument that returns the negated sine of that argument as a float.
+    """
+
+    def custom_second_derivative(time: float) -> float:
+        return -float(np.sin(time))
+
+    return custom_second_derivative
+
+
+def make_unbound_callable_fixture() -> UnboundCallable:
+    """This method makes a fixture that is an UnboundCallable with source text, for
+    serialization testing.
+
+    :return unbound_callable_fixture: UnboundCallable This is an UnboundCallable
+        standing in for a function named my_module.my_spacing whose source text and
+        matching SHA-256 source hash are recorded.
+    """
+    source = "def my_spacing(time: float) -> float:\n    return 0.0\n"
+    return UnboundCallable(
+        qualname="my_module.my_spacing",
+        source=source,
+        source_hash=hashlib.sha256(source.encode("utf-8")).hexdigest(),
+    )
+
+
+def make_sourceless_unbound_callable_fixture() -> UnboundCallable:
+    """This method makes a fixture that is an UnboundCallable without source text, for
+    serialization testing.
+
+    :return sourceless_unbound_callable_fixture: UnboundCallable This is an
+        UnboundCallable standing in for the built in len function, whose source text
+        could not be retrieved when it was saved.
+    """
+    return UnboundCallable(qualname="builtins.len", source=None, source_hash=None)

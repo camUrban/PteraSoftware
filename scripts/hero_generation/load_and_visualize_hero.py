@@ -40,7 +40,7 @@ _ANIMATE_KWARGS: dict[str, Any] = {
 
 ps.set_up_logging()
 
-loaded_hero_solver = ps.load(_hero_graphics_dir / "hero_solver.json.gz")
+loaded_hero_solver = ps.load(_hero_graphics_dir / "hero_solver.psz")
 assert isinstance(
     loaded_hero_solver,
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,

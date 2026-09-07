@@ -34,7 +34,7 @@ class TestSteadySolverSerializationOutput(unittest.TestCase):
         solver.run()
 
         cls.temporary_directory = tempfile.TemporaryDirectory()
-        path = Path(cls.temporary_directory.name) / "solver.json"
+        path = Path(cls.temporary_directory.name) / "solver.psz"
         ps.save(path, solver)
         loaded_solver = ps.load(path)
         assert isinstance(
@@ -94,7 +94,7 @@ class TestUnsteadySolverSerializationOutput(unittest.TestCase):
         solver.run(show_progress=False)
 
         cls.temporary_directory = tempfile.TemporaryDirectory()
-        path = Path(cls.temporary_directory.name) / "solver.json"
+        path = Path(cls.temporary_directory.name) / "solver.psz"
         ps.save(path, solver)
         loaded_solver = ps.load(path)
         assert isinstance(

@@ -101,9 +101,8 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
     * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
 7. Save and Load Simulation Results
-    * Save solved simulations to JSON files and load them back without re-running.
+    * Save solved simulations to .psz files and load them back without re-running.
     * Uses JSON serialization instead of pickle, avoiding arbitrary code execution vulnerabilities.
-    * Supports gzip compression for reduced file sizes.
     * Loaded objects are fully compatible with all output and visualization functions.
 8. Features for Flapping-Wing Vehicle Design
     * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.

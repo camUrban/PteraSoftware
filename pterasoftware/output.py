@@ -635,10 +635,14 @@ def draw(
     else:
         draw_cpos = None
 
-    # Settle the scalar bar layout before the drawing is displayed. This is the first of
-    # the two passes it takes, and show below is the second, so the labels are in place
-    # by the time the user sees anything.
-    if T_reflect is not None:
+    # The scene is translucent when it holds the image surface plane or a geom whose
+    # rgba has an alpha below one. Settle the scalar bar layout before such a drawing is
+    # displayed. This is the first of the two passes it takes, and show below is the
+    # second, so the labels are in place by the time the user sees anything.
+    scene_is_translucent = T_reflect is not None or any(
+        float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
+    )
+    if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     if not testing:
@@ -668,7 +672,13 @@ def draw(
         image = _output_rendering.screenshot_image(plotter)
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.
-        webp.save_image(img=image, file_path=str(path), lossless=False, quality=quality)
+        webp.save_image(
+            img=image,
+            file_path=str(path),
+            lossless=False,
+            quality=quality,
+            method=_output_rendering.WEBP_METHOD,
+        )
 
     # Close all Plotters.
     pv.close_all()
@@ -1218,11 +1228,17 @@ def animate(
     else:
         animate_cpos = None
 
-    # Give the first frame the scalar bar layout pass that the frames in the loop get,
-    # so the view held for the user matches the animation that follows it. This is the
-    # first of the two passes the layout takes to settle, and show below is the second,
-    # so the labels are in place by the time the user sees anything.
-    if T_reflect is not None:
+    # The frames are translucent when the scene holds the image surface plane or a geom
+    # whose rgba has an alpha below one, and the held first frame is translucent
+    # whenever it has ghosts as well. Give a translucent held frame the scalar bar
+    # layout pass that translucent frames in the loop get, so the view held for the user
+    # matches the animation that follows it. This is the first of the two passes the
+    # layout takes to settle, and show below is the second, so the labels are in place
+    # by the time the user sees anything.
+    scene_is_translucent = T_reflect is not None or any(
+        float(render_geom.rgba[3]) < 1.0 for render_geom in worldbody_geoms + body_geoms
+    )
+    if scene_is_translucent or last_step != 0:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     # If not testing, show the Plotter with the first time step so the user can orient
@@ -1283,8 +1299,7 @@ def animate(
             step_body_transforms[0],
             T_reflect,
         )
-    if T_reflect is not None:
-        assert image_surface_mesh is not None
+    if scene_is_translucent:
         _output_rendering.settle_scalar_bar_layout(plotter)
 
     # The user may have reoriented or rescaled the view during the held first frame.
@@ -1306,8 +1321,24 @@ def animate(
 
     plotter.render()
 
-    # Start a list to hold a WebP Image of each frame, beginning with this first frame.
-    images = [_output_rendering.screenshot_image(plotter)]
+    # If saving, start the writer that encodes each frame into the WebP as it is
+    # captured, so the frames never accumulate in memory, and hand it this first frame.
+    animation_writer = None
+    if save:
+        # Ask the driver not to wait for the display's vertical blank before each buffer
+        # swap. With the wait in place, every captured frame costs at least one refresh
+        # period however little work it holds, so capture speed follows the display's
+        # refresh rate. The frames are read back from the buffer, so the tearing the
+        # wait prevents never reaches the file. This is a request the platform may
+        # ignore, in which case capture simply keeps the refresh rate's pace. It is not
+        # made when not saving, since the window is then what the user watches, and the
+        # wait is the only pacing the playback has.
+        plotter.ren_win.SetSwapControl(0)
+
+        animation_writer = _output_rendering.AnimationWriter(
+            path, playback.frame_rate, quality
+        )
+        animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
 
     # Initialize a variable to keep track of the current time step.
     current_step = 1
@@ -1400,9 +1431,9 @@ def animate(
                 render=False,
             )
 
-        # If an image surface is present, settle the scalar bar layout before the frame
-        # is displayed, leaving the second of its two passes to the render below.
-        if T_reflect is not None:
+        # If the frame is translucent, settle the scalar bar layout before it is
+        # displayed, leaving the second of its two passes to the render below.
+        if scene_is_translucent:
             _output_rendering.settle_scalar_bar_layout(plotter)
 
         # Render the assembled frame. Every add above is made with render=False, so
@@ -1410,23 +1441,19 @@ def animate(
         # is whole is invisible, unlike the renders the adds used to trigger.
         plotter.render()
 
-        # If saving, append a WebP Image of this frame to the list of Images. Only the
-        # time steps that are multiples of the stride are saved, so a speed the maximum
-        # frame rate cannot carry drops the ones in between. The render above is not
-        # skipped, so the animation on screen still steps through every time step.
-        if save and current_step % playback.keep_every == 0:
-            images.append(_output_rendering.screenshot_image(plotter))
+        # If saving, hand a WebP Image of this frame to the writer. Only the time steps
+        # that are multiples of the stride are saved, so a speed the maximum frame rate
+        # cannot carry drops the ones in between. The render above is not skipped, so
+        # the animation on screen still steps through every time step.
+        if animation_writer is not None and current_step % playback.keep_every == 0:
+            animation_writer.add_frame(_output_rendering.screenshot_image(plotter))
 
         # Increment the time step tracker.
         current_step += 1
 
-    # If saving, save the list of Images as an animated WebP.
-    if save:
-        # Convert the list of WebP Images to an WebP animation. webp annotates file_path
-        # as a str, so the Path is converted at the boundary.
-        webp.save_images(
-            images, str(path), fps=playback.frame_rate, lossless=False, quality=quality
-        )
+    # If saving, finish the animation and write it to its file.
+    if animation_writer is not None:
+        animation_writer.close()
 
     # Close all the Plotters.
     pv.close_all()

@@ -32,7 +32,7 @@ def pathLike_return_path(value: Any, name: str, suffixes: tuple[str, ...]) -> Pa
 
     :param value: The value to validate.
     :param name: The name of the value.
-    :param suffixes: The accepted file name suffixes, such as (".json", ".json.gz").
+    :param suffixes: The accepted file name suffixes, such as (".psz",) or (".tar.gz",).
         These are matched against the whole file name rather than through Path.suffix,
         so that multi part suffixes work. The match ignores case, since Windows treats
         ".WEBP" as the same extension as ".webp" and rejecting it would refuse a

@@ -1,13 +1,13 @@
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.978 s
-INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz
-INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.json.gz (8407274 bytes)
-INFO    |_serialization                              |Loading from example_solver.json.gz
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.968 s
+INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.psz
+INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.psz (9050781 bytes)
+INFO    |_serialization                              |Loading from example_solver.psz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes
-INFO    |_serialization                              |Loaded UnsteadyRingVortexLatticeMethodSolver from example_solver.json.gz
+INFO    |_serialization                              |Loaded UnsteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Forces (in Geometry Axes):
 INFO    |output                                      |    fX_G:            4.10 N

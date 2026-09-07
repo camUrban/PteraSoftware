@@ -9,7 +9,7 @@ import numpy.testing as npt
 import pterasoftware as ps
 
 # noinspection PyProtectedMember
-from pterasoftware import _core, _mujoco_model, _panel
+from pterasoftware import _core, _mujoco_model, _panel, _serialization
 
 # noinspection PyProtectedMember
 from tests.unit.fixtures import (
@@ -31,6 +31,7 @@ from tests.unit.fixtures import (
     operating_point_movement_fixtures,
     panel_fixtures,
     problem_fixtures,
+    serialization_fixtures,
     solver_fixtures,
     wing_cross_section_movement_fixtures,
     wing_movement_fixtures,
@@ -2328,3 +2329,33 @@ class TestFreeFlightUnsteadyRingSolverSlots(unittest.TestCase):
 
         # Verify objects are independent.
         self.assertIsNot(copied.unsteady_problem, self.solver.unsteady_problem)
+
+
+class TestUnboundCallableSlots(unittest.TestCase):
+    """This class contains tests to verify __slots__ enforcement on UnboundCallable."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for UnboundCallable slots tests."""
+        self.unbound_callable = serialization_fixtures.make_unbound_callable_fixture()
+
+    def test_slots_defined(self) -> None:
+        """Test that __slots__ is defined on UnboundCallable."""
+        self.assertTrue(hasattr(_serialization.UnboundCallable, "__slots__"))
+
+    def test_no_instance_dict(self) -> None:
+        """Test that UnboundCallable instances have no __dict__."""
+        self.assertFalse(hasattr(self.unbound_callable, "__dict__"))
+
+    def test_dynamic_attribute_raises(self) -> None:
+        """Test that dynamic attribute assignment raises AttributeError."""
+        with self.assertRaises(AttributeError):
+            setattr(self.unbound_callable, "nonexistent_attribute", 42)
+
+    def test_property_access(self) -> None:
+        """Test that immutable properties are accessible."""
+        self.assertEqual(self.unbound_callable.qualname, "my_module.my_spacing")
+        self.assertEqual(
+            self.unbound_callable.source,
+            "def my_spacing(time: float) -> float:\n    return 0.0\n",
+        )
+        self.assertIsNotNone(self.unbound_callable.source_hash)

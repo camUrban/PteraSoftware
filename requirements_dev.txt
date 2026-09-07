@@ -6,7 +6,6 @@ coverage
 docformatter
 isort
 mypy == 2.3.0
-octowrap == 0.6.2
 pre-commit
 pyvista == 0.48.4
 scipy-stubs == 1.18.0.1

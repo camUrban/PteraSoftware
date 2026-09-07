@@ -1,7 +1,7 @@
 """Regenerates the expected outputs for the example scripts.
 
 Runs each example script in examples/ and collects its outputs (WebPs, PNGs, CSVs, and
-JSON files) into the corresponding subdirectory under docs/examples_expected_output/.
+.psz files) into the corresponding subdirectory under docs/examples_expected_output/.
 When run without arguments, wipes and rebuilds the entire output tree. When given an
 example file name, regenerates only that example's subdirectory.
 
@@ -104,13 +104,13 @@ def _extract_output_kwargs(
 
 
 def _find_solver_file(directory: Path) -> Path | None:
-    """Finds the saved solver JSON file in a directory or any of its subdirectories.
+    """Finds the saved solver .psz file in a directory or any of its subdirectories.
 
     :param directory: The directory to search.
     :return: The path to the solver file, or None if the directory tree does not hold
         exactly one.
     """
-    candidates = sorted(directory.rglob("*.json.gz"))
+    candidates = sorted(directory.rglob("*.psz"))
     if len(candidates) == 1:
         return candidates[0]
     return None

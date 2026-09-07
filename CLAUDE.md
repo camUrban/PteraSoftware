@@ -16,7 +16,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Aeroelasticity**: First-order structural wing deformation coupled to the UVLM via a torsional spring-mass-damper model (beta)
 - **Free Flight**: Six-degree-of-freedom flight dynamics from UVLM aerodynamics coupled to MuJoCo rigid-body dynamics (beta)
 - **Visualization Tools**: 3D mesh visualization and 2D plotting of results
-- **Save and Load**: JSON serialization of solved simulations without pickle security risks
+- **Save and Load**: Serialization of solved simulations to .psz files (zip archives of JSON members, one per time step) without pickle security risks
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
@@ -94,7 +94,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_panel.py`: Panel class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
     - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a FreeFlightUnsteadyProblem's MuJoCoModel for the rendering layer
-    - `_serialization.py`: JSON serialization and deserialization (save/load)
+    - `_serialization.py`: Serialization and deserialization (save/load) to and from .psz files, which are zip archives of JSON members chunked by time step
     - `_transformations.py`: Coordinate transformations and rotations
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation
     - `convergence.py`: Convergence analysis tools

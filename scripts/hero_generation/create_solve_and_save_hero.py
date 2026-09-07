@@ -1,7 +1,7 @@
 """Creates, solves, and saves the hero simulation used for the README graphics.
 
 This defines a flapping wing with surface effects (ground effect), runs the simulation,
-and saves the solved result to hero_solver.json.gz. The saved file can then be loaded by
+and saves the solved result to hero_solver.psz. The saved file can then be loaded by
 load_and_visualize_hero.py to generate preview graphics.
 """
 
@@ -220,4 +220,4 @@ hero_solver.run(
     show_progress=True,
 )
 
-ps.save(_hero_graphics_dir / "hero_solver.json.gz", hero_solver)
+ps.save(_hero_graphics_dir / "hero_solver.psz", hero_solver)

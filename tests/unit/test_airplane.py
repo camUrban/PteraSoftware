@@ -362,6 +362,103 @@ class TestAirplane(unittest.TestCase):
         self.assertTrue(second_wing.mirror_only)
         self.assertTrue(second_wing.name.startswith("Reflected"))
 
+    def test_process_wing_symmetry_type_5_edge_defined(self) -> None:
+        """Test that a type 5 edge-defined Wing's reflection is also edge-defined."""
+        ys = np.linspace(0.0, 1.0, 4)
+        zeros = np.zeros_like(ys)
+        leading = np.column_stack((ys, ys, zeros))
+        trailing = np.column_stack((np.ones_like(ys), ys, zeros))
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leading,
+            trailingEdgePoints_Wn_Ler=trailing,
+            num_wing_cross_sections=3,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            symmetric=True,
+            symmetryNormal_G=[0.0, 0.707, 0.707],
+            symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+            tip_trim_fraction=0.2,
+        )
+
+        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+
+        original_wing = result[0]
+        reflected_wing = result[1]
+        self.assertEqual(reflected_wing.symmetry_type, 3)
+        self.assertEqual(reflected_wing.spanwise_mesh, "edge_defined")
+        self.assertEqual(reflected_wing.tip_trim_fraction, 0.2)
+        npt.assert_array_equal(reflected_wing.leadingEdgePoints_Wn_Ler, leading)
+        npt.assert_array_equal(reflected_wing.trailingEdgePoints_Wn_Ler, trailing)
+        self.assertEqual(
+            len(reflected_wing.wing_cross_sections),
+            len(original_wing.wing_cross_sections),
+        )
+        for original_wing_cross_section, reflected_wing_cross_section in zip(
+            original_wing.wing_cross_sections, reflected_wing.wing_cross_sections
+        ):
+            self.assertEqual(
+                reflected_wing_cross_section.chord, original_wing_cross_section.chord
+            )
+            npt.assert_array_equal(
+                reflected_wing_cross_section.Lp_Wcsp_Lpp,
+                original_wing_cross_section.Lp_Wcsp_Lpp,
+            )
+            self.assertIsNone(
+                reflected_wing_cross_section.control_surface_symmetry_type
+            )
+
+    def test_process_wing_symmetry_type_5_exploded(self) -> None:
+        """Test that a type 5 exploded Wing's reflection is also exploded."""
+        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=geometry_fixtures.make_test_airfoil_fixture(),
+            num_spanwise_panels=4,
+            chord=2.0,
+            Lp_Wcsp_Lpp=[0.0, 0.0, 0.0],
+            angles_Wcsp_to_Wcs_ixyz=[0.0, 0.0, 0.0],
+            control_surface_symmetry_type="symmetric",
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_with_control_surface_fixture()
+        )
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+            symmetric=True,
+            symmetryNormal_G=[0.0, 0.707, 0.707],
+            symmetryPoint_G_Cg=[0.5, 0.0, 0.0],
+            explode_into_strips=True,
+        )
+
+        result = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+
+        original_wing = result[0]
+        reflected_wing = result[1]
+        self.assertEqual(reflected_wing.symmetry_type, 3)
+        self.assertEqual(reflected_wing.spanwise_mesh, "exploded")
+        self.assertEqual(
+            len(reflected_wing.wing_cross_sections),
+            len(original_wing.wing_cross_sections),
+        )
+        for original_wing_cross_section, reflected_wing_cross_section in zip(
+            original_wing.wing_cross_sections, reflected_wing.wing_cross_sections
+        ):
+            self.assertEqual(
+                reflected_wing_cross_section.num_spanwise_panels,
+                original_wing_cross_section.num_spanwise_panels,
+            )
+            self.assertEqual(
+                reflected_wing_cross_section.chord, original_wing_cross_section.chord
+            )
+            npt.assert_array_equal(
+                reflected_wing_cross_section.Lp_Wcsp_Lpp,
+                original_wing_cross_section.Lp_Wcsp_Lpp,
+            )
+            npt.assert_array_equal(
+                reflected_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+                original_wing_cross_section.angles_Wcsp_to_Wcs_ixyz,
+            )
+
     def test_process_wing_symmetry_control_surface_validation_types_1_2_3(self) -> None:
         """Test control surface validation for symmetry types 1, 2, 3."""
         # Type 1: should fail with control surfaces. Create fresh fixtures since

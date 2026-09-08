@@ -14,8 +14,10 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's math package.
+# Import Python's logging, math, and pathlib packages.
+import logging
 import math
+from pathlib import Path
 
 # Import NumPy and MatPlotLib's PyPlot package.
 import matplotlib.pyplot as plt
@@ -23,6 +25,19 @@ import numpy as np
 
 # Import the source package.
 import pterasoftware as ps
+
+# Find this script's directory so that the data files it reads and the figure it saves
+# resolve correctly regardless of the current working directory.
+validation_directory = Path(__file__).resolve().parent
+
+# Configure logging to write info level messages to a file. To display log messages on
+# the console alongside progress bars instead, omit the handler argument. Keep the
+# configured logger so this script can log its own results alongside the package's
+# messages.
+validation_logger = ps.set_up_logging(
+    level="Info",
+    handler=logging.FileHandler(validation_directory / "validation_study.log"),
+)
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -54,7 +69,7 @@ wing_midline_offset = 0.005
 # positive chordwise axis from trailing edge to leading edge. The values are in
 # millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
-    "extracted_planform_coordinates.csv", delimiter=","
+    validation_directory / "extracted_planform_coordinates.csv", delimiter=","
 )
 
 # Convert the points to SI units.
@@ -75,16 +90,25 @@ stackPlanformPoints_YeoXReversed_Ler = stackPlanformPoints_Yeo_Ler * np.array(
 # root point.
 stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
-# Find the index of the point where the planform point's x component equals the half
+# Find the index of the point where the planform point's y component equals the half
 # span.
 tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
 
 # Using the tip index, split the points into two ndarrays of leading and trailing edge
 # points (in wing axes projected onto its xy plane, relative to the leading edge root
-# point).
-stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[:tip_index, :]
+# point). Both curves include the tip point so they span the same maximum y component.
+stackLeadingPointsXY_Wn_Ler = stackPlanformPointsXY_Wn_Ler[: tip_index + 1, :]
 stackTrailingPointsXY_Wn_Ler = np.flip(
     stackPlanformPointsXY_Wn_Ler[tip_index:, :], axis=0
+)
+
+# Add zero z components so the curves are 3D points (in wing axes, relative to the
+# leading edge root point), which is the form that Wing.from_edge_points expects.
+leadingEdgePoints_Wn_Ler = np.column_stack(
+    (stackLeadingPointsXY_Wn_Ler, np.zeros(len(stackLeadingPointsXY_Wn_Ler)))
+)
+trailingEdgePoints_Wn_Ler = np.column_stack(
+    (stackTrailingPointsXY_Wn_Ler, np.zeros(len(stackTrailingPointsXY_Wn_Ler)))
 )
 
 # Set the number of flap cycles to run the simulation for. The converged result is 3
@@ -102,131 +126,117 @@ num_spanwise_sections = 18
 # standard for UVLM simulations.
 chordwise_spacing = "uniform"
 
-# Calculate the spanwise distance between the WingCrossSections.
-spanwise_step = (half_span - tip_inset) / num_spanwise_sections
 
-# Define four ndarrays to hold the leading and trailing points of each section's left
-# and right WingCrossSections (in wing axes projected onto its xy plane, relative to the
-# leading edge root point).
-stackLeftLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightLpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackLeftTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
-stackRightTpsXY_Wn_Ler = np.zeros((num_spanwise_sections, 2), dtype=float)
+def validation_flap_angle_series(
+    cycle_angle_rad: float | np.ndarray,
+) -> float | np.ndarray:
+    """Returns the flap angle in degrees at a position within one flap cycle.
 
-# Iterate through the locations of the future sections to populate the left and right
-# WingCrossSection's leading and trailing points (in wing axes projected onto its xy
-# plane, relative to the leading edge root point).
-for spanwise_loc in range(num_spanwise_sections):
-    # Find the y component of the leading and trailing points (in wing axes projected
-    # onto its xy plane, relative to the leading edge root point).
-    stackLeftLpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackLeftTpsXY_Wn_Ler[spanwise_loc, 1] = spanwise_loc * spanwise_step
-    stackRightLpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
-    stackRightTpsXY_Wn_Ler[spanwise_loc, 1] = (spanwise_loc + 1) * spanwise_step
+    The position is measured in cycle radians, so 0.0 is the start of a flap and 2.0 *
+    pi is the end of that same flap. This function contains no flapping frequency. The
+    frequency enters later, when the solver converts time in seconds to cycle radians.
+    The Fourier series is fourth order, and its coefficients were calculated by Yeo et
+    al., 2011.
 
-    # Interpolate between the points to find their x components (in wing axes projected
-    # onto its xy plane, relative to the leading edge root point).
-    stackLeftLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step,
-        stackLeadingPointsXY_Wn_Ler[:, 1],
-        stackLeadingPointsXY_Wn_Ler[:, 0],
-    )
-    stackLeftTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        spanwise_loc * spanwise_step,
-        stackTrailingPointsXY_Wn_Ler[:, 1],
-        stackTrailingPointsXY_Wn_Ler[:, 0],
-    )
-    stackRightLpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step,
-        stackLeadingPointsXY_Wn_Ler[:, 1],
-        stackLeadingPointsXY_Wn_Ler[:, 0],
-    )
-    stackRightTpsXY_Wn_Ler[spanwise_loc, 0] = np.interp(
-        (spanwise_loc + 1) * spanwise_step,
-        stackTrailingPointsXY_Wn_Ler[:, 1],
-        stackTrailingPointsXY_Wn_Ler[:, 0],
+    :param cycle_angle_rad: A float or a (N,) ndarray of floats representing the
+        position or positions within a flap cycle at which to evaluate the flap angle.
+        The units are radians of flap cycle.
+    :return: A float or a (N,) ndarray of floats representing the flap angle or angles
+        at the given cycle positions. The units are degrees.
+    """
+    # Set the Fourier series coefficients.
+    a_0 = 0.0354
+    a_1 = 4.10e-5
+    b_1 = 0.3793
+    a_2 = -0.0322
+    b_2 = -1.95e-6
+    a_3 = -8.90e-7
+    b_3 = -0.0035
+    a_4 = 0.00046
+    b_4 = -3.60e-6
+
+    # Calculate and return the flap angle(s).
+    return np.rad2deg(
+        a_0
+        + a_1 * np.cos(1 * cycle_angle_rad)
+        + b_1 * np.sin(1 * cycle_angle_rad)
+        + a_2 * np.cos(2 * cycle_angle_rad)
+        + b_2 * np.sin(2 * cycle_angle_rad)
+        + a_3 * np.cos(3 * cycle_angle_rad)
+        + b_3 * np.sin(3 * cycle_angle_rad)
+        + a_4 * np.cos(4 * cycle_angle_rad)
+        + b_4 * np.sin(4 * cycle_angle_rad)
     )
 
-# Define an empty list to hold the WingCrossSections.
-validation_airplane_wing_cross_sections = []
 
-# Iterate through the leading and trailing point ndarrays to create the
-# WingCrossSections.
-for i in range(num_spanwise_sections):
-    if i == 0:
-        thisLpY_Wcsp_Lpp = 0.0
-        thisLpX_Wcsp_Lpp = 0.0
-    else:
-        thisLpY_Wcsp_Lpp = spanwise_step
-        thisLpX_Wcsp_Lpp = stackLeftLpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i - 1, 0]
+# The custom spacing API expects the flap angle split into three parts: the value at the
+# start of a flap, an amplitude, and a unit shape that starts at 0.0, returns to 0.0
+# after 2.0 * pi, and has an amplitude of 1.0. Sample the series over one flap cycle to
+# find the first two parts. The units are degrees.
+flap_cycle_angles_rad = np.linspace(0.0, 2.0 * np.pi, 10001, dtype=float)
+flap_angles = validation_flap_angle_series(flap_cycle_angles_rad)
+validation_flap_angle_at_start = float(validation_flap_angle_series(0.0))
+validation_flap_angle_amplitude = float(
+    (np.max(flap_angles) - np.min(flap_angles)) / 2.0
+)
 
-    this_chord = stackLeftTpsXY_Wn_Ler[i, 0] - stackLeftLpsXY_Wn_Ler[i, 0]
+# Delete the extraneous pointers.
+del flap_cycle_angles_rad
+del flap_angles
 
-    # Create this WingCrossSection.
-    this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
-        airfoil=ps.geometry.airfoil.Airfoil(
-            name="naca0012",
-        ),
-        num_spanwise_panels=1,
-        chord=this_chord,
-        Lp_Wcsp_Lpp=(thisLpX_Wcsp_Lpp, thisLpY_Wcsp_Lpp, 0.0),
-        angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-        control_surface_symmetry_type="symmetric",
-        control_surface_hinge_point=0.75,
-        control_surface_deflection=0.0,
-        spanwise_spacing="uniform",
+
+def validation_flap_angle_shape(cycle_angle_rad: float) -> float:
+    """Returns the unit shape of the flap angle series at a position within one flap
+    cycle.
+
+    This is the third part of the split described above. It is the flap angle series
+    with its value at the start of a flap subtracted and its amplitude divided out, so
+    it meets the requirements for a custom spacing function.
+
+    :param cycle_angle_rad: A float representing the position within a flap cycle at
+        which to evaluate the shape. The units are radians of flap cycle.
+    :return: A float representing the unit shape at the given cycle position. It is
+        dimensionless.
+    """
+    return float(
+        (validation_flap_angle_series(cycle_angle_rad) - validation_flap_angle_at_start)
+        / validation_flap_angle_amplitude
     )
 
-    # Append this WingCrossSection to the list of WingCrossSections.
-    validation_airplane_wing_cross_sections.append(this_wing_cross_section)
 
-    # If this is the last section, also create the right WingCrossSection and append it
-    # to the list.
-    if i == num_spanwise_sections - 1:
-        thisLpY_Wcsp_Lpp = spanwise_step
-        thisLpX_Wcsp_Lpp = (
-            stackRightLpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i - 1, 0]
-        )
-
-        this_chord = stackRightTpsXY_Wn_Ler[i, 0] - stackRightLpsXY_Wn_Ler[i, 0]
-
-        this_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+# Create the Airplane. The main Wing is built directly from the digitized leading and
+# trailing edge curves, resampled at uniformly spaced WingCrossSections and trimmed at
+# the tip by the inset. The x component of the main Wing's angles describing the
+# orientation of the wing axes relative to the geometry axes (after accounting for
+# symmetry) using an intrinsic xy'z" sequence is the flap angle at the start of a flap.
+# The WingMovements oscillate it about that value.
+validation_airplane = ps.geometry.airplane.Airplane(
+    wings=[
+        ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+            trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+            num_wing_cross_sections=num_spanwise_sections + 1,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca0012",
             ),
-            num_spanwise_panels=None,
-            chord=this_chord,
-            Lp_Wcsp_Lpp=(thisLpX_Wcsp_Lpp, thisLpY_Wcsp_Lpp, 0.0),
-            angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
-            control_surface_symmetry_type="symmetric",
-            control_surface_hinge_point=0.75,
-            control_surface_deflection=0.0,
-            spanwise_spacing=None,
-        )
-
-        validation_airplane_wing_cross_sections.append(this_wing_cross_section)
-
-# Create the Airplane.
-validation_airplane = ps.geometry.airplane.Airplane(
-    wings=[
-        ps.geometry.wing.Wing(
-            wing_cross_sections=validation_airplane_wing_cross_sections,
             name="Main Wing",
             Ler_Gs_Cgs=(0.0, wing_midline_offset / 2, 0.0),
-            angles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(validation_flap_angle_at_start, 0.0, 0.0),
             symmetric=True,
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
+            tip_trim_fraction=tip_inset / half_span,
         ),
     ],
     name="Validation Airplane",
 )
 
-# Delete the extraneous pointer.
-del validation_airplane_wing_cross_sections
+# Delete the extraneous pointers.
+del leadingEdgePoints_Wn_Ler
+del trailingEdgePoints_Wn_Ler
 
 # Initialize empty lists to hold the WingCrossSectionMovements for the main and
 # reflected main Wings.
@@ -255,46 +265,6 @@ for i in range(num_spanwise_sections + 1):
 # Delete the extraneous pointers to make debugging easier.
 del this_main_wing_cross_section_movement
 del this_reflected_main_wing_cross_section_movement
-
-
-def validation_geometry_sweep_function(
-    time: float | np.ndarray,
-) -> float | np.ndarray:
-    """This function takes in the time during a flap cycle and returns the flap angle in
-    degrees. It uses the flapping frequency defined in the encompassing script, and is
-    based on a fourth-order Fourier series. The coefficients were calculated by Yeo et
-    al., 2011.
-
-    :param time: float or a (N,) ndarray of floats This is a single time or a ndarray of
-        N times at which to calculate the flap angle. The units are seconds.
-    :return flap_angle: float a (N,) ndarray of floats This is a single flap angle or a
-        ndarray of N flap angles at the inputted time value or values. The units are
-        degrees.
-    """
-    # Set the Fourier series coefficients and the flapping frequency.
-    a_0 = 0.0354
-    a_1 = 4.10e-5
-    b_1 = 0.3793
-    a_2 = -0.0322
-    b_2 = -1.95e-6
-    a_3 = -8.90e-7
-    b_3 = -0.0035
-    a_4 = 0.00046
-    b_4 = -3.60e-6
-    f = 2 * math.pi * validation_flapping_frequency
-
-    # Calculate and return the flap angle(s).
-    return (
-        a_0
-        + a_1 * np.cos(1 * f * time)
-        + b_1 * np.sin(1 * f * time)
-        + a_2 * np.cos(2 * f * time)
-        + b_2 * np.sin(2 * f * time)
-        + a_3 * np.cos(3 * f * time)
-        + b_3 * np.sin(3 * f * time)
-        + a_4 * np.cos(4 * f * time)
-        + b_4 * np.sin(4 * f * time)
-    ) / 0.0174533
 
 
 def time_normalized_validation_geometry_sweep_function_rad(
@@ -339,24 +309,23 @@ def time_normalized_validation_geometry_sweep_function_rad(
 main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_section_movements=main_wing_cross_section_movements,
-    # TODO: Replace with actual angle movement values.
-    ampAngles_Gs_to_Wn_ixyz=(22.0, 0.0, 0.0),
+    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
 reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[1],
-    wing_cross_section_movements=main_wing_cross_section_movements,
-    # TODO: Replace with actual angle movement values.
-    ampAngles_Gs_to_Wn_ixyz=(22.0, 0.0, 0.0),
+    wing_cross_section_movements=reflected_main_wing_cross_section_movements,
+    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
+    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
 
-# Delete the extraneous pointer.
+# Delete the extraneous pointers.
 del main_wing_cross_section_movements
+del reflected_main_wing_cross_section_movements
 
 # Define the AirplaneMovement that contains the WingMovements.
 validation_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
@@ -431,6 +400,10 @@ green_leading_area = 0.071 * 0.015
 # Run the validation solver using a prescribed wake.
 validation_solver.run(prescribed_wake=True)
 
+# Save the solved solver to a .psz file. This allows us to load the results later
+# without re-running the simulation.
+ps.save(validation_directory / "validation_solver.psz", validation_solver)
+
 # Extract the Movement's num_steps and delta_time attributes.
 validation_num_steps = validation_movement.num_steps
 validation_delta_time = validation_movement.delta_time
@@ -459,31 +432,40 @@ normalized_times = np.linspace(0, 1, 100, endpoint=False)
 # sets are stored in CSV files in the same directory as this script. The pressure units
 # used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    "blue_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    "blue_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    "blue_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "blue_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    "orange_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    "orange_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    "orange_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "orange_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    "green_trailing_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_trailing_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    "green_middle_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_middle_point_experimental_pressures.csv",
+    delimiter=",",
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    "green_leading_point_experimental_pressures.csv", delimiter=","
+    validation_directory / "green_leading_point_experimental_pressures.csv",
+    delimiter=",",
 )
 
 # Interpolate the experimental pressure data to ensure that they all reference the same
@@ -721,7 +703,7 @@ lift_axes.legend(
 
 # Save the lift comparison figure.
 lift_figure.savefig(
-    fname="Lift comparison.jpg",
+    fname=validation_directory / "lift_validation.png",
     dpi=300,
     bbox_inches="tight",
 )
@@ -741,20 +723,26 @@ lift_mean_absolute_error = np.mean(lift_absolute_errors)
 sim_lift_rms = math.sqrt(np.mean(final_flap_sim_lifts**2))
 exp_lift_rms = math.sqrt(np.mean(exp_lifts**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
-print("\nLift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%")
-print("Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N")
-print("Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N")
 
-# Print the MAE.
-print(
-    "\nMean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
+# Print and log the RMS lift results.
+lift_rmsape_message = (
+    "Lift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%"
 )
+sim_lift_rms_message = "Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N"
+exp_lift_rms_message = "Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N"
+print("\n" + lift_rmsape_message)
+print(sim_lift_rms_message)
+print(exp_lift_rms_message)
+validation_logger.info(lift_rmsape_message)
+validation_logger.info(sim_lift_rms_message)
+validation_logger.info(exp_lift_rms_message)
 
-# Calculate the experimental root-mean-square (RMS) lift.
-exp_rms_lift = np.sqrt(np.mean(np.power(exp_lifts, 2)))
-
-# Print the experimental RMS lift.
-print("Experimental RMS Lift: " + str(np.round(exp_rms_lift, 4)) + " N")
+# Print and log the MAE.
+lift_mean_absolute_error_message = (
+    "Mean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
+)
+print("\n" + lift_mean_absolute_error_message)
+validation_logger.info(lift_mean_absolute_error_message)
 
 ps.output.draw(
     solver=validation_solver,
@@ -774,4 +762,5 @@ ps.output.animate(
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
+    speed=0.2,
 )

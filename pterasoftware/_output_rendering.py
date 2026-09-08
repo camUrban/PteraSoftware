@@ -24,10 +24,7 @@ from . import (
     geometry,
 )
 from . import operating_point as operating_point_mod
-from . import (
-    problems,
-    unsteady_ring_vortex_lattice_method,
-)
+from . import problems, unsteady_ring_vortex_lattice_method
 
 _logger = _logging.get_logger("output")
 

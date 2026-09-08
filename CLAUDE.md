@@ -114,6 +114,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
+    - `execute_tutorials.py`: Executes all tutorial notebooks (or a single named notebook) in `tutorials/` and stores their outputs in the notebook files for the documentation site to render
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
     - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests

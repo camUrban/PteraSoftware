@@ -5,6 +5,7 @@
 :hidden:
 
 self
+tutorials
 examples
 api
 performance

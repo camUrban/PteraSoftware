@@ -166,6 +166,11 @@ draw.webp
 # This folder contains a copy of the Furo theme to use as a reference for customization.
 /docs/website/furo_src/
 
+# The docs build copies the tutorial notebooks and their images here from tutorials/.
+/docs/website/tutorials/*.ipynb
+/docs/website/tutorials/*.png
+/docs/website/tutorials/*.webp
+
 # These are serialization output files to ignore.
 *.json
 *.json.gz

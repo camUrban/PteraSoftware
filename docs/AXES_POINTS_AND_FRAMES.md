@@ -138,6 +138,7 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ### 2. Body axes
 
+* Source: Body axes follow Section 2.3 of "Aircraft Control and Simulation" by Stevens, Lewis, and Johnson (2016, third edition).
 * Basis directions
     1. +x: Towards the front of the Airplane
     2. +y: Towards the right of the Airplane
@@ -154,12 +155,13 @@ The standard abbreviations and names are given below for reference. See the sect
 ### 3. Wind axes
 
 * Caveat: We assume a still airmass, so the freestream velocity observed from the body frame is solely due to the Airplane's velocity observed from the Earth frame.
+* Source: Wind axes, the angle of attack, and the angle of sideslip follow Section 2.3 of "Aircraft Control and Simulation" by Stevens, Lewis, and Johnson (2016, third edition).
 * Basis directions
     1. +x: In line with (parallel, not anti-parallel, to) Airplane's velocity observed from the Earth frame
     2. +y: In the direction perpendicular to first and third components\*
     3. +z: In the direction perpendicular to first and second components\*
-* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions. There is exactly one pair of angles, which we'll call -alpha (note the negative sign) and beta, that we can use to perform a y-z extrinsic series (or, equivalently, a z-y' intrinsic series) of rotations to construct wind axes from body axes that will exactly align the x axis with Airplane's velocity observed from the Earth frame. This series of rotations also constructs the wind axes +y and +z basis directions.
-  The two angles alpha and beta are known as the angle of attack and the angle of sideslip. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: in the simplest scenarios, a positive alpha corresponds to the Airplane's nose pointing above its direction of travel (relative wind coming from below the aircraft), and a positive beta to its nose pointing to the left of its direction of travel (relative wind coming from the right of the aircraft). However, this can seem a bit cyclical, and it obscures some subtlety in their definition: defining alpha and beta using the convention described previously allows us to define lift as the aerodynamic force's component in the wind axes' -z basis direction, thereby making lift independent of sideslip.
+* \*There are infinite options for the second and third components that satisfy the perpendicularity requirement. Therefore, we define them using a thought experiment: Imagine three unit vectors pointing along the body axes' basis directions. We perform a z-y extrinsic series (or, equivalently, a y-z' intrinsic series) of rotations through two angles, which we'll call beta and -alpha (note the negative sign), to construct wind axes from body axes. Read as an active rotation, this rotates the three unit vectors about the body y axis through -alpha first, and then about the resulting z axis through beta. For alpha in (-180.0, 180.0] and beta in [-90.0, 90.0], there is exactly one pair of angles that exactly aligns the x axis with the Airplane's velocity observed from the Earth frame, with one exception: when |beta| = 90.0, the velocity lies along the body y axis, every alpha aligns the x axis with it, and alpha only rolls the y and z axes about the x axis, so we define alpha to be 0.0 there. This series of rotations also constructs the wind axes' +y and +z basis directions.
+  The two angles alpha and beta are known as the angle of attack and the angle of sideslip. Equivalently, beta is the angle from the body xz plane to the Airplane's velocity, and alpha is the angle from the body x axis to the velocity's projection onto the body xz plane. Wind axes are commonly defined using these angles. This is because they are intuitively understood by many aerodynamicists: for small |alpha| and |beta|, a positive alpha corresponds to the Airplane's nose pointing above its direction of travel (relative wind coming from below the aircraft), and a positive beta to its nose pointing to the left of its direction of travel (relative wind coming from the right of the aircraft), where the wind axes' +z and +y basis directions define below and right. However, this can seem a bit cyclical, and it obscures some subtlety in their definition: rotating through -alpha before beta keeps the wind axes' +z basis direction in the body xz plane for every pair of angles, which allows us to define lift as the aerodynamic force's component in the wind axes' -z basis direction, thereby making lift independent of sideslip.
 * Alternative way to think about basis directions (for small |alpha| and |beta|):
     1. +x: Approximately towards the front of the Airplane
     2. +y: Approximately towards the right of the Airplane
@@ -182,6 +184,7 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ### 4. Geometry axes
 
+* Source: Geometry axes follow Section 6.1 of "Flight Vehicle Aerodynamics" by Mark Drela (2014).
 * Basis directions
     1. +x: Towards the back of the Airplane (aft)
     2. +y: Towards the right of the Airplane

@@ -1917,3 +1917,539 @@ class TestOperatingPointDeepCopy(unittest.TestCase):
         first = copy.deepcopy(self.operating_point, memo)
         second = copy.deepcopy(self.operating_point, memo)
         self.assertIs(first, second)
+
+
+def _make_pairs(alphas: np.ndarray, betas: np.ndarray) -> list[tuple[float, float]]:
+    """Makes every valid pair of alpha and beta from the given grids.
+
+    At beta = +/-90.0, the only valid alpha is 0.0, so those columns contribute one pair
+    each regardless of the alpha grid.
+
+    :param alphas: A (N,) ndarray of floats representing the alpha values in degrees.
+    :param betas: A (M,) ndarray of floats representing the beta values in degrees.
+    :return: A list of (alpha, beta) tuples of floats in degrees.
+    """
+    pairs = []
+    for beta in betas:
+        if abs(beta) == 90.0:
+            pairs.append((0.0, float(beta)))
+        else:
+            for alpha in alphas:
+                pairs.append((float(alpha), float(beta)))
+    return pairs
+
+
+# The full accepted ranges of alpha and beta in five degree increments.
+_FULL_RANGE_PAIRS = _make_pairs(
+    np.arange(-175.0, 180.1, 5.0), np.arange(-90.0, 90.1, 5.0)
+)
+
+# The small angle ranges of alpha and beta in five degree increments.
+_SMALL_ANGLE_PAIRS = _make_pairs(
+    np.arange(-30.0, 30.1, 5.0), np.arange(-30.0, 30.1, 5.0)
+)
+
+# Coarser grids in thirty degree increments for the sweeps that also vary the attitude.
+_COARSE_ANGLES = np.arange(-150.0, 180.1, 30.0)
+_COARSE_FULL_RANGE_PAIRS = _make_pairs(_COARSE_ANGLES, np.arange(-90.0, 90.1, 30.0))
+_COARSE_SMALL_ANGLE_PAIRS = _make_pairs(
+    np.arange(-30.0, 30.1, 30.0), np.arange(-30.0, 30.1, 30.0)
+)
+_COARSE_ATTITUDES = [
+    (float(yaw), float(pitch), float(roll))
+    for yaw in _COARSE_ANGLES
+    for pitch in _COARSE_ANGLES
+    for roll in _COARSE_ANGLES
+]
+
+
+def _stevens_R_pas_BP1_to_W(alpha: float, beta: float) -> np.ndarray:
+    """Returns the body axes to wind axes rotation matrix from equation (2.3-2) of
+    "Aircraft Control and Simulation" by Stevens, Lewis, and Johnson (2016).
+
+    The entries are written out directly so this golden matrix does not depend on
+    generate_rot_T.
+
+    :param alpha: The angle of attack in degrees.
+    :param beta: The angle of sideslip in degrees.
+    :return: A (3,3) ndarray of floats representing the rotation matrix which maps from
+        body axes to wind axes.
+    """
+    cos_alpha = np.cos(np.deg2rad(alpha))
+    sin_alpha = np.sin(np.deg2rad(alpha))
+    cos_beta = np.cos(np.deg2rad(beta))
+    sin_beta = np.sin(np.deg2rad(beta))
+    return np.array(
+        [
+            [cos_alpha * cos_beta, sin_beta, sin_alpha * cos_beta],
+            [-cos_alpha * sin_beta, cos_beta, -sin_alpha * sin_beta],
+            [-sin_alpha, 0.0, cos_alpha],
+        ],
+        dtype=float,
+    )
+
+
+def _vCgHat_BP1__E(op: ps.operating_point.OperatingPoint) -> np.ndarray:
+    """Returns the unit vector along the first Airplane's CG velocity (in the first
+    Airplane's body axes, observed from the Earth frame).
+
+    :param op: The OperatingPoint.
+    :return: A (3,) ndarray of floats representing the unit velocity vector.
+    """
+    R_pas_GP1_to_BP1 = op.T_pas_GP1_CgP1_to_BP1_CgP1[:3, :3]
+    return np.asarray(-(R_pas_GP1_to_BP1 @ op.vInfHat_GP1__E), dtype=float)
+
+
+def _xHat_BP1_in_W_via_E(op: ps.operating_point.OperatingPoint) -> np.ndarray:
+    """Returns the first Airplane's body x axis basis direction expressed in wind axes,
+    computed through Earth axes.
+
+    The direct route (the first column of the body axes to wind axes rotation matrix)
+    cannot depend on the attitude, so this takes the long way through the Earth
+    matrices, which do.
+
+    :param op: The OperatingPoint.
+    :return: A (3,) ndarray of floats representing the body x axis basis direction (in
+        wind axes).
+    """
+    R_pas_BP1_to_E = op.T_pas_BP1_CgP1_to_E_CgP1[:3, :3]
+    R_pas_E_to_W = op.T_pas_E_CgP1_to_W_CgP1[:3, :3]
+    xHat_BP1 = np.array([1.0, 0.0, 0.0])
+    return np.asarray(R_pas_E_to_W @ (R_pas_BP1_to_E @ xHat_BP1), dtype=float)
+
+
+class TestWindAxesClaims(unittest.TestCase):
+    """Tests each claim in the wind axes section of docs/AXES_POINTS_AND_FRAMES.md that
+    holds for every pair of alpha and beta.
+
+    Each test sweeps alpha and beta in five degree increments over their full accepted
+    ranges, with alpha = 0.0 in the beta = +/-90.0 columns, and checks its claim at
+    every pair. The OperatingPoints are built once in setUpClass and shared."""
+
+    operating_points: list[ps.operating_point.OperatingPoint]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Build one OperatingPoint per pair in the sweep at the default attitude."""
+        cls.operating_points = [
+            ps.operating_point.OperatingPoint(vCg__E=10.0, alpha=alpha, beta=beta)
+            for alpha, beta in _FULL_RANGE_PAIRS
+        ]
+
+    def test_wind_x_axis_aligns_with_velocity(self) -> None:
+        """Test that the wind x axis is parallel to the Airplane's velocity observed
+        from the Earth frame.
+
+        The rows of the body axes to wind axes rotation matrix are the wind axes' basis
+        directions expressed in body axes, so the first row must equal the unit velocity
+        in body axes.
+        """
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            R_pas_BP1_to_W = op.T_pas_BP1_CgP1_to_W_CgP1[:3, :3]
+            npt.assert_allclose(
+                R_pas_BP1_to_W[0],
+                _vCgHat_BP1__E(op),
+                atol=1e-14,
+                err_msg=f"alpha={alpha}, beta={beta}",
+            )
+
+    def test_wind_z_axis_lies_in_body_xz_plane(self) -> None:
+        """Test that the wind z axis lies in the body xz plane, which is what makes lift
+        independent of sideslip."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            R_pas_BP1_to_W = op.T_pas_BP1_CgP1_to_W_CgP1[:3, :3]
+            self.assertAlmostEqual(
+                R_pas_BP1_to_W[2, 1], 0.0, places=14, msg=f"alpha={alpha}, beta={beta}"
+            )
+
+    def test_wind_axes_are_right_handed_and_orthonormal(self) -> None:
+        """Test that wind axes are right-handed and orthonormal."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            R_pas_BP1_to_W = op.T_pas_BP1_CgP1_to_W_CgP1[:3, :3]
+            npt.assert_allclose(
+                R_pas_BP1_to_W @ R_pas_BP1_to_W.T,
+                np.eye(3),
+                atol=1e-14,
+                err_msg=f"alpha={alpha}, beta={beta}",
+            )
+            self.assertAlmostEqual(
+                float(np.linalg.det(R_pas_BP1_to_W)),
+                1.0,
+                places=14,
+                msg=f"alpha={alpha}, beta={beta}",
+            )
+
+    def test_matrix_matches_stevens(self) -> None:
+        """Test that the body axes to wind axes rotation matrix matches equation (2.3-2)
+        of "Aircraft Control and Simulation" by Stevens, Lewis, and Johnson (2016)."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            T = op.T_pas_BP1_CgP1_to_W_CgP1
+            npt.assert_allclose(
+                T[:3, :3],
+                _stevens_R_pas_BP1_to_W(alpha, beta),
+                atol=1e-14,
+                err_msg=f"alpha={alpha}, beta={beta}",
+            )
+            npt.assert_array_equal(T[:3, 3], [0.0, 0.0, 0.0])
+            npt.assert_array_equal(T[3], [0.0, 0.0, 0.0, 1.0])
+
+    def test_extrinsic_and_intrinsic_series_are_equivalent(self) -> None:
+        """Test that the z-y extrinsic series of rotations through beta and -alpha
+        equals the y-z' intrinsic series of rotations through -alpha and beta."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            T_intrinsic = ps._transformations.generate_rot_T(
+                angles=np.array([0.0, -alpha, beta]),
+                passive=True,
+                intrinsic=True,
+                order="yzx",
+            )
+            npt.assert_allclose(
+                op.T_pas_BP1_CgP1_to_W_CgP1,
+                T_intrinsic,
+                atol=1e-14,
+                err_msg=f"alpha={alpha}, beta={beta}",
+            )
+
+    def test_beta_is_angle_from_body_xz_plane_to_velocity(self) -> None:
+        """Test that beta is the angle from the body xz plane to the velocity."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            vCgHat_BP1__E = _vCgHat_BP1__E(op)
+            recovered_beta = float(
+                np.rad2deg(np.arcsin(np.clip(vCgHat_BP1__E[1], -1.0, 1.0)))
+            )
+            self.assertAlmostEqual(
+                recovered_beta, beta, places=12, msg=f"alpha={alpha}, beta={beta}"
+            )
+
+    def test_alpha_is_angle_from_body_x_axis_to_projected_velocity(self) -> None:
+        """Test that alpha is the angle from the body x axis to the velocity's
+        projection onto the body xz plane.
+
+        At beta = +/-90.0 the projection vanishes and alpha is defined as 0.0, which
+        test_alpha_is_zero_at_beta_boundaries covers, so those pairs are skipped here.
+        """
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            if abs(beta) == 90.0:
+                continue
+            vCgHat_BP1__E = _vCgHat_BP1__E(op)
+            recovered_alpha = float(
+                np.rad2deg(np.arctan2(vCgHat_BP1__E[2], vCgHat_BP1__E[0]))
+            )
+            if recovered_alpha == -180.0:
+                recovered_alpha = 180.0
+            self.assertAlmostEqual(
+                recovered_alpha, alpha, places=12, msg=f"alpha={alpha}, beta={beta}"
+            )
+
+    def test_each_velocity_direction_has_exactly_one_pair(self) -> None:
+        """Test that no two pairs of alpha and beta in the sweep produce the same
+        velocity direction in body axes."""
+        pairs_by_direction: dict[tuple[float, float, float], tuple[float, float]] = {}
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            vCgHat_BP1__E = np.round(_vCgHat_BP1__E(op), 9) + 0.0
+            direction = (
+                float(vCgHat_BP1__E[0]),
+                float(vCgHat_BP1__E[1]),
+                float(vCgHat_BP1__E[2]),
+            )
+            self.assertNotIn(
+                direction,
+                pairs_by_direction,
+                msg=(
+                    f"alpha={alpha}, beta={beta} produces the same velocity direction "
+                    f"as alpha={pairs_by_direction.get(direction, (None, None))[0]}, "
+                    f"beta={pairs_by_direction.get(direction, (None, None))[1]}"
+                ),
+            )
+            pairs_by_direction[direction] = (alpha, beta)
+        self.assertEqual(len(pairs_by_direction), len(_FULL_RANGE_PAIRS))
+
+    def test_extractor_recovers_pair(self) -> None:
+        """Test that alpha_and_beta_from_vInf_BP1 recovers every pair in the sweep from
+        its freestream, including alpha = 0.0 at beta = +/-90.0."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            vInf_BP1__E = -op.vCg__E * _vCgHat_BP1__E(op)
+            recovered_alpha, recovered_beta = (
+                ps._transformations.alpha_and_beta_from_vInf_BP1(vInf_BP1__E, op.vCg__E)
+            )
+            self.assertAlmostEqual(
+                recovered_alpha, alpha, places=12, msg=f"alpha={alpha}, beta={beta}"
+            )
+            self.assertAlmostEqual(
+                recovered_beta, beta, places=12, msg=f"alpha={alpha}, beta={beta}"
+            )
+
+    def test_alpha_is_zero_at_beta_boundaries(self) -> None:
+        """Test that at beta = +/-90.0, alpha = 0.0 is accepted and every other alpha in
+        the sweep is rejected."""
+        for beta in [-90.0, 90.0]:
+            op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
+            npt.assert_allclose(
+                _vCgHat_BP1__E(op), [0.0, np.sign(beta), 0.0], atol=1e-14
+            )
+            for alpha in np.arange(-175.0, 180.1, 5.0):
+                if alpha == 0.0:
+                    continue
+                with self.assertRaises(ValueError, msg=f"alpha={alpha}, beta={beta}"):
+                    ps.operating_point.OperatingPoint(alpha=float(alpha), beta=beta)
+
+    def test_default_attitude_makes_wind_axes_coincide_with_earth_axes(self) -> None:
+        """Test that the default angles_E_to_BP1_izyx resolves to the attitude that
+        makes wind axes coincide with Earth axes."""
+        for (alpha, beta), op in zip(_FULL_RANGE_PAIRS, self.operating_points):
+            npt.assert_allclose(
+                op.T_pas_E_CgP1_to_W_CgP1,
+                np.eye(4),
+                atol=1e-13,
+                err_msg=f"alpha={alpha}, beta={beta}",
+            )
+
+
+class TestWindAxesSignConventions(unittest.TestCase):
+    """Tests the sign conventions stated for small alpha and beta in the wind axes
+    section of docs/AXES_POINTS_AND_FRAMES.md.
+
+    Each test sweeps alpha and beta in five degree increments from -30.0 to 30.0 at the
+    default attitude, and in thirty degree increments over the same range at every
+    attitude in a thirty degree grid, so the conventions are checked regardless of the
+    Airplane's orientation relative to Earth. The OperatingPoints are built once in
+    setUpClass, and only the vectors the tests need are kept.
+    """
+
+    cases: list[tuple[float, float, tuple[float, float, float] | None]]
+    vInfHat_BP1__E: np.ndarray
+    xHat_W: np.ndarray
+    R_pas_BP1_to_W_diagonals: np.ndarray
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Build one OperatingPoint per (alpha, beta, attitude) case, where a None
+        attitude means the default, and keep the freestream direction in body axes, the
+        body x axis basis direction in wind axes computed through Earth axes, and the
+        diagonal of the body axes to wind axes rotation matrix for each case."""
+        cls.cases = [(alpha, beta, None) for alpha, beta in _SMALL_ANGLE_PAIRS]
+        for coarse_attitude in _COARSE_ATTITUDES:
+            for alpha, beta in _COARSE_SMALL_ANGLE_PAIRS:
+                cls.cases.append((alpha, beta, coarse_attitude))
+
+        cls.vInfHat_BP1__E = np.zeros((len(cls.cases), 3), dtype=float)
+        cls.xHat_W = np.zeros((len(cls.cases), 3), dtype=float)
+        cls.R_pas_BP1_to_W_diagonals = np.zeros((len(cls.cases), 3), dtype=float)
+        for i, (alpha, beta, attitude) in enumerate(cls.cases):
+            op = ps.operating_point.OperatingPoint(
+                alpha=alpha, beta=beta, angles_E_to_BP1_izyx=attitude
+            )
+            cls.vInfHat_BP1__E[i] = -_vCgHat_BP1__E(op)
+            cls.xHat_W[i] = _xHat_BP1_in_W_via_E(op)
+            cls.R_pas_BP1_to_W_diagonals[i] = np.diag(
+                op.T_pas_BP1_CgP1_to_W_CgP1[:3, :3]
+            )
+
+    def _assert_sign(self, value: float, angle: float, msg: str) -> None:
+        """Asserts that a value is negative, zero, or positive when an angle is
+        positive, zero, or negative, respectively.
+
+        :param value: The value to check.
+        :param angle: The angle whose sign the value must oppose.
+        :param msg: The message to report on failure.
+        :return: None
+        """
+        if angle > 0.0:
+            self.assertLess(value, 0.0, msg=msg)
+        elif angle < 0.0:
+            self.assertGreater(value, 0.0, msg=msg)
+        else:
+            self.assertAlmostEqual(value, 0.0, places=14, msg=msg)
+
+    def test_positive_alpha_means_relative_wind_from_below(self) -> None:
+        """Test that positive alpha means the relative wind comes from below, so the
+        freestream's body z component is negative, and the reverse for negative
+        alpha."""
+        for (alpha, beta, attitude), vInfHat_BP1__E in zip(
+            self.cases, self.vInfHat_BP1__E
+        ):
+            self._assert_sign(
+                float(vInfHat_BP1__E[2]),
+                alpha,
+                f"alpha={alpha}, beta={beta}, attitude={attitude}",
+            )
+
+    def test_positive_alpha_means_nose_above_direction_of_travel(self) -> None:
+        """Test that positive alpha means the nose points above the direction of travel,
+        so the body x axis has a negative wind z component, and the reverse for negative
+        alpha.
+
+        The wind z axis points below the Airplane, so "above" is the wind -z direction.
+        The body x axis is carried into wind axes through Earth axes so the attitude
+        participates.
+        """
+        for (alpha, beta, attitude), xHat_W in zip(self.cases, self.xHat_W):
+            self._assert_sign(
+                float(xHat_W[2]),
+                alpha,
+                f"alpha={alpha}, beta={beta}, attitude={attitude}",
+            )
+
+    def test_positive_beta_means_relative_wind_from_right(self) -> None:
+        """Test that positive beta means the relative wind comes from the right, so the
+        freestream's body y component is negative, and the reverse for negative beta."""
+        for (alpha, beta, attitude), vInfHat_BP1__E in zip(
+            self.cases, self.vInfHat_BP1__E
+        ):
+            self._assert_sign(
+                float(vInfHat_BP1__E[1]),
+                beta,
+                f"alpha={alpha}, beta={beta}, attitude={attitude}",
+            )
+
+    def test_positive_beta_means_nose_left_of_direction_of_travel(self) -> None:
+        """Test that positive beta means the nose points to the left of the direction of
+        travel, so the body x axis has a negative wind y component, and the reverse for
+        negative beta.
+
+        The wind y axis points to the right of the Airplane, so "left" is the wind -y
+        direction. The body x axis is carried into wind axes through Earth axes so the
+        attitude participates.
+        """
+        for (alpha, beta, attitude), xHat_W in zip(self.cases, self.xHat_W):
+            self._assert_sign(
+                float(xHat_W[1]),
+                beta,
+                f"alpha={alpha}, beta={beta}, attitude={attitude}",
+            )
+
+    def test_wind_axes_approximately_align_with_body_axes(self) -> None:
+        """Test that for small alpha and beta, each wind axes' basis direction points
+        approximately along the corresponding body axes' basis direction, so each
+        diagonal entry of the body axes to wind axes rotation matrix is positive."""
+        for (alpha, beta, attitude), diagonal in zip(
+            self.cases, self.R_pas_BP1_to_W_diagonals
+        ):
+            for i in range(3):
+                self.assertGreater(
+                    diagonal[i],
+                    0.0,
+                    msg=f"alpha={alpha}, beta={beta}, attitude={attitude}, i={i}",
+                )
+
+
+class TestWindAxesAttitudeIndependence(unittest.TestCase):
+    """Tests that the wind axes construction does not depend on the Airplane's attitude
+    relative to Earth.
+
+    Each test sweeps alpha and beta in thirty degree increments over their full
+    accepted ranges, with alpha = 0.0 in the beta = +/-90.0 columns, at every attitude
+    in a thirty degree grid. The OperatingPoints are built once in setUpClass, and only
+    the quantities the tests need are kept."""
+
+    vCg__E: float
+    cases: list[tuple[float, float, tuple[float, float, float]]]
+    alphas: np.ndarray
+    betas: np.ndarray
+    T_pas_BP1_CgP1_to_W_CgP1s: np.ndarray
+    vInfHat_GP1__Es: np.ndarray
+    vInf_W__E_via_Es: np.ndarray
+    T_pas_E_CgP1_to_W_CgP1s: np.ndarray
+    default_T_pas_BP1_CgP1_to_W_CgP1s: dict[tuple[float, float], np.ndarray]
+    default_vInfHat_GP1__Es: dict[tuple[float, float], np.ndarray]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Build one OperatingPoint per (alpha, beta, attitude) case, plus one per pair
+        at the default attitude, and keep the stored angles, the body axes to wind axes
+        matrix, the freestream direction in geometry axes, the freestream carried into
+        wind axes through Earth axes, and the Earth axes to wind axes matrix."""
+        cls.vCg__E = 10.0
+        cls.cases = [
+            (alpha, beta, attitude)
+            for alpha, beta in _COARSE_FULL_RANGE_PAIRS
+            for attitude in _COARSE_ATTITUDES
+        ]
+
+        cls.default_T_pas_BP1_CgP1_to_W_CgP1s = {}
+        cls.default_vInfHat_GP1__Es = {}
+        for alpha, beta in _COARSE_FULL_RANGE_PAIRS:
+            op_default = ps.operating_point.OperatingPoint(
+                vCg__E=cls.vCg__E, alpha=alpha, beta=beta
+            )
+            cls.default_T_pas_BP1_CgP1_to_W_CgP1s[(alpha, beta)] = (
+                op_default.T_pas_BP1_CgP1_to_W_CgP1
+            )
+            cls.default_vInfHat_GP1__Es[(alpha, beta)] = op_default.vInfHat_GP1__E
+
+        num_cases = len(cls.cases)
+        cls.alphas = np.zeros(num_cases, dtype=float)
+        cls.betas = np.zeros(num_cases, dtype=float)
+        cls.T_pas_BP1_CgP1_to_W_CgP1s = np.zeros((num_cases, 4, 4), dtype=float)
+        cls.vInfHat_GP1__Es = np.zeros((num_cases, 3), dtype=float)
+        cls.vInf_W__E_via_Es = np.zeros((num_cases, 3), dtype=float)
+        cls.T_pas_E_CgP1_to_W_CgP1s = np.zeros((num_cases, 4, 4), dtype=float)
+        for i, (alpha, beta, attitude) in enumerate(cls.cases):
+            op = ps.operating_point.OperatingPoint(
+                vCg__E=cls.vCg__E,
+                alpha=alpha,
+                beta=beta,
+                angles_E_to_BP1_izyx=attitude,
+            )
+            cls.alphas[i] = op.alpha
+            cls.betas[i] = op.beta
+            cls.T_pas_BP1_CgP1_to_W_CgP1s[i] = op.T_pas_BP1_CgP1_to_W_CgP1
+            cls.vInfHat_GP1__Es[i] = op.vInfHat_GP1__E
+            R_pas_GP1_to_E = op.T_pas_GP1_CgP1_to_E_CgP1[:3, :3]
+            R_pas_E_to_W = op.T_pas_E_CgP1_to_W_CgP1[:3, :3]
+            cls.vInf_W__E_via_Es[i] = R_pas_E_to_W @ (R_pas_GP1_to_E @ op.vInf_GP1__E)
+            cls.T_pas_E_CgP1_to_W_CgP1s[i] = op.T_pas_E_CgP1_to_W_CgP1
+
+    def test_wind_axes_and_freestream_are_independent_of_attitude(self) -> None:
+        """Test that alpha, beta, the body axes to wind axes matrix, and the freestream
+        direction in geometry axes are identical at every attitude."""
+        for i, (alpha, beta, attitude) in enumerate(self.cases):
+            msg = f"alpha={alpha}, beta={beta}, attitude={attitude}"
+            self.assertEqual(self.alphas[i], alpha, msg=msg)
+            self.assertEqual(self.betas[i], beta, msg=msg)
+            npt.assert_array_equal(
+                self.T_pas_BP1_CgP1_to_W_CgP1s[i],
+                self.default_T_pas_BP1_CgP1_to_W_CgP1s[(alpha, beta)],
+                err_msg=msg,
+            )
+            npt.assert_array_equal(
+                self.vInfHat_GP1__Es[i],
+                self.default_vInfHat_GP1__Es[(alpha, beta)],
+                err_msg=msg,
+            )
+
+    def test_freestream_through_earth_axes_is_along_wind_minus_x(self) -> None:
+        """Test that the freestream carried from geometry axes to Earth axes and then to
+        wind axes lies along the wind -x direction at every attitude.
+
+        This is the route a wind-Earth assumption could hide in, since the direct route
+        from geometry axes to wind axes never touches the attitude.
+        """
+        vInf_W__E = np.array([-self.vCg__E, 0.0, 0.0])
+        for (alpha, beta, attitude), vInf_W__E_via_E in zip(
+            self.cases, self.vInf_W__E_via_Es
+        ):
+            npt.assert_allclose(
+                vInf_W__E_via_E,
+                vInf_W__E,
+                atol=1e-13,
+                err_msg=f"alpha={alpha}, beta={beta}, attitude={attitude}",
+            )
+
+    def test_earth_to_wind_matrix_varies_with_attitude(self) -> None:
+        """Test that the Earth axes to wind axes matrix varies with the attitude, so the
+        attitude sweeps are exercising something."""
+        for alpha, beta in _COARSE_FULL_RANGE_PAIRS:
+            indices = [
+                i
+                for i, (case_alpha, case_beta, _) in enumerate(self.cases)
+                if case_alpha == alpha and case_beta == beta
+            ]
+            first = self.T_pas_E_CgP1_to_W_CgP1s[indices[0]]
+            self.assertTrue(
+                any(
+                    not np.allclose(self.T_pas_E_CgP1_to_W_CgP1s[i], first)
+                    for i in indices[1:]
+                ),
+                msg=f"alpha={alpha}, beta={beta}",
+            )

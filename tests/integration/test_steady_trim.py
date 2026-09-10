@@ -35,6 +35,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             alpha=corrupted_alpha,
             beta=corrupted_beta,
             externalFX_W=corrupted_thrust,
+            g_E=(0.0, 0.0, 9.80665),
         )
 
         # Create the SteadyProblem.
@@ -42,6 +43,86 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             airplanes=[this_airplane],
             operating_point=this_operating_point,
         )
+
+    def test_g_E_validation(self) -> None:
+        """This method tests that a zero g_E is rejected, since the trim analysis places
+        the Airplane's weight along g_E's direction.
+
+        :return: None
+        """
+        problem = ps.problems.SteadyProblem(
+            airplanes=[
+                airplane_fixtures.make_multiple_wing_steady_validation_airplane()
+            ],
+            operating_point=ps.operating_point.OperatingPoint(),
+        )
+
+        with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
+            ps.trim.analyze_steady_trim(
+                problem=problem,
+                solver_type="steady horseshoe vortex lattice method",
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
+
+    def test_angle_bounds_validation(self) -> None:
+        """This method tests that alpha bounds outside (-180.0, 180.0] and beta bounds
+        outside (-90.0, 90.0) are rejected, since the search builds an OperatingPoint
+        from every trial and varies alpha and beta independently.
+
+        :return: None
+        """
+        for bad_alpha_bounds in [(-180.0, 20.0), (-20.0, 180.001)]:
+            with self.subTest(alpha_bounds=bad_alpha_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
+                    ps.trim.analyze_steady_trim(
+                        problem=self.steady_validation_problem,
+                        solver_type="steady horseshoe vortex lattice method",
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=bad_alpha_bounds,
+                        beta_bounds=(-20.0, 20.0),
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
+
+        for bad_beta_bounds in [(-90.0, 20.0), (-20.0, 90.0), (-180.0, 180.0)]:
+            with self.subTest(beta_bounds=bad_beta_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
+                    ps.trim.analyze_steady_trim(
+                        problem=self.steady_validation_problem,
+                        solver_type="steady horseshoe vortex lattice method",
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=(-20.0, 20.0),
+                        beta_bounds=bad_beta_bounds,
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
+
+    def test_base_attitude_validation(self) -> None:
+        """This method tests that a base attitude that does not resolve to level flight
+        is rejected, since the trials resolve their own attitudes to level flight and
+        would otherwise silently discard it.
+
+        :return: None
+        """
+        problem = ps.problems.SteadyProblem(
+            airplanes=[
+                airplane_fixtures.make_multiple_wing_steady_validation_airplane()
+            ],
+            operating_point=ps.operating_point.OperatingPoint(
+                angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
+            ),
+        )
+
+        with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
+            ps.trim.analyze_steady_trim(
+                problem=problem,
+                solver_type="steady horseshoe vortex lattice method",
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
 
     def test_function(self) -> None:
         """This method tests that the function finds a pre-known trim condition.

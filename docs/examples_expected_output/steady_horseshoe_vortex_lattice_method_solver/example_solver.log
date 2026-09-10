@@ -1,4 +1,4 @@
-INFO    |steady_horseshoe_vortex_lattice_method      |Steady horseshoe vortex lattice method solver completed in 0.0227 s
+INFO    |steady_horseshoe_vortex_lattice_method      |Steady horseshoe vortex lattice method solver completed in 0.0236 s
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Reynolds Number: 1.08E+06
 INFO    |output                                      |  Forces (in Geometry Axes):
@@ -19,7 +19,7 @@ INFO    |output                                      |    cMY_G_Cg:       -1.05
 INFO    |output                                      |    cMZ_G_Cg:    7.51E-18
 INFO    |output                                      |  Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:           -41.0 N     Induced Drag:                       41.0 N
-INFO    |output                                      |    fY_W:        3.53E-14 N     Side Force:                     3.53E-14 N
+INFO    |output                                      |    fY_W:        3.53E-14 N     Crosswind Force:               -3.53E-14 N
 INFO    |output                                      |    fZ_W:       -1.06E+03 N     Lift:                           1.06E+03 N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    mX_W_Cg:     4.23E-13 Nm    Rolling Moment:                 4.23E-13 Nm
@@ -27,7 +27,7 @@ INFO    |output                                      |    mY_W_Cg:    -2.04E+03 
 INFO    |output                                      |    mZ_W_Cg:    -1.45E-13 Nm    Yawing Moment:                 -1.45E-13 Nm
 INFO    |output                                      |  Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:        -0.0344       Induced Drag Coefficient:         0.0344
-INFO    |output                                      |    cFY_W:       2.96E-17       Side Force Coefficient:         2.96E-17
+INFO    |output                                      |    cFY_W:       2.96E-17       Crosswind Force Coefficient:   -2.96E-17
 INFO    |output                                      |    cFZ_W:         -0.886       Lift Coefficient:                  0.886
 INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    cMX_W_Cg:    2.96E-17       Rolling Moment Coefficient:     2.96E-17

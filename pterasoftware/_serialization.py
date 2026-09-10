@@ -84,9 +84,11 @@ _CALLABLE_NAME_TO_FUNC = {
 }
 _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.items()}
 
-# Increments only when the serialization structure changes (slots added/removed/
-# renamed, class registry changed, encoding strategy changed).
-_FORMAT_VERSION = 28
+# Increments when the serialization structure changes (slots added/removed/renamed,
+# class registry changed, encoding strategy changed), and also when the meaning of a
+# serialized value changes, so that a file saved under the old meaning fails to load
+# loudly instead of being read under the new one.
+_FORMAT_VERSION = 29
 
 
 class UnboundCallable:

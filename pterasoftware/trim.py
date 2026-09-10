@@ -28,6 +28,7 @@ from . import (
     _functions,
     _logging,
     _parameter_validation,
+    _transformations,
     movements,
 )
 from . import operating_point as operating_point_mod
@@ -81,8 +82,12 @@ def analyze_steady_trim(
     calls, the function returns None values and logs a critical error.
 
     :param problem: The SteadyProblem whose trim condition will be found. It must
-        contain exactly one Airplane. The problem's OperatingPoint will be modified
-        during the trim search.
+        contain exactly one Airplane, and its OperatingPoint's g_E must be non-zero,
+        since the Airplane's weight is placed along g_E's direction. Trim searches for a
+        level flight equilibrium, so the OperatingPoint's angles_E_to_BP1_izyx must
+        resolve to level flight (leave it unset), and each trial resolves its own
+        attitude to level flight at its alpha and beta. The problem's OperatingPoint
+        will be modified during the trim search.
     :param solver_type: Determines what type of steady solver will be used to analyze
         the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
         "steady ring vortex lattice method".
@@ -91,14 +96,16 @@ def analyze_steady_trim(
         to search. The SteadyProblem's OperatingPoint's initial vCg__E must be within
         these bounds. Values are converted to floats internally. The units are in meters
         per second.
-    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of angles of attack to search. The SteadyProblem's
-        OperatingPoint's initial alpha must be within these bounds. Values are converted
-        to floats internally. The units are in degrees.
-    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of sideslip angles to search. The SteadyProblem's
-        OperatingPoint's initial beta must be within these bounds. Values are converted
-        to floats internally. The units are in degrees.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order
+        and in the range (-180.0, 180.0], determining the range of angles of attack to
+        search. The SteadyProblem's OperatingPoint's initial alpha must be within these
+        bounds. Values are converted to floats internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order and
+        in the range (-90.0, 90.0), determining the range of sideslip angles to search.
+        The bounds exclude the poles at -90.0 and 90.0 because the search varies alpha
+        and beta independently, and OperatingPoint only accepts alpha = 0.0 there. The
+        SteadyProblem's OperatingPoint's initial beta must be within these bounds.
+        Values are converted to floats internally. The units are in degrees.
     :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The SteadyProblem's OperatingPoint's initial externalFX_W must be
@@ -159,6 +166,12 @@ def analyze_steady_trim(
             "The first value in alpha_bounds must be less than or equal to the second "
             "value."
         )
+    # The search builds an OperatingPoint from every trial's alpha, so the bounds must
+    # lie within the range OperatingPoint accepts.
+    if alpha_bounds[0] <= -180.0 or alpha_bounds[1] > 180.0:
+        raise ValueError(
+            "Both values in alpha_bounds must be in the range (-180.0, 180.0]."
+        )
 
     # Validate the beta_bounds parameter.
     if not (isinstance(beta_bounds, tuple) and len(beta_bounds) == 2):
@@ -169,6 +182,13 @@ def analyze_steady_trim(
         raise ValueError(
             "The first value in beta_bounds must be less than or equal to the second "
             "value."
+        )
+    # The search varies alpha and beta independently, and OperatingPoint only accepts
+    # alpha = 0.0 when the absolute value of beta is 90.0, so the bounds must exclude
+    # those poles to keep every trial valid.
+    if beta_bounds[0] <= -90.0 or beta_bounds[1] >= 90.0:
+        raise ValueError(
+            "Both values in beta_bounds must be in the range (-90.0, 90.0)."
         )
 
     # Validate the boundsExternalFX_W parameter.
@@ -221,17 +241,39 @@ def analyze_steady_trim(
             "externalFX_W bounds."
         )
 
-    current_arguments = [np.nan, np.nan, np.nan, np.nan]
-
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = problem.operating_point.rho
     base_nu = problem.operating_point.nu
-    base_angles_E_to_BP1_izyx = problem.operating_point.angles_E_to_BP1_izyx
     base_CgP1_E_Eo = problem.operating_point.CgP1_E_Eo
     base_surfaceNormal_E = problem.operating_point.surfaceNormal_E
     base_surfacePoint_E_Eo = problem.operating_point.surfacePoint_E_Eo
     base_g_E = problem.operating_point.g_E
     base_omegas_BP1__E = problem.operating_point.omegas_BP1__E
+
+    # The Airplane's weight acts along the gravitational acceleration's direction, so
+    # g_E must define one. The Airplane carries a weight rather than a mass, so only
+    # g_E's direction is used here, and its magnitude can be any non-zero value.
+    if not np.any(base_g_E):
+        raise ValueError(
+            "The OperatingPoint's g_E must be non-zero for trim analysis, as the "
+            "Airplane's weight is placed along its direction."
+        )
+    weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    # Trim searches for a level flight equilibrium, so the base OperatingPoint's
+    # attitude must be the one that makes wind axes coincide with Earth axes, which is
+    # what leaving angles_E_to_BP1_izyx unset resolves to. Any other attitude would be
+    # silently discarded by the trials, so reject it instead.
+    if not np.allclose(
+        problem.operating_point.T_pas_E_CgP1_to_W_CgP1, np.eye(4), atol=1e-9
+    ):
+        raise ValueError(
+            "The OperatingPoint's angles_E_to_BP1_izyx must resolve to level flight "
+            "for trim analysis. Leave it unset so it resolves to the attitude that "
+            "makes wind axes coincide with Earth axes."
+        )
+
+    current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -256,7 +298,10 @@ def analyze_steady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
+        # so we create a new instance rather than mutating the original. Each trial
+        # leaves its attitude unset so it resolves to level flight at its own alpha and
+        # beta, rather than carrying the base OperatingPoint's attitude, which would
+        # tilt the flight path relative to Earth as alpha and beta vary.
         trial_operating_point = operating_point_mod.OperatingPoint(
             rho=base_rho,
             vCg__E=vCg__E,
@@ -264,7 +309,6 @@ def analyze_steady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
             CgP1_E_Eo=base_CgP1_E_Eo,
             surfaceNormal_E=base_surfaceNormal_E,
             surfacePoint_E_Eo=base_surfacePoint_E_Eo,
@@ -297,7 +341,18 @@ def analyze_steady_trim(
         # that is what is used for aerodynamic force coefficients. If we later allow
         # users to apply external moments we may need to come up with a better approach,
         # as moment coefficients non dimensionalize using different dimensions.
-        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
+        #
+        # The external thrust or drag acts along the wind x axis by definition, while
+        # the weight is fixed in Earth axes and so is rotated into this trial's wind
+        # axes, which depend on the trial's alpha and beta.
+        weightForce_W = _transformations.apply_T_to_vectors(
+            trial_operating_point.T_pas_E_CgP1_to_W_CgP1,
+            weightForce_E,
+            is_position=False,
+        )
+        externalForces_W = (
+            np.array([externalFX_W, 0.0, 0.0], dtype=float) + weightForce_W
+        )
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         solver: (
@@ -516,21 +571,27 @@ def analyze_unsteady_trim(
         num_steps would change the simulated duration from trial to trial. If its wake
         is truncated, the maximum wake length must likewise be defined with
         max_wake_cycles or max_wake_chords, rather than an explicit max_wake_rows. The
-        problem's OperatingPointMovement's base OperatingPoint will be modified during
-        the trim search.
+        base OperatingPoint's g_E must be non-zero, since the Airplane's weight is
+        placed along g_E's direction. Trim searches for a level flight equilibrium, so
+        the base OperatingPoint's angles_E_to_BP1_izyx must resolve to level flight
+        (leave it unset), and each trial resolves its own attitude to level flight at
+        its alpha and beta. The problem's OperatingPointMovement's base OperatingPoint
+        will be modified during the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
         bounds. Values are converted to floats internally. The units are in meters per
         second.
-    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of angles of attack to search. The base OperatingPoint's
-        initial alpha must be within these bounds. Values are converted to floats
-        internally. The units are in degrees.
-    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of sideslip angles to search. The base OperatingPoint's
-        initial beta must be within these bounds. Values are converted to floats
-        internally. The units are in degrees.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order
+        and in the range (-180.0, 180.0], determining the range of angles of attack to
+        search. The base OperatingPoint's initial alpha must be within these bounds.
+        Values are converted to floats internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order and
+        in the range (-90.0, 90.0), determining the range of sideslip angles to search.
+        The bounds exclude the poles at -90.0 and 90.0 because the search varies alpha
+        and beta independently, and OperatingPoint only accepts alpha = 0.0 there. The
+        base OperatingPoint's initial beta must be within these bounds. Values are
+        converted to floats internally. The units are in degrees.
     :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The base OperatingPoint's initial externalFX_W must be within these
@@ -613,6 +674,12 @@ def analyze_unsteady_trim(
             "The first value in alpha_bounds must be less than or equal to the second "
             "value."
         )
+    # The search builds an OperatingPoint from every trial's alpha, so the bounds must
+    # lie within the range OperatingPoint accepts.
+    if alpha_bounds[0] <= -180.0 or alpha_bounds[1] > 180.0:
+        raise ValueError(
+            "Both values in alpha_bounds must be in the range (-180.0, 180.0]."
+        )
 
     # Validate the beta_bounds parameter.
     if not (isinstance(beta_bounds, tuple) and len(beta_bounds) == 2):
@@ -623,6 +690,13 @@ def analyze_unsteady_trim(
         raise ValueError(
             "The first value in beta_bounds must be less than or equal to the second "
             "value."
+        )
+    # The search varies alpha and beta independently, and OperatingPoint only accepts
+    # alpha = 0.0 when the absolute value of beta is 90.0, so the bounds must exclude
+    # those poles to keep every trial valid.
+    if beta_bounds[0] <= -90.0 or beta_bounds[1] >= 90.0:
+        raise ValueError(
+            "Both values in beta_bounds must be in the range (-90.0, 90.0)."
         )
 
     # Validate the boundsExternalFX_W parameter.
@@ -692,18 +766,40 @@ def analyze_unsteady_trim(
             "externalFX_W bounds."
         )
 
-    current_arguments = [np.nan, np.nan, np.nan, np.nan]
-
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = base_operating_point.rho
     base_nu = base_operating_point.nu
-    base_angles_E_to_BP1_izyx = base_operating_point.angles_E_to_BP1_izyx
     base_CgP1_E_Eo = base_operating_point.CgP1_E_Eo
     base_surfaceNormal_E = base_operating_point.surfaceNormal_E
     base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
     base_g_E = base_operating_point.g_E
     base_omegas_BP1__E = base_operating_point.omegas_BP1__E
     reference_operating_point_movement = problem.movement.operating_point_movement
+
+    # The Airplane's weight acts along the gravitational acceleration's direction, so
+    # g_E must define one. The Airplane carries a weight rather than a mass, so only
+    # g_E's direction is used here, and its magnitude can be any non-zero value.
+    if not np.any(base_g_E):
+        raise ValueError(
+            "The base OperatingPoint's g_E must be non-zero for trim analysis, as the "
+            "Airplane's weight is placed along its direction."
+        )
+    weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    # Trim searches for a level flight equilibrium, so the base OperatingPoint's
+    # attitude must be the one that makes wind axes coincide with Earth axes, which is
+    # what leaving angles_E_to_BP1_izyx unset resolves to. Any other attitude would be
+    # silently discarded by the trials, so reject it instead.
+    if not np.allclose(
+        base_operating_point.T_pas_E_CgP1_to_W_CgP1, np.eye(4), atol=1e-9
+    ):
+        raise ValueError(
+            "The base OperatingPoint's angles_E_to_BP1_izyx must resolve to level "
+            "flight for trim analysis. Leave it unset so it resolves to the attitude "
+            "that makes wind axes coincide with Earth axes."
+        )
+
+    current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -728,7 +824,10 @@ def analyze_unsteady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
+        # so we create a new instance rather than mutating the original. Each trial
+        # leaves its attitude unset so it resolves to level flight at its own alpha and
+        # beta, rather than carrying the base OperatingPoint's attitude, which would
+        # tilt the flight path relative to Earth as alpha and beta vary.
         trial_operating_point = operating_point_mod.OperatingPoint(
             rho=base_rho,
             vCg__E=vCg__E,
@@ -736,7 +835,6 @@ def analyze_unsteady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
             CgP1_E_Eo=base_CgP1_E_Eo,
             surfaceNormal_E=base_surfaceNormal_E,
             surfacePoint_E_Eo=base_surfacePoint_E_Eo,
@@ -757,7 +855,18 @@ def analyze_unsteady_trim(
         # that is what is used for aerodynamic force coefficients. If we later allow
         # users to apply external moments we may need to come up with a better approach,
         # as moment coefficients non dimensionalize using different dimensions.
-        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
+        #
+        # The external thrust or drag acts along the wind x axis by definition, while
+        # the weight is fixed in Earth axes and so is rotated into this trial's wind
+        # axes, which depend on the trial's alpha and beta.
+        weightForce_W = _transformations.apply_T_to_vectors(
+            trial_operating_point.T_pas_E_CgP1_to_W_CgP1,
+            weightForce_E,
+            is_position=False,
+        )
+        externalForces_W = (
+            np.array([externalFX_W, 0.0, 0.0], dtype=float) + weightForce_W
+        )
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         this_operating_point_movement = (

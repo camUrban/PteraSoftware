@@ -123,13 +123,13 @@ class TestCsvHeaders(unittest.TestCase):
     def test_appends_the_context_and_the_unit(self) -> None:
         """Test that a header is its label, then its context, then its unit."""
         headers = _output_plotting.csv_headers(
-            ["Induced Drag", "Side Force", "Lift"], "(in Wind Axes)", "Force (N)"
+            ["Induced Drag", "Crosswind Force", "Lift"], "(in Wind Axes)", "Force (N)"
         )
         self.assertEqual(
             headers,
             [
                 "Induced Drag in Wind Axes (N)",
-                "Side Force in Wind Axes (N)",
+                "Crosswind Force in Wind Axes (N)",
                 "Lift in Wind Axes (N)",
             ],
         )

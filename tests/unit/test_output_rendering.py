@@ -842,13 +842,17 @@ class TestGetScalars(unittest.TestCase):
         expected = [-panel.forces_W[0] / 2.0 / panel.area for panel in panels]
         npt.assert_allclose(scalars, expected)
 
-    def test_side_force_keeps_the_wind_axes_y_force(self) -> None:
-        """Test that side force reads in the same direction as wind axes y."""
+    def test_crosswind_force_negates_the_wind_axes_y_force(self) -> None:
+        """Test that crosswind force reads as positive toward the Airplane's left.
+
+        Wind axes y points to the Airplane's right, so the coefficient carries the
+        negated force.
+        """
         airplanes = output_rendering_fixtures.make_loaded_airplanes_fixture()
         assert airplanes[0].wings[0].panels is not None
         panels = np.ravel(airplanes[0].wings[0].panels)
-        scalars = _output_rendering.get_scalars(airplanes, "side force", 2.0)
-        expected = [panel.forces_W[1] / 2.0 / panel.area for panel in panels]
+        scalars = _output_rendering.get_scalars(airplanes, "crosswind force", 2.0)
+        expected = [-panel.forces_W[1] / 2.0 / panel.area for panel in panels]
         npt.assert_allclose(scalars, expected)
 
     def test_lift_negates_the_wind_axes_z_force(self) -> None:

@@ -201,15 +201,16 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     finalInducedDrags_W: The final induced drag force experienced by each Airplane (in
     wind axes).
 
-    finalSideForces_W: The final side force experienced by each Airplane (in wind axes).
+    finalCrosswindForces_W: The final crosswind force experienced by each Airplane (in
+    wind axes).
 
     finalLifts_W: The final lift force experienced by each Airplane (in wind axes).
 
     finalInducedDragCoefficients_W: The final induced drag force coefficient experienced
     by each Airplane (in wind axes).
 
-    finalSideForceCoefficients_W: The final side force coefficient experienced by each
-    Airplane (in wind axes).
+    finalCrosswindForceCoefficients_W: The final crosswind force coefficient experienced
+    by each Airplane (in wind axes).
 
     finalLiftCoefficients_W: The final lift force coefficient experienced by each
     Airplane (in wind axes).
@@ -235,8 +236,8 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     finalMeanInducedDrags_W: The final cycle averaged induced drag force experienced by
     each Airplane (in wind axes).
 
-    finalMeanSideForces_W: The final cycle averaged side force experienced by each
-    Airplane (in wind axes).
+    finalMeanCrosswindForces_W: The final cycle averaged crosswind force experienced by
+    each Airplane (in wind axes).
 
     finalMeanLifts_W: The final cycle averaged lift force experienced by each Airplane
     (in wind axes).
@@ -244,8 +245,8 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     finalMeanInducedDragCoefficients_W: The final cycle averaged induced drag force
     coefficient experienced by each Airplane (in wind axes).
 
-    finalMeanSideForceCoefficients_W: The final cycle averaged side force coefficient
-    experienced by each Airplane (in wind axes).
+    finalMeanCrosswindForceCoefficients_W: The final cycle averaged crosswind force
+    coefficient experienced by each Airplane (in wind axes).
 
     finalMeanLiftCoefficients_W: The final cycle averaged lift force coefficient
     experienced by each Airplane (in wind axes).

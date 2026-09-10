@@ -2436,16 +2436,16 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalForces_W]
 
     @property
-    def finalSideForces_W(self) -> list[float]:
-        """The final side force experienced by each Airplane (in wind axes).
+    def finalCrosswindForces_W(self) -> list[float]:
+        """The final crosswind force experienced by each Airplane (in wind axes).
 
-        Side force points along the wind axes' +y basis direction, so each entry equals
-        the corresponding finalForces_W entry's y component.
+        Crosswind force points along the wind axes' -y basis direction, so each entry is
+        the negative of the corresponding finalForces_W entry's y component.
 
-        :return: The final side forces in Newtons, one entry per Airplane. Empty if
+        :return: The final crosswind forces in Newtons, one entry per Airplane. Empty if
             finalForces_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalForces_W]
+        return [float(-entry[1]) for entry in self.finalForces_W]
 
     @property
     def finalLifts_W(self) -> list[float]:
@@ -2474,16 +2474,18 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalForceCoefficients_W]
 
     @property
-    def finalSideForceCoefficients_W(self) -> list[float]:
-        """The final side force coefficient experienced by each Airplane (in wind axes).
+    def finalCrosswindForceCoefficients_W(self) -> list[float]:
+        """The final crosswind force coefficient experienced by each Airplane (in wind
+        axes).
 
-        Side force coefficient corresponds to the wind axes' +y basis direction, so each
-        entry equals the corresponding finalForceCoefficients_W entry's y component.
+        Crosswind force coefficient corresponds to the wind axes' -y basis direction, so
+        each entry is the negative of the corresponding finalForceCoefficients_W entry's
+        y component.
 
-        :return: The final side force coefficients, one entry per Airplane. Empty if
-            finalForceCoefficients_W has not been populated.
+        :return: The final crosswind force coefficients, one entry per Airplane. Empty
+            if finalForceCoefficients_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalForceCoefficients_W]
+        return [float(-entry[1]) for entry in self.finalForceCoefficients_W]
 
     @property
     def finalLiftCoefficients_W(self) -> list[float]:
@@ -2593,17 +2595,17 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalMeanForces_W]
 
     @property
-    def finalMeanSideForces_W(self) -> list[float]:
-        """The final cycle averaged side force experienced by each Airplane (in wind
-        axes).
+    def finalMeanCrosswindForces_W(self) -> list[float]:
+        """The final cycle averaged crosswind force experienced by each Airplane (in
+        wind axes).
 
-        Side force points along the wind axes' +y basis direction, so each entry equals
-        the corresponding finalMeanForces_W entry's y component.
+        Crosswind force points along the wind axes' -y basis direction, so each entry is
+        the negative of the corresponding finalMeanForces_W entry's y component.
 
-        :return: The final cycle averaged side forces in Newtons, one entry per
+        :return: The final cycle averaged crosswind forces in Newtons, one entry per
             Airplane. Empty if finalMeanForces_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanForces_W]
+        return [float(-entry[1]) for entry in self.finalMeanForces_W]
 
     @property
     def finalMeanLifts_W(self) -> list[float]:
@@ -2633,17 +2635,18 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalMeanForceCoefficients_W]
 
     @property
-    def finalMeanSideForceCoefficients_W(self) -> list[float]:
-        """The final cycle averaged side force coefficient experienced by each Airplane
-        (in wind axes).
+    def finalMeanCrosswindForceCoefficients_W(self) -> list[float]:
+        """The final cycle averaged crosswind force coefficient experienced by each
+        Airplane (in wind axes).
 
-        Side force coefficient corresponds to the wind axes' +y basis direction, so each
-        entry equals the corresponding finalMeanForceCoefficients_W entry's y component.
+        Crosswind force coefficient corresponds to the wind axes' -y basis direction, so
+        each entry is the negative of the corresponding finalMeanForceCoefficients_W
+        entry's y component.
 
-        :return: The final cycle averaged side force coefficients, one entry per
+        :return: The final cycle averaged crosswind force coefficients, one entry per
             Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanForceCoefficients_W]
+        return [float(-entry[1]) for entry in self.finalMeanForceCoefficients_W]
 
     @property
     def finalMeanLiftCoefficients_W(self) -> list[float]:

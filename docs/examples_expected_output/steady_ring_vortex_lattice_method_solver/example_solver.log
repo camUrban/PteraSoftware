@@ -1,4 +1,4 @@
-INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0340 s
+INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0391 s
 INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.psz
 INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.psz (728395 bytes)
 INFO    |_serialization                              |Loading from example_solver.psz
@@ -25,7 +25,7 @@ INFO    |output                                      |    cMY_G_Cg:       -1.04
 INFO    |output                                      |    cMZ_G_Cg:    1.06E-17
 INFO    |output                                      |  Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:           -24.7 N     Induced Drag:                       24.7 N
-INFO    |output                                      |    fY_W:        2.34E-14 N     Side Force:                     2.34E-14 N
+INFO    |output                                      |    fY_W:        2.34E-14 N     Crosswind Force:               -2.34E-14 N
 INFO    |output                                      |    fZ_W:           -831. N     Lift:                               831. N
 INFO    |output                                      |  Moments (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    mX_W_Cg:    -3.05E-13 Nm    Rolling Moment:                -3.05E-13 Nm
@@ -33,7 +33,7 @@ INFO    |output                                      |    mY_W_Cg:    -1.00E+03 
 INFO    |output                                      |    mZ_W_Cg:    -7.87E-14 Nm    Yawing Moment:                 -7.87E-14 Nm
 INFO    |output                                      |  Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:        -0.0299       Induced Drag Coefficient:         0.0299
-INFO    |output                                      |    cFY_W:       2.83E-17       Side Force Coefficient:         2.83E-17
+INFO    |output                                      |    cFY_W:       2.83E-17       Crosswind Force Coefficient:   -2.83E-17
 INFO    |output                                      |    cFZ_W:          -1.01       Lift Coefficient:                   1.01
 INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    cMX_W_Cg:   -3.08E-17       Rolling Moment Coefficient:    -3.08E-17

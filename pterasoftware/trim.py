@@ -83,8 +83,11 @@ def analyze_steady_trim(
 
     :param problem: The SteadyProblem whose trim condition will be found. It must
         contain exactly one Airplane, and its OperatingPoint's g_E must be non-zero,
-        since the Airplane's weight is placed along g_E's direction. The problem's
-        OperatingPoint will be modified during the trim search.
+        since the Airplane's weight is placed along g_E's direction. Trim searches for a
+        level flight equilibrium, so the OperatingPoint's angles_E_to_BP1_izyx must
+        resolve to level flight (leave it unset), and each trial resolves its own
+        attitude to level flight at its alpha and beta. The problem's OperatingPoint
+        will be modified during the trim search.
     :param solver_type: Determines what type of steady solver will be used to analyze
         the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
         "steady ring vortex lattice method".
@@ -226,7 +229,6 @@ def analyze_steady_trim(
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = problem.operating_point.rho
     base_nu = problem.operating_point.nu
-    base_angles_E_to_BP1_izyx = problem.operating_point.angles_E_to_BP1_izyx
     base_CgP1_E_Eo = problem.operating_point.CgP1_E_Eo
     base_surfaceNormal_E = problem.operating_point.surfaceNormal_E
     base_surfacePoint_E_Eo = problem.operating_point.surfacePoint_E_Eo
@@ -242,6 +244,19 @@ def analyze_steady_trim(
             "Airplane's weight is placed along its direction."
         )
     weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    # Trim searches for a level flight equilibrium, so the base OperatingPoint's
+    # attitude must be the one that makes wind axes coincide with Earth axes, which is
+    # what leaving angles_E_to_BP1_izyx unset resolves to. Any other attitude would be
+    # silently discarded by the trials, so reject it instead.
+    if not np.allclose(
+        problem.operating_point.T_pas_E_CgP1_to_W_CgP1, np.eye(4), atol=1e-9
+    ):
+        raise ValueError(
+            "The OperatingPoint's angles_E_to_BP1_izyx must resolve to level flight "
+            "for trim analysis. Leave it unset so it resolves to the attitude that "
+            "makes wind axes coincide with Earth axes."
+        )
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
@@ -268,7 +283,10 @@ def analyze_steady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
+        # so we create a new instance rather than mutating the original. Each trial
+        # leaves its attitude unset so it resolves to level flight at its own alpha and
+        # beta, rather than carrying the base OperatingPoint's attitude, which would
+        # tilt the flight path relative to Earth as alpha and beta vary.
         trial_operating_point = operating_point_mod.OperatingPoint(
             rho=base_rho,
             vCg__E=vCg__E,
@@ -276,7 +294,6 @@ def analyze_steady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
             CgP1_E_Eo=base_CgP1_E_Eo,
             surfaceNormal_E=base_surfaceNormal_E,
             surfacePoint_E_Eo=base_surfacePoint_E_Eo,
@@ -540,8 +557,11 @@ def analyze_unsteady_trim(
         is truncated, the maximum wake length must likewise be defined with
         max_wake_cycles or max_wake_chords, rather than an explicit max_wake_rows. The
         base OperatingPoint's g_E must be non-zero, since the Airplane's weight is
-        placed along g_E's direction. The problem's OperatingPointMovement's base
-        OperatingPoint will be modified during the trim search.
+        placed along g_E's direction. Trim searches for a level flight equilibrium, so
+        the base OperatingPoint's angles_E_to_BP1_izyx must resolve to level flight
+        (leave it unset), and each trial resolves its own attitude to level flight at
+        its alpha and beta. The problem's OperatingPointMovement's base OperatingPoint
+        will be modified during the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
@@ -719,7 +739,6 @@ def analyze_unsteady_trim(
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = base_operating_point.rho
     base_nu = base_operating_point.nu
-    base_angles_E_to_BP1_izyx = base_operating_point.angles_E_to_BP1_izyx
     base_CgP1_E_Eo = base_operating_point.CgP1_E_Eo
     base_surfaceNormal_E = base_operating_point.surfaceNormal_E
     base_surfacePoint_E_Eo = base_operating_point.surfacePoint_E_Eo
@@ -736,6 +755,19 @@ def analyze_unsteady_trim(
             "Airplane's weight is placed along its direction."
         )
     weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    # Trim searches for a level flight equilibrium, so the base OperatingPoint's
+    # attitude must be the one that makes wind axes coincide with Earth axes, which is
+    # what leaving angles_E_to_BP1_izyx unset resolves to. Any other attitude would be
+    # silently discarded by the trials, so reject it instead.
+    if not np.allclose(
+        base_operating_point.T_pas_E_CgP1_to_W_CgP1, np.eye(4), atol=1e-9
+    ):
+        raise ValueError(
+            "The base OperatingPoint's angles_E_to_BP1_izyx must resolve to level "
+            "flight for trim analysis. Leave it unset so it resolves to the attitude "
+            "that makes wind axes coincide with Earth axes."
+        )
 
     current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
@@ -762,7 +794,10 @@ def analyze_unsteady_trim(
         current_arguments.extend([vCg__E, alpha, beta, externalFX_W])
 
         # Create a new OperatingPoint with the trial values. OperatingPoint is immutable
-        # so we create a new instance rather than mutating the original.
+        # so we create a new instance rather than mutating the original. Each trial
+        # leaves its attitude unset so it resolves to level flight at its own alpha and
+        # beta, rather than carrying the base OperatingPoint's attitude, which would
+        # tilt the flight path relative to Earth as alpha and beta vary.
         trial_operating_point = operating_point_mod.OperatingPoint(
             rho=base_rho,
             vCg__E=vCg__E,
@@ -770,7 +805,6 @@ def analyze_unsteady_trim(
             beta=beta,
             externalFX_W=externalFX_W,
             nu=base_nu,
-            angles_E_to_BP1_izyx=base_angles_E_to_BP1_izyx,
             CgP1_E_Eo=base_CgP1_E_Eo,
             surfaceNormal_E=base_surfaceNormal_E,
             surfacePoint_E_Eo=base_surfacePoint_E_Eo,

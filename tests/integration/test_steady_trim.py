@@ -67,6 +67,32 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
+    def test_base_attitude_validation(self) -> None:
+        """This method tests that a base attitude that does not resolve to level flight
+        is rejected, since the trials resolve their own attitudes to level flight and
+        would otherwise silently discard it.
+
+        :return: None
+        """
+        problem = ps.problems.SteadyProblem(
+            airplanes=[
+                airplane_fixtures.make_multiple_wing_steady_validation_airplane()
+            ],
+            operating_point=ps.operating_point.OperatingPoint(
+                angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
+            ),
+        )
+
+        with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
+            ps.trim.analyze_steady_trim(
+                problem=problem,
+                solver_type="steady horseshoe vortex lattice method",
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
+
     def test_function(self) -> None:
         """This method tests that the function finds a pre-known trim condition.
 

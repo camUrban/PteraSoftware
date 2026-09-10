@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import numpy as np
+import numpy.testing as npt
 
 import pterasoftware as ps
 from tests.unit.fixtures import movement_fixtures, problem_fixtures
@@ -437,24 +438,51 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
-    def test_weight_is_placed_along_g_E(self) -> None:
-        """Test that each trial balances the Airplane's weight along g_E's direction,
-        rotated into that trial's wind axes, rather than along the wind z axis.
+    def test_base_attitude_validation(self) -> None:
+        """Test that a base attitude that does not resolve to level flight is rejected,
+        since the trials resolve their own attitudes to level flight and would otherwise
+        silently discard it."""
+        reference_movement = movement_fixtures.make_static_movement_fixture()
+        operating_point_movement = (
+            ps.movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=ps.operating_point.OperatingPoint(
+                    angles_E_to_BP1_izyx=(0.0, 0.0, 0.0), g_E=(0.0, 0.0, 9.80665)
+                )
+            )
+        )
+        movement = ps.movements.movement.Movement(
+            airplane_movements=list(reference_movement.airplane_movements),
+            operating_point_movement=operating_point_movement,
+            num_chords=reference_movement.num_chords,
+        )
+        problem = ps.problems.UnsteadyProblem(movement=movement)
 
-        The base OperatingPoint has a non-default attitude and a g_E that is not along
-        Earth +z, so wind axes, Earth axes, and g_E all differ. The stubbed solver
-        returns exactly the force coefficients that cancel the external thrust and the
-        weight placed along g_E, so the objective is zero at the initial guess only if
-        the trim analysis places the weight the same way. With a tiny cutoff and a
-        single allowed call, the analysis then returns the initial guess, and anything
-        else returns Nones.
+        with self.assertRaisesRegex(ValueError, "must resolve to level flight"):
+            ps.trim.analyze_unsteady_trim(
+                problem=problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
+
+    def test_trials_are_level_flight_with_weight_along_g_E(self) -> None:
+        """Test that each trial resolves its attitude to level flight and balances the
+        Airplane's weight along g_E's direction, rotated into that trial's wind axes.
+
+        The base OperatingPoint has a g_E that is not along Earth +z, so the weight is
+        not along the wind z axis even in level flight. The stubbed solver records each
+        trial's Earth axes to wind axes matrix and returns exactly the force
+        coefficients that cancel the external thrust and the weight placed along g_E, so
+        the objective is zero at the initial guess only if the trim analysis places the
+        weight the same way. With a tiny cutoff and a single allowed call, the analysis
+        then returns the initial guess, and anything else returns Nones.
         """
         reference_movement = movement_fixtures.make_static_movement_fixture()
         base_operating_point = ps.operating_point.OperatingPoint(
             vCg__E=10.0,
             alpha=5.0,
             beta=3.0,
-            angles_E_to_BP1_izyx=(30.0, 10.0, 20.0),
             externalFX_W=7.0,
             g_E=(1.0, -2.0, 4.0),
         )
@@ -471,10 +499,12 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         problem = ps.problems.UnsteadyProblem(movement=movement)
         base_airplane = movement.airplane_movements[0].base_airplane
         self.assertGreater(base_airplane.weight, 0.0)
+        trial_T_pas_E_CgP1_to_W_CgP1s: list[np.ndarray] = []
 
         class SolverStub:
-            """A solver stub whose loads exactly cancel the external thrust and the
-            weight placed along g_E."""
+            """A solver stub that records each trial's Earth axes to wind axes matrix
+            and whose loads exactly cancel the external thrust and the weight placed
+            along g_E."""
 
             def __init__(self, unsteady_problem: ps.problems.UnsteadyProblem) -> None:
                 self.unsteady_problem = unsteady_problem
@@ -482,6 +512,9 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             def run(self, **_: Any) -> None:
                 trial_operating_point = (
                     self.unsteady_problem.movement.operating_point_movement.base_operating_point
+                )
+                trial_T_pas_E_CgP1_to_W_CgP1s.append(
+                    trial_operating_point.T_pas_E_CgP1_to_W_CgP1
                 )
                 g_E = trial_operating_point.g_E
                 weightForce_E = base_airplane.weight * g_E / np.linalg.norm(g_E)
@@ -520,6 +553,8 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
             )
 
         self.assertEqual(trim_conditions, (10.0, 5.0, 3.0, 7.0))
+        self.assertEqual(len(trial_T_pas_E_CgP1_to_W_CgP1s), 1)
+        npt.assert_allclose(trial_T_pas_E_CgP1_to_W_CgP1s[0], np.eye(4), atol=1e-12)
 
     def test_static_trial_uses_final_load_coefficients(self) -> None:
         """Test that a static trial uses its final-time-step loads."""

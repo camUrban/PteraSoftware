@@ -46,7 +46,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
     positions_E_Eo: np.ndarray
     omegas_BP1__E: np.ndarray
     lifts: np.ndarray
-    side_forces: np.ndarray
+    crosswind_forces: np.ndarray
     weight: float
     g_E: np.ndarray
     mass: float
@@ -97,7 +97,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
             ]
         )
         cls.lifts = -forces_W[:, 2]
-        cls.side_forces = forces_W[:, 1]
+        cls.crosswind_forces = -forces_W[:, 1]
 
         cls.weight = cls.solver.current_airplanes[0].weight
         cls.g_E = operating_points[0].g_E
@@ -160,13 +160,12 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethod(unittest.TestCase):
         """This method tests that the glide stays in the longitudinal plane.
 
         The glider is laterally symmetric and starts with zero sideslip, so the sideslip
-        angle, the lateral side force, and the lateral position should all stay
-        negligible.
+        angle, the crosswind force, and the lateral position should all stay negligible.
 
         :return: None
         """
         self.assertLess(float(np.max(np.abs(self.betas))), 1.0)
-        self.assertLess(float(np.max(np.abs(self.side_forces))), 1.0)
+        self.assertLess(float(np.max(np.abs(self.crosswind_forces))), 1.0)
         self.assertLess(float(np.max(np.abs(self.positions_E_Eo[:, 1]))), 1.0e-3)
 
     def test_angle_of_attack_stays_bounded(self) -> None:
@@ -225,7 +224,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
     positions_E_Eo: np.ndarray
     forces_W: np.ndarray
     lifts: np.ndarray
-    side_forces: np.ndarray
+    crosswind_forces: np.ndarray
     weight: float
 
     _warning_records: list[logging.LogRecord]
@@ -276,7 +275,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         )
 
         # In Ptera Software's wind axes, lift is the negative z component of the wind
-        # axes force and the lateral side force is the y component.
+        # axes force and the crosswind force is the negative y component.
         forces_W = np.array(
             [
                 steady_problem.airplanes[0].forces_W
@@ -285,7 +284,7 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         )
         cls.forces_W = forces_W
         cls.lifts = -forces_W[:, 2]
-        cls.side_forces = forces_W[:, 1]
+        cls.crosswind_forces = -forces_W[:, 1]
 
         cls.weight = cls.solver.current_airplanes[0].weight
 
@@ -336,13 +335,13 @@ class TestFreeFlightUnsteadyRingVortexLatticeMethodFlapping(unittest.TestCase):
         """This method tests that the flight stays in the longitudinal plane.
 
         The main wing flaps symmetrically and the airframe starts with zero sideslip, so
-        the sideslip angle, the lateral side force, and the lateral position should all
+        the sideslip angle, the crosswind force, and the lateral position should all
         stay negligible despite the large flapping loads.
 
         :return: None
         """
         self.assertLess(float(np.max(np.abs(self.betas))), 1.0)
-        self.assertLess(float(np.max(np.abs(self.side_forces))), 1.0)
+        self.assertLess(float(np.max(np.abs(self.crosswind_forces))), 1.0)
         self.assertLess(float(np.max(np.abs(self.positions_E_Eo[:, 1]))), 1.0e-3)
 
 

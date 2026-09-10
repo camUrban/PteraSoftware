@@ -85,10 +85,10 @@ _MULTI_SAMPLES = 4
 # quantity from the legend label, its axes, point, and frame from the subtitle, and its
 # unit from the y axis label, while a logged group header pairs a quantity with the same
 # subtitle. Naming them once is what keeps the three describing a quantity the same way.
-_FORCE_LABELS = ["Induced Drag", "Side Force", "Lift"]
+_FORCE_LABELS = ["Induced Drag", "Crosswind Force", "Lift"]
 _FORCE_COEFFICIENT_LABELS = [
     "Induced Drag Coefficient",
-    "Side Force Coefficient",
+    "Crosswind Force Coefficient",
     "Lift Coefficient",
 ]
 _MOMENT_LABELS = ["Rolling Moment", "Pitching Moment", "Yawing Moment"]
@@ -205,8 +205,8 @@ def draw(
         FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
     :param scalar_type: Determines how to color the Panels. Setting this to None colors
         the Panels uniformly. If the solver has been run, it can also be "induced drag",
-        "side force", or "lift", which respectively use each Panel's induced drag, side
-        force, and lift coefficient. The default is None.
+        "crosswind force", or "lift", which respectively use each Panel's induced drag,
+        crosswind force, and lift coefficient. The default is None.
     :param show_streamlines: Set this to True to show the streamlines emanating from the
         back of the Wings. If True, the solver's streamlines must have already been
         calculated. Can be a bool or a numpy bool and will be converted internally to a
@@ -432,7 +432,7 @@ def draw(
     # Choose the scalar coloring for the Panels, leaving it None to color them
     # uniformly.
     coloring: _output_rendering.ScalarColoring | None = None
-    if scalar_type in ("induced drag", "side force", "lift"):
+    if scalar_type in ("induced drag", "crosswind force", "lift"):
         these_scalars = _output_rendering.get_scalars(airplanes, scalar_type, qInf__E)
         color_map, c_min, c_max = _output_rendering.choose_color_map(these_scalars)
         coloring = _output_rendering.ScalarColoring(
@@ -710,8 +710,8 @@ def animate(
         FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
     :param scalar_type: Determines how to color the Panels. Setting this to None colors
         the Panels uniformly. If the solver has been run, it can also be "induced drag",
-        "side force", or "lift", which respectively use each Panel's induced drag, side
-        force, and lift coefficient. The default is None.
+        "crosswind force", or "lift", which respectively use each Panel's induced drag,
+        crosswind force, and lift coefficient. The default is None.
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
@@ -1631,13 +1631,13 @@ def plot_results_versus_time(
         # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
             namedForces_W[airplane_id, 0, results_step] = airplane.inducedDrag_W
-            namedForces_W[airplane_id, 1, results_step] = airplane.sideForce_W
+            namedForces_W[airplane_id, 1, results_step] = airplane.crosswindForce_W
             namedForces_W[airplane_id, 2, results_step] = airplane.lift_W
             namedForceCoefficients_W[airplane_id, 0, results_step] = (
                 airplane.inducedDragCoefficient_W
             )
             namedForceCoefficients_W[airplane_id, 1, results_step] = (
-                airplane.sideForceCoefficient_W
+                airplane.crosswindForceCoefficient_W
             )
             namedForceCoefficients_W[airplane_id, 2, results_step] = (
                 airplane.liftCoefficient_W
@@ -2123,7 +2123,7 @@ def log_results(
 
                 theseNamedForces_W = [
                     airplane.inducedDrag_W,
-                    airplane.sideForce_W,
+                    airplane.crosswindForce_W,
                     airplane.lift_W,
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2133,7 +2133,7 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     airplane.inducedDragCoefficient_W,
-                    airplane.sideForceCoefficient_W,
+                    airplane.crosswindForceCoefficient_W,
                     airplane.liftCoefficient_W,
                 ]
                 theseNamedMomentCoefficients_W_Cg = [
@@ -2169,7 +2169,7 @@ def log_results(
                 )
                 theseNamedForces_W = [
                     unsteady_problem.finalInducedDrags_W[airplane_num],
-                    unsteady_problem.finalSideForces_W[airplane_num],
+                    unsteady_problem.finalCrosswindForces_W[airplane_num],
                     unsteady_problem.finalLifts_W[airplane_num],
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2179,7 +2179,7 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     unsteady_problem.finalInducedDragCoefficients_W[airplane_num],
-                    unsteady_problem.finalSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalCrosswindForceCoefficients_W[airplane_num],
                     unsteady_problem.finalLiftCoefficients_W[airplane_num],
                 ]
                 theseNamedMomentCoefficients_W_Cg = [
@@ -2214,7 +2214,7 @@ def log_results(
                 )
                 theseNamedForces_W = [
                     unsteady_problem.finalMeanInducedDrags_W[airplane_num],
-                    unsteady_problem.finalMeanSideForces_W[airplane_num],
+                    unsteady_problem.finalMeanCrosswindForces_W[airplane_num],
                     unsteady_problem.finalMeanLifts_W[airplane_num],
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2224,7 +2224,9 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     unsteady_problem.finalMeanInducedDragCoefficients_W[airplane_num],
-                    unsteady_problem.finalMeanSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanCrosswindForceCoefficients_W[
+                        airplane_num
+                    ],
                     unsteady_problem.finalMeanLiftCoefficients_W[airplane_num],
                 ]
                 theseNamedMomentCoefficients_W_Cg = [

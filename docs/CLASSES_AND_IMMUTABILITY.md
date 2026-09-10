@@ -162,10 +162,10 @@ These read-only properties expose the named load components and coefficients def
 | Property                                   | Depends On                         | Notes                                    |
 |--------------------------------------------|------------------------------------|------------------------------------------|
 | `finalInducedDrags_W`                      | `finalForces_W`                    | Negatives of the x components            |
-| `finalSideForces_W`                        | `finalForces_W`                    | The y components                         |
+| `finalCrosswindForces_W`                   | `finalForces_W`                    | Negatives of the y components            |
 | `finalLifts_W`                             | `finalForces_W`                    | Negatives of the z components            |
 | `finalInducedDragCoefficients_W`           | `finalForceCoefficients_W`         | Negatives of the x components            |
-| `finalSideForceCoefficients_W`             | `finalForceCoefficients_W`         | The y components                         |
+| `finalCrosswindForceCoefficients_W`        | `finalForceCoefficients_W`         | Negatives of the y components            |
 | `finalLiftCoefficients_W`                  | `finalForceCoefficients_W`         | Negatives of the z components            |
 | `finalRollingMoments_W_Cg`                 | `finalMoments_W_Cg`                | The x components                         |
 | `finalPitchingMoments_W_Cg`                | `finalMoments_W_Cg`                | The y components                         |
@@ -174,10 +174,10 @@ These read-only properties expose the named load components and coefficients def
 | `finalPitchingMomentCoefficients_W_Cg`     | `finalMomentCoefficients_W_Cg`     | The y components                         |
 | `finalYawingMomentCoefficients_W_Cg`       | `finalMomentCoefficients_W_Cg`     | The z components                         |
 | `finalMeanInducedDrags_W`                  | `finalMeanForces_W`                | Cycle averaged counterparts of the above |
-| `finalMeanSideForces_W`                    | `finalMeanForces_W`                |                                          |
+| `finalMeanCrosswindForces_W`               | `finalMeanForces_W`                |                                          |
 | `finalMeanLifts_W`                         | `finalMeanForces_W`                |                                          |
 | `finalMeanInducedDragCoefficients_W`       | `finalMeanForceCoefficients_W`     |                                          |
-| `finalMeanSideForceCoefficients_W`         | `finalMeanForceCoefficients_W`     |                                          |
+| `finalMeanCrosswindForceCoefficients_W`    | `finalMeanForceCoefficients_W`     |                                          |
 | `finalMeanLiftCoefficients_W`              | `finalMeanForceCoefficients_W`     |                                          |
 | `finalMeanRollingMoments_W_Cg`             | `finalMeanMoments_W_Cg`            |                                          |
 | `finalMeanPitchingMoments_W_Cg`            | `finalMeanMoments_W_Cg`            |                                          |
@@ -546,10 +546,10 @@ These read-only properties expose the named load components and coefficients def
 | Property                         | Depends On                | Notes                       |
 |----------------------------------|---------------------------|-----------------------------|
 | `inducedDrag_W`                  | `forces_W`                | Negative of the x component |
-| `sideForce_W`                    | `forces_W`                | The y component             |
+| `crosswindForce_W`               | `forces_W`                | Negative of the y component |
 | `lift_W`                         | `forces_W`                | Negative of the z component |
 | `inducedDragCoefficient_W`       | `forceCoefficients_W`     | Negative of the x component |
-| `sideForceCoefficient_W`         | `forceCoefficients_W`     | The y component             |
+| `crosswindForceCoefficient_W`    | `forceCoefficients_W`     | Negative of the y component |
 | `liftCoefficient_W`              | `forceCoefficients_W`     | Negative of the z component |
 | `rollingMoment_W_Cg`             | `moments_W_Cg`            | The x component             |
 | `pitchingMoment_W_Cg`            | `moments_W_Cg`            | The y component             |
@@ -760,11 +760,11 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 These read-only properties expose the named force components defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of `forces_W`, or None while it is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates `forces_W`.
 
-| Property        | Depends On | Notes                       |
-|-----------------|------------|-----------------------------|
-| `inducedDrag_W` | `forces_W` | Negative of the x component |
-| `sideForce_W`   | `forces_W` | The y component             |
-| `lift_W`        | `forces_W` | Negative of the z component |
+| Property           | Depends On | Notes                       |
+|--------------------|------------|-----------------------------|
+| `inducedDrag_W`    | `forces_W` | Negative of the x component |
+| `crosswindForce_W` | `forces_W` | Negative of the y component |
+| `lift_W`           | `forces_W` | Negative of the z component |
 
 ---
 

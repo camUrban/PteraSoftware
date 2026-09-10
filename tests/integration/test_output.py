@@ -802,10 +802,10 @@ class TestOutputFileWriting(unittest.TestCase):
             [
                 "Time (s)",
                 "Induced Drag in Wind Axes (N)",
-                "Side Force in Wind Axes (N)",
+                "Crosswind Force in Wind Axes (N)",
                 "Lift in Wind Axes (N)",
                 "Induced Drag Coefficient in Wind Axes",
-                "Side Force Coefficient in Wind Axes",
+                "Crosswind Force Coefficient in Wind Axes",
                 "Lift Coefficient in Wind Axes",
                 "Rolling Moment in Wind Axes Relative to the CG (N*m)",
                 "Pitching Moment in Wind Axes Relative to the CG (N*m)",

@@ -43,7 +43,7 @@ def make_three_labels_fixture() -> list[str]:
 
     :return: A list of three legend labels, one per series.
     """
-    return ["Induced Drag", "Side Force", "Lift"]
+    return ["Induced Drag", "Crosswind Force", "Lift"]
 
 
 def make_three_colors_fixture() -> list[str]:
@@ -61,7 +61,7 @@ def make_three_headers_fixture() -> list[str]:
     """
     return [
         "Induced Drag in Wind Axes (N)",
-        "Side Force in Wind Axes (N)",
+        "Crosswind Force in Wind Axes (N)",
         "Lift in Wind Axes (N)",
     ]
 

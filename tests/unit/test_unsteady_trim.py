@@ -137,6 +137,18 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
+        # The bounds must lie within the range OperatingPoint accepts for alpha.
+        for bad_alpha_bounds in [(-180.0, 20.0), (-20.0, 180.001)]:
+            with self.subTest(alpha_bounds=bad_alpha_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
+                    ps.trim.analyze_unsteady_trim(
+                        problem=self.problem,
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=bad_alpha_bounds,
+                        beta_bounds=(-20.0, 20.0),
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
+
     def test_beta_bounds_validation(self) -> None:
         """Test beta_bounds parameter validation."""
         bad_str: Any = "invalid"
@@ -177,6 +189,19 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 beta_bounds=(10.0, -10.0),
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
+
+        # The bounds must exclude the poles at beta = +/-90.0, where OperatingPoint only
+        # accepts alpha = 0.0, since the search varies alpha and beta independently.
+        for bad_beta_bounds in [(-90.0, 20.0), (-20.0, 90.0), (-180.0, 180.0)]:
+            with self.subTest(beta_bounds=bad_beta_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
+                    ps.trim.analyze_unsteady_trim(
+                        problem=self.problem,
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=(-20.0, 20.0),
+                        beta_bounds=bad_beta_bounds,
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
 
     def test_boundsExternalFX_W_validation(self) -> None:
         """Test boundsExternalFX_W parameter validation."""

@@ -67,6 +67,37 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
+    def test_angle_bounds_validation(self) -> None:
+        """This method tests that alpha bounds outside (-180.0, 180.0] and beta bounds
+        outside (-90.0, 90.0) are rejected, since the search builds an OperatingPoint
+        from every trial and varies alpha and beta independently.
+
+        :return: None
+        """
+        for bad_alpha_bounds in [(-180.0, 20.0), (-20.0, 180.001)]:
+            with self.subTest(alpha_bounds=bad_alpha_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-180.0, 180.0\\]"):
+                    ps.trim.analyze_steady_trim(
+                        problem=self.steady_validation_problem,
+                        solver_type="steady horseshoe vortex lattice method",
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=bad_alpha_bounds,
+                        beta_bounds=(-20.0, 20.0),
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
+
+        for bad_beta_bounds in [(-90.0, 20.0), (-20.0, 90.0), (-180.0, 180.0)]:
+            with self.subTest(beta_bounds=bad_beta_bounds):
+                with self.assertRaisesRegex(ValueError, "range \\(-90.0, 90.0\\)"):
+                    ps.trim.analyze_steady_trim(
+                        problem=self.steady_validation_problem,
+                        solver_type="steady horseshoe vortex lattice method",
+                        boundsVCg__E=(1.0, 100.0),
+                        alpha_bounds=(-20.0, 20.0),
+                        beta_bounds=bad_beta_bounds,
+                        boundsExternalFX_W=(-1000.0, 1000.0),
+                    )
+
     def test_base_attitude_validation(self) -> None:
         """This method tests that a base attitude that does not resolve to level flight
         is rejected, since the trials resolve their own attitudes to level flight and

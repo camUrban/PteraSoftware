@@ -96,14 +96,16 @@ def analyze_steady_trim(
         to search. The SteadyProblem's OperatingPoint's initial vCg__E must be within
         these bounds. Values are converted to floats internally. The units are in meters
         per second.
-    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of angles of attack to search. The SteadyProblem's
-        OperatingPoint's initial alpha must be within these bounds. Values are converted
-        to floats internally. The units are in degrees.
-    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of sideslip angles to search. The SteadyProblem's
-        OperatingPoint's initial beta must be within these bounds. Values are converted
-        to floats internally. The units are in degrees.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order
+        and in the range (-180.0, 180.0], determining the range of angles of attack to
+        search. The SteadyProblem's OperatingPoint's initial alpha must be within these
+        bounds. Values are converted to floats internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order and
+        in the range (-90.0, 90.0), determining the range of sideslip angles to search.
+        The bounds exclude the poles at -90.0 and 90.0 because the search varies alpha
+        and beta independently, and OperatingPoint only accepts alpha = 0.0 there. The
+        SteadyProblem's OperatingPoint's initial beta must be within these bounds.
+        Values are converted to floats internally. The units are in degrees.
     :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The SteadyProblem's OperatingPoint's initial externalFX_W must be
@@ -164,6 +166,12 @@ def analyze_steady_trim(
             "The first value in alpha_bounds must be less than or equal to the second "
             "value."
         )
+    # The search builds an OperatingPoint from every trial's alpha, so the bounds must
+    # lie within the range OperatingPoint accepts.
+    if alpha_bounds[0] <= -180.0 or alpha_bounds[1] > 180.0:
+        raise ValueError(
+            "Both values in alpha_bounds must be in the range (-180.0, 180.0]."
+        )
 
     # Validate the beta_bounds parameter.
     if not (isinstance(beta_bounds, tuple) and len(beta_bounds) == 2):
@@ -174,6 +182,13 @@ def analyze_steady_trim(
         raise ValueError(
             "The first value in beta_bounds must be less than or equal to the second "
             "value."
+        )
+    # The search varies alpha and beta independently, and OperatingPoint only accepts
+    # alpha = 0.0 when the absolute value of beta is 90.0, so the bounds must exclude
+    # those poles to keep every trial valid.
+    if beta_bounds[0] <= -90.0 or beta_bounds[1] >= 90.0:
+        raise ValueError(
+            "Both values in beta_bounds must be in the range (-90.0, 90.0)."
         )
 
     # Validate the boundsExternalFX_W parameter.
@@ -567,14 +582,16 @@ def analyze_unsteady_trim(
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
         bounds. Values are converted to floats internally. The units are in meters per
         second.
-    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of angles of attack to search. The base OperatingPoint's
-        initial alpha must be within these bounds. Values are converted to floats
-        internally. The units are in degrees.
-    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order,
-        determining the range of sideslip angles to search. The base OperatingPoint's
-        initial beta must be within these bounds. Values are converted to floats
-        internally. The units are in degrees.
+    :param alpha_bounds: A tuple of two numbers (ints or floats), in ascending order
+        and in the range (-180.0, 180.0], determining the range of angles of attack to
+        search. The base OperatingPoint's initial alpha must be within these bounds.
+        Values are converted to floats internally. The units are in degrees.
+    :param beta_bounds: A tuple of two numbers (ints or floats), in ascending order and
+        in the range (-90.0, 90.0), determining the range of sideslip angles to search.
+        The bounds exclude the poles at -90.0 and 90.0 because the search varies alpha
+        and beta independently, and OperatingPoint only accepts alpha = 0.0 there. The
+        base OperatingPoint's initial beta must be within these bounds. Values are
+        converted to floats internally. The units are in degrees.
     :param boundsExternalFX_W: A tuple of two numbers (ints or floats), in ascending
         order, determining the range of external forces (in the wind axes' x direction)
         to search. The base OperatingPoint's initial externalFX_W must be within these
@@ -657,6 +674,12 @@ def analyze_unsteady_trim(
             "The first value in alpha_bounds must be less than or equal to the second "
             "value."
         )
+    # The search builds an OperatingPoint from every trial's alpha, so the bounds must
+    # lie within the range OperatingPoint accepts.
+    if alpha_bounds[0] <= -180.0 or alpha_bounds[1] > 180.0:
+        raise ValueError(
+            "Both values in alpha_bounds must be in the range (-180.0, 180.0]."
+        )
 
     # Validate the beta_bounds parameter.
     if not (isinstance(beta_bounds, tuple) and len(beta_bounds) == 2):
@@ -667,6 +690,13 @@ def analyze_unsteady_trim(
         raise ValueError(
             "The first value in beta_bounds must be less than or equal to the second "
             "value."
+        )
+    # The search varies alpha and beta independently, and OperatingPoint only accepts
+    # alpha = 0.0 when the absolute value of beta is 90.0, so the bounds must exclude
+    # those poles to keep every trial valid.
+    if beta_bounds[0] <= -90.0 or beta_bounds[1] >= 90.0:
+        raise ValueError(
+            "Both values in beta_bounds must be in the range (-90.0, 90.0)."
         )
 
     # Validate the boundsExternalFX_W parameter.

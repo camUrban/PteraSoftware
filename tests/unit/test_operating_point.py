@@ -170,26 +170,42 @@ class TestOperatingPoint(unittest.TestCase):
 
     def test_beta_parameter_validation(self) -> None:
         """Test beta parameter validation."""
-        # Test valid range (-180, 180]
-        valid_beta_values = [-179.9, -90.0, 0.0, 10.0, 90.0, 180.0]
+        # Test valid range [-90, 90]. Use alpha = 0.0 because the boundary values
+        # require it.
+        valid_beta_values = [-90.0, -89.9, -45.0, 0.0, 10.0, 45.0, 89.9, 90.0]
 
         for beta in valid_beta_values:
             with self.subTest(beta=beta):
-                op = ps.operating_point.OperatingPoint(beta=beta)
+                op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
                 self.assertEqual(op.beta, float(beta))
 
         # Test invalid values (outside range)
-        invalid_beta_values = [180.1, -180.0, -180.1, 200.0, -200.0]
+        invalid_beta_values = [90.1, -90.1, 180.0, -180.0, 200.0, -200.0]
 
         for invalid_beta in invalid_beta_values:
             with self.subTest(invalid_beta=invalid_beta):
                 with self.assertRaises(ValueError):
-                    ps.operating_point.OperatingPoint(beta=invalid_beta)
+                    ps.operating_point.OperatingPoint(alpha=0.0, beta=invalid_beta)
 
         # Test non-numeric values
         bad_beta: Any = "invalid"
         with self.assertRaises(TypeError):
             ps.operating_point.OperatingPoint(beta=bad_beta)
+
+    def test_alpha_at_beta_boundaries(self) -> None:
+        """Test that alpha must be 0.0 when the absolute value of beta is 90.0."""
+        for beta in [-90.0, 90.0]:
+            with self.subTest(beta=beta):
+                op = ps.operating_point.OperatingPoint(alpha=0.0, beta=beta)
+                self.assertEqual(op.alpha, 0.0)
+                self.assertEqual(op.beta, beta)
+
+                for invalid_alpha in [-179.9, -5.0, 0.1, 5.0, 90.0, 180.0]:
+                    with self.subTest(invalid_alpha=invalid_alpha):
+                        with self.assertRaises(ValueError):
+                            ps.operating_point.OperatingPoint(
+                                alpha=invalid_alpha, beta=beta
+                            )
 
     def test_externalFX_W_parameter_validation(self) -> None:
         """Test externalFX_W parameter validation."""
@@ -416,7 +432,7 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertFalse(np.any(np.isinf(T_alpha)))
 
         # Test with beta at boundary
-        op_beta_boundary = ps.operating_point.OperatingPoint(alpha=0.0, beta=180.0)
+        op_beta_boundary = ps.operating_point.OperatingPoint(alpha=0.0, beta=90.0)
         T_beta = op_beta_boundary.T_pas_GP1_CgP1_to_W_CgP1
         R_beta = T_beta[:3, :3]
 
@@ -577,10 +593,11 @@ class TestOperatingPoint(unittest.TestCase):
         # Test boundary values that should be valid
         valid_boundary_cases: list[dict[str, Any]] = [
             {"alpha": 180.0, "beta": 0.0},
-            {"alpha": 0.0, "beta": 180.0},
+            {"alpha": 0.0, "beta": 90.0},
+            {"alpha": 0.0, "beta": -90.0},
             {"alpha": -179.999, "beta": 0.0},
-            {"alpha": 0.0, "beta": -179.999},
-            {"alpha": 180.0, "beta": 180.0},
+            {"alpha": 0.0, "beta": -89.999},
+            {"alpha": 180.0, "beta": 89.999},
         ]
 
         for params in valid_boundary_cases:
@@ -763,11 +780,11 @@ class TestOperatingPoint(unittest.TestCase):
         npt.assert_allclose(identity, np.eye(4), atol=1e-14)
 
     def test_boundary_beta_transformation(self) -> None:
-        """Test transformation with beta at boundary (180 degrees)."""
+        """Test transformation with beta at boundary (90 degrees)."""
         op = self.boundary_beta_op
 
         # Verify beta is stored correctly.
-        self.assertEqual(op.beta, 180.0)
+        self.assertEqual(op.beta, 90.0)
 
         # Verify transformation matrix is valid.
         T = op.T_pas_GP1_CgP1_to_W_CgP1
@@ -778,12 +795,13 @@ class TestOperatingPoint(unittest.TestCase):
         self.assertFalse(np.any(np.isinf(T)))
 
     def test_combined_boundary_angles_transformation(self) -> None:
-        """Test transformation with both alpha and beta at boundary values."""
+        """Test transformation with alpha at its boundary value and beta just inside its
+        boundary value."""
         op = self.combined_boundary_angles_op
 
         # Verify angles are stored correctly.
         self.assertEqual(op.alpha, 180.0)
-        self.assertEqual(op.beta, 180.0)
+        self.assertEqual(op.beta, 89.999)
 
         # Verify transformation matrix is valid.
         T = op.T_pas_GP1_CgP1_to_W_CgP1
@@ -836,8 +854,8 @@ class TestOperatingPoint(unittest.TestCase):
         """Test the near boundary beta fixture properties."""
         op = self.near_boundary_beta_op
 
-        # Verify beta is stored correctly (near -180).
-        self.assertEqual(op.beta, -179.999)
+        # Verify beta is stored correctly (near -90).
+        self.assertEqual(op.beta, -89.999)
 
         # Verify transformation is still valid.
         T = op.T_pas_GP1_CgP1_to_W_CgP1

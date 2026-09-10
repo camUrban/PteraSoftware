@@ -119,11 +119,16 @@ class OperatingPoint:
             details on the exact interpretation of this value, see the description of
             wind axes in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or
             float) in the range (-180.0, 180.0] and will be converted internally to a
-            float. The units are in degrees. The default is 5.0.
+            float. When the absolute value of beta is 90.0, the Airplane's velocity lies
+            along its body y axis and every alpha describes that same velocity
+            direction. So that each velocity direction in body axes corresponds to
+            exactly one pair of alpha and beta, we define alpha to be 0.0 there, and any
+            other value raises a ValueError. The units are in degrees. The default is
+            5.0.
         :param beta: The sideslip angle for the problem's Airplane(s). For more details
             on the exact interpretation of this value, see the description of wind axes
             in docs/AXES_POINTS_AND_FRAMES.md. It must be a number (int or float) in the
-            range (-180.0, 180.0] and will be converted internally to a float. The units
+            range [-90.0, 90.0] and will be converted internally to a float. The units
             are in degrees. The default is 0.0.
         :param angles_E_to_BP1_izyx: None, or an array-like object of 3 numbers
             representing the angles from Earth axes to the first Airplane's body axes
@@ -200,25 +205,38 @@ class OperatingPoint:
         self._vCg__E = _parameter_validation.number_in_range_return_float(
             vCg__E, "vCg__E", min_val=0.0, min_inclusive=False
         )
-        # TODO: Restrict alpha and beta's range if testing reveals that high absolute
-        #  magnitude values break things.
+        # Beta is the angle from the body xz plane to the velocity, and alpha is the
+        # angle from the body x axis to the velocity's projection onto the body xz
+        # plane. Beta therefore acts like a latitude whose equator is the body xz plane
+        # and whose poles are the body +y and -y axes, and alpha acts like a longitude
+        # measured about the body y axis. Alpha in (-180.0, 180.0] and beta in [-90.0,
+        # 90.0] then reach every velocity direction exactly once, except at the poles
+        # (beta = +/-90.0), where the velocity lies along the body y axis and every
+        # alpha describes the same velocity direction. So that each velocity direction
+        # corresponds to exactly one pair of alpha and beta, we define alpha to be 0.0
+        # there.
         self._alpha = _parameter_validation.number_in_range_return_float(
             alpha, "alpha", -180.0, False, 180.0, True
         )
         self._beta = _parameter_validation.number_in_range_return_float(
-            beta, "beta", -180.0, False, 180.0, True
+            beta, "beta", -90.0, True, 90.0, True
         )
+        if abs(self._beta) == 90.0 and self._alpha != 0.0:
+            raise ValueError(
+                "alpha must be 0.0 when the absolute value of beta is 90.0."
+            )
         if angles_E_to_BP1_izyx is None:
             # Resolve the default attitude to the one that makes wind axes coincide with
             # Earth axes, which places the first Airplane in level flight along Earth +x
             # at the given alpha and beta. The body-to-wind rotation depends only on
             # alpha and beta, so setting the Earth-to-body rotation equal to the
-            # wind-to-body rotation makes Earth and wind coincide.
+            # wind-to-body rotation makes Earth and wind coincide. The rotation sequence
+            # matches the one in the T_pas_BP1_CgP1_to_W_CgP1 property.
             T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
                 angles=np.array([0.0, -self._alpha, self._beta]),
                 passive=True,
                 intrinsic=False,
-                order="xyz",
+                order="zyx",
             )
             R_pas_W_to_BP1 = T_pas_BP1_CgP1_to_W_CgP1[:3, :3].T
             angles_E_to_BP1_izyx = _transformations.R_to_angles_izyx(R_pas_W_to_BP1)
@@ -619,12 +637,19 @@ class OperatingPoint:
             wind axes relative to the first Airplane's CG.
         """
         if self._T_pas_BP1_CgP1_to_W_CgP1 is None:
-            angles_BP1_to_W_exyz = np.array([0.0, -self._alpha, self._beta])
+            # Wind axes are constructed from body axes by a z-y extrinsic series of
+            # rotations through beta and -alpha (or, equivalently, a y-z' intrinsic
+            # series of rotations through -alpha and beta). Read as an active rotation
+            # carrying the body axes' basis vectors onto the wind axes' basis vectors,
+            # this rotates about the body y axis through -alpha first and then about the
+            # resulting z axis through beta, so the wind z axis stays in the body xz
+            # plane and lift is independent of beta.
+            angles_BP1_to_W_ezyx = np.array([0.0, -self._alpha, self._beta])
             self._T_pas_BP1_CgP1_to_W_CgP1 = _transformations.generate_rot_T(
-                angles=angles_BP1_to_W_exyz,
+                angles=angles_BP1_to_W_ezyx,
                 passive=True,
                 intrinsic=False,
-                order="xyz",
+                order="zyx",
             )
             self._T_pas_BP1_CgP1_to_W_CgP1.flags.writeable = False
         return self._T_pas_BP1_CgP1_to_W_CgP1

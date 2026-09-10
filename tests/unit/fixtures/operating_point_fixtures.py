@@ -229,14 +229,14 @@ def make_boundary_beta_operating_point_fixture() -> ps.operating_point.Operating
     values for angle wrapping edge case testing.
 
     :return boundary_beta_operating_point_fixture: OperatingPoint This is the
-        OperatingPoint with beta at the boundary value of 180 degrees to test angle
-        wrapping edge cases.
+        OperatingPoint with beta at the boundary value of 90 degrees (and alpha at the 0
+        degrees that value requires) to test angle wrapping edge cases.
     """
     boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
         vCg__E=10.0,
         alpha=0.0,
-        beta=180.0,
+        beta=90.0,
         externalFX_W=0.0,
         nu=15.06e-6,
     )
@@ -247,19 +247,21 @@ def make_boundary_beta_operating_point_fixture() -> ps.operating_point.Operating
 def make_combined_boundary_angles_operating_point_fixture() -> (
     ps.operating_point.OperatingPoint
 ):
-    """This method makes a fixture that is an OperatingPoint with both alpha and beta at
-    boundary values for combined boundary edge case testing.
+    """This method makes a fixture that is an OperatingPoint with alpha at its boundary
+    value and beta just inside its boundary value for combined boundary edge case
+    testing.
 
     :return combined_boundary_angles_operating_point_fixture: OperatingPoint This is the
-        OperatingPoint with both alpha and beta at boundary values to test combined
-        boundary edge cases.
+        OperatingPoint with alpha at its boundary value of 180 degrees and beta just
+        inside its boundary value of 90 degrees (where alpha would have to be 0 degrees)
+        to test combined boundary edge cases.
     """
     combined_boundary_angles_operating_point_fixture = (
         ps.operating_point.OperatingPoint(
             rho=1.225,
             vCg__E=10.0,
             alpha=180.0,
-            beta=180.0,
+            beta=89.999,
             externalFX_W=0.0,
             nu=15.06e-6,
         )
@@ -360,14 +362,14 @@ def make_near_boundary_beta_operating_point_fixture() -> (
     boundary for testing near boundary behavior.
 
     :return near_boundary_beta_operating_point_fixture: OperatingPoint This is the
-        OperatingPoint with beta near the lower boundary value of negative 180 degrees
-        to test near boundary behavior.
+        OperatingPoint with beta near the lower boundary value of negative 90 degrees to
+        test near boundary behavior.
     """
     near_boundary_beta_operating_point_fixture = ps.operating_point.OperatingPoint(
         rho=1.225,
         vCg__E=10.0,
         alpha=0.0,
-        beta=-179.999,
+        beta=-89.999,
         externalFX_W=0.0,
         nu=15.06e-6,
     )

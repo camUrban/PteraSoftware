@@ -704,28 +704,42 @@ def alpha_and_beta_from_vInf_BP1(
         second.
     :param vCg__E: A float representing the speed of the first Airplane's CG (observed
         from the Earth frame) in meters per second.
-    :return: A tuple (alpha, beta) where alpha is the angle of attack in degrees and
-        beta is the angle of sideslip in degrees. Both are NaN if vCg__E is zero.
+    :return: A tuple (alpha, beta) where alpha is the angle of attack in degrees in the
+        range (-180.0, 180.0] and beta is the angle of sideslip in degrees in the range
+        [-90.0, 90.0]. When the absolute value of beta is 90.0, alpha is 0.0. Both are
+        NaN if vCg__E is zero.
     """
     if vCg__E == 0.0:
         return float("nan"), float("nan")
 
-    vInfX_BP1__E, vInfY_BP1__E, vInfZ_BP1__E = vInf_BP1__E
+    vCgX_BP1__E, vCgY_BP1__E, vCgZ_BP1__E = -vInf_BP1__E
 
     # octowrap: off
     # Invert the wind axes construction defined in docs/AXES_POINTS_AND_FRAMES.md and
     # implemented by OperatingPoint. In that convention the CG velocity in body axes (the
     # negated freestream, vCg_BP1__E = -vInf_BP1__E) has components
     #   x: vCg__E * cos(alpha) * cos(beta)
-    #   y: vCg__E * cos(alpha) * sin(beta)
-    #   z: vCg__E * sin(alpha)
-    # so alpha follows from the body z component (arcsin) and beta from the body x and y
-    # components (arctan2). Extracting them in this order, rather than the more common
-    # textbook order that swaps which angle uses arcsin, keeps this function the exact
-    # inverse of OperatingPoint. Deriving alpha and beta here and storing them back on an
+    #   y: vCg__E * sin(beta)
+    #   z: vCg__E * sin(alpha) * cos(beta)
+    # so beta follows from the body y component (arcsin) and alpha from the body x and z
+    # components (arctan2). Deriving alpha and beta here and storing them back on an
     # OperatingPoint then reproduces the original freestream.
     # octowrap: on
-    sin_alpha = float(np.clip(-vInfZ_BP1__E / vCg__E, -1.0, 1.0))
-    alpha = float(np.rad2deg(np.arcsin(sin_alpha)))
-    beta = float(np.rad2deg(np.arctan2(-vInfY_BP1__E, -vInfX_BP1__E)))
+    sin_beta = float(np.clip(vCgY_BP1__E / vCg__E, -1.0, 1.0))
+    beta = float(np.rad2deg(np.arcsin(sin_beta)))
+
+    # At the poles (beta = +/-90.0), the velocity lies along the body y axis, so the
+    # arctangent's inputs carry no information about alpha and every alpha describes the
+    # same velocity direction. So we define alpha to be 0.0 there to ensure a unique
+    # mapping between velocity directions and pairs of alpha and beta. Test for both
+    # inputs being zero explicitly rather than letting their signed zeros pick a value.
+    # Also, an arctangent of a negative zero or of a negative value small enough to
+    # round to -180.0 in degrees returns -180.0, which OperatingPoint rejects, so wrap
+    # that one value to 180.0.
+    if abs(beta) == 90.0 or (vCgX_BP1__E == 0.0 and vCgZ_BP1__E == 0.0):
+        alpha = 0.0
+    else:
+        alpha = float(np.rad2deg(np.arctan2(vCgZ_BP1__E, vCgX_BP1__E)))
+        if alpha == -180.0:
+            alpha = 180.0
     return alpha, beta

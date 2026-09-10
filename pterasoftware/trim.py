@@ -28,6 +28,7 @@ from . import (
     _functions,
     _logging,
     _parameter_validation,
+    _transformations,
     movements,
 )
 from . import operating_point as operating_point_mod
@@ -81,8 +82,9 @@ def analyze_steady_trim(
     calls, the function returns None values and logs a critical error.
 
     :param problem: The SteadyProblem whose trim condition will be found. It must
-        contain exactly one Airplane. The problem's OperatingPoint will be modified
-        during the trim search.
+        contain exactly one Airplane, and its OperatingPoint's g_E must be non-zero,
+        since the Airplane's weight is placed along g_E's direction. The problem's
+        OperatingPoint will be modified during the trim search.
     :param solver_type: Determines what type of steady solver will be used to analyze
         the SteadyProblem. The options are "steady horseshoe vortex lattice method" and
         "steady ring vortex lattice method".
@@ -221,8 +223,6 @@ def analyze_steady_trim(
             "externalFX_W bounds."
         )
 
-    current_arguments = [np.nan, np.nan, np.nan, np.nan]
-
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = problem.operating_point.rho
     base_nu = problem.operating_point.nu
@@ -232,6 +232,18 @@ def analyze_steady_trim(
     base_surfacePoint_E_Eo = problem.operating_point.surfacePoint_E_Eo
     base_g_E = problem.operating_point.g_E
     base_omegas_BP1__E = problem.operating_point.omegas_BP1__E
+
+    # The Airplane's weight acts along the gravitational acceleration's direction, so
+    # g_E must define one. The Airplane carries a weight rather than a mass, so only
+    # g_E's direction is used here, and its magnitude can be any non-zero value.
+    if not np.any(base_g_E):
+        raise ValueError(
+            "The OperatingPoint's g_E must be non-zero for trim analysis, as the "
+            "Airplane's weight is placed along its direction."
+        )
+    weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -297,7 +309,18 @@ def analyze_steady_trim(
         # that is what is used for aerodynamic force coefficients. If we later allow
         # users to apply external moments we may need to come up with a better approach,
         # as moment coefficients non dimensionalize using different dimensions.
-        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
+        #
+        # The external thrust or drag acts along the wind x axis by definition, while
+        # the weight is fixed in Earth axes and so is rotated into this trial's wind
+        # axes, which depend on the trial's alpha and beta.
+        weightForce_W = _transformations.apply_T_to_vectors(
+            trial_operating_point.T_pas_E_CgP1_to_W_CgP1,
+            weightForce_E,
+            is_position=False,
+        )
+        externalForces_W = (
+            np.array([externalFX_W, 0.0, 0.0], dtype=float) + weightForce_W
+        )
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         solver: (
@@ -516,8 +539,9 @@ def analyze_unsteady_trim(
         num_steps would change the simulated duration from trial to trial. If its wake
         is truncated, the maximum wake length must likewise be defined with
         max_wake_cycles or max_wake_chords, rather than an explicit max_wake_rows. The
-        problem's OperatingPointMovement's base OperatingPoint will be modified during
-        the trim search.
+        base OperatingPoint's g_E must be non-zero, since the Airplane's weight is
+        placed along g_E's direction. The problem's OperatingPointMovement's base
+        OperatingPoint will be modified during the trim search.
     :param boundsVCg__E: A tuple of two positive numbers (ints or floats), in ascending
         order, determining the range of base speeds of the Airplane's CG (in the Earth
         frame) to search. The base OperatingPoint's initial vCg__E must be within these
@@ -692,8 +716,6 @@ def analyze_unsteady_trim(
             "externalFX_W bounds."
         )
 
-    current_arguments = [np.nan, np.nan, np.nan, np.nan]
-
     # Store the base OperatingPoint's immutable attributes that don't vary during trim.
     base_rho = base_operating_point.rho
     base_nu = base_operating_point.nu
@@ -704,6 +726,18 @@ def analyze_unsteady_trim(
     base_g_E = base_operating_point.g_E
     base_omegas_BP1__E = base_operating_point.omegas_BP1__E
     reference_operating_point_movement = problem.movement.operating_point_movement
+
+    # The Airplane's weight acts along the gravitational acceleration's direction, so
+    # g_E must define one. The Airplane carries a weight rather than a mass, so only
+    # g_E's direction is used here, and its magnitude can be any non-zero value.
+    if not np.any(base_g_E):
+        raise ValueError(
+            "The base OperatingPoint's g_E must be non-zero for trim analysis, as the "
+            "Airplane's weight is placed along its direction."
+        )
+    weightForce_E = weight * base_g_E / np.linalg.norm(base_g_E)
+
+    current_arguments = [np.nan, np.nan, np.nan, np.nan]
 
     def objective_function(arguments: np.ndarray) -> float:
         """Computes the trim objective function for a given set of OperatingPoint
@@ -757,7 +791,18 @@ def analyze_unsteady_trim(
         # that is what is used for aerodynamic force coefficients. If we later allow
         # users to apply external moments we may need to come up with a better approach,
         # as moment coefficients non dimensionalize using different dimensions.
-        externalForces_W = np.array([externalFX_W, 0.0, weight], dtype=float)
+        #
+        # The external thrust or drag acts along the wind x axis by definition, while
+        # the weight is fixed in Earth axes and so is rotated into this trial's wind
+        # axes, which depend on the trial's alpha and beta.
+        weightForce_W = _transformations.apply_T_to_vectors(
+            trial_operating_point.T_pas_E_CgP1_to_W_CgP1,
+            weightForce_E,
+            is_position=False,
+        )
+        externalForces_W = (
+            np.array([externalFX_W, 0.0, 0.0], dtype=float) + weightForce_W
+        )
         externalForceCoefficients_W = externalForces_W / qInf__E / s_ref
 
         this_operating_point_movement = (

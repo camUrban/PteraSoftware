@@ -35,6 +35,7 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             alpha=corrupted_alpha,
             beta=corrupted_beta,
             externalFX_W=corrupted_thrust,
+            g_E=(0.0, 0.0, 9.80665),
         )
 
         # Create the SteadyProblem.
@@ -42,6 +43,29 @@ class TestSteadyTrimHorseshoeVortexLatticeMethod(unittest.TestCase):
             airplanes=[this_airplane],
             operating_point=this_operating_point,
         )
+
+    def test_g_E_validation(self) -> None:
+        """This method tests that a zero g_E is rejected, since the trim analysis places
+        the Airplane's weight along g_E's direction.
+
+        :return: None
+        """
+        problem = ps.problems.SteadyProblem(
+            airplanes=[
+                airplane_fixtures.make_multiple_wing_steady_validation_airplane()
+            ],
+            operating_point=ps.operating_point.OperatingPoint(),
+        )
+
+        with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
+            ps.trim.analyze_steady_trim(
+                problem=problem,
+                solver_type="steady horseshoe vortex lattice method",
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
 
     def test_function(self) -> None:
         """This method tests that the function finds a pre-known trim condition.

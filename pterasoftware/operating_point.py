@@ -186,8 +186,9 @@ class OperatingPoint:
             per second squared. The default is (0.0, 0.0, 0.0), which corresponds to no
             gravitational field; set it explicitly (for example (0.0, 0.0, 9.80665) for
             standard gravity pointing along +z in Earth axes) to model a body in a
-            gravitational field. This parameter is only used by the free-flight solver;
-            other solvers ignore it.
+            gravitational field. The free-flight solver uses it as the gravitational
+            field, and the trim analyses use its direction to place the Airplane's
+            weight, so they raise if it is zero. The other solvers ignore it.
         :param omegas_BP1__E: An array-like of 3 numbers (int or float) representing the
             angular velocity of the first Airplane's body axes (observed from the Earth
             frame, expressed in the first Airplane's body axes). Can be a tuple, list,

@@ -425,11 +425,118 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
                 boundsExternalFX_W=(-1000.0, 1000.0),
             )
 
+    def test_g_E_validation(self) -> None:
+        """Test that a zero base g_E is rejected, since the trim analysis places the
+        Airplane's weight along g_E's direction."""
+        with self.assertRaisesRegex(ValueError, "g_E must be non-zero"):
+            ps.trim.analyze_unsteady_trim(
+                problem=self.problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+            )
+
+    def test_weight_is_placed_along_g_E(self) -> None:
+        """Test that each trial balances the Airplane's weight along g_E's direction,
+        rotated into that trial's wind axes, rather than along the wind z axis.
+
+        The base OperatingPoint has a non-default attitude and a g_E that is not along
+        Earth +z, so wind axes, Earth axes, and g_E all differ. The stubbed solver
+        returns exactly the force coefficients that cancel the external thrust and the
+        weight placed along g_E, so the objective is zero at the initial guess only if
+        the trim analysis places the weight the same way. With a tiny cutoff and a
+        single allowed call, the analysis then returns the initial guess, and anything
+        else returns Nones.
+        """
+        reference_movement = movement_fixtures.make_static_movement_fixture()
+        base_operating_point = ps.operating_point.OperatingPoint(
+            vCg__E=10.0,
+            alpha=5.0,
+            beta=3.0,
+            angles_E_to_BP1_izyx=(30.0, 10.0, 20.0),
+            externalFX_W=7.0,
+            g_E=(1.0, -2.0, 4.0),
+        )
+        operating_point_movement = (
+            ps.movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=base_operating_point
+            )
+        )
+        movement = ps.movements.movement.Movement(
+            airplane_movements=list(reference_movement.airplane_movements),
+            operating_point_movement=operating_point_movement,
+            num_chords=reference_movement.num_chords,
+        )
+        problem = ps.problems.UnsteadyProblem(movement=movement)
+        base_airplane = movement.airplane_movements[0].base_airplane
+        self.assertGreater(base_airplane.weight, 0.0)
+
+        class SolverStub:
+            """A solver stub whose loads exactly cancel the external thrust and the
+            weight placed along g_E."""
+
+            def __init__(self, unsteady_problem: ps.problems.UnsteadyProblem) -> None:
+                self.unsteady_problem = unsteady_problem
+
+            def run(self, **_: Any) -> None:
+                trial_operating_point = (
+                    self.unsteady_problem.movement.operating_point_movement.base_operating_point
+                )
+                g_E = trial_operating_point.g_E
+                weightForce_E = base_airplane.weight * g_E / np.linalg.norm(g_E)
+                R_pas_E_to_W = trial_operating_point.T_pas_E_CgP1_to_W_CgP1[:3, :3]
+                externalForces_W = (
+                    np.array([trial_operating_point.externalFX_W, 0.0, 0.0])
+                    + R_pas_E_to_W @ weightForce_E
+                )
+                assert base_airplane.s_ref is not None
+                externalForceCoefficients_W = (
+                    externalForces_W
+                    / trial_operating_point.qInf__E
+                    / base_airplane.s_ref
+                )
+                self.unsteady_problem.finalForceCoefficients_W = [
+                    -externalForceCoefficients_W
+                ]
+                self.unsteady_problem.finalMomentCoefficients_W_Cg = [
+                    np.zeros(3, dtype=float)
+                ]
+
+        with patch(
+            "pterasoftware.trim.unsteady_ring_vortex_lattice_method."
+            "UnsteadyRingVortexLatticeMethodSolver",
+            SolverStub,
+        ):
+            trim_conditions = ps.trim.analyze_unsteady_trim(
+                problem=problem,
+                boundsVCg__E=(1.0, 100.0),
+                alpha_bounds=(-20.0, 20.0),
+                beta_bounds=(-20.0, 20.0),
+                boundsExternalFX_W=(-1000.0, 1000.0),
+                objective_cut_off=1.0e-9,
+                num_calls=1,
+                show_solver_progress=False,
+            )
+
+        self.assertEqual(trim_conditions, (10.0, 5.0, 3.0, 7.0))
+
     def test_static_trial_uses_final_load_coefficients(self) -> None:
         """Test that a static trial uses its final-time-step loads."""
-        problem = ps.problems.UnsteadyProblem(
-            movement=movement_fixtures.make_static_movement_fixture()
+        reference_movement = movement_fixtures.make_static_movement_fixture()
+        operating_point_movement = (
+            ps.movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=ps.operating_point.OperatingPoint(
+                    g_E=(0.0, 0.0, 9.80665)
+                )
+            )
         )
+        movement = ps.movements.movement.Movement(
+            airplane_movements=list(reference_movement.airplane_movements),
+            operating_point_movement=operating_point_movement,
+            num_chords=reference_movement.num_chords,
+        )
+        problem = ps.problems.UnsteadyProblem(movement=movement)
 
         class SolverStub:
             """A solver stub that populates only static-movement loads."""
@@ -465,8 +572,8 @@ class TestAnalyzeUnsteadyTrim(unittest.TestCase):
         reference_movement = self.problem.movement
         reference_operating_point_movement = (
             ps.movements.operating_point_movement.OperatingPointMovement(
-                base_operating_point=(
-                    reference_movement.operating_point_movement.base_operating_point
+                base_operating_point=ps.operating_point.OperatingPoint(
+                    g_E=(0.0, 0.0, 9.80665)
                 ),
                 ampVCg__E=1.0,
                 periodVCg__E=2.0,

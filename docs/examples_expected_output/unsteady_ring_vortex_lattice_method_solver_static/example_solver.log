@@ -1,7 +1,7 @@
 INFO    |movements.movement                          |Starting analytical delta_time optimization
 INFO    |movements.movement                          |All motion is static
 INFO    |movements.movement                          |Returning the initial delta_time estimate
-INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 0.968 s
+INFO    |unsteady_ring_vortex_lattice_method         |Unsteady ring vortex lattice method solver completed in 1.00 s
 INFO    |_serialization                              |Saving UnsteadyRingVortexLatticeMethodSolver to example_solver.psz
 INFO    |_serialization                              |Saved UnsteadyRingVortexLatticeMethodSolver to example_solver.psz (9050781 bytes)
 INFO    |_serialization                              |Loading from example_solver.psz
@@ -27,7 +27,7 @@ INFO    |output                                      |    cMY_G_Cg:      0.0110
 INFO    |output                                      |    cMZ_G_Cg:   -1.95E-17
 INFO    |output                                      |  Final Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:           -10.9 N     Induced Drag:                       10.9 N
-INFO    |output                                      |    fY_W:       -9.35E-14 N     Side Force:                    -9.35E-14 N
+INFO    |output                                      |    fY_W:       -9.35E-14 N     Crosswind Force:                9.35E-14 N
 INFO    |output                                      |    fZ_W:           -389. N     Lift:                               389. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    mX_W_Cg:    -1.30E-12 Nm    Rolling Moment:                -1.30E-12 Nm
@@ -35,7 +35,7 @@ INFO    |output                                      |    mY_W_Cg:         21.4 
 INFO    |output                                      |    mZ_W_Cg:     3.01E-13 Nm    Yawing Moment:                  3.01E-13 Nm
 INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:       -0.00913       Induced Drag Coefficient:        0.00913
-INFO    |output                                      |    cFY_W:      -7.84E-17       Side Force Coefficient:        -7.84E-17
+INFO    |output                                      |    cFY_W:      -7.84E-17       Crosswind Force Coefficient:    7.84E-17
 INFO    |output                                      |    cFZ_W:         -0.326       Lift Coefficient:                  0.326
 INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    cMX_W_Cg:   -9.08E-17       Rolling Moment Coefficient:    -9.08E-17

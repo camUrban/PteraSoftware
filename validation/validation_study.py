@@ -12,8 +12,7 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's logging, math, and pathlib packages.
-import logging
+# Import Python's math and pathlib packages.
 import math
 from pathlib import Path
 
@@ -32,17 +31,6 @@ validation_directory = Path(__file__).resolve().parent
 # bars. Keep the configured logger so this script can log its own results alongside the
 # package's messages.
 validation_logger = ps.set_up_logging(level="Info")
-
-# Also write the same messages to a file. The file handler reuses the console handler's
-# formatter so both outputs share the package's message format.
-validation_log_file_handler = logging.FileHandler(
-    validation_directory / "validation_study.log"
-)
-validation_log_file_handler.setFormatter(validation_logger.handlers[0].formatter)
-validation_logger.addHandler(validation_log_file_handler)
-
-# Delete the extraneous pointer.
-del validation_log_file_handler
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -577,10 +565,6 @@ green_leading_area = 0.071 * 0.015
 # Run the validation solver using the converged wake state.
 validation_solver.run(prescribed_wake=converged_prescribed_wake)
 
-# Save the solved solver to a .psz file. This allows us to load the results later
-# without re-running the simulation.
-ps.save(validation_directory / "validation_solver.psz", validation_solver)
-
 # Extract the Movement's num_steps and delta_time attributes.
 validation_num_steps = validation_movement.num_steps
 validation_delta_time = validation_movement.delta_time
@@ -927,20 +911,4 @@ ps.output.draw(
     scalar_type="lift",
     save=True,
     path=validation_directory / "draw.webp",
-)
-
-ps.output.plot_results_versus_time(
-    unsteady_solver=validation_solver,
-    show=False,
-    save=True,
-    directory=validation_directory,
-)
-
-ps.output.animate(
-    unsteady_solver=validation_solver,
-    show_wake_vortices=True,
-    scalar_type="lift",
-    save=True,
-    path=validation_directory / "animate.webp",
-    speed=0.2,
 )

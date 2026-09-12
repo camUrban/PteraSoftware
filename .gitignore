@@ -150,12 +150,15 @@ draw.webp
 *_aerodynamic_angles.png
 *_loads.csv
 *_state.csv
-/validation/lift_validation.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores
 # above.
 !docs/examples_expected_output/**
+
+# The validation study's rendered mesh is a tracked record of the validation run, so
+# re-include it past the draw.webp rule above.
+!/validation/draw.webp
 
 # This symlink folder contains reference documentation that shouldn't be uploaded.
 /docs/private
@@ -180,6 +183,10 @@ draw.webp
 # tracked artifact, not serialization output, so re-include it past the *.json
 # rule above.
 !/docs/_static/benchmarks/host.json
+
+# The validation study's convergence cache records the iterations behind its converged
+# parameters, so re-include it past the *.json rule above.
+!/validation/validation_convergence_cache.json
 
 # These are the Claude's documentation files to ignore.
 /docs/CLAUDE_*.md

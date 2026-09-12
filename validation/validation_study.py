@@ -1,5 +1,3 @@
-# TODO: Redo the convergence analysis for this simulation and update the relevant
-#  parameters if necessary.
 """This script runs a validation case of Ptera Software's UVLM.
 
 I first emulate the geometry and kinematics of a flapping robotic test stand from
@@ -14,8 +12,7 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's logging, math, and pathlib packages.
-import logging
+# Import Python's math and pathlib packages.
 import math
 from pathlib import Path
 
@@ -27,17 +24,15 @@ import numpy as np
 import pterasoftware as ps
 
 # Find this script's directory so that the data files it reads and the figure it saves
-# resolve correctly regardless of the current working directory.
+# resolve correctly regardless of the current working directory. The experimental data
+# extracted from the paper is stored in CSV files in a subdirectory.
 validation_directory = Path(__file__).resolve().parent
+experimental_data_directory = validation_directory / "experimental_data"
 
-# Configure logging to write info level messages to a file. To display log messages on
-# the console alongside progress bars instead, omit the handler argument. Keep the
-# configured logger so this script can log its own results alongside the package's
-# messages.
-validation_logger = ps.set_up_logging(
-    level="Info",
-    handler=logging.FileHandler(validation_directory / "validation_study.log"),
-)
+# Configure logging to display info level messages on the console alongside progress
+# bars. Keep the configured logger so this script can log its own results alongside the
+# package's messages.
+validation_logger = ps.set_up_logging(level="Info")
 
 # Set the given characteristics of the wing in meters.
 half_span = 0.213
@@ -69,7 +64,7 @@ wing_midline_offset = 0.005
 # positive chordwise axis from trailing edge to leading edge. The values are in
 # millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
-    validation_directory / "extracted_planform_coordinates.csv", delimiter=","
+    experimental_data_directory / "extracted_planform_coordinates.csv", delimiter=","
 )
 
 # Convert the points to SI units.
@@ -111,16 +106,16 @@ trailingEdgePoints_Wn_Ler = np.column_stack(
     (stackTrailingPointsXY_Wn_Ler, np.zeros(len(stackTrailingPointsXY_Wn_Ler)))
 )
 
-# Set the number of flap cycles to run the simulation for. The converged result is 3
-# flaps.
-num_flaps = 3
-
-# Set the number of chordwise Panels. The converged result is 5 Panels.
-num_chordwise_panels = 5
-
-# Set the number of sections to map on each Wing half. There will be this number +1
-# WingCrossSections per Wing half. The converged result is 18 spanwise sections.
-num_spanwise_sections = 18
+# Set the starting values for the number of flap cycles to run the simulation for, the
+# number of chordwise Panels, and the number of sections to map on each Wing half (there
+# will be this number + 1 WingCrossSections per Wing half). These only define the
+# reference problem for the convergence analysis below, so they are set to the coarse
+# end of its sweep (3 spanwise sections gives an average Panel aspect ratio of about 4
+# at 3 chordwise Panels). The validation results come from the solver that analysis runs
+# at whatever values it finds are converged.
+num_flaps = 1
+num_chordwise_panels = 3
+num_spanwise_sections = 3
 
 # Set the chordwise spacing scheme for the Panels. This is set to uniform, as is
 # standard for UVLM simulations.
@@ -233,10 +228,6 @@ validation_airplane = ps.geometry.airplane.Airplane(
     ],
     name="Validation Airplane",
 )
-
-# Delete the extraneous pointers.
-del leadingEdgePoints_Wn_Ler
-del trailingEdgePoints_Wn_Ler
 
 # Initialize empty lists to hold the WingCrossSectionMovements for the main and
 # reflected main Wings.
@@ -360,21 +351,79 @@ validation_movement = ps.movements.movement.Movement(
 del validation_airplane_movement
 del validation_operating_point_movement
 
-# Define the UnsteadyProblem.
-validation_problem = ps.problems.UnsteadyProblem(
+# Define the reference UnsteadyProblem for the convergence analysis. It only needs each
+# iteration's final results, which is all the analysis compares.
+reference_problem = ps.problems.UnsteadyProblem(
     movement=validation_movement,
-    only_final_results=False,
-)
-
-# Define the UnsteadyRingVortexLatticeMethodSolver.
-validation_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=validation_problem,
-    )
+    only_final_results=True,
 )
 
 # Delete the extraneous pointer.
-del validation_problem
+del validation_movement
+
+# Run the convergence analysis. This will run several simulations, modifying the wake
+# state, number of flaps, average Panel aspect ratio, and number of chordwise Panels
+# with each iteration, until each of the Airplane's final-flap mean load coefficients
+# stops changing by more than the relative tolerance (rtol) plus the absolute tolerance
+# (atol) between successive iterations. The main Wing is edge-defined, so the analysis
+# refines it by resampling its edge curves into more WingCrossSections. Each iteration's
+# results are cached in a JSON file next to this script, so rerunning this study with an
+# existing cache skips the simulations it has already done. The analysis also rebuilds
+# and runs a solver at the converged parameters, and that solver's results are the ones
+# compared to the experimental results below. See the analyze_unsteady_convergence
+# function docstring for more details.
+(
+    converged_prescribed_wake,
+    converged_num_flaps,
+    converged_panel_aspect_ratio,
+    converged_num_chordwise_panels,
+    converged_solver,
+) = ps.convergence.analyze_unsteady_convergence(
+    ref_problem=reference_problem,
+    prescribed_wake=True,
+    free_wake=True,
+    num_cycles_bounds=(1, 4),
+    panel_aspect_ratio_bounds=(4, 1),
+    num_chordwise_panels_bounds=(3, 12),
+    rtol=0.010,
+    atol=0.001,
+    show_solver_progress=True,
+    resolve_converged_solver=True,
+    cache_path=validation_directory / "validation_convergence_cache.json",
+)
+
+# Delete the extraneous pointer.
+del reference_problem
+
+# The analysis returns Nones if it did not find a converged case within its bounds, in
+# which case there is nothing to validate.
+if (
+    converged_prescribed_wake is None
+    or converged_num_flaps is None
+    or converged_num_chordwise_panels is None
+    or converged_solver is None
+):
+    raise RuntimeError(
+        "The convergence analysis did not find a converged case within its bounds."
+    )
+
+# Print and log the converged parameters.
+convergence_message = (
+    "Converged parameters: prescribed wake = "
+    + str(converged_prescribed_wake)
+    + ", flaps = "
+    + str(converged_num_flaps)
+    + ", Panel aspect ratio = "
+    + str(converged_panel_aspect_ratio)
+    + ", chordwise Panels = "
+    + str(converged_num_chordwise_panels)
+)
+print("\n" + convergence_message)
+validation_logger.info(convergence_message)
+
+# Delete the extraneous pointers.
+del leadingEdgePoints_Wn_Ler
+del trailingEdgePoints_Wn_Ler
 
 # Define the position of the points of interest and the area of their rectangles. These
 # values were extracted by digitizing the figures in Yeo et al., 2011.
@@ -397,30 +446,23 @@ green_middle_area = 0.06565 * 0.015
 greenLeadingPointsXY_Wn_Ler = [0.01569, 0.1775]
 green_leading_area = 0.071 * 0.015
 
-# Run the validation solver using a prescribed wake.
-validation_solver.run(prescribed_wake=True)
+# The converged solver has already been run, and its results are compared to the
+# experimental results directly. It was run with only final results, so it holds loads
+# only for the time steps in the final flap, from its first results step onward. That is
+# the only flap the comparison uses.
+first_results_step = converged_solver.first_results_step
 
-# Save the solved solver to a .psz file. This allows us to load the results later
-# without re-running the simulation.
-ps.save(validation_directory / "validation_solver.psz", validation_solver)
-
-# Extract the Movement's num_steps and delta_time attributes.
-validation_num_steps = validation_movement.num_steps
-validation_delta_time = validation_movement.delta_time
-
-# Create a variable to hold the time in seconds at each of the simulation's time steps.
-times = np.linspace(
-    0,
-    validation_num_steps * validation_delta_time,
-    validation_num_steps,
-    endpoint=False,
+# Create a variable to hold the time in seconds at each of the time steps with results.
+times = (
+    np.arange(first_results_step, converged_solver.num_steps)
+    * converged_solver.delta_time
 )
 
 # Discretize the time period of the final flap analyzed into 100 steps. Store this to a
 # ndarray.
 final_flap_times = np.linspace(
-    (num_flaps - 1) / validation_flapping_frequency,
-    num_flaps / validation_flapping_frequency,
+    (converged_num_flaps - 1) / validation_flapping_frequency,
+    converged_num_flaps / validation_flapping_frequency,
     100,
     endpoint=False,
 )
@@ -429,42 +471,42 @@ final_flap_times = np.linspace(
 normalized_times = np.linspace(0, 1, 100, endpoint=False)
 
 # Pull the experimental pressure vs. time histories from the digitized data. These data
-# sets are stored in CSV files in the same directory as this script. The pressure units
+# sets are stored in CSV files in the experimental data subdirectory. The pressure units
 # used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "blue_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    validation_directory / "blue_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    validation_directory / "blue_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "orange_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    validation_directory / "orange_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    validation_directory / "orange_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "green_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "green_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    validation_directory / "green_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "green_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    validation_directory / "green_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "green_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 
@@ -612,13 +654,13 @@ for force_id, expNetForceZ_GP1 in enumerate(stackExpNetForcesZ_G):
 # component multiplied by negative one.
 exp_lifts = -1 * stackExpNetForcesZ_W
 
-# Get this solver's SteadyProblems' Airplanes.
+# Get the converged solver's SteadyProblems' Airplanes for the time steps with results.
 airplanes = []
-for steady_problem in validation_solver.steady_problems:
+for steady_problem in converged_solver.steady_problems[first_results_step:]:
     airplanes.append(steady_problem.airplanes[0])
 
-# Initialize a ndarray to hold the force at each time step (in wind axes).
-stackSimForces_W = np.zeros((3, validation_num_steps))
+# Initialize a ndarray to hold the force at each time step with results (in wind axes).
+stackSimForces_W = np.zeros((3, len(airplanes)), dtype=float)
 
 # Iterate through the time steps and populate the ndarray.
 for step, airplane in enumerate(airplanes):
@@ -745,22 +787,9 @@ print("\n" + lift_mean_absolute_error_message)
 validation_logger.info(lift_mean_absolute_error_message)
 
 ps.output.draw(
-    solver=validation_solver,
+    solver=converged_solver,
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
-)
-
-ps.output.plot_results_versus_time(
-    unsteady_solver=validation_solver,
-    show=False,
-    save=True,
-)
-
-ps.output.animate(
-    unsteady_solver=validation_solver,
-    show_wake_vortices=True,
-    scalar_type="lift",
-    save=True,
-    speed=0.2,
+    path=validation_directory / "draw.webp",
 )

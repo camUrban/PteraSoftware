@@ -111,8 +111,8 @@ trailingEdgePoints_Wn_Ler = np.column_stack(
 # will be this number + 1 WingCrossSections per Wing half). These only define the
 # reference problem for the convergence analysis below, so they are set to the coarse
 # end of its sweep (3 spanwise sections gives an average Panel aspect ratio of about 4
-# at 3 chordwise Panels). The validation simulation is rebuilt with whatever values that
-# analysis finds are converged.
+# at 3 chordwise Panels). The validation results come from the solver that analysis runs
+# at whatever values it finds are converged.
 num_flaps = 1
 num_chordwise_panels = 3
 num_spanwise_sections = 3
@@ -358,9 +358,7 @@ reference_problem = ps.problems.UnsteadyProblem(
     only_final_results=True,
 )
 
-# Delete the extraneous pointer. Creating an UnsteadyProblem populates set-once
-# attributes on its Movement's Panels, so this Movement cannot be reused for the
-# validation problem, which is rebuilt below.
+# Delete the extraneous pointer.
 del validation_movement
 
 # Run the convergence analysis. This will run several simulations, modifying the wake
@@ -371,9 +369,9 @@ del validation_movement
 # refines it by resampling its edge curves into more WingCrossSections. Each iteration's
 # results are cached in a JSON file next to this script, so rerunning this study with an
 # existing cache skips the simulations it has already done. The analysis also rebuilds
-# and runs a solver at the converged parameters, which is how the converged spanwise
-# mesh is read back below. See the analyze_unsteady_convergence function docstring for
-# more details.
+# and runs a solver at the converged parameters, and that solver's results are the ones
+# compared to the experimental results below. See the analyze_unsteady_convergence
+# function docstring for more details.
 (
     converged_prescribed_wake,
     converged_num_flaps,
@@ -409,17 +407,6 @@ if (
         "The convergence analysis did not find a converged case within its bounds."
     )
 
-# The analysis reports the converged spanwise mesh as a Panel aspect ratio, so read the
-# number of WingCrossSections it resolved for the main Wing from the converged solver
-# and convert it to the number of spanwise sections.
-converged_num_spanwise_sections = (
-    len(converged_solver.steady_problems[0].airplanes[0].wings[0].wing_cross_sections)
-    - 1
-)
-
-# Delete the extraneous pointer.
-del converged_solver
-
 # Print and log the converged parameters.
 convergence_message = (
     "Converged parameters: prescribed wake = "
@@ -430,118 +417,13 @@ convergence_message = (
     + str(converged_panel_aspect_ratio)
     + ", chordwise Panels = "
     + str(converged_num_chordwise_panels)
-    + ", spanwise sections = "
-    + str(converged_num_spanwise_sections)
 )
 print("\n" + convergence_message)
 validation_logger.info(convergence_message)
 
-# Rebuild the Airplane, movements, and Movement at the converged values, in the same way
-# as above.
-validation_airplane = ps.geometry.airplane.Airplane(
-    wings=[
-        ps.geometry.wing.Wing.from_edge_points(
-            leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
-            trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
-            num_wing_cross_sections=converged_num_spanwise_sections + 1,
-            airfoil=ps.geometry.airfoil.Airfoil(
-                name="naca0012",
-            ),
-            name="Main Wing",
-            Ler_Gs_Cgs=(0.0, wing_midline_offset / 2, 0.0),
-            angles_Gs_to_Wn_ixyz=(validation_flap_angle_at_start, 0.0, 0.0),
-            symmetric=True,
-            mirror_only=False,
-            symmetryNormal_G=(0.0, 1.0, 0.0),
-            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-            num_chordwise_panels=converged_num_chordwise_panels,
-            chordwise_spacing=chordwise_spacing,
-            tip_trim_fraction=tip_inset / half_span,
-        ),
-    ],
-    name="Validation Airplane",
-)
-
 # Delete the extraneous pointers.
 del leadingEdgePoints_Wn_Ler
 del trailingEdgePoints_Wn_Ler
-
-main_wing_cross_section_movements = []
-reflected_main_wing_cross_section_movements = []
-for i in range(converged_num_spanwise_sections + 1):
-    main_wing_cross_section_movements.append(
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[i]
-        )
-    )
-    reflected_main_wing_cross_section_movements.append(
-        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
-            base_wing_cross_section=validation_airplane.wings[1].wing_cross_sections[i]
-        )
-    )
-
-main_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=validation_airplane.wings[0],
-    wing_cross_section_movements=main_wing_cross_section_movements,
-    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
-    periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
-)
-reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
-    base_wing=validation_airplane.wings[1],
-    wing_cross_section_movements=reflected_main_wing_cross_section_movements,
-    ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
-    periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
-    phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
-    spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
-)
-
-# Delete the extraneous pointers.
-del main_wing_cross_section_movements
-del reflected_main_wing_cross_section_movements
-
-validation_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-    base_airplane=validation_airplane,
-    wing_movements=[main_wing_movement, reflected_main_wing_movement],
-)
-
-# Delete the extraneous pointers.
-del validation_airplane
-del main_wing_movement
-del reflected_main_wing_movement
-
-validation_operating_point_movement = (
-    ps.movements.operating_point_movement.OperatingPointMovement(
-        base_operating_point=validation_operating_point
-    )
-)
-
-validation_movement = ps.movements.movement.Movement(
-    airplane_movements=[validation_airplane_movement],
-    operating_point_movement=validation_operating_point_movement,
-    num_cycles=converged_num_flaps,
-)
-
-# Delete the extraneous pointers.
-del validation_airplane_movement
-del validation_operating_point_movement
-
-# Define the UnsteadyProblem.
-validation_problem = ps.problems.UnsteadyProblem(
-    movement=validation_movement,
-    only_final_results=False,
-)
-
-# Define the UnsteadyRingVortexLatticeMethodSolver.
-validation_solver = (
-    ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
-        unsteady_problem=validation_problem,
-    )
-)
-
-# Delete the extraneous pointer.
-del validation_problem
 
 # Define the position of the points of interest and the area of their rectangles. These
 # values were extracted by digitizing the figures in Yeo et al., 2011.
@@ -564,19 +446,16 @@ green_middle_area = 0.06565 * 0.015
 greenLeadingPointsXY_Wn_Ler = [0.01569, 0.1775]
 green_leading_area = 0.071 * 0.015
 
-# Run the validation solver using the converged wake state.
-validation_solver.run(prescribed_wake=converged_prescribed_wake)
+# The converged solver has already been run, and its results are compared to the
+# experimental results directly. It was run with only final results, so it holds loads
+# only for the time steps in the final flap, from its first results step onward. That is
+# the only flap the comparison uses.
+first_results_step = converged_solver.first_results_step
 
-# Extract the Movement's num_steps and delta_time attributes.
-validation_num_steps = validation_movement.num_steps
-validation_delta_time = validation_movement.delta_time
-
-# Create a variable to hold the time in seconds at each of the simulation's time steps.
-times = np.linspace(
-    0,
-    validation_num_steps * validation_delta_time,
-    validation_num_steps,
-    endpoint=False,
+# Create a variable to hold the time in seconds at each of the time steps with results.
+times = (
+    np.arange(first_results_step, converged_solver.num_steps)
+    * converged_solver.delta_time
 )
 
 # Discretize the time period of the final flap analyzed into 100 steps. Store this to a
@@ -775,13 +654,13 @@ for force_id, expNetForceZ_GP1 in enumerate(stackExpNetForcesZ_G):
 # component multiplied by negative one.
 exp_lifts = -1 * stackExpNetForcesZ_W
 
-# Get this solver's SteadyProblems' Airplanes.
+# Get the converged solver's SteadyProblems' Airplanes for the time steps with results.
 airplanes = []
-for steady_problem in validation_solver.steady_problems:
+for steady_problem in converged_solver.steady_problems[first_results_step:]:
     airplanes.append(steady_problem.airplanes[0])
 
-# Initialize a ndarray to hold the force at each time step (in wind axes).
-stackSimForces_W = np.zeros((3, validation_num_steps))
+# Initialize a ndarray to hold the force at each time step with results (in wind axes).
+stackSimForces_W = np.zeros((3, len(airplanes)), dtype=float)
 
 # Iterate through the time steps and populate the ndarray.
 for step, airplane in enumerate(airplanes):
@@ -908,7 +787,7 @@ print("\n" + lift_mean_absolute_error_message)
 validation_logger.info(lift_mean_absolute_error_message)
 
 ps.output.draw(
-    solver=validation_solver,
+    solver=converged_solver,
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,

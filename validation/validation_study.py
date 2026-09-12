@@ -926,12 +926,14 @@ ps.output.draw(
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
+    path=validation_directory / "draw.webp",
 )
 
 ps.output.plot_results_versus_time(
     unsteady_solver=validation_solver,
     show=False,
     save=True,
+    directory=validation_directory,
 )
 
 ps.output.animate(
@@ -939,5 +941,6 @@ ps.output.animate(
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
+    path=validation_directory / "animate.webp",
     speed=0.2,
 )

@@ -24,8 +24,10 @@ import numpy as np
 import pterasoftware as ps
 
 # Find this script's directory so that the data files it reads and the figure it saves
-# resolve correctly regardless of the current working directory.
+# resolve correctly regardless of the current working directory. The experimental data
+# extracted from the paper is stored in CSV files in a subdirectory.
 validation_directory = Path(__file__).resolve().parent
+experimental_data_directory = validation_directory / "experimental_data"
 
 # Configure logging to display info level messages on the console alongside progress
 # bars. Keep the configured logger so this script can log its own results alongside the
@@ -62,7 +64,7 @@ wing_midline_offset = 0.005
 # positive chordwise axis from trailing edge to leading edge. The values are in
 # millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
-    validation_directory / "extracted_planform_coordinates.csv", delimiter=","
+    experimental_data_directory / "extracted_planform_coordinates.csv", delimiter=","
 )
 
 # Convert the points to SI units.
@@ -590,42 +592,42 @@ final_flap_times = np.linspace(
 normalized_times = np.linspace(0, 1, 100, endpoint=False)
 
 # Pull the experimental pressure vs. time histories from the digitized data. These data
-# sets are stored in CSV files in the same directory as this script. The pressure units
+# sets are stored in CSV files in the experimental data subdirectory. The pressure units
 # used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "blue_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    validation_directory / "blue_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    validation_directory / "blue_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "blue_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "orange_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    validation_directory / "orange_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    validation_directory / "orange_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "orange_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    validation_directory / "green_trailing_point_experimental_pressures.csv",
+    experimental_data_directory / "green_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    validation_directory / "green_middle_point_experimental_pressures.csv",
+    experimental_data_directory / "green_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    validation_directory / "green_leading_point_experimental_pressures.csv",
+    experimental_data_directory / "green_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 

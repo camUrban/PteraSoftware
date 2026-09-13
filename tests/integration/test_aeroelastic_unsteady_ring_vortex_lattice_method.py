@@ -145,19 +145,25 @@ def _make_aeroelastic_solver(
         weight=0.0,
     )
 
-    # Build WingCrossSectionMovements from wings[0]'s WingCrossSections. Following the
-    # example's pattern, the same movement objects are reused for the reflected Wing
-    # (wings[1]) since both halves flap symmetrically.
-    wing_cross_section_movements = [
+    # Build each Wing's AeroelasticWingCrossSectionMovements from that Wing's own
+    # WingCrossSections. The reflected Wing (wings[1]) has its own WingCrossSections, so
+    # it needs its own movements even though both halves flap symmetrically.
+    main_wing_cross_section_movements = [
         ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
             base_wing_cross_section=wing_cross_section,
         )
         for wing_cross_section in airplane.wings[0].wing_cross_sections
     ]
+    reflected_wing_cross_section_movements = [
+        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+            base_wing_cross_section=wing_cross_section,
+        )
+        for wing_cross_section in airplane.wings[1].wing_cross_sections
+    ]
 
     main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
         base_wing=airplane.wings[0],
-        wing_cross_section_movements=wing_cross_section_movements,
+        wing_cross_section_movements=main_wing_cross_section_movements,
         ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
         periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
         spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
@@ -167,7 +173,7 @@ def _make_aeroelastic_solver(
     reflected_wing_movement = (
         ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
             base_wing=airplane.wings[1],
-            wing_cross_section_movements=wing_cross_section_movements,
+            wing_cross_section_movements=reflected_wing_cross_section_movements,
             ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
             periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
             spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),

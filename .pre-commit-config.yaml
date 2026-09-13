@@ -83,7 +83,7 @@ repos:
         # ABL, gEs), so exclude the reports tree where these blobs live.
         exclude: ^docs/_static/benchmarks/.*\.html$
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: 451b56af716f9f0d0c2b816503a3fd0cf8b036fa  # frozen: v1.29.0
+    rev: cef8b8350da46d8114c7e6b7272aebdccdf193ce  # frozen: v1.30.0
     hooks:
       - id: zizmor
         name: checker  zizmor

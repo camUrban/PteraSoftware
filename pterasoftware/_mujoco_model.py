@@ -157,11 +157,9 @@ class MuJoCoModel:
 
         omegaXRad_BP1__E, omegaYRad_BP1__E, omegaZRad_BP1__E = omegasRad_BP1__E[:]
 
-        R_pas_BP1_to_E = T_pas_BP1_CgP1_to_E_CgP1[:3, :3]
+        R_pas_BP1_to_E = _transformations.extract_R_from_T(T_pas_BP1_CgP1_to_E_CgP1)
 
-        R_act_BP1_to_E = np.linalg.inv(R_pas_BP1_to_E)
-
-        R_act_E_to_BP1 = R_act_BP1_to_E.T
+        R_act_E_to_BP1 = _transformations.invert_R_act(R_pas_BP1_to_E)
 
         quat_act_E_to_BP1_wxyz = _transformations.R_to_quat_wxyz(R_act_E_to_BP1)
 
@@ -379,9 +377,8 @@ class MuJoCoModel:
         # Airplane's body axes to Earth axes. To get R_pas_E_to_BP1, we take the
         # transpose.
         R_pas_BP1_to_E = self._data.xmat[self._body_id].reshape(3, 3)
-        # TODO: Consider creating an invert_R_pas function in _transformations.py and
-        #  calling it here.
-        R_pas_E_to_BP1 = R_pas_BP1_to_E.T
+
+        R_pas_E_to_BP1 = _transformations.invert_R_pas(R_pas_BP1_to_E)
 
         return {
             "position_E_Eo": np.copy(self._data.qpos[0:3]),

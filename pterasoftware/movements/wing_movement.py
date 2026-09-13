@@ -88,7 +88,11 @@ class WingMovement(_core.CoreWingMovement):
             created.
         :param wing_cross_section_movements: A list of WingCrossSectionMovements
             associated with each of the base Wing's WingCrossSections. It must have the
-            same length as the base Wing's list of WingCrossSections.
+            same length as the base Wing's list of WingCrossSections, and element i's
+            base WingCrossSection must be the base Wing's WingCrossSection at index i
+            itself (the same object, not just an equal one). Build each
+            WingCrossSectionMovement around the corresponding element of the base Wing's
+            wing_cross_sections.
         :param ampLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the WingMovement's
             changes in its Wings' Ler_Gs_Cgs parameters. Can be a tuple, list, or

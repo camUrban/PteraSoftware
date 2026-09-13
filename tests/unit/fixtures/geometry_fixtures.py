@@ -724,7 +724,7 @@ def make_origin_airplane_fixture() -> ps.geometry.airplane.Airplane:
         wings=[wing],
         name="Origin Airplane",
         Cg_GP1_CgP1=[0.0, 0.0, 0.0],
-        weight=0.0,
+        weight=1500.0,
     )
 
     return origin_airplane_fixture

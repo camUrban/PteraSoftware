@@ -18,8 +18,12 @@ def make_static_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the static CoreWingMovement.
@@ -50,8 +54,12 @@ def make_basic_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the basic CoreWingMovement.
@@ -82,8 +90,12 @@ def make_sine_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with sine spacing for Ler_Gs_Cgs.
@@ -114,8 +126,12 @@ def make_uniform_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with uniform spacing for Ler_Gs_Cgs.
@@ -146,8 +162,12 @@ def make_mixed_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with mixed spacing for Ler_Gs_Cgs.
@@ -178,8 +198,12 @@ def make_sine_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with sine spacing for angles_Gs_to_Wn_ixyz.
@@ -210,8 +234,12 @@ def make_uniform_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with uniform spacing for angles_Gs_to_Wn_ixyz.
@@ -242,8 +270,12 @@ def make_mixed_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with mixed spacing for angles_Gs_to_Wn_ixyz.
@@ -274,8 +306,12 @@ def make_Ler_only_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the Ler-only CoreWingMovement.
@@ -306,8 +342,12 @@ def make_angles_only_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the angles-only CoreWingMovement.
@@ -338,8 +378,12 @@ def make_phase_offset_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the phase-offset CoreWingMovement.
@@ -370,8 +414,12 @@ def make_phase_offset_angles_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the phase-offset CoreWingMovement.
@@ -402,8 +450,12 @@ def make_multiple_periods_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_multiple_periods_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_multiple_periods_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the multiple-periods CoreWingMovement.
@@ -434,8 +486,12 @@ def make_custom_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -480,8 +536,12 @@ def make_custom_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -529,8 +589,12 @@ def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture() -> (
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -572,8 +636,12 @@ def make_rotation_point_offset_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with rotation point offset. The offset is in y
@@ -610,8 +678,12 @@ def make_periodic_geometry_core_wing_movement_fixture() -> CoreWingMovement:
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the periodic geometry CoreWingMovement. Use a 0.1 s period for angular
@@ -641,8 +713,12 @@ def make_2_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
     """
     base_wing = geometry_fixtures.make_wing_with_2_chordwise_panels()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     fixture = CoreWingMovement(
@@ -669,8 +745,12 @@ def make_3_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
     """
     base_wing = geometry_fixtures.make_wing_with_3_chordwise_panels()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     fixture = CoreWingMovement(

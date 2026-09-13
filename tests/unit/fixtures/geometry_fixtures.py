@@ -704,6 +704,32 @@ def make_first_airplane_fixture() -> ps.geometry.airplane.Airplane:
     return first_airplane_fixture
 
 
+def make_origin_airplane_fixture() -> ps.geometry.airplane.Airplane:
+    """This method makes a fixture that is an Airplane wrapping the origin Wing,
+    suitable for use as the first Airplane in a movement test (with Cg_GP1_CgP1 set to
+    zeros).
+
+    Build movements around this Airplane's own Wing and WingCrossSections (for example,
+    origin_airplane_fixture.wings[0]) so that they satisfy the movement classes' base
+    geometry identity checks.
+
+    :return origin_airplane_fixture: Airplane This is the Airplane wrapping the origin
+        Wing.
+    """
+    # Create the origin Wing for the Airplane.
+    wing = make_origin_wing_fixture()
+
+    # Create the origin Airplane.
+    origin_airplane_fixture = ps.geometry.airplane.Airplane(
+        wings=[wing],
+        name="Origin Airplane",
+        Cg_GP1_CgP1=[0.0, 0.0, 0.0],
+        weight=0.0,
+    )
+
+    return origin_airplane_fixture
+
+
 def make_multi_wing_airplane_fixture() -> ps.geometry.airplane.Airplane:
     """This method makes a fixture that is an Airplane with multiple Wings for testing
     multi-wing configurations.

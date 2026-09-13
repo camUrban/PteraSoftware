@@ -3,6 +3,8 @@ tests."""
 
 import numpy as np
 
+import pterasoftware as ps
+
 # noinspection PyProtectedMember
 from pterasoftware._core import CoreWingCrossSectionMovement
 
@@ -178,18 +180,26 @@ def make_mixed_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     return mixed_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_static_core_wing_cross_section_movement_fixture() -> (
-    CoreWingCrossSectionMovement
-):
+def make_static_core_wing_cross_section_movement_fixture(
+    base_wing_cross_section: (
+        ps.geometry.wing_cross_section.WingCrossSection | None
+    ) = None,
+) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement).
 
+    :param base_wing_cross_section: WingCrossSection, optional This is the base
+        WingCrossSection to build the movement around. If None, a new root
+        WingCrossSection fixture will be created. The default is None.
     :return static_core_wing_cross_section_movement_fixture:
         CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with no
         movement.
     """
-    # Initialize the constructing fixture.
-    base_wing_cross_section = geometry_fixtures.make_root_wing_cross_section_fixture()
+    # Use the provided WingCrossSection or create a new one.
+    if base_wing_cross_section is None:
+        base_wing_cross_section = (
+            geometry_fixtures.make_root_wing_cross_section_fixture()
+        )
 
     # Create the static CoreWingCrossSectionMovement.
     static_core_wing_cross_section_movement_fixture = CoreWingCrossSectionMovement(
@@ -208,18 +218,26 @@ def make_static_core_wing_cross_section_movement_fixture() -> (
     return static_core_wing_cross_section_movement_fixture
 
 
-def make_static_tip_core_wing_cross_section_movement_fixture() -> (
-    CoreWingCrossSectionMovement
-):
+def make_static_tip_core_wing_cross_section_movement_fixture(
+    base_wing_cross_section: (
+        ps.geometry.wing_cross_section.WingCrossSection | None
+    ) = None,
+) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with all
     parameters zero (no movement), using a tip WingCrossSection as the base.
 
+    :param base_wing_cross_section: WingCrossSection, optional This is the base
+        WingCrossSection to build the movement around. If None, a new tip
+        WingCrossSection fixture will be created. The default is None.
     :return static_tip_core_wing_cross_section_movement_fixture:
         CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with no
         movement for a tip cross section.
     """
-    # Initialize the constructing fixture.
-    base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
+    # Use the provided WingCrossSection or create a new one.
+    if base_wing_cross_section is None:
+        base_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_fixture()
+        )
 
     # Create the static tip CoreWingCrossSectionMovement.
     static_tip_core_wing_cross_section_movement_fixture = CoreWingCrossSectionMovement(
@@ -238,18 +256,26 @@ def make_static_tip_core_wing_cross_section_movement_fixture() -> (
     return static_tip_core_wing_cross_section_movement_fixture
 
 
-def make_basic_core_wing_cross_section_movement_fixture() -> (
-    CoreWingCrossSectionMovement
-):
+def make_basic_core_wing_cross_section_movement_fixture(
+    base_wing_cross_section: (
+        ps.geometry.wing_cross_section.WingCrossSection | None
+    ) = None,
+) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with general-
     purpose moderate values.
 
+    :param base_wing_cross_section: WingCrossSection, optional This is the base
+        WingCrossSection to build the movement around. If None, a new tip
+        WingCrossSection fixture will be created. The default is None.
     :return basic_core_wing_cross_section_movement_fixture: CoreWingCrossSectionMovement
         This is the CoreWingCrossSectionMovement with general-purpose values.
     """
-    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
-    # non-negative during oscillation.
-    base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
+    # Use the provided WingCrossSection or create a new one. The tip fixture ensures Lp
+    # values stay non-negative during oscillation.
+    if base_wing_cross_section is None:
+        base_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_fixture()
+        )
 
     # Create the basic CoreWingCrossSectionMovement.
     basic_core_wing_cross_section_movement_fixture = CoreWingCrossSectionMovement(
@@ -394,19 +420,27 @@ def make_phase_offset_angles_core_wing_cross_section_movement_fixture() -> (
     return phase_offset_angles_core_wing_cross_section_movement_fixture
 
 
-def make_multiple_periods_core_wing_cross_section_movement_fixture() -> (
-    CoreWingCrossSectionMovement
-):
+def make_multiple_periods_core_wing_cross_section_movement_fixture(
+    base_wing_cross_section: (
+        ps.geometry.wing_cross_section.WingCrossSection | None
+    ) = None,
+) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with different
     periods for different dimensions.
 
+    :param base_wing_cross_section: WingCrossSection, optional This is the base
+        WingCrossSection to build the movement around. If None, a new tip
+        WingCrossSection fixture will be created. The default is None.
     :return multiple_periods_core_wing_cross_section_movement_fixture:
         CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with
         different periods.
     """
-    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
-    # non-negative during oscillation.
-    base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
+    # Use the provided WingCrossSection or create a new one. The tip fixture ensures Lp
+    # values stay non-negative during oscillation.
+    if base_wing_cross_section is None:
+        base_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_fixture()
+        )
 
     # Create the multiple-periods CoreWingCrossSectionMovement.
     multiple_periods_core_wing_cross_section_movement_fixture = (
@@ -520,19 +554,27 @@ def make_custom_spacing_angles_core_wing_cross_section_movement_fixture() -> (
     return custom_spacing_angles_core_wing_cross_section_movement_fixture
 
 
-def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture() -> (
-    CoreWingCrossSectionMovement
-):
+def make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(
+    base_wing_cross_section: (
+        ps.geometry.wing_cross_section.WingCrossSection | None
+    ) = None,
+) -> CoreWingCrossSectionMovement:
     """This method makes a fixture that is a CoreWingCrossSectionMovement with mixed
     custom and standard spacing functions.
 
+    :param base_wing_cross_section: WingCrossSection, optional This is the base
+        WingCrossSection to build the movement around. If None, a new tip
+        WingCrossSection fixture will be created. The default is None.
     :return mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture:
         CoreWingCrossSectionMovement This is the CoreWingCrossSectionMovement with mixed
         custom and standard spacing.
     """
-    # Initialize the constructing fixture. Use the tip fixture to ensure Lp values stay
-    # non-negative during oscillation.
-    base_wing_cross_section = geometry_fixtures.make_tip_wing_cross_section_fixture()
+    # Use the provided WingCrossSection or create a new one. The tip fixture ensures Lp
+    # values stay non-negative during oscillation.
+    if base_wing_cross_section is None:
+        base_wing_cross_section = (
+            geometry_fixtures.make_tip_wing_cross_section_fixture()
+        )
 
     # Define a custom harmonic spacing function.
     def custom_harmonic(x: float) -> float:

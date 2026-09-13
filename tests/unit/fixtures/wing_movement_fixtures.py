@@ -15,8 +15,12 @@ def make_static_wing_movement_fixture() -> ps.movements.wing_movement.WingMoveme
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
-        wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
+        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the static WingMovement.
@@ -47,8 +51,12 @@ def make_basic_wing_movement_fixture() -> ps.movements.wing_movement.WingMovemen
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
-        wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture(),
+        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the basic WingMovement.
@@ -83,8 +91,12 @@ def make_periodic_geometry_wing_movement_fixture() -> (
     # Initialize the constructing fixtures.
     base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
-        wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
+        wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the periodic-geometry WingMovement.

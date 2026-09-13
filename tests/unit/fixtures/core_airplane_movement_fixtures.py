@@ -15,10 +15,13 @@ def make_static_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     :return static_core_airplane_movement_fixture: CoreAirplaneMovement This is the
         CoreAirplaneMovement with no movement.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the static CoreAirplaneMovement.
@@ -42,10 +45,13 @@ def make_basic_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     :return basic_core_airplane_movement_fixture: CoreAirplaneMovement This is the
         CoreAirplaneMovement with general-purpose values.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_basic_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_basic_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the basic CoreAirplaneMovement.
@@ -69,10 +75,13 @@ def make_sine_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovemen
     :return sine_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is
         the CoreAirplaneMovement with sine spacing for Cg_GP1_CgP1.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the CoreAirplaneMovement with sine spacing for Cg_GP1_CgP1.
@@ -96,10 +105,13 @@ def make_uniform_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMove
     :return uniform_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
         is the CoreAirplaneMovement with uniform spacing for Cg_GP1_CgP1.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the CoreAirplaneMovement with uniform spacing for Cg_GP1_CgP1.
@@ -123,10 +135,13 @@ def make_mixed_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMoveme
     :return mixed_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
         is the CoreAirplaneMovement with mixed spacing for Cg_GP1_CgP1.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the CoreAirplaneMovement with mixed spacing for Cg_GP1_CgP1.
@@ -150,10 +165,13 @@ def make_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     :return Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is the
         CoreAirplaneMovement with Cg_GP1_CgP1 movement.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the moving Cg CoreAirplaneMovement.
@@ -177,10 +195,13 @@ def make_phase_offset_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovemen
     :return phase_offset_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This is
         the CoreAirplaneMovement with phase offset for Cg_GP1_CgP1.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the phase-offset CoreAirplaneMovement.
@@ -204,10 +225,13 @@ def make_multiple_periods_core_airplane_movement_fixture() -> CoreAirplaneMoveme
     :return multiple_periods_core_airplane_movement_fixture: CoreAirplaneMovement This
         is the CoreAirplaneMovement with different periods.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_multiple_periods_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_multiple_periods_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the multiple-periods CoreAirplaneMovement.
@@ -231,10 +255,13 @@ def make_custom_spacing_Cg_core_airplane_movement_fixture() -> CoreAirplaneMovem
     :return custom_spacing_Cg_core_airplane_movement_fixture: CoreAirplaneMovement This
         is the CoreAirplaneMovement with custom spacing for Cg_GP1_CgP1.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Define a custom harmonic spacing function.
@@ -275,10 +302,13 @@ def make_mixed_custom_and_standard_spacing_core_airplane_movement_fixture() -> (
         CoreAirplaneMovement This is the CoreAirplaneMovement with mixed custom and
         standard spacing.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Define a custom harmonic spacing function.
@@ -318,10 +348,13 @@ def make_periodic_geometry_core_airplane_movement_fixture() -> CoreAirplaneMovem
     :return periodic_geometry_core_airplane_movement_fixture: CoreAirplaneMovement This
         is the CoreAirplaneMovement with periodic geometry motion.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_periodic_geometry_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_periodic_geometry_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the periodic geometry CoreAirplaneMovement.
@@ -348,10 +381,13 @@ def make_angles_only_core_airplane_movement_fixture() -> CoreAirplaneMovement:
     :return angles_only_core_airplane_movement_fixture: CoreAirplaneMovement This is the
         CoreAirplaneMovement with only Wing angle movement.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_angles_only_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_angles_only_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the angles-only CoreAirplaneMovement.
@@ -376,10 +412,13 @@ def make_2_chordwise_panels_core_airplane_movement_fixture() -> CoreAirplaneMove
 
     :return: CoreAirplaneMovement with a Wing that has 2 chordwise panels.
     """
-    # Initialize the constructing fixtures.
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
     base_airplane = geometry_fixtures.make_2_chordwise_panels_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_2_chordwise_panels_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_2_chordwise_panels_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the CoreAirplaneMovement.
@@ -403,10 +442,13 @@ def make_3_chordwise_panels_core_airplane_movement_fixture() -> CoreAirplaneMove
 
     :return: CoreAirplaneMovement with a Wing that has 3 chordwise panels.
     """
-    # Initialize the constructing fixtures.
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the CoreWingMovement around its own Wing.
     base_airplane = geometry_fixtures.make_3_chordwise_panels_airplane_fixture()
     wing_movements = [
-        core_wing_movement_fixtures.make_3_chordwise_panels_core_wing_movement_fixture()
+        core_wing_movement_fixtures.make_3_chordwise_panels_core_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the CoreAirplaneMovement.

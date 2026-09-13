@@ -14,9 +14,12 @@ def make_static_airplane_movement_fixture() -> (
     :return static_airplane_movement_fixture: AirplaneMovement This is the
         AirplaneMovement with no movement.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
-    wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the WingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+    wing_movements = [
+        wing_movement_fixtures.make_static_wing_movement_fixture(base_airplane.wings[0])
+    ]
 
     # Create the static AirplaneMovement.
     static_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
@@ -41,9 +44,12 @@ def make_basic_airplane_movement_fixture() -> (
     :return basic_airplane_movement_fixture: AirplaneMovement This is the
         AirplaneMovement with general-purpose values.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
-    wing_movements = [wing_movement_fixtures.make_basic_wing_movement_fixture()]
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the WingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+    wing_movements = [
+        wing_movement_fixtures.make_basic_wing_movement_fixture(base_airplane.wings[0])
+    ]
 
     # Create the basic AirplaneMovement.
     basic_airplane_movement_fixture = ps.movements.airplane_movement.AirplaneMovement(
@@ -71,10 +77,13 @@ def make_periodic_geometry_airplane_movement_fixture() -> (
     :return periodic_geometry_airplane_movement_fixture: AirplaneMovement This is the
         AirplaneMovement with periodic geometry motion.
     """
-    # Initialize the constructing fixtures.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
+    # Initialize the constructing fixtures. Build the base Airplane first, then build
+    # the WingMovement around its own Wing.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
     wing_movements = [
-        wing_movement_fixtures.make_periodic_geometry_wing_movement_fixture()
+        wing_movement_fixtures.make_periodic_geometry_wing_movement_fixture(
+            base_airplane.wings[0]
+        )
     ]
 
     # Create the periodic geometry AirplaneMovement.

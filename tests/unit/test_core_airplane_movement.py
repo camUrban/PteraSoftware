@@ -965,6 +965,25 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
                 wing_movements=[],
             )
 
+    def test_wing_movements_base_wing_must_be_airplane_wing(self) -> None:
+        """Test that each WingMovement's base Wing must be the corresponding element of
+        base_airplane.wings, even if it is an equal copy."""
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+
+        # Build the CoreWingMovement around a fresh origin Wing that equals the base
+        # Airplane's Wing but is a different object.
+        wing_movements = [
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        ]
+
+        with self.assertRaisesRegex(
+            ValueError, "must be base_airplane.wings\\[0\\] itself"
+        ):
+            ps._core.CoreAirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
+            )
+
     def test_wing_movements_elements_must_be_wing_movements(self) -> None:
         """Test that every element in wing_movements must be a WingMovement."""
         base_airplane = geometry_fixtures.make_first_airplane_fixture()

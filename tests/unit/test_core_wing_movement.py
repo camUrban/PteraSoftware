@@ -452,6 +452,29 @@ class TestCoreWingMovement(unittest.TestCase):
                 wing_cross_section_movements=wing_cross_section_movements,
             )
 
+    def test_initialization_unshared_base_wing_cross_section(self) -> None:
+        """Test that CoreWingMovement initialization fails when a
+        CoreWingCrossSectionMovement's base WingCrossSection is not the corresponding
+        element of base_wing.wing_cross_sections, even if it is an equal copy."""
+        base_wing = geometry_fixtures.make_type_1_wing_fixture()
+
+        # Build the first movement around a fresh WingCrossSection that equals the base
+        # Wing's root WingCrossSection but is a different object.
+        wing_cross_section_movements = [
+            core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
+            core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+                base_wing.wing_cross_sections[1]
+            ),
+        ]
+
+        with self.assertRaisesRegex(
+            ValueError, "must be base_wing.wing_cross_sections\\[0\\] itself"
+        ):
+            ps._core.CoreWingMovement(
+                base_wing=base_wing,
+                wing_cross_section_movements=wing_cross_section_movements,
+            )
+
     def test_initialization_ampLer_Gs_Cgs_validation(self) -> None:
         """Test ampLer_Gs_Cgs parameter validation."""
         base_wing = geometry_fixtures.make_type_1_wing_fixture()

@@ -88,6 +88,47 @@ class TestAeroelasticAirplaneMovement(unittest.TestCase):
                 wing_movements=[wing_movement],
             )
 
+    def test_rejects_unshared_unmeshed_type_4_base_wing(self) -> None:
+        """Test that AeroelasticAirplaneMovement rejects an AeroelasticWingMovement
+        whose base Wing is an unmeshed copy of the base Airplane's type 4 Wing rather
+        than that Wing itself.
+
+        Such a copy never gets meshed, so its symmetry type stays None and the type 4
+        symmetry check alone cannot catch it. The base geometry identity check catches
+        it instead, with a clear error at construction rather than a failure deep inside
+        the solver.
+        """
+        # Build the AeroelasticWingMovement around a Wing that equals the base
+        # Airplane's Wing but is a different object, so it is never meshed.
+        unshared_wing = geometry_fixtures.make_type_4_wing_fixture()
+        wing_cross_section_movements = [
+            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                base_wing_cross_section=wing_cross_section
+            )
+            for wing_cross_section in unshared_wing.wing_cross_sections
+        ]
+        wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+            base_wing=unshared_wing,
+            wing_cross_section_movements=wing_cross_section_movements,
+        )
+
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_type_4_wing_fixture()],
+            name="Type 4 Test Airplane",
+            Cg_GP1_CgP1=[0.0, 0.0, 0.0],
+            weight=1500.0,
+        )
+        self.assertIsNone(unshared_wing.symmetry_type)
+        self.assertEqual(base_airplane.wings[0].symmetry_type, 4)
+
+        with self.assertRaisesRegex(
+            ValueError, "must be base_airplane.wings\\[0\\] itself"
+        ):
+            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=[wing_movement],
+            )
+
     def test_wing_movements_property_returns_tuple(self) -> None:
         """Test that the wing_movements property returns a tuple of the
         AeroelasticAirplaneMovement's wing movements."""

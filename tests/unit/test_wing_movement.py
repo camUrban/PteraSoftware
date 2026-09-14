@@ -28,8 +28,12 @@ class TestWingMovement(unittest.TestCase):
         """Test that WingMovement instantiation returns a WingMovement."""
         base_wing = geometry_fixtures.make_origin_wing_fixture()
         wing_cross_section_movements = [
-            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
-            wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(),
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
+                base_wing.wing_cross_sections[0]
+            ),
+            wing_cross_section_movement_fixtures.make_static_tip_wing_cross_section_movement_fixture(
+                base_wing.wing_cross_sections[1]
+            ),
         ]
         wing_movement = ps.movements.wing_movement.WingMovement(
             base_wing=base_wing,

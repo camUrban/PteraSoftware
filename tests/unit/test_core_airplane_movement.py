@@ -155,9 +155,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
             )
 
         # Test valid Airplane works.
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
         airplane_movement = ps._core.CoreAirplaneMovement(
             base_airplane=base_airplane, wing_movements=wing_movements
@@ -166,9 +168,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_ampCg_GP1_CgP1_validation(self) -> None:
         """Test ampCg_GP1_CgP1 parameter validation."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test valid values.
@@ -207,9 +211,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_periodCg_GP1_CgP1_validation(self) -> None:
         """Test periodCg_GP1_CgP1 parameter validation."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test valid values.
@@ -237,9 +243,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_spacingCg_GP1_CgP1_validation(self) -> None:
         """Test spacingCg_GP1_CgP1 parameter validation."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test valid string values.
@@ -267,9 +275,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_phaseCg_GP1_CgP1_validation(self) -> None:
         """Test phaseCg_GP1_CgP1 parameter validation."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test valid phase values within range (-180.0, 180.0].
@@ -314,9 +324,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_amp_period_relationship_Cg(self) -> None:
         """Test that if ampCg_GP1_CgP1 element is 0, corresponding period must be 0."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test amp=0 with period=0 works.
@@ -339,9 +351,11 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
     def test_amp_phase_relationship_Cg(self) -> None:
         """Test that if ampCg_GP1_CgP1 element is 0, corresponding phase must be 0."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         # Test amp=0 with phase=0 works.
@@ -671,9 +685,11 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
     def test_variable_geometry_Cg_updates(self) -> None:
         """Test that Cg_GP1_CgP1 is updated correctly for deepcopied Airplanes."""
         # Create an CoreAirplaneMovement with both geometry motion and CG motion.
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_periodic_geometry_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_periodic_geometry_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
 
         airplane_movement = ps._core.CoreAirplaneMovement(
@@ -699,9 +715,11 @@ class TestCoreAirplaneMovementVariableGeometryOptimization(unittest.TestCase):
     def test_fallback_when_period_not_aligned(self) -> None:
         """Test that fallback to standard generation works when period not aligned."""
         # Create an CoreAirplaneMovement with a wing movement that has period = 1.0.
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
         wing_movements = [
-            core_wing_movement_fixtures.make_sine_spacing_Ler_core_wing_movement_fixture()
+            core_wing_movement_fixtures.make_sine_spacing_Ler_core_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
         ]
         airplane_movement = ps._core.CoreAirplaneMovement(
             base_airplane=base_airplane,
@@ -945,6 +963,25 @@ class TestCoreAirplaneMovementWingMovementsValidation(unittest.TestCase):
             ps._core.CoreAirplaneMovement(
                 base_airplane=base_airplane,
                 wing_movements=[],
+            )
+
+    def test_wing_movements_base_wing_must_be_airplane_wing(self) -> None:
+        """Test that each WingMovement's base Wing must be the corresponding element of
+        base_airplane.wings, even if it is an equal copy."""
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+
+        # Build the CoreWingMovement around a fresh origin Wing that equals the base
+        # Airplane's Wing but is a different object.
+        wing_movements = [
+            core_wing_movement_fixtures.make_static_core_wing_movement_fixture()
+        ]
+
+        with self.assertRaisesRegex(
+            ValueError, "must be base_airplane.wings\\[0\\] itself"
+        ):
+            ps._core.CoreAirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=wing_movements,
             )
 
     def test_wing_movements_elements_must_be_wing_movements(self) -> None:

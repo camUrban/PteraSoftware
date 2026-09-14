@@ -828,7 +828,8 @@ class CoreWingMovement:
 
         :param base_wing: The base Wing.
         :param wing_cross_section_movements: The CoreWingCrossSectionMovements for each
-            WingCrossSection.
+            WingCrossSection. Element i's base WingCrossSection must be
+            base_wing.wing_cross_sections[i] itself.
         :param ampLer_Gs_Cgs: The amplitudes of Ler_Gs_Cgs oscillation in meters.
         :param periodLer_Gs_Cgs: The periods of Ler_Gs_Cgs oscillation in seconds.
         :param spacingLer_Gs_Cgs: The spacing types for Ler_Gs_Cgs oscillation.
@@ -868,6 +869,22 @@ class CoreWingMovement:
                 raise TypeError(
                     "Every element in wing_cross_section_movements must "
                     "be a CoreWingCrossSectionMovement."
+                )
+        # The base WingCrossSections are reachable through both the base Wing and the
+        # CoreWingCrossSectionMovements, so require that both paths lead to the same
+        # objects. Meshing the base Wing sets state on its WingCrossSections in place,
+        # which a CoreWingCrossSectionMovement built around a copy would never see.
+        for i, wing_cross_section_movement in enumerate(wing_cross_section_movements):
+            if (
+                wing_cross_section_movement.base_wing_cross_section
+                is not self._base_wing.wing_cross_sections[i]
+            ):
+                raise ValueError(
+                    f"The base WingCrossSection of wing_cross_section_movements[{i}] "
+                    f"must be base_wing.wing_cross_sections[{i}] itself (the same "
+                    "object, not just an equal one). Build each "
+                    "wing_cross_section_movement around the corresponding element "
+                    "of base_wing.wing_cross_sections."
                 )
         # Store as tuple to prevent external mutation.
         self._wing_cross_section_movements: tuple[CoreWingCrossSectionMovement, ...] = (
@@ -1386,7 +1403,8 @@ class CoreAirplaneMovement:
         See AirplaneMovement's initialization method for full parameter descriptions.
 
         :param base_airplane: The base Airplane.
-        :param wing_movements: The CoreWingMovements for each Wing.
+        :param wing_movements: The CoreWingMovements for each Wing. Element i's base
+            Wing must be base_airplane.wings[i] itself.
         :param ampCg_GP1_CgP1: The amplitudes of Cg_GP1_CgP1 oscillation in meters.
         :param periodCg_GP1_CgP1: The periods of Cg_GP1_CgP1 oscillation in seconds.
         :param spacingCg_GP1_CgP1: The spacing types for Cg_GP1_CgP1 oscillation.
@@ -1410,6 +1428,19 @@ class CoreAirplaneMovement:
             if not isinstance(wing_movement, CoreWingMovement):
                 raise TypeError(
                     "Every element in wing_movements must be a " "CoreWingMovement."
+                )
+        # The base Wings are reachable through both the base Airplane and the
+        # CoreWingMovements, so require that both paths lead to the same objects. The
+        # base Airplane's constructor meshes its Wings in place and may reshape a
+        # symmetric Wing's definition, which a CoreWingMovement built around a copy
+        # would never see.
+        for i, wing_movement in enumerate(wing_movements):
+            if wing_movement.base_wing is not self._base_airplane.wings[i]:
+                raise ValueError(
+                    f"The base Wing of wing_movements[{i}] must be "
+                    f"base_airplane.wings[{i}] itself (the same object, not just an "
+                    "equal one). Build each wing_movement around the corresponding "
+                    "element of base_airplane.wings."
                 )
         # Store as tuple to prevent external mutation.
         self._wing_movements: tuple[CoreWingMovement, ...] = tuple(wing_movements)

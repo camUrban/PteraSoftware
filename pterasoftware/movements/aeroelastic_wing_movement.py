@@ -115,12 +115,15 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         """The initialization method.
 
         :param base_wing: The base Wing from which the Wing at each time step will be
-            created. It cannot have type 4 symmetry; see this class's docstring for
+            created. It cannot have type 4 symmetry. See this class's docstring for
             details.
         :param wing_cross_section_movements: A list of
             AeroelasticWingCrossSectionMovements associated with each of the base Wing's
             WingCrossSections. It must have the same length as the base Wing's list of
-            WingCrossSections.
+            WingCrossSections, and element i's base WingCrossSection must be the base
+            Wing's WingCrossSection at index i itself (the same object, not just an
+            equal one). Build each AeroelasticWingCrossSectionMovement around the
+            corresponding element of the base Wing's wing_cross_sections.
         :param ampLer_Gs_Cgs: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the
             AeroelasticWingMovement's changes in its Wings' Ler_Gs_Cgs parameters. Can
@@ -180,7 +183,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
             phaseAngles_Gs_to_Wn_ixyz and the base value, with the period set by
             periodAngles_Gs_to_Wn_ixyz. A component set to a custom callable must be
             paired with a matching spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
-            component, and a "sine" or "uniform" component must not be; see that
+            component, and a "sine" or "uniform" component must not be. See that
             parameter for the full pairing rule. The default is ("sine", "sine",
             "sine").
         :param phaseAngles_Gs_to_Wn_ixyz: An array-like object of numbers (int or float)
@@ -307,7 +310,8 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
         """
         new_movement = cast(AeroelasticWingMovement, super().__deepcopy__(memo))
 
-        # Copy the tuple directly (immutable; holds callables or None per component).
+        # Copy the tuple directly. It is immutable and holds callables or None per
+        # component.
         new_movement._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz = (
             self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz
         )

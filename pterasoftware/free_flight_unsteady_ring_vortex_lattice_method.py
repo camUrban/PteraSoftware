@@ -228,8 +228,8 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         if self._prescribed_wake:
             self._substepStackVIndGridWrvp_GP1__E = None
         else:
-            bound_singularity_counts = np.zeros(4, dtype=np.int64)
-            wake_singularity_counts = np.zeros(4, dtype=np.int64)
+            bound_singularity_counts = np.zeros(3, dtype=np.int64)
+            wake_singularity_counts = np.zeros(3, dtype=np.int64)
             self._substepStackVIndGridWrvp_GP1__E = (
                 self._calculate_wake_grid_induced_velocities(
                     bound_singularity_counts, wake_singularity_counts

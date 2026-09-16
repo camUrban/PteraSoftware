@@ -32,9 +32,8 @@ _logger = _logging.get_logger("_functions")
 
 _SINGULARITY_NAMES: tuple[str, ...] = (
     "degenerate filament",
-    "vertex start proximity",
-    "vertex end proximity",
-    "collinearity",
+    "point on start vertex",
+    "point on end vertex",
 )
 
 
@@ -50,9 +49,9 @@ def log_unexpected_singularity_counts(
     :param level: The logging level (e.g., logging.ERROR, logging.INFO).
     :param context: A string describing the call site context (e.g.,
         "_calculate_wing_wing_influences").
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex.
     :return: None
     """
     total = singularity_counts.sum()
@@ -60,7 +59,7 @@ def log_unexpected_singularity_counts(
         return
 
     parts = []
-    for i in range(4):
+    for i in range(3):
         count = singularity_counts[i]
         if count > 0:
             parts.append(f"{_SINGULARITY_NAMES[i]}={count}")
@@ -180,7 +179,7 @@ def calculate_streamlines(
         solver.stackSeedPoints_GP1_CgP1, axis=0
     )
 
-    bound_singularity_counts = np.zeros(4, dtype=np.int64)
+    bound_singularity_counts = np.zeros(3, dtype=np.int64)
 
     # Iterate through the streamline time steps.
     for step in range(num_steps):

@@ -220,18 +220,38 @@ def make_kinematic_viscosity_fixture() -> float:
     return kinematic_viscosity_fixture
 
 
-def make_rc0s_fixture(num_vortices: int) -> np.ndarray:
+def make_rc0s_fixture(num_vortices: int, num_legs: int) -> np.ndarray:
     """This method makes a fixture that is a ndarray of initial core radii for testing
     velocity calculation functions.
 
     :param num_vortices: An int representing the number of vortices.
-    :return rc0s_fixture: (num_vortices,) ndarray of floats This is a ndarray of initial
-        core radii in meters. Each entry is 0.03 meters, representing 3% of a 1 meter
-        standard mean chord.
+    :param num_legs: An int representing the number of legs per vortex, which is 4 for
+        ring vortices and 3 for horseshoe vortices.
+    :return rc0s_fixture: (num_vortices, num_legs) ndarray of floats This is a ndarray
+        of initial core radii in meters. Each entry is 0.03 meters, representing 3% of a
+        1 meter standard mean chord.
     """
-    rc0s_fixture = np.full(num_vortices, 0.03, dtype=float)
+    rc0s_fixture = np.full((num_vortices, num_legs), 0.03, dtype=float)
 
     return rc0s_fixture
+
+
+def make_distinct_rc0s_fixture(num_vortices: int, num_legs: int) -> np.ndarray:
+    """This method makes a fixture that is a ndarray of initial core radii with a
+    distinct value for each leg, for testing that the velocity calculation functions map
+    each column to the correct leg.
+
+    :param num_vortices: An int representing the number of vortices.
+    :param num_legs: An int representing the number of legs per vortex, which is 4 for
+        ring vortices and 3 for horseshoe vortices.
+    :return distinct_rc0s_fixture: (num_vortices, num_legs) ndarray of floats This is a
+        ndarray of initial core radii in meters. Every vortex's legs take 0.1 meters,
+        0.2 meters, and so on in column order, so no two columns share a value.
+    """
+    leg_rc0s = 0.1 * np.arange(1, num_legs + 1, dtype=float)
+    distinct_rc0s_fixture = np.tile(leg_rc0s, (num_vortices, 1))
+
+    return distinct_rc0s_fixture
 
 
 def make_degenerate_ring_vortex_arrays_fixture() -> (

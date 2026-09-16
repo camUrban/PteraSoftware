@@ -88,7 +88,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 # class registry changed, encoding strategy changed), and also when the meaning of a
 # serialized value changes, so that a file saved under the old meaning fails to load
 # loudly instead of being read under the new one.
-_FORMAT_VERSION = 29
+_FORMAT_VERSION = 30
 
 
 class UnboundCallable:

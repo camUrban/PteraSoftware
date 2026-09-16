@@ -177,8 +177,8 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0190
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0447 s
-INFO    |convergence                                 |          Simulation completed in 0.0449 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0439 s
+INFO    |convergence                                 |          Simulation completed in 0.0441 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
@@ -391,17 +391,17 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0196
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0710 s
-INFO    |convergence                                 |          Simulation completed in 0.0713 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0699 s
+INFO    |convergence                                 |          Simulation completed in 0.0702 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.94%
+INFO    |convergence                                 |            cFZ_W: 40.66%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 61.90%
+INFO    |convergence                                 |            cMY_W_Cg: 56.95%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 3/96
@@ -656,17 +656,17 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0199
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.154 s
-INFO    |convergence                                 |          Simulation completed in 0.154 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.150 s
+INFO    |convergence                                 |          Simulation completed in 0.150 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.26%
+INFO    |convergence                                 |            cFZ_W: 61.12%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 82.42%
+INFO    |convergence                                 |            cMY_W_Cg: 72.71%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 3
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -832,16 +832,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0192
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0413 s
-INFO    |convergence                                 |          Simulation completed in 0.0415 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0407 s
+INFO    |convergence                                 |          Simulation completed in 0.0409 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.90%
+INFO    |convergence                                 |            cFX_W: 46.64%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.30%
+INFO    |convergence                                 |            cFZ_W: 45.46%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 57.35%
+INFO    |convergence                                 |            cMY_W_Cg: 57.44%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -1052,23 +1052,23 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0197
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0953 s
-INFO    |convergence                                 |          Simulation completed in 0.0955 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0930 s
+INFO    |convergence                                 |          Simulation completed in 0.0933 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 66.98%
+INFO    |convergence                                 |            cFX_W: 65.85%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.99%
+INFO    |convergence                                 |            cFZ_W: 69.86%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 83.70%
+INFO    |convergence                                 |            cMY_W_Cg: 82.96%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 66.74%
+INFO    |convergence                                 |            cFZ_W: 58.94%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 93.91%
+INFO    |convergence                                 |            cMY_W_Cg: 81.92%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 6/96
@@ -1323,12 +1323,12 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0200
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.193 s
-INFO    |convergence                                 |          Simulation completed in 0.194 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.187 s
+INFO    |convergence                                 |          Simulation completed in 0.188 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 97.27%
+INFO    |convergence                                 |            cFX_W: 94.20%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -1337,9 +1337,9 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 83.80%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 97.46%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 2
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -1505,16 +1505,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0194
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0670 s
-INFO    |convergence                                 |          Simulation completed in 0.0672 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0658 s
+INFO    |convergence                                 |          Simulation completed in 0.0660 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.81%
+INFO    |convergence                                 |            cFX_W: 39.84%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.54%
+INFO    |convergence                                 |            cFZ_W: 42.03%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.02%
+INFO    |convergence                                 |            cMY_W_Cg: 50.19%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -1725,16 +1725,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0198
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.149 s
-INFO    |convergence                                 |          Simulation completed in 0.149 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.144 s
+INFO    |convergence                                 |          Simulation completed in 0.144 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 57.92%
+INFO    |convergence                                 |            cFX_W: 55.63%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.61%
+INFO    |convergence                                 |            cFZ_W: 59.33%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 70.71%
+INFO    |convergence                                 |            cMY_W_Cg: 68.66%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -1996,23 +1996,23 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0201
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.286 s
-INFO    |convergence                                 |          Simulation completed in 0.287 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.281 s
+INFO    |convergence                                 |          Simulation completed in 0.281 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 60.61%
+INFO    |convergence                                 |            cFX_W: 56.49%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.03%
+INFO    |convergence                                 |            cFZ_W: 60.40%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.60%
+INFO    |convergence                                 |            cMY_W_Cg: 68.83%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 85.98%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 97.81%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 1
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -2178,16 +2178,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0195
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.123 s
-INFO    |convergence                                 |          Simulation completed in 0.123 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.120 s
+INFO    |convergence                                 |          Simulation completed in 0.120 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 52.05%
+INFO    |convergence                                 |            cFX_W: 48.14%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 54.23%
+INFO    |convergence                                 |            cFZ_W: 50.85%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.27%
+INFO    |convergence                                 |            cMY_W_Cg: 59.86%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -2398,16 +2398,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0199
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.278 s
-INFO    |convergence                                 |          Simulation completed in 0.278 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.269 s
+INFO    |convergence                                 |          Simulation completed in 0.269 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.97%
+INFO    |convergence                                 |            cFX_W: 48.28%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 56.94%
+INFO    |convergence                                 |            cFZ_W: 51.20%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 66.61%
+INFO    |convergence                                 |            cMY_W_Cg: 59.27%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2669,16 +2669,16 @@ INFO    |movements.movement                          |            delta_time: 0.
 INFO    |movements.movement                          |            Mismatch: 0.0201
 INFO    |movements.movement                          |          Optimization complete
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.541 s
-INFO    |convergence                                 |          Simulation completed in 0.541 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.538 s
+INFO    |convergence                                 |          Simulation completed in 0.538 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 81.38%
+INFO    |convergence                                 |            cFX_W: 64.92%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.72%
+INFO    |convergence                                 |            cFZ_W: 69.24%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 98.27%
+INFO    |convergence                                 |            cMY_W_Cg: 80.08%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2693,11 +2693,11 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 13/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0582 s
-INFO    |convergence                                 |          Simulation completed in 0.0585 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0578 s
+INFO    |convergence                                 |          Simulation completed in 0.0582 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.45%
+INFO    |convergence                                 |            cFX_W: 42.40%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -2709,21 +2709,21 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 14/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.151 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.150 s
 INFO    |convergence                                 |          Simulation completed in 0.151 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 63.72%
+INFO    |convergence                                 |            cFX_W: 63.41%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.25%
+INFO    |convergence                                 |            cFZ_W: 94.15%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.49%
+INFO    |convergence                                 |            cMY_W_Cg: 74.37%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 59.61%
+INFO    |convergence                                 |            cFX_W: 61.44%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.91%
+INFO    |convergence                                 |            cFZ_W: 52.93%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2731,21 +2731,21 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 15/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.300 s
-INFO    |convergence                                 |          Simulation completed in 0.301 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.299 s
+INFO    |convergence                                 |          Simulation completed in 0.300 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 95.02%
+INFO    |convergence                                 |            cFX_W: 93.90%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 68.75%
+INFO    |convergence                                 |            cFZ_W: 70.54%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 53.85%
+INFO    |convergence                                 |            cMY_W_Cg: 54.68%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 78.61%
+INFO    |convergence                                 |            cFX_W: 81.19%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 92.17%
+INFO    |convergence                                 |            cFZ_W: 77.97%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2754,8 +2754,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 16/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0831 s
-INFO    |convergence                                 |          Simulation completed in 0.0835 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0818 s
+INFO    |convergence                                 |          Simulation completed in 0.0821 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 42.75%
@@ -2765,38 +2765,38 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.54%
+INFO    |convergence                                 |            cFX_W: 46.23%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.99%
+INFO    |convergence                                 |            cFZ_W: 46.21%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.16%
+INFO    |convergence                                 |            cMY_W_Cg: 58.38%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 17/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.209 s
-INFO    |convergence                                 |          Simulation completed in 0.210 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.204 s
+INFO    |convergence                                 |          Simulation completed in 0.205 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 65.09%
+INFO    |convergence                                 |            cFX_W: 64.87%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 89.53%
+INFO    |convergence                                 |            cFZ_W: 92.08%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 71.36%
+INFO    |convergence                                 |            cMY_W_Cg: 72.98%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.52%
+INFO    |convergence                                 |            cFX_W: 64.35%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 71.03%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 85.27%
+INFO    |convergence                                 |            cMY_W_Cg: 84.77%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 95.51%
+INFO    |convergence                                 |            cFX_W: 99.05%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 88.69%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2804,18 +2804,18 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 18/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.353 s
-INFO    |convergence                                 |          Simulation completed in 0.353 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.349 s
+INFO    |convergence                                 |          Simulation completed in 0.349 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 97.30%
+INFO    |convergence                                 |            cFX_W: 96.31%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 68.16%
+INFO    |convergence                                 |            cFZ_W: 69.80%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 53.43%
+INFO    |convergence                                 |            cMY_W_Cg: 54.15%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 95.00%
+INFO    |convergence                                 |            cFX_W: 91.89%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -2833,44 +2833,44 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 19/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.145 s
-INFO    |convergence                                 |          Simulation completed in 0.145 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.142 s
+INFO    |convergence                                 |          Simulation completed in 0.142 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 43.63%
+INFO    |convergence                                 |            cFX_W: 43.69%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.05%
+INFO    |convergence                                 |            cFX_W: 39.06%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.06%
+INFO    |convergence                                 |            cFZ_W: 42.61%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.76%
+INFO    |convergence                                 |            cMY_W_Cg: 51.04%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 20/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.273 s
-INFO    |convergence                                 |          Simulation completed in 0.274 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.272 s
+INFO    |convergence                                 |          Simulation completed in 0.272 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 66.78%
+INFO    |convergence                                 |            cFX_W: 66.70%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 88.02%
+INFO    |convergence                                 |            cFZ_W: 90.19%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 70.27%
+INFO    |convergence                                 |            cMY_W_Cg: 71.58%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.65%
+INFO    |convergence                                 |            cFX_W: 54.36%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.32%
+INFO    |convergence                                 |            cFZ_W: 60.13%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 71.82%
+INFO    |convergence                                 |            cMY_W_Cg: 69.94%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2883,22 +2883,22 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 21/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.528 s
-INFO    |convergence                                 |          Simulation completed in 0.529 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.517 s
+INFO    |convergence                                 |          Simulation completed in 0.517 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 67.47%
+INFO    |convergence                                 |            cFZ_W: 68.87%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 52.92%
+INFO    |convergence                                 |            cMY_W_Cg: 53.45%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 59.30%
+INFO    |convergence                                 |            cFX_W: 55.22%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.63%
+INFO    |convergence                                 |            cFZ_W: 61.11%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 73.59%
+INFO    |convergence                                 |            cMY_W_Cg: 70.01%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2912,44 +2912,44 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 22/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.224 s
-INFO    |convergence                                 |          Simulation completed in 0.224 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.219 s
+INFO    |convergence                                 |          Simulation completed in 0.220 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 44.35%
+INFO    |convergence                                 |            cFX_W: 44.52%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 51.04%
+INFO    |convergence                                 |            cFX_W: 47.17%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 54.58%
+INFO    |convergence                                 |            cFZ_W: 51.26%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.77%
+INFO    |convergence                                 |            cMY_W_Cg: 60.49%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 23/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.514 s
-INFO    |convergence                                 |          Simulation completed in 0.515 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.499 s
+INFO    |convergence                                 |          Simulation completed in 0.500 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 68.45%
+INFO    |convergence                                 |            cFX_W: 68.72%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 87.26%
+INFO    |convergence                                 |            cFZ_W: 88.97%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.75%
+INFO    |convergence                                 |            cMY_W_Cg: 70.67%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 53.90%
+INFO    |convergence                                 |            cFX_W: 47.29%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.25%
+INFO    |convergence                                 |            cFZ_W: 51.60%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 67.08%
+INFO    |convergence                                 |            cMY_W_Cg: 59.90%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2962,22 +2962,22 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 24/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.16 s
-INFO    |convergence                                 |          Simulation completed in 1.16 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.21 s
+INFO    |convergence                                 |          Simulation completed in 1.21 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 67.29%
+INFO    |convergence                                 |            cFZ_W: 68.45%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 52.82%
+INFO    |convergence                                 |            cMY_W_Cg: 53.16%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 79.91%
+INFO    |convergence                                 |            cFX_W: 63.65%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.99%
+INFO    |convergence                                 |            cFZ_W: 69.67%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 98.60%
+INFO    |convergence                                 |            cMY_W_Cg: 80.75%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2992,8 +2992,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 25/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0892 s
-INFO    |convergence                                 |          Simulation completed in 0.0897 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0889 s
+INFO    |convergence                                 |          Simulation completed in 0.0894 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3008,8 +3008,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 26/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.237 s
-INFO    |convergence                                 |          Simulation completed in 0.238 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.233 s
+INFO    |convergence                                 |          Simulation completed in 0.234 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3020,9 +3020,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 59.59%
+INFO    |convergence                                 |            cFX_W: 61.42%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.80%
+INFO    |convergence                                 |            cFZ_W: 52.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3030,8 +3030,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 27/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.425 s
-INFO    |convergence                                 |          Simulation completed in 0.426 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.417 s
+INFO    |convergence                                 |          Simulation completed in 0.418 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3042,9 +3042,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 78.59%
+INFO    |convergence                                 |            cFX_W: 81.17%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 92.00%
+INFO    |convergence                                 |            cFZ_W: 77.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3053,8 +3053,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 28/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.129 s
-INFO    |convergence                                 |          Simulation completed in 0.130 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.128 s
+INFO    |convergence                                 |          Simulation completed in 0.129 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3064,19 +3064,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.51%
+INFO    |convergence                                 |            cFX_W: 46.20%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.89%
+INFO    |convergence                                 |            cFZ_W: 46.11%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.02%
+INFO    |convergence                                 |            cMY_W_Cg: 58.24%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 29/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.286 s
-INFO    |convergence                                 |          Simulation completed in 0.287 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.284 s
+INFO    |convergence                                 |          Simulation completed in 0.284 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3086,16 +3086,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.49%
+INFO    |convergence                                 |            cFX_W: 64.32%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 70.89%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 85.10%
+INFO    |convergence                                 |            cMY_W_Cg: 84.60%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 95.50%
+INFO    |convergence                                 |            cFX_W: 99.05%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 88.56%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3103,8 +3103,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 30/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.505 s
-INFO    |convergence                                 |          Simulation completed in 0.506 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.509 s
+INFO    |convergence                                 |          Simulation completed in 0.510 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3114,7 +3114,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 94.96%
+INFO    |convergence                                 |            cFX_W: 91.86%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3133,7 +3133,7 @@ INFO    |convergence                                 |          Iteration number
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
 INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.204 s
-INFO    |convergence                                 |          Simulation completed in 0.204 s
+INFO    |convergence                                 |          Simulation completed in 0.205 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3143,19 +3143,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.04%
+INFO    |convergence                                 |            cFX_W: 39.05%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.98%
+INFO    |convergence                                 |            cFZ_W: 42.53%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.65%
+INFO    |convergence                                 |            cMY_W_Cg: 50.94%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 32/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.397 s
-INFO    |convergence                                 |          Simulation completed in 0.398 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.383 s
+INFO    |convergence                                 |          Simulation completed in 0.384 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3165,11 +3165,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.63%
+INFO    |convergence                                 |            cFX_W: 54.34%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.20%
+INFO    |convergence                                 |            cFZ_W: 60.02%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 71.69%
+INFO    |convergence                                 |            cMY_W_Cg: 69.82%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3182,8 +3182,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 33/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.892 s
-INFO    |convergence                                 |          Simulation completed in 0.894 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.801 s
+INFO    |convergence                                 |          Simulation completed in 0.803 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3193,11 +3193,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 59.28%
+INFO    |convergence                                 |            cFX_W: 55.20%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.52%
+INFO    |convergence                                 |            cFZ_W: 61.00%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 73.47%
+INFO    |convergence                                 |            cMY_W_Cg: 69.90%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3211,8 +3211,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 34/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.330 s
-INFO    |convergence                                 |          Simulation completed in 0.331 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.316 s
+INFO    |convergence                                 |          Simulation completed in 0.317 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3222,19 +3222,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 51.03%
+INFO    |convergence                                 |            cFX_W: 47.16%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 54.48%
+INFO    |convergence                                 |            cFZ_W: 51.17%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.65%
+INFO    |convergence                                 |            cMY_W_Cg: 60.38%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 35/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.813 s
-INFO    |convergence                                 |          Simulation completed in 0.814 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.814 s
+INFO    |convergence                                 |          Simulation completed in 0.816 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3244,11 +3244,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 53.88%
+INFO    |convergence                                 |            cFX_W: 47.28%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.16%
+INFO    |convergence                                 |            cFZ_W: 51.51%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 66.97%
+INFO    |convergence                                 |            cMY_W_Cg: 59.81%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3261,8 +3261,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 36/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.83 s
-INFO    |convergence                                 |          Simulation completed in 1.83 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.75 s
+INFO    |convergence                                 |          Simulation completed in 1.75 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3272,11 +3272,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 79.88%
+INFO    |convergence                                 |            cFX_W: 63.64%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.85%
+INFO    |convergence                                 |            cFZ_W: 69.56%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 98.45%
+INFO    |convergence                                 |            cMY_W_Cg: 80.63%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3307,8 +3307,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 38/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.313 s
-INFO    |convergence                                 |          Simulation completed in 0.314 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.307 s
+INFO    |convergence                                 |          Simulation completed in 0.308 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3319,9 +3319,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 59.58%
+INFO    |convergence                                 |            cFX_W: 61.41%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.76%
+INFO    |convergence                                 |            cFZ_W: 52.81%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3329,8 +3329,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 39/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.557 s
-INFO    |convergence                                 |          Simulation completed in 0.558 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.552 s
+INFO    |convergence                                 |          Simulation completed in 0.553 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3341,9 +3341,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 78.58%
+INFO    |convergence                                 |            cFX_W: 81.16%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.95%
+INFO    |convergence                                 |            cFZ_W: 77.79%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3352,8 +3352,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 40/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.183 s
-INFO    |convergence                                 |          Simulation completed in 0.183 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.177 s
+INFO    |convergence                                 |          Simulation completed in 0.178 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3363,19 +3363,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.50%
+INFO    |convergence                                 |            cFX_W: 46.19%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.87%
+INFO    |convergence                                 |            cFZ_W: 46.09%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 57.99%
+INFO    |convergence                                 |            cMY_W_Cg: 58.20%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 41/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.377 s
-INFO    |convergence                                 |          Simulation completed in 0.378 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.370 s
+INFO    |convergence                                 |          Simulation completed in 0.371 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3385,16 +3385,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.48%
+INFO    |convergence                                 |            cFX_W: 64.31%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 70.86%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 85.05%
+INFO    |convergence                                 |            cMY_W_Cg: 84.56%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 95.49%
+INFO    |convergence                                 |            cFX_W: 99.04%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 88.52%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3402,8 +3402,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 42/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.664 s
-INFO    |convergence                                 |          Simulation completed in 0.666 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.661 s
+INFO    |convergence                                 |          Simulation completed in 0.663 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3413,7 +3413,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 94.94%
+INFO    |convergence                                 |            cFX_W: 91.85%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3431,8 +3431,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 43/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.265 s
-INFO    |convergence                                 |          Simulation completed in 0.265 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.260 s
+INFO    |convergence                                 |          Simulation completed in 0.261 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3442,19 +3442,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.03%
+INFO    |convergence                                 |            cFX_W: 39.04%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.96%
+INFO    |convergence                                 |            cFZ_W: 42.51%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.63%
+INFO    |convergence                                 |            cMY_W_Cg: 50.91%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 44/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.504 s
-INFO    |convergence                                 |          Simulation completed in 0.505 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.498 s
+INFO    |convergence                                 |          Simulation completed in 0.500 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3464,11 +3464,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.62%
+INFO    |convergence                                 |            cFX_W: 54.33%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.18%
+INFO    |convergence                                 |            cFZ_W: 59.99%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 71.66%
+INFO    |convergence                                 |            cMY_W_Cg: 69.79%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3481,8 +3481,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 45/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.17 s
-INFO    |convergence                                 |          Simulation completed in 1.18 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.11 s
+INFO    |convergence                                 |          Simulation completed in 1.11 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3492,11 +3492,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 59.27%
+INFO    |convergence                                 |            cFX_W: 55.19%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.49%
+INFO    |convergence                                 |            cFZ_W: 60.98%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 73.44%
+INFO    |convergence                                 |            cMY_W_Cg: 69.87%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3510,8 +3510,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 46/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.422 s
-INFO    |convergence                                 |          Simulation completed in 0.423 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.421 s
+INFO    |convergence                                 |          Simulation completed in 0.422 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3521,19 +3521,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 51.02%
+INFO    |convergence                                 |            cFX_W: 47.15%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 54.46%
+INFO    |convergence                                 |            cFZ_W: 51.15%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.63%
+INFO    |convergence                                 |            cMY_W_Cg: 60.36%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 47/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.08 s
-INFO    |convergence                                 |          Simulation completed in 1.08 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.25 s
+INFO    |convergence                                 |          Simulation completed in 1.25 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3543,11 +3543,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 53.88%
+INFO    |convergence                                 |            cFX_W: 47.27%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.13%
+INFO    |convergence                                 |            cFZ_W: 51.49%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 66.95%
+INFO    |convergence                                 |            cMY_W_Cg: 59.78%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3560,8 +3560,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 48/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 2.46 s
-INFO    |convergence                                 |          Simulation completed in 2.46 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 2.48 s
+INFO    |convergence                                 |          Simulation completed in 2.48 s
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3571,11 +3571,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 79.87%
+INFO    |convergence                                 |            cFX_W: 63.63%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.82%
+INFO    |convergence                                 |            cFZ_W: 69.53%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 98.41%
+INFO    |convergence                                 |            cMY_W_Cg: 80.60%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3591,8 +3591,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 49/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0376 s
-INFO    |convergence                                 |          Simulation completed in 0.0379 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0372 s
+INFO    |convergence                                 |          Simulation completed in 0.0374 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3607,8 +3607,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 50/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0905 s
-INFO    |convergence                                 |          Simulation completed in 0.0908 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0893 s
+INFO    |convergence                                 |          Simulation completed in 0.0896 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3621,16 +3621,16 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.77%
+INFO    |convergence                                 |            cFZ_W: 39.54%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.99%
+INFO    |convergence                                 |            cMY_W_Cg: 54.15%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 51/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.190 s
-INFO    |convergence                                 |          Simulation completed in 0.191 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.184 s
+INFO    |convergence                                 |          Simulation completed in 0.185 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3643,17 +3643,17 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 68.83%
+INFO    |convergence                                 |            cFZ_W: 60.62%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 82.39%
+INFO    |convergence                                 |            cMY_W_Cg: 72.38%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 3
 INFO    |convergence                                 |        Chordwise Panels: 3
 INFO    |convergence                                 |          Iteration number: 52/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0524 s
-INFO    |convergence                                 |          Simulation completed in 0.0526 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0518 s
+INFO    |convergence                                 |          Simulation completed in 0.0520 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3663,19 +3663,19 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.02%
+INFO    |convergence                                 |            cFX_W: 46.70%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.21%
+INFO    |convergence                                 |            cFZ_W: 45.23%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.14%
+INFO    |convergence                                 |            cMY_W_Cg: 57.78%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 53/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.119 s
-INFO    |convergence                                 |          Simulation completed in 0.119 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.117 s
+INFO    |convergence                                 |          Simulation completed in 0.117 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3685,25 +3685,25 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 67.23%
+INFO    |convergence                                 |            cFX_W: 66.13%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 71.26%
+INFO    |convergence                                 |            cFZ_W: 70.96%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 88.33%
+INFO    |convergence                                 |            cMY_W_Cg: 86.97%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.25%
+INFO    |convergence                                 |            cFZ_W: 57.67%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 90.33%
+INFO    |convergence                                 |            cMY_W_Cg: 78.90%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 54/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.241 s
-INFO    |convergence                                 |          Simulation completed in 0.241 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.230 s
+INFO    |convergence                                 |          Simulation completed in 0.231 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3713,7 +3713,7 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 97.56%
+INFO    |convergence                                 |            cFX_W: 94.63%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3722,17 +3722,17 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 99.96%
+INFO    |convergence                                 |            cFZ_W: 83.04%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 96.92%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 2
 INFO    |convergence                                 |        Chordwise Panels: 3
 INFO    |convergence                                 |          Iteration number: 55/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0846 s
-INFO    |convergence                                 |          Simulation completed in 0.0848 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0819 s
+INFO    |convergence                                 |          Simulation completed in 0.0821 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3742,19 +3742,19 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.89%
+INFO    |convergence                                 |            cFX_W: 39.93%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.34%
+INFO    |convergence                                 |            cFZ_W: 42.73%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.07%
+INFO    |convergence                                 |            cMY_W_Cg: 52.87%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 56/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.186 s
-INFO    |convergence                                 |          Simulation completed in 0.186 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.178 s
+INFO    |convergence                                 |          Simulation completed in 0.178 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3764,16 +3764,16 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 58.07%
+INFO    |convergence                                 |            cFX_W: 55.84%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 62.30%
+INFO    |convergence                                 |            cFZ_W: 60.89%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 76.35%
+INFO    |convergence                                 |            cMY_W_Cg: 73.70%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 97.55%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3781,8 +3781,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 57/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.378 s
-INFO    |convergence                                 |          Simulation completed in 0.378 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.366 s
+INFO    |convergence                                 |          Simulation completed in 0.366 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3792,26 +3792,26 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 60.78%
+INFO    |convergence                                 |            cFX_W: 56.76%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.11%
+INFO    |convergence                                 |            cFZ_W: 62.35%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 79.46%
+INFO    |convergence                                 |            cMY_W_Cg: 74.86%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 85.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 98.96%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 1
 INFO    |convergence                                 |        Chordwise Panels: 3
 INFO    |convergence                                 |          Iteration number: 58/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.155 s
-INFO    |convergence                                 |          Simulation completed in 0.155 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.148 s
+INFO    |convergence                                 |          Simulation completed in 0.148 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3821,19 +3821,19 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 52.12%
+INFO    |convergence                                 |            cFX_W: 48.26%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 55.61%
+INFO    |convergence                                 |            cFZ_W: 52.06%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.21%
+INFO    |convergence                                 |            cMY_W_Cg: 64.01%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 59/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.356 s
-INFO    |convergence                                 |          Simulation completed in 0.356 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.344 s
+INFO    |convergence                                 |          Simulation completed in 0.345 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3843,16 +3843,16 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.06%
+INFO    |convergence                                 |            cFX_W: 48.44%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.66%
+INFO    |convergence                                 |            cFZ_W: 52.67%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.72%
+INFO    |convergence                                 |            cMY_W_Cg: 64.06%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 99.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3860,8 +3860,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 60/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.689 s
-INFO    |convergence                                 |          Simulation completed in 0.689 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.667 s
+INFO    |convergence                                 |          Simulation completed in 0.668 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3871,11 +3871,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 81.43%
+INFO    |convergence                                 |            cFX_W: 65.14%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 86.51%
+INFO    |convergence                                 |            cFZ_W: 71.44%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 87.12%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3890,8 +3890,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 61/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0866 s
-INFO    |convergence                                 |          Simulation completed in 0.0869 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.0848 s
+INFO    |convergence                                 |          Simulation completed in 0.0851 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3900,7 +3900,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.38%
+INFO    |convergence                                 |            cFX_W: 42.36%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3912,8 +3912,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 62/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.208 s
-INFO    |convergence                                 |          Simulation completed in 0.208 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.201 s
+INFO    |convergence                                 |          Simulation completed in 0.202 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3922,26 +3922,26 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 63.73%
+INFO    |convergence                                 |            cFX_W: 63.34%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 85.61%
+INFO    |convergence                                 |            cFZ_W: 89.28%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 67.30%
+INFO    |convergence                                 |            cMY_W_Cg: 70.04%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 60.08%
+INFO    |convergence                                 |            cFX_W: 61.74%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.51%
+INFO    |convergence                                 |            cFZ_W: 51.77%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 99.69%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 63/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.460 s
-INFO    |convergence                                 |          Simulation completed in 0.461 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.449 s
+INFO    |convergence                                 |          Simulation completed in 0.450 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3950,17 +3950,17 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 95.22%
+INFO    |convergence                                 |            cFX_W: 93.83%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.38%
+INFO    |convergence                                 |            cFZ_W: 67.45%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.71%
+INFO    |convergence                                 |            cMY_W_Cg: 51.90%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 79.47%
+INFO    |convergence                                 |            cFX_W: 81.82%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.69%
+INFO    |convergence                                 |            cFZ_W: 77.61%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3969,8 +3969,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 64/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.120 s
-INFO    |convergence                                 |          Simulation completed in 0.121 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.126 s
+INFO    |convergence                                 |          Simulation completed in 0.126 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -3979,26 +3979,26 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.61%
+INFO    |convergence                                 |            cFX_W: 42.58%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.74%
+INFO    |convergence                                 |            cFX_W: 46.43%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.25%
+INFO    |convergence                                 |            cFZ_W: 46.49%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.66%
+INFO    |convergence                                 |            cMY_W_Cg: 59.87%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 65/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.284 s
-INFO    |convergence                                 |          Simulation completed in 0.285 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.283 s
+INFO    |convergence                                 |          Simulation completed in 0.284 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4007,23 +4007,23 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 64.97%
+INFO    |convergence                                 |            cFX_W: 64.65%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.90%
+INFO    |convergence                                 |            cFZ_W: 86.87%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 66.23%
+INFO    |convergence                                 |            cMY_W_Cg: 68.38%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.90%
+INFO    |convergence                                 |            cFX_W: 64.76%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 72.49%
+INFO    |convergence                                 |            cFZ_W: 72.54%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 90.25%
+INFO    |convergence                                 |            cMY_W_Cg: 89.70%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 96.64%
+INFO    |convergence                                 |            cFX_W: 99.84%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 86.61%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4031,8 +4031,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 66/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.567 s
-INFO    |convergence                                 |          Simulation completed in 0.568 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.555 s
+INFO    |convergence                                 |          Simulation completed in 0.556 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4041,14 +4041,14 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 97.26%
+INFO    |convergence                                 |            cFX_W: 96.03%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 64.94%
+INFO    |convergence                                 |            cFZ_W: 66.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.43%
+INFO    |convergence                                 |            cMY_W_Cg: 51.41%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 95.51%
+INFO    |convergence                                 |            cFX_W: 92.50%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -4066,8 +4066,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 67/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.198 s
-INFO    |convergence                                 |          Simulation completed in 0.198 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.188 s
+INFO    |convergence                                 |          Simulation completed in 0.189 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4076,26 +4076,26 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 43.34%
+INFO    |convergence                                 |            cFX_W: 43.37%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.24%
+INFO    |convergence                                 |            cFX_W: 39.26%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.97%
+INFO    |convergence                                 |            cFZ_W: 43.52%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.97%
+INFO    |convergence                                 |            cMY_W_Cg: 54.17%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 68/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.474 s
-INFO    |convergence                                 |          Simulation completed in 0.475 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.417 s
+INFO    |convergence                                 |          Simulation completed in 0.418 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4104,18 +4104,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 66.38%
+INFO    |convergence                                 |            cFX_W: 66.22%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 82.80%
+INFO    |convergence                                 |            cFZ_W: 85.13%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 65.54%
+INFO    |convergence                                 |            cMY_W_Cg: 67.12%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.99%
+INFO    |convergence                                 |            cFX_W: 54.73%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 62.91%
+INFO    |convergence                                 |            cFZ_W: 61.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 77.30%
+INFO    |convergence                                 |            cMY_W_Cg: 75.22%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4128,8 +4128,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 69/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.08 s
-INFO    |convergence                                 |          Simulation completed in 1.08 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.877 s
+INFO    |convergence                                 |          Simulation completed in 0.878 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4138,18 +4138,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
+INFO    |convergence                                 |            cFX_W: 99.33%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 64.47%
+INFO    |convergence                                 |            cFZ_W: 65.92%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.17%
+INFO    |convergence                                 |            cMY_W_Cg: 50.84%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 59.75%
+INFO    |convergence                                 |            cFX_W: 55.69%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.58%
+INFO    |convergence                                 |            cFZ_W: 63.10%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.14%
+INFO    |convergence                                 |            cMY_W_Cg: 76.13%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4163,8 +4163,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 70/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.366 s
-INFO    |convergence                                 |          Simulation completed in 0.366 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.355 s
+INFO    |convergence                                 |          Simulation completed in 0.355 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4173,26 +4173,26 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 43.85%
+INFO    |convergence                                 |            cFX_W: 44.00%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 51.40%
+INFO    |convergence                                 |            cFX_W: 47.51%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 55.87%
+INFO    |convergence                                 |            cFZ_W: 52.48%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.44%
+INFO    |convergence                                 |            cMY_W_Cg: 64.65%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 71/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.961 s
-INFO    |convergence                                 |          Simulation completed in 0.962 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.848 s
+INFO    |convergence                                 |          Simulation completed in 0.849 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4201,18 +4201,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 67.60%
+INFO    |convergence                                 |            cFX_W: 67.84%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 82.39%
+INFO    |convergence                                 |            cFZ_W: 84.09%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 65.44%
+INFO    |convergence                                 |            cMY_W_Cg: 66.48%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.26%
+INFO    |convergence                                 |            cFX_W: 47.62%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.87%
+INFO    |convergence                                 |            cFZ_W: 53.07%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.84%
+INFO    |convergence                                 |            cMY_W_Cg: 64.65%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4225,8 +4225,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 72/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.87 s
-INFO    |convergence                                 |          Simulation completed in 1.87 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.84 s
+INFO    |convergence                                 |          Simulation completed in 1.84 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4237,16 +4237,16 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 64.56%
+INFO    |convergence                                 |            cFZ_W: 65.73%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.30%
+INFO    |convergence                                 |            cMY_W_Cg: 50.74%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 80.19%
+INFO    |convergence                                 |            cFX_W: 63.98%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 86.34%
+INFO    |convergence                                 |            cFZ_W: 71.67%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 87.43%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4261,8 +4261,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 73/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.141 s
-INFO    |convergence                                 |          Simulation completed in 0.142 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.137 s
+INFO    |convergence                                 |          Simulation completed in 0.138 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4283,8 +4283,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 74/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.398 s
-INFO    |convergence                                 |          Simulation completed in 0.399 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.381 s
+INFO    |convergence                                 |          Simulation completed in 0.381 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4301,18 +4301,18 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 60.07%
+INFO    |convergence                                 |            cFX_W: 61.74%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.55%
+INFO    |convergence                                 |            cFZ_W: 51.80%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
+INFO    |convergence                                 |            cMY_W_Cg: 99.61%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 75/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.815 s
-INFO    |convergence                                 |          Simulation completed in 0.821 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.783 s
+INFO    |convergence                                 |          Simulation completed in 0.784 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4329,9 +4329,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 79.44%
+INFO    |convergence                                 |            cFX_W: 81.78%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 91.45%
+INFO    |convergence                                 |            cFZ_W: 77.42%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4340,8 +4340,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 76/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.202 s
-INFO    |convergence                                 |          Simulation completed in 0.203 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.200 s
+INFO    |convergence                                 |          Simulation completed in 0.201 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4357,19 +4357,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.73%
+INFO    |convergence                                 |            cFX_W: 46.43%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.25%
+INFO    |convergence                                 |            cFZ_W: 46.48%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.64%
+INFO    |convergence                                 |            cMY_W_Cg: 59.84%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 77/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.505 s
-INFO    |convergence                                 |          Simulation completed in 0.506 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.500 s
+INFO    |convergence                                 |          Simulation completed in 0.501 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4385,16 +4385,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.87%
+INFO    |convergence                                 |            cFX_W: 64.74%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 72.33%
+INFO    |convergence                                 |            cFZ_W: 72.39%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 90.04%
+INFO    |convergence                                 |            cMY_W_Cg: 89.50%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 96.61%
+INFO    |convergence                                 |            cFX_W: 99.80%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
+INFO    |convergence                                 |            cFZ_W: 86.51%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4402,8 +4402,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 78/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.02 s
-INFO    |convergence                                 |          Simulation completed in 1.02 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.00 s
+INFO    |convergence                                 |          Simulation completed in 1.01 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4419,7 +4419,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 95.49%
+INFO    |convergence                                 |            cFX_W: 92.48%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -4437,8 +4437,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 79/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.352 s
-INFO    |convergence                                 |          Simulation completed in 0.353 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.341 s
+INFO    |convergence                                 |          Simulation completed in 0.341 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4454,19 +4454,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 40.22%
+INFO    |convergence                                 |            cFX_W: 39.24%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.88%
+INFO    |convergence                                 |            cFZ_W: 43.44%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.85%
+INFO    |convergence                                 |            cMY_W_Cg: 54.06%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 80/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.764 s
-INFO    |convergence                                 |          Simulation completed in 0.765 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.732 s
+INFO    |convergence                                 |          Simulation completed in 0.733 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4482,11 +4482,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.96%
+INFO    |convergence                                 |            cFX_W: 54.69%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 62.81%
+INFO    |convergence                                 |            cFZ_W: 61.66%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 77.17%
+INFO    |convergence                                 |            cMY_W_Cg: 75.10%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4499,8 +4499,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 81/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.72 s
-INFO    |convergence                                 |          Simulation completed in 1.72 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.59 s
+INFO    |convergence                                 |          Simulation completed in 1.59 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4516,11 +4516,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 59.73%
+INFO    |convergence                                 |            cFX_W: 55.67%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.53%
+INFO    |convergence                                 |            cFZ_W: 63.05%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.07%
+INFO    |convergence                                 |            cMY_W_Cg: 76.06%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4534,8 +4534,8 @@ INFO    |convergence                                 |        Chordwise Panels: 
 INFO    |convergence                                 |          Iteration number: 82/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.638 s
-INFO    |convergence                                 |          Simulation completed in 0.639 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 0.609 s
+INFO    |convergence                                 |          Simulation completed in 0.610 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4551,19 +4551,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 51.38%
+INFO    |convergence                                 |            cFX_W: 47.49%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 55.82%
+INFO    |convergence                                 |            cFZ_W: 52.44%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.38%
+INFO    |convergence                                 |            cMY_W_Cg: 64.59%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
 INFO    |convergence                                 |          Iteration number: 83/96
 INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
 INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.71 s
-INFO    |convergence                                 |          Simulation completed in 1.72 s
+INFO    |unsteady_ring_vortex_lattice_method         |            Unsteady ring vortex lattice method solver completed in 1.61 s
+INFO    |convergence                                 |          Simulation completed in 1.61 s
 INFO    |convergence                                 |          Wake type convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
@@ -4579,11 +4579,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.26%
+INFO    |convergence                                 |            cFX_W: 47.63%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.80%
+INFO    |convergence                                 |            cFZ_W: 53.01%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.77%
+INFO    |convergence                                 |            cMY_W_Cg: 64.58%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4597,7 +4597,7 @@ INFO    |convergence                                 |  Wake type: prescribed
 INFO    |convergence                                 |  Cycles: 2
 INFO    |convergence                                 |  Panel aspect ratio: 1
 INFO    |convergence                                 |  Chordwise Panels: 3
-INFO    |convergence                                 |  Simulation completed in 0.224 s
+INFO    |convergence                                 |  Simulation completed in 0.220 s
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Example Airplane:
 INFO    |convergence                                 |      Main Wing:
@@ -4606,4 +4606,4 @@ INFO    |convergence                                 |        WingCrossSection 2
 INFO    |convergence                                 |      Reflected Main Wing:
 INFO    |convergence                                 |        WingCrossSection 1: 9
 INFO    |convergence                                 |        WingCrossSection 2: None
-INFO    |convergence                                 |Convergence analysis completed in 58.1 s
+INFO    |convergence                                 |Convergence analysis completed in 57.2 s

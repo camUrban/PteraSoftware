@@ -1324,6 +1324,25 @@ class TestCoreRadiusFormula(unittest.TestCase):
             self.ring_strengths,
         ) = aerodynamics_functions_fixtures.make_simple_ring_vortex_arrays_fixture()
 
+        # Simple horseshoe vortex fixture.
+        (
+            self.horseshoe_Brhvp,
+            self.horseshoe_Frhvp,
+            self.horseshoe_Flhvp,
+            self.horseshoe_Blhvp,
+            self.horseshoe_strengths,
+        ) = (
+            aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
+        )
+
+        # Initial core radius fixtures with a distinct value for each leg.
+        self.distinct_ring_rc0s = (
+            aerodynamics_functions_fixtures.make_distinct_rc0s_fixture(1, 4)
+        )
+        self.distinct_horseshoe_rc0s = (
+            aerodynamics_functions_fixtures.make_distinct_rc0s_fixture(1, 3)
+        )
+
         # Evaluation point above the ring vortex center, away from any singularity.
         self.center_point = np.array([[0.5, 0.0, 1.0]], dtype=float)
 
@@ -1580,6 +1599,177 @@ class TestCoreRadiusFormula(unittest.TestCase):
 
         # Verify the kernel result matches the reference.
         npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_collapsed_ring_vortex_per_leg_core_radii_match_reference(self) -> None:
+        """Test that collapsed_velocities_from_ring_vortices applies each column of the
+        initial core radii to the right, front, left, and back legs in that order, by
+        comparing against the regularized reference with a distinct core radius on each
+        leg."""
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.ring_strengths[0])
+        Br = self.ring_Brrvp[0]
+        Fr = self.ring_Frrvp[0]
+        Fl = self.ring_Flrvp[0]
+        Bl = self.ring_Blrvp[0]
+        r_c_right, r_c_front, r_c_left, r_c_back = self.distinct_ring_rc0s[0]
+
+        expected = (
+            ref(Br, Fr, P, gamma, r_c_right)
+            + ref(Fr, Fl, P, gamma, r_c_front)
+            + ref(Fl, Bl, P, gamma, r_c_left)
+            + ref(Bl, Br, P, gamma, r_c_back)
+        )
+
+        velocities = self._call_collapsed_ring(self.distinct_ring_rc0s)
+
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_expanded_ring_vortex_per_leg_core_radii_match_reference(self) -> None:
+        """Test that expanded_velocities_from_ring_vortices applies each column of the
+        initial core radii to the right, front, left, and back legs in that order, by
+        comparing against the regularized reference with a distinct core radius on each
+        leg."""
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.ring_strengths[0])
+        Br = self.ring_Brrvp[0]
+        Fr = self.ring_Frrvp[0]
+        Fl = self.ring_Flrvp[0]
+        Bl = self.ring_Blrvp[0]
+        r_c_right, r_c_front, r_c_left, r_c_back = self.distinct_ring_rc0s[0]
+
+        expected = (
+            ref(Br, Fr, P, gamma, r_c_right)
+            + ref(Fr, Fl, P, gamma, r_c_front)
+            + ref(Fl, Bl, P, gamma, r_c_left)
+            + ref(Bl, Br, P, gamma, r_c_back)
+        )
+
+        velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
+            stackP_GP1_CgP1=self.center_point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.distinct_ring_rc0s,
+            singularity_counts=np.zeros(3, dtype=np.int64),
+            ages=None,
+            nu=0.0,
+        )
+
+        npt.assert_array_almost_equal(velocities[0, 0], expected, decimal=10)
+
+    def test_collapsed_ring_vortex_chordwise_segments_per_leg_core_radii_match_reference(
+        self,
+    ) -> None:
+        """Test that collapsed_velocities_from_ring_vortices_chordwise_segments reads
+        the right and left legs' initial core radii from the first and third columns, by
+        comparing against the regularized reference with a distinct core radius on each
+        leg."""
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.ring_strengths[0])
+        Br = self.ring_Brrvp[0]
+        Fr = self.ring_Frrvp[0]
+        Fl = self.ring_Flrvp[0]
+        Bl = self.ring_Blrvp[0]
+        r_c_right = self.distinct_ring_rc0s[0, 0]
+        r_c_left = self.distinct_ring_rc0s[0, 2]
+
+        expected = ref(Br, Fr, P, gamma, r_c_right) + ref(Fl, Bl, P, gamma, r_c_left)
+
+        velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices_chordwise_segments(
+            stackP_GP1_CgP1=self.center_point,
+            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
+            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
+            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
+            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
+            strengths=self.ring_strengths,
+            r_c0s=self.distinct_ring_rc0s,
+            singularity_counts=np.zeros(3, dtype=np.int64),
+            ages=None,
+            nu=0.0,
+        )
+
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_collapsed_horseshoe_vortex_per_leg_core_radii_match_reference(
+        self,
+    ) -> None:
+        """Test that collapsed_velocities_from_horseshoe_vortices applies each column of
+        the initial core radii to the right, front, and left legs in that order, by
+        comparing against the regularized reference with a distinct core radius on each
+        leg."""
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.horseshoe_strengths[0])
+        Br = self.horseshoe_Brhvp[0]
+        Fr = self.horseshoe_Frhvp[0]
+        Fl = self.horseshoe_Flhvp[0]
+        Bl = self.horseshoe_Blhvp[0]
+        r_c_right, r_c_front, r_c_left = self.distinct_horseshoe_rc0s[0]
+
+        expected = (
+            ref(Br, Fr, P, gamma, r_c_right)
+            + ref(Fr, Fl, P, gamma, r_c_front)
+            + ref(Fl, Bl, P, gamma, r_c_left)
+        )
+
+        velocities = (
+            _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=self.center_point,
+                stackBrhvp_GP1_CgP1=self.horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
+                strengths=self.horseshoe_strengths,
+                r_c0s=self.distinct_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
+                nu=0.0,
+            )
+        )
+
+        npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
+
+    def test_expanded_horseshoe_vortex_per_leg_core_radii_match_reference(
+        self,
+    ) -> None:
+        """Test that expanded_velocities_from_horseshoe_vortices applies each column of
+        the initial core radii to the right, front, and left legs in that order, by
+        comparing against the regularized reference with a distinct core radius on each
+        leg."""
+        ref = self.ref_calculate_regularized_biot_savart_velocity
+        P = self.center_point[0]
+        gamma = float(self.horseshoe_strengths[0])
+        Br = self.horseshoe_Brhvp[0]
+        Fr = self.horseshoe_Frhvp[0]
+        Fl = self.horseshoe_Flhvp[0]
+        Bl = self.horseshoe_Blhvp[0]
+        r_c_right, r_c_front, r_c_left = self.distinct_horseshoe_rc0s[0]
+
+        expected = (
+            ref(Br, Fr, P, gamma, r_c_right)
+            + ref(Fr, Fl, P, gamma, r_c_front)
+            + ref(Fl, Bl, P, gamma, r_c_left)
+        )
+
+        velocities = (
+            _aerodynamics_functions.expanded_velocities_from_horseshoe_vortices(
+                stackP_GP1_CgP1=self.center_point,
+                stackBrhvp_GP1_CgP1=self.horseshoe_Brhvp,
+                stackFrhvp_GP1_CgP1=self.horseshoe_Frhvp,
+                stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
+                stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
+                strengths=self.horseshoe_strengths,
+                r_c0s=self.distinct_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
+                nu=0.0,
+            )
+        )
+
+        npt.assert_array_almost_equal(velocities[0, 0], expected, decimal=10)
 
 
 class TestSingularityCounters(unittest.TestCase):

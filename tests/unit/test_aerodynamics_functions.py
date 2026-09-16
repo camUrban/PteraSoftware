@@ -1619,7 +1619,6 @@ class TestSingularityCounters(unittest.TestCase):
 
         # Zero initial core radii, so every leg takes the numerical floor.
         self.zero_rc0s = np.zeros((1, 4), dtype=float)
-        self.zero_horseshoe_rc0s = np.zeros((1, 3), dtype=float)
 
     def test_degenerate_filament_increments_counter_zero(self) -> None:
         """Test that a degenerate ring vortex (all corners at origin) increments

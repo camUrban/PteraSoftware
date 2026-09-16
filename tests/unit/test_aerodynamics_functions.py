@@ -3,6 +3,7 @@
 import math
 import unittest
 import warnings
+from decimal import Decimal, localcontext
 from typing import Any
 from unittest.mock import patch
 
@@ -1770,6 +1771,265 @@ class TestCoreRadiusFormula(unittest.TestCase):
         )
 
         npt.assert_array_almost_equal(velocities[0, 0], expected, decimal=10)
+
+
+class TestKernelCancellation(unittest.TestCase):
+    """This is a class with functions to test that the line vortex kernels stay accurate
+    in the regimes where the naive Biot-Savart arithmetic suffers catastrophic
+    cancellation: points nearly collinear with a line vortex but off its segment, and
+    short line vortices seen from far away."""
+
+    # The first fifty decimal digits of pi, for the high precision reference.
+    _PI = Decimal("3.14159265358979323846264338327950288419716939937510")
+
+    def setUp(self) -> None:
+        """Set up fixtures for kernel cancellation tests."""
+        # A unit vector along the line vortices and a unit vector perpendicular to it.
+        # Both are skew to the axes so that every component of the induced velocity is
+        # nonzero.
+        self.u_G = np.array([2.0, 1.0, 2.0], dtype=float) / 3.0
+        self.w_G = np.array([1.0, -2.0, 0.0], dtype=float) / math.sqrt(5.0)
+
+        # The line vortices' start point (in geometry axes, relative to the CG).
+        self.S_G_Cg = np.array([0.1, 0.2, 0.3], dtype=float)
+
+        self.gamma = 1.0
+
+        # For a short line vortex seen broadside, the kernels' measured relative error
+        # is a few machine epsilons.
+        self.max_relative_error = 1.0e-12
+
+        # For a point nearly collinear with a line vortex, rounding the point's
+        # coordinates alone perturbs the result by a relative amount of order eps /
+        # sin(theta). The kernels' measured relative error is 0.2 to 1.0 times eps /
+        # sin(theta). Computing r1 * r2 - r1 . r2 directly in floats, as the kernels did
+        # before the sign branched form, gives a relative error of order eps /
+        # sin(theta)^2.
+        self.conditioning_margin = 10.0
+
+    @staticmethod
+    def ref_calculate_high_precision_biot_savart_velocity(
+        S_A_a: np.ndarray,
+        E_A_a: np.ndarray,
+        P_A_a: np.ndarray,
+        gamma: float,
+        r_c: float,
+    ) -> np.ndarray:
+        """Calculate induced velocity using the regularized Biot-Savart formula
+        evaluated in fifty digit decimal arithmetic.
+
+        The inputs are converted from floats exactly, so the result is the correctly
+        rounded value of the formula for the exact floating point inputs the kernels
+        receive. This makes it a reference in the regimes where the same formula
+        evaluated in floats suffers catastrophic cancellation.
+
+        :param S_A_a: A (3,) ndarray of floats representing the start point of the line
+            vortex (in A axes, relative to point a) in meters.
+        :param E_A_a: A (3,) ndarray of floats representing the end point of the line
+            vortex (in A axes, relative to point a) in meters.
+        :param P_A_a: A (3,) ndarray of floats representing the evaluation point (in A
+            axes, relative to point a) in meters.
+        :param gamma: A float representing the line vortex strength in meters squared
+            per second.
+        :param r_c: A non negative float representing the core radius in meters.
+        :return v_A__I: A (3,) ndarray of floats representing the induced velocity (in A
+            axes, observed from an inertial frame) in meters per second.
+        """
+        with localcontext() as context:
+            context.prec = 50
+
+            S = [Decimal(float(x)) for x in S_A_a]
+            E = [Decimal(float(x)) for x in E_A_a]
+            P = [Decimal(float(x)) for x in P_A_a]
+
+            r0_A = [e - s for e, s in zip(E, S)]
+            r1_A = [p - s for p, s in zip(P, S)]
+            r2_A = [p - e for p, e in zip(P, E)]
+            r3_A = [
+                r1_A[1] * r2_A[2] - r1_A[2] * r2_A[1],
+                r1_A[2] * r2_A[0] - r1_A[0] * r2_A[2],
+                r1_A[0] * r2_A[1] - r1_A[1] * r2_A[0],
+            ]
+
+            r0_sq = sum(x * x for x in r0_A)
+            r1 = sum((x * x for x in r1_A), Decimal(0)).sqrt()
+            r2 = sum((x * x for x in r2_A), Decimal(0)).sqrt()
+            r3_sq = sum(x * x for x in r3_A)
+            r1_dot_r2 = sum(a * b for a, b in zip(r1_A, r2_A))
+
+            c_1 = Decimal(float(gamma)) / (4 * TestKernelCancellation._PI)
+            c_2_num = (r1 + r2) * (r1 * r2 - r1_dot_r2)
+            c_2_den = r1 * r2 * (r3_sq + r0_sq * Decimal(float(r_c)) ** 2)
+
+            v_A__I = [c_1 * (c_2_num / c_2_den) * x for x in r3_A]
+
+        return np.array([float(x) for x in v_A__I], dtype=float)
+
+    def _near_collinear_geometry(
+        self, ratio: float, beyond_end: bool
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Helper to build a unit length line vortex and a point one length off one of
+        its ends, displaced sideways by ratio lengths so that it is nearly collinear.
+
+        The sine of the angle at the point between the lines to the two vertices is
+        about half the ratio.
+
+        :param ratio: A positive float representing the sideways displacement of the
+            point as a fraction of the line vortex's length.
+        :param beyond_end: A bool that is True if the point is beyond the end point, and
+            False if it is before the start point.
+        :return: A tuple of three (3,) ndarrays of floats representing the start point,
+            end point, and evaluation point (in geometry axes, relative to the CG) in
+            meters.
+        """
+        S_G_Cg = self.S_G_Cg
+        E_G_Cg = S_G_Cg + self.u_G
+        if beyond_end:
+            P_G_Cg = E_G_Cg + self.u_G + ratio * self.w_G
+        else:
+            P_G_Cg = S_G_Cg - self.u_G + ratio * self.w_G
+        return S_G_Cg, E_G_Cg, P_G_Cg
+
+    def _short_far_geometry(
+        self, r0: float
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Helper to build a short line vortex and a point one meter away from it,
+        broadside.
+
+        The sine of the angle at the point between the lines to the two vertices is
+        about the line vortex's length in meters.
+
+        :param r0: A positive float representing the line vortex's length in meters.
+        :return: A tuple of three (3,) ndarrays of floats representing the start point,
+            end point, and evaluation point (in geometry axes, relative to the CG) in
+            meters.
+        """
+        S_G_Cg = self.S_G_Cg
+        E_G_Cg = S_G_Cg + r0 * self.u_G
+        P_G_Cg = S_G_Cg + self.w_G
+        return S_G_Cg, E_G_Cg, P_G_Cg
+
+    def _conditioning_tolerance(
+        self, S_G_Cg: np.ndarray, E_G_Cg: np.ndarray, P_G_Cg: np.ndarray
+    ) -> float:
+        """Helper to find the relative error tolerance for a nearly collinear point,
+        which is the conditioning margin times eps / sin(theta), where theta is the
+        angle at the point between the lines to the line vortex's two vertices."""
+        # This is the tolerance's scale, not a lower bound on what an FP64 kernel could
+        # achieve.
+        r1_G = S_G_Cg - P_G_Cg
+        r2_G = E_G_Cg - P_G_Cg
+        sin_theta = float(
+            np.linalg.norm(np.cross(r1_G, r2_G))
+            / (np.linalg.norm(r1_G) * np.linalg.norm(r2_G))
+        )
+        return self.conditioning_margin * float(np.finfo(float).eps) / sin_theta
+
+    def _collapsed_relative_error(
+        self, S_G_Cg: np.ndarray, E_G_Cg: np.ndarray, P_G_Cg: np.ndarray
+    ) -> float:
+        """Helper to call collapsed_velocities_from_line_vortices for one line vortex
+        with a core radius of 3% of its length and return the relative error of the
+        result against the high precision reference."""
+        r_c0 = 0.03 * float(np.linalg.norm(E_G_Cg - S_G_Cg))
+
+        velocity = _aerodynamics_functions.collapsed_velocities_from_line_vortices(
+            stackP_GP1_CgP1=P_G_Cg.reshape(1, 3),
+            stackSlvp_GP1_CgP1=S_G_Cg.reshape(1, 3),
+            stackElvp_GP1_CgP1=E_G_Cg.reshape(1, 3),
+            strengths=np.array([self.gamma], dtype=float),
+            r_c0s=np.array([r_c0], dtype=float),
+            singularity_counts=np.zeros(3, dtype=np.int64),
+        )[0]
+
+        expected = self.ref_calculate_high_precision_biot_savart_velocity(
+            S_G_Cg, E_G_Cg, P_G_Cg, self.gamma, r_c0
+        )
+
+        return float(np.linalg.norm(velocity - expected) / np.linalg.norm(expected))
+
+    def _expanded_relative_error(
+        self, S_G_Cg: np.ndarray, E_G_Cg: np.ndarray, P_G_Cg: np.ndarray
+    ) -> float:
+        """Helper to call _expanded_velocities_from_line_vortices for one line vortex
+        with a core radius of 3% of its length and return the relative error of the
+        result against the high precision reference."""
+        r_c0 = 0.03 * float(np.linalg.norm(E_G_Cg - S_G_Cg))
+
+        velocity = _aerodynamics_functions._expanded_velocities_from_line_vortices(
+            stackP_GP1_CgP1=P_G_Cg.reshape(1, 3),
+            stackSlvp_GP1_CgP1=S_G_Cg.reshape(1, 3),
+            stackElvp_GP1_CgP1=E_G_Cg.reshape(1, 3),
+            strengths=np.array([self.gamma], dtype=float),
+            r_c0s=np.array([r_c0], dtype=float),
+            singularity_counts=np.zeros(3, dtype=np.int64),
+        )[0, 0]
+
+        expected = self.ref_calculate_high_precision_biot_savart_velocity(
+            S_G_Cg, E_G_Cg, P_G_Cg, self.gamma, r_c0
+        )
+
+        return float(np.linalg.norm(velocity - expected) / np.linalg.norm(expected))
+
+    def test_collapsed_line_vortex_near_collinear_off_segment_matches_reference(
+        self,
+    ) -> None:
+        """Test that the collapsed kernel matches the high precision reference to within
+        a margin over eps / sin(theta) for points nearly collinear with a line vortex
+        but off its segment, on both sides, with the sine of the angle at the point
+        between 1.0e-10 and 1.0e-6."""
+        for ratio in [2.0e-10, 2.0e-9, 2.0e-8, 2.0e-7, 2.0e-6]:
+            for beyond_end in [False, True]:
+                with self.subTest(ratio=ratio, beyond_end=beyond_end):
+                    S_G_Cg, E_G_Cg, P_G_Cg = self._near_collinear_geometry(
+                        ratio, beyond_end
+                    )
+                    self.assertLess(
+                        self._collapsed_relative_error(S_G_Cg, E_G_Cg, P_G_Cg),
+                        self._conditioning_tolerance(S_G_Cg, E_G_Cg, P_G_Cg),
+                    )
+
+    def test_expanded_line_vortex_near_collinear_off_segment_matches_reference(
+        self,
+    ) -> None:
+        """Test that the expanded kernel matches the high precision reference to within
+        a margin over eps / sin(theta) for points nearly collinear with a line vortex
+        but off its segment, on both sides, with the sine of the angle at the point
+        between 1.0e-10 and 1.0e-6."""
+        for ratio in [2.0e-10, 2.0e-9, 2.0e-8, 2.0e-7, 2.0e-6]:
+            for beyond_end in [False, True]:
+                with self.subTest(ratio=ratio, beyond_end=beyond_end):
+                    S_G_Cg, E_G_Cg, P_G_Cg = self._near_collinear_geometry(
+                        ratio, beyond_end
+                    )
+                    self.assertLess(
+                        self._expanded_relative_error(S_G_Cg, E_G_Cg, P_G_Cg),
+                        self._conditioning_tolerance(S_G_Cg, E_G_Cg, P_G_Cg),
+                    )
+
+    def test_collapsed_line_vortex_short_far_filament_matches_reference(self) -> None:
+        """Test that the collapsed kernel matches the high precision reference for short
+        line vortices seen broadside from one meter away, with lengths between 1.0e-3
+        and 1.0e-9 meters."""
+        for r0 in [1.0e-3, 1.0e-5, 1.0e-7, 1.0e-9]:
+            with self.subTest(r0=r0):
+                S_G_Cg, E_G_Cg, P_G_Cg = self._short_far_geometry(r0)
+                self.assertLess(
+                    self._collapsed_relative_error(S_G_Cg, E_G_Cg, P_G_Cg),
+                    self.max_relative_error,
+                )
+
+    def test_expanded_line_vortex_short_far_filament_matches_reference(self) -> None:
+        """Test that the expanded kernel matches the high precision reference for short
+        line vortices seen broadside from one meter away, with lengths between 1.0e-3
+        and 1.0e-9 meters."""
+        for r0 in [1.0e-3, 1.0e-5, 1.0e-7, 1.0e-9]:
+            with self.subTest(r0=r0):
+                S_G_Cg, E_G_Cg, P_G_Cg = self._short_far_geometry(r0)
+                self.assertLess(
+                    self._expanded_relative_error(S_G_Cg, E_G_Cg, P_G_Cg),
+                    self.max_relative_error,
+                )
 
 
 class TestSingularityCounters(unittest.TestCase):

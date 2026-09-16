@@ -18,16 +18,16 @@ _logger = _logging.get_logger("_aerodynamics_functions")
 # the stability of the result. I'm using this value, as cited for use in flapping-wing
 # vehicles in "Role of Filament Strain in the Free-Vortex Modeling of Rotor Wakes"
 # (Ananthan and Leishman, 2004). It is unitless.
-_squire = 1.0e-4
+_SQUIRE = 1.0e-4
 
 # Lamb's constant relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is well agreed upon, and published in "Extended
 # Unsteady Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016). It is
 # unitless.
-_lamb = 1.25643
+_LAMB = 1.25643
 
 # The local machine error is used to detect degenerate (zero length) line vortices.
-_eps = np.finfo(float).eps
+_EPS = np.finfo(float).eps
 
 # The minimum core radius of a line vortex, as a fraction of its length. Every line
 # vortex gets at least this core, so a zero initial core radius means the floor.
@@ -39,12 +39,12 @@ _eps = np.finfo(float).eps
 # is a fraction f of the length scales the induced velocity by about 1 - f^2, a relative
 # error of f^2. Second, a core bounds the spurious velocity at a point that should lie
 # on the line vortex, such as a load evaluation point at a leg's center. Rounding leaves
-# such a point about _eps times its distance from the reference point off the line
+# such a point about _EPS times its distance from the reference point off the line
 # vortex, and with a core the velocity there is about strength * offset / (2 * pi *
 # core^2). Relative to a typical near field velocity of strength / (2 * pi * length),
-# that is _eps / f^2 when the point's distance from the reference point is about a
+# that is _EPS / f^2 when the point's distance from the reference point is about a
 # length. Growing f shrinks the spurious error and grows the bias, and the two are equal
-# at f = _eps^(1 / 4), where both are about _eps^(1 / 2).
+# at f = _EPS^(1 / 4), where both are about _EPS^(1 / 2).
 #
 # Two ratios were taken as one above. Evaluations closer than a length, such as a
 # collocation point half a Panel chord from a long spanwise leg, raise the bias by the
@@ -52,11 +52,11 @@ _eps = np.finfo(float).eps
 # length from the line vortex raise the spurious error linearly in that distance over
 # the length. Across all plausible ranges of both ratios, these cause relative errors
 # much lower than the solvers' own accuracies, so the fraction is not adjusted for them.
-_core_fraction = _eps**0.25
+_CORE_FRACTION = _EPS**0.25
 
-# Pre compute 4 * pi and 4.0 * _lamb as they used repeatedly.
-_four_pi = 4.0 * math.pi
-_four_lamb = 4.0 * _lamb
+# Pre compute 4 * pi and 4.0 * _LAMB as they used repeatedly.
+_FOUR_PI = 4.0 * math.pi
+_FOUR_LAMB = 4.0 * _LAMB
 
 # The smallest number of evaluations worth handing one thread of a parallel kernel
 # launch, where one evaluation is computing one line vortex's induced velocity at one
@@ -862,7 +862,7 @@ def _collapsed_velocities_from_line_vortices(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _eps:
+        if r0 < _EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -873,12 +873,12 @@ def _collapsed_velocities_from_line_vortices(
         age = ages[vortex_id]
 
         # Clamp the initial core radius to the numerical floor.
-        r_c0 = max(r_c0s[vortex_id], _core_fraction * r0)
+        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
 
         # Calculate the radius of the line vortex's core squared.
-        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c1[vortex_id] = strength / _FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index
@@ -1064,7 +1064,7 @@ def _expanded_velocities_from_line_vortices(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _eps:
+        if r0 < _EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -1075,12 +1075,12 @@ def _expanded_velocities_from_line_vortices(
         age = ages[vortex_id]
 
         # Clamp the initial core radius to the numerical floor.
-        r_c0 = max(r_c0s[vortex_id], _core_fraction * r0)
+        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
 
         # Calculate the radius of the line vortex's core squared.
-        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c1[vortex_id] = strength / _FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index

@@ -1422,7 +1422,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
         :return v_A__I: A (3,) ndarray of floats representing the induced velocity (in A
             axes, observed from an inertial frame) in meters per second.
         """
-        r_c = _aerodynamics_functions._core_fraction * float(
+        r_c = _aerodynamics_functions._CORE_FRACTION * float(
             np.linalg.norm(E_A_a - S_A_a)
         )
         return TestCoreRadiusFormula.ref_calculate_regularized_biot_savart_velocity(
@@ -1567,8 +1567,8 @@ class TestCoreRadiusFormula(unittest.TestCase):
 
         # Manually compute r_c using the Ramasamy-Leishman formula with the module's
         # physical constants.
-        lamb = _aerodynamics_functions._lamb
-        squire = _aerodynamics_functions._squire
+        lamb = _aerodynamics_functions._LAMB
+        squire = _aerodynamics_functions._SQUIRE
         r_c = np.sqrt(r_c0**2 + 4.0 * lamb * (nu + squire * abs(gamma)) * age)
 
         # Call the kernel.

@@ -241,8 +241,107 @@ def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
         source[0] = text
 
 
+# Parameter annotations to show in place of the source annotation, keyed by the fully
+# qualified class (for constructor parameters) or method, and then by parameter name.
+# These are signatures whose source annotation names a class from a private module,
+# which the API reference does not document, and is wider than what the implementation
+# accepts: the hook methods are widened to the shared parent solver type because an
+# override cannot narrow a parameter type, and the base unsteady solver's constructor is
+# widened to the shared parent problem type so the derived solvers can pass their own
+# problem types through it. The docs show the type that actually works, and contributors
+# can read the source for the formal contract.
+_ANNOTATION_OVERRIDES = {
+    "pterasoftware.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver": {
+        "unsteady_problem": "pterasoftware.problems.UnsteadyProblem",
+    },
+    "pterasoftware.problems.FreeFlightUnsteadyProblem.initialize_next_problem": {
+        "solver": (
+            "pterasoftware.free_flight_unsteady_ring_vortex_lattice_method."
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver"
+        ),
+    },
+    "pterasoftware.problems.AeroelasticUnsteadyProblem.initialize_next_problem": {
+        "solver": (
+            "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method."
+            "AeroelasticUnsteadyRingVortexLatticeMethodSolver"
+        ),
+    },
+}
+
+
+def _apply_annotation_overrides(app: Any, text: str, module: str) -> str:
+    """Apply _ANNOTATION_OVERRIDES to one module's generated API reference.
+
+    Each override key is resolved through AutoAPI's parsed object tree, which settles
+    whether it names a class or a method and which module's page renders it, and which
+    raises for a key that no longer matches anything in the package. The generated
+    reStructuredText renders each class as a ``py:class`` directive whose signature
+    holds the constructor parameters, with its methods as ``py:method`` directives
+    beneath it, each signature on one line. A class is located by its directive, and a
+    method by finding its class directive and then the first directive for the method
+    name before the next class directive. Within that signature line, the parameter's
+    annotation runs from the parameter name to the next top-level comma or the closing
+    parenthesis.
+    """
+    all_objects = getattr(app.env, "autoapi_all_objects", {})
+    for target_id, overrides in _ANNOTATION_OVERRIDES.items():
+        target = all_objects.get(target_id)
+        if target is None:
+            raise ValueError(f"Annotation override target {target_id} not found.")
+        if target.type == "class":
+            class_name = target.short_name
+            if target_id.rsplit(".", 1)[0] != module:
+                continue
+            pattern = rf"\.\. py:class:: {class_name}\("
+        elif target.type == "method":
+            class_id, method_name = target_id.rsplit(".", 1)
+            if class_id.rsplit(".", 1)[0] != module:
+                continue
+            class_name = class_id.rsplit(".", 1)[1]
+            pattern = (
+                rf"\.\. py:class:: {class_name}\("
+                rf"(?:(?!\.\. py:class::).)*?"
+                rf"\.\. py:method:: {method_name}\("
+            )
+        else:
+            raise ValueError(
+                f"Annotation override target {target_id} is a {target.type}, not a "
+                "class or method."
+            )
+        match = re.search(pattern, text, flags=re.DOTALL)
+        if match is None:
+            raise ValueError(f"Annotation override target {target_id} not rendered.")
+        line_end = text.index("\n", match.end())
+        signature = text[match.end() : line_end]
+        for parameter, annotation in overrides.items():
+            start = signature.index(f"{parameter}: ") + len(parameter) + 2
+            depth = 0
+            end = start
+            while end < len(signature):
+                character = signature[end]
+                if character == "[":
+                    depth += 1
+                elif character == "]":
+                    depth -= 1
+                elif character in ",)" and depth == 0:
+                    break
+                end += 1
+            signature = signature[:start] + annotation + signature[end:]
+        text = text[: match.end()] + signature + text[line_end:]
+    return text
+
+
+def _rewrite_annotations(app: Any, docname: str, source: list[str]) -> None:
+    """Apply _ANNOTATION_OVERRIDES to each generated API reference page."""
+    if not docname.startswith(f"{autoapi_root}/"):
+        return
+    module = docname[len(autoapi_root) + 1 :].removesuffix("/index").replace("/", ".")
+    source[0] = _apply_annotation_overrides(app, source[0], module)
+
+
 def setup(app: Any) -> None:
     app.connect("source-read", _rewrite_repo_root_links)
+    app.connect("source-read", _rewrite_annotations)
 
     # Copy extra assets to the site root after build
     # noinspection PyShadowingNames

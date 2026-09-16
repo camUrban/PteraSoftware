@@ -466,8 +466,8 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         - 1``. Per step work that should run on every step (such as recording the
         current step's loads) belongs outside that guard.
 
-        :param solver: The CoupledUnsteadyRingVortexLatticeMethodSolver instance
-            providing aerodynamic data from the current time step.
+        :param solver: The solver driving this problem, which provides the aerodynamic
+            data from the current time step.
         :param step: The current time step index (zero indexed).
         :return: None
         :raises NotImplementedError: Always. Subclasses must override this method.
@@ -1420,8 +1420,8 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         rigid body state are driven to mutual consistency by the strongly coupled sub-
         iteration before the next step is committed.
 
-        :param solver: The CoupledUnsteadyRingVortexLatticeMethodSolver instance
-            providing aerodynamic data from the current time step.
+        :param solver: The solver driving this problem, which provides the aerodynamic
+            data from the current time step.
         :param step: The current time step index (zero indexed).
         :return: None
         """
@@ -1468,8 +1468,8 @@ _SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
 
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
-    """A subclass of _CoupledUnsteadyProblem used to couple aeroelastic wing
-    deformations with unsteady aerodynamics.
+    """A class used to contain problems that couple aeroelastic wing deformations with
+    unsteady aerodynamics.
 
     This class couples aerodynamic loads with wing structural dynamics (spring-mass-
     damper system) to simulate aeroelastic deformation. Each time step, wing
@@ -1545,9 +1545,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
         Sets up the aeroelastic problem with structural parameters for the torsional
         spring-mass-damper model applied to each wing spanwise section. Initializes the
         per-wing structural state time series.
-
-        See _CoupledUnsteadyProblem's initialization method for descriptions of
-        inherited parameters.
 
         :param movement: An AeroelasticMovement containing the prescribed motion and
             aerodynamic setup for the aeroelastic simulation.

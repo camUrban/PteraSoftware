@@ -146,8 +146,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def __init__(self, unsteady_problem: _core.CoreUnsteadyProblem) -> None:
         """The initialization method.
 
-        :param unsteady_problem: The UnsteadyProblem (or subclass of
-            CoreUnsteadyProblem) to be solved.
+        :param unsteady_problem: The UnsteadyProblem to be solved. The derived solvers
+            pass their own problem types through this parameter.
         :return: None
         """
         # Guard direct instantiation of the base solver against coupled problems while

@@ -351,16 +351,9 @@ class Airplane:
         This method is used by AirplaneMovement to create Airplanes at different time
         steps that share the same geometry but have different positions in the
         formation. It maintains immutability by returning a new Airplane rather than
-        modifying the existing one.
-
-        Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to differ
-        from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs, panels, etc.)
-        is defined relative to this Airplane's own CG, not the formation position, so it
-        remains valid, (2) Panel local coordinates (_G_Cg) are independent of formation
-        position (global coordinates (_GP1_CgP1) are reset to None by Panel's
-        __deepcopy__ and will be recomputed by the Problem using the new transformation
-        matrix), and (3) all other child objects (WingCrossSections, Airfoils, vortices)
-        have no dependency on Cg_GP1_CgP1.
+        modifying the existing one. The Wings and their child objects are deep copied
+        unchanged, since their geometry is defined relative to this Airplane's own CG
+        rather than its position in the formation.
 
         :param new_Cg_GP1_CgP1: An array-like object of 3 numbers representing the
             position of the new Airplane's CG (in the first Airplane's geometry axes,
@@ -368,6 +361,15 @@ class Airplane:
             Values are converted to floats internally. The units are in meters.
         :return: A new Airplane with the specified position and deep copied geometry.
         """
+        # Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to
+        # differ from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs,
+        # panels, etc.) is defined relative to this Airplane's own CG, not the formation
+        # position, so it remains valid, (2) Panel local coordinates (_G_Cg) are
+        # independent of formation position (global coordinates (_GP1_CgP1) are reset to
+        # None by Panel's __deepcopy__ and will be recomputed by the Problem using the
+        # new transformation matrix), and (3) all other child objects
+        # (WingCrossSections, Airfoils, vortices) have no dependency on Cg_GP1_CgP1.
+
         # Validate the new position.
         validated_Cg_GP1_CgP1 = (
             _parameter_validation.threeD_number_vectorLike_return_float(

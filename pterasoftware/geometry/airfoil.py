@@ -14,16 +14,12 @@ from __future__ import annotations
 import importlib.resources
 import warnings
 from collections.abc import Sequence
-from typing import Any, cast
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .. import _functions, _parameter_validation, _transformations
-
-# Create a token object for bypassing outline_A_Lp parameter validation in Airfoil's
-# __init__ method.
-_TRUST = object()
 
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
 # annotated as Any so the deprecated parameter can carry it as a default while keeping
@@ -72,7 +68,6 @@ class Airfoil:
         outline_A_Lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
         resample: bool | np.bool = True,
         n_points_per_side: int = 400,
-        _trust: object | None = None,
         outline_A_lp: Any = _UNSET,
     ) -> None:
         """The initialization method.
@@ -136,14 +131,10 @@ class Airfoil:
         self._name = _parameter_validation.str_return_str(name, "name")
 
         if outline_A_Lp is not None:
-            if _trust is not _TRUST:
-                # Validate, normalize, and final validate user provided outlines.
-                self._outline_A_Lp = self._validate_outline_preliminary(outline_A_Lp)
-                self._normalize_outline()
-                self._validate_outline_final()
-            else:
-                # When _trust is _TRUST, we know outline_A_Lp is already validated.
-                self._outline_A_Lp = cast(np.ndarray, outline_A_Lp)
+            # Validate, normalize, and final validate user provided outlines.
+            self._outline_A_Lp = self._validate_outline_preliminary(outline_A_Lp)
+            self._normalize_outline()
+            self._validate_outline_final()
         else:
             self._populate_outline()
             # Validate, normalize, and final validate database and generated NACA
@@ -413,17 +404,23 @@ class Airfoil:
             ]
         )
 
-        # Return the new flapped Airfoil, with the _TRUST token so that we don't
-        # re-validate the outline, which would fail because the validation requires the
-        # trailing edge points be roughly at y = 0.0 (in airfoil axes, relative to the
-        # leading point).
-        return Airfoil(
-            name=self.name + " flapped",
-            outline_A_Lp=flappedOutline_A_Lp,
-            resample=False,
-            n_points_per_side=self.n_points_per_side,
-            _trust=_TRUST,
-        )
+        # Build the flapped Airfoil without calling __init__, which would re-validate
+        # the outline and fail because the validation requires the trailing edge points
+        # be roughly at y = 0.0 (in airfoil axes, relative to the leading point). The
+        # flapped outline is derived from this Airfoil's already validated outline, so
+        # it is stored as is, and the remaining steps mirror __init__ with resampling
+        # disabled.
+        flapped_airfoil = object.__new__(Airfoil)
+        flapped_airfoil._name = self._name + " flapped"
+        flapped_airfoil._outline_A_Lp = flappedOutline_A_Lp
+        flapped_airfoil._resample = False
+        flapped_airfoil._n_points_per_side = self._n_points_per_side
+        flapped_airfoil._mcl_A_Lp = None
+        flapped_airfoil._populate_mcl()
+        flapped_airfoil._outline_A_Lp.flags.writeable = False
+        if flapped_airfoil._mcl_A_Lp is not None:
+            flapped_airfoil._mcl_A_Lp.flags.writeable = False
+        return flapped_airfoil
 
     def draw(self) -> None:
         """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.

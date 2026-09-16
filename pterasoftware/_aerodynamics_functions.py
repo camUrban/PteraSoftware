@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import sys
 import warnings
 
 import numba
@@ -27,7 +28,7 @@ _SQUIRE = 1.0e-4
 _LAMB = 1.25643
 
 # The local machine error is used to detect degenerate (zero length) line vortices.
-_EPS = np.finfo(float).eps
+_EPS = sys.float_info.epsilon
 
 # The minimum core radius of a line vortex, as a fraction of its length. Every line
 # vortex gets at least this core, so a zero initial core radius means the floor.

@@ -71,13 +71,15 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         )
 
         # Create initial core radius fixtures.
-        self.simple_ring_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1)
-        self.multiple_ring_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(3)
+        self.simple_ring_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1, 4)
+        self.multiple_ring_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(
+            3, 4
+        )
         self.simple_horseshoe_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(
-            1
+            1, 3
         )
         self.multiple_horseshoe_rc0s = (
-            aerodynamics_functions_fixtures.make_rc0s_fixture(2)
+            aerodynamics_functions_fixtures.make_rc0s_fixture(2, 3)
         )
 
         # Create age and viscosity fixtures.
@@ -97,7 +99,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -121,7 +123,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -140,7 +142,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             r_c0s=self.multiple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -160,7 +162,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
                 ages=self.ages,
                 nu=self.kinematic_viscosity,
             )
@@ -184,7 +186,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=zero_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -206,7 +208,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -228,7 +230,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -247,7 +249,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -266,7 +268,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
             strengths=self.multiple_ring_strengths,
             r_c0s=self.multiple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -286,7 +288,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_ring_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=self.kinematic_viscosity,
         )
@@ -306,7 +308,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -322,7 +324,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.multiple_ring_Blrvp,
                 strengths=self.multiple_ring_strengths,
                 r_c0s=self.multiple_ring_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -347,7 +349,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -371,7 +373,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -393,7 +395,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -416,7 +418,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=zero_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -436,7 +438,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -458,7 +460,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -478,7 +480,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -498,7 +500,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -512,7 +514,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.multiple_horseshoe_Blhvp,
                 strengths=self.multiple_horseshoe_strengths,
                 r_c0s=self.multiple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -534,7 +536,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
                 strengths=self.simple_ring_strengths,
                 r_c0s=self.simple_ring_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
                 ages=None,
                 nu=self.kinematic_viscosity,
             )
@@ -553,7 +555,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
                 strengths=self.simple_horseshoe_strengths,
                 r_c0s=self.simple_horseshoe_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -791,19 +793,12 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         P_G_Cg = np.array([0.5, 0.5, 1.0], dtype=float)
 
         # Calculate velocity induced (in geometry axes, observed from the Earth frame)
-        # by each conceptual line vortex using the reference implementation.
-        vRight_G__E = self.ref_calculate_biot_savart_velocity(
-            Br_G_Cg, Fr_G_Cg, P_G_Cg, 1.0
-        )
-        vFront_G__E = self.ref_calculate_biot_savart_velocity(
-            Fr_G_Cg, Fl_G_Cg, P_G_Cg, 1.0
-        )
-        vLeft_G__E = self.ref_calculate_biot_savart_velocity(
-            Fl_G_Cg, Bl_G_Cg, P_G_Cg, 1.0
-        )
-        vBack_G__E = self.ref_calculate_biot_savart_velocity(
-            Bl_G_Cg, Br_G_Cg, P_G_Cg, 1.0
-        )
+        # by each conceptual line vortex using the floored reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
+        vRight_G__E = ref(Br_G_Cg, Fr_G_Cg, P_G_Cg, 1.0)
+        vFront_G__E = ref(Fr_G_Cg, Fl_G_Cg, P_G_Cg, 1.0)
+        vLeft_G__E = ref(Fl_G_Cg, Bl_G_Cg, P_G_Cg, 1.0)
+        vBack_G__E = ref(Bl_G_Cg, Br_G_Cg, P_G_Cg, 1.0)
 
         # Sum to get total velocity induced by all the conceptual line vortices (in
         # geometry axes, observed from the Earth frame).
@@ -816,9 +811,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         stackBlrvp_GP1_CgP1 = Bl_G_Cg.reshape(1, 3)
         strengths = np.array([1.0], dtype=float)
 
-        # Use 0 for the initial core radius as the reference implementation is a
-        # coreless model.
-        r_c0s = np.zeros(1, dtype=float)
+        # Pass zeros for the initial core radii so each leg takes the numerical floor,
+        # which the floored reference implementation applies as well.
+        r_c0s = np.zeros((1, 4), dtype=float)
 
         # Calculate velocity induced by an equivalent ring vortex (in geometry axes,
         # observed from the Earth frame) using the
@@ -831,7 +826,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
             stackBlrvp_GP1_CgP1=stackBlrvp_GP1_CgP1,
             strengths=strengths,
             r_c0s=r_c0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=None,
             nu=0.0,
         )[0]
@@ -854,10 +849,12 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         # Vortex strength.
         gamma = 1.0
 
-        # Calculate velocity induced by each line segment.
-        v_right = self.ref_calculate_biot_savart_velocity(Br, Fr, P, gamma)
-        v_finite = self.ref_calculate_biot_savart_velocity(Fr, Fl, P, gamma)
-        v_left = self.ref_calculate_biot_savart_velocity(Fl, Bl, P, gamma)
+        # Calculate velocity induced by each line segment using the floored reference
+        # implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
+        v_right = ref(Br, Fr, P, gamma)
+        v_finite = ref(Fr, Fl, P, gamma)
+        v_left = ref(Fl, Bl, P, gamma)
 
         # Sum to get total velocity.
         expected_total = v_right + v_finite + v_left
@@ -870,9 +867,9 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         stackBlhvp_GP1_CgP1 = Bl.reshape(1, 3)
         strengths = np.array([gamma], dtype=float)
 
-        # Use 0 for the initial core radius as the reference implementation is a
-        # coreless model.
-        r_c0s = np.zeros(1, dtype=float)
+        # Pass zeros for the initial core radii so each leg takes the numerical floor,
+        # which the floored reference implementation applies as well.
+        r_c0s = np.zeros((1, 3), dtype=float)
 
         computed_total = (
             _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
@@ -883,7 +880,7 @@ class TestAerodynamicsFunctions(unittest.TestCase):
                 stackBlhvp_GP1_CgP1=stackBlhvp_GP1_CgP1,
                 strengths=strengths,
                 r_c0s=r_c0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )[0]
         )
 
@@ -892,8 +889,8 @@ class TestAerodynamicsFunctions(unittest.TestCase):
 
 
 class TestSingularityGuards(unittest.TestCase):
-    """This is a class with functions to test the scale invariant singularity guards in
-    the Biot-Savart kernels."""
+    """This is a class with functions to test the singularity guards and the numerical
+    core radius floor in the Biot-Savart kernels."""
 
     def setUp(self) -> None:
         """Set up fixtures for singularity guard tests."""
@@ -941,9 +938,10 @@ class TestSingularityGuards(unittest.TestCase):
             aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
         )
 
-        # The initial core radii are zero for coreless comparison with the reference
-        # Biot-Savart implementation.
-        self.zero_rc0s = np.zeros(1, dtype=float)
+        # The initial core radii are zero, so every leg takes the numerical floor that
+        # the floored reference Biot-Savart implementation applies as well.
+        self.zero_rc0s = np.zeros((1, 4), dtype=float)
+        self.zero_horseshoe_rc0s = np.zeros((1, 3), dtype=float)
 
     # ---- Degenerate filament tests (r0 < eps) ----
 
@@ -962,7 +960,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
             strengths=self.degenerate_ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
         # Verify all velocities are zero.
@@ -983,7 +981,7 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.degenerate_ring_Blrvp,
             strengths=self.degenerate_ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
         # Verify all velocities are zero.
@@ -1004,8 +1002,8 @@ class TestSingularityGuards(unittest.TestCase):
                 stackFlhvp_GP1_CgP1=self.degenerate_horseshoe_Flhvp,
                 stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
                 strengths=self.degenerate_horseshoe_strengths,
-                r_c0s=self.zero_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                r_c0s=self.zero_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
@@ -1027,15 +1025,15 @@ class TestSingularityGuards(unittest.TestCase):
                 stackFlhvp_GP1_CgP1=self.degenerate_horseshoe_Flhvp,
                 stackBlhvp_GP1_CgP1=self.degenerate_horseshoe_Blhvp,
                 strengths=self.degenerate_horseshoe_strengths,
-                r_c0s=self.zero_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                r_c0s=self.zero_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
         # Verify all velocities are zero.
         npt.assert_array_almost_equal(velocities, np.zeros((1, 1, 3), dtype=float))
 
-    # ---- Vertex proximity tests (r1/r0 < tol or r2/r0 < tol) ----
+    # ---- Vertex tests (r1 == 0 or r2 == 0) ----
 
     def test_collapsed_ring_vortex_point_at_corner_matches_non_singular_legs(
         self,
@@ -1044,15 +1042,15 @@ class TestSingularityGuards(unittest.TestCase):
         from only the non singular legs when the evaluation point is at a ring vortex
         corner.
 
-        The evaluation point is placed at the front right corner. The right leg (Br to
-        Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl) hits the r1/r0 <
-        tol guard. The left and back legs are non singular.
+        The evaluation point is placed at the front right corner, which is the end
+        vertex of the right leg (Br to Fr) and the start vertex of the front leg (Fr to
+        Fl), so both are skipped. The left and back legs are non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
         gamma = float(self.ring_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
             stackP_GP1_CgP1=point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1061,12 +1059,12 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
-        # Compute expected velocity from the two non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the two non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
         v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
@@ -1082,15 +1080,15 @@ class TestSingularityGuards(unittest.TestCase):
         from only the non singular legs when the evaluation point is at a ring vortex
         corner.
 
-        The evaluation point is placed at the front right corner. The right leg (Br to
-        Fr) hits the r2/r0 < tol guard, and the front leg (Fr to Fl) hits the r1/r0 <
-        tol guard. The left and back legs are non singular.
+        The evaluation point is placed at the front right corner, which is the end
+        vertex of the right leg (Br to Fr) and the start vertex of the front leg (Fr to
+        Fl), so both are skipped. The left and back legs are non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
         gamma = float(self.ring_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
             stackP_GP1_CgP1=point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1099,12 +1097,12 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
-        # Compute expected velocity from the two non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the two non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
         v_back = ref(self.ring_Blrvp[0], self.ring_Brrvp[0], P, gamma)
@@ -1120,15 +1118,15 @@ class TestSingularityGuards(unittest.TestCase):
         contribution from only the non singular leg when the evaluation point is at a
         horseshoe vortex corner.
 
-        The evaluation point is placed at the front right corner. The right leg (Br to
-        Fr) hits the r2/r0 < tol guard, and the finite leg (Fr to Fl) hits the r1/r0 <
-        tol guard. Only the left leg is non singular.
+        The evaluation point is placed at the front right corner, which is the end
+        vertex of the right leg (Br to Fr) and the start vertex of the finite leg (Fr to
+        Fl), so both are skipped. Only the left leg is non singular.
         """
         # Place the evaluation point at the front right corner.
         point = self.horseshoe_Frhvp.copy()
         gamma = float(self.horseshoe_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = (
             _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=point,
@@ -1137,21 +1135,21 @@ class TestSingularityGuards(unittest.TestCase):
                 stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
                 stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
                 strengths=self.horseshoe_strengths,
-                r_c0s=self.zero_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                r_c0s=self.zero_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
-        # Compute expected velocity from the one non singular leg using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the one non singular leg using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         expected = ref(self.horseshoe_Flhvp[0], self.horseshoe_Blhvp[0], P, gamma)
 
         # Verify the kernel result matches the non singular leg's contribution.
         npt.assert_array_almost_equal(velocities[0], expected, decimal=10)
 
-    # ---- Collinearity tests (r3/(r1*r2) < tol) ----
+    # ---- Collinearity tests (r3 == 0) ----
 
     def test_collapsed_ring_vortex_point_on_leg_extension_matches_non_singular_legs(
         self,
@@ -1161,14 +1159,14 @@ class TestSingularityGuards(unittest.TestCase):
         a ring vortex leg.
 
         The evaluation point is placed at (5, 0.5, 0), which is collinear with the right
-        leg (Br to Fr, both at y=0.5). The right leg hits the r3/(r1*r2) < tol guard.
+        leg (Br to Fr, both at y=0.5), so the right leg's contribution is exactly zero.
         The other three legs are non singular.
         """
         # Place the evaluation point on the extension of the right leg.
         point = np.array([[5.0, 0.5, 0.0]], dtype=float)
         gamma = float(self.ring_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
             stackP_GP1_CgP1=point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1177,12 +1175,12 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the three non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
@@ -1200,14 +1198,14 @@ class TestSingularityGuards(unittest.TestCase):
         a ring vortex leg.
 
         The evaluation point is placed at (5, 0.5, 0), which is collinear with the right
-        leg (Br to Fr, both at y=0.5). The right leg hits the r3/(r1*r2) < tol guard.
+        leg (Br to Fr, both at y=0.5), so the right leg's contribution is exactly zero.
         The other three legs are non singular.
         """
         # Place the evaluation point on the extension of the right leg.
         point = np.array([[5.0, 0.5, 0.0]], dtype=float)
         gamma = float(self.ring_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = _aerodynamics_functions.expanded_velocities_from_ring_vortices(
             stackP_GP1_CgP1=point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1216,12 +1214,12 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the three non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
@@ -1239,14 +1237,14 @@ class TestSingularityGuards(unittest.TestCase):
         a ring vortex leg.
 
         The evaluation point is placed at (0.5, 0.5, 0), which is the midpoint of the
-        right leg (Br to Fr). This triggers the r3/(r1*r2) < tol guard for the right leg
-        due to collinearity. The other three legs are non singular.
+        right leg (Br to Fr), so the right leg's contribution is exactly zero inside its
+        core. The other three legs are non singular.
         """
         # Place the evaluation point at the midpoint of the right leg.
         point = np.array([[0.5, 0.5, 0.0]], dtype=float)
         gamma = float(self.ring_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
             stackP_GP1_CgP1=point,
             stackBrrvp_GP1_CgP1=self.ring_Brrvp,
@@ -1255,12 +1253,12 @@ class TestSingularityGuards(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=self.zero_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
-        # Compute expected velocity from the three non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the three non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_front = ref(self.ring_Frrvp[0], self.ring_Flrvp[0], P, gamma)
         v_left = ref(self.ring_Flrvp[0], self.ring_Blrvp[0], P, gamma)
@@ -1278,14 +1276,14 @@ class TestSingularityGuards(unittest.TestCase):
         horseshoe vortex's finite leg.
 
         The evaluation point is placed at (0, 0, 0), which is the midpoint of the finite
-        leg (Fr to Fl, both at x=0). This triggers the r3/(r1*r2) < tol guard for the
-        finite leg due to collinearity. The right and left legs are non singular.
+        leg (Fr to Fl, both at x=0), so the finite leg's contribution is exactly zero
+        inside its core. The right and left legs are non singular.
         """
         # Place the evaluation point at the midpoint of the finite leg.
         point = np.array([[0.0, 0.0, 0.0]], dtype=float)
         gamma = float(self.horseshoe_strengths[0])
 
-        # Call the function with zero core radius for coreless comparison.
+        # Pass zeros for the initial core radii so each leg takes the numerical floor.
         velocities = (
             _aerodynamics_functions.collapsed_velocities_from_horseshoe_vortices(
                 stackP_GP1_CgP1=point,
@@ -1294,14 +1292,14 @@ class TestSingularityGuards(unittest.TestCase):
                 stackFlhvp_GP1_CgP1=self.horseshoe_Flhvp,
                 stackBlhvp_GP1_CgP1=self.horseshoe_Blhvp,
                 strengths=self.horseshoe_strengths,
-                r_c0s=self.zero_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                r_c0s=self.zero_horseshoe_rc0s,
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
         )
 
-        # Compute expected velocity from the two non singular legs using the reference
-        # Biot-Savart implementation.
-        ref = TestAerodynamicsFunctions.ref_calculate_biot_savart_velocity
+        # Compute expected velocity from the two non singular legs using the floored
+        # reference implementation.
+        ref = TestCoreRadiusFormula.ref_calculate_floored_biot_savart_velocity
         P = point[0]
         v_right = ref(self.horseshoe_Brhvp[0], self.horseshoe_Frhvp[0], P, gamma)
         v_left = ref(self.horseshoe_Flhvp[0], self.horseshoe_Blhvp[0], P, gamma)
@@ -1374,7 +1372,6 @@ class TestCoreRadiusFormula(unittest.TestCase):
             second.
         """
         eps = np.finfo(float).eps
-        tol = 1.0e-10
 
         r1_A = P_A_a - S_A_a
         r2_A = P_A_a - E_A_a
@@ -1389,7 +1386,9 @@ class TestCoreRadiusFormula(unittest.TestCase):
         if r0 < eps:
             return np.zeros(3, dtype=float)
 
-        if r1 / r0 < tol or r2 / r0 < tol or r3 / (r1 * r2) < tol:
+        # A point on a vertex, or on the line vortex with no core, is a true singularity
+        # whose regularized limit is zero.
+        if r1 == 0.0 or r2 == 0.0 or (r3 == 0.0 and r_c == 0.0):
             return np.zeros(3, dtype=float)
 
         c_1 = gamma / (4.0 * math.pi)
@@ -1400,6 +1399,35 @@ class TestCoreRadiusFormula(unittest.TestCase):
         v_A__I: np.ndarray = c_1 * (c_2_num / c_2_den) * r3_A
 
         return v_A__I
+
+    @staticmethod
+    def ref_calculate_floored_biot_savart_velocity(
+        S_A_a: np.ndarray,
+        E_A_a: np.ndarray,
+        P_A_a: np.ndarray,
+        gamma: float,
+    ) -> np.ndarray:
+        """Calculate induced velocity using the regularized Biot-Savart formula with the
+        kernels' numerical floor as the core radius, which is what a line vortex with a
+        zero initial core radius receives.
+
+        :param S_A_a: A (3,) ndarray of floats representing the start point of the line
+            vortex (in A axes, relative to point a) in meters.
+        :param E_A_a: A (3,) ndarray of floats representing the end point of the line
+            vortex (in A axes, relative to point a) in meters.
+        :param P_A_a: A (3,) ndarray of floats representing the evaluation point (in A
+            axes, relative to point a) in meters.
+        :param gamma: A float representing the line vortex strength in meters squared
+            per second.
+        :return v_A__I: A (3,) ndarray of floats representing the induced velocity (in A
+            axes, observed from an inertial frame) in meters per second.
+        """
+        r_c = _aerodynamics_functions._core_fraction * float(
+            np.linalg.norm(E_A_a - S_A_a)
+        )
+        return TestCoreRadiusFormula.ref_calculate_regularized_biot_savart_velocity(
+            S_A_a, E_A_a, P_A_a, gamma, r_c
+        )
 
     def _call_collapsed_ring(
         self, rc0s: np.ndarray, ages: np.ndarray | None = None, nu: float = 0.0
@@ -1414,7 +1442,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.ring_Blrvp,
             strengths=self.ring_strengths,
             r_c0s=rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
             ages=ages,
             nu=nu,
         )
@@ -1445,7 +1473,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
         magnitudes = []
 
         for rc0 in rc0_values:
-            rc0s = np.array([rc0], dtype=float)
+            rc0s = np.full((1, 4), rc0, dtype=float)
             velocities = self._call_collapsed_ring(rc0s)
             magnitudes.append(np.linalg.norm(velocities[0]))
 
@@ -1456,7 +1484,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
     def test_collapsed_ring_vortex_velocity_decreases_with_increasing_age(self) -> None:
         """Test that increasing the vortex age decreases the induced velocity magnitude
         for a ring vortex due to core radius growth."""
-        rc0s = np.array([0.03], dtype=float)
+        rc0s = np.full((1, 4), 0.03, dtype=float)
         nu = 1.5e-5
         age_values = [0.0, 0.1, 0.5, 1.0, 5.0]
         magnitudes = []
@@ -1475,7 +1503,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
     ) -> None:
         """Test that increasing the kinematic viscosity decreases the induced velocity
         magnitude for an aged ring vortex due to faster core radius growth."""
-        rc0s = np.array([0.03], dtype=float)
+        rc0s = np.full((1, 4), 0.03, dtype=float)
         ages = np.array([1.0], dtype=float)
         nu_values = [0.0, 1.0e-5, 1.0e-4, 1.0e-3]
         magnitudes = []
@@ -1491,7 +1519,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
     def test_collapsed_ring_vortex_large_rc0_suppresses_velocity(self) -> None:
         """Test that a very large initial core radius suppresses the induced velocity to
         near zero."""
-        rc0s = np.array([1000.0], dtype=float)
+        rc0s = np.full((1, 4), 1000.0, dtype=float)
 
         # Call the function.
         velocities = self._call_collapsed_ring(rc0s)
@@ -1508,7 +1536,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
         With ages=None and nu=0.0, the core radius equals r_c0.
         """
         r_c0 = 0.03
-        rc0s = np.array([r_c0], dtype=float)
+        rc0s = np.full((1, 4), r_c0, dtype=float)
 
         # For bound vortices (ages=None), r_c = r_c0.
         r_c = r_c0
@@ -1534,7 +1562,7 @@ class TestCoreRadiusFormula(unittest.TestCase):
         age = 1.0
         nu = 1.5e-5
         gamma = float(self.ring_strengths[0])
-        rc0s = np.array([r_c0], dtype=float)
+        rc0s = np.full((1, 4), r_c0, dtype=float)
         ages = np.array([age], dtype=float)
 
         # Manually compute r_c using the Ramasamy-Leishman formula with the module's
@@ -1589,13 +1617,14 @@ class TestSingularityCounters(unittest.TestCase):
             aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
         )
 
-        # Zero initial core radii for coreless tests.
-        self.zero_rc0s = np.zeros(1, dtype=float)
+        # Zero initial core radii, so every leg takes the numerical floor.
+        self.zero_rc0s = np.zeros((1, 4), dtype=float)
+        self.zero_horseshoe_rc0s = np.zeros((1, 3), dtype=float)
 
     def test_degenerate_filament_increments_counter_zero(self) -> None:
         """Test that a degenerate ring vortex (all corners at origin) increments
         singularity_counts[0] (degenerate filament)."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
         _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
@@ -1616,7 +1645,7 @@ class TestSingularityCounters(unittest.TestCase):
         """Test that placing the evaluation point at a ring vortex corner increments
         singularity_counts[1] (vertex start proximity) and singularity_counts[2] (vertex
         end proximity)."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
@@ -1632,60 +1661,15 @@ class TestSingularityCounters(unittest.TestCase):
             singularity_counts=singularity_counts,
         )
 
-        # The right leg (Br to Fr) hits the r2 / r0 guard (counter 2) because the
-        # evaluation point is at Fr. The front leg (Fr to Fl) hits the r1 / r0 guard
-        # (counter 1) because the evaluation point is at Fr.
+        # The evaluation point is at Fr, which is the end vertex of the right leg (Br to
+        # Fr), incrementing counter 2, and the start vertex of the front leg (Fr to Fl),
+        # incrementing counter 1.
         self.assertGreater(singularity_counts[1], 0)
         self.assertGreater(singularity_counts[2], 0)
 
-    def test_on_filament_collinearity_increments_counter_three(self) -> None:
-        """Test that placing the evaluation point on the a ring vortex leg increments
-        singularity_counts[3] (on-filament collinearity)."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
-
-        # Place the evaluation point on the right leg.
-        point = np.array([[0.5, 0.5, 0.0]], dtype=float)
-
-        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=point,
-            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
-            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
-            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
-            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
-            strengths=self.ring_strengths,
-            r_c0s=self.zero_rc0s,
-            singularity_counts=singularity_counts,
-        )
-
-        # The right leg (Br to Fr) is collinear with the evaluation point.
-        self.assertGreater(singularity_counts[3], 0)
-
-    def test_off_filament_collinearity_does_not_increment_counter(self) -> None:
-        """Test that placing the evaluation point on the extension of a ring vortex leg
-        doesn't increment singularity_counts[3] (off-filament collinearity)."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
-
-        # Place the evaluation point on the extension of the right leg.
-        point = np.array([[5.0, 0.5, 0.0]], dtype=float)
-
-        _aerodynamics_functions.collapsed_velocities_from_ring_vortices(
-            stackP_GP1_CgP1=point,
-            stackBrrvp_GP1_CgP1=self.ring_Brrvp,
-            stackFrrvp_GP1_CgP1=self.ring_Frrvp,
-            stackFlrvp_GP1_CgP1=self.ring_Flrvp,
-            stackBlrvp_GP1_CgP1=self.ring_Blrvp,
-            strengths=self.ring_strengths,
-            r_c0s=self.zero_rc0s,
-            singularity_counts=singularity_counts,
-        )
-
-        # The point is collinear with the right leg (Br to Fr) but lies off the filament
-        # (c_3 > 0), so the counter is not incremented.
-        self.assertEqual(singularity_counts[3], 0)
-
     def test_non_singular_configuration_has_zero_counts(self) -> None:
         """Test that a non singular configuration produces zero singularity counts."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
 
         # Place the evaluation point well above the ring vortex.
         point = np.array([[0.5, 0.0, 5.0]], dtype=float)
@@ -1707,7 +1691,7 @@ class TestSingularityCounters(unittest.TestCase):
     def test_counts_accumulate_across_calls(self) -> None:
         """Test that singularity counts accumulate when the same array is passed to
         multiple calls."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
         point = np.array([[1.0, 0.0, 0.0]], dtype=float)
 
         # First call: degenerate ring vortex.
@@ -1743,7 +1727,7 @@ class TestSingularityCounters(unittest.TestCase):
     def test_horseshoe_vortex_counter_increments(self) -> None:
         """Test that singularity counters work correctly for horseshoe vortex wrapper
         functions."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
         point = self.horseshoe_Frhvp.copy()
@@ -1765,7 +1749,7 @@ class TestSingularityCounters(unittest.TestCase):
     def test_expanded_ring_vortex_counter_increments(self) -> None:
         """Test that singularity counters work correctly for the expanded ring vortex
         wrapper."""
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
 
         # Place the evaluation point at the front right corner.
         point = self.ring_Frrvp.copy()
@@ -1796,7 +1780,7 @@ class TestLogSingularityCounts(unittest.TestCase):
         from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_zero_counts")
-        singularity_counts = np.zeros(4, dtype=np.int64)
+        singularity_counts = np.zeros(3, dtype=np.int64)
 
         with self.assertLogs(logger, level="DEBUG") as cm:
             logger.debug("sentinel")
@@ -1815,7 +1799,7 @@ class TestLogSingularityCounts(unittest.TestCase):
         from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_nonzero_counts")
-        singularity_counts = np.array([2, 0, 3, 0], dtype=np.int64)
+        singularity_counts = np.array([2, 0, 3], dtype=np.int64)
 
         with self.assertLogs(logger, level="WARNING") as cm:
             log_unexpected_singularity_counts(
@@ -1827,7 +1811,7 @@ class TestLogSingularityCounts(unittest.TestCase):
         self.assertIn("test_context", cm.output[0])
         self.assertIn("5 singularity skip(s)", cm.output[0])
         self.assertIn("degenerate filament=2", cm.output[0])
-        self.assertIn("vertex end proximity=3", cm.output[0])
+        self.assertIn("point on end vertex=3", cm.output[0])
 
     def test_log_level_is_respected(self) -> None:
         """Test that _log_singularity_counts uses the specified logging level."""
@@ -1836,7 +1820,7 @@ class TestLogSingularityCounts(unittest.TestCase):
         from pterasoftware._functions import log_unexpected_singularity_counts
 
         logger = logging.getLogger("test_log_level")
-        singularity_counts = np.array([1, 0, 0, 0], dtype=np.int64)
+        singularity_counts = np.array([1, 0, 0], dtype=np.int64)
 
         with self.assertLogs(logger, level="ERROR") as cm:
             log_unexpected_singularity_counts(
@@ -2048,8 +2032,11 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             aerodynamics_functions_fixtures.make_simple_horseshoe_vortex_arrays_fixture()
         )
 
-        # Create an initial core radius fixture.
-        self.simple_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1)
+        # Create initial core radius fixtures.
+        self.simple_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(1, 4)
+        self.simple_horseshoe_rc0s = aerodynamics_functions_fixtures.make_rc0s_fixture(
+            1, 3
+        )
 
     def _call_collapsed_ring(self) -> np.ndarray:
         """Helper to call collapsed_velocities_from_ring_vortices with the simple ring
@@ -2062,7 +2049,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
     def _call_chordwise_segments(self) -> np.ndarray:
@@ -2076,7 +2063,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
     def _call_expanded_ring(self) -> np.ndarray:
@@ -2090,7 +2077,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
             strengths=self.simple_ring_strengths,
             r_c0s=self.simple_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
     def _call_collapsed_horseshoe(self) -> np.ndarray:
@@ -2103,8 +2090,8 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
             stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
-            r_c0s=self.simple_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            r_c0s=self.simple_horseshoe_rc0s,
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
     def _call_expanded_horseshoe(self) -> np.ndarray:
@@ -2117,8 +2104,8 @@ class TestParallelDispatchWrappers(unittest.TestCase):
             stackFlhvp_GP1_CgP1=self.simple_horseshoe_Flhvp,
             stackBlhvp_GP1_CgP1=self.simple_horseshoe_Blhvp,
             strengths=self.simple_horseshoe_strengths,
-            r_c0s=self.simple_rc0s,
-            singularity_counts=np.zeros(4, dtype=np.int64),
+            r_c0s=self.simple_horseshoe_rc0s,
+            singularity_counts=np.zeros(3, dtype=np.int64),
         )
 
     # ---- Thread mask restoration tests (successful kernel calls) ----
@@ -2259,7 +2246,7 @@ class TestParallelDispatchWrappers(unittest.TestCase):
                 stackBlrvp_GP1_CgP1=self.simple_ring_Blrvp,
                 strengths=self.simple_ring_strengths,
                 r_c0s=self.simple_rc0s,
-                singularity_counts=np.zeros(4, dtype=np.int64),
+                singularity_counts=np.zeros(3, dtype=np.int64),
             )
 
         return recorded_thread_counts

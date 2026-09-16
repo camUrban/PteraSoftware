@@ -25,7 +25,7 @@
       {% if "show-inheritance" in autoapi_options %}
          {% set public_bases = [] %}
          {% for base in obj.bases %}
-            {% if "._" not in base %}
+            {% if "._" not in base and not base.startswith("_") %}
                {% set _ = public_bases.append(base) %}
             {% endif %}
          {% endfor %}

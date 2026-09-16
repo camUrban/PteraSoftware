@@ -73,7 +73,7 @@ def boolLike_return_bool(value: Any, name: str) -> bool:
     :param name: The name of the value.
     :return: The validated value.
     """
-    if isinstance(value, (bool, np.bool_)):
+    if isinstance(value, (bool, np.bool)):
         return bool(value)
     else:
         raise TypeError(

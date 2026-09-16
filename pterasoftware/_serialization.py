@@ -1284,7 +1284,7 @@ def _serialize_value(
         return None
 
     # Check bool before int because bool is a subclass of int.
-    if isinstance(value, (bool, np.bool_)):
+    if isinstance(value, (bool, np.bool)):
         return bool(value)
 
     if isinstance(value, (int, np.integer)):

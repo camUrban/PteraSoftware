@@ -845,7 +845,7 @@ def _collapsed_velocities_from_line_vortices(
     # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
     # which are a per line vortex property, not per point.
-    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_valid = np.empty(num_vortices, dtype=np.bool)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
 
@@ -1047,7 +1047,7 @@ def _expanded_velocities_from_line_vortices(
     # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
     # which are a per line vortex property, not per point.
-    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_valid = np.empty(num_vortices, dtype=np.bool)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
 

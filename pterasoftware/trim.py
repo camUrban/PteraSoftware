@@ -535,7 +535,7 @@ def analyze_unsteady_trim(
     boundsExternalFX_W: tuple[float | int, float | int],
     objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
-    show_solver_progress: bool | np.bool_ = True,
+    show_solver_progress: bool | np.bool = True,
     force_method: str = "joukowski",
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base

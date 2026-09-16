@@ -70,7 +70,7 @@ class Airfoil:
         self,
         name: str = "NACA0012",
         outline_A_Lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
-        resample: bool | np.bool_ = True,
+        resample: bool | np.bool = True,
         n_points_per_side: int = 400,
         _trust: object | None = None,
         outline_A_lp: Any = _UNSET,
@@ -463,7 +463,7 @@ class Airfoil:
         plt.show()
 
     def get_plottable_data(
-        self, show: bool | np.bool_ = False
+        self, show: bool | np.bool = False
     ) -> list[np.ndarray] | None:
         """Returns plottable data for this Airfoil's outline and mean camber line.
 

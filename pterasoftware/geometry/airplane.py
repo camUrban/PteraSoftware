@@ -659,7 +659,7 @@ class Airplane:
 
     # --- Other methods ---
     def draw(
-        self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False
+        self, save: bool | np.bool = False, testing: bool | np.bool = False
     ) -> None:
         """Draws the 3D geometry of this Airplane.
 
@@ -787,7 +787,7 @@ class Airplane:
         pv.close_all()
 
     def get_plottable_data(
-        self, show: bool | np.bool_ = False
+        self, show: bool | np.bool = False
     ) -> list[list[list[np.ndarray]]] | None:
         """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
         lines.

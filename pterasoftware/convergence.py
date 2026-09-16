@@ -60,7 +60,7 @@ def analyze_steady_convergence(
     rtol: float | int = 0.05,
     atol: float | int = 0.001,
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
-    resolve_converged_solver: bool | np.bool_ = False,
+    resolve_converged_solver: bool | np.bool = False,
     cache_path: str | Path | None = None,
 ) -> (
     tuple[
@@ -702,8 +702,8 @@ def analyze_steady_convergence(
 
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
-    prescribed_wake: bool | np.bool_ = True,
-    free_wake: bool | np.bool_ = True,
+    prescribed_wake: bool | np.bool = True,
+    free_wake: bool | np.bool = True,
     num_cycles_bounds: tuple[int, int] | None = None,
     num_chords_bounds: tuple[int, int] | None = None,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
@@ -711,8 +711,8 @@ def analyze_unsteady_convergence(
     rtol: float | int = 0.05,
     atol: float | int = 0.001,
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
-    show_solver_progress: bool | np.bool_ = True,
-    resolve_converged_solver: bool | np.bool_ = False,
+    show_solver_progress: bool | np.bool = True,
+    resolve_converged_solver: bool | np.bool = False,
     cache_path: str | Path | None = None,
     force_method: str = "joukowski",
 ) -> (

@@ -300,7 +300,7 @@ class UnsteadyProblem(_core.CoreUnsteadyProblem):
     def __init__(
         self,
         movement: movements.movement.Movement,
-        only_final_results: bool | np.bool_ = False,
+        only_final_results: bool | np.bool = False,
     ) -> None:
         """The initialization method.
 

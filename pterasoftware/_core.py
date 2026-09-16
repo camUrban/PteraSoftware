@@ -2286,7 +2286,7 @@ class CoreUnsteadyProblem:
 
     def __init__(
         self,
-        only_final_results: bool | np.bool_,
+        only_final_results: bool | np.bool,
         delta_time: float | int,
         num_steps: int,
         max_wake_rows: int | None,

@@ -425,9 +425,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def run(
         self,
-        prescribed_wake: bool | np.bool_ = True,
-        calculate_streamlines: bool | np.bool_ = True,
-        show_progress: bool | np.bool_ = True,
+        prescribed_wake: bool | np.bool = True,
+        calculate_streamlines: bool | np.bool = True,
+        show_progress: bool | np.bool = True,
         force_method: str = "joukowski",
     ) -> None:
         """Runs the solver on the UnsteadyProblem.

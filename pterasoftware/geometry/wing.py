@@ -212,11 +212,11 @@ class Wing:
         name: str = "Untitled Wing",
         Ler_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         angles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        symmetric: bool | np.bool_ = False,
-        mirror_only: bool | np.bool_ = False,
+        symmetric: bool | np.bool = False,
+        mirror_only: bool | np.bool = False,
         symmetryNormal_G: None | np.ndarray | Sequence[float | int] = None,
         symmetryPoint_G_Cg: None | np.ndarray | Sequence[float | int] = None,
-        explode_into_strips: bool | np.bool_ = False,
+        explode_into_strips: bool | np.bool = False,
         num_chordwise_panels: int = 8,
         chordwise_spacing: str = "cosine",
     ) -> None:
@@ -475,8 +475,8 @@ class Wing:
         name: str = "Untitled Wing",
         Ler_Gs_Cgs: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
         angles_Gs_to_Wn_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
-        symmetric: bool | np.bool_ = False,
-        mirror_only: bool | np.bool_ = False,
+        symmetric: bool | np.bool = False,
+        mirror_only: bool | np.bool = False,
         symmetryNormal_G: None | np.ndarray | Sequence[float | int] = None,
         symmetryPoint_G_Cg: None | np.ndarray | Sequence[float | int] = None,
         num_chordwise_panels: int = 8,
@@ -1614,7 +1614,7 @@ class Wing:
         _meshing.mesh_wing(self)
 
     def get_plottable_data(
-        self, show: bool | np.bool_ = False
+        self, show: bool | np.bool = False
     ) -> list[list[np.ndarray]] | None:
         """Returns plottable data for this Wing's Airfoils' outlines and mean camber
         lines.

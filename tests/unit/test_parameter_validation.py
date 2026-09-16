@@ -143,7 +143,7 @@ class TestBoolLikeReturnBool(unittest.TestCase):
 
     def test_valid_numpy_bool_true(self) -> None:
         """Test boolLike_return_bool with numpy bool True."""
-        np_bool = np.bool_(True)
+        np_bool = np.bool(True)
         result = pv.boolLike_return_bool(np_bool, "test_param")
         self.assertTrue(result)
         self.assertIsInstance(result, bool)

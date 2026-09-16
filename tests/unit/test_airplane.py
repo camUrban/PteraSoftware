@@ -1216,7 +1216,7 @@ class TestAirplaneGetPlottableData(unittest.TestCase):
 
     def test_get_plottable_data_accepts_numpy_bool(self) -> None:
         """Test that get_plottable_data accepts numpy bool for show parameter."""
-        result = self.basic_airplane.get_plottable_data(show=np.bool_(False))
+        result = self.basic_airplane.get_plottable_data(show=np.bool(False))
 
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)
@@ -1258,7 +1258,7 @@ class TestAirplaneDraw(unittest.TestCase):
     def test_draw_accepts_numpy_bool_for_save(self) -> None:
         """Test that draw accepts numpy bool for save parameter."""
         try:
-            self.basic_airplane.draw(save=np.bool_(False), testing=np.bool_(True))
+            self.basic_airplane.draw(save=np.bool(False), testing=np.bool(True))
         except Exception as e:
             self.fail(f"draw() raised {type(e).__name__}: {e}")
 

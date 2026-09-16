@@ -39,7 +39,7 @@ import numpy as np
 |---------------------------------|--------------------|
 | String                          | `str`              |
 | Boolean                         | `bool`             |
-| Boolean (accepting numpy bools) | `bool \| np.bool_` |
+| Boolean (accepting numpy bools) | `bool \| np.bool` |
 | Integer                         | `int`              |
 | Number (int or float)           | `float \| int`     |
 | Float only                      | `float`            |
@@ -970,7 +970,7 @@ def get_resampled_mcl(
 # Simple types
 param: str
 param: bool
-param: bool | np.bool_  # Accepts both Python and numpy bools
+param: bool | np.bool  # Accepts both Python and numpy bools
 param: int
 param: float | int
 

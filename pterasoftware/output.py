@@ -173,14 +173,14 @@ def draw(
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type: str | None = None,
-    show_streamlines: bool | np.bool_ = False,
-    show_wake_vortices: bool | np.bool_ = False,
-    show_mujoco_geometry: bool | np.bool_ = False,
+    show_streamlines: bool | np.bool = False,
+    show_wake_vortices: bool | np.bool = False,
+    show_mujoco_geometry: bool | np.bool = False,
     window_size: Sequence[int] = (1024, 768),
-    save: bool | np.bool_ = False,
+    save: bool | np.bool = False,
     path: str | Path = "draw.webp",
     quality: int | float = 75.0,
-    testing: bool | np.bool_ = False,
+    testing: bool | np.bool = False,
 ) -> None:
     """Draws a solver's Airplane(s).
 
@@ -687,14 +687,14 @@ def draw(
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
-    show_wake_vortices: bool | np.bool_ = False,
-    show_mujoco_geometry: bool | np.bool_ = False,
+    show_wake_vortices: bool | np.bool = False,
+    show_mujoco_geometry: bool | np.bool = False,
     window_size: Sequence[int] = (1024, 768),
-    save: bool | np.bool_ = False,
+    save: bool | np.bool = False,
     path: str | Path = "animate.webp",
     quality: int | float = 75.0,
     speed: int | float | None = None,
-    testing: bool | np.bool_ = False,
+    testing: bool | np.bool = False,
 ) -> None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
     its subclasses (the aeroelastic or free flight solver).
@@ -1461,10 +1461,10 @@ def animate(
 
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    show: bool | np.bool_ = True,
+    show: bool | np.bool = True,
     figure_size_in: Sequence[int | float] = (6.4, 4.8),
-    save: bool | np.bool_ = False,
-    save_csv: bool | np.bool_ = False,
+    save: bool | np.bool = False,
+    save_csv: bool | np.bool = False,
     directory: str | Path = ".",
     prefix: str = "",
     resolution_dpi: int | float = 300.0,

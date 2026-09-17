@@ -231,7 +231,7 @@ def draw(
     :param save: Set this to True to save the image as a WebP. It can be a bool or a
         numpy bool and will be converted internally to a bool. The default is False.
     :param path: The file path to save the image to. It can be a str or a Path, must end
-        with '.webp', and its directory must already exist. This has no effect unless
+        with ".webp", and its directory must already exist. This has no effect unless
         save is True. The default is "draw.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
@@ -265,10 +265,10 @@ def draw(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
             valid_types = ", ".join(
-                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+                f'"{t}"' for t in _output_rendering.VALID_SCALAR_TYPES
             )
             raise ValueError(
-                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
+                f'scalar_type must be None, {valid_types}, got "{scalar_type}".'
             )
 
     show_streamlines = _parameter_validation.boolLike_return_bool(
@@ -732,7 +732,7 @@ def animate(
         bool or a numpy bool and will be converted internally to a bool. The default is
         False.
     :param path: The file path to save the animation to. It can be a str or a Path, must
-        end with '.webp', and its directory must already exist. This has no effect
+        end with ".webp", and its directory must already exist. This has no effect
         unless save is True. The default is "animate.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
@@ -772,10 +772,10 @@ def animate(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
             valid_types = ", ".join(
-                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+                f'"{t}"' for t in _output_rendering.VALID_SCALAR_TYPES
             )
             raise ValueError(
-                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
+                f'scalar_type must be None, {valid_types}, got "{scalar_type}".'
             )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
@@ -1548,10 +1548,10 @@ def plot_results_versus_time(
         raise TypeError("directory must be a str or a Path.")
     directory = Path(directory)
     if directory.exists() and not directory.is_dir():
-        raise ValueError(f"directory must be a directory, got file '{directory}'.")
+        raise ValueError(f'directory must be a directory, got file "{directory}".')
     if not directory.is_dir():
         raise ValueError(
-            f"directory '{directory}' does not exist. Create it first, or choose a "
+            f'directory "{directory}" does not exist. Create it first, or choose a '
             f"destination that already exists."
         )
 
@@ -1563,7 +1563,7 @@ def plot_results_versus_time(
     prefix = _parameter_validation.str_return_str(prefix, "prefix")
     if prefix != os.path.basename(prefix):
         raise ValueError(
-            f"prefix must be a file name component rather than a path, got '{prefix}'."
+            f'prefix must be a file name component rather than a path, got "{prefix}".'
         )
 
     resolution_dpi = _parameter_validation.number_in_range_return_float(
@@ -1584,7 +1584,7 @@ def plot_results_versus_time(
             airplane_name_snake = airplane.name.lower().replace(" ", "_")
             if airplane_name_snake != os.path.basename(airplane_name_snake):
                 raise ValueError(
-                    f"An Airplane's name, '{airplane.name}', cannot be used in a file "
+                    f'An Airplane\'s name, "{airplane.name}", cannot be used in a file '
                     f"name, since it contains a path separator."
                 )
 

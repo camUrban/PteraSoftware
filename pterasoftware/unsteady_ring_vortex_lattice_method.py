@@ -465,7 +465,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         if force_method not in ("joukowski", "katz"):
             raise ValueError(
-                f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+                f'force_method must be "joukowski" or "katz", got "{force_method}".'
             )
         self._force_method = force_method
 

@@ -462,9 +462,9 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
 
         Subclasses must override this method. It is invoked by the solver on every step,
         so subclasses are responsible for guarding any work that depends on a next step
-        existing (such as building the next SteadyProblem) with ``step < self.num_steps
-        - 1``. Per step work that should run on every step (such as recording the
-        current step's loads) belongs outside that guard.
+        existing (such as building the next SteadyProblem) with step < self.num_steps -
+        1. Per step work that should run on every step (such as recording the current
+        step's loads) belongs outside that guard.
 
         :param solver: The solver driving this problem, which provides the aerodynamic
             data from the current time step.
@@ -578,10 +578,11 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             multi-airplane free flight is not supported in this release.
         :param mass: A number (int or float) representing the mass of the Airplane. It
             must be greater than zero and will be converted internally to a float. The
-            units are in kilograms. It must satisfy weight == mass * |g_E| within
-            floating point tolerance, where weight is the Airplane's weight and g_E is
-            the OperatingPoint's gravitational acceleration, which keeps the Airplane's
-            weight, the supplied mass, and the gravitational field mutually consistent.
+            units are in kilograms. It must satisfy weight == mass * np.linalg.norm(g_E)
+            within floating point tolerance, where weight is the Airplane's weight and
+            g_E is the OperatingPoint's gravitational acceleration, which keeps the
+            Airplane's weight, the supplied mass, and the gravitational field mutually
+            consistent.
         :param I_BP1_CgP1: An array-like object of numbers (int or float) with shape
             (3,3) representing the inertia matrix of the Airplane (in the first
             Airplane's body axes, relative to the first Airplane's CG). It must be
@@ -733,7 +734,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
         integrator = _parameter_validation.str_return_str(integrator, "integrator")
         if integrator not in _MUJOCO_INTEGRATORS:
             raise ValueError(
-                f"integrator '{integrator}' is not a supported MuJoCo integrator; "
+                f'integrator "{integrator}" is not a supported MuJoCo integrator; '
                 f"expected one of {sorted(_MUJOCO_INTEGRATORS)}."
             )
 
@@ -750,11 +751,11 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
             for key, value in extra_xml.items():
                 if key not in _EXTRA_XML_INJECTION_POINTS:
                     raise ValueError(
-                        f"extra_xml key '{key}' is not a permitted injection point; "
+                        f'extra_xml key "{key}" is not a permitted injection point; '
                         f"expected one of {sorted(_EXTRA_XML_INJECTION_POINTS)}."
                     )
                 validated_extra_xml[key] = _parameter_validation.str_return_str(
-                    value, f"extra_xml['{key}']"
+                    value, f'extra_xml["{key}"]'
                 )
             extra_xml = validated_extra_xml
 
@@ -778,7 +779,7 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 # of saved files.
                 if PureWindowsPath(filename).name != filename:
                     raise ValueError(
-                        f"mujoco_assets key '{filename}' must be a bare filename "
+                        f'mujoco_assets key "{filename}" must be a bare filename '
                         "with no path separators or drive prefixes."
                     )
 
@@ -788,13 +789,13 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 stem, _, extension = filename.rpartition(".")
                 if not stem or not extension:
                     raise ValueError(
-                        f"mujoco_assets key '{filename}' must be a filename with a "
+                        f'mujoco_assets key "{filename}" must be a filename with a '
                         "nonempty extension."
                     )
 
                 if not isinstance(contents, bytes):
                     raise TypeError(
-                        f"mujoco_assets['{filename}'] must be bytes, not "
+                        f'mujoco_assets["{filename}"] must be bytes, not '
                         f"{type(contents).__name__}."
                     )
 

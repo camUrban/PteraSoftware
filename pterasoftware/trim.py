@@ -729,7 +729,7 @@ def analyze_unsteady_trim(
     force_method = _parameter_validation.str_return_str(force_method, "force_method")
     if force_method not in ("joukowski", "katz"):
         raise ValueError(
-            f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+            f'force_method must be "joukowski" or "katz", got "{force_method}".'
         )
 
     base_operating_point = (

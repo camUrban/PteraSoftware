@@ -110,7 +110,7 @@ def __getattr__(name: str) -> Any:
         attr = getattr(module, attr_name)
         globals()[name] = attr
         return attr
-    raise AttributeError(f"module 'pterasoftware' has no attribute {name!r}")
+    raise AttributeError(f'module "pterasoftware" has no attribute "{name}"')
 
 
 def __dir__() -> list[str]:

@@ -132,13 +132,12 @@ autosectionlabel_prefix_document = True
 # running together on one line.
 python_maximum_signature_line_length = 1
 
-# AutoAPI renders docstrings as reStructuredText, where a vector magnitude written with
-# bars (for example, "|g_E|") parses as a substitution reference. Define those tokens so
-# the reference resolves to the literal barred text instead of emitting an "Undefined
-# substitution referenced" build error, without annotating the docstrings themselves.
-rst_prolog = r"""
-.. |g_E| replace:: \|g_E\|
-"""
+# Keep straight quotes in the rendered site. Docstrings write str values and code
+# examples in plain prose with double quotes (see
+# docs/TYPE_HINT_AND_DOCSTRING_STYLE.md), and the default conversion to curly quotes
+# would turn examples like set_up_logging(level="Info") into text that cannot be copied
+# back into Python.
+smartquotes = False
 
 # Use README as the landing page (instead of index)
 root_doc = "README"
@@ -229,11 +228,11 @@ def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
     """Rewrite relative links in files included from the repo root.
 
     Files like CONTRIBUTING.md live at the repo root and use paths like
-    ``docs/CODE_STYLE.md`` which are correct on GitHub. When Sphinx includes them via
-    ``{include}``, those paths are resolved relative to ``docs/website/`` where the
-    wrapper lives, so ``docs/CODE_STYLE.md`` cannot be found. This handler replaces the
-    wrapper's ``{include}`` directive with the actual file content, rewriting
-    ``docs/*.md`` paths to ``*.md`` so they resolve correctly in the Sphinx build.
+    docs/CODE_STYLE.md which are correct on GitHub. When Sphinx includes them via
+    {include}, those paths are resolved relative to docs/website/ where the wrapper
+    lives, so docs/CODE_STYLE.md cannot be found. This handler replaces the wrapper's
+    {include} directive with the actual file content, stripping the leading docs/ from
+    each such path so they resolve correctly in the Sphinx build.
     """
     contributing_path = REPO_ROOT / "CONTRIBUTING.md"
     if docname == "CONTRIBUTING" and contributing_path.exists():
@@ -371,13 +370,12 @@ def _locate_signature(
     The target is resolved through AutoAPI's parsed object tree, which settles whether
     it names a class or a method and which module's page renders it, and which raises
     for a name that no longer matches anything in the package. The generated
-    reStructuredText renders each class as a ``py:class`` directive whose signature
-    holds the constructor parameters, with its methods as ``py:method`` directives
-    beneath it, each signature on one line. A class is located by its directive, and a
-    method by finding its class directive and then the first directive for the method
-    name before the next class directive. Returns the start and end of the signature
-    text after the opening parenthesis, or None when the target is rendered on another
-    module's page.
+    reStructuredText renders each class as a py:class directive whose signature holds
+    the constructor parameters, with its methods as py:method directives beneath it,
+    each signature on one line. A class is located by its directive, and a method by
+    finding its class directive and then the first directive for the method name before
+    the next class directive. Returns the start and end of the signature text after the
+    opening parenthesis, or None when the target is rendered on another module's page.
     """
     all_objects = getattr(app.env, "autoapi_all_objects", {})
     target = all_objects.get(target_id)
@@ -415,7 +413,7 @@ def _parameter_end(signature: str, start: int) -> int:
     """Find where the parameter starting at the given index ends in a signature.
 
     The end is the next top-level comma or closing parenthesis, ignoring the commas
-    inside subscripted annotations such as ``list[dict[str, int]]``.
+    inside subscripted annotations such as list[dict[str, int]].
     """
     depth = 0
     end = start
@@ -456,7 +454,7 @@ def _remove_parameter(signature: str, parameter: str) -> str:
 
 
 def _remove_parameter_field(text: str, region_start: int, parameter: str) -> str:
-    """Remove a parameter's ``:param:`` field from the docstring following a signature.
+    """Remove a parameter's :param: field from the docstring following a signature.
 
     The docstring runs from the signature to the next directive. The field's line and
     its continuation lines, which are indented deeper than the field line, are removed

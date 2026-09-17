@@ -5,6 +5,7 @@
 - Follow existing code style (black) and conventions
 - Maintain consistent indentation and spacing
 - When initializing numpy arrays (e.g., using `np.zeros`, `np.ones`, `np.empty`, etc.), always specify the `dtype` parameter (e.g., `dtype=float`, `dtype=int`, `dtype=object`, etc.)
+- In runtime strings such as error and log messages, name str values in double quotes, as the docstring rules in `TYPE_HINT_AND_DOCSTRING_STYLE.md` do. Black then keeps the outer string single-quoted to avoid escapes (`f'force_method must be "joukowski" or "katz", got "{force_method}".'`). Write the value inline with double quotes rather than through `!r`, which always emits single quotes.
 
 ## Variable Naming
 

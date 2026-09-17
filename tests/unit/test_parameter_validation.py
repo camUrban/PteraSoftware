@@ -1099,14 +1099,14 @@ class TestRotationOrderReturnStr(unittest.TestCase):
     """A class with functions to test rotation_order_return_str."""
 
     def test_valid_xyz(self) -> None:
-        """Test rotation_order_return_str with valid 'xyz' order."""
+        """Test rotation_order_return_str with valid "xyz" order."""
         valid_order = pvf.make_valid_rotation_order_xyz_fixture()
         result = pv.rotation_order_return_str(valid_order, "test_param")
         self.assertEqual(result, "xyz")
         self.assertIsInstance(result, str)
 
     def test_valid_zyx(self) -> None:
-        """Test rotation_order_return_str with valid 'zyx' order."""
+        """Test rotation_order_return_str with valid "zyx" order."""
         valid_order = pvf.make_valid_rotation_order_zyx_fixture()
         result = pv.rotation_order_return_str(valid_order, "test_param")
         self.assertEqual(result, "zyx")

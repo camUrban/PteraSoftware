@@ -186,7 +186,7 @@ class Airplane:
             equal to zero. The default is 0.0. In free flight, it must also be
             consistent with the FreeFlightUnsteadyProblem's mass and the
             OperatingPoint's gravitational acceleration, satisfying weight == mass *
-            |g_E| within floating point tolerance.
+            np.linalg.norm(g_E) within floating point tolerance.
         :param s_ref: A number (int or float) representing the reference wetted area. If
             not set or set to None (the default), it populates from first Wing. If set,
             it must be greater than zero, and will be converted to a float internally.
@@ -472,7 +472,7 @@ class Airplane:
             Airplane's geometry axes, relative to its CG.
         """
         if self._T_pas_G_Cg_to_GP1_CgP1 is None:
-            # generate_trans_T with passive=True expects the `translations` parameter to
+            # generate_trans_T with passive=True expects the translations parameter to
             # be the position of the target reference point (CgP1) relative to the
             # source reference point (Cg). Using the notation from
             # AXES_POINTS_AND_FRAMES.md: translations = CgP1_G_Cg. However, we have
@@ -1187,7 +1187,7 @@ class Airplane:
                 and root_wing_cross_section.control_surface_deflection != 0.0
             ):
                 raise ValueError(
-                    "control_surface_symmetry_type cannot be 'asymmetric' with a "
+                    'control_surface_symmetry_type cannot be "asymmetric" with a '
                     "nonzero control_surface_deflection on the root WingCrossSection "
                     "of a Wing with a coincident symmetry plane"
                 )

@@ -110,12 +110,12 @@ class CoreOperatingPointMovement:
         if isinstance(spacingVCg__E, str):
             if spacingVCg__E not in ["sine", "uniform"]:
                 raise ValueError(
-                    f"spacingVCg__E must be 'sine', 'uniform', or a callable, "
-                    f"got string '{spacingVCg__E}'."
+                    f'spacingVCg__E must be "sine", "uniform", or a callable, '
+                    f'got string "{spacingVCg__E}".'
                 )
         elif not callable(spacingVCg__E):
             raise TypeError(
-                f"spacingVCg__E must be 'sine', 'uniform', or a callable, got "
+                f'spacingVCg__E must be "sine", "uniform", or a callable, got '
                 f"{type(spacingVCg__E).__name__}."
             )
         self._spacingVCg__E = spacingVCg__E

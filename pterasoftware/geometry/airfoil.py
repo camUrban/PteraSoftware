@@ -790,7 +790,7 @@ class Airfoil:
                     break
 
             if airfoil_file is None:
-                raise FileNotFoundError(f"Airfoil '{sanitized_name}' not found.")
+                raise FileNotFoundError(f'Airfoil "{sanitized_name}" not found.')
 
             # Read the text from the airfoil file.
             raw_text = airfoil_file.read_text()

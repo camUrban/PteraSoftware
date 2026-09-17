@@ -752,7 +752,7 @@ class TestMovement(unittest.TestCase):
                     )
 
     def test_delta_time_optimize_for_static_movement(self) -> None:
-        """Test that delta_time='optimize' works for static Movement."""
+        """Test that delta_time="optimize" works for static Movement."""
         airplane_movements = [
             airplane_movement_fixtures.make_static_airplane_movement_fixture()
         ]
@@ -774,7 +774,7 @@ class TestMovement(unittest.TestCase):
         self.assertTrue(movement.static)
 
     def test_delta_time_optimize_calls_both_optimizers(self) -> None:
-        """Test that delta_time='optimize' calls both analytical and iterative
+        """Test that delta_time="optimize" calls both analytical and iterative
         optimizers, using analytical result as initial guess for iterative.
 
         This test uses mocking to avoid running the expensive optimizations. The actual

@@ -46,20 +46,20 @@ def pathLike_return_path(value: Any, name: str, suffixes: tuple[str, ...]) -> Pa
 
     lowered_name = validated_path.name.lower()
     if not any(lowered_name.endswith(suffix.lower()) for suffix in suffixes):
-        accepted = " or ".join(f"'{suffix}'" for suffix in suffixes)
+        accepted = " or ".join(f'"{suffix}"' for suffix in suffixes)
         raise ValueError(
-            f"{name} must end with {accepted}, got '{validated_path.name}'."
+            f'{name} must end with {accepted}, got "{validated_path.name}".'
         )
 
     if validated_path.is_dir():
         raise ValueError(
-            f"{name} must be a file path, got directory '{validated_path}'."
+            f'{name} must be a file path, got directory "{validated_path}".'
         )
 
     parent_directory = validated_path.parent
     if not parent_directory.is_dir():
         raise ValueError(
-            f"{name}'s directory '{parent_directory}' does not exist. Create it first, "
+            f'{name}\'s directory "{parent_directory}" does not exist. Create it first, '
             f"or choose a destination that already exists."
         )
 
@@ -461,15 +461,15 @@ def threeD_spacing_vectorLike_return_tuple(value: Any, name: str) -> tuple[
         if isinstance(elem, str):
             if elem not in ["sine", "uniform"]:
                 raise ValueError(
-                    f"Element {i} of {name} must be 'sine', 'uniform', or a callable, "
-                    f"got str '{elem}'."
+                    f'Element {i} of {name} must be "sine", "uniform", or a callable, '
+                    f'got str "{elem}".'
                 )
             validated_list.append(elem)
         elif callable(elem):
             validated_list.append(elem)
         else:
             raise TypeError(
-                f"Element {i} of {name} must be a str ('sine' or 'uniform') or a "
+                f'Element {i} of {name} must be a str ("sine" or "uniform") or a '
                 f"callable, got {type(elem).__name__}."
             )
 

@@ -101,9 +101,9 @@ The constraint is on what you author. Content quoted verbatim from external sour
 
 If a legitimate reason to violate this rule arises (a contribution must include a file with Unicode contents, or correctness requires a specific Unicode character), flag it in the PR description rather than assume.
 
-## Running CodeSpell
+## Running codespell
 
-CodeSpell is configured as a pre-commit hook. Run it with:
+codespell is configured as a pre-commit hook. Run it with:
 
 ```shell
 pre-commit run --all-files codespell

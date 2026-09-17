@@ -16,39 +16,39 @@ Consider the arbitrary vector **r**, which exists in 3D space. For now, let's sa
 
 It is worth being precise about what a moment's reference point does and does not mean when the moment is transformed. Because the reference point is the point the moment acts about, and not an origin, expressing the same moment in a different axis system is a pure rotation of its components, exactly like a force or a velocity. The reference point only records which moment it is, and has no bearing on the rotation. Changing a moment's reference point is a separate, physical operation that requires its own formula rather than a coordinate transformation. A moment is therefore never re-referenced by a transformation's translation. A homogeneous transform only ever rotates it, the same way it rotates a force or a velocity (in code, this is `is_position` set to `False`. See [Angle Vectors and Transformations](ANGLE_VECTORS_AND_TRANSFORMATIONS.md)).
 
-Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](ANGLE_VECTORS_AND_TRANSFORMATIONS.md)
+Due to the nested structure of Ptera Software's geometry objects, in practice, many vector-valued quantities like positions and moments, use reference points and axes that are defined locally within a given object. For information on how axes are defined relative to one another, and how vectors can be transformed within an axis system, read through [Angle Vectors and Transformations](ANGLE_VECTORS_AND_TRANSFORMATIONS.md).
 
 ## Specifying Axes, Points, and Frames
 
-Given the varied requirements for vector-valued quantities, it is important that we are very specific when assigning them variable names or referencing them in text. Also, due to the hierarchical structure of Ptera Software's objects, additional specificity may be required depending on the context. For example, if we use a force vector within the `Wing` class that references wing axes, we still need to specify that this vector is given in wind axes, but we don't (and can't) specify which of the parent `Airplane`'s `Wing`'s axes we mean. In contrast, if we declare a variable inside the `Wing` class that references wing cross section axes, we must specify which of the `Wing`'s `WingCrossSection`s's axes we are referring to.
+Given the varied requirements for vector-valued quantities, it is important that we are very specific when assigning them variable names or referencing them in text. Also, due to the hierarchical structure of Ptera Software's objects, additional specificity may be required depending on the context. For example, if we use a force vector within the `Wing` class that references wing axes, we still need to specify that this vector is given in wind axes, but we don't (and can't) specify which of the parent `Airplane`'s `Wing`'s axes we mean. In contrast, if we declare a variable inside the `Wing` class that references wing cross section axes, we must specify which of the `Wing`'s `WingCrossSection`s' axes we are referring to.
 
 ## Patterns
 
-There are four useful combinations of axes, points, and frames. For variables that fall into each of these three cases, we denote them by appending information to their variable names using **IDs**. When referencing the variables in comments and docstrings, we add this additional information parenthetically using **names**:
+There are four useful combinations of axes, points, and frames. For variables that fall into each of these four cases, we denote them by appending information to their variable names using **IDs**. When referencing the variables in comments and docstrings, we add this additional information parenthetically using **names**:
 
 1. Axes without a point and without a frame
 
    `[variable name]_[axes ID]`
 
-   "\[variable name\] (in \[axes name\])"
+   "[variable name] (in [axes name])"
 
 2. Axes without a point and with a frame
 
    `[variable name]_[axes ID]__[frame ID]`
 
-   "\[variable name\] (in \[axes name\], observed from the \[frame name\])"
+   "[variable name] (in [axes name], observed from the [frame name])"
 
 3. Axes with a point and without a frame
 
    `[variable name]_[axes ID]_[point ID]`
 
-   "\[variable name\] (in \[axes name\], relative to the \[point name\])"
+   "[variable name] (in [axes name], relative to the [point name])"
 
 4. Only a frame (for scalar values like speed)
 
    `[variable name]__[frame ID]`
 
-   "\[variable name\] (observed from the \[frame name\])"
+   "[variable name] (observed from the [frame name])"
 
 The correct name and ID for a particular axis system, point, or frame depends on the level of context. However, in all cases IDs consist of a series of abbreviations, moving in scope from most specific to least specific. By contrast, names move from least specific to most specific. Also, in contrast with IDs, the exact syntax for names is slightly flexible to allow for the description to sound correct in plain English.
 
@@ -94,7 +94,7 @@ The standard abbreviations and names are given below for reference. See the sect
     * Br...: back right
     * Bo...: backward outer
     * C...: collocation
-    * ...r\[m\]c\[n\]: (m, n)
+    * ...r[m]c[n]: (m, n)
 * ...hvp...: horseshoe vortex point
     * Fr...: front right
     * Fl...: front left
@@ -102,8 +102,8 @@ The standard abbreviations and names are given below for reference. See the sect
     * Br...: back right
     * ...b...: bound
     * ...w...: wake
-    * ...r\[m\]c\[n\]: (m, n)
-    * ...\[n\]: n
+    * ...r[m]c[n]: (m, n)
+    * ...[n]: n
 * ...rvp...: ring vortex point
     * Fr...: front right
     * Fl...: front left
@@ -112,7 +112,7 @@ The standard abbreviations and names are given below for reference. See the sect
     * C...: centroid
     * ...b...: bound
     * ...w...: wake
-    * ...r\[m\]c\[n\]: (m, n)
+    * ...r[m]c[n]: (m, n)
 * ...lvp...: line vortex point
     * S...: start
     * E...: end
@@ -188,7 +188,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * Basis directions
     1. +x: Towards the back of the `Airplane` (aft)
     2. +y: Towards the right of the `Airplane`
-    3. +z: Towards the top of `Airplane`
+    3. +z: Towards the top of the `Airplane`
 * Right-handed
 * Ownership: `Airplane`
 * Local reference examples
@@ -261,7 +261,7 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...in wing cross section parent axes...
     * Variables: `..._Wcsp...`
 * Wing-local reference examples
-    * Text: ...in the second WingCrossSection's parent axes...
+    * Text: ...in the first WingCrossSection's parent axes...
     * Variables: `..._Wcsp1...`
 * Airplane-local reference examples
     * Text: ...in the second Wing's third WingCrossSection's parent axes...
@@ -313,7 +313,7 @@ The standard abbreviations and names are given below for reference. See the sect
 
 ### 3. CG (after accounting for symmetry)
 
-* For a non-symmetric or symmetric-continuous `Wing`, this identical to its `Airplane`'s CG. For mirror-only `Wing`s, it is their `Airplane`'s CG reflected across that `Wing`'s symmetry plane.
+* For a non-symmetric or symmetric-continuous `Wing`, this is identical to its `Airplane`'s CG. For mirror-only `Wing`s, it is their `Airplane`'s CG reflected across that `Wing`'s symmetry plane.
 * Ownership: `Wing`
 * Local reference examples
     * Text: ...relative to the CG (after accounting for symmetry)...
@@ -361,16 +361,16 @@ The standard abbreviations and names are given below for reference. See the sect
 * For a `Wing`'s first `WingCrossSection`, this is the `Wing`'s leading edge root point. For subsequent `WingCrossSection`s, this is the previous `WingCrossSection`'s leading point.
 * Ownership: `WingCrossSection`
 * Local reference examples
-    * Text: ...relative to the leading point parent)
+    * Text: ...relative to the leading point parent...
     * Variables: `..._Lpp`
 * Wing-local reference examples
-    * Text: ...relative to the first WingCrossSection's leading point parent)
+    * Text: ...relative to the first WingCrossSection's leading point parent...
     * Variables: `..._Lpp1`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's first WingCrossSection's leading point parent)
+    * Text: ...relative to the second Wing's first WingCrossSection's leading point parent...
     * Variables: `..._Lpp1Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's first WingCrossSection's leading parent point...
+    * Text: ...relative to the first Airplane's second Wing's first WingCrossSection's leading point parent...
     * Variables: `..._Lpp1Wn2P1`
 
 ### 7. Panel points
@@ -381,13 +381,13 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...relative to the panel front right point...
     * Variables: `..._Frpp`
 * Wing-local reference examples
-    * Text: ...relative to the (3, 2\) Panel's front right point...
+    * Text: ...relative to the (3, 2) Panel's front right point...
     * Variables: `..._Frppr3c2`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's (3, 2\) Panel's front right point...
+    * Text: ...relative to the second Wing's (3, 2) Panel's front right point...
     * Variables: `..._Frppr3c2Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's (3, 2\) Panel's front right point...
+    * Text: ...relative to the first Airplane's second Wing's (3, 2) Panel's front right point...
     * Variables: `..._Frppr3c2Wn2P1`
 
 ### 8. Bound horseshoe vortex points
@@ -399,13 +399,13 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...relative to the bound horseshoe vortex front right point...
     * Variables: `..._Frbhvp`
 * Wing-local reference examples
-    * Text: ...relative to the (3, 2\) Panel's bound horseshoe vortex's front right point...
+    * Text: ...relative to the (3, 2) Panel's bound horseshoe vortex's front right point...
     * Variables: `..._Frbhvpr3c2`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's (3, 2\) Panel's bound horseshoe vortex's front right point...
+    * Text: ...relative to the second Wing's (3, 2) Panel's bound horseshoe vortex's front right point...
     * Variables: `..._Frbhvpr3c2Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's (3, 2\) Panel's bound horseshoe vortex's front right point...
+    * Text: ...relative to the first Airplane's second Wing's (3, 2) Panel's bound horseshoe vortex's front right point...
     * Variables: `..._Frbhvpr3c2Wn2P1`
 
 ### 9. Bound ring vortex points
@@ -416,13 +416,13 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...relative to the bound ring vortex front right point...
     * Variables: `..._Frbrvp`
 * Wing-local reference examples
-    * Text: ...relative to the (3, 2\) Panel's bound ring vortex's front right point...
+    * Text: ...relative to the (3, 2) Panel's bound ring vortex's front right point...
     * Variables: `..._Frbrvpr3c2`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's (3, 2\) Panel's bound ring vortex's front right point...
+    * Text: ...relative to the second Wing's (3, 2) Panel's bound ring vortex's front right point...
     * Variables: `..._Frbrvpr3c2Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's (3, 2\) Panel's bound ring vortex's front right point...
+    * Text: ...relative to the first Airplane's second Wing's (3, 2) Panel's bound ring vortex's front right point...
     * Variables: `..._Frbrvpr3c2Wn2P1`
 
 ### 10. Wake horseshoe vortex points
@@ -452,13 +452,13 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...relative to the wake ring vortex front right point...
     * Variables: `..._Frwrvp`
 * Wing-local reference examples
-    * Text: ...relative to the (3, 2\) wake ring vortex's front right point...
+    * Text: ...relative to the (3, 2) wake ring vortex's front right point...
     * Variables: `..._Frwrvpr3c2`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's (3, 2\) wake ring vortex's front right point...
+    * Text: ...relative to the second Wing's (3, 2) wake ring vortex's front right point...
     * Variables: `..._Frwrvpr3c2Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's (3, 2\) wake ring vortex's front right point...
+    * Text: ...relative to the first Airplane's second Wing's (3, 2) wake ring vortex's front right point...
     * Variables: `..._Frwrvpr3c2Wn2P1`
 
 ### 12. Line vortex points
@@ -472,13 +472,13 @@ The standard abbreviations and names are given below for reference. See the sect
     * Text: ...relative to the bound horseshoe vortex's front line vortex's center point...
     * Variables: `..._Clvpf`
 * Wing-local reference examples
-    * Text: ...relative to the (3, 2\) bound horseshoe vortex's front line vortex's center point...
+    * Text: ...relative to the (3, 2) bound horseshoe vortex's front line vortex's center point...
     * Variables: `..._ClvpfBhvr3c2`
 * Airplane-local reference examples
-    * Text: ...relative to the second Wing's (3, 2\) bound horseshoe vortex's front line vortex's center point...
+    * Text: ...relative to the second Wing's (3, 2) bound horseshoe vortex's front line vortex's center point...
     * Variables: `..._ClvpfBhvr3c2Wn2`
 * Non-local reference examples
-    * Text: ...relative to the first Airplane's second Wing's (3, 2\) bound horseshoe vortex's front line vortex's center point...
+    * Text: ...relative to the first Airplane's second Wing's (3, 2) bound horseshoe vortex's front line vortex's center point...
     * Variables: `..._ClvpfBhvr3c2Wn2P1`
 
 ### 13. Strip leading edge point (SLEP)
@@ -517,10 +517,10 @@ The standard abbreviations and names are given below for reference. See the sect
 * Ownership: `Airplane`
 * Local reference examples
     * Text: ...observed from the body frame...
-    * Variables `...__B`
+    * Variables: `...__B`
 * Non-local reference examples
     * Text: ...observed from the second Airplane's body frame...
-    * Variables `...__BP2`
+    * Variables: `...__BP2`
 
 ### 3. Wing reference frame
 
@@ -529,13 +529,13 @@ The standard abbreviations and names are given below for reference. See the sect
 * Ownership: `Wing`
 * Local reference examples
     * Text: ...observed from the wing frame...
-    * Variables `...__Wn`
+    * Variables: `...__Wn`
 * Airplane-local reference examples
     * Text: ...observed from the second Wing's frame...
-    * Variables `...__Wn2`
+    * Variables: `...__Wn2`
 * Non-local reference examples
     * Text: ...observed from the fourth Airplane's second Wing's frame...
-    * Variables `...__Wn2P4`
+    * Variables: `...__Wn2P4`
 
 ### 4. Wing cross section reference frame
 
@@ -544,16 +544,16 @@ The standard abbreviations and names are given below for reference. See the sect
 * Ownership: `WingCrossSection`
 * Local reference examples
     * Text: ...observed from the wing cross section frame...
-    * Variables `...__Wcs`
+    * Variables: `...__Wcs`
 * Wing-local reference examples
     * Text: ...observed from the third WingCrossSection's frame...
-    * Variables `...__Wcs3`
+    * Variables: `...__Wcs3`
 * Airplane-local reference examples
     * Text: ...observed from the second Wing's third WingCrossSection's frame...
-    * Variables `...__Wcs3Wn2`
+    * Variables: `...__Wcs3Wn2`
 * Non-local reference examples
     * Text: ...observed from the fourth Airplane's second Wing's third WingCrossSection's frame...
-    * Variables `...__Wcs3Wn2P4`
+    * Variables: `...__Wcs3Wn2P4`
 
 ### 5. Wing cross section parent reference frame
 
@@ -562,13 +562,13 @@ The standard abbreviations and names are given below for reference. See the sect
 * Ownership: `WingCrossSection`
 * Local reference examples
     * Text: ...observed from the wing cross section parent frame...
-    * Variables `...__Wcsp`
+    * Variables: `...__Wcsp`
 * Wing-local reference examples
     * Text: ...observed from the third WingCrossSection's parent frame...
-    * Variables `...__Wcsp3`
+    * Variables: `...__Wcsp3`
 * Airplane-local reference examples
     * Text: ...observed from the second Wing's third WingCrossSection's parent frame...
-    * Variables `...__Wcsp3Wn2`
+    * Variables: `...__Wcsp3Wn2`
 * Non-local reference examples
     * Text: ...observed from the fourth Airplane's second Wing's third WingCrossSection's parent frame...
-    * Variables `...__Wcsp3Wn2P4`
+    * Variables: `...__Wcsp3Wn2P4`

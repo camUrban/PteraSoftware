@@ -8,7 +8,7 @@ Each version's bar is measured against a frozen software stack reconstructed at 
 
 Every bar in the archive shares the host hardware described under [Test environment](#test-environment) below. The publishing step refuses to emit a chart that mixes bars from different hosts, so a hardware change in the archive forces a full re-run before publication can resume.
 
-The baseline against which speedups and ratios are computed is the immediately-preceding pypi version of the latest pypi version. Open the interactive chart's toggle ("Speedup vs. baseline" for time, "Ratio vs. baseline" for memory) to switch from absolute units on a log y axis to the normalized view on a linear y axis.
+The baseline against which speedups and ratios are computed is the immediately-preceding PyPI version of the latest PyPI version. Open the interactive chart's toggle ("Speedup vs. baseline" for time, "Ratio vs. baseline" for memory) to switch from absolute units on a log y axis to the normalized view on a linear y axis.
 
 ## Test environment
 

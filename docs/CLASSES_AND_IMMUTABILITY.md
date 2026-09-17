@@ -671,7 +671,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 |---------------------------------|---------------|-----------------------------------|
 | `control_surface_symmetry_type` | `str \| None` | Set to `None` for type 5 symmetry |
 
-**Note**: Modified at when type 5 symmetry is split into two wings.
+**Note**: Modified when type 5 symmetry is split into two wings.
 
 ## `Airfoil` Class (`geometry/airfoil.py`)
 

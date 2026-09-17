@@ -118,7 +118,7 @@ panel = cast(_panel.Panel, object_array[i, j])
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
 
-**Avoid `cast()` for `Type | None` -> `Type` narrowing** - use `assert` instead for runtime safety.
+**Avoid `cast()` for `Type | None` -> `Type` narrowing.** Use `assert` instead for runtime safety.
 
 When the type being cast to lives across a circular import boundary, use the string form (`cast("OtherClass", value)`). See "Casting Across a Circular Dependency" below.
 
@@ -425,10 +425,10 @@ class ClassName:
     **Contains the following methods:**
 
     public_method_1: Short description (identical to method's docstring's short
-    description.
+    description).
 
     public_method_2: Short description (identical to method's docstring's short
-    description.
+    description).
 
     Optional notes block
 
@@ -861,7 +861,7 @@ def _get_mcl_points(
     """
 ```
 
-### Example 2: Function with Transformation Matrices
+### Example 3: Function with Transformation Matrices
 
 ```python
 def _get_mcs_points(
@@ -901,7 +901,7 @@ def _get_mcs_points(
     """
 ```
 
-### Example 3: Public Method with Array-Like Parameters
+### Example 4: Public Method with Array-Like Parameters
 
 ```python
 def __init__(
@@ -913,7 +913,7 @@ def __init__(
 ) -> None:
     """The initialization method.
 
-    :param name: The name of the Airfoil. It should correspond to the name of a file
+    :param name: The name of the Airfoil. It should correspond to the name of a file in
         the airfoils directory, or to a valid NACA 4-series airfoil (once converted to
         lower-case and stripped of leading and trailing whitespace) unless you are
         passing in your own array of points using outline_A_Lp. Note that NACA0000 isn't
@@ -926,7 +926,7 @@ def __init__(
         x component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: Determines whether to resample the points defining the Airfoil's
         outline. This applies to points passed in by the user or to those from the
-        airfoils directory. I highly recommended setting this to True. Can be a bool or
+        airfoils directory. I highly recommend setting this to True. Can be a bool or
         a numpy bool and will be converted internally to a bool. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
@@ -937,7 +937,7 @@ def __init__(
     """
 ```
 
-### Example 4: Method Returning Self-Reference
+### Example 5: Method Returning Self-Reference
 
 ```python
 def add_control_surface(
@@ -957,7 +957,7 @@ def add_control_surface(
     """
 ```
 
-### Example 5: Method with Optional Return
+### Example 6: Method with Optional Return
 
 ```python
 def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
@@ -972,7 +972,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
     """
 ```
 
-### Example 6: Method Returning Array
+### Example 7: Method Returning Array
 
 ```python
 def get_resampled_mcl(

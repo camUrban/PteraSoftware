@@ -20,7 +20,7 @@ Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.
 
 ## Environment constraints
 
-- The script's verification modes run the full test suite under `coverage` (pinned in `requirements_dev.txt`). This takes several minutes. Always invoke the script with `python -u` so its output streams, and never pipe the run through `tail`, `head`, `grep`, or any other filter, per `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md`.
+- The script's verification modes run the full test suite under coverage (pinned in `requirements_dev.txt`). This takes several minutes. Always invoke the script with `python -u` so its output streams, and never pipe the run through `tail`, `head`, `grep`, or any other filter, per `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md`.
 - The script never modifies a file until you pass `--delete-verified`. The plain run and `--verify` leave every file untouched.
 
 ## Steps

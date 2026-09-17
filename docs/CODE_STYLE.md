@@ -4,7 +4,7 @@
 
 - Follow existing code style (black) and conventions
 - Maintain consistent indentation and spacing
-- When initializing numpy arrays (e.g., using `np.zeros`, `np.ones`, `np.empty`, etc.), always specify the `dtype` parameter (e.g., `dtype=float`, `dtype=int`, `dtype=object`, etc.)
+- When initializing NumPy arrays (e.g., using `np.zeros`, `np.ones`, `np.empty`, etc.), always specify the `dtype` parameter (e.g., `dtype=float`, `dtype=int`, `dtype=object`, etc.)
 - In runtime strings such as error and log messages, name str values in double quotes, as the docstring rules in [Type Hints and Docstrings](TYPE_HINT_AND_DOCSTRING_STYLE.md) do. Black then keeps the outer string single-quoted to avoid escapes (`f'force_method must be "joukowski" or "katz", got "{force_method}".'`). Write the value inline with double quotes rather than through `!r`, which always emits single quotes.
 
 ## Variable Naming
@@ -25,9 +25,9 @@ Black is configured as a pre-commit hook. Run it with:
 pre-commit run --all-files black
 ```
 
-## Running CodeSpell
+## Running codespell
 
-CodeSpell is configured as a pre-commit hook. Run it with:
+codespell is configured as a pre-commit hook. Run it with:
 
 ```shell
 pre-commit run --all-files codespell

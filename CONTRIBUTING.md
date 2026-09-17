@@ -59,7 +59,7 @@ For feature requests:
 
 ### Contributing Code
 
-Ptera Software now uses GitHub Flow to manage code contributions. If this is new to you, it's a good idea to read through [this guide](https://docs.github.com/en/get-started/using-github/github-flow) first. Once you understand the process, here's how to implement it:
+Ptera Software uses GitHub Flow to manage code contributions. If this is new to you, it's a good idea to read through [this guide](https://docs.github.com/en/get-started/using-github/github-flow) first. Once you understand the process, here's how to implement it:
 
 1. **Choose what to work on**
     - Look for issues labeled `good_first_issue`.
@@ -182,7 +182,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     ```shell
     git add <file-1> <file-2> ...
     ```
-    - Before committing, note that you need to know how to use Git's text editor, which defaults to Vim. If you've never used Vim before, I recommend telling Git to use Nano instead, as many people find it less confusing. To do so, run the following (you only need to run it once):
+    - Before committing, note that you need to know how to use Git's text editor, which defaults to Vim. If you've never used Vim before, we recommend telling Git to use Nano instead, as many people find it less confusing. To do so, run the following (you only need to run it once):
     ```shell
     git config --global core.editor "nano"
     ```

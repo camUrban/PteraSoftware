@@ -37,7 +37,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 ##### Text Reference Pattern
 
-"\[variable name, default to "angles"\] describing the orientation of \[target axes name\] relative to \[source axes name\] using an \[sequence name\] sequence"
+"[variable name, default to "angles"] describing the orientation of [target axes name] relative to [source axes name] using an [sequence name] sequence"
 
 #### Passive Angle Vector Examples
 
@@ -63,7 +63,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 ### Active Angle Vectors
 
-Active angle vectors give instructions for rotating a vector within its current axis system. Therefore, they don't require information about the particular axes, only the type or rotation and the sequence.
+Active angle vectors give instructions for rotating a vector within its current axis system. Therefore, they don't require information about the particular axes, only the type of rotation and the sequence.
 
 #### Specifying Active Angle Vectors
 
@@ -73,7 +73,7 @@ Active angle vectors give instructions for rotating a vector within its current 
 
 ##### Text Reference Pattern
 
-"\[variable name, default to "angles"\] for rotation using an \[sequence name\] sequence"
+"[variable name, default to "angles"] for rotation using an [sequence name] sequence"
 
 #### Active Angle Vector Examples
 
@@ -96,7 +96,7 @@ Angle component time derivatives take no reference frame ID. A frame ID records 
 
 ### Implementation Notes
 
-1. Angle wrapping: All angles should be wrapped to the range (-180, 180\] for consistency
+1. Angle wrapping: All angles should be wrapped to the range (-180, 180] for consistency
 2. Singularities: Different sequences experience gimbal lock at particular points
 3. Units: For all quantities whose units include an angular component, that angular component is in degrees unless explicitly noted otherwise
 4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. zy'x" is the same as xyz)
@@ -112,9 +112,9 @@ By convention, we treat vectors as column vectors and left-multiply by matrices 
 
 ### Homogeneous Coordinates
 
-We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert vector's three components to four homogeneous coordinates before applying the transformation.
+We can use 3x3 rotation matrices to transform our vector-valued quantities as is. However, when working with 4x4 transformation matrices, we must convert a vector's three components to four homogeneous coordinates before applying the transformation.
 
-For vector with components (x, y, z) that is given relative to a reference point, its homogeneous form is (x, y, z, 1). If it is a vector independent of any reference point, its homogeneous form is (x, y, z, 0). After applying the transformation, we can convert either type back to non-homogeneous components by dropping the last coordinate.
+For a vector with components (x, y, z) that is given relative to a reference point, its homogeneous form is (x, y, z, 1). If it is a vector independent of any reference point, its homogeneous form is (x, y, z, 0). After applying the transformation, we can convert either type back to non-homogeneous components by dropping the last coordinate.
 
 ### Passive Matrices
 
@@ -122,21 +122,21 @@ For vector with components (x, y, z) that is given relative to a reference point
 
 * Ptera Software uses two passive matrix types:
     * `R_pas_...`: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
-    * `T_pas_...`: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
+    * `T_pas_...`: 4x4 transformation matrices in homogeneous coordinates that map components from a source axis system and reference point to a target axis system and reference point. They apply the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also apply the translation between the points. They only change how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 
 #### Passive Matrix Name Patterns
 
 ##### 3x3 Rotation Matrices
 
 * `R_pas_[source axes ID]_to_[target axes ID]`
-* ...rotation matrix R, which maps from \[source axes name\] to \[target axes name\]...
+* ...rotation matrix R, which maps from [source axes name] to [target axes name]...
 
 ##### 4x4 General Transformation Matrices
 
 * `T_pas_[source axes ID]_[source point ID]_to_[target axes ID]_[target point ID]`
-* ...transformation matrix T, which maps in homogeneous coordinates from \[source axes name\] relative to \[source point ID\] to \[target axes name\] relative to \[target point ID\]...
+* ...transformation matrix T, which maps in homogeneous coordinates from [source axes name] relative to [source point ID] to [target axes name] relative to [target point ID]...
 
-##### Examples:
+##### Examples
 
 * `R_pas_W_to_B`: ...rotation matrix R, which maps from wind axes to body axes...
 * `T_pas_Wn_Ler_to_G_I`: ...which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point...
@@ -163,7 +163,7 @@ See the section on angle vectors for examples that can be adapted to form text r
 * `[variable name]_T_act`
 * ...[variable name], a matrix for active transformations in homogeneous coordinates...
 
-##### Examples:
+##### Examples
 
 * `mirror_T_act`: ...mirror, a matrix for active transformations in homogeneous coordinates...
 * `translate_wing_T_act`: ...`translate_wing`, a matrix for active transformations in homogeneous coordinates...

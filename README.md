@@ -78,7 +78,7 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ## Features
 
 1. Various Aerodynamic Simulation Methods
-    * Steady simulations can be run with a standard horseshoe vortex-lattice method (VLM) or a ring VLM.
+    * Steady simulations can be run with a standard horseshoe vortex lattice method (VLM) or a ring VLM.
     * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
     * Unsteady simulations support both fixed and free wakes.
     * Unsteady simulations implement vortex aging to reduce numerical instabilities.

@@ -73,12 +73,12 @@ class Airfoil:
         """The initialization method.
 
         :param name: The name of the Airfoil. It should correspond to the name of a file
-            the airfoils directory, or to a valid NACA 4 series airfoil (once converted
-            to lower-case and stripped of leading and trailing whitespace) unless you
-            are passing in your own array of points using outline_A_Lp. Note that
-            NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils with
-            thickness above 30% are not supported, the first two digits must either both
-            be zero (symmetric) or both be non zero (cambered), and for cambered
+            in the airfoils directory, or to a valid NACA 4 series airfoil (once
+            converted to lower-case and stripped of leading and trailing whitespace)
+            unless you are passing in your own array of points using outline_A_Lp. Note
+            that NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils
+            with thickness above 30% are not supported, the first two digits must either
+            both be zero (symmetric) or both be non zero (cambered), and for cambered
             airfoils the position of maximum camber must be greater than or equal to the
             maximum camber plus half the maximum thickness. The default is "NACA0012".
         :param outline_A_Lp: An array like object of numbers (int or float) with shape
@@ -99,8 +99,8 @@ class Airfoil:
             edges are supported. The default value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
-            from the airfoils directory. I highly recommended setting this to True. Can
-            be a bool or a numpy bool and will be converted internally to a bool. The
+            from the airfoils directory. I highly recommend setting this to True. Can be
+            a bool or a numpy bool and will be converted internally to a bool. The
             default is True.
         :param n_points_per_side: The number of points to use when creating the
             Airfoil's MCL and when resampling the upper and lower parts of the Airfoil's

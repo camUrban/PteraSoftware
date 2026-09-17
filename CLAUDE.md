@@ -49,7 +49,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `website/`: Directory with the source files for generating the documentation website
     - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
     - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
-    - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability.
+    - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability
     - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
     - `MUJOCO_CONVENTIONS.md`: Definitive interpretation of MuJoCo state variables and their mapping to Ptera Software's axes, points, frames, and transformations
     - `RUNNING_TESTS_AND_TYPE_CHECKS.md`: Instructions for running tests and type checks **READ BEFORE RUNNING TESTS OR TYPE CHECKS LOCALLY**
@@ -86,8 +86,8 @@ Requires Python 3.11, but active development is done in 3.14
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
     - `_functions.py`: Shared utility functions
-    - `_logging.py`: Contains function for setting up logging
-    - `_mujoco_model.py`: Contains the `MuJoCoModel` class.
+    - `_logging.py`: Contains the function for setting up logging
+    - `_mujoco_model.py`: Contains the `MuJoCoModel` class
     - `_oscillation.py`: Oscillation functions for movement classes
     - `_output_plotting.py`: Matplotlib figure drawing for the visualization functions
     - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions

@@ -26,14 +26,14 @@ The argument is a short description of what the issue is about. If its first tok
     - `gh issue list --search "<keywords>" --state all --limit 20 --json number,title,state,url` to find open or closed issues on the same topic.
     - If any look like plausible duplicates, list them (number, state, title, and URL) in your draft and ask the user whether to proceed before creating anything.
 3. **Choose the title** following the repository's issue conventions:
-    - Sentence case, no trailing period. The title may contain backticked identifiers, and there is no length limit for issue titles.
+    - Sentence case, no trailing period. The title contains no backticks, so write identifiers bare, and there is no length limit for issue titles.
     - Do not prefix the title with `[BUG]`, `[FEATURE]`, or any other bracketed tag, even though older issues carry such prefixes. Classification lives in the labels, not the title.
 4. **Draft the body** following the lived, streamlined convention. Do not copy the verbose `.github/ISSUE_TEMPLATE/` placeholder prose, the end-user-reporter sections (`Reproduction`, `Screenshots`, `Desktop`), or `Alternative Solutions`. Keep each section to a few concise sentences.
 
    Apply these writing conventions throughout the body:
     - Do not hard-wrap. Write each paragraph and bullet as a single continuous line; GitHub reflows Markdown for display.
     - Follow `docs/WRITING_STYLE.md` for tone, terminology, and mechanics.
-    - Backtick every file, path, module, class, function, method, and inline code span.
+    - Mark up code tokens, str values, and plurals as the Markup and Quoting section of `docs/WRITING_STYLE.md` prescribes for issue bodies.
 
    Use this structure:
     - For a **bug**:
@@ -71,7 +71,7 @@ The argument is a short description of what the issue is about. If its first tok
 
 - Draw the issue's substance from the conversation and the argument; never fabricate. If context is too thin, stop and ask for specifics.
 - Follow the lived, streamlined convention, not the verbose `.github/ISSUE_TEMPLATE/` forms: include the `**Location(s):**` line, and omit `Reproduction`, `Screenshots`, `Desktop`, and `Alternative Solutions`.
-- Keep the title and body ASCII-only and unwrapped, with backticked identifiers and no footer beyond the policy's `Assisted-by:` disclosure line.
+- Keep the title and body ASCII-only and unwrapped, with the body's code tokens in backticks per `docs/WRITING_STYLE.md`, no backticks in the title, and no footer beyond the policy's `Assisted-by:` disclosure line.
 - Never use `gh api`; use only the `gh issue` porcelain.
 - Never assign the issue, and never attach a milestone or project.
 - Add the `good_first_issue` label and a `## Hints for New Contributors` section only when the `gfi` keyword is given.

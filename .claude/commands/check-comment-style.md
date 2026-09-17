@@ -30,10 +30,10 @@ This command checks comment prose style only. It does not check:
 
 2. Read `docs/WRITING_STYLE.md` in full. Extract the following sections verbatim (heading through last bullet, no summarizing or paraphrasing) for use in agent prompts:
    - The "Sentence Structure" section and the "How to Handle Each Forbidden Case" subsection (for pass 1)
-   - The "Terminology" section (for pass 2)
+   - The "Terminology" section and the "Comments and Docstrings" subsection of the "Markup and Quoting" section (for pass 2)
    - The "Math and Numbers" section (for pass 3)
 
-   The "File Formatting" and remaining "ASCII Only" material is intentionally given to no pass: it is out of scope for block comments or covered by hooks.
+   The "File Formatting" material, the remaining "ASCII Only" material, and the Markdown subsection of "Markup and Quoting" are intentionally given to no pass: they are out of scope for block comments or covered by hooks.
 
 3. Build the class name inventory for pass 2. Run:
 
@@ -49,7 +49,7 @@ This command checks comment prose style only. It does not check:
 
    Pass 1, sentence structure: the agent receives the verbatim "Sentence Structure" section, the verbatim "How to Handle Each Forbidden Case" subsection, the file path, and the Common Agent Instructions. Note that the "How to Handle Each Forbidden Case" subsection contains a bullet on spelling out math symbols, which overlaps pass 3's rule group. Pass 1 applies it only to non-ASCII math characters appearing in prose, and leaves spacing and formatting of existing ASCII math to pass 3.
 
-   Pass 2, terminology and class references: the agent receives the verbatim "Terminology" section, the class name inventory from step 3, the file path, and the Common Agent Instructions, plus these two pass-specific instructions:
+   Pass 2, terminology, class references, and markup and quoting: the agent receives the verbatim "Terminology" section, the verbatim "Comments and Docstrings" subsection of "Markup and Quoting", the class name inventory from step 3, the file path, and the Common Agent Instructions, plus these two pass-specific instructions:
    - Use the class name inventory to decide whether a word in a comment refers to a code object (capitalize, no spaces) or an abstraction (lowercase, spaced words). If you are unsure which one a word refers to, leave it unchanged and insert `# FIXME: Manually review this comment.` on its own line above it.
    - Do not attempt to fix coordinate system naming (the conventions referenced in the CRITICAL bullet); those conventions live in documents you have not been given. If a comment looks like it violates them, insert a FIXME marker instead of editing.
 
@@ -78,7 +78,7 @@ Open every agent prompt with this, filling in the bracketed parts for the pass b
 > You are pass [N] of 3 in a three-pass comment style review of a single file. The three passes run strictly in sequence over the same file, and each one owns a different group of style rules:
 >
 > - Pass 1 owns sentence structure.
-> - Pass 2 owns terminology and class references.
+> - Pass 2 owns terminology, class references, and markup and quoting (backticks and quoted values).
 > - Pass 3 owns math and number formatting.
 >
 > You own [that pass's rule group]. The other two passes are already assigned to other agents and will run on this file. Do not fix violations belonging to their rule groups, even when you notice them and even when the fix looks obvious. Doing so produces duplicate and conflicting edits, and it is not your job.

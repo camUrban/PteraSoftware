@@ -33,7 +33,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
     - `git diff --stat <base>...HEAD` and `git diff <base>...HEAD` to understand the actual changes. Base the description and the `Changes` bullets on this diff, not on the commit messages alone.
     - Read `.github/pull_request_template.md` so the body reproduces its exact, current section structure.
 2. **Choose and verify the title** following the template's title rules and this repository's conventions:
-    - Sentence case, no trailing period.
+    - Sentence case, no trailing period, and no backticks, so write identifiers bare.
     - Do not prefix the title with `[FEATURE]`, `[BUG]`, or any other bracketed tag. Classification lives in the labels, not the title.
     - A title may state an outcome (e.g., "Add free flight simulations").
     - The entire title must be at most 42 characters. Verify its length and ASCII-only content with a single awk call (this runs without a permission prompt, so it costs the user nothing):
@@ -52,7 +52,7 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
    Apply these writing conventions throughout the body:
     - Do not hard-wrap. Write each paragraph and bullet as a single continuous line; this repository never hard-wraps Markdown and GitHub reflows it for display. This is the opposite of the commit-message convention, which wraps at 72 characters.
     - Consult `docs/WRITING_STYLE.md` and follow its conventions for tone, terminology, and mechanics.
-    - Enclose every file, path, directory, module, package, class, object, function, method, attribute, and any other identifier or inline code in backticks (for example, `_transformations.py`, `OperatingPoint`, and `alpha_and_beta_from_vInf_BP1`).
+    - Mark up code tokens, str values, and plurals as its Markup and Quoting section prescribes for pull request descriptions (for example, `_transformations.py`, `OperatingPoint`, `alpha_and_beta_from_vInf_BP1`, and `"sine"`).
 
    Fill each section as follows:
     - **Description**: One or two prose paragraphs describing what the change does, scaled to its magnitude. For a small change, a few sentences, noting backward compatibility when relevant (e.g., a new default that leaves existing callers unaffected). For a larger change, a fuller paragraph covering the mechanism and the scope, including anything deliberately left out of scope.
@@ -91,9 +91,9 @@ Examples: `/create-pr` (base `main`, ready), `/create-pr develop` (base `develop
 - Never push, and never use `--no-verify` or any flag that bypasses checks. If the branch is not pushed and current, stop and ask the user to push.
 - Never use `gh api`; stick to the `gh pr` porcelain.
 - Follow `.github/pull_request_template.md` exactly: every section, in order, with real content.
-- Never prefix the title with `[FEATURE]`, `[BUG]`, or any other bracketed tag (classification lives in the labels), and keep the whole title to at most 42 characters, verified with the awk check.
+- Never prefix the title with `[FEATURE]`, `[BUG]`, or any other bracketed tag (classification lives in the labels), never put backticks in it, and keep the whole title to at most 42 characters, verified with the awk check.
 - Never check a checklist item that asserts a GitHub action or the ReadTheDocs build passes; those run only after the PR is created, so they have not run yet. Leave every such item `[ ]`, no matter how certain the outcome.
 - Keep the title and body ASCII-only, with no footer beyond the policy's `Assisted-by:` disclosure line.
-- The body is Markdown: do not hard-wrap it, follow `docs/WRITING_STYLE.md`, and backtick every identifier, path, and inline code span.
+- The body is Markdown: do not hard-wrap it, follow `docs/WRITING_STYLE.md`, and apply its Markup and Quoting section.
 - Do not open a PR from the base branch, and do not open a duplicate when one already exists for the branch.
 - Do not attach a milestone or project, and do not request reviewers. Always self-assign with `--assignee "@me"`, which targets whoever `gh` is authenticated as.

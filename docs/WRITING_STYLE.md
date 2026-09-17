@@ -5,7 +5,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 ## Terminology
 
 - **"Ptera Software"**: When referring to the project, package, or codebase by its proper name in prose, always write "Ptera Software" as two capitalized words without a hyphen. Never use "ptera", "ptera software", "PteraSoftware", or "Ptera" alone in prose. This includes possessives ("Ptera Software's", not "Ptera's") and shortenings ("the Ptera Software solver", not "the Ptera solver"). Identifier strings keep their canonical form and are not affected: the GitHub repo name "PteraSoftware", the Python package "pterasoftware", and paths like "~/Documents/GitHub/PteraSoftware/" stay as-is.
-- **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). In summary, when talking about code objects:
+- **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). The examples below are written as they appear in comments and docstrings. Markdown files, issue bodies, and pull request descriptions also put the class name in a code span, as the [Markup and Quoting](#markup-and-quoting) section describes. In summary, when talking about code objects:
     - GOOD: "the previous WingCrossSection"
     - BAD: "the previous cross section"
     - GOOD: "this Wing"
@@ -43,6 +43,26 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 - When writing tuples or vectors in prose, include a space after each comma (e.g., "(1.0, 2.0, 3.0)", not "(1.0,2.0,3.0)").
 - When writing numerals that represent float values in prose, include a trailing ".0" (e.g., "1.0" not "1", "0.0" not "0") when the context describes float-valued quantities.
 - Include a space between a numeral and its unit (e.g., "0.5 m" not "0.5m", "1.0 s" not "1.0s").
+
+## Markup and Quoting
+
+The same name is marked up differently depending on where it appears. Comments and docstrings write it bare, while Markdown files, issue bodies, and pull request descriptions put it in a code span. The rules below say which applies where.
+
+### Comments and Docstrings
+
+- No backticks. Write identifiers, expressions, calls, and keyword assignments bare (the free_wake parameter, passive=True, get_logger("trim")). Docstrings are rST, where single backticks render as italics rather than code, and comments follow the same rule so that the two read alike. The capitalization of a class name already sets it apart from prose, as the Terminology section describes.
+- Write a str value in double quotes, matching black's quoting in code: an accepted parameter value such as "sine", a dict key such as "position_E_Eo", a default such as "draw.webp", or an extension that is itself the str being passed or checked such as ".webp". Never quote a path or glob pattern named as a reference (docs/AXES_POINTS_AND_FRAMES.md, a .psz file).
+- Docstrings carry two further rules, for the one place double backticks belong and for sequences that rST parses as markup. See [TYPE_HINT_AND_DOCSTRING_STYLE.md](TYPE_HINT_AND_DOCSTRING_STYLE.md). Runtime strings such as error messages follow the same quoting, as described in [CODE_STYLE.md](CODE_STYLE.md).
+
+### Markdown Files, Issue Bodies, and Pull Request Descriptions
+
+- Put every code token in a code span (single backticks): shell commands (`pre-commit run --all-files codespell`), CLI flags (`--all-files`), keyword assignments (`dtype=float`), slash paths (`examples/`, `tests/unit/`), class names (`WingCrossSection`), variable names of every form (`wing_cross_section`, `omegasRad_BP1__E`, `_UNSET`), file names (`AXES_POINTS_AND_FRAMES.md`, `_meshing.py`), an extension used as a file-type reference (a `.psz` file), and any other code, including in headers.
+- A str value is code too, so its double quotes go inside the code span: `"sine"`, `"edge_defined"`, and `".webp"` when the extension is itself the str being passed or checked.
+- Attach plurals and possessives outside the code span: `WingMovement`s, `OperatingPoint`'s.
+- Numerals, array shapes, and inline math stay bare and follow the Math and Numbers section: 1.0e-10, (M, 4), and r1 * r2.
+- When pointing the reader at another document in this repository, use a Markdown link ([Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md)). When naming a file without sending the reader to it, use the backticked file name.
+- Never escape underscores with backslashes. Any text containing an underscore belongs in a code span, where Markdown parses nothing, and that includes naming templates such as `[variable name]_[axes ID]`.
+- Issue and pull request titles contain no backticks. Write identifiers bare there.
 
 ## File Formatting
 

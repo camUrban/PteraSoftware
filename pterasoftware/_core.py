@@ -110,12 +110,12 @@ class CoreOperatingPointMovement:
         if isinstance(spacingVCg__E, str):
             if spacingVCg__E not in ["sine", "uniform"]:
                 raise ValueError(
-                    f"spacingVCg__E must be 'sine', 'uniform', or a callable, "
-                    f"got string '{spacingVCg__E}'."
+                    f'spacingVCg__E must be "sine", "uniform", or a callable, '
+                    f'got string "{spacingVCg__E}".'
                 )
         elif not callable(spacingVCg__E):
             raise TypeError(
-                f"spacingVCg__E must be 'sine', 'uniform', or a callable, got "
+                f'spacingVCg__E must be "sine", "uniform", or a callable, got '
                 f"{type(spacingVCg__E).__name__}."
             )
         self._spacingVCg__E = spacingVCg__E
@@ -230,8 +230,7 @@ class CoreOperatingPointMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of OperatingPoints associated with this
-            CoreOperatingPointMovement.
+        :return: The list of OperatingPoints associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -733,8 +732,7 @@ class CoreWingCrossSectionMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of WingCrossSections associated with this
-            CoreWingCrossSectionMovement.
+        :return: The list of WingCrossSections associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -1336,7 +1334,7 @@ class CoreWingMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of Wings associated with this CoreWingMovement.
+        :return: The list of Wings associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -1698,7 +1696,7 @@ class CoreAirplaneMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (float or int), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of Airplanes associated with this CoreAirplaneMovement.
+        :return: The list of Airplanes associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -2286,7 +2284,7 @@ class CoreUnsteadyProblem:
 
     def __init__(
         self,
-        only_final_results: bool | np.bool_,
+        only_final_results: bool | np.bool,
         delta_time: float | int,
         num_steps: int,
         max_wake_rows: int | None,

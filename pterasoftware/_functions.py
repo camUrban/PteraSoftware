@@ -786,8 +786,8 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
     Only one solve loop may be active per process. A second one entered while the first
     is still running raises, rather than silently corrupting the process-wide BLAS
     thread count that both would be saving and restoring. Run simulations in parallel
-    with separate processes using the 'spawn' or 'forkserver' start method (for example,
-    mp_context=multiprocessing.get_context('spawn') for ProcessPoolExecutor) rather than
+    with separate processes using the "spawn" or "forkserver" start method (for example,
+    mp_context=multiprocessing.get_context("spawn") for ProcessPoolExecutor) rather than
     with separate threads or with fork-method multiprocessing after a solve has run.
     Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at
     the child kernel launch on GCC Linux builds, so a forked child that inherited a live
@@ -815,23 +815,23 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 "layer from its parent after a solver run. Fork-method "
                 "multiprocessing cannot be used after a solve has run in the "
                 "parent process, because the child would abort at its first "
-                "parallel kernel launch on GCC Linux builds. Use the 'spawn' or "
-                "'forkserver' start method instead, for example "
-                "mp_context=multiprocessing.get_context('spawn') for "
+                'parallel kernel launch on GCC Linux builds. Use the "spawn" or '
+                '"forkserver" start method instead, for example '
+                'mp_context=multiprocessing.get_context("spawn") for '
                 "ProcessPoolExecutor, or create worker processes before the first "
                 "solve."
             )
         if _solve_loop_owner is not None:
             raise RuntimeError(
                 f"A solver run is already in progress in thread "
-                f"'{_solve_loop_owner}', and thread '{this_thread}' tried to start "
+                f'"{_solve_loop_owner}", and thread "{this_thread}" tried to start '
                 f"another. Ptera Software's solvers cannot run concurrently within one "
                 f"process, because limiting the BLAS thread pool around a run's linear "
                 f"solves changes process-wide state that concurrent runs would corrupt, "
                 f"silently capping the process at a single BLAS thread. Run simulations "
-                f"in parallel with separate processes using the 'spawn' or "
-                f"'forkserver' start method, for example "
-                f"mp_context=multiprocessing.get_context('spawn') for "
+                f'in parallel with separate processes using the "spawn" or '
+                f'"forkserver" start method, for example '
+                f'mp_context=multiprocessing.get_context("spawn") for '
                 f"ProcessPoolExecutor, rather than with separate threads or with "
                 f"fork-method multiprocessing after a solve has run. Threads "
                 f"would not speed the solvers up in any case, because the compiled "

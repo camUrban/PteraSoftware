@@ -214,10 +214,10 @@ class TestNdarrayRoundTrip(unittest.TestCase):
 
         :return: None
         """
-        arr = np.array([True, False, True, False], dtype=np.bool_)
+        arr = np.array([True, False, True, False], dtype=np.bool)
         result = _ndarray_from_dict(_ndarray_to_dict(arr))
         npt.assert_array_equal(result, arr)
-        self.assertEqual(result.dtype, np.bool_)
+        self.assertEqual(result.dtype, np.bool)
 
     def test_empty_float64(self) -> None:
         """Tests round trip for an empty float64 array.
@@ -397,7 +397,7 @@ class TestSerializeValue(unittest.TestCase):
 
         :return: None
         """
-        result = _serialize_value(np.bool_(True))
+        result = _serialize_value(np.bool(True))
         self.assertIs(result, True)
         self.assertIsInstance(result, bool)
 

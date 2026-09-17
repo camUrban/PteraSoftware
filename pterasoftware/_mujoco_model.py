@@ -362,17 +362,17 @@ class MuJoCoModel:
 
         We define MuJoCo world coordinates to be identical to Ptera Software Earth axes.
 
-        :return: A dictionary containing the following keys: ``position_E_Eo``, a (3,)
+        :return: A dictionary containing the following keys: "position_E_Eo", a (3,)
             ndarray of floats representing the current position of the first Airplane's
             CG (in Earth axes, relative to the Earth origin) in meters;
-            ``R_pas_E_to_BP1``, a (3,3) ndarray of floats representing the current
+            "R_pas_E_to_BP1", a (3,3) ndarray of floats representing the current
             orientation of the first Airplane as a passive rotation matrix from Earth
-            axes to first Airplane's body axes; ``velocity_E__E``, a (3,) ndarray of
+            axes to first Airplane's body axes; "velocity_E__E", a (3,) ndarray of
             floats representing the current velocity of the first Airplane's CG (in
             Earth axes, observed from the Earth frame) in meters per second;
-            ``omegas_BP1__E``, a (3,) ndarray of floats representing the current angular
+            "omegas_BP1__E", a (3,) ndarray of floats representing the current angular
             velocity of the first Airplane's body axes (in the first Airplane's body
-            axes, observed from the Earth frame) in degrees per second; ``time``, a
+            axes, observed from the Earth frame) in degrees per second; "time", a
             float representing the current simulation time in seconds.
         """
         # MuJoCo's xmat is R_pas_BP1_to_E: it transforms vectors from the first
@@ -504,7 +504,7 @@ class MuJoCoModel:
                 geom_name = mujoco.mj_id2name(
                     self._model, mujoco.mjtObj.mjOBJ_GEOM, geom_id
                 )
-                geom_label = f"'{geom_name}'" if geom_name else f"with ID {geom_id}"
+                geom_label = f'"{geom_name}"' if geom_name else f"with ID {geom_id}"
                 _logger.warning(
                     _logging.indent()
                     + "Not drawing the MuJoCo geom %s because it is %s, which this "

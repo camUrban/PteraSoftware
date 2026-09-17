@@ -535,7 +535,7 @@ def analyze_unsteady_trim(
     boundsExternalFX_W: tuple[float | int, float | int],
     objective_cut_off: float | int = 0.01,
     num_calls: int = 100,
-    show_solver_progress: bool | np.bool_ = True,
+    show_solver_progress: bool | np.bool = True,
     force_method: str = "joukowski",
 ) -> tuple[float, float, float, float] | tuple[None, None, None, None]:
     """Attempts to calculate a trim condition of an UnsteadyProblem by varying the base
@@ -729,7 +729,7 @@ def analyze_unsteady_trim(
     force_method = _parameter_validation.str_return_str(force_method, "force_method")
     if force_method not in ("joukowski", "katz"):
         raise ValueError(
-            f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+            f'force_method must be "joukowski" or "katz", got "{force_method}".'
         )
 
     base_operating_point = (

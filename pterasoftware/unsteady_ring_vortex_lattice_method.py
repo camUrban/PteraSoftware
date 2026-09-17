@@ -146,8 +146,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def __init__(self, unsteady_problem: _core.CoreUnsteadyProblem) -> None:
         """The initialization method.
 
-        :param unsteady_problem: The UnsteadyProblem (or subclass of
-            CoreUnsteadyProblem) to be solved.
+        :param unsteady_problem: The UnsteadyProblem to be solved. The derived solvers
+            pass their own problem types through this parameter.
         :return: None
         """
         # Guard direct instantiation of the base solver against coupled problems while
@@ -425,9 +425,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
     def run(
         self,
-        prescribed_wake: bool | np.bool_ = True,
-        calculate_streamlines: bool | np.bool_ = True,
-        show_progress: bool | np.bool_ = True,
+        prescribed_wake: bool | np.bool = True,
+        calculate_streamlines: bool | np.bool = True,
+        show_progress: bool | np.bool = True,
         force_method: str = "joukowski",
     ) -> None:
         """Runs the solver on the UnsteadyProblem.
@@ -465,7 +465,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         )
         if force_method not in ("joukowski", "katz"):
             raise ValueError(
-                f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+                f'force_method must be "joukowski" or "katz", got "{force_method}".'
             )
         self._force_method = force_method
 

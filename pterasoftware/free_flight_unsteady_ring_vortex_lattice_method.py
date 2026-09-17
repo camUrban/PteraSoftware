@@ -2,11 +2,11 @@
 
 **Contains the following classes:**
 
-FreeFlightUnsteadyRingVortexLatticeMethodSolver: A subclass of
-CoupledUnsteadyRingVortexLatticeMethodSolver that solves FreeFlightUnsteadyProblems,
-contributing the body angular rate (omega cross r) to the apparent velocity at every
-evaluation point so that the inherited unsteady ring vortex lattice method models the
-six-degree-of-freedom motion that the coupled MuJoCo dynamics produce.
+FreeFlightUnsteadyRingVortexLatticeMethodSolver: A class used to solve
+FreeFlightUnsteadyProblems with the unsteady ring vortex lattice method, contributing
+the body angular rate (omega cross r) to the apparent velocity at every evaluation point
+so that the method models the six-degree-of-freedom motion that the coupled MuJoCo
+dynamics produce.
 
 **Contains the following functions:**
 
@@ -34,23 +34,20 @@ _BP1_TO_GP1_FLIP.flags.writeable = False
 class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     CoupledUnsteadyRingVortexLatticeMethodSolver
 ):
-    """A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver that solves
-    FreeFlightUnsteadyProblems.
+    """A class used to solve FreeFlightUnsteadyProblems with the unsteady ring vortex
+    lattice method.
 
     In a FreeFlightUnsteadyProblem the body state at each time step comes from the
     coupled MuJoCo rigid-body dynamics (carried out in FreeFlightUnsteadyProblem's
     initialize_next_problem), so each step's OperatingPoint carries a body angular rate
     (omegas_BP1__E) that the standard solver assumes is zero. This solver contributes
     the apparent velocity from that body rate (omega cross r) at every collocation point
-    and bound line vortex leg center by overriding _currentOmegasRad_GP1__E, which the
-    inherited velocity calculations feed through _apply_body_rate.
+    and bound line vortex leg center.
 
-    **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:** sets
-    _models_body_rates to True so the inherited constructor permits non-zero body rates,
-    and overrides _currentOmegasRad_GP1__E and _convectionOmegasRad_GP1__E to supply the
-    current and next OperatingPoints' body angular rates (in the first Airplane's
-    geometry axes, in radians per second), the latter used when convecting the wake to
-    the next time step.
+    **Key additions over the unsteady ring vortex lattice method:** permits non-zero
+    body rates, and supplies the current and next OperatingPoints' body angular rates
+    (in the first Airplane's geometry axes, in radians per second) to the velocity
+    calculations, the latter used when convecting the wake to the next time step.
 
     **Strongly coupled solve interface:** freeze_substep, evaluate_trial_aero_loads, and
     restore_substep are the public methods the FreeFlightUnsteadyProblem's step solve

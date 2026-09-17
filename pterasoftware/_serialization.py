@@ -180,7 +180,7 @@ class UnboundCallable:
             "the object was loaded, because saved files store only a callable's name "
             "and source text and never execute anything they contain. To use it, load "
             "the file again and pass the function as load(path, callables="
-            f"{{{self._qualname!r}: function}}). {source_note}"
+            f'{{"{self._qualname}": function}}). {source_note}'
         )
 
     def __repr__(self) -> str:
@@ -188,7 +188,7 @@ class UnboundCallable:
 
         :return: The repr string.
         """
-        return f"UnboundCallable(qualname={self._qualname!r})"
+        return f'UnboundCallable(qualname="{self._qualname}")'
 
 
 def _all_slots(cls: type) -> list[str]:
@@ -463,9 +463,9 @@ def load(
     """
     path = Path(path)
     if not path.name.lower().endswith(".psz"):
-        raise ValueError(f"Path must end with '.psz', got '{path.name}'.")
+        raise ValueError(f'Path must end with ".psz", got "{path.name}".')
     if path.is_dir():
-        raise ValueError(f"Path must be a file path, got directory '{path}'.")
+        raise ValueError(f'Path must be a file path, got directory "{path}".')
     if callables is not None:
         if not isinstance(callables, Mapping):
             raise TypeError(
@@ -478,7 +478,7 @@ def load(
                 )
             if not callable(func):
                 raise TypeError(
-                    f"callables values must be callable, but the value for '{key}' is "
+                    f'callables values must be callable, but the value for "{key}" is '
                     f"{type(func).__name__}."
                 )
     _logger.info(_logging.indent() + "Loading from %s", path)
@@ -527,7 +527,7 @@ def load(
             top_level_type = header.get("_type")
             if top_level_type not in _PUBLIC_SAVEABLE_CLASSES:
                 raise TypeError(
-                    f"'{top_level_type}' is not a public saveable class. Only files "
+                    f'"{top_level_type}" is not a public saveable class. Only files '
                     f"containing public Ptera Software classes can be loaded via "
                     f"load()."
                 )
@@ -552,7 +552,7 @@ def load(
             if member_names[-1] != _ROOT_MEMBER_NAME:
                 raise ValueError(
                     f"The file's header must list {_ROOT_MEMBER_NAME} as its last "
-                    f"member, got '{member_names[-1]}'."
+                    f'member, got "{member_names[-1]}".'
                 )
 
             # Stream the step members in manifest order. Each member maps the key of
@@ -590,11 +590,11 @@ def load(
             root_data = json.loads(root_bytes)
             del root_bytes
     except zipfile.BadZipFile as error:
-        raise ValueError(f"'{path}' is not a valid .psz file: {error}") from error
+        raise ValueError(f'"{path}" is not a valid .psz file: {error}') from error
 
     if not isinstance(root_data, dict) or root_data.get("_type") != top_level_type:
         raise ValueError(
-            f"The file's {_ROOT_MEMBER_NAME} member must hold a '{top_level_type}' "
+            f'The file\'s {_ROOT_MEMBER_NAME} member must hold a "{top_level_type}" '
             f"record to match its header."
         )
 
@@ -611,7 +611,7 @@ def load(
     if chunk_values:
         raise ValueError(
             "The file's step members hold keys that no chunked slot claimed: "
-            + ", ".join(f"'{key}'" for key in sorted(chunk_values))
+            + ", ".join(f'"{key}"' for key in sorted(chunk_values))
             + "."
         )
 
@@ -639,7 +639,7 @@ def _read_member_bytes(
     try:
         member = archive.open(member_name)
     except KeyError:
-        raise ValueError(f"The file is missing the member '{member_name}'.") from None
+        raise ValueError(f'The file is missing the member "{member_name}".') from None
 
     decompressed = bytearray()
     with member:
@@ -736,7 +736,7 @@ def _emit_members(obj: object) -> Iterator[tuple[str, dict[str, Any]]]:
     for key, owner, slot_name, sequence in named_sequences:
         if id(owner) in memo:
             raise RuntimeError(
-                f"The owner of the chunked slot '{key}' was reached from a step member "
+                f'The owner of the chunked slot "{key}" was reached from a step member '
                 "before the root member was written."
             )
         if isinstance(sequence, tuple):
@@ -745,7 +745,7 @@ def _emit_members(obj: object) -> Iterator[tuple[str, dict[str, Any]]]:
             container = "list"
         else:
             raise TypeError(
-                f"The chunked slot '{key}' must hold a tuple or a list, got "
+                f'The chunked slot "{key}" must hold a tuple or a list, got '
                 f"{type(sequence).__name__}."
             )
         chunk_placeholders.setdefault(id(owner), {})[slot_name] = {
@@ -810,9 +810,9 @@ def _check_callables_against_markers(
     if unused:
         raise ValueError(
             "callables has keys that match no custom callable in the file: "
-            + ", ".join(f"'{key}'" for key in unused)
+            + ", ".join(f'"{key}"' for key in unused)
             + ". The file's custom callables are: "
-            + ", ".join(f"'{key}'" for key in sorted(recorded_hashes))
+            + ", ".join(f'"{key}"' for key in sorted(recorded_hashes))
             + "."
         )
 
@@ -1119,7 +1119,7 @@ def _object_from_dict(
     type_tag = data["_type"]
     cls = _CLASS_REGISTRY.get(type_tag)
     if cls is None:
-        raise TypeError(f"Unknown class in _object_from_dict: '{type_tag}'.")
+        raise TypeError(f'Unknown class in _object_from_dict: "{type_tag}".')
 
     if table is None:
         table = {}
@@ -1284,7 +1284,7 @@ def _serialize_value(
         return None
 
     # Check bool before int because bool is a subclass of int.
-    if isinstance(value, (bool, np.bool_)):
+    if isinstance(value, (bool, np.bool)):
         return bool(value)
 
     if isinstance(value, (int, np.integer)):
@@ -1453,7 +1453,7 @@ def _deserialize_value(
         type_tag = data.get("_type")
         if type_tag is None:
             raise ValueError(
-                "Dict without '_type' key encountered during deserialization."
+                'Dict without "_type" key encountered during deserialization.'
             )
         if type_tag == "int":
             return int(data["value"])
@@ -1505,7 +1505,7 @@ def _deserialize_value(
             items = chunk_values.pop(key, [])
             if len(items) != data["length"]:
                 raise ValueError(
-                    f"The chunked slot '{key}' should hold {data['length']} elements, "
+                    f"The chunked slot \"{key}\" should hold {data['length']} elements, "
                     f"but the file's step members hold {len(items)}."
                 )
             container = data["container"]
@@ -1513,12 +1513,12 @@ def _deserialize_value(
                 return tuple(items)
             if container == "list":
                 return items
-            raise ValueError(f"Unknown chunked container: '{container}'.")
+            raise ValueError(f'Unknown chunked container: "{container}".')
         if type_tag == "callable":
             name = data["name"]
             func = _CALLABLE_NAME_TO_FUNC.get(name)
             if func is None:
-                raise ValueError(f"Unknown callable name: '{name}'.")
+                raise ValueError(f'Unknown callable name: "{name}".')
             return func
         if type_tag == "custom_callable":
             qualname = data["qualname"]
@@ -1533,7 +1533,7 @@ def _deserialize_value(
             return _object_from_dict(
                 data, table=table, callables=callables, chunk_values=chunk_values
             )
-        raise TypeError(f"Unknown _type tag: '{type_tag}'.")
+        raise TypeError(f'Unknown _type tag: "{type_tag}".')
 
     if isinstance(data, (int, float)):
         raise ValueError(

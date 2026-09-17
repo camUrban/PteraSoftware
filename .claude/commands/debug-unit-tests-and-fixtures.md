@@ -21,7 +21,7 @@ If there's ANY possibility you've found a real bug based on the source code logi
 Follow these steps carefully and track your progress:
 
 - [ ] Identify which test files correspond to `$ARGUMENTS`
-- [ ] Run the relevant tests with unittest, per `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md`, and read the output
+- [ ] Run the relevant tests with `unittest`, per `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md`, and read the output
 - [ ] For each failure, analyze the source code logic
 - [ ] Check documentation/docstrings for intended behavior
 - [ ] Determine if failure indicates test error or source bug
@@ -38,7 +38,7 @@ Follow these steps carefully and track your progress:
     - Note any fixture dependencies
 2. **Run initial tests** following `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md` (Ptera Software uses `unittest`, not pytest):
     - Run the module's tests with `python -u -m unittest tests.unit.test_module_name -v`, or a single test with `python -u -m unittest tests.unit.test_module_name.TestClass.test_method -v`. The `-u` flag keeps output streaming.
-    - Let the output stream directly into the conversation; never pipe it through `tail`, `head`, `grep`, or any other filter.
+    - Let the output stream directly into the conversation. Never pipe it through `tail`, `head`, `grep`, or any other filter.
     - Capture and analyze the full output, noting all failures and their error messages.
 3. **For EACH test failure**:
    a. **Read the failing test carefully**:
@@ -46,7 +46,7 @@ Follow these steps carefully and track your progress:
       - Note the expected vs actual values
       - Identify which source method/function is being tested
    b. **Analyze the source code**:
-      - Read the source implementation in $ARGUMENTS
+      - Read the source implementation in `$ARGUMENTS`
       - Trace through the logic step by step
       - Check all relevant docstrings and comments
       - Look for any documentation about intended behavior

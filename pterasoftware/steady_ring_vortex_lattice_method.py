@@ -216,7 +216,7 @@ class SteadyRingVortexLatticeMethodSolver:
         """
         return self._ran
 
-    def run(self, calculate_streamlines: bool | np.bool_ = True) -> None:
+    def run(self, calculate_streamlines: bool | np.bool = True) -> None:
         """Runs the solver on the SteadyProblem.
 
         :param calculate_streamlines: Determines whether to calculate the streamlines

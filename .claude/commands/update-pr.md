@@ -10,19 +10,19 @@ This command takes no arguments. It operates on the single open PR whose head is
 
 ## Shared conventions
 
-Read `.claude/commands/create-pr.md` and apply every convention it defines: the `.github/pull_request_template.md` section structure and per-section detail level, the body writing conventions (no hard-wrapping, `docs/WRITING_STYLE.md`, backticking every identifier, path, and inline code span), the title rules (no `[FEATURE]`, `[BUG]`, or other bracketed prefix, and the 42-character limit with its awk check), label selection from `.github/labels.yml`, the checklist rule (never check an item that asserts a GitHub action or the ReadTheDocs build passes), and the environment constraints (an already-pushed branch; only the `gh pr` porcelain and never `gh api`; an ASCII-only title and body with no footer beyond the AI-use policy's `Assisted-by:` disclosure line; and never attaching a milestone or project or requesting reviewers). Only the differences specific to updating an existing PR are spelled out below.
+Read `.claude/commands/create-pr.md` and apply every convention it defines: the `.github/pull_request_template.md` section structure and per-section detail level, the body writing conventions (no hard-wrapping, `docs/WRITING_STYLE.md`, and its Markup and Quoting section for code spans, str values, and plurals), the title rules (no `[FEATURE]`, `[BUG]`, or other bracketed prefix, no backticks, and the 42-character limit with its awk check), label selection from `.github/labels.yml`, the checklist rule (never check an item that asserts a GitHub action or the ReadTheDocs build passes), and the environment constraints (an already-pushed branch, only the `gh pr` porcelain and never `gh api`, an ASCII-only title and body with no footer beyond the AI-use policy's `Assisted-by:` disclosure line, and never attaching a milestone or project or requesting reviewers). Only the differences specific to updating an existing PR are spelled out below.
 
 ## Environment constraints
 
-- `git push` is denied, so this command cannot push. The new commits must already be on the remote; if the branch has unpushed commits, stop and ask the user to push, then re-run.
+- `git push` is denied, so this command cannot push. The new commits must already be on the remote. If the branch has unpushed commits, stop and ask the user to push, then re-run.
 - `gh api` is denied. Use only the `gh pr` porcelain (`gh pr view`, `gh pr edit`).
 
 ## Steps
 
 1. **Locate the PR and gather context** with these read-only commands (all run without permission prompts):
-    - `git status -sb` to confirm the branch is pushed and current, using the same first-line interpretation as create-pr. If the branch has no upstream, a `[gone]` upstream, or any `[ahead N]` marker, stop and tell the user to push first so the PR reflects the new commits.
+    - `git status -sb` to confirm the branch is pushed and current, using the same first-line interpretation as `create-pr`. If the branch has no upstream, a `[gone]` upstream, or any `[ahead N]` marker, stop and tell the user to push first so the PR reflects the new commits.
     - `gh pr list --head <branch> --state open` to find the open PR. If there is none, stop and tell the user to run `/create-pr` first. If there is more than one, stop and report them rather than guessing.
-    - `gh pr view <number> --json number,url,title,body,labels,baseRefName,isDraft` to read the PR's current state. Use `baseRefName` as the base for all diffs; do not assume `main`.
+    - `gh pr view <number> --json number,url,title,body,labels,baseRefName,isDraft` to read the PR's current state. Use `baseRefName` as the base for all diffs. Do not assume `main`.
     - `git log --oneline <base>..HEAD`, `git diff --stat <base>...HEAD`, and `git diff <base>...HEAD` to see the full, current change set the PR should describe.
     - Read `.github/pull_request_template.md` and `.github/labels.yml` so the refreshed body matches the current template and the labels come from the canonical set.
 2. **Diff the PR against reality.** Compare the existing body's `Description` and `Changes` against the current diff to identify (a) new changes not yet described, (b) described changes that have since been undone or reverted and no longer appear in the diff, and (c) prose that is now inaccurate or has formatting or template defects.
@@ -32,9 +32,9 @@ Read `.claude/commands/create-pr.md` and apply every convention it defines: the 
     - Update `Dependency Updates` if dependencies were added, changed, or removed, and re-evaluate `Change Magnitude` against the new total change set, changing the selected line only if the magnitude genuinely changed.
     - Re-evaluate the checklist against the new state: preserve existing marks, add any template items that are missing, uncheck any item the new work makes no longer satisfied, reconsider items that were not applicable but now are (for example, package type hints once package code is touched), and uncheck any item asserting a GitHub action or the ReadTheDocs build passes.
     - Correct typos and formatting defects anywhere in the body, including removing hard wraps, fixing backticking, and repairing any drift from the template's structure, even in otherwise-preserved sections.
-    - Apply the AI-use policy's disclosure (docs/AI_USE_POLICY.md): keep any existing `Assisted-by:` line as the body's last line. When none is present, add one of the form `Assisted-by: MODEL_OR_TOOL_NAME` (preceded by a single blank line) if the conversation context makes clear the user used AI on the PR, or if the requested updates to the description go beyond formatting and typo corrections. Write the tag's casing exactly as shown, include no email address, and use your own model name unless the context names a different assisting tool.
+    - Apply the AI-use policy's disclosure (`docs/AI_USE_POLICY.md`): keep any existing `Assisted-by:` line as the body's last line. When none is present, add one of the form `Assisted-by: MODEL_OR_TOOL_NAME` (preceded by a single blank line) if the conversation context makes clear the user used AI on the PR, or if the requested updates to the description go beyond formatting and typo corrections. Write the tag's casing exactly as shown, include no email address, and use your own model name unless the context names a different assisting tool.
 4. **Re-evaluate the title and labels** against the new change set:
-    - Confirm the title still fits and still describes the change set, and remove any legacy `[FEATURE]` or `[BUG]` prefix it carries. Change it only if it carries such a prefix, the new work makes it inaccurate, or it breaks the rules, and re-run the 42-character and ASCII awk check from create-pr on any new title.
+    - Confirm the title still fits and still describes the change set, and remove any legacy `[FEATURE]` or `[BUG]` prefix it carries. Change it only if it carries such a prefix, the new work makes it inaccurate, or it breaks the rules, and re-run the 42-character and ASCII awk check from `create-pr` on any new title.
     - Recompute the applicable labels from `.github/labels.yml`. Plan to add newly applicable labels and remove labels that no longer apply.
 5. **Present the planned update** in your reply: the PR number and URL, the old and new title (or "unchanged"), the labels to add and remove (or "unchanged"), and the full new body. This is the user's review opportunity. If nothing needs to change, say so and stop without editing.
 6. **Apply the update** with `gh pr edit`. Provide the body on stdin via a quoted heredoc so the permission prompt shows the exact new body as the final review gate:
@@ -49,15 +49,15 @@ Read `.claude/commands/create-pr.md` and apply every convention it defines: the 
    ...full refreshed body...
    EOF
    ```
-    - Include `--title` only if the title changed. Repeat `--add-label` and `--remove-label` once per label, and omit them when labels are unchanged. Do not pass `--milestone`, `--project`, `--reviewer`, `--base`, or any draft flag; this command leaves the base branch and draft status as they are.
+    - Include `--title` only if the title changed. Repeat `--add-label` and `--remove-label` once per label, and omit them when labels are unchanged. Do not pass `--milestone`, `--project`, `--reviewer`, `--base`, or any draft flag. This command leaves the base branch and draft status as they are.
     - The `gh pr edit` permission prompt is the final gate. If the user denies it, treat any feedback as revision input, update the plan, and repeat from step 5. If they deny without feedback, stop and report that the PR was not changed.
 7. **Confirm** by reporting the PR's URL.
 
 ## Important Reminders
 
-- This command edits an existing PR; if none exists for the branch, stop and direct the user to `/create-pr`.
-- Preserve human-authored content by default; change prose only to add new scope, remove undone scope, or fix typos, formatting (including hard wraps), and template drift.
-- Never push; if the new commits are not on the remote, stop and ask the user to push.
-- Never use `gh api`; use only the `gh pr` porcelain.
-- Apply all create-pr conventions to the refreshed title, body, and labels: ASCII-only with no hard-wrapping, no title prefixes and the 42-character title limit, backticked identifiers, no checked action or ReadTheDocs checklist items, the policy's `Assisted-by:` line as the only permitted footer, and no milestone, project, or reviewer changes.
+- This command edits an existing PR. If none exists for the branch, stop and direct the user to `/create-pr`.
+- Preserve human-authored content by default. Change prose only to add new scope, remove undone scope, or fix typos, formatting (including hard wraps), and template drift.
+- Never push. If the new commits are not on the remote, stop and ask the user to push.
+- Never use `gh api`. Use only the `gh pr` porcelain.
+- Apply all `create-pr` conventions to the refreshed title, body, and labels: ASCII-only with no hard-wrapping, no title prefixes or title backticks and the 42-character title limit, the Markup and Quoting section of `docs/WRITING_STYLE.md` for the body, no checked action or ReadTheDocs checklist items, the policy's `Assisted-by:` line as the only permitted footer, and no milestone, project, or reviewer changes.
 - Leave the PR's base branch and draft status unchanged.

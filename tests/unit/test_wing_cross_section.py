@@ -962,7 +962,7 @@ class TestWingCrossSectionGetPlottableData(unittest.TestCase):
         self.basic_wing_cross_section.validated = True
         self.basic_wing_cross_section.symmetry_type = 1
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=np.bool_(False))
+        result = self.basic_wing_cross_section.get_plottable_data(show=np.bool(False))
 
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)

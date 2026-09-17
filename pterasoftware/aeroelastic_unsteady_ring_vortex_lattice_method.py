@@ -2,12 +2,11 @@
 
 **Contains the following classes:**
 
-AeroelasticUnsteadyRingVortexLatticeMethodSolver: A subclass of
-CoupledUnsteadyRingVortexLatticeMethodSolver that solves AeroelasticUnsteadyProblems,
-extending the coupled solver with Strip Leading Edge Point (SLEP) functionality for
-computing the aerodynamic moments (in the first Airplane's geometry axes, relative to
-the strip leading edge points) so that wing deformations can be coupled with aerodynamic
-loads.
+AeroelasticUnsteadyRingVortexLatticeMethodSolver: A class used to solve
+AeroelasticUnsteadyProblems with the unsteady ring vortex lattice method, extended with
+Strip Leading Edge Point (SLEP) functionality for computing the aerodynamic moments (in
+the first Airplane's geometry axes, relative to the strip leading edge points) so that
+wing deformations can be coupled with aerodynamic loads.
 
 **Contains the following functions:**
 
@@ -29,19 +28,19 @@ from ._coupled_unsteady_ring_vortex_lattice_method import (
 class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     CoupledUnsteadyRingVortexLatticeMethodSolver
 ):
-    """A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver that adds SLEP (Strip
-    Leading Edge Point) functionality for aeroelastic simulations.
+    """A class used to solve AeroelasticUnsteadyProblems with the unsteady ring vortex
+    lattice method.
 
-    This solver extends the coupled solver with calculations of the moments (in the
-    first Airplane's geometry axes) about each panel's strip leading edge point, which
-    is important for analyzing wing loading and deformation characteristics relative to
-    the wing root.
+    This solver extends the unsteady ring vortex lattice method with calculations of the
+    moments (in the first Airplane's geometry axes) about each panel's strip leading
+    edge point (SLEP), which is important for analyzing wing loading and deformation
+    characteristics relative to the wing root.
 
-    **Key additions over parent CoupledUnsteadyRingVortexLatticeMethodSolver:**
-    initializes and maintains the SLEP index mapping and position arrays, overrides
-    ``_reinitialize_step_arrays_hook`` to reset the SLEP arrays each step, and overrides
-    ``_process_panel_loads_hook`` to compute the moments (in the first Airplane's
-    geometry axes) about the strip leading edge points from the per Panel total loads.
+    **Key additions over the unsteady ring vortex lattice method:** initializes and
+    maintains the SLEP index mapping and position arrays, resets them at the start of
+    each time step, and computes the moments (in the first Airplane's geometry axes)
+    about the strip leading edge points from the per Panel total loads once those loads
+    are known.
 
     **Structural coupling output:** moments_GP1_Slep is the solver's one public SLEP
     attribute: a (num_panels, 3) ndarray of floats representing the moments (in the

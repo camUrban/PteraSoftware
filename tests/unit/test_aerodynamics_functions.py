@@ -573,15 +573,16 @@ class TestAerodynamicsFunctions(unittest.TestCase):
         This is a reference implementation to validate the aerodynamics functions.
 
         Formula:
-            v_A__I = (gamma/(4*pi)) * (r3_A / |r3_A|^2) * [dot(r0_A, r1Hat_A - r2Hat_A)]
+            v_A__I = (gamma/(4*pi)) * (r3_A / norm(r3_A)^2) * [dot(r0_A, r1Hat_A -
+            r2Hat_A)]
 
         Where:
             r1_A = P_A_a - S_A_a
             r2_A = P_A_a - E_A_a
             r0_A = E_A_a - S_A_a
             r3_A = r1_A x r2_A
-            r1Hat_A = r1_A/|r1_A|
-            r2Hat_A = r2_A/|r2_A|
+            r1Hat_A = r1_A/norm(r1_A)
+            r2Hat_A = r2_A/norm(r2_A)
 
         :param S_A_a: (3,) ndarray of floats
             Start point of the conceptual line vortex (in A axes, relative to point
@@ -1366,9 +1367,9 @@ class TestCoreRadiusFormula(unittest.TestCase):
         r2_A = P_A_a - E_A_a
         r3_A = r1_A x r2_A
 
-        r1 = |r1_A|
-        r2 = |r2_A|
-        r3 = |r3_A|
+        r1 = norm(r1_A)
+        r2 = norm(r2_A)
+        r3 = norm(r3_A)
 
         c_1 = (gamma / (4 * pi))
 

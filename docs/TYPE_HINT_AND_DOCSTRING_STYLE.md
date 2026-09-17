@@ -35,14 +35,14 @@ import numpy as np
 
 #### Basic Types
 
-| Parameter Description           | Type Hint          |
-|---------------------------------|--------------------|
-| String                          | `str`              |
-| Boolean                         | `bool`             |
-| Boolean (accepting numpy bools) | `bool \| np.bool_` |
-| Integer                         | `int`              |
-| Number (int or float)           | `float \| int`     |
-| Float only                      | `float`            |
+| Parameter Description           | Type Hint         |
+|---------------------------------|-------------------|
+| String                          | `str`             |
+| Boolean                         | `bool`            |
+| Boolean (accepting numpy bools) | `bool \| np.bool` |
+| Integer                         | `int`             |
+| Number (int or float)           | `float \| int`    |
+| Float only                      | `float`           |
 
 #### Array and Array-Like Types
 
@@ -97,11 +97,11 @@ def compute_forces(self):
 
 **Use `assert` when:**
 
-- None represents a bug, not a valid state
+- `None` represents a bug, not a valid state
 - You want runtime safety during development
 - The invariant should always hold
 
-#### Narrowing with cast()
+#### Narrowing with `cast()`
 
 Use `cast()` sparingly, only when the type checker cannot infer what you know to be true:
 
@@ -114,11 +114,11 @@ panel = cast(_panel.Panel, object_array[i, j])
 
 **Use `cast()` when:**
 
-- Working around type checker limitations (e.g., numpy dtype=object arrays)
+- Working around type checker limitations (e.g., numpy `dtype=object` arrays)
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
 
-**Avoid `cast()` for `Type | None` -> `Type` narrowing** - use `assert` instead for runtime safety.
+**Avoid `cast()` for `Type | None` -> `Type` narrowing.** Use `assert` instead for runtime safety.
 
 When the type being cast to lives across a circular import boundary, use the string form (`cast("OtherClass", value)`). See "Casting Across a Circular Dependency" below.
 
@@ -194,13 +194,13 @@ def narrow(value):
     ...
 ```
 
-The `TYPE_CHECKING` import gives mypy the symbol for static resolution; the string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
+The `TYPE_CHECKING` import gives mypy the symbol for static resolution. The string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
 
 ### Type Hints in Tests
 
 The test suite is type-checked with the same mypy configuration as the package, including `disallow_untyped_defs`. Test code has recurring situations that package code does not, and this section defines the pragma-free convention for each of them. The project contains no `type: ignore` pragmas anywhere, and none of these situations justifies adding one.
 
-#### Attributes Assigned in setUpClass
+#### Attributes Assigned in `setUpClass`
 
 mypy cannot see attributes assigned through `cls` inside `setUpClass`, so every use site reports an attribute error. Declare the attributes with class-level annotations directly below the class docstring, taking the types from the fixture factories' return annotations. Do not wrap the annotations in `ClassVar`, and do not convert `setUpClass` to `setUp` just to satisfy the type checker:
 
@@ -230,7 +230,7 @@ def test_wings_validation(self) -> None:
         ps.geometry.airplane.Airplane(wings=bad_wings)
 ```
 
-Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`; annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
+Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`. Annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
 
 #### Read-Only Property Tests
 
@@ -243,7 +243,7 @@ def test_chord_is_read_only(self) -> None:
         setattr(self.basic_wing_cross_section, "chord", 2.0)
 ```
 
-#### Narrowing After assertIsNotNone
+#### Narrowing After `assertIsNotNone`
 
 mypy does not narrow a type on `self.assertIsNotNone(x)`. Keep the unittest assertion, and add a bare `assert x is not None` after it before the first use that needs the narrowed type:
 
@@ -278,12 +278,15 @@ def custom_spacing(x: float) -> float:
 8. **Place closing triple-quotes on their own line**
 9. **Summary line is a single sentence.** Any additional description goes in a new paragraph after a blank line. docformatter enforces this: if the first paragraph contains multiple sentences, it moves all but the first into a new paragraph.
 10. **No blank line between the closing triple-quotes and the next line of code.** docformatter enforces this too: a blank gap after the docstring will be removed.
+11. **No backticks in prose.** Write identifiers, expressions, calls, and keyword assignments bare (the free_wake parameter, passive=True, get_logger("trim")). Single backticks are not code markup in rST (they render as italics), and the identifier casing already sets names apart from prose. The one place double backticks belong is inside an rST line block (a line starting with `|`) holding a standalone code example, as in the use-case blocks of `_transformations.py`. Comments follow the same rule, as the Markup and Quoting section of [WRITING_STYLE.md](WRITING_STYLE.md) records, along with the code span rules for Markdown files.
+12. **Double-quote string values, never paths.** A str value (an accepted parameter value such as "sine", a dict key such as "position_E_Eo", a default such as "draw.webp", or an extension that is itself the str being passed or checked such as ".webp") is written in double quotes, matching black's quoting in code. Paths and glob patterns named as references (docs/AXES_POINTS_AND_FRAMES.md, a .psz file) are never quoted. Comments follow the same quoting, as described in [WRITING_STYLE.md](WRITING_STYLE.md), and so do runtime strings such as error messages, as described in [CODE_STYLE.md](CODE_STYLE.md).
+13. **Bare text is still rST.** Since prose carries no literal markup, avoid sequences rST parses as markup: `|x|` (a substitution reference), `*x*` (emphasis), and `word_` followed by whitespace (a hyperlink reference). Reword instead, for example abs(angleY) rather than a barred magnitude.
 
 ### Module-Level Docstrings
 
 Module-level docstrings appear at the very top of each Python file and describe the module's contents. The style varies based on the type of module.
 
-#### Public Package __init__.py Files
+#### Public Package `__init__.py` Files
 
 `__init__.py` files for a public package list subpackages, directories, and modules:
 
@@ -422,10 +425,10 @@ class ClassName:
     **Contains the following methods:**
 
     public_method_1: Short description (identical to method's docstring's short
-    description.
+    description).
 
     public_method_2: Short description (identical to method's docstring's short
-    description.
+    description).
 
     Optional notes block
 
@@ -613,7 +616,7 @@ Public methods and properties defined on a private parent are inherited by all p
 
 1. **No deferral language.** Do not write "see child class for full details" or similar, since the docstring IS the documentation the user sees on the child's page.
 2. **No references to specific sibling types.** A `CoreWingMovement` method docstring must not mention `WingCrossSectionMovement` or `AeroelasticWingCrossSectionMovement`, because the docstring appears on all siblings' RTD pages. Instead, reference the universal geometry class that the movement class manages (e.g., `WingCrossSection`), since geometry classes have no feature subclasses and are always correct.
-3. **Use "each X's movement class" framing** when referring to child movement objects. For example, write "each `WingCrossSection`'s movement class" rather than "its `WingCrossSection`s' movement classes". This avoids implying that a movement class owns geometry objects (movement classes own other movement classes; geometry classes own geometry classes).
+3. **Use "each X's movement class" framing** when referring to child movement objects. For example, write "each WingCrossSection's movement class" rather than "its WingCrossSections' movement classes". This avoids implying that a movement class owns geometry objects (movement classes own other movement classes, and geometry classes own geometry classes).
 
 **Example (correct):**
 
@@ -651,6 +654,36 @@ def generate_wing_at_time_step(self, ...) -> Wing:
 #### Multiple Public Siblings
 
 When multiple public classes share the same private parent (e.g., `Movement`, `FreeFlightMovement`, and `AeroelasticMovement` all extending `CoreMovement`), each sibling maintains its own self-contained docstring. The inherited method descriptions can be tailored to each sibling's context (e.g., "Movement's sub movement objects" vs "FreeFlightMovement's sub movement objects").
+
+### Private Names in Public Docstrings and Signatures
+
+The API reference documents only the public modules. Anything defined in a private module has no page, and that includes classes whose own names carry no underscore, such as `Panel` in `_panel.py` and `CoupledUnsteadyRingVortexLatticeMethodSolver` in `_coupled_unsteady_ring_vortex_lattice_method.py`. A public docstring or signature that names one of them therefore renders as dead text: a class name the reader cannot look up, or a fully qualified path such as `pterasoftware._core.CoreUnsteadyProblem` in a signature. The rules below cover every way a private name can reach a rendered page. "Rendered" means the docstring of a public module, class, function, method, or property, including methods and properties inherited from a private parent (see "Private Parent Method and Property Docstrings").
+
+#### Prose
+
+1. **Never name a private class in rendered prose.** Point at the referent instead of naming its type: "The list of Wings associated with this movement", not "associated with this CoreWingMovement", and "The solver driving this problem, which provides the aerodynamic data from the current time step", not "The CoupledUnsteadyRingVortexLatticeMethodSolver instance providing aerodynamic data". Where the private class is a parent, describe what the public class adds rather than what it extends: "A class used to solve AeroelasticUnsteadyProblems with the unsteady ring vortex lattice method" and "**Key additions over the unsteady ring vortex lattice method:**", not "A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver".
+2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
+3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
+4. **Do not defer to a private parent.** "See _CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
+5. **Module docstrings follow the same rules.** The entries under **Contains the following classes:** render on the module page, so they get the same wording as the class docstrings they summarize.
+6. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
+7. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
+
+#### Signatures
+
+1. **Annotate with public types wherever the implementation allows.** A private type in a parameter annotation renders as an unlinked fully qualified path.
+2. **When an annotation must be a private type, add an override.** Two shapes force this: a hook method whose override cannot narrow the parameter type, so the hook is annotated with the shared parent solver, and a base solver constructor that accepts the shared parent problem type so the derived solvers can pass their own problems through it. For those, add an entry to `_ANNOTATION_OVERRIDES` in `docs/website/conf.py`, keyed by the fully qualified class (for constructor parameters) or method, then by parameter name, giving the one public type that actually works. The build resolves each key against AutoAPI's object tree and fails on a stale key, so a rename cannot silently drop an override. The parameter's docstring stays exact without naming the private type: "The UnsteadyProblem to be solved. The derived solvers pass their own problem types through this parameter."
+3. **Private bases are hidden automatically.** The class template drops any base whose path contains a private module or underscore prefixed name from the Bases line, so a public class extending a private parent shows no Bases line at all. Its docstring must stand on its own for that reason.
+4. **No private parameters or sentinels in public signatures.** A private parameter such as a `_trust` token, or a private sentinel such as `_UNSET` as a default, renders with the signature. For a construction path that must skip the constructor's validation, allocate with `object.__new__(Cls)` and set the slots directly inside the class's own module, as `Airfoil.__deepcopy__` and `Airfoil.add_control_surface` do. A sentinel default is acceptable only on a deprecated parameter, which the reference filters out (next section).
+
+#### Deprecated API
+
+Deprecated functions, methods, properties, and parameters are filtered out of the API reference, so they need no docstring marker. The build detects them from the source, and the detection only works when the deprecation takes this exact shape:
+
+- A function, method, or property is deprecated when a top-level statement of its body is `warnings.warn(..., DeprecationWarning)` (positional or `category=` keyword). Deprecated members are omitted from the reference entirely.
+- A parameter is deprecated when such a call sits inside a top-level `if` statement whose test names the parameter, as in `if outline_A_lp is not _UNSET:`. Deprecated parameters are removed from the rendered signature along with their `:param:` field, while the rest of the signature and docstring render unchanged.
+
+Do not move the `warnings.warn` call into a helper function, since the detection reads the deprecated member's own body. For a member, the call must be a top-level statement of that body, not nested in a block. For a parameter, the call may sit anywhere inside the guarding `if`, but the `if` itself must be top-level and its test must name the parameter. The docstring still documents the deprecated member or parameter for source readers and `help()`, in the form "A deprecated alias for outline_A_Lp. Passing it emits a DeprecationWarning, and it will be removed in v6.0.0."
 
 ### Property Docstring Template
 
@@ -752,7 +785,7 @@ class Panel:
 
 ### Example 1: Module-Level Docstrings
 
-#### Public Package __init__.py
+#### Public Package `__init__.py`
 
 ```python
 """Contains the geometry classes.
@@ -828,7 +861,7 @@ def _get_mcl_points(
     """
 ```
 
-### Example 2: Function with Transformation Matrices
+### Example 3: Function with Transformation Matrices
 
 ```python
 def _get_mcs_points(
@@ -868,7 +901,7 @@ def _get_mcs_points(
     """
 ```
 
-### Example 3: Public Method with Array-Like Parameters
+### Example 4: Public Method with Array-Like Parameters
 
 ```python
 def __init__(
@@ -880,7 +913,7 @@ def __init__(
 ) -> None:
     """The initialization method.
 
-    :param name: The name of the Airfoil. It should correspond to the name of a file
+    :param name: The name of the Airfoil. It should correspond to the name of a file in
         the airfoils directory, or to a valid NACA 4-series airfoil (once converted to
         lower-case and stripped of leading and trailing whitespace) unless you are
         passing in your own array of points using outline_A_Lp. Note that NACA0000 isn't
@@ -893,7 +926,7 @@ def __init__(
         x component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: Determines whether to resample the points defining the Airfoil's
         outline. This applies to points passed in by the user or to those from the
-        airfoils directory. I highly recommended setting this to True. Can be a bool or
+        airfoils directory. I highly recommend setting this to True. Can be a bool or
         a numpy bool and will be converted internally to a bool. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
@@ -904,7 +937,7 @@ def __init__(
     """
 ```
 
-### Example 4: Method Returning Self-Reference
+### Example 5: Method Returning Self-Reference
 
 ```python
 def add_control_surface(
@@ -924,7 +957,7 @@ def add_control_surface(
     """
 ```
 
-### Example 5: Method with Optional Return
+### Example 6: Method with Optional Return
 
 ```python
 def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
@@ -939,7 +972,7 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
     """
 ```
 
-### Example 6: Method Returning Array
+### Example 7: Method Returning Array
 
 ```python
 def get_resampled_mcl(
@@ -970,7 +1003,7 @@ def get_resampled_mcl(
 # Simple types
 param: str
 param: bool
-param: bool | np.bool_  # Accepts both Python and numpy bools
+param: bool | np.bool  # Accepts both Python and numpy bools
 param: int
 param: float | int
 

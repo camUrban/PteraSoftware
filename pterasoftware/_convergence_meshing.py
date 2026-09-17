@@ -721,7 +721,7 @@ def _get_wing_section_movement_num_spanwise_panels(
         wing section within the Wing. It must be a non negative int.
     :param ref_tip_wing_cross_section_id: The index of the tip WingCrossSection of the
         wing section within the Wing. It must be a non negative int and greater than
-        ``ref_root_wing_cross_section_id``.
+        ref_root_wing_cross_section_id.
     :param start_val: The initial number of spanwise Panels to start the search from. It
         must be a positive int. Using a higher value can speed up the search if a lower
         bound is already known.
@@ -1065,8 +1065,8 @@ def _resolve_num_wing_cross_sections(
     Wing) combination is returned from the cache if present. Otherwise, the search
     starts from a conservative lower bound (the smallest number of WingCrossSections
     already found for this Wing at an incrementally coarser mesh, since the current
-    finer mesh must need at least that many), ``compute_num_wing_cross_sections`` is
-    called with that starting value to find the count, and the result is cached.
+    finer mesh must need at least that many), compute_num_wing_cross_sections is called
+    with that starting value to find the count, and the result is cached.
 
     :param panel_aspect_ratio_id: The index of the current Panel aspect ratio within the
         list of Panel aspect ratios being tested.
@@ -1179,8 +1179,8 @@ def _resolve_num_spanwise_panels(
     Otherwise, the search starts from a conservative lower bound (the smallest number of
     spanwise Panels already found for this Wing section at an incrementally coarser
     mesh, since the current finer mesh must need at least that many),
-    ``compute_num_spanwise_panels`` is called with that starting value to find the
-    count, and the result is cached.
+    compute_num_spanwise_panels is called with that starting value to find the count,
+    and the result is cached.
 
     :param panel_aspect_ratio_id: The index of the current Panel aspect ratio within the
         list of Panel aspect ratios being tested.

@@ -122,7 +122,7 @@ class TestAeroelasticUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
         self.assertEqual(
             len(self.solver._slep_outboard_is_left), self.solver.num_panels
         )
-        self.assertEqual(self.solver._slep_outboard_is_left.dtype, np.bool_)
+        self.assertEqual(self.solver._slep_outboard_is_left.dtype, np.bool)
         expected = []
         first_problem = self.solver.unsteady_problem.steady_problems[0]
         for airplane in first_problem.airplanes:

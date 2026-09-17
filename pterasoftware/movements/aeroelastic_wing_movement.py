@@ -293,7 +293,7 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
                 raise ValueError(
                     "A spacingAnglesSecondDerivative_Gs_to_Wn_ixyz may only be given "
                     "for a custom (callable) spacingAngles_Gs_to_Wn_ixyz, but element "
-                    f"{i} has a '{spacing}' spacing with a derivative."
+                    f'{i} has a "{spacing}" spacing with a derivative.'
                 )
 
         self._spacingAnglesSecondDerivative_Gs_to_Wn_ixyz = derivatives

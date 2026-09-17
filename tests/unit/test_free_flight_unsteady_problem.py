@@ -20,7 +20,7 @@ def _movement_and_mass() -> (
     tuple[ps.movements.free_flight_movement.FreeFlightMovement, float]
 ):
     """Return a fresh FreeFlightMovement and the mass consistent with its Airplane's
-    weight and gravitational field (weight == mass * |g_E|).
+    weight and gravitational field (weight == mass * np.linalg.norm(g_E)).
 
     The mass is taken from a basic fixture problem, so it stays consistent with whatever
     weight and gravity the fixture uses.
@@ -451,7 +451,8 @@ class TestFreeFlightUnsteadyProblem(unittest.TestCase):
                 )
 
     def test_weight_mass_gravity_consistency_validation(self) -> None:
-        """Test that the Airplane's weight must equal mass * |g_E| within tolerance."""
+        """Test that the Airplane's weight must equal mass * np.linalg.norm(g_E) within
+        tolerance."""
         movement, mass = _movement_and_mass()
         with self.assertRaises(ValueError):
             ps.problems.FreeFlightUnsteadyProblem(

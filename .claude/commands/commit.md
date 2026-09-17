@@ -36,13 +36,13 @@ Generate a commit message for the current staged changes, then create the commit
    ### Body (only if needed for non-trivial changes)
 
     - Separate from the subject with one blank line.
-    - Draft each paragraph as one single long line, with a blank line between paragraphs. Wrapping happens mechanically in the next step; do not wrap by hand.
+    - Draft each paragraph as one single long line, with a blank line between paragraphs. Wrapping happens mechanically in the next step. Do not wrap by hand.
     - Explain *why* the change was made, not *what* was changed (the diff shows that).
-    - Use complete sentences ending with periods, each of which written using an imperative mood.
+    - Use complete sentences ending with periods, each of which is written using an imperative mood.
 
    ### Disclosure trailer
 
-   Per the AI-use policy (docs/AI_USE_POLICY.md), disclose AI assistance when it applies to the staged changes:
+   Per the AI-use policy (`docs/AI_USE_POLICY.md`), disclose AI assistance when it applies to the staged changes:
 
     - Judge from the session's context. If the conversation shows Claude wrote or meaningfully assisted the staged changes, include the trailer. If the context does not settle it (e.g., the user staged work produced outside the session), ask the user whether AI assisted the changes before drafting the message.
     - Drafting the commit message itself does not count as assistance, and neither does routine grammar or formatting help.
@@ -50,7 +50,7 @@ Generate a commit message for the current staged changes, then create the commit
     - Fill in the placeholders by asking the user which model or tool assisted and what its standard commit email address is. If the user does not know the email address, look it up instead of guessing. Skip the questions when the conversation context makes clear that the assistant was the model running this command: use its own model name and its provider's standard commit email address.
     - Do not use any other disclosure trailers (the policy rejects `Assisted-by:` and `Signed-off-by:` in commits), and do not add a session link.
 
-   The entire message (subject, body, and any trailer) must contain only printable ASCII characters. Apart from the disclosure trailer described above, do not include any footer lines.
+   The entire message (subject, body, and any trailer) must contain only printable ASCII characters. Commit messages are plain text, not Markdown, so never use backticks or emphasis markers (asterisks or underscores) anywhere in the message, and write identifiers, file names, and commands bare. Apart from the disclosure trailer described above, do not include any footer lines.
 3. **Validate and wrap the message** in a single Bash call. These tools run without permission prompts, so this step costs the user nothing:
    ```bash
    subject="Your subject line here"
@@ -76,10 +76,10 @@ Generate a commit message for the current staged changes, then create the commit
    }'
    ```
    The output is the full message (subject, blank line, wrapped body, and the trailer when it applies) followed by a blank line and one status line per check.
-   - Avoid the `!` character anywhere in this call (write `sfail == 0`, not `!sfail`); the harness escapes `!` in Bash commands, which corrupts the awk program.
-   - Do not reference awk fields by their numbered forms (a dollar sign followed by a digit) in this snippet; slash-command argument substitution replaces those tokens with the command's arguments (empty when none are passed) and silently corrupts the program. The body loop instead uses awk's implicit current record: a bare `/regex/` pattern, bare `length`, and bare `print` all operate on the whole record without naming it.
+   - Avoid the `!` character anywhere in this call (write `sfail == 0`, not `!sfail`). The harness escapes `!` in Bash commands, which corrupts the awk program.
+   - Do not reference awk fields by their numbered forms (a dollar sign followed by a digit) in this snippet. Slash-command argument substitution replaces those tokens with the command's arguments (empty when none are passed) and silently corrupts the program. The body loop instead uses awk's implicit current record: a bare `/regex/` pattern, bare `length`, and bare `print` all operate on the whole record without naming it.
    - If any check prints `FAIL`, fix the message and re-run this step before proceeding.
-   - Use the wrapped body lines verbatim as the final body text; the status lines after the final blank line are feedback, not message content. The `awk` stage strips the trailing space that `fold -s` leaves at each break point; every resulting line is 72 characters or fewer. This is a hard limit.
+   - Use the wrapped body lines verbatim as the final body text. The status lines after the final blank line are feedback, not message content. The `awk` stage strips the trailing space that `fold -s` leaves at each break point, so every resulting line is 72 characters or fewer. This is a hard limit.
    - `fold` hard-splits any token longer than 72 characters (e.g., a long URL). If the body contains such a token, place it on its own line, exclude that line from wrapping, and let it exceed the limit.
    - If there is no body, drop the `fold` stage and run only the subject checks (plus the trailer printing and check, when a trailer applies) inside an awk `BEGIN` block.
    - If the disclosure trailer applies, set the `trailer` variable to it. It reaches awk through `-v t=`, never through `fold`, so it is displayed and ASCII-checked with its own status line but never wrapped and never counted in the body's line stats. It must stay on one line regardless of its length (GitHub's co-author parsing does not recognize wrapped trailers), so its length is reported but not limited.
@@ -99,6 +99,7 @@ Generate a commit message for the current staged changes, then create the commit
 ## Important Reminders
 
 - Never use `--no-verify` or skip pre-commit hooks.
+- Never put backticks or emphasis markers in the commit message. It is plain text, not Markdown.
 - If the pre-commit hook fails, fix the issue and create a NEW commit (do not amend).
 - Never push unless the user explicitly asks.
 - If there are no changes to commit, inform the user and stop.

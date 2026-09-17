@@ -14,16 +14,12 @@ from __future__ import annotations
 import importlib.resources
 import warnings
 from collections.abc import Sequence
-from typing import Any, cast
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from .. import _functions, _parameter_validation, _transformations
-
-# Create a token object for bypassing outline_A_Lp parameter validation in Airfoil's
-# __init__ method.
-_TRUST = object()
 
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
 # annotated as Any so the deprecated parameter can carry it as a default while keeping
@@ -70,20 +66,19 @@ class Airfoil:
         self,
         name: str = "NACA0012",
         outline_A_Lp: np.ndarray | Sequence[Sequence[float | int]] | None = None,
-        resample: bool | np.bool_ = True,
+        resample: bool | np.bool = True,
         n_points_per_side: int = 400,
-        _trust: object | None = None,
         outline_A_lp: Any = _UNSET,
     ) -> None:
         """The initialization method.
 
         :param name: The name of the Airfoil. It should correspond to the name of a file
-            the airfoils directory, or to a valid NACA 4 series airfoil (once converted
-            to lower-case and stripped of leading and trailing whitespace) unless you
-            are passing in your own array of points using outline_A_Lp. Note that
-            NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils with
-            thickness above 30% are not supported, the first two digits must either both
-            be zero (symmetric) or both be non zero (cambered), and for cambered
+            in the airfoils directory, or to a valid NACA 4 series airfoil (once
+            converted to lower-case and stripped of leading and trailing whitespace)
+            unless you are passing in your own array of points using outline_A_Lp. Note
+            that NACA0000 isn't a valid NACA 4 series airfoil, NACA 4 series airfoils
+            with thickness above 30% are not supported, the first two digits must either
+            both be zero (symmetric) or both be non zero (cambered), and for cambered
             airfoils the position of maximum camber must be greater than or equal to the
             maximum camber plus half the maximum thickness. The default is "NACA0012".
         :param outline_A_Lp: An array like object of numbers (int or float) with shape
@@ -104,8 +99,8 @@ class Airfoil:
             edges are supported. The default value is None.
         :param resample: Determines whether to resample the points defining the
             Airfoil's outline. This applies to points passed in by the user or to those
-            from the airfoils directory. I highly recommended setting this to True. Can
-            be a bool or a numpy bool and will be converted internally to a bool. The
+            from the airfoils directory. I highly recommend setting this to True. Can be
+            a bool or a numpy bool and will be converted internally to a bool. The
             default is True.
         :param n_points_per_side: The number of points to use when creating the
             Airfoil's MCL and when resampling the upper and lower parts of the Airfoil's
@@ -136,14 +131,10 @@ class Airfoil:
         self._name = _parameter_validation.str_return_str(name, "name")
 
         if outline_A_Lp is not None:
-            if _trust is not _TRUST:
-                # Validate, normalize, and final validate user provided outlines.
-                self._outline_A_Lp = self._validate_outline_preliminary(outline_A_Lp)
-                self._normalize_outline()
-                self._validate_outline_final()
-            else:
-                # When _trust is _TRUST, we know outline_A_Lp is already validated.
-                self._outline_A_Lp = cast(np.ndarray, outline_A_Lp)
+            # Validate, normalize, and final validate user provided outlines.
+            self._outline_A_Lp = self._validate_outline_preliminary(outline_A_Lp)
+            self._normalize_outline()
+            self._validate_outline_final()
         else:
             self._populate_outline()
             # Validate, normalize, and final validate database and generated NACA
@@ -413,17 +404,23 @@ class Airfoil:
             ]
         )
 
-        # Return the new flapped Airfoil, with the _TRUST token so that we don't
-        # re-validate the outline, which would fail because the validation requires the
-        # trailing edge points be roughly at y = 0.0 (in airfoil axes, relative to the
-        # leading point).
-        return Airfoil(
-            name=self.name + " flapped",
-            outline_A_Lp=flappedOutline_A_Lp,
-            resample=False,
-            n_points_per_side=self.n_points_per_side,
-            _trust=_TRUST,
-        )
+        # Build the flapped Airfoil without calling __init__, which would re-validate
+        # the outline and fail because the validation requires the trailing edge points
+        # be roughly at y = 0.0 (in airfoil axes, relative to the leading point). The
+        # flapped outline is derived from this Airfoil's already validated outline, so
+        # it is stored as is, and the remaining steps mirror __init__ with resampling
+        # disabled.
+        flapped_airfoil = object.__new__(Airfoil)
+        flapped_airfoil._name = self._name + " flapped"
+        flapped_airfoil._outline_A_Lp = flappedOutline_A_Lp
+        flapped_airfoil._resample = False
+        flapped_airfoil._n_points_per_side = self._n_points_per_side
+        flapped_airfoil._mcl_A_Lp = None
+        flapped_airfoil._populate_mcl()
+        flapped_airfoil._outline_A_Lp.flags.writeable = False
+        if flapped_airfoil._mcl_A_Lp is not None:
+            flapped_airfoil._mcl_A_Lp.flags.writeable = False
+        return flapped_airfoil
 
     def draw(self) -> None:
         """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
@@ -463,7 +460,7 @@ class Airfoil:
         plt.show()
 
     def get_plottable_data(
-        self, show: bool | np.bool_ = False
+        self, show: bool | np.bool = False
     ) -> list[np.ndarray] | None:
         """Returns plottable data for this Airfoil's outline and mean camber line.
 
@@ -793,7 +790,7 @@ class Airfoil:
                     break
 
             if airfoil_file is None:
-                raise FileNotFoundError(f"Airfoil '{sanitized_name}' not found.")
+                raise FileNotFoundError(f'Airfoil "{sanitized_name}" not found.')
 
             # Read the text from the airfoil file.
             raw_text = airfoil_file.read_text()

@@ -29,7 +29,8 @@ def describe(char: str) -> str:
     except ValueError:
         name = "no Unicode name"
     utf8 = " ".join(f"{b:02X}" for b in char.encode("utf-8"))
-    return f'U+{codepoint:04X} "{char}" ({name}; UTF-8: {utf8})'
+    display = f'"{char}"' if char.isprintable() else '"' + ascii(char)[1:-1] + '"'
+    return f"U+{codepoint:04X} {display} ({name}; UTF-8: {utf8})"
 
 
 def find_violations(path: Path) -> list[tuple[int, int, str]]:

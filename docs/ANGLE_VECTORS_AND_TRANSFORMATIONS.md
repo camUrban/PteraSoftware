@@ -122,7 +122,7 @@ For a vector with components (x, y, z) that is given relative to a reference poi
 
 * Ptera Software uses two passive matrix types:
     * `R_pas_...`: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
-    * `T_pas_...`: 4x4 transformation matrices in homogeneous coordinates that map components from a source axis system and reference point to a target axis system and reference point. They apply the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also apply the translation between the points. They only change how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
+    * `T_pas_...`: 4x4 transformation matrices in homogeneous coordinates that map components from a source axis system and reference point to a target axis system and reference point. They apply the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also apply the translation between the points. They only change how the same physical quantity is expressed (axes and/or point) and never introduce scaling or shear.
 
 #### Passive Matrix Name Patterns
 

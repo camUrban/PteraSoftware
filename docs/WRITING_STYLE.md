@@ -4,7 +4,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 
 ## Terminology
 
-- **"Ptera Software"**: When referring to the project, package, or codebase by its proper name in prose, always write "Ptera Software" as two capitalized words without a hyphen. Never use "ptera", "ptera software", "PteraSoftware", or "Ptera" alone in prose. This includes possessives ("Ptera Software's", not "Ptera's") and shortenings ("the Ptera Software solver", not "the Ptera solver"). Identifier strings keep their canonical form and are not affected: the GitHub repo name "PteraSoftware", the Python package "pterasoftware", and paths like "~/Documents/GitHub/PteraSoftware/" stay as-is.
+- **"Ptera Software"**: When referring to the project, package, or codebase by its proper name in prose, always write "Ptera Software" as two capitalized words without a hyphen. Never use "ptera", "ptera software", "PteraSoftware", or "Ptera" alone in prose. This includes possessives ("Ptera Software's", not "Ptera's") and shortenings ("the Ptera Software solver", not "the Ptera solver"). Identifier strings keep their canonical form and are not affected: the GitHub repo name `PteraSoftware`, the Python package `pterasoftware`, and paths like `~/Documents/GitHub/PteraSoftware/` stay as-is.
 - **Object references**: When referring to code objects, use proper class naming convention. The capitalization indicates that we are talking about a code object, not an abstraction. You don't need to add "object" or "objects" after the class name since the capitalization already makes this clear (e.g. "update the Wings" instead of "update the Wing objects"). The examples below are written as they appear in comments and docstrings. Markdown files, issue bodies, and pull request descriptions also put the class name in a code span, as the [Markup and Quoting](#markup-and-quoting) section describes. In summary, when talking about code objects:
     - GOOD: "the previous WingCrossSection"
     - BAD: "the previous cross section"
@@ -12,14 +12,14 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
     - BAD: "this wing"
     - GOOD: "update the Wings"
     - BAD: "update the Wing objects" (unnecessary)
-- **"WingCrossSection" and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section". Exception: a capitalization variant of "WCS" is allowed in a variable name when that name is written in exactly one of the forms required by `AXES_POINTS_AND_FRAMES.md` or `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` (e.g., the axes IDs in `angles_Wcsp_to_Wcs_ixyz` and the point IDs in `Lp_Wcsp_Lpp`). Such names keep their canonical form when referenced in text.
+- **`WingCrossSection` and "wing cross section"**: Do not use "WCS" (or any other abbreviation). Also, never hyphenate "cross section". Exception: a capitalization variant of "WCS" is allowed in a variable name when that name is written in exactly one of the forms required by [AXES_POINTS_AND_FRAMES.md](AXES_POINTS_AND_FRAMES.md) or [ANGLE_VECTORS_AND_TRANSFORMATIONS.md](ANGLE_VECTORS_AND_TRANSFORMATIONS.md) (e.g., the axes IDs in `angles_Wcsp_to_Wcs_ixyz` and the point IDs in `Lp_Wcsp_Lpp`). Such names keep their canonical form when referenced in text.
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 - **"strip leading edge point"**: When spelled out in prose, do not capitalize "strip leading edge point" unless it starts a sentence.
 - **"V-tail"**: Always write "V-tail" (capital V, hyphenated) in prose. Never use "v-tail", "v tail", "Vtail", or other variants. Identifier strings keep their canonical form and are not affected: variable names like `v_tail_movement` and string literals like `"V-Tail"` stay as-is.
 - **"time step"**: Write a simulation time increment as either "time step" or "step"; the two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
 - **Axis references**: When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - **Abbreviations**: Avoid abbreviations in text unless they are well-known in the context.
-- **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the `AXES_POINTS_AND_FRAMES.md` and `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
+- **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the [AXES_POINTS_AND_FRAMES.md](AXES_POINTS_AND_FRAMES.md) and [ANGLE_VECTORS_AND_TRANSFORMATIONS.md](ANGLE_VECTORS_AND_TRANSFORMATIONS.md) documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
 
 ## Sentence Structure
 
@@ -36,7 +36,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 ## Math and Numbers
 
 - For subtraction, use a hyphen surrounded by spaces (e.g., "a - b").
-- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N*m", "kg*m^2", and "N*m*s/rad").
+- For multiplication, use a lowercase x or an asterisk, both surrounded by spaces (e.g., "8 x 8 panels" or "2 * pi"). Compound units are exempt: write them without spaces (e.g., "N\*m", "kg\*m^2", and "N\*m\*s/rad").
 - For division, use a slash surrounded by spaces (e.g., "a / b"). Derivative notation is exempt: write it without spaces (e.g., "d(theta)/dt", "d^2(theta)/dt^2", and "dGamma/dt").
 - For equals signs in inline equations and value descriptions, surround with spaces (e.g., "area = 0.5", not "area=0.5").
 - For approximately-equal, use a tilde surrounded by spaces (e.g., "a ~ b").
@@ -66,7 +66,7 @@ The same name is marked up differently depending on where it appears. Comments a
 
 ## File Formatting
 
-- Always end *.py files with an empty line.
+- Always end `*.py` files with an empty line.
 - In markdown files, always include a blank line after a header line. Also precede them with a blank line, except for header lines that happen to also be the first line in their file.
 - In markdown files, do not use trailing whitespace for line breaks. Markdown already handles breaks between paragraphs, list items, and headings.
 - In markdown files, do not use hard line wrapping.
@@ -117,9 +117,9 @@ docformatter is configured as a pre-commit hook. Run it with:
 pre-commit run --all-files docformatter
 ```
 
-## Running ascii-only
+## Running `ascii-only`
 
-ascii-only is configured as a pre-commit hook that enforces the [ASCII Only](#ascii-only) rule above. Run it with:
+`ascii-only` is configured as a pre-commit hook that enforces the [ASCII Only](#ascii-only) rule above. Run it with:
 
 ```shell
 pre-commit run --all-files ascii-only

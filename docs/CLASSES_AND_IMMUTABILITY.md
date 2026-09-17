@@ -41,7 +41,7 @@ Most attributes fall into one of these categories:
 
 A constructor parameter is not always retained as an attribute. Some parameters shape how an object is built but are deliberately discarded once construction finishes: they have no `__slots__` entry, appear in no attribute-category table, and are not serialized or deep copied, because nothing reads them after `__init__`. They are still validated exactly like their stored counterparts.
 
-`Wing`'s `explode_into_strips` is one example. When True, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections. The bool itself is never assigned to `self`: its validated value lives in a local variable inside `__init__`, passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`. Construction does, however, derive the immutable `spanwise_mesh` marker from it (see the Wing Class section), recording whether the spanwise mesh was defined as trapezoidal corners or as single-strip cross sections. That provenance is set explicitly here rather than detected later, precisely because an exploded Wing is structurally indistinguishable from one a user defines with single-strip cross sections directly: the standard convergence tools must refine the latter but reject the former, so the distinction cannot be recovered from the geometry alone.
+`Wing`'s `explode_into_strips` is one example. When `True`, it triggers `Wing._explode_wing` to replace the supplied wing cross sections with single-strip cross sections. The bool itself is never assigned to `self`: its validated value lives in a local variable inside `__init__`, passing through `boolLike_return_bool`, the same check applied to the stored bool-likes `symmetric` and `mirror_only`. Construction does, however, derive the immutable `spanwise_mesh` marker from it (see the `Wing` Class section), recording whether the spanwise mesh was defined as trapezoidal corners or as single-strip cross sections. That provenance is set explicitly here rather than detected later, precisely because an exploded `Wing` is structurally indistinguishable from one a user defines with single-strip cross sections directly: the standard convergence tools must refine the latter but reject the former, so the distinction cannot be recovered from the geometry alone.
 
 ### Key Decisions
 
@@ -73,7 +73,7 @@ Even with read-only properties, numpy arrays can still be mutated in place via t
 When implementing `__deepcopy__`, handle cached derived properties based on their source:
 
 1. **Derived from Immutable -> Preserve**: Copy the cached values (they remain valid since the source immutable attributes are also copied). For numpy arrays, use `.copy()` then set `flags.writeable = False`.
-2. **Derived from Set Once -> Reset to None**: These depend on values that will be set fresh by the solver or meshing, so reset them.
+2. **Derived from Set Once -> Reset to `None`**: These depend on values that will be set fresh by the solver or meshing, so reset them.
 
 ### Serialization Attribute Handling
 
@@ -99,7 +99,7 @@ Store collections as tuples internally to prevent external mutation via `.append
 
 ---
 
-## CoreUnsteadyProblem / UnsteadyProblem Class (`_core.py`, `problems.py`)
+## `CoreUnsteadyProblem` / `UnsteadyProblem` Class (`_core.py`, `problems.py`)
 
 `UnsteadyProblem` extends `CoreUnsteadyProblem`. `CoreUnsteadyProblem` owns all attributes except `movement` and `steady_problems`, which are defined on `UnsteadyProblem`.
 
@@ -111,11 +111,11 @@ Store collections as tuples internally to prevent external mutation via `.append
 |------------------------|-----------------------------|-------------------------|-----------------------|
 | `movement`             | `Movement`                  | `UnsteadyProblem`       | Movement definition   |
 | `only_final_results`   | `bool`                      | `CoreUnsteadyProblem`   | Results flag          |
-| `num_steps`            | `int`                       | `CoreUnsteadyProblem`   | Copied from Movement  |
-| `delta_time`           | `float`                     | `CoreUnsteadyProblem`   | Copied from Movement  |
+| `num_steps`            | `int`                       | `CoreUnsteadyProblem`   | Copied from `Movement`  |
+| `delta_time`           | `float`                     | `CoreUnsteadyProblem`   | Copied from `Movement`  |
 | `first_averaging_step` | `int`                       | `CoreUnsteadyProblem`   | Computed during init  |
 | `first_results_step`   | `int`                       | `CoreUnsteadyProblem`   | Computed during init  |
-| `max_wake_rows`        | `int \| None`               | `CoreUnsteadyProblem`   | Copied from Movement  |
+| `max_wake_rows`        | `int \| None`               | `CoreUnsteadyProblem`   | Copied from `Movement`  |
 | `steady_problems`      | `tuple[SteadyProblem, ...]` | `UnsteadyProblem`       | Generated during init |
 
 #### Mutable (populated by solver)
@@ -153,11 +153,11 @@ Store collections as tuples internally to prevent external mutation via `.append
 | `finalRmsMoments_W_Cg`               | `list[np.ndarray]` |                                                  |
 | `finalRmsMomentCoefficients_W_Cg`    | `list[np.ndarray]` |                                                  |
 
-**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-Airplane lists, the G and Cg IDs are used without an Airplane index to implicitly mean "in the entry's own Airplane's geometry axes" and "relative to the entry's own Airplane's CG".
+**Note**: The mutable solver result lists are defined on `CoreUnsteadyProblem` and must remain mutable as they are populated after initialization by the solver. These are initialized as empty lists and appended to during the solve. In these per-`Airplane` lists, the G and Cg IDs are used without an `Airplane` index to implicitly mean "in the entry's own `Airplane`'s geometry axes" and "relative to the entry's own `Airplane`'s CG".
 
 #### Derived from Mutable (read-only property, no backing slot)
 
-These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md` for the wind axes lists. Each returns one signed component per Airplane, or an empty list while its source list is empty, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source lists.
+These read-only properties expose the named load components and coefficients defined in [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md) for the wind axes lists. Each returns one signed component per `Airplane`, or an empty list while its source list is empty, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source lists.
 
 | Property                                   | Depends On                         | Notes                                    |
 |--------------------------------------------|------------------------------------|------------------------------------------|
@@ -186,7 +186,7 @@ These read-only properties expose the named load components and coefficients def
 | `finalMeanPitchingMomentCoefficients_W_Cg` | `finalMeanMomentCoefficients_W_Cg` |                                          |
 | `finalMeanYawingMomentCoefficients_W_Cg`   | `finalMeanMomentCoefficients_W_Cg` |                                          |
 
-## _CoupledUnsteadyProblem Class (`problems.py`)
+## `_CoupledUnsteadyProblem` Class (`problems.py`)
 
 `_CoupledUnsteadyProblem` is a private middle-layer class that extends `CoreUnsteadyProblem`. It is the base for concrete subclasses (`AeroelasticUnsteadyProblem` and `FreeFlightUnsteadyProblem`, both documented below) whose per-step `SteadyProblem` depends on the solver's results from the previous step: deformed wing geometry for aeroelasticity, updated rigid body state for free flight. Unlike `UnsteadyProblem`, which builds all `SteadyProblem`s up front from a pre-generated `Movement`, the coupled subclasses grow their `SteadyProblem` collection one step at a time during the solve.
 
@@ -203,7 +203,7 @@ All `CoreUnsteadyProblem` attributes (documented in the section above) are inher
 
 **Note on `steady_problems`**: The parent class's `steady_problems` property is doubly immutable. The returned tuple is read-only and its value never changes over the lifetime of the `UnsteadyProblem`. On `_CoupledUnsteadyProblem`, the first guarantee still holds (callers cannot mutate the tuple), but the second does not. The backing slot `_steady_problems` is a `list[SteadyProblem]` seeded at init with a single entry built from `initial_airplanes` and `initial_operating_point`. Subclass `initialize_next_problem` overrides append to this list as each step is initialized during the solve, so calling `steady_problems` at different points can yield different-length tuples. External code that needs a consistent snapshot should read `steady_problems` once after the solver has completed.
 
-## AeroelasticUnsteadyProblem Class (`problems.py`)
+## `AeroelasticUnsteadyProblem` Class (`problems.py`)
 
 `AeroelasticUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with a torsional spring-mass-damper structural model so that each wing's deformation at a given time step is driven by the previous step's aerodynamic, inertial, and spring-restoring moments. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the structural configuration (set once at construction) and the per-wing structural state (populated as the solve advances).
 
@@ -217,7 +217,7 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 |------------------------|---------|--------------------------------------------------------|
 | `wing_density`         | `float` | Mass per unit span area (kg/m^2)                       |
 | `spring_constant_rad`  | `float` | Torsional spring stiffness (N*m/rad)                   |
-| `damping_constant_rad` | `float` | Torsional damping coefficient (N*m*s/rad)              |
+| `damping_constant_rad` | `float` | Torsional damping coefficient (N\*m\*s/rad)              |
 | `step_discards`        | `int`   | Number of initial steps discarded for stability        |
 
 #### Derived from Immutable (read-only property, no backing slot)
@@ -235,9 +235,9 @@ These lists are allocated in `__init__` with one entry per wing in the initial a
 | `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz`             | `list[list[np.ndarray]]` | Cumulative torsional angle time series (radians), indexed `[wing][entry]`, seeded     |
 | `_listDeformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz`  | `list[list[np.ndarray]]` | Torsional angle time derivative time series (rad/s), indexed `[wing][entry]`, seeded  |
 
-## FreeFlightUnsteadyProblem Class (`problems.py`)
+## `FreeFlightUnsteadyProblem` Class (`problems.py`)
 
-`FreeFlightUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with six-degree-of-freedom rigid body dynamics, integrated by a `MuJoCoModel`, so that the Airplane's position, orientation, and velocity at a given time step are driven by the previous step's aerodynamic loads, gravity, and any external loads. The wing geometry stays prescribed; it is the per-step `OperatingPoint` (body pose and rates) that the dynamics update. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the rigid body configuration (set once at construction) and the per-step aerodynamic load history (populated as the solve advances).
+`FreeFlightUnsteadyProblem` extends `_CoupledUnsteadyProblem`. It couples aerodynamic loads with six-degree-of-freedom rigid body dynamics, integrated by a `MuJoCoModel`, so that the `Airplane`'s position, orientation, and velocity at a given time step are driven by the previous step's aerodynamic loads, gravity, and any external loads. The wing geometry stays prescribed; it is the per-step `OperatingPoint` (body pose and rates) that the dynamics update. All `_CoupledUnsteadyProblem` and `CoreUnsteadyProblem` attributes (documented in the sections above) are inherited unchanged. The additions are the rigid body configuration (set once at construction) and the per-step aerodynamic load history (populated as the solve advances).
 
 ### Attribute Classification
 
@@ -247,12 +247,12 @@ Each is stored in a `_`-prefixed backing slot and exposed through a read-only pr
 
 | Attribute           | Type               | Notes                                                                                                        |
 |---------------------|--------------------|--------------------------------------------------------------------------------------------------------------|
-| `I_BP1_CgP1`        | `np.ndarray`       | Inertia matrix in the first Airplane's body axes about its CG (kg*m^2); the array itself is set read-only    |
-| `mass`              | `float`            | Mass of the first Airplane (kg)                                                                              |
+| `I_BP1_CgP1`        | `np.ndarray`       | Inertia matrix in the first `Airplane`'s body axes about its CG (kg*m^2); the array itself is set read-only    |
+| `mass`              | `float`            | Mass of the first `Airplane` (kg)                                                                              |
 | `k_max`             | `int`              | Maximum strongly coupled sub-iterations per free-flight time step (a capped step is accepted with a warning) |
-| `external_loads_fn` | `Callable \| None` | Optional callback returning additional (force, moment) loads to apply each step, or None                     |
+| `external_loads_fn` | `Callable \| None` | Optional callback returning additional (force, moment) loads to apply each step, or `None`                     |
 
-The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJoCoModel`). Like the attributes above, it is set in `__init__` and never reassigned, and the reference stays fixed while the engine's own state advances during the solve. It has no public property: users never interact with the engine directly (see the MuJoCoModel section).
+The rigid body dynamics engine lives in the private `_mujoco_model` slot (a `MuJoCoModel`). Like the attributes above, it is set in `__init__` and never reassigned, and the reference stays fixed while the engine's own state advances during the solve. It has no public property: users never interact with the engine directly (see the `MuJoCoModel` section).
 
 #### Derived from Immutable (read-only property, no backing slot)
 
@@ -270,9 +270,9 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Construction-only parameters
 
-`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or None with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or None mapping str filenames to bytes, where each filename must be a bare basename with a nonempty extension), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo, except that construction raises if the generated model XML references files that `mujoco_assets` does not cover, which keeps machine-specific paths out of saved files and every constructed problem saveable. See Construction-Only Parameters under Design Principles.
+`integrator`, `extra_xml`, and `mujoco_assets` are constructor parameters, not attributes: all three are validated here (`integrator` a str naming a supported MuJoCo integrator; `extra_xml` a dict or `None` with keys restricted to the permitted injection points and str values; `mujoco_assets` a dict or `None` mapping str filenames to bytes, where each filename must be a bare basename with a nonempty extension), then forwarded to the `MuJoCoModel` constructed in `__init__` and not stored on the problem, so none has a slot or an attribute-category entry above. They are the only raw user input reaching the `MuJoCoModel`, which performs no validation of its own; deeper XML and asset-reference correctness is left to MuJoCo, except that construction raises if the generated model XML references files that `mujoco_assets` does not cover, which keeps machine-specific paths out of saved files and every constructed problem saveable. See Construction-Only Parameters under Design Principles.
 
-## CoreMovement / Movement Class (`_core.py`, `movements/movement.py`)
+## `CoreMovement` / `Movement` Class (`_core.py`, `movements/movement.py`)
 
 `Movement` extends `CoreMovement`. `CoreMovement` owns the shared slots (`airplane_movements`, `operating_point_movement`, `delta_time`, `num_steps`, `max_wake_rows`) and derived properties (`lcm_period`, `max_period`, `min_period`, `static`). `Movement` adds cycle/chord counting, wake sizing parameters, and batch pre-generation of `Airplane`s and `OperatingPoint`s.
 
@@ -286,13 +286,13 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `operating_point_movement` | `OperatingPointMovement`           | `CoreMovement` | Operating point changes   |
 | `delta_time`               | `float`                            | `CoreMovement` | Time step                 |
 | `num_steps`                | `int`                              | `CoreMovement` | Total time steps          |
-| `max_wake_rows`            | `int \| None`                      | `CoreMovement` | Max wake rows per Wing    |
+| `max_wake_rows`            | `int \| None`                      | `CoreMovement` | Max wake rows per `Wing`    |
 | `num_cycles`               | `int \| None`                      | `Movement`     | Number of cycles          |
 | `num_chords`               | `int \| None`                      | `Movement`     | Number of chord lengths   |
 | `max_wake_chords`          | `int \| None`                      | `Movement`     | Max wake in chord lengths |
 | `max_wake_cycles`          | `int \| None`                      | `Movement`     | Max wake in motion cycles |
-| `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | `Movement`     | Generated Airplanes       |
-| `operating_points`         | `tuple[OperatingPoint, ...]`       | `Movement`     | Generated OperatingPoints |
+| `airplanes`                | `tuple[tuple[Airplane, ...], ...]` | `Movement`     | Generated `Airplane`s       |
+| `operating_points`         | `tuple[OperatingPoint, ...]`       | `Movement`     | Generated `OperatingPoint`s |
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -313,10 +313,10 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 |------------------------|------------------------------------|-----------------------|---------------------------------------------------------------------------------|
 | `prescribed_num_steps` | `int`                              | `FreeFlightMovement`  | Prescribed-flight time steps before the free-flight phase                       |
 | `free_num_steps`       | `int`                              | `FreeFlightMovement`  | Free-flight time steps after the prescribed phase                               |
-| `airplanes`            | `tuple[tuple[Airplane, ...], ...]` | `FreeFlightMovement`  | Pre-generated prescribed Airplane geometry, indexed `[airplane_movement][step]` |
-| `operating_points`     | `tuple[OperatingPoint, ...]`       | `AeroelasticMovement` | Pre-generated prescribed OperatingPoints                                        |
+| `airplanes`            | `tuple[tuple[Airplane, ...], ...]` | `FreeFlightMovement`  | Pre-generated prescribed `Airplane` geometry, indexed `[airplane_movement][step]` |
+| `operating_points`     | `tuple[OperatingPoint, ...]`       | `AeroelasticMovement` | Pre-generated prescribed `OperatingPoint`s                                        |
 
-## CoreAirplaneMovement / AirplaneMovement Class (`_core.py`, `movements/airplane_movement.py`)
+## `CoreAirplaneMovement` / `AirplaneMovement` Class (`_core.py`, `movements/airplane_movement.py`)
 
 `AirplaneMovement` extends `CoreAirplaneMovement`. All slots are defined on `CoreAirplaneMovement`; `AirplaneMovement` has empty `__slots__` and only narrows the `wing_movements` type to require `WingMovement` children.
 
@@ -340,7 +340,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `all_periods` | Own periods + child `all_periods` | Tuple of unique non zero periods (cached) |
 | `max_period`  | Own periods + child `max_period`  | Scalar float, longest period (cached)     |
 
-## CoreWingMovement / WingMovement Class (`_core.py`, `movements/wing_movement.py`)
+## `CoreWingMovement` / `WingMovement` Class (`_core.py`, `movements/wing_movement.py`)
 
 `WingMovement` extends `CoreWingMovement`. All slots are defined on `CoreWingMovement`; `WingMovement` has empty `__slots__` and only narrows the `wing_cross_section_movements` type to require `WingCrossSectionMovement` children.
 
@@ -375,9 +375,9 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 | Attribute                                     | Type                           | Notes                                                                                                                                                                                                           |
 |-----------------------------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `spacingAnglesSecondDerivative_Gs_to_Wn_ixyz` | `tuple[Callable \| None, ...]` | Per-basis-direction (x, y, z) analytical second time derivative of the matching custom angular spacing; an entry is a callable when its `spacingAngles_Gs_to_Wn_ixyz` component is a custom callable, else None |
+| `spacingAnglesSecondDerivative_Gs_to_Wn_ixyz` | `tuple[Callable \| None, ...]` | Per-basis-direction (x, y, z) analytical second time derivative of the matching custom angular spacing; an entry is a callable when its `spacingAngles_Gs_to_Wn_ixyz` component is a custom callable, else `None` |
 
-## CoreWingCrossSectionMovement / WingCrossSectionMovement Class (`_core.py`, `movements/wing_cross_section_movement.py`)
+## `CoreWingCrossSectionMovement` / `WingCrossSectionMovement` Class (`_core.py`, `movements/wing_cross_section_movement.py`)
 
 `WingCrossSectionMovement` extends `CoreWingCrossSectionMovement`. All slots are defined on `CoreWingCrossSectionMovement`; `WingCrossSectionMovement` has empty `__slots__`.
 
@@ -404,7 +404,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `all_periods` | Period arrays | Tuple of unique non zero periods (cached) |
 | `max_period`  | Period arrays | Scalar float, longest period (cached)     |
 
-## CoreOperatingPointMovement / OperatingPointMovement Class (`_core.py`, `movements/operating_point_movement.py`)
+## `CoreOperatingPointMovement` / `OperatingPointMovement` Class (`_core.py`, `movements/operating_point_movement.py`)
 
 `OperatingPointMovement` extends `CoreOperatingPointMovement`. All slots are defined on `CoreOperatingPointMovement`; `OperatingPointMovement` has empty `__slots__`.
 
@@ -432,9 +432,9 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 | Attribute          | Type                   | Notes                                                                                                                                                                                                                                            |
 |--------------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `operating_points` | `list[OperatingPoint]` | Mutable OperatingPoint history; seeded with the base OperatingPoint at step 0, then the solver appends one per step. A plain mutable slot rather than a read-only property, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem` |
+| `operating_points` | `list[OperatingPoint]` | Mutable `OperatingPoint` history; seeded with the base `OperatingPoint` at step 0, then the solver appends one per step. A plain mutable slot rather than a read-only property, mirroring the mutable-result-list treatment on `CoreUnsteadyProblem` |
 
-## SteadyProblem Class (`problems.py`)
+## `SteadyProblem` Class (`problems.py`)
 
 ### Attribute Classification
 
@@ -449,9 +449,9 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 | Property           | Depends On                     | Notes                                  |
 |--------------------|--------------------------------|----------------------------------------|
-| `reynolds_numbers` | `airplanes`, `operating_point` | Tuple of Re for each Airplane (cached) |
+| `reynolds_numbers` | `airplanes`, `operating_point` | Tuple of Re for each `Airplane` (cached) |
 
-## OperatingPoint Class (`operating_point.py`)
+## `OperatingPoint` Class (`operating_point.py`)
 
 ### Attribute Classification
 
@@ -501,7 +501,7 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 **Note on transformation decomposition**: The geometry-to-wind transformation (`T_pas_GP1_CgP1_to_W_CgP1`) is composed from `T_pas_GP1_CgP1_to_BP1_CgP1` and `T_pas_BP1_CgP1_to_W_CgP1` via `compose_T_pas`. Similarly, `T_pas_E_CgP1_to_GP1_CgP1` is composed from `T_pas_E_CgP1_to_BP1_CgP1` and `T_pas_BP1_CgP1_to_GP1_CgP1`, and `T_pas_W_CgP1_to_E_CgP1` is composed from `T_pas_W_CgP1_to_BP1_CgP1` and `T_pas_BP1_CgP1_to_E_CgP1`. Decomposing through body axes lets each non-body chain reuse the body-relative matrices rather than computing fresh rotations.
 
-## Airplane Class (`geometry/airplane.py`)
+## `Airplane` Class (`geometry/airplane.py`)
 
 ### Attribute Classification
 
@@ -530,18 +530,18 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 |-----------------------------|----------------------|---------------------------------------------|
 | `forces_W`                  | `np.ndarray \| None` | Forces in wind axes                         |
 | `forceCoefficients_W`       | `np.ndarray \| None` | Force coefficients                          |
-| `moments_W_CgP1`            | `np.ndarray \| None` | Moments relative to the first Airplane's CG |
+| `moments_W_CgP1`            | `np.ndarray \| None` | Moments relative to the first `Airplane`'s CG |
 | `momentCoefficients_W_CgP1` | `np.ndarray \| None` | Moment coefficients                         |
 | `forces_G`                  | `np.ndarray \| None` | Forces in geometry axes                     |
 | `forceCoefficients_G`       | `np.ndarray \| None` | Force coefficients                          |
-| `moments_G_Cg`              | `np.ndarray \| None` | Moments relative to this Airplane's CG      |
+| `moments_G_Cg`              | `np.ndarray \| None` | Moments relative to this `Airplane`'s CG      |
 | `momentCoefficients_G_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
 | `moments_W_Cg`              | `np.ndarray \| None` | Wind-axes rotation of `moments_G_Cg`        |
 | `momentCoefficients_W_Cg`   | `np.ndarray \| None` | Moment coefficients                         |
 
 #### Derived from Mutable (read-only property, no backing slot)
 
-These read-only properties expose the named load components and coefficients defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of its source array, or None while the source is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source arrays.
+These read-only properties expose the named load components and coefficients defined in [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md). Each returns one signed component of its source array, or `None` while the source is `None`, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates the source arrays.
 
 | Property                         | Depends On                | Notes                       |
 |----------------------------------|---------------------------|-----------------------------|
@@ -560,7 +560,7 @@ These read-only properties expose the named load components and coefficients def
 
 ---
 
-## Wing Class (`geometry/wing.py`)
+## `Wing` Class (`geometry/wing.py`)
 
 ### Attribute Classification
 
@@ -573,11 +573,11 @@ These read-only properties expose the named load components and coefficients def
 | `Ler_Gs_Cgs`                | `np.ndarray`                   | Leading edge root position                                                                                                 |
 | `angles_Gs_to_Wn_ixyz`      | `np.ndarray`                   | Rotation angles                                                                                                            |
 | `num_chordwise_panels`      | `int`                          | Chordwise panel count                                                                                                      |
-| `chordwise_spacing`         | `str`                          | "cosine" or "uniform"                                                                                                      |
-| `spanwise_mesh`             | `str`                          | "trapezoidal", "exploded", or "edge_defined", set by provenance during construction rather than as a constructor parameter |
-| `leadingEdgePoints_Wn_Ler`  | `np.ndarray \| None`           | Original leading edge curve, a read-only array set only by `from_edge_points` (else None)                                  |
-| `trailingEdgePoints_Wn_Ler` | `np.ndarray \| None`           | Original trailing edge curve, a read-only array set only by `from_edge_points` (else None)                                 |
-| `tip_trim_fraction`         | `float \| None`                | Span fraction dropped off the tip while resampling, set only by `from_edge_points` (else None)                             |
+| `chordwise_spacing`         | `str`                          | `"cosine"` or `"uniform"`                                                                                                      |
+| `spanwise_mesh`             | `str`                          | `"trapezoidal"`, `"exploded"`, or `"edge_defined"`, set by provenance during construction rather than as a constructor parameter |
+| `leadingEdgePoints_Wn_Ler`  | `np.ndarray \| None`           | Original leading edge curve, a read-only array set only by `from_edge_points` (else `None`)                                  |
+| `trailingEdgePoints_Wn_Ler` | `np.ndarray \| None`           | Original trailing edge curve, a read-only array set only by `from_edge_points` (else `None`)                                 |
+| `tip_trim_fraction`         | `float \| None`                | Span fraction dropped off the tip while resampling, set only by `from_edge_points` (else `None`)                             |
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -614,12 +614,12 @@ These read-only properties expose the named load components and coefficients def
 
 | Attribute            | Type                 | Notes                        |
 |----------------------|----------------------|------------------------------|
-| `symmetric`          | `bool`               | Modified to False for type 5 |
-| `mirror_only`        | `bool`               | Modified to False for type 5 |
-| `symmetryNormal_G`   | `np.ndarray \| None` | Modified to None for type 5  |
-| `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to None for type 5  |
+| `symmetric`          | `bool`               | Modified to `False` for type 5 |
+| `mirror_only`        | `bool`               | Modified to `False` for type 5 |
+| `symmetryNormal_G`   | `np.ndarray \| None` | Modified to `None` for type 5  |
+| `symmetryPoint_G_Cg` | `np.ndarray \| None` | Modified to `None` for type 5  |
 
-**Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original Wing becomes a type 1 wing and a new reflected Wing is created with type 3 symmetry.
+**Note**: These are modified by `Airplane.process_wing_symmetry()` when type 5 symmetry is detected. The original `Wing` becomes a type 1 wing and a new reflected `Wing` is created with type 3 symmetry.
 
 #### Mutable (modified during simulation for wake)
 
@@ -630,11 +630,11 @@ These read-only properties expose the named load components and coefficients def
 
 #### Construction-only parameters
 
-`explode_into_strips` is a constructor parameter, not an attribute: when True it triggers `_explode_wing` during initialization and the bool is then discarded, so it has no slot of its own. It does, however, set the derived immutable `spanwise_mesh` marker listed in the Immutable table above ("exploded" when True, "trapezoidal" otherwise). See Construction-Only Parameters under Design Principles.
+`explode_into_strips` is a constructor parameter, not an attribute: when `True` it triggers `_explode_wing` during initialization and the bool is then discarded, so it has no slot of its own. It does, however, set the derived immutable `spanwise_mesh` marker listed in the Immutable table above (`"exploded"` when `True`, `"trapezoidal"` otherwise). See Construction-Only Parameters under Design Principles.
 
-The `from_edge_points` classmethod is the third source of the `spanwise_mesh` marker. It builds the single-strip cross sections from leading edge and trailing edge curves, constructs a normal Wing through `__init__` (which marks it "trapezoidal"), then sets the marker to "edge_defined" and fills the `leadingEdgePoints_Wn_Ler`, `trailingEdgePoints_Wn_Ler`, and `tip_trim_fraction` slots with the original curves and the tip trim fraction applied while resampling them before returning. These four immutable slots are assigned in-class outside `__init__`, the same way `__deepcopy__` and deserialization set slots. The Wing is never exposed in the intermediate "trapezoidal" state. Storing the original curves and the trim fraction (rather than the resampled cross sections) is what lets a future non-trapezoidal convergence tool resample them at a different number of WingCrossSections, which is why the marker is three-valued: only an "edge_defined" Wing carries curves, while an "exploded" Wing does not.
+The `from_edge_points` classmethod is the third source of the `spanwise_mesh` marker. It builds the single-strip cross sections from leading edge and trailing edge curves, constructs a normal `Wing` through `__init__` (which marks it `"trapezoidal"`), then sets the marker to `"edge_defined"` and fills the `leadingEdgePoints_Wn_Ler`, `trailingEdgePoints_Wn_Ler`, and `tip_trim_fraction` slots with the original curves and the tip trim fraction applied while resampling them before returning. These four immutable slots are assigned in-class outside `__init__`, the same way `__deepcopy__` and deserialization set slots. The `Wing` is never exposed in the intermediate `"trapezoidal"` state. Storing the original curves and the trim fraction (rather than the resampled cross sections) is what lets a future non-trapezoidal convergence tool resample them at a different number of `WingCrossSection`s, which is why the marker is three-valued: only an `"edge_defined"` `Wing` carries curves, while an `"exploded"` `Wing` does not.
 
-## WingCrossSection Class (`geometry/wing_cross_section.py`)
+## `WingCrossSection` Class (`geometry/wing_cross_section.py`)
 
 ### Attribute Classification
 
@@ -649,7 +649,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `angles_Wcsp_to_Wcs_ixyz`     | `np.ndarray`  | Rotation angles            |
 | `control_surface_hinge_point` | `float`       | Hinge location (0-1)       |
 | `control_surface_deflection`  | `float`       | Deflection in degrees      |
-| `spanwise_spacing`            | `str \| None` | "cosine" or "uniform"      |
+| `spanwise_spacing`            | `str \| None` | `"cosine"` or `"uniform"`      |
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -658,7 +658,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `T_pas_Wcsp_Lpp_to_Wcs_Lp` | `Lp_Wcsp_Lpp`, `angles_...` | Transformation matrix  |
 | `T_pas_Wcs_Lp_to_Wcsp_Lpp` | Above                       | Inverse transformation |
 
-#### Set Once (set by parent Wing)
+#### Set Once (set by parent `Wing`)
 
 | Attribute       | Type          | Set By               | Notes                   |
 |-----------------|---------------|----------------------|-------------------------|
@@ -669,11 +669,11 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 | Attribute                       | Type          | Notes                           |
 |---------------------------------|---------------|---------------------------------|
-| `control_surface_symmetry_type` | `str \| None` | Set to None for type 5 symmetry |
+| `control_surface_symmetry_type` | `str \| None` | Set to `None` for type 5 symmetry |
 
 **Note**: Modified at when type 5 symmetry is split into two wings.
 
-## Airfoil Class (`geometry/airfoil.py`)
+## `Airfoil` Class (`geometry/airfoil.py`)
 
 ### Attribute Classification
 
@@ -687,11 +687,11 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 | `n_points_per_side` | `int`        | Points per side for resampling |
 | `mcl_A_Lp`          | `np.ndarray` | Mean camber line coordinates   |
 
-**Note**: The `add_control_surface` method creates and returns a new Airfoil instance rather than modifying the existing one. This is the correct immutable pattern.
+**Note**: The `add_control_surface` method creates and returns a new `Airfoil` instance rather than modifying the existing one. This is the correct immutable pattern.
 
-**Note**: `outline_A_lp` and `mcl_A_lp` are deprecated read-only aliases for `outline_A_Lp` and `mcl_A_Lp`, and the constructor accepts a deprecated `outline_A_lp` alias for its `outline_A_Lp` parameter. Using any of the aliases emits a DeprecationWarning, and all three will be removed in v6.0.0.
+**Note**: `outline_A_lp` and `mcl_A_lp` are deprecated read-only aliases for `outline_A_Lp` and `mcl_A_Lp`, and the constructor accepts a deprecated `outline_A_lp` alias for its `outline_A_Lp` parameter. Using any of the aliases emits a `DeprecationWarning`, and all three will be removed in v6.0.0.
 
-## Panel Class (`_panel.py`)
+## `Panel` Class (`_panel.py`)
 
 ### Attribute Classification
 
@@ -758,7 +758,7 @@ The `from_edge_points` classmethod is the third source of the `spanwise_mesh` ma
 
 #### Derived from Mutable (read-only property, no backing slot)
 
-These read-only properties expose the named force components defined in `AXES_POINTS_AND_FRAMES.md`. Each returns one signed component of `forces_W`, or None while it is None, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates `forces_W`.
+These read-only properties expose the named force components defined in [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md). Each returns one signed component of `forces_W`, or `None` while it is `None`, and stores nothing of its own. They are recomputed on every access, since a cached value would go stale when the solver populates `forces_W`.
 
 | Property           | Depends On | Notes                       |
 |--------------------|------------|-----------------------------|
@@ -768,7 +768,7 @@ These read-only properties expose the named force components defined in `AXES_PO
 
 ---
 
-## MuJoCoModel Class (`_mujoco_model.py`)
+## `MuJoCoModel` Class (`_mujoco_model.py`)
 
 `MuJoCoModel` is a private class that wraps MuJoCo's `MjModel` and `MjData` objects. It is constructed by `FreeFlightUnsteadyProblem` and provides methods for applying aerodynamic loads, stepping the rigid body dynamics, and extracting the updated state. Users pass raw scalars and arrays to `FreeFlightUnsteadyProblem` and never interact with `MuJoCoModel` directly.
 
@@ -780,11 +780,11 @@ These read-only properties expose the named force components defined in `AXES_PO
 |------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | `xml_str`              | `str`                      | Generated MuJoCo XML                                                                                                                         |
 | `_model`               | `mujoco.MjModel`           | Compiled MuJoCo model; private slot with no property                                                                                         |
-| `body_id`              | `int`                      | MuJoCo body ID for the Airplane                                                                                                              |
+| `body_id`              | `int`                      | MuJoCo body ID for the `Airplane`                                                                                                              |
 | `initial_key_frame_id` | `int`                      | MuJoCo key frame ID for initial conditions                                                                                                   |
 | `initial_qpos`         | `np.ndarray`               | Initial generalized positions (computed during init)                                                                                         |
 | `initial_qvel`         | `np.ndarray`               | Initial generalized velocities (computed during init)                                                                                        |
-| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or None); private slot with no property; serialized into saved files so `_rebuild_engine` can resolve asset references |
+| `_mujoco_assets`       | `dict[str, bytes] \| None` | Retained assets dict (or `None`); private slot with no property; serialized into saved files so `_rebuild_engine` can resolve asset references |
 
 #### Mutable
 
@@ -805,4 +805,4 @@ The six solver classes (`SteadyHorseshoeVortexLatticeMethodSolver`, `SteadyRingV
 
 One narrow exception is `UnsteadyRingVortexLatticeMethodSolver.steady_problems`. It is not internal working state but results data that external code reads after a run, so rather than holding a separate mutable copy it is a read-only property that returns the underlying `UnsteadyProblem.steady_problems` directly. This keeps the problem as the single source of truth and removes any chance of the solver's view going stale, which matters for coupled problems whose `steady_problems` grows step by step during the solve.
 
-The other exceptions are the solver attributes that describe a run rather than serve it, which are exposed through read-only properties over `_`-prefixed backing slots. Every solver has `ran`, a bool that starts False and is set True at the end of a completed `run()` call. The unsteady solver, and its coupled subclasses by inheritance, also has `prescribed_wake` and `force_method`, which report the configuration of the most recent `run()` call. Their backing slots are None until the first call to `run()` assigns them validated values, and reading either property while its backing slot is None raises a RuntimeError, so there is no pre-run default that could be mistaken for a real run's configuration. Unlike the immutable properties on the data classes, these values change over the solver's lifetime: `ran` flips once, and the run configuration is reassigned by each call to `run()`. The read-only property guarantees only that external code cannot write them.
+The other exceptions are the solver attributes that describe a run rather than serve it, which are exposed through read-only properties over `_`-prefixed backing slots. Every solver has `ran`, a bool that starts `False` and is set `True` at the end of a completed `run()` call. The unsteady solver, and its coupled subclasses by inheritance, also has `prescribed_wake` and `force_method`, which report the configuration of the most recent `run()` call. Their backing slots are `None` until the first call to `run()` assigns them validated values, and reading either property while its backing slot is `None` raises a `RuntimeError`, so there is no pre-run default that could be mistaken for a real run's configuration. Unlike the immutable properties on the data classes, these values change over the solver's lifetime: `ran` flips once, and the run configuration is reassigned by each call to `run()`. The read-only property guarantees only that external code cannot write them.

@@ -137,7 +137,7 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
 
    The hooks in `.pre-commit-config.yaml` are SHA-pinned with `# frozen: <tag>` comments, so Dependabot can manage bumps with a 7-day cooldown that gives the community time to catch a malicious release before it reaches us. Do not run `pre-commit autoupdate` directly: it rewrites every `rev:` field back to a moving tag and undoes the pinning.
 3. **Create a new branch**
-    - Branch from main for each change.
+    - Branch from `main` for each change.
     - Use descriptive branch names, such as `add_new_plot` or `fix_units`.
     ```shell
     git switch main
@@ -223,21 +223,21 @@ Ptera Software now uses GitHub Flow to manage code contributions. If this is new
     ```shell
     git push -u origin <branch-name> # After the first push, just use git push
     ```
-    - Open a PR from your branch to the main branch of the upstream repository.
+    - Open a PR from your branch to the `main` branch of the upstream repository.
         - You can open the PR as a **Draft** to get feedback early before the work is complete. Draft PRs indicate that design details may still be changing.
         - Give the PR a title of 42 characters or fewer, written in the same imperative style as a commit summary.
         - In the PR description, follow the PR template, and link any related issues.
 
 7. **Keeping your branch up to date**
-    - If main changes before your PR is merged, sync your branch to avoid merge conflicts:
+    - If `main` changes before your PR is merged, sync your branch to avoid merge conflicts:
     ```shell
     git fetch upstream
     git merge upstream/main
     ```
 8. **Review and approval process**
-    - Only the repository owner (currently [camUrban](https://github.com/camUrban)) can approve merges to main.
+    - Only the repository owner (currently [camUrban](https://github.com/camUrban)) can approve merges to `main`.
     - Your PR will be reviewed, and changes may be requested.
-    - Once approved, it will be merged into main and included in the next release.
+    - Once approved, it will be merged into `main` and included in the next release.
 
 ---
 

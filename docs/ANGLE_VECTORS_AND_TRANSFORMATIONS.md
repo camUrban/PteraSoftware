@@ -33,7 +33,7 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 ##### Variable Name Pattern
 
-\[variable name, default to "angles"\]\_\[source axes ID\]\_to\_\[target axes ID\]\_\[sequence ID\]
+`[variable name, default to "angles"]_[source axes ID]_to_[target axes ID]_[sequence ID]`
 
 ##### Text Reference Pattern
 
@@ -43,23 +43,23 @@ Given the dual-axes nature of angle vectors, we denote them by appending informa
 
 ##### Local reference examples
 
-* Variables: angles\_E\_to\_B\_izyx
+* Variables: `angles_E_to_B_izyx`
 * Text: ...angles describing the orientation of the body axes relative to the Earth axes using an intrinsic zy'x" sequence...
 
 ##### Wing-local reference examples
 
-* Variables: angles\_Wcs1\_to\_Wn\_izyx
-* Text: ...angles describing the orientation of the wing axes from the first WingCrossSection's axes using an intrinsic zy'x" sequence...
+* Variables: `angles_Wcs1_to_Wn_izyx`
+* Text: ...angles describing the orientation of the wing axes from the first `WingCrossSection`'s axes using an intrinsic zy'x" sequence...
 
 ##### Airplane-local reference examples
 
-* Variables: angles\_Wn2\_to\_G\_izyx
-* Text: ...angles describing the orientation of the geometry axes from the second Wing's axes using an intrinsic zy'x" sequence...
+* Variables: `angles_Wn2_to_G_izyx`
+* Text: ...angles describing the orientation of the geometry axes from the second `Wing`'s axes using an intrinsic zy'x" sequence...
 
 ##### Non-local reference examples
 
-* Variables: angles\_BP1\_to\_E\_exyz
-* Text: ...angles describing the orientation of the Earth axes from the first Airplane's body axes using an extrinsic xyz sequence...
+* Variables: `angles_BP1_to_E_exyz`
+* Text: ...angles describing the orientation of the Earth axes from the first `Airplane`'s body axes using an extrinsic xyz sequence...
 
 ### Active Angle Vectors
 
@@ -69,7 +69,7 @@ Active angle vectors give instructions for rotating a vector within its current 
 
 ##### Variable Name Pattern
 
-\[variable name, default to "angles"\]\_act\_\[sequence ID\]
+`[variable name, default to "angles"]_act_[sequence ID]`
 
 ##### Text Reference Pattern
 
@@ -77,20 +77,20 @@ Active angle vectors give instructions for rotating a vector within its current 
 
 #### Active Angle Vector Examples
 
-* Variables: angles\_act\_izyx
+* Variables: `angles_act_izyx`
 * Text: ...angles for rotation using an intrinsic zy'x" sequence...
 
 ### Angle Vector Components
 
-Appending a component letter (X, Y, or Z) to the end of the camelCase portion of an angle vector's variable name denotes a variable that holds only that scalar component (or a stack of that component), while keeping the rest of the name so the component stays tied to the angle vector it came from. Match the name's plurality to what the variable holds: a single component value singularizes the name, while a stack of component values keeps it plural. For example, angleY\_E\_to\_B\_izyx would hold only the y component of angles\_E\_to\_B\_izyx, and deformationAnglesYRad\_Wcsp\_to\_Wcs\_ixyz holds one y component per WingCrossSection. This is the same component letter convention that [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md) defines for all vector-valued quantities, and the stack, grid, and list collection prefixes defined there apply to angle vectors in the same way (e.g., listDeformationAnglesYRad\_Wcsp\_to\_Wcs\_ixyz holds per-Wing lists of stored angle components).
+Appending a component letter (X, Y, or Z) to the end of the camelCase portion of an angle vector's variable name denotes a variable that holds only that scalar component (or a stack of that component), while keeping the rest of the name so the component stays tied to the angle vector it came from. Match the name's plurality to what the variable holds: a single component value singularizes the name, while a stack of component values keeps it plural. For example, `angleY_E_to_B_izyx` would hold only the y component of `angles_E_to_B_izyx`, and `deformationAnglesYRad_Wcsp_to_Wcs_ixyz` holds one y component per `WingCrossSection`. This is the same component letter convention that [Axes, Points, and Frames](AXES_POINTS_AND_FRAMES.md) defines for all vector-valued quantities, and the stack, grid, and list collection prefixes defined there apply to angle vectors in the same way (e.g., `listDeformationAnglesYRad_Wcsp_to_Wcs_ixyz` holds per-`Wing` lists of stored angle components).
 
 ### Angle Component Time Derivatives
 
-Some quantities are time derivatives of an angle vector's individual components, such as the aeroelastic structural model's torsional angle rates and the movement classes' second-derivative spacing functions (e.g., spacingAnglesSecondDerivative\_Gs\_to\_Wn\_ixyz). These are rates of change of scalar coordinates.
+Some quantities are time derivatives of an angle vector's individual components, such as the aeroelastic structural model's torsional angle rates and the movement classes' second-derivative spacing functions (e.g., `spacingAnglesSecondDerivative_Gs_to_Wn_ixyz`). These are rates of change of scalar coordinates.
 
-An angle vector's componentwise time derivative is not, in general, an angular velocity vector. For Tait-Bryan sequences, the angular velocity vector relates to the component rates through a sequence-dependent kinematic matrix, and the two coincide only in special cases (for example, a rotation about a single fixed axis). Reserve omega-style names (e.g., omegas\_BP1\_\_E) for true angular velocity vectors, which take an axes ID and a frame ID like any other vector observed over time. Never name a stack of angle component derivatives as omegas, and never treat one as an angular velocity vector.
+An angle vector's componentwise time derivative is not, in general, an angular velocity vector. For Tait-Bryan sequences, the angular velocity vector relates to the component rates through a sequence-dependent kinematic matrix, and the two coincide only in special cases (for example, a rotation about a single fixed axis). Reserve omega-style names (e.g., `omegas_BP1__E`) for true angular velocity vectors, which take an axes ID and a frame ID like any other vector observed over time. Never name a stack of angle component derivatives as `omegas`, and never treat one as an angular velocity vector.
 
-To name an angle component time derivative, start from the name of the angle vector being differentiated, add a derivative marker to the end of the camelCase portion (Derivative for a first derivative, SecondDerivative for a second), add a component letter (X, Y, or Z) when only some components are stored, and keep the source angle vector's full source-to-target and sequence suffix so the derivative is tied to the angle vector it differentiates. When the value is in radians-based units (rad/s, rad/s^2), mark it with Rad as the last element of the camelCase portion. For example, deformationAnglesDerivativeYRad\_Wcsp\_to\_Wcs\_ixyz holds the time derivatives (rad/s) of the y components of deformationAngles\_Wcsp\_to\_Wcs\_ixyz, angles describing the orientation of the wing cross section axes relative to the wing cross section parent axes using an intrinsic xy'z" sequence.
+To name an angle component time derivative, start from the name of the angle vector being differentiated, add a derivative marker to the end of the camelCase portion (`Derivative` for a first derivative, `SecondDerivative` for a second), add a component letter (X, Y, or Z) when only some components are stored, and keep the source angle vector's full source-to-target and sequence suffix so the derivative is tied to the angle vector it differentiates. When the value is in radians-based units (rad/s, rad/s^2), mark it with `Rad` as the last element of the camelCase portion. For example, `deformationAnglesDerivativeYRad_Wcsp_to_Wcs_ixyz` holds the time derivatives (rad/s) of the y components of `deformationAngles_Wcsp_to_Wcs_ixyz`, angles describing the orientation of the wing cross section axes relative to the wing cross section parent axes using an intrinsic xy'z" sequence.
 
 Angle component time derivatives take no reference frame ID. A frame ID records the observer when differentiating a vector, because the result depends on the rotation of the basis the vector is expressed in. A scalar angle component has no basis, so once the component is defined, its time derivative is unambiguous and no observer needs to be named.
 
@@ -100,7 +100,7 @@ Angle component time derivatives take no reference frame ID. A frame ID records 
 2. Singularities: Different sequences experience gimbal lock at particular points
 3. Units: For all quantities whose units include an angular component, that angular component is in degrees unless explicitly noted otherwise
 4. Intrinsic vs Extrinsic: Remember that intrinsic and extrinsic rotations are equivalent with the order reversed (e.g. zy'x" is the same as xyz)
-5. Radians naming: For vector-valued quantities and their components, noting radians-based units (rad, rad/s, rad/s^2, etc.) in a docstring or comment is not enough, so the variable's name itself must declare them, with Rad as the last element of its camelCase portion (e.g., omegasRad\_BP1\_\_E), while non-vector-valued variables instead take a \_rad suffix on their snake case names, as described in [Code Style](CODE_STYLE.md)
+5. Radians naming: For vector-valued quantities and their components, noting radians-based units (rad, rad/s, rad/s^2, etc.) in a docstring or comment is not enough, so the variable's name itself must declare them, with `Rad` as the last element of its camelCase portion (e.g., `omegasRad_BP1__E`), while non-vector-valued variables instead take a `_rad` suffix on their snake case names, as described in [Code Style](CODE_STYLE.md)
 
 ## Rotation and Transformation Matrices
 
@@ -121,25 +121,25 @@ For vector with components (x, y, z) that is given relative to a reference point
 #### Overview of Passive Matrices
 
 * Ptera Software uses two passive matrix types:
-    * R\_pas\_...: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
-    * T\_pas\_...: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
+    * `R_pas_...`: 2x2 or 3x3 rotation matrices that relate the orientation of one axis system relative to another.
+    * `T_pas_...`: 4x4 transformation matrices in homogeneous coordinates that maps components from a source axis system and reference point to a target axis system and reference point. It applies the orientation change implied by the two axes (rotation or reflection) and, when the quantity is tied to a reference point (e.g., positions), also applies the translation between the points. It only changes how the same physical quantity is expressed (axes and/or point) and never introduces scaling or shear.
 
 #### Passive Matrix Name Patterns
 
 ##### 3x3 Rotation Matrices
 
-* R\_pas\_\[source axes ID\]\_to\_\[target axes ID\]
+* `R_pas_[source axes ID]_to_[target axes ID]`
 * ...rotation matrix R, which maps from \[source axes name\] to \[target axes name\]...
 
 ##### 4x4 General Transformation Matrices
 
-* T\_pas\_\[source axes ID\]\_\[source point ID\]\_to\_\[target axes ID\]\_\[target point ID\]
+* `T_pas_[source axes ID]_[source point ID]_to_[target axes ID]_[target point ID]`
 * ...transformation matrix T, which maps in homogeneous coordinates from \[source axes name\] relative to \[source point ID\] to \[target axes name\] relative to \[target point ID\]...
 
 ##### Examples:
 
-* R\_pas\_W\_to\_B: ...rotation matrix R, which maps from wind axes to body axes...
-* T\_pas\_Wn\_Ler\_to\_G\_I: ...which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point...
+* `R_pas_W_to_B`: ...rotation matrix R, which maps from wind axes to body axes...
+* `T_pas_Wn_Ler_to_G_I`: ...which maps in homogeneous coordinates from wing axes relative to the leading edge root point to geometry axes relative to the simulation starting point...
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.
 
@@ -148,24 +148,24 @@ See the section on angle vectors for examples that can be adapted to form text r
 #### Overview of Active Matrices
 
 * Ptera Software uses two active matrix types:
-    * [variable name]\_R\_act: 2x2 or 3x3 rotation matrices that are used to rotate a vector in its current axis system.
-    * [variable name]\_T\_act: 4x4 homogeneous transformation that operates within a single axis system. It applies a rigid orientation change (rotation or reflection) and, for quantities tied to a reference point, may also apply a translation. It never changes which axes a vector is expressed in and never introduces scaling or shear. The translation has no effect on non-position vectors (e.g., forces and moments).
+    * `[variable name]_R_act`: 2x2 or 3x3 rotation matrices that are used to rotate a vector in its current axis system.
+    * `[variable name]_T_act`: 4x4 homogeneous transformation that operates within a single axis system. It applies a rigid orientation change (rotation or reflection) and, for quantities tied to a reference point, may also apply a translation. It never changes which axes a vector is expressed in and never introduces scaling or shear. The translation has no effect on non-position vectors (e.g., forces and moments).
 
 #### Active Matrix Name Patterns
 
 ##### 3x3 Rotation Matrices
 
-* [variable name]\_R\_act
+* `[variable name]_R_act`
 * ...[variable name], a matrix for active rotations...
 
 ##### 4x4 General Transformation Matrices
 
-* [variable name]\_T\_act
+* `[variable name]_T_act`
 * ...[variable name], a matrix for active transformations in homogeneous coordinates...
 
 ##### Examples:
 
-* mirror\_T\_act: ...mirror, a matrix for active transformations in homogeneous coordinates...
-* translate\_wing\_T\_act: ...translate_wing, a matrix for active transformations in homogeneous coordinates...
+* `mirror_T_act`: ...mirror, a matrix for active transformations in homogeneous coordinates...
+* `translate_wing_T_act`: ...`translate_wing`, a matrix for active transformations in homogeneous coordinates...
 
 See the section on angle vectors for examples that can be adapted to form text references and variable names for matrices in non-local contexts.

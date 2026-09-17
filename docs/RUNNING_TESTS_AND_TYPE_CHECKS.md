@@ -2,7 +2,7 @@
 
 > This document describes how AI coding agents (Claude Code and similar) should invoke linters, formatters, type checkers, tests, and ad-hoc scripts when working on Ptera Software. **Human contributors should follow [`CONTRIBUTING.md`](../CONTRIBUTING.md) instead**, which documents the developer-facing workflow.
 
-The guidance below assumes the project's virtual environment has already been created and activated, and that the package has been installed in editable mode via `pip install -e .` per the setup steps in `CONTRIBUTING.md`. These steps are part of normal project setup and are not repeated here. When the venv is active, `python`, `mypy`, `pre-commit`, and the other tools resolve to their venv copies on `PATH`.
+The guidance below assumes the project's virtual environment has already been created and activated, and that the package has been installed in editable mode via `pip install -e .` per the setup steps in [`CONTRIBUTING.md`](../CONTRIBUTING.md). These steps are part of normal project setup and are not repeated here. When the venv is active, `python`, `mypy`, `pre-commit`, and the other tools resolve to their venv copies on `PATH`.
 
 ## Linters, Formatters, and Spell-Checkers
 

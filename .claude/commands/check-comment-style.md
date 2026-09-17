@@ -12,7 +12,7 @@ Check and fix block and inline comments in `$ARGUMENTS` against `docs/WRITING_ST
 This command checks comment prose style only. It does not check:
 
 - Line wrapping (handled by octowrap)
-- Non-ASCII character detection (handled by the ascii-only pre-commit hook, which is read-only; this command does fix doubled hyphens and restructures em dash sentences, since doubled hyphens are pure ASCII and invisible to the hook)
+- Non-ASCII character detection (handled by the `ascii-only` pre-commit hook, which is read-only; this command does fix doubled hyphens and restructures em dash sentences, since doubled hyphens are pure ASCII and invisible to the hook)
 - Docstrings (handled by docformatter and manual review)
 
 ## Design Constraints

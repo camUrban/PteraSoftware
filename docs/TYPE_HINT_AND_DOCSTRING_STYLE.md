@@ -97,11 +97,11 @@ def compute_forces(self):
 
 **Use `assert` when:**
 
-- None represents a bug, not a valid state
+- `None` represents a bug, not a valid state
 - You want runtime safety during development
 - The invariant should always hold
 
-#### Narrowing with cast()
+#### Narrowing with `cast()`
 
 Use `cast()` sparingly, only when the type checker cannot infer what you know to be true:
 
@@ -114,7 +114,7 @@ panel = cast(_panel.Panel, object_array[i, j])
 
 **Use `cast()` when:**
 
-- Working around type checker limitations (e.g., numpy dtype=object arrays)
+- Working around type checker limitations (e.g., numpy `dtype=object` arrays)
 - You're certain of the type but can't prove it to the type checker
 - No runtime check is needed
 
@@ -200,7 +200,7 @@ The `TYPE_CHECKING` import gives mypy the symbol for static resolution; the stri
 
 The test suite is type-checked with the same mypy configuration as the package, including `disallow_untyped_defs`. Test code has recurring situations that package code does not, and this section defines the pragma-free convention for each of them. The project contains no `type: ignore` pragmas anywhere, and none of these situations justifies adding one.
 
-#### Attributes Assigned in setUpClass
+#### Attributes Assigned in `setUpClass`
 
 mypy cannot see attributes assigned through `cls` inside `setUpClass`, so every use site reports an attribute error. Declare the attributes with class-level annotations directly below the class docstring, taking the types from the fixture factories' return annotations. Do not wrap the annotations in `ClassVar`, and do not convert `setUpClass` to `setUp` just to satisfy the type checker:
 
@@ -243,7 +243,7 @@ def test_chord_is_read_only(self) -> None:
         setattr(self.basic_wing_cross_section, "chord", 2.0)
 ```
 
-#### Narrowing After assertIsNotNone
+#### Narrowing After `assertIsNotNone`
 
 mypy does not narrow a type on `self.assertIsNotNone(x)`. Keep the unittest assertion, and add a bare `assert x is not None` after it before the first use that needs the narrowed type:
 
@@ -286,7 +286,7 @@ def custom_spacing(x: float) -> float:
 
 Module-level docstrings appear at the very top of each Python file and describe the module's contents. The style varies based on the type of module.
 
-#### Public Package __init__.py Files
+#### Public Package `__init__.py` Files
 
 `__init__.py` files for a public package list subpackages, directories, and modules:
 
@@ -662,12 +662,12 @@ The API reference documents only the public modules. Anything defined in a priva
 #### Prose
 
 1. **Never name a private class in rendered prose.** Point at the referent instead of naming its type: "The list of Wings associated with this movement", not "associated with this CoreWingMovement", and "The solver driving this problem, which provides the aerodynamic data from the current time step", not "The CoupledUnsteadyRingVortexLatticeMethodSolver instance providing aerodynamic data". Where the private class is a parent, describe what the public class adds rather than what it extends: "A class used to solve AeroelasticUnsteadyProblems with the unsteady ring vortex lattice method" and "**Key additions over the unsteady ring vortex lattice method:**", not "A subclass of CoupledUnsteadyRingVortexLatticeMethodSolver".
-2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an AeroelasticAirplaneMovement also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
+2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
 3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
 4. **Do not defer to a private parent.** "See _CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
 5. **Module docstrings follow the same rules.** The entries under **Contains the following classes:** render on the module page, so they get the same wording as the class docstrings they summarize.
 6. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
-7. **Panel is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
+7. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
 
 #### Signatures
 
@@ -785,7 +785,7 @@ class Panel:
 
 ### Example 1: Module-Level Docstrings
 
-#### Public Package __init__.py
+#### Public Package `__init__.py`
 
 ```python
 """Contains the geometry classes.

@@ -22,7 +22,7 @@ Follow these steps carefully and track your progress:
 
 Please do NOT:
 - Run or debug any tests
-- Reformat any files; formatting is handled later through pre-commit by the debug command
+- Reformat any files. Formatting is handled later through pre-commit by the debug command
 
 These steps are both handled by other slash commands.
 

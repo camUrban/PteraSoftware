@@ -17,7 +17,7 @@ Arguments: $ARGUMENTS
    python -u scripts/analyze_webp.py <file> info
    ```
    If multiple files were given, analyze each one in turn with these same steps.
-2. **Render and view the frames.** The script prints the path of each PNG it saves; view them with the Read tool.
+2. **Render and view the frames.** The script prints the path of each PNG it saves. View them with the Read tool.
     - For a static file (1 frame), render it on its own:
       ```bash
       python -u scripts/analyze_webp.py <file> frames 0
@@ -26,8 +26,8 @@ Arguments: $ARGUMENTS
       ```bash
       python -u scripts/analyze_webp.py <file> sheet
       ```
-      The default samples 9 frames into a 3 x 3 grid, which is usually sufficient on its own to answer the question. To inspect more frames, render multiple sheets over sub-ranges with `--first` and `--last` rather than raising `--count` on one sheet; tiles much smaller than the default grid's are illegible.
-3. **Drill down only where needed.** The sheet's tiles render at about two-thirds of these models' native viewing resolution, so they carry nearly as much visible detail as full-resolution renders; do not rerender frames individually just because they appeared as tiles. Reserve full-resolution renders for when a specific tile shows something that genuinely needs closer inspection (an apparent artifact, fine text, a subtle geometry question) and name that reason before rendering:
+      The default samples 9 frames into a 3 x 3 grid, which is usually sufficient on its own to answer the question. To inspect more frames, render multiple sheets over sub-ranges with `--first` and `--last` rather than raising `--count` on one sheet. Tiles much smaller than the default grid's are illegible.
+3. **Drill down only where needed.** The sheet's tiles render at about two-thirds of these models' native viewing resolution, so they carry nearly as much visible detail as full-resolution renders. Do not rerender frames individually just because they appeared as tiles. Reserve full-resolution renders for when a specific tile shows something that genuinely needs closer inspection (an apparent artifact, fine text, a subtle geometry question) and name that reason before rendering:
    ```bash
    python -u scripts/analyze_webp.py <file> frames <index> [<index> ...]
    ```

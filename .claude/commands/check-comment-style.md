@@ -12,7 +12,7 @@ Check and fix block and inline comments in `$ARGUMENTS` against `docs/WRITING_ST
 This command checks comment prose style only. It does not check:
 
 - Line wrapping (handled by octowrap)
-- Non-ASCII character detection (handled by the `ascii-only` pre-commit hook, which is read-only; this command does fix doubled hyphens and restructures em dash sentences, since doubled hyphens are pure ASCII and invisible to the hook)
+- Non-ASCII character detection (handled by the `ascii-only` pre-commit hook, which is read-only, but this command does fix doubled hyphens and restructures em dash sentences, since doubled hyphens are pure ASCII and invisible to the hook)
 - Docstrings (handled by docformatter and manual review)
 
 ## Design Constraints
@@ -26,7 +26,7 @@ This command checks comment prose style only. It does not check:
 
 ## Steps
 
-1. If `$ARGUMENTS` is empty, stop and ask the user which files to check. Otherwise, confirm each file exists and contains comments by running `grep -c '#' <file>` on each. This count can include `#` characters inside string literals, which is acceptable for a presence check because the agents read the files themselves and ignore non-comment hashes. Do not read the files yourself; the agents will read them. Skip (and later report) any file with no comments.
+1. If `$ARGUMENTS` is empty, stop and ask the user which files to check. Otherwise, confirm each file exists and contains comments by running `grep -c '#' <file>` on each. This count can include `#` characters inside string literals, which is acceptable for a presence check because the agents read the files themselves and ignore non-comment hashes. Do not read the files yourself. The agents will read them. Skip (and later report) any file with no comments.
 
 2. Read `docs/WRITING_STYLE.md` in full. Extract the following sections verbatim (heading through last bullet, no summarizing or paraphrasing) for use in agent prompts:
    - The "Sentence Structure" section and the "How to Handle Each Forbidden Case" subsection (for pass 1)
@@ -51,7 +51,7 @@ This command checks comment prose style only. It does not check:
 
    Pass 2, terminology, class references, and markup and quoting: the agent receives the verbatim "Terminology" section, the verbatim "Comments and Docstrings" subsection of "Markup and Quoting", the class name inventory from step 3, the file path, and the Common Agent Instructions, plus these two pass-specific instructions:
    - Use the class name inventory to decide whether a word in a comment refers to a code object (capitalize, no spaces) or an abstraction (lowercase, spaced words). If you are unsure which one a word refers to, leave it unchanged and insert `# FIXME: Manually review this comment.` on its own line above it.
-   - Do not attempt to fix coordinate system naming (the conventions referenced in the CRITICAL bullet); those conventions live in documents you have not been given. If a comment looks like it violates them, insert a FIXME marker instead of editing.
+   - Do not attempt to fix coordinate system naming (the conventions referenced in the CRITICAL bullet). Those conventions live in documents you have not been given. If a comment looks like it violates them, insert a FIXME marker instead of editing.
 
    Pass 3, math and number formatting: the agent receives the verbatim "Math and Numbers" section, the file path, and the Common Agent Instructions.
 
@@ -92,7 +92,7 @@ Open every agent prompt with this, filling in the bracketed parts for the pass b
 Include these verbatim in every agent prompt, after the rule sections:
 
 - Read the file before editing.
-- Edit comments only, both kinds: block comments (lines whose first non-whitespace character is `#`) and inline comments (a `#` comment trailing code on the same line). Never edit docstrings, string literals, or code. A `#` inside a string literal is not a comment; leave it alone.
+- Edit comments only, both kinds: block comments (lines whose first non-whitespace character is `#`) and inline comments (a `#` comment trailing code on the same line). Never edit docstrings, string literals, or code. A `#` inside a string literal is not a comment. Leave it alone.
 - When editing an inline comment, change only the text after the `#`. Never move the comment to its own line, and never touch the code before it.
 - Do not change line wrapping, and do not worry about line length. Leave your edits unwrapped even if they overrun the line width.
 - Do not run pre-commit, octowrap, black, docformatter, or any other formatter or linter. The orchestrator runs these once after all three passes finish. Running them yourself corrupts the line numbers the later passes work from.

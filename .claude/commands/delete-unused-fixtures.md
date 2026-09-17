@@ -29,7 +29,7 @@ Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.
    ```bash
    python -u scripts/find_unused_fixtures.py
    ```
-   It prints the three categories above with each candidate's file and line, then a summary count. It exits non-zero whenever any candidate is found; that is expected and is not an error.
+   It prints the three categories above with each candidate's file and line, then a summary count. It exits non-zero whenever any candidate is found. That is expected and is not an error.
 2. **Present the candidates** to the user: the directly unused fixtures, the transitively unused fixtures, and the dead `setUp` attributes, each with its location. If the report is empty, report that the suite is clean and stop.
 3. **Optionally preview the verification.** If the user wants to see which candidates survive verification before authorizing any deletion, run the dry-run verification, which deletes each candidate in memory, runs the full suite under coverage, checks that all tests still pass, that the set of discoverable test IDs is unchanged, and that coverage does not drop, then restores every file:
    ```bash
@@ -44,12 +44,12 @@ Both `tests/unit/fixtures/__init__.py` and `tests/integration/fixtures/__init__.
    ```bash
    pre-commit run --files <each modified fixture or test file>
    ```
-6. **Re-scan for newly exposed candidates.** Removing a fixture can leave another one unused. The deletion pass reports whether new candidates were exposed; if so, repeat from step 1 until a report comes back clean.
+6. **Re-scan for newly exposed candidates.** Removing a fixture can leave another one unused. The deletion pass reports whether new candidates were exposed. If so, repeat from step 1 until a report comes back clean.
 
 ## Important Reminders
 
-- This command operates on the whole suite and takes no argument; do not try to scope it to a single module.
+- This command operates on the whole suite and takes no argument. Do not try to scope it to a single module.
 - Never edit an `__init__.py` after deleting fixtures: the fixture packages are bare markers with no imports, so a deleted fixture or module cannot break one.
 - Always show the user the report, and the verification result if you ran one, before any deletion. The script only mutates files under `--delete-verified`.
-- Run the script with `python -u` and never pipe it through a filter; the verification suite can run for minutes and its output must stay visible.
+- Run the script with `python -u` and never pipe it through a filter. The verification suite can run for minutes and its output must stay visible.
 - Reformat modified files with `pre-commit run --files`, never a bare formatter.

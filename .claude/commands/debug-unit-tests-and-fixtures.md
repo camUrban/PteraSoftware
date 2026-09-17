@@ -38,7 +38,7 @@ Follow these steps carefully and track your progress:
     - Note any fixture dependencies
 2. **Run initial tests** following `docs/RUNNING_TESTS_AND_TYPE_CHECKS.md` (Ptera Software uses `unittest`, not pytest):
     - Run the module's tests with `python -u -m unittest tests.unit.test_module_name -v`, or a single test with `python -u -m unittest tests.unit.test_module_name.TestClass.test_method -v`. The `-u` flag keeps output streaming.
-    - Let the output stream directly into the conversation; never pipe it through `tail`, `head`, `grep`, or any other filter.
+    - Let the output stream directly into the conversation. Never pipe it through `tail`, `head`, `grep`, or any other filter.
     - Capture and analyze the full output, noting all failures and their error messages.
 3. **For EACH test failure**:
    a. **Read the failing test carefully**:

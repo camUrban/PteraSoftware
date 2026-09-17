@@ -194,7 +194,7 @@ def narrow(value):
     ...
 ```
 
-The `TYPE_CHECKING` import gives mypy the symbol for static resolution; the string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
+The `TYPE_CHECKING` import gives mypy the symbol for static resolution. The string argument keeps the runtime call free of any reference to `OtherClass`. Prefer this over importing `OtherClass` inside the function body: in-function imports are reserved for genuine lazy-load or circular cases, and the string-form `cast()` resolves the circularity without that escape hatch, keeping all imports at the top of the file.
 
 ### Type Hints in Tests
 
@@ -230,7 +230,7 @@ def test_wings_validation(self) -> None:
         ps.geometry.airplane.Airplane(wings=bad_wings)
 ```
 
-Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`; annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
+Lists of invalid values follow the same recipe: `invalid_values: list[Any] = [0, -5, 2.5, "three"]`. Lists of valid values never use `Any`. Annotate them precisely, as in `valid_positions: list[np.ndarray | Sequence[float | int]]` for an array-like acceptance test.
 
 #### Read-Only Property Tests
 

@@ -14,7 +14,7 @@ Read `.claude/commands/create-pr.md` and apply every convention it defines: the 
 
 ## Environment constraints
 
-- `git push` is denied, so this command cannot push. The new commits must already be on the remote; if the branch has unpushed commits, stop and ask the user to push, then re-run.
+- `git push` is denied, so this command cannot push. The new commits must already be on the remote. If the branch has unpushed commits, stop and ask the user to push, then re-run.
 - `gh api` is denied. Use only the `gh pr` porcelain (`gh pr view`, `gh pr edit`).
 
 ## Steps
@@ -22,7 +22,7 @@ Read `.claude/commands/create-pr.md` and apply every convention it defines: the 
 1. **Locate the PR and gather context** with these read-only commands (all run without permission prompts):
     - `git status -sb` to confirm the branch is pushed and current, using the same first-line interpretation as `create-pr`. If the branch has no upstream, a `[gone]` upstream, or any `[ahead N]` marker, stop and tell the user to push first so the PR reflects the new commits.
     - `gh pr list --head <branch> --state open` to find the open PR. If there is none, stop and tell the user to run `/create-pr` first. If there is more than one, stop and report them rather than guessing.
-    - `gh pr view <number> --json number,url,title,body,labels,baseRefName,isDraft` to read the PR's current state. Use `baseRefName` as the base for all diffs; do not assume `main`.
+    - `gh pr view <number> --json number,url,title,body,labels,baseRefName,isDraft` to read the PR's current state. Use `baseRefName` as the base for all diffs. Do not assume `main`.
     - `git log --oneline <base>..HEAD`, `git diff --stat <base>...HEAD`, and `git diff <base>...HEAD` to see the full, current change set the PR should describe.
     - Read `.github/pull_request_template.md` and `.github/labels.yml` so the refreshed body matches the current template and the labels come from the canonical set.
 2. **Diff the PR against reality.** Compare the existing body's `Description` and `Changes` against the current diff to identify (a) new changes not yet described, (b) described changes that have since been undone or reverted and no longer appear in the diff, and (c) prose that is now inaccurate or has formatting or template defects.
@@ -49,15 +49,15 @@ Read `.claude/commands/create-pr.md` and apply every convention it defines: the 
    ...full refreshed body...
    EOF
    ```
-    - Include `--title` only if the title changed. Repeat `--add-label` and `--remove-label` once per label, and omit them when labels are unchanged. Do not pass `--milestone`, `--project`, `--reviewer`, `--base`, or any draft flag; this command leaves the base branch and draft status as they are.
+    - Include `--title` only if the title changed. Repeat `--add-label` and `--remove-label` once per label, and omit them when labels are unchanged. Do not pass `--milestone`, `--project`, `--reviewer`, `--base`, or any draft flag. This command leaves the base branch and draft status as they are.
     - The `gh pr edit` permission prompt is the final gate. If the user denies it, treat any feedback as revision input, update the plan, and repeat from step 5. If they deny without feedback, stop and report that the PR was not changed.
 7. **Confirm** by reporting the PR's URL.
 
 ## Important Reminders
 
-- This command edits an existing PR; if none exists for the branch, stop and direct the user to `/create-pr`.
-- Preserve human-authored content by default; change prose only to add new scope, remove undone scope, or fix typos, formatting (including hard wraps), and template drift.
-- Never push; if the new commits are not on the remote, stop and ask the user to push.
-- Never use `gh api`; use only the `gh pr` porcelain.
+- This command edits an existing PR. If none exists for the branch, stop and direct the user to `/create-pr`.
+- Preserve human-authored content by default. Change prose only to add new scope, remove undone scope, or fix typos, formatting (including hard wraps), and template drift.
+- Never push. If the new commits are not on the remote, stop and ask the user to push.
+- Never use `gh api`. Use only the `gh pr` porcelain.
 - Apply all `create-pr` conventions to the refreshed title, body, and labels: ASCII-only with no hard-wrapping, no title prefixes or title backticks and the 42-character title limit, the Markup and Quoting section of `docs/WRITING_STYLE.md` for the body, no checked action or ReadTheDocs checklist items, the policy's `Assisted-by:` line as the only permitted footer, and no milestone, project, or reviewer changes.
 - Leave the PR's base branch and draft status unchanged.

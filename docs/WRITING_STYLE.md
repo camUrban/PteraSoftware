@@ -16,7 +16,7 @@ Guidelines when writing comments, docstrings, and documentation for Ptera Softwa
 - **Abstract references**: When referring to abstractions, use lowercase and separate individual words with a space (e.g. "an airplane's wings are used to generate lift" and "the cross section of a wing typically has a streamlined shape known as an airfoil"). This is to distinguish them from code objects.
 - **"strip leading edge point"**: When spelled out in prose, do not capitalize "strip leading edge point" unless it starts a sentence.
 - **"V-tail"**: Always write "V-tail" (capital V, hyphenated) in prose. Never use "v-tail", "v tail", "Vtail", or other variants. Identifier strings keep their canonical form and are not affected: variable names like `v_tail_movement` and string literals like `"V-Tail"` stay as-is.
-- **"time step"**: Write a simulation time increment as either "time step" or "step"; the two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
+- **"time step"**: Write a simulation time increment as either "time step" or "step". The two terms are interchangeable. When using the two-word form, always write it as "time step", never "timestep" or "time-step".
 - **Axis references**: When referring to axes, coordinates, or planes, use lowercase letters without hyphens between coordinate letters and descriptors (e.g., "x axis", "y component", "xz plane", "z direction"). Never use uppercase letters for axis references in text.
 - **Abbreviations**: Avoid abbreviations in text unless they are well-known in the context.
 - **CRITICAL**: Follow the formalized coordinate system naming conventions exactly as described in the [AXES_POINTS_AND_FRAMES.md](AXES_POINTS_AND_FRAMES.md) and [ANGLE_VECTORS_AND_TRANSFORMATIONS.md](ANGLE_VECTORS_AND_TRANSFORMATIONS.md) documents when writing about or referencing in text vector-valued variables or things such as transformation and rotation matrices.
@@ -125,4 +125,4 @@ pre-commit run --all-files docformatter
 pre-commit run --all-files ascii-only
 ```
 
-The hook reports each violation with its line, column, the offending character, its Unicode code point and name, and its UTF-8 byte sequence. The check is read-only; it never modifies files. Qt Designer `.ui` files are excluded because Qt regenerates them on every save.
+The hook reports each violation with its line, column, the offending character, its Unicode code point and name, and its UTF-8 byte sequence. The check is read-only. It never modifies files. Qt Designer `.ui` files are excluded because Qt regenerates them on every save.

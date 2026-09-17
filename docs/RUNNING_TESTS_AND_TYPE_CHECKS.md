@@ -75,4 +75,4 @@ python -u experimental/long_running_thing.py > experimental/long_running_thing.l
 
 Launched with `run_in_background: true`, the file grows line by line as the script runs and can be Read at any time.
 
-The trailing `2>&1` is required: it duplicates stderr to wherever stdout is going, so Python's logging output, NumPy/PyVista warnings, and tracebacks (all of which default to stderr) land in the same visible log instead of splitting off into the harness's separate stderr capture. Order matters: `> <file> 2>&1` works; `2>&1 > <file>` leaves stderr on the terminal.
+The trailing `2>&1` is required: it duplicates stderr to wherever stdout is going, so Python's logging output, NumPy/PyVista warnings, and tracebacks (all of which default to stderr) land in the same visible log instead of splitting off into the harness's separate stderr capture. Order matters: `> <file> 2>&1` works, while `2>&1 > <file>` leaves stderr on the terminal.

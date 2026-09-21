@@ -150,12 +150,15 @@ draw.webp
 *_aerodynamic_angles.png
 *_loads.csv
 *_state.csv
-/validation/lift_validation.png
 
 # The canonical reference outputs under docs/examples_expected_output/ are committed
 # copies of these artifacts, so re-include that tree after the usage-artifact ignores
 # above.
 !docs/examples_expected_output/**
+
+# The validation study's rendered mesh is a tracked record of the validation run, so
+# re-include it past the draw.webp rule above.
+!/validation/draw.webp
 
 # This symlink folder contains reference documentation that shouldn't be uploaded.
 /docs/private
@@ -166,6 +169,11 @@ draw.webp
 # This folder contains a copy of the Furo theme to use as a reference for customization.
 /docs/website/furo_src/
 
+# The docs build copies the tutorial notebooks and their images here from tutorials/.
+/docs/website/tutorials/*.ipynb
+/docs/website/tutorials/*.png
+/docs/website/tutorials/*.webp
+
 # These are serialization output files to ignore.
 *.json
 *.json.gz
@@ -175,6 +183,10 @@ draw.webp
 # tracked artifact, not serialization output, so re-include it past the *.json
 # rule above.
 !/docs/_static/benchmarks/host.json
+
+# The validation study's convergence cache records the iterations behind its converged
+# parameters, so re-include it past the *.json rule above.
+!/validation/validation_convergence_cache.json
 
 # These are the Claude's documentation files to ignore.
 /docs/CLAUDE_*.md

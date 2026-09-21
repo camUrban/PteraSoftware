@@ -56,7 +56,7 @@ class TestSteadyRingVortexLatticeMethodFormation(unittest.TestCase):
 
                 # Compare loosely, with an absolute floor scaled to the load vector's
                 # magnitude so that near zero components (e.g., the symmetric Airplanes'
-                # side forces and roll moments) don't fail the relative comparison.
+                # crosswind forces and roll moments) don't fail the relative comparison.
                 npt.assert_allclose(
                     second_loads,
                     first_loads,

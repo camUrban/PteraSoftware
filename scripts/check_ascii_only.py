@@ -20,8 +20,8 @@ def describe(char: str) -> str:
     """Formats a one-line description of a disallowed character.
 
     :param char: The disallowed character to describe.
-    :return: A string containing the character's code point, repr, Unicode name, and
-        UTF-8 byte sequence.
+    :return: A string containing the character's code point, the character itself in
+        double quotes, its Unicode name, and its UTF-8 byte sequence.
     """
     codepoint = ord(char)
     try:
@@ -29,7 +29,8 @@ def describe(char: str) -> str:
     except ValueError:
         name = "no Unicode name"
     utf8 = " ".join(f"{b:02X}" for b in char.encode("utf-8"))
-    return f"U+{codepoint:04X} {char!r} ({name}; UTF-8: {utf8})"
+    display = f'"{char}"' if char.isprintable() else '"' + ascii(char)[1:-1] + '"'
+    return f"U+{codepoint:04X} {display} ({name}; UTF-8: {utf8})"
 
 
 def find_violations(path: Path) -> list[tuple[int, int, str]]:

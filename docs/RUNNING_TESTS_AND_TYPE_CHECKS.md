@@ -2,7 +2,7 @@
 
 > This document describes how AI coding agents (Claude Code and similar) should invoke linters, formatters, type checkers, tests, and ad-hoc scripts when working on Ptera Software. **Human contributors should follow [`CONTRIBUTING.md`](../CONTRIBUTING.md) instead**, which documents the developer-facing workflow.
 
-The guidance below assumes the project's virtual environment has already been created and activated, and that the package has been installed in editable mode via `pip install -e .` per the setup steps in `CONTRIBUTING.md`. These steps are part of normal project setup and are not repeated here. When the venv is active, `python`, `mypy`, `pre-commit`, and the other tools resolve to their venv copies on `PATH`.
+The guidance below assumes the project's virtual environment has already been created and activated, and that the package has been installed in editable mode via `pip install -e .` per the setup steps in [`CONTRIBUTING.md`](../CONTRIBUTING.md). These steps are part of normal project setup and are not repeated here. When the venv is active, `python`, `mypy`, `pre-commit`, and the other tools resolve to their venv copies on `PATH`.
 
 ## Linters, Formatters, and Spell-Checkers
 
@@ -75,4 +75,4 @@ python -u experimental/long_running_thing.py > experimental/long_running_thing.l
 
 Launched with `run_in_background: true`, the file grows line by line as the script runs and can be Read at any time.
 
-The trailing `2>&1` is required: it duplicates stderr to wherever stdout is going, so Python's logging output, NumPy/PyVista warnings, and tracebacks (all of which default to stderr) land in the same visible log instead of splitting off into the harness's separate stderr capture. Order matters: `> <file> 2>&1` works; `2>&1 > <file>` leaves stderr on the terminal.
+The trailing `2>&1` is required: it duplicates stderr to wherever stdout is going, so Python's logging output, NumPy/PyVista warnings, and tracebacks (all of which default to stderr) land in the same visible log instead of splitting off into the harness's separate stderr capture. Order matters: `> <file> 2>&1` works, while `2>&1 > <file>` leaves stderr on the terminal.

@@ -25,8 +25,12 @@ class TestAirplaneMovement(unittest.TestCase):
 
     def test_instantiation_returns_correct_type(self) -> None:
         """Test that AirplaneMovement instantiation returns an AirplaneMovement."""
-        base_airplane = geometry_fixtures.make_first_airplane_fixture()
-        wing_movements = [wing_movement_fixtures.make_static_wing_movement_fixture()]
+        base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+        wing_movements = [
+            wing_movement_fixtures.make_static_wing_movement_fixture(
+                base_airplane.wings[0]
+            )
+        ]
         airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
             base_airplane=base_airplane,
             wing_movements=wing_movements,

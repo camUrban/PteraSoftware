@@ -162,9 +162,9 @@ def get_logger(name: str) -> logging.Logger:
     """Gets a logger with proper hierarchical naming.
 
     This function ensures all loggers are children of the pterasoftware package logger,
-    enabling unified configuration. For example, ``get_logger("trim")`` returns a logger
-    named "pterasoftware.trim", and ``get_logger("movements.movement")`` returns a
-    logger named "pterasoftware.movements.movement".
+    enabling unified configuration. For example, get_logger("trim") returns a logger
+    named "pterasoftware.trim", and get_logger("movements.movement") returns a logger
+    named "pterasoftware.movements.movement".
 
     :param name: The module name (e.g., "trim", "convergence", "movements.movement").
         Should use dots for hierarchy, not slashes.
@@ -187,20 +187,20 @@ def set_up_logging(
     standard pattern for libraries).
 
     If you want log messages printed to the console, call this function without passing
-    a handler (e.g., ``ps.set_up_logging(level="Info")``). This installs a handler that
-    is compatible with TQDM progress bars, so log messages and progress bars can coexist
-    on the console without garbling each other.
+    a handler (e.g., ps.set_up_logging(level="Info")). This installs a handler that is
+    compatible with TQDM progress bars, so log messages and progress bars can coexist on
+    the console without garbling each other.
 
     If you want log messages written to a file (while any progress bars continue to
-    display on the console), pass a ``logging.FileHandler`` (e.g.,
-    ``ps.set_up_logging(level="Info", handler=logging.FileHandler("simulation.log"))``).
+    display on the console), pass a logging.FileHandler (e.g.,
+    ps.set_up_logging(level="Info", handler=logging.FileHandler("simulation.log"))).
 
     :param level: The logging level. Can be an int (e.g., logging.DEBUG) or a string
         (either "debug", "info", "warning", "error", or "critical", case insensitive).
         The default is logging.WARNING.
     :param handler: A custom logging handler. If None, a TQDM compatible handler is
         created that prints to the console without interfering with progress bars. Pass
-        a handler (such as ``logging.FileHandler``) to route log messages elsewhere.
+        a handler (such as logging.FileHandler) to route log messages elsewhere.
     :param format_string: Custom format string for log messages. If None, uses the
         format "%(levelname)-8s|%(display_name)-<width>s|%(message)s", where
         display_name is the logger's name with the leading "pterasoftware." stripped.

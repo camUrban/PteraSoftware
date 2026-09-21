@@ -110,12 +110,12 @@ class CoreOperatingPointMovement:
         if isinstance(spacingVCg__E, str):
             if spacingVCg__E not in ["sine", "uniform"]:
                 raise ValueError(
-                    f"spacingVCg__E must be 'sine', 'uniform', or a callable, "
-                    f"got string '{spacingVCg__E}'."
+                    f'spacingVCg__E must be "sine", "uniform", or a callable, '
+                    f'got string "{spacingVCg__E}".'
                 )
         elif not callable(spacingVCg__E):
             raise TypeError(
-                f"spacingVCg__E must be 'sine', 'uniform', or a callable, got "
+                f'spacingVCg__E must be "sine", "uniform", or a callable, got '
                 f"{type(spacingVCg__E).__name__}."
             )
         self._spacingVCg__E = spacingVCg__E
@@ -230,8 +230,7 @@ class CoreOperatingPointMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of OperatingPoints associated with this
-            CoreOperatingPointMovement.
+        :return: The list of OperatingPoints associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -733,8 +732,7 @@ class CoreWingCrossSectionMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of WingCrossSections associated with this
-            CoreWingCrossSectionMovement.
+        :return: The list of WingCrossSections associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -828,7 +826,8 @@ class CoreWingMovement:
 
         :param base_wing: The base Wing.
         :param wing_cross_section_movements: The CoreWingCrossSectionMovements for each
-            WingCrossSection.
+            WingCrossSection. Element i's base WingCrossSection must be
+            base_wing.wing_cross_sections[i] itself.
         :param ampLer_Gs_Cgs: The amplitudes of Ler_Gs_Cgs oscillation in meters.
         :param periodLer_Gs_Cgs: The periods of Ler_Gs_Cgs oscillation in seconds.
         :param spacingLer_Gs_Cgs: The spacing types for Ler_Gs_Cgs oscillation.
@@ -868,6 +867,22 @@ class CoreWingMovement:
                 raise TypeError(
                     "Every element in wing_cross_section_movements must "
                     "be a CoreWingCrossSectionMovement."
+                )
+        # The base WingCrossSections are reachable through both the base Wing and the
+        # CoreWingCrossSectionMovements, so require that both paths lead to the same
+        # objects. Meshing the base Wing sets state on its WingCrossSections in place,
+        # which a CoreWingCrossSectionMovement built around a copy would never see.
+        for i, wing_cross_section_movement in enumerate(wing_cross_section_movements):
+            if (
+                wing_cross_section_movement.base_wing_cross_section
+                is not self._base_wing.wing_cross_sections[i]
+            ):
+                raise ValueError(
+                    f"The base WingCrossSection of wing_cross_section_movements[{i}] "
+                    f"must be base_wing.wing_cross_sections[{i}] itself (the same "
+                    "object, not just an equal one). Build each "
+                    "wing_cross_section_movement around the corresponding element "
+                    "of base_wing.wing_cross_sections."
                 )
         # Store as tuple to prevent external mutation.
         self._wing_cross_section_movements: tuple[CoreWingCrossSectionMovement, ...] = (
@@ -1319,7 +1334,7 @@ class CoreWingMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (int or float), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of Wings associated with this CoreWingMovement.
+        :return: The list of Wings associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -1386,7 +1401,8 @@ class CoreAirplaneMovement:
         See AirplaneMovement's initialization method for full parameter descriptions.
 
         :param base_airplane: The base Airplane.
-        :param wing_movements: The CoreWingMovements for each Wing.
+        :param wing_movements: The CoreWingMovements for each Wing. Element i's base
+            Wing must be base_airplane.wings[i] itself.
         :param ampCg_GP1_CgP1: The amplitudes of Cg_GP1_CgP1 oscillation in meters.
         :param periodCg_GP1_CgP1: The periods of Cg_GP1_CgP1 oscillation in seconds.
         :param spacingCg_GP1_CgP1: The spacing types for Cg_GP1_CgP1 oscillation.
@@ -1410,6 +1426,19 @@ class CoreAirplaneMovement:
             if not isinstance(wing_movement, CoreWingMovement):
                 raise TypeError(
                     "Every element in wing_movements must be a " "CoreWingMovement."
+                )
+        # The base Wings are reachable through both the base Airplane and the
+        # CoreWingMovements, so require that both paths lead to the same objects. The
+        # base Airplane's constructor meshes its Wings in place and may reshape a
+        # symmetric Wing's definition, which a CoreWingMovement built around a copy
+        # would never see.
+        for i, wing_movement in enumerate(wing_movements):
+            if wing_movement.base_wing is not self._base_airplane.wings[i]:
+                raise ValueError(
+                    f"The base Wing of wing_movements[{i}] must be "
+                    f"base_airplane.wings[{i}] itself (the same object, not just an "
+                    "equal one). Build each wing_movement around the corresponding "
+                    "element of base_airplane.wings."
                 )
         # Store as tuple to prevent external mutation.
         self._wing_movements: tuple[CoreWingMovement, ...] = tuple(wing_movements)
@@ -1667,7 +1696,7 @@ class CoreAirplaneMovement:
         :param delta_time: The time between each time step. It must be a positive number
             (float or int), and will be converted internally to a float. The units are
             in seconds.
-        :return: The list of Airplanes associated with this CoreAirplaneMovement.
+        :return: The list of Airplanes associated with this movement.
         """
         num_steps = _parameter_validation.int_in_range_return_int(
             num_steps,
@@ -2255,7 +2284,7 @@ class CoreUnsteadyProblem:
 
     def __init__(
         self,
-        only_final_results: bool | np.bool_,
+        only_final_results: bool | np.bool,
         delta_time: float | int,
         num_steps: int,
         max_wake_rows: int | None,
@@ -2436,16 +2465,16 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalForces_W]
 
     @property
-    def finalSideForces_W(self) -> list[float]:
-        """The final side force experienced by each Airplane (in wind axes).
+    def finalCrosswindForces_W(self) -> list[float]:
+        """The final crosswind force experienced by each Airplane (in wind axes).
 
-        Side force points along the wind axes' +y basis direction, so each entry equals
-        the corresponding finalForces_W entry's y component.
+        Crosswind force points along the wind axes' -y basis direction, so each entry is
+        the negative of the corresponding finalForces_W entry's y component.
 
-        :return: The final side forces in Newtons, one entry per Airplane. Empty if
+        :return: The final crosswind forces in Newtons, one entry per Airplane. Empty if
             finalForces_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalForces_W]
+        return [float(-entry[1]) for entry in self.finalForces_W]
 
     @property
     def finalLifts_W(self) -> list[float]:
@@ -2474,16 +2503,18 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalForceCoefficients_W]
 
     @property
-    def finalSideForceCoefficients_W(self) -> list[float]:
-        """The final side force coefficient experienced by each Airplane (in wind axes).
+    def finalCrosswindForceCoefficients_W(self) -> list[float]:
+        """The final crosswind force coefficient experienced by each Airplane (in wind
+        axes).
 
-        Side force coefficient corresponds to the wind axes' +y basis direction, so each
-        entry equals the corresponding finalForceCoefficients_W entry's y component.
+        Crosswind force coefficient corresponds to the wind axes' -y basis direction, so
+        each entry is the negative of the corresponding finalForceCoefficients_W entry's
+        y component.
 
-        :return: The final side force coefficients, one entry per Airplane. Empty if
-            finalForceCoefficients_W has not been populated.
+        :return: The final crosswind force coefficients, one entry per Airplane. Empty
+            if finalForceCoefficients_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalForceCoefficients_W]
+        return [float(-entry[1]) for entry in self.finalForceCoefficients_W]
 
     @property
     def finalLiftCoefficients_W(self) -> list[float]:
@@ -2593,17 +2624,17 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalMeanForces_W]
 
     @property
-    def finalMeanSideForces_W(self) -> list[float]:
-        """The final cycle averaged side force experienced by each Airplane (in wind
-        axes).
+    def finalMeanCrosswindForces_W(self) -> list[float]:
+        """The final cycle averaged crosswind force experienced by each Airplane (in
+        wind axes).
 
-        Side force points along the wind axes' +y basis direction, so each entry equals
-        the corresponding finalMeanForces_W entry's y component.
+        Crosswind force points along the wind axes' -y basis direction, so each entry is
+        the negative of the corresponding finalMeanForces_W entry's y component.
 
-        :return: The final cycle averaged side forces in Newtons, one entry per
+        :return: The final cycle averaged crosswind forces in Newtons, one entry per
             Airplane. Empty if finalMeanForces_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanForces_W]
+        return [float(-entry[1]) for entry in self.finalMeanForces_W]
 
     @property
     def finalMeanLifts_W(self) -> list[float]:
@@ -2633,17 +2664,18 @@ class CoreUnsteadyProblem:
         return [float(-entry[0]) for entry in self.finalMeanForceCoefficients_W]
 
     @property
-    def finalMeanSideForceCoefficients_W(self) -> list[float]:
-        """The final cycle averaged side force coefficient experienced by each Airplane
-        (in wind axes).
+    def finalMeanCrosswindForceCoefficients_W(self) -> list[float]:
+        """The final cycle averaged crosswind force coefficient experienced by each
+        Airplane (in wind axes).
 
-        Side force coefficient corresponds to the wind axes' +y basis direction, so each
-        entry equals the corresponding finalMeanForceCoefficients_W entry's y component.
+        Crosswind force coefficient corresponds to the wind axes' -y basis direction, so
+        each entry is the negative of the corresponding finalMeanForceCoefficients_W
+        entry's y component.
 
-        :return: The final cycle averaged side force coefficients, one entry per
+        :return: The final cycle averaged crosswind force coefficients, one entry per
             Airplane. Empty if finalMeanForceCoefficients_W has not been populated.
         """
-        return [float(entry[1]) for entry in self.finalMeanForceCoefficients_W]
+        return [float(-entry[1]) for entry in self.finalMeanForceCoefficients_W]
 
     @property
     def finalMeanLiftCoefficients_W(self) -> list[float]:

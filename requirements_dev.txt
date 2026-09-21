@@ -4,8 +4,11 @@ codecov
 codespell
 coverage
 docformatter
+ipykernel
+ipywidgets
 isort
 mypy == 2.3.0
+nbclient
 pre-commit
 pyvista == 0.48.4
 scipy-stubs == 1.18.0.1

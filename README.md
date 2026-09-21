@@ -78,7 +78,7 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
 ## Features
 
 1. Various Aerodynamic Simulation Methods
-    * Steady simulations can be run with a standard horseshoe vortex-lattice method (VLM) or a ring VLM.
+    * Steady simulations can be run with a standard horseshoe vortex lattice method (VLM) or a ring VLM.
     * Unsteady simulations use a ring unsteady VLM (UVLM) solver.
     * Unsteady simulations support both fixed and free wakes.
     * Unsteady simulations implement vortex aging to reduce numerical instabilities.
@@ -101,15 +101,15 @@ ps.output.draw(solver=solver, scalar_type="lift", show_streamlines=True)
     * Since v2.0.0, Ptera Software has supported simulations with more than one airplane.
     * This feature can be used to analyze the aerodynamics of flapping-wing formation flight!
 7. Save and Load Simulation Results
-    * Save solved simulations to .psz files and load them back without re-running.
+    * Save solved simulations to `.psz` files and load them back without re-running.
     * Uses JSON serialization instead of pickle, avoiding arbitrary code execution vulnerabilities.
     * Loaded objects are fully compatible with all output and visualization functions.
 8. Features for Flapping-Wing Vehicle Design
     * Ptera Software is focused on developing features to facilitate designing flapping-wing vehicles.
-    * For example, use the functions in the trim module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
+    * For example, use the functions in the `trim` module to automatically search for a trim operating point for steady and unsteady simulations of aircraft.
 9. Aeroelastic Module for Flapping Flight (Beta)
     * This feature enables co-simulation of structural wing deformation and standard Ptera Software UVLM calculations.
-    * Currently the feature offers a simple torsional spring model for each WingCrossSection.
+    * Currently the feature offers a simple torsional spring model for each `WingCrossSection`.
     * Experimental validation and improved deformation models coming soon.
 10. Free Flight Module (Beta)
     * This feature couples Ptera Software's UVLM with six-degree-of-freedom rigid body dynamics, using the MuJoCo physics engine, so an aircraft flies a free trajectory under its own aerodynamic loads, weight, and inertia.
@@ -188,6 +188,7 @@ Before contributing, make sure to read through the [Contributing Guidelines](CON
 * [w3lld1](https://github.com/w3lld1)
 * Shaziya Hussain ([ShaziyaHussain](https://github.com/ShaziyaHussain))
 * Sarvesh Mohite ([CyberSarvesh](https://github.com/CyberSarvesh))
+* TianHeng Zhuang ([TianHengZhuang](https://github.com/TianHengZhuang))
 
 ### Supporters
 

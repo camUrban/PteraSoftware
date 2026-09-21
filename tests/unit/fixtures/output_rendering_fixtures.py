@@ -101,11 +101,19 @@ def make_fast_motion_playback_solver_fixture() -> (
 
     :return: The unrun UnsteadyRingVortexLatticeMethodSolver of 11 time steps.
     """
+    # Build the base Airplane first, then build the movements around its own Wing and
+    # WingCrossSections.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+    base_wing = base_airplane.wings[0]
     fast_wing_movement = ps.movements.wing_movement.WingMovement(
-        base_wing=geometry_fixtures.make_origin_wing_fixture(),
+        base_wing=base_wing,
         wing_cross_section_movements=[
-            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(),
-            wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture(),
+            wing_cross_section_movement_fixtures.make_static_wing_cross_section_movement_fixture(
+                base_wing.wing_cross_sections[0]
+            ),
+            wing_cross_section_movement_fixtures.make_basic_wing_cross_section_movement_fixture(
+                base_wing.wing_cross_sections[1]
+            ),
         ],
         ampLer_Gs_Cgs=(0.0, 0.0, 0.0),
         periodLer_Gs_Cgs=(0.0, 0.0, 0.0),
@@ -117,7 +125,7 @@ def make_fast_motion_playback_solver_fixture() -> (
         phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     )
     fast_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
-        base_airplane=geometry_fixtures.make_first_airplane_fixture(),
+        base_airplane=base_airplane,
         wing_movements=[fast_wing_movement],
         ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
         periodCg_GP1_CgP1=(0.0, 0.0, 0.0),

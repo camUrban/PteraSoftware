@@ -16,7 +16,7 @@ Ptera Software is a fast, easy-to-use, and open-source package for analyzing fla
 - **Aeroelasticity**: First-order structural wing deformation coupled to the UVLM via a torsional spring-mass-damper model (beta)
 - **Free Flight**: Six-degree-of-freedom flight dynamics from UVLM aerodynamics coupled to MuJoCo rigid-body dynamics (beta)
 - **Visualization Tools**: 3D mesh visualization and 2D plotting of results
-- **Save and Load**: Serialization of solved simulations to .psz files (zip archives of JSON members, one per time step) without pickle security risks
+- **Save and Load**: Serialization of solved simulations to `.psz` files (zip archives of JSON members, one per time step) without pickle security risks
 - **Extensive Testing**: Comprehensive unit and integration tests for reliability
 
 ### Python Version Constraint
@@ -49,7 +49,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `website/`: Directory with the source files for generating the documentation website
     - `ANGLE_VECTORS_AND_TRANSFORMATIONS.md`: Conventions and definitions for angle vectors and transformations **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
     - `AXES_POINTS_AND_FRAMES.md`: Conventions and definitions for axis systems, points, and reference points: **READ BEFORE CONTRIBUTING ANY CODE, PARTICIPATING IN DISCUSSIONS REGARDING, OR PLANNING RELATED TO VECTOR-VALUED VARIABLES**
-    - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability.
+    - `CLASSES_AND_IMMUTABILITY.md`: Description of class structure and attribute immutability
     - `CODE_STYLE.md`: Code style guidelines: **READ BEFORE CONTRIBUTING ANY CODE**
     - `MUJOCO_CONVENTIONS.md`: Definitive interpretation of MuJoCo state variables and their mapping to Ptera Software's axes, points, frames, and transformations
     - `RUNNING_TESTS_AND_TYPE_CHECKS.md`: Instructions for running tests and type checks **READ BEFORE RUNNING TESTS OR TYPE CHECKS LOCALLY**
@@ -61,22 +61,22 @@ Requires Python 3.11, but active development is done in 3.14
     - `geometry/`: Package with aircraft geometry classes
         - `_airfoils/`: Directory containing data files with airfoil coordinates
         - `_meshing.py`: Wing mesh generation
-        - `airfoil.py`: Airfoil class with coordinate generation
-        - `airplane.py`: Airplane class with coordinate transformations
-        - `wing.py`: Wing class with symmetry processing
-        - `wing_cross_section.py`: WingCrossSection class with validation
+        - `airfoil.py`: `Airfoil` class with coordinate generation
+        - `airplane.py`: `Airplane` class with coordinate transformations
+        - `wing.py`: `Wing` class with symmetry processing
+        - `wing_cross_section.py`: `WingCrossSection` class with validation
     - `movements/`: Package with movement classes (definitions for time-dependent motion)
-        - `aeroelastic_airplane_movement.py`: AeroelasticAirplaneMovement class
-        - `aeroelastic_movement.py`: AeroelasticMovement class
-        - `aeroelastic_wing_cross_section_movement.py`: AeroelasticWingCrossSectionMovement class
-        - `aeroelastic_wing_movement.py`: AeroelasticWingMovement class
-        - `airplane_movement.py`: AirplaneMovement class
-        - `free_flight_movement.py`: FreeFlightMovement class
-        - `free_flight_operating_point_movement.py`: FreeFlightOperatingPointMovement class
-        - `movement.py`: Movement class
-        - `operating_point_movement.py`: OperatingPointMovement class
-        - `wing_cross_section_movement.py`: WingCrossSectionMovement class
-        - `wing_movement.py`: WingMovement class
+        - `aeroelastic_airplane_movement.py`: `AeroelasticAirplaneMovement` class
+        - `aeroelastic_movement.py`: `AeroelasticMovement` class
+        - `aeroelastic_wing_cross_section_movement.py`: `AeroelasticWingCrossSectionMovement` class
+        - `aeroelastic_wing_movement.py`: `AeroelasticWingMovement` class
+        - `airplane_movement.py`: `AirplaneMovement` class
+        - `free_flight_movement.py`: `FreeFlightMovement` class
+        - `free_flight_operating_point_movement.py`: `FreeFlightOperatingPointMovement` class
+        - `movement.py`: `Movement` class
+        - `operating_point_movement.py`: `OperatingPointMovement` class
+        - `wing_cross_section_movement.py`: `WingCrossSectionMovement` class
+        - `wing_movement.py`: `WingMovement` class
     - `_colormap_data/`: Directory containing data files with the vendored color map and color palette colors, along with their licenses
     - `_aerodynamics_functions.py`: Induced velocity functions
     - `_colormaps.py`: Color maps and color palettes used by the visualization functions
@@ -86,22 +86,22 @@ Requires Python 3.11, but active development is done in 3.14
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
     - `_functions.py`: Shared utility functions
-    - `_logging.py`: Contains function for setting up logging
-    - `_mujoco_model.py`: Contains the MuJoCoModel class.
+    - `_logging.py`: Contains the function for setting up logging
+    - `_mujoco_model.py`: Contains the `MuJoCoModel` class
     - `_oscillation.py`: Oscillation functions for movement classes
     - `_output_plotting.py`: Matplotlib figure drawing for the visualization functions
     - `_output_rendering.py`: PyVista styling, geometry building, and scene assembly for the visualization functions
-    - `_panel.py`: Panel class for discretized mesh elements
+    - `_panel.py`: `Panel` class for discretized mesh elements
     - `_parameter_validation.py`: Input validation functions
-    - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a FreeFlightUnsteadyProblem's MuJoCoModel for the rendering layer
-    - `_serialization.py`: Serialization and deserialization (save/load) to and from .psz files, which are zip archives of JSON members chunked by time step
+    - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a `FreeFlightUnsteadyProblem`'s `MuJoCoModel` for the rendering layer
+    - `_serialization.py`: Serialization and deserialization (save/load) to and from `.psz` files, which are zip archives of JSON members chunked by time step
     - `_transformations.py`: Coordinate transformations and rotations
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation
     - `convergence.py`: Convergence analysis tools
     - `free_flight_unsteady_ring_vortex_lattice_method.py`: Free flight UVLM solver subclass with six-DOF MuJoCo coupling
-    - `operating_point.py`: OperatingPoint class
+    - `operating_point.py`: `OperatingPoint` class
     - `output.py`: Visualization and results processing
-    - `problems.py`: SteadyProblem and UnsteadyProblem classes
+    - `problems.py`: `SteadyProblem` and `UnsteadyProblem` classes
     - `steady_horseshoe_vortex_lattice_method.py`: Steady horseshoe VLM solver
     - `steady_ring_vortex_lattice_method.py`: Steady ring VLM solver
     - `trim.py`: Trim analysis functionality
@@ -114,13 +114,14 @@ Requires Python 3.11, but active development is done in 3.14
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
+    - `execute_tutorials.py`: Executes all tutorial notebooks (or a single named notebook) in `tutorials/` and stores their outputs in the notebook files for the documentation site to render
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
     - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests
     - `integration/`: Integration tests for combined functionality, with shared fixtures in a `fixtures/` subpackage. There is one test module per solver configuration worth exercising end-to-end (each solver, plus its surface-effect, wake-truncation, multiple-wing, and variable-geometry variants), along with modules for convergence, trim, output, and serialized output
     - `unit/`: Unit tests for individual classes and functions, with shared fixtures in a `fixtures/` subpackage. The test modules mirror the package's modules one-to-one (for example, `test_wing.py` tests `geometry/wing.py`), plus a few suite-level modules such as `test_package_init.py`, `test_slots.py`, and `test_test_environment.py`. Fixture modules are named after the test modules they serve
-    - `_test_environment.py`: Configures the test process to quiet known sources of test run noise (the serialization dirty-tree warnings, tqdm progress bars, and the headless-Linux VTK warning). It is imported as the first line of `tests/__init__.py` so the suppressions are in place before any pterasoftware, pyvista, or tqdm module loads
-- `validation/`: Directory with the experimental validation study: `validation_study.py` simulates a flapping test stand from Yeo et al., 2011 and compares the UVLM results against the paper's published pressure measurements, which are stored alongside it as CSV files extracted from the paper, along with the accompanying report (`validation_paper.pdf`)
+    - `_test_environment.py`: Configures the test process to quiet known sources of test run noise (the serialization dirty-tree warnings, tqdm progress bars, and the headless-Linux VTK warning). It is imported as the first line of `tests/__init__.py` so the suppressions are in place before any `pterasoftware`, `pyvista`, or `tqdm` module loads
+- `validation/`: Directory with the experimental validation study: `validation_study.py` simulates a flapping test stand from Yeo et al., 2011 and compares the UVLM results against the paper's published pressure measurements, which are stored as CSV files extracted from the paper in the `experimental_data/` subdirectory, along with the accompanying report (`validation_paper.pdf`), the study's convergence cache, and its tracked outputs (the rendered mesh and the lift comparison plot)
 - `.codespell-ignore.txt`: File listing words to ignore in spell checking
 - `.gitignore`: Git ignore file
 - `.pre-commit-config.yaml`: Pre-commit configuration file
@@ -153,8 +154,8 @@ The practical consequences are worth internalizing before planning any git workf
 
 ## Common Mistakes
 
-- Forgetting to read RUNNING_TESTS_AND_TYPE_CHECKS.md before running tests and trying to use pytest (Ptera Software uses unittest)
-- Forgetting to read CODE_STYLE.md before contributing code
-- Forgetting to read TYPE_HINT_AND_DOCSTRING_STYLE.md before writing docstrings
-- Forgetting to read ANGLE_VECTORS_AND_TRANSFORMATIONS.md and AXES_POINTS_AND_FRAMES.md before working with vector-valued variables. If in doubt, before writing code, read both of these documents
-- Forgetting to read WRITING_STYLE.md before writing documentation, docstrings, or comments
+- Forgetting to read `RUNNING_TESTS_AND_TYPE_CHECKS.md` before running tests and trying to use pytest (Ptera Software uses unittest)
+- Forgetting to read `CODE_STYLE.md` before contributing code
+- Forgetting to read `TYPE_HINT_AND_DOCSTRING_STYLE.md` before writing docstrings
+- Forgetting to read `ANGLE_VECTORS_AND_TRANSFORMATIONS.md` and `AXES_POINTS_AND_FRAMES.md` before working with vector-valued variables. If in doubt, before writing code, read both of these documents
+- Forgetting to read `WRITING_STYLE.md` before writing documentation, docstrings, or comments

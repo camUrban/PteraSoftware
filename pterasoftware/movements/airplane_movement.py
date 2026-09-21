@@ -60,7 +60,11 @@ class AirplaneMovement(_core.CoreAirplaneMovement):
             step will be created.
         :param wing_movements: A list of the WingMovements associated with each of the
             base Airplane's Wings. It must have the same length as the base Airplane's
-            list of Wings.
+            list of Wings, and element i's base Wing must be the base Airplane's Wing at
+            index i itself (the same object, not just an equal one). Build each
+            WingMovement around the corresponding element of the base Airplane's wings,
+            which includes any reflected Wing the base Airplane created from a Wing with
+            type 5 symmetry.
         :param ampCg_GP1_CgP1: An array-like object of non negative numbers (int or
             float) with shape (3,) representing the amplitudes of the AirplaneMovement's
             changes in its Airplanes' Cg_GP1_CgP1 parameters. Can be a tuple, list, or

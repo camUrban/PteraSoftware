@@ -104,7 +104,7 @@ class TestCoreUnsteadyProblem(unittest.TestCase):
     def test_only_final_results_accepts_numpy_bool(self) -> None:
         """Test that only_final_results accepts numpy bool values."""
         core_unsteady_problem = ps._core.CoreUnsteadyProblem(
-            only_final_results=np.bool_(True),
+            only_final_results=np.bool(True),
             delta_time=0.01,
             num_steps=10,
             max_wake_rows=None,

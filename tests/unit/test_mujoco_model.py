@@ -930,7 +930,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
 
         self.assertEqual(render_geoms, [])
         self.assertEqual(len(logs.output), 1)
-        self.assertIn("'endless'", logs.output[0])
+        self.assertIn('"endless"', logs.output[0])
         self.assertIn("an infinite plane", logs.output[0])
         self.assertIn("still participates in the dynamics", logs.output[0])
 
@@ -959,7 +959,7 @@ class TestMuJoCoModelGetRenderGeometry(unittest.TestCase):
 
         self.assertEqual(render_geoms, [])
         self.assertEqual(len(logs.output), 1)
-        self.assertIn("'rough'", logs.output[0])
+        self.assertIn('"rough"', logs.output[0])
         self.assertIn("a heightfield", logs.output[0])
         self.assertIn("still participates in the dynamics", logs.output[0])
 

@@ -85,7 +85,8 @@ class Panel:
     inducedDrag_W: The total induced drag force experienced by this Panel (in wind
     axes).
 
-    sideForce_W: The total side force experienced by this Panel (in wind axes).
+    crosswindForce_W: The total crosswind force experienced by this Panel (in wind
+    axes).
 
     lift_W: The total lift force experienced by this Panel (in wind axes).
 
@@ -890,17 +891,17 @@ class Panel:
         return float(-self.forces_W[0])
 
     @property
-    def sideForce_W(self) -> float | None:
-        """The total side force experienced by this Panel (in wind axes).
+    def crosswindForce_W(self) -> float | None:
+        """The total crosswind force experienced by this Panel (in wind axes).
 
-        Side force points along the wind axes' +y basis direction, so it equals the wind
-        axes' y force component.
+        Crosswind force points along the wind axes' -y basis direction, so it is the
+        negative of the wind axes' y force component.
 
-        :return: The side force in Newtons, or None if forces_W has not been set.
+        :return: The crosswind force in Newtons, or None if forces_W has not been set.
         """
         if self.forces_W is None:
             return None
-        return float(self.forces_W[1])
+        return float(-self.forces_W[1])
 
     @property
     def lift_W(self) -> float | None:

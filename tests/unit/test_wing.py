@@ -1653,7 +1653,7 @@ class TestWingGetPlottableData(unittest.TestCase):
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        result = wing.get_plottable_data(show=np.bool_(False))
+        result = wing.get_plottable_data(show=np.bool(False))
 
         self.assertIsNotNone(result)
         self.assertIsInstance(result, list)

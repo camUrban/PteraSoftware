@@ -143,7 +143,7 @@ class TestBoolLikeReturnBool(unittest.TestCase):
 
     def test_valid_numpy_bool_true(self) -> None:
         """Test boolLike_return_bool with numpy bool True."""
-        np_bool = np.bool_(True)
+        np_bool = np.bool(True)
         result = pv.boolLike_return_bool(np_bool, "test_param")
         self.assertTrue(result)
         self.assertIsInstance(result, bool)
@@ -1099,14 +1099,14 @@ class TestRotationOrderReturnStr(unittest.TestCase):
     """A class with functions to test rotation_order_return_str."""
 
     def test_valid_xyz(self) -> None:
-        """Test rotation_order_return_str with valid 'xyz' order."""
+        """Test rotation_order_return_str with valid "xyz" order."""
         valid_order = pvf.make_valid_rotation_order_xyz_fixture()
         result = pv.rotation_order_return_str(valid_order, "test_param")
         self.assertEqual(result, "xyz")
         self.assertIsInstance(result, str)
 
     def test_valid_zyx(self) -> None:
-        """Test rotation_order_return_str with valid 'zyx' order."""
+        """Test rotation_order_return_str with valid "zyx" order."""
         valid_order = pvf.make_valid_rotation_order_zyx_fixture()
         result = pv.rotation_order_return_str(valid_order, "test_param")
         self.assertEqual(result, "zyx")

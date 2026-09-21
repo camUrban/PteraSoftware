@@ -108,9 +108,12 @@ trim_airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
     ],
 )
 
-# Create an OperatingPoint using default values.
+# Create an OperatingPoint. We must specify a gravitational acceleration, because the
+# trim analysis places the Airplane's weight along its direction. Only the direction
+# matters here, as the Airplane carries a weight rather than a mass.
 trim_operating_point = ps.operating_point.OperatingPoint(
     externalFX_W=7.5,
+    g_E=(0.0, 0.0, 9.80665),
 )
 
 # Create an OperatingPointMovement using default values.

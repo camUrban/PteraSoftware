@@ -246,7 +246,7 @@ def main(argv: list[str]) -> int:
         type=str,
         default=None,
         help="A color over which to composite the pixels inside each frame, "
-        "given as any matplotlib color specification (for example, 'black' or "
+        'given as any matplotlib color specification (for example, "black" or '
         "'#1a2b3c'). The default is to keep the frames' original alpha values.",
     )
     frames_parser = subparsers.add_parser(
@@ -270,7 +270,7 @@ def main(argv: list[str]) -> int:
         type=str,
         default=None,
         help="A color over which to composite the pixels inside each frame, "
-        "given as any matplotlib color specification (for example, 'black' or "
+        'given as any matplotlib color specification (for example, "black" or '
         "'#1a2b3c'). The default is to keep the frames' original alpha values.",
     )
     args = parser.parse_args(argv)
@@ -281,7 +281,7 @@ def main(argv: list[str]) -> int:
             background_rgb = np.array(to_rgb(args.background), dtype=float)
         except ValueError:
             print(
-                f"error: {args.background!r} is not a valid matplotlib color "
+                f'error: "{args.background}" is not a valid matplotlib color '
                 "specification",
                 file=sys.stderr,
             )

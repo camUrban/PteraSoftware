@@ -55,10 +55,11 @@ def make_static_free_flight_movement_fixture() -> (
         is static.
     """
     # Initialize the constructing fixtures. The base Airplane is the first Airplane in a
-    # simulation, so its Cg_GP1_CgP1 parameter is all zeros. The base Wing is a type 1
-    # Wing (no symmetry), so its static motion cannot change its symmetry type.
-    base_airplane = geometry_fixtures.make_first_airplane_fixture()
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # simulation, so its Cg_GP1_CgP1 parameter is all zeros. Its Wing is a type 1 Wing
+    # (no symmetry), so its static motion cannot change its symmetry type. The movements
+    # are built around the base Airplane's own Wing and WingCrossSections.
+    base_airplane = geometry_fixtures.make_origin_airplane_fixture()
+    base_wing = base_airplane.wings[0]
     root_wing_cross_section, tip_wing_cross_section = base_wing.wing_cross_sections
 
     # Create static WingCrossSectionMovements (default zero oscillation).

@@ -2,24 +2,35 @@
 
 import numpy as np
 
+import pterasoftware as ps
+
 # noinspection PyProtectedMember
 from pterasoftware._core import CoreWingMovement
 
 from . import core_wing_cross_section_movement_fixtures, geometry_fixtures
 
 
-def make_static_core_wing_movement_fixture() -> CoreWingMovement:
+def make_static_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with all parameters zero
     (no movement).
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return static_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with no movement.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the static CoreWingMovement.
@@ -40,18 +51,27 @@ def make_static_core_wing_movement_fixture() -> CoreWingMovement:
     return static_core_wing_movement_fixture
 
 
-def make_basic_core_wing_movement_fixture() -> CoreWingMovement:
+def make_basic_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with general-purpose
     moderate values.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return basic_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with general-purpose values.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_basic_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the basic CoreWingMovement.
@@ -72,18 +92,27 @@ def make_basic_core_wing_movement_fixture() -> CoreWingMovement:
     return basic_core_wing_movement_fixture
 
 
-def make_sine_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
+def make_sine_spacing_Ler_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with sine spacing for
     Ler_Gs_Cgs.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return sine_spacing_Ler_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with sine spacing for Ler_Gs_Cgs.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with sine spacing for Ler_Gs_Cgs.
@@ -104,18 +133,27 @@ def make_sine_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     return sine_spacing_Ler_core_wing_movement_fixture
 
 
-def make_uniform_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
+def make_uniform_spacing_Ler_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with uniform spacing for
     Ler_Gs_Cgs.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return uniform_spacing_Ler_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with uniform spacing for Ler_Gs_Cgs.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with uniform spacing for Ler_Gs_Cgs.
@@ -136,18 +174,27 @@ def make_uniform_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     return uniform_spacing_Ler_core_wing_movement_fixture
 
 
-def make_mixed_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
+def make_mixed_spacing_Ler_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with mixed spacing for
     Ler_Gs_Cgs.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return mixed_spacing_Ler_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with mixed spacing for Ler_Gs_Cgs.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with mixed spacing for Ler_Gs_Cgs.
@@ -168,18 +215,27 @@ def make_mixed_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     return mixed_spacing_Ler_core_wing_movement_fixture
 
 
-def make_sine_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
+def make_sine_spacing_angles_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with sine spacing for
     angles_Gs_to_Wn_ixyz.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return sine_spacing_angles_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with sine spacing for angles_Gs_to_Wn_ixyz.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with sine spacing for angles_Gs_to_Wn_ixyz.
@@ -200,18 +256,27 @@ def make_sine_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     return sine_spacing_angles_core_wing_movement_fixture
 
 
-def make_uniform_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
+def make_uniform_spacing_angles_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with uniform spacing for
     angles_Gs_to_Wn_ixyz.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return uniform_spacing_angles_core_wing_movement_fixture: CoreWingMovement This is
         the CoreWingMovement with uniform spacing for angles_Gs_to_Wn_ixyz.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with uniform spacing for angles_Gs_to_Wn_ixyz.
@@ -232,18 +297,27 @@ def make_uniform_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement
     return uniform_spacing_angles_core_wing_movement_fixture
 
 
-def make_mixed_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
+def make_mixed_spacing_angles_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with mixed spacing for
     angles_Gs_to_Wn_ixyz.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return mixed_spacing_angles_core_wing_movement_fixture: CoreWingMovement This is
         the CoreWingMovement with mixed spacing for angles_Gs_to_Wn_ixyz.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with mixed spacing for angles_Gs_to_Wn_ixyz.
@@ -264,18 +338,27 @@ def make_mixed_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     return mixed_spacing_angles_core_wing_movement_fixture
 
 
-def make_Ler_only_core_wing_movement_fixture() -> CoreWingMovement:
+def make_Ler_only_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement where only Ler_Gs_Cgs
     moves.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return Ler_only_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with only Ler_Gs_Cgs movement.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the Ler-only CoreWingMovement.
@@ -296,18 +379,27 @@ def make_Ler_only_core_wing_movement_fixture() -> CoreWingMovement:
     return Ler_only_core_wing_movement_fixture
 
 
-def make_angles_only_core_wing_movement_fixture() -> CoreWingMovement:
+def make_angles_only_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement where only
     angles_Gs_to_Wn_ixyz moves.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return angles_only_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with only angles_Gs_to_Wn_ixyz movement.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the angles-only CoreWingMovement.
@@ -328,18 +420,27 @@ def make_angles_only_core_wing_movement_fixture() -> CoreWingMovement:
     return angles_only_core_wing_movement_fixture
 
 
-def make_phase_offset_Ler_core_wing_movement_fixture() -> CoreWingMovement:
+def make_phase_offset_Ler_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with non-zero phase offset
     for Ler_Gs_Cgs.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return phase_offset_Ler_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with phase offset for Ler_Gs_Cgs.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the phase-offset CoreWingMovement.
@@ -360,18 +461,27 @@ def make_phase_offset_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     return phase_offset_Ler_core_wing_movement_fixture
 
 
-def make_phase_offset_angles_core_wing_movement_fixture() -> CoreWingMovement:
+def make_phase_offset_angles_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with non-zero phase offset
     for angles_Gs_to_Wn_ixyz.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return phase_offset_angles_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with phase offset for angles_Gs_to_Wn_ixyz.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the phase-offset CoreWingMovement.
@@ -392,18 +502,27 @@ def make_phase_offset_angles_core_wing_movement_fixture() -> CoreWingMovement:
     return phase_offset_angles_core_wing_movement_fixture
 
 
-def make_multiple_periods_core_wing_movement_fixture() -> CoreWingMovement:
+def make_multiple_periods_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with different periods for
     different dimensions.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return multiple_periods_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with different periods.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_multiple_periods_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_multiple_periods_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the multiple-periods CoreWingMovement.
@@ -424,18 +543,27 @@ def make_multiple_periods_core_wing_movement_fixture() -> CoreWingMovement:
     return multiple_periods_core_wing_movement_fixture
 
 
-def make_custom_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
+def make_custom_spacing_Ler_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a custom spacing
     function for Ler_Gs_Cgs.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return custom_spacing_Ler_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with custom spacing for Ler_Gs_Cgs.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -470,18 +598,27 @@ def make_custom_spacing_Ler_core_wing_movement_fixture() -> CoreWingMovement:
     return custom_spacing_Ler_core_wing_movement_fixture
 
 
-def make_custom_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
+def make_custom_spacing_angles_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a custom spacing
     function for angles_Gs_to_Wn_ixyz.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return custom_spacing_angles_core_wing_movement_fixture: CoreWingMovement This is
         the CoreWingMovement with custom spacing for angles_Gs_to_Wn_ixyz.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -516,21 +653,28 @@ def make_custom_spacing_angles_core_wing_movement_fixture() -> CoreWingMovement:
     return custom_spacing_angles_core_wing_movement_fixture
 
 
-def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture() -> (
-    CoreWingMovement
-):
+def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with mixed custom and
     standard spacing functions.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return mixed_custom_and_standard_spacing_core_wing_movement_fixture:
         CoreWingMovement This is the CoreWingMovement with mixed custom and standard
         spacing.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_mixed_custom_and_standard_spacing_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Define a custom harmonic spacing function.
@@ -562,18 +706,27 @@ def make_mixed_custom_and_standard_spacing_core_wing_movement_fixture() -> (
     return mixed_custom_and_standard_spacing_core_wing_movement_fixture
 
 
-def make_rotation_point_offset_core_wing_movement_fixture() -> CoreWingMovement:
+def make_rotation_point_offset_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with a non zero rotation
     point offset.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return rotation_point_offset_core_wing_movement_fixture: CoreWingMovement This is
         the CoreWingMovement with a non zero rotationPointOffset_Gs_Ler.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the CoreWingMovement with rotation point offset. The offset is in y
@@ -597,21 +750,30 @@ def make_rotation_point_offset_core_wing_movement_fixture() -> CoreWingMovement:
     return rotation_point_offset_core_wing_movement_fixture
 
 
-def make_periodic_geometry_core_wing_movement_fixture() -> CoreWingMovement:
+def make_periodic_geometry_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement with periodic geometry
     motion suitable for testing the variable geometry optimization.
 
     The fixture uses a 0.1s period which aligns well with common delta_time values like
     0.01s (10 steps per period) and 0.02s (5 steps per period).
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new origin Wing fixture will be created. The default is None.
     :return periodic_geometry_core_wing_movement_fixture: CoreWingMovement This is the
         CoreWingMovement with periodic geometry motion.
     """
-    # Initialize the constructing fixtures.
-    base_wing = geometry_fixtures.make_origin_wing_fixture()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_origin_wing_fixture()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     # Create the periodic geometry CoreWingMovement. Use a 0.1 s period for angular
@@ -633,16 +795,27 @@ def make_periodic_geometry_core_wing_movement_fixture() -> CoreWingMovement:
     return periodic_geometry_core_wing_movement_fixture
 
 
-def make_2_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
+def make_2_chordwise_panels_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement for a Wing with 2
     chordwise panels.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new Wing fixture with 2 chordwise panels will be created. The default
+        is None.
     :return: CoreWingMovement for a Wing with 2 chordwise panels.
     """
-    base_wing = geometry_fixtures.make_wing_with_2_chordwise_panels()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_wing_with_2_chordwise_panels()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     fixture = CoreWingMovement(
@@ -661,16 +834,27 @@ def make_2_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
     return fixture
 
 
-def make_3_chordwise_panels_core_wing_movement_fixture() -> CoreWingMovement:
+def make_3_chordwise_panels_core_wing_movement_fixture(
+    base_wing: ps.geometry.wing.Wing | None = None,
+) -> CoreWingMovement:
     """This method makes a fixture that is a CoreWingMovement for a Wing with 3
     chordwise panels.
 
+    :param base_wing: Wing, optional This is the base Wing to build the movement around.
+        If None, a new Wing fixture with 3 chordwise panels will be created. The default
+        is None.
     :return: CoreWingMovement for a Wing with 3 chordwise panels.
     """
-    base_wing = geometry_fixtures.make_wing_with_3_chordwise_panels()
+    # Use the provided Wing or create a new one.
+    if base_wing is None:
+        base_wing = geometry_fixtures.make_wing_with_3_chordwise_panels()
     wing_cross_section_movements = [
-        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(),
-        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(),
+        core_wing_cross_section_movement_fixtures.make_static_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[0]
+        ),
+        core_wing_cross_section_movement_fixtures.make_static_tip_core_wing_cross_section_movement_fixture(
+            base_wing.wing_cross_sections[1]
+        ),
     ]
 
     fixture = CoreWingMovement(

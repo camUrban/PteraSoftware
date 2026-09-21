@@ -64,10 +64,10 @@ def generate_rot_T(
 
     **Passive Use-Case:**
 
-    Let ``r_A`` be a non-position vector in "A" axes, but we want to find ``r_B``, which
-    is the same vector, but expressed in "B" axes. The orientation of "B" axes relative
-    to "A" axes is defined by the angle vector ``angles`` (with rotations in order and
-    type defined by the variables ``order`` and ``intrinsic``). Then:
+    Let r_A be a non-position vector in "A" axes, but we want to find r_B, which is the
+    same vector, but expressed in "B" axes. The orientation of "B" axes relative to "A"
+    axes is defined by the angle vector angles (with rotations in order and type defined
+    by the variables order and intrinsic). Then:
 
     | ``T_pas_A_to_B=generate_rot_T(angles,True,intrinsic,order)``
 
@@ -75,32 +75,32 @@ def generate_rot_T(
 
     **Active Use-Case:**
 
-    Let ``r_A`` be a non-position vector in "A" axes, but we want to find ``rPrime_A``,
-    which is ``r_A`` rotated by the specified sequence: about the fixed "A" axes if
-    ``intrinsic=False``, or about the current, newly-rotated axes if ``intrinsic=True``,
-    with angles given by ``angles`` and the sequence defined by ``order``. Then:
+    Let r_A be a non-position vector in "A" axes, but we want to find rPrime_A, which is
+    r_A rotated by the specified sequence: about the fixed "A" axes if intrinsic=False,
+    or about the current, newly-rotated axes if intrinsic=True, with angles given by
+    angles and the sequence defined by order. Then:
 
     | ``rot_T_act=generate_rot_T(angles,False,intrinsic,order)``
 
     | ``rPrime_A=apply_T_to_vectors(rot_T_act,r_A,is_position=False)``
 
     :param angles: A (3,) ndarray of floats representing the rotation angles, with signs
-        defined using the right-hand rule. For `passive=True`, it describes the
-        orientation of "B" axes with respect to "A" axes. For `passive=False`, it
+        defined using the right-hand rule. For passive=True, it describes the
+        orientation of "B" axes with respect to "A" axes. For passive=False, it
         prescribes the angles by which to rotate a vector in "A" axes. In both cases,
         the rotations' type is specified by the intrinsic parameter. Angles are always
         listed as [about x axis, about y axis, about z axis], but are applied in the
-        sequence given by `order` (e.g., order="zxy" applies angles[2], angles[0],
+        sequence given by order (e.g., order="zxy" applies angles[2], angles[0],
         angles[1]). The units are in degrees.
     :param passive: Set this to True to return a matrix that changes coordinates from
-        "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that
-        rotates vectors in "A" axes (``rPrime_A=R@r_A``).
+        "A" to "B" axes (r_B=R@r_A). Set this to False to return a matrix that rotates
+        vectors in "A" axes (rPrime_A=R@r_A).
     :param intrinsic: Set this to True to return a transformation matrix where each
         subsequent rotation is applied to the current, newly-rotated axes. Set this to
         False to return a transformation matrix where rotations are performed about the
         original, non rotated "A" axes.
     :param order: A str of three chars that represents the rotation order. Each char can
-        be 'x', 'y', or 'z'. Only Tait-Bryan angles are accepted so all accepted chars
+        be "x", "y", or "z". Only Tait-Bryan angles are accepted so all accepted chars
         must be distinct.
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
@@ -179,9 +179,9 @@ def generate_2D_rot_R(
 
     **Passive Use-Case:**
 
-    Let ``r_A`` be a 2D non-position vector in "A" axes, but we want to find ``r_B``,
-    which is the same vector, but expressed in "B" axes. The orientation of "B" axes
-    relative to "A" axes is defined by the angle ``angle``. Then:
+    Let r_A be a 2D non-position vector in "A" axes, but we want to find r_B, which is
+    the same vector, but expressed in "B" axes. The orientation of "B" axes relative to
+    "A" axes is defined by the angle angle. Then:
 
     | ``R_pas_A_to_B=generate_2D_rot_R(angle,True)``
 
@@ -189,20 +189,20 @@ def generate_2D_rot_R(
 
     **Active Use-Case:**
 
-    Let ``r_A`` be a 2D non-position vector in "A" axes, but we want to find
-    ``rPrime_A``, which is ``r_A`` rotated by ``angle``. Then:
+    Let r_A be a 2D non-position vector in "A" axes, but we want to find rPrime_A, which
+    is r_A rotated by angle. Then:
 
     | ``rot_R_act=generate_2D_rot_R(angle,False)``
 
     | ``rPrime_A=rot_R_act@r_A``
 
     :param angle: A float representing the rotation angle, with signs defined using the
-        right-hand rule. For ``passive=True``, it describes the orientation of "B" axes
-        with respect to "A" axes. For ``passive=False``, it prescribes the angle by
-        which to rotate a vector in "A" axes. The units are in degrees.
+        right-hand rule. For passive=True, it describes the orientation of "B" axes with
+        respect to "A" axes. For passive=False, it prescribes the angle by which to
+        rotate a vector in "A" axes. The units are in degrees.
     :param passive: Set this to True to return a matrix that changes coordinates from
-        "A" to "B" axes (``r_B=R@r_A``). Set this to False to return a matrix that
-        rotates vectors in "A" axes (``rPrime_A=R@r_A``).
+        "A" to "B" axes (r_B=R@r_A). Set this to False to return a matrix that rotates
+        vectors in "A" axes (rPrime_A=R@r_A).
     :return: The rotation matrix as a (2,2) ndarray of floats.
     """
     angleRad = np.deg2rad(angle)
@@ -229,10 +229,10 @@ def generate_trans_T(
 
     **Passive Use-Case:**
 
-    Let ``c_A_a`` be a vector which describes the location of point "c" (in "A" axes,
-    relative to the "a" point). We want to find ``c_A_b``, which describes the location
-    of "c", relative to the "b" point. The position of "b" is defined by
-    ``translations`` (in "A" axes, relative to the point a). Then:
+    Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
+    relative to the "a" point). We want to find c_A_b, which describes the location of
+    "c", relative to the "b" point. The position of "b" is defined by translations (in
+    "A" axes, relative to the point a). Then:
 
     | ``T_pas_A_a_to_A_b=generate_trans_T(translations,True)``
 
@@ -240,24 +240,23 @@ def generate_trans_T(
 
     **Active Use-Case:**
 
-    Let ``c_A_a`` be a vector which describes the location of point "c" (in "A" axes,
-    relative to the "a" point). We want to find ``cPrime_A_a``, which is the position of
-    "cPrime", which is point "c" offset by `translations` (in "A" axes). Then:
+    Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
+    relative to the "a" point). We want to find cPrime_A_a, which is the position of
+    "cPrime", which is point "c" offset by translations (in "A" axes). Then:
 
     | ``translate_T_act=generate_trans_T(translations,False)``
 
     | ``cPrime_A_a=apply_T_to_vectors(translate_T_act,c_A_a,is_position=True)``
 
     :param translations: A (3,) ndarray of floats representing the translations. For
-        ``passive=True``, this is the position of the "b" point (in "A" axes, relative
-        to the "a" point). For ``passive=False``, this is the position (in "A" axes) of
-        the offset point "cPrime" relative to the original "c" point. The units are in
+        passive=True, this is the position of the "b" point (in "A" axes, relative to
+        the "a" point). For passive=False, this is the position (in "A" axes) of the
+        offset point "cPrime" relative to the original "c" point. The units are in
         meters.
     :param passive: Set this to True to return a matrix that changes the reference point
-        of a vector in homogeneous coordinates (``rHomog_A_b=T_trans@rHomog_A_a``). Set
-        this to False to return a matrix that finds the new position vector of point
-        after translating it from its original position
-        (``cPrimeHomog_A_a=T_trans@cHomog_A_a``).
+        of a vector in homogeneous coordinates (rHomog_A_b=T_trans@rHomog_A_a). Set this
+        to False to return a matrix that finds the new position vector of point after
+        translating it from its original position (cPrimeHomog_A_a=T_trans@cHomog_A_a).
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
     p = translations
@@ -277,12 +276,11 @@ def generate_reflect_T(
 
     **Passive Use-Case:**
 
-    Let ``c_A_a`` be a vector which describes the location of point "c" (in "A" axes,
-    relative to the "a" point). We want to find ``c_B_b``, which describes the location
-    of "c" in "B" axes, relative to the "b" point. The orientation of "B" is "A"
-    reflected across the plane defined by ``plane_point_A_a`` and ``plane_normal_A``.
-    The "b" point is located at the "a" point's position, reflected across the same
-    plane. Then:
+    Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
+    relative to the "a" point). We want to find c_B_b, which describes the location of
+    "c" in "B" axes, relative to the "b" point. The orientation of "B" is "A" reflected
+    across the plane defined by plane_point_A_a and plane_normal_A. The "b" point is
+    located at the "a" point's position, reflected across the same plane. Then:
 
     | ``T_pas_A_a_to_B_b=generate_reflect_T(plane_point_A_a,plane_normal_A,True)``
 
@@ -290,10 +288,10 @@ def generate_reflect_T(
 
     **Active Use-Case:**
 
-    Let ``c_A_a`` be a vector which describes the location of point "c" (in "A" axes,
-    relative to the "a" point). We want to find ``cPrime_A_a``, which is the position of
-    "cPrime", point "c" reflected across the plane defined by ``plane_point_A_a`` and
-    ``plane_normal_A``. Then:
+    Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
+    relative to the "a" point). We want to find cPrime_A_a, which is the position of
+    "cPrime", point "c" reflected across the plane defined by plane_point_A_a and
+    plane_normal_A. Then:
 
     | ``reflect_T_act=generate_reflect_T(plane_point_A_a,plane_normal_A,False)``
 
@@ -302,7 +300,7 @@ def generate_reflect_T(
     **Notes:**
 
     This function generates identical matrices for both passive and active cases, which
-    is correct. However, it retains the `passive` flag for API consistency and as a
+    is correct. However, it retains the passive flag for API consistency and as a
     reminder to consider what the final matrix represents.
 
     **Warning:**
@@ -322,10 +320,10 @@ def generate_reflect_T(
         normalized to a unit vector.
     :param passive: Set this to True to return a matrix that changes reference point and
         axes of a vector in homogeneous coordinates to a reference point and axes
-        reflected about the specified plane (``cHomog_B_b=T_reflect@cHomog_A_a``). Set
-        this to False to return a matrix that reflects a vector (in its original axes,
+        reflected about the specified plane (cHomog_B_b=T_reflect@cHomog_A_a). Set this
+        to False to return a matrix that reflects a vector (in its original axes,
         relative to its original reference point) about a specified plane
-        (``cPrimeHomog_A_a=T_reflect@cHomog_A_a``).
+        (cPrimeHomog_A_a=T_reflect@cHomog_A_a).
     :return: The transformation matrix as a (4,4) ndarray of floats.
     """
     p = plane_point_A_a
@@ -350,8 +348,8 @@ def _left_compose_T(valid_T_chain: list[np.ndarray]) -> np.ndarray:
     :param valid_T_chain: A list of ndarrays of floats, each with shape (4,4),
         representing the series of transformations.
     :return: A single (4,4) ndarray of floats representing the composed transformation.
-        For example, if ``valid_T_chain=[T_1,T_2,...,T_n]``, this function will return
-        ``T_n@...@T_2@T_1``.
+        For example, if valid_T_chain=[T_1,T_2,...,T_n], this function will return
+        T_n@...@T_2@T_1.
     """
     if len(valid_T_chain) == 1:
         return valid_T_chain[0]
@@ -393,16 +391,15 @@ def compose_T_act(
     **Notes:**
 
     This function left-composes the supplied active transforms: given
-    ``compose_T_act(T1,T2,...,Tn)`` it returns ``Tn@...@T2@T1``. Interpreting these as
-    active transformations, this implies that they occur in the order in which they are
-    passed.
+    compose_T_act(T1,T2,...,Tn) it returns Tn@...@T2@T1. Interpreting these as active
+    transformations, this implies that they occur in the order in which they are passed.
 
-    Active translations created with ``generate_trans_T(...,passive=False)`` interpret
-    the components in the same axes the vector is expressed in (e.g., geometry axes).
-    Therefore: ```T_act=compose_T_act(rot_T_act,trans_T_act)``` applies a rotation first
-    and then a *world-fixed* translation. This can seem counter-intuitive.
+    Active translations created with generate_trans_T(...,passive=False) interpret the
+    components in the same axes the vector is expressed in (e.g., geometry axes).
+    Therefore: T_act=compose_T_act(rot_T_act,trans_T_act) applies a rotation first and
+    then a world-fixed translation. This can seem counter-intuitive.
 
-    If you instead want a *body-fixed* translation (e.g., "+10 along x' after the
+    If you instead want a body-fixed translation (e.g., "+10 along x' after the
     rotation"), either pre-rotate the components before building the translation:
 
     | ``R=rot_T_act[:3,:3]``
@@ -438,7 +435,7 @@ def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
 
     | ``t=valid_T[:3,3]``
 
-    This function uses these components to return the inverse of ``valid_T``:
+    This function uses these components to return the inverse of valid_T:
 
     | ``[[R.T,-R.T@t];[0,1]]``
 
@@ -464,8 +461,8 @@ def invert_T_pas(T_pas: np.ndarray) -> np.ndarray:
 
     A passive transform maps components of the same physical quantity between an initial
     axis system and reference point and a target axis system and reference point. For
-    example, if ``T_pas_A_a_to_B_b`` maps components from "A" axes (relative to point
-    "a") to "B" axes (relative to point "b"), then:
+    example, if T_pas_A_a_to_B_b maps components from "A" axes (relative to point "a")
+    to "B" axes (relative to point "b"), then:
 
     | ``T_pas_B_b_to_A_a=invert_T_pas(T_pas_A_a_to_B_b)``
 
@@ -473,9 +470,9 @@ def invert_T_pas(T_pas: np.ndarray) -> np.ndarray:
 
     **Notes:**
 
-    For position vectors (``is_position=True``), the translation component matters.
-    Otherwise (``is_position=False``, for example a velocity, force, or moment),
-    translation has no effect because the homogeneous last coordinate is 0.0.
+    For position vectors (is_position=True), the translation component matters.
+    Otherwise (is_position=False, for example a velocity, force, or moment), translation
+    has no effect because the homogeneous last coordinate is 0.0.
 
     :param T_pas: A (4,4) ndarray of floats representing a passive homogeneous transform
         mapping from source axes and reference point to target axes and reference point.
@@ -490,15 +487,15 @@ def invert_T_act(T_act: np.ndarray) -> np.ndarray:
     """Inverts an active homogeneous transform.
 
     An active transform re-orients and optionally translates a quantity within the same
-    axis system. For example, if ``T_act`` transforms the non-position vector ``q_A``
-    (in "A" axes) to the non-position vector ``qPrime_A`` (in "A" axes), then:
+    axis system. For example, if T_act transforms the non-position vector q_A (in "A"
+    axes) to the non-position vector qPrime_A (in "A" axes), then:
 
     | ``q_A=apply_T_to_vectors(invert_T_act(T_act),qPrime_A,is_position=False)``
 
     **Notes:**
 
-    For position vectors (``is_position=True``), both orientation and translation are
-    undone. Otherwise (``is_position=False``, for example a velocity, force, or moment),
+    For position vectors (is_position=True), both orientation and translation are
+    undone. Otherwise (is_position=False, for example a velocity, force, or moment),
     only the orientation is undone; translation has no effect because the homogeneous
     last coordinate is 0.0.
 
@@ -575,7 +572,7 @@ def apply_T_to_vectors(
     :param is_position: True if the vector is a position (a point), so the transform's
         translation applies. False otherwise (for example a velocity, force, or moment),
         so only the rotation applies.
-    :return: A ndarray of floats with same shape as ``vectors_A`` representing the
+    :return: A ndarray of floats with same shape as vectors_A representing the
         transformed vector(s).
     """
     vectorsHomog_A = _generate_homogs(vectors_A, is_position)
@@ -653,17 +650,17 @@ def R_to_quat_wxyz(R: np.ndarray) -> np.ndarray:
 def R_to_angles_izyx(R: np.ndarray) -> np.ndarray:
     """Converts a rotation matrix to intrinsic z-y'-x" Euler angles in degrees.
 
-    The returned ``[angleX, angleY, angleZ]`` always satisfies the matrix round-trip
-    property: ``generate_rot_T(angles=[angleX, angleY, angleZ], passive=True,
-    intrinsic=True, order="zyx")`` produces a (4,4) homogeneous transform whose
+    The returned [angleX, angleY, angleZ] always satisfies the matrix round-trip
+    property: generate_rot_T(angles=[angleX, angleY, angleZ], passive=True,
+    intrinsic=True, order="zyx") produces a (4,4) homogeneous transform whose
     rotation block equals R.
 
     The angle round-trip property (recovering the same angles that built R) only
-    holds when ``|sin(angleY)| <= 1 - 1e-12``, equivalently when ``|angleY|`` is more
+    holds when abs(sin(angleY)) <= 1 - 1e-12, equivalently when abs(angleY) is more
     than about 8e-5 degrees from the +/- 90 degree gimbal-lock pole. Inside the pole
     band, the standard atan2 decomposition becomes ill conditioned because
     cos(angleY) approaches machine epsilon, so the helper falls back to an
-    alternative decomposition with ``angleX = 0`` and ``angleZ`` absorbing the
+    alternative decomposition with angleX = 0 and angleZ absorbing the
     indeterminate rotation. That fallback is one of infinitely many valid
     decompositions at the pole, so the recovered angles will differ from the
     originals there even though the matrix is reconstructed correctly.
@@ -690,7 +687,7 @@ def alpha_and_beta_from_vInf_BP1(
     """Extracts the angle of attack and angle of sideslip from the freestream velocity
     in the first Airplane's body axes.
 
-    Returns ``(nan, nan)`` when ``vCg__E`` is exactly zero. The freestream has no
+    Returns (nan, nan) when vCg__E is exactly zero. The freestream has no
     preferred direction at zero speed, so alpha and beta are physically undefined;
     NaN is the IEEE representation of an undefined real value. Callers that need to
     handle the zero-speed case must check for NaN in the result. The broader free
@@ -704,30 +701,44 @@ def alpha_and_beta_from_vInf_BP1(
         second.
     :param vCg__E: A float representing the speed of the first Airplane's CG (observed
         from the Earth frame) in meters per second.
-    :return: A tuple (alpha, beta) where alpha is the angle of attack in degrees and
-        beta is the angle of sideslip in degrees. Both are NaN if vCg__E is zero.
+    :return: A tuple (alpha, beta) where alpha is the angle of attack in degrees in the
+        range (-180.0, 180.0] and beta is the angle of sideslip in degrees in the range
+        [-90.0, 90.0]. When the absolute value of beta is 90.0, alpha is 0.0. Both are
+        NaN if vCg__E is zero.
     """
     if vCg__E == 0.0:
         return float("nan"), float("nan")
 
-    vInfX_BP1__E, vInfY_BP1__E, vInfZ_BP1__E = vInf_BP1__E
+    vCgX_BP1__E, vCgY_BP1__E, vCgZ_BP1__E = -vInf_BP1__E
 
     # octowrap: off
     # Invert the wind axes construction defined in docs/AXES_POINTS_AND_FRAMES.md and
     # implemented by OperatingPoint. In that convention the CG velocity in body axes (the
     # negated freestream, vCg_BP1__E = -vInf_BP1__E) has components
     #   x: vCg__E * cos(alpha) * cos(beta)
-    #   y: vCg__E * cos(alpha) * sin(beta)
-    #   z: vCg__E * sin(alpha)
-    # so alpha follows from the body z component (arcsin) and beta from the body x and y
-    # components (arctan2). Extracting them in this order, rather than the more common
-    # textbook order that swaps which angle uses arcsin, keeps this function the exact
-    # inverse of OperatingPoint. Deriving alpha and beta here and storing them back on an
+    #   y: vCg__E * sin(beta)
+    #   z: vCg__E * sin(alpha) * cos(beta)
+    # so beta follows from the body y component (arcsin) and alpha from the body x and z
+    # components (arctan2). Deriving alpha and beta here and storing them back on an
     # OperatingPoint then reproduces the original freestream.
     # octowrap: on
-    sin_alpha = float(np.clip(-vInfZ_BP1__E / vCg__E, -1.0, 1.0))
-    alpha = float(np.rad2deg(np.arcsin(sin_alpha)))
-    beta = float(np.rad2deg(np.arctan2(-vInfY_BP1__E, -vInfX_BP1__E)))
+    sin_beta = float(np.clip(vCgY_BP1__E / vCg__E, -1.0, 1.0))
+    beta = float(np.rad2deg(np.arcsin(sin_beta)))
+
+    # At the poles (beta = +/-90.0), the velocity lies along the body y axis, so the
+    # arctangent's inputs carry no information about alpha and every alpha describes the
+    # same velocity direction. So we define alpha to be 0.0 there to ensure a unique
+    # mapping between velocity directions and pairs of alpha and beta. Test for both
+    # inputs being zero explicitly rather than letting their signed zeros pick a value.
+    # Also, an arctangent of a negative zero or of a negative value small enough to
+    # round to -180.0 in degrees returns -180.0, which OperatingPoint rejects, so wrap
+    # that one value to 180.0.
+    if abs(beta) == 90.0 or (vCgX_BP1__E == 0.0 and vCgZ_BP1__E == 0.0):
+        alpha = 0.0
+    else:
+        alpha = float(np.rad2deg(np.arctan2(vCgZ_BP1__E, vCgX_BP1__E)))
+        if alpha == -180.0:
+            alpha = 180.0
     return alpha, beta
 
 

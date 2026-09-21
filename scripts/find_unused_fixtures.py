@@ -2,6 +2,7 @@
 
 import argparse
 import ast
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -378,8 +379,8 @@ def _discover_test_ids() -> list[str]:
     """Discovers all test IDs without running them.
 
     Uses unittest's test loader to walk the test suite and collect fully qualified test
-    IDs (e.g., ``tests.unit.test_foo.TestBar.test_baz``). This is fast, deterministic,
-    and not affected by output interleaving from warnings or multi-line docstrings.
+    IDs (e.g., tests.unit.test_foo.TestBar.test_baz). This is fast, deterministic, and
+    not affected by output interleaving from warnings or multi-line docstrings.
 
     :return: A sorted list of test ID strings.
     """
@@ -390,7 +391,7 @@ def _discover_test_ids() -> list[str]:
             (
                 "import unittest, sys\n"
                 "loader = unittest.TestLoader()\n"
-                f"suite = loader.discover({str(TESTS_DIR)!r})\n"
+                f"suite = loader.discover({json.dumps(str(TESTS_DIR))})\n"
                 "def collect(s):\n"
                 "    ids = []\n"
                 "    for t in s:\n"

@@ -1,4 +1,26 @@
-# Default ignored files
-/workspace.xml
-# Datasource local storage ignored files
-/dataSources.local.xml
+# =========================== JetBrains .gitignore template ============================
+# Adapted from: https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+
+# User specific stuff:
+/**/workspace.xml
+/**/tasks.xml
+/**/usage.statistics.xml
+/**/dictionaries/*
+!/**/dictionaries/project.xml
+/**/shelf
+
+# Generated files:
+/**/contentModel.xml
+
+# Sensitive or high churn files:
+/**/dataSources/
+/**/dataSources.ids
+/**/dataSources.local.xml
+/**/sqlDataSources.xml
+/**/dynamic.xml
+/**/uiDesigner.xml
+/**/dbnavigator.xml
+
+# Github Copilot persisted session migrations, see:
+# https://github.com/microsoft/copilot-intellij-feedback/issues/712#issuecomment-3322062215
+/**/copilot.data.migration.*.xml

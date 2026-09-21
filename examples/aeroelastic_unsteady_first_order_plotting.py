@@ -162,43 +162,44 @@ def run_aeroelastic(
     period_z = 0.0
     amplitude_z = 0.0
 
-    main_wing_cross_section_movements_list = []
-    reflected_wing_cross_section_movements_list = []
+    main_wing_cross_section_movements_list: list[
+        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+    ] = []
+    reflected_wing_cross_section_movements_list: list[
+        ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement
+    ] = []
 
-    for i in range(len(example_airplane.wings[0].wing_cross_sections)):
-        if i == 0:
-            wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-                base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[
-                    i
-                ],
-            )
-            main_wing_cross_section_movements_list.append(wing_cross_section_movement)
-            reflected_wing_cross_section_movements_list.append(
-                wing_cross_section_movement
-            )
+    # The reflected Wing has its own WingCrossSections, so its movements must be built
+    # around those rather than reusing the main Wing's movements, even though both
+    # halves move identically.
+    for wing_cross_section_movements_list, wing in (
+        (main_wing_cross_section_movements_list, example_airplane.wings[0]),
+        (reflected_wing_cross_section_movements_list, example_airplane.wings[1]),
+    ):
+        for i in range(len(wing.wing_cross_sections)):
+            if i == 0:
+                wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                    base_wing_cross_section=wing.wing_cross_sections[i],
+                )
+                wing_cross_section_movements_list.append(wing_cross_section_movement)
 
-        else:
-            wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
-                base_wing_cross_section=example_airplane.wings[0].wing_cross_sections[
-                    i
-                ],
-                ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
-                phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampAngles_Wcsp_to_Wcs_ixyz=(
-                    amplitude_x,
-                    amplitude_y,
-                    amplitude_z,
-                ),
-                periodAngles_Wcsp_to_Wcs_ixyz=(period_x, period_y, period_z),
-                spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-                phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
-            )
-            main_wing_cross_section_movements_list.append(wing_cross_section_movement)
-            reflected_wing_cross_section_movements_list.append(
-                wing_cross_section_movement
-            )
+            else:
+                wing_cross_section_movement = ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                    base_wing_cross_section=wing.wing_cross_sections[i],
+                    ampLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
+                    phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    ampAngles_Wcsp_to_Wcs_ixyz=(
+                        amplitude_x,
+                        amplitude_y,
+                        amplitude_z,
+                    ),
+                    periodAngles_Wcsp_to_Wcs_ixyz=(period_x, period_y, period_z),
+                    spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
+                    phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
+                )
+                wing_cross_section_movements_list.append(wing_cross_section_movement)
 
     v_tail_root_wing_cross_section_movement = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(

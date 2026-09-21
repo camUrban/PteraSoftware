@@ -905,7 +905,7 @@ class TestAirfoilGetPlottableData(unittest.TestCase):
 
     def test_get_plottable_data_accepts_numpy_bool(self) -> None:
         """Test that get_plottable_data accepts numpy bool for show parameter."""
-        result = self.naca0012_airfoil.get_plottable_data(show=np.bool_(False))
+        result = self.naca0012_airfoil.get_plottable_data(show=np.bool(False))
 
         self.assertIsInstance(result, list)
 

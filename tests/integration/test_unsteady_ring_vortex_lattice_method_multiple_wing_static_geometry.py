@@ -34,7 +34,7 @@ class TestUnsteadyRingVortexLatticeMethodMultipleWingStaticGeometry(unittest.Tes
         ps.output.animate(
             unsteady_solver=self.unsteady_ring_vortex_lattice_method_validation_solver,
             show_wake_vortices=True,
-            scalar_type="side force",
+            scalar_type="crosswind force",
             save=False,
             testing=True,
         )

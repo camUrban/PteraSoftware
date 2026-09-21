@@ -2159,9 +2159,9 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
 
         The CG velocity in body axes (the negated freestream,
         vCg_BP1__E = -vInf_BP1__E) for the wind axes convention has components
-        vCg__E * cos(alpha) * cos(beta), vCg__E * cos(alpha) * sin(beta), and
-        vCg__E * sin(alpha). Build the freestream for a known alpha and beta and confirm
-        both are recovered exactly.
+        vCg__E * cos(alpha) * cos(beta), vCg__E * sin(beta), and
+        vCg__E * sin(alpha) * cos(beta). Build the freestream for a known alpha and beta
+        and confirm both are recovered exactly.
 
         :return: None
         """
@@ -2173,8 +2173,8 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
         vCg_BP1__E = vCg__E * np.array(
             [
                 np.cos(alphaRad) * np.cos(betaRad),
-                np.cos(alphaRad) * np.sin(betaRad),
-                np.sin(alphaRad),
+                np.sin(betaRad),
+                np.sin(alphaRad) * np.cos(betaRad),
             ]
         )
         vInf_BP1__E = -vCg_BP1__E
@@ -2183,6 +2183,67 @@ class TestAlphaAndBetaFromVInfBP1(unittest.TestCase):
 
         npt.assert_allclose(alpha, expected_alpha, atol=1e-13)
         npt.assert_allclose(beta, expected_beta, atol=1e-13)
+
+    def test_backward_flight_returns_positive_180(self) -> None:
+        """Tests that exact backward flight yields alpha = 180.0 rather than -180.0,
+        which OperatingPoint rejects.
+
+        A two-argument arctangent returns -180.0 degrees when its first argument is a
+        negative zero, or a negative value small enough that the result rounds to
+        -180.0 in degrees, and its second argument is negative. Both cases arise from
+        the free flight state update, so confirm each is wrapped to 180.0.
+
+        :return: None
+        """
+        vCg__E = 10.0
+        vInf_BP1__E_cases = [
+            np.array([vCg__E, 0.0, 0.0]),
+            np.array([vCg__E, 0.0, -0.0]),
+            np.array([vCg__E, 0.0, 1.0e-17]),
+        ]
+
+        for vInf_BP1__E in vInf_BP1__E_cases:
+            with self.subTest(vInf_BP1__E=vInf_BP1__E):
+                alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(
+                    vInf_BP1__E, vCg__E
+                )
+
+                self.assertEqual(alpha, 180.0)
+                self.assertEqual(beta, 0.0)
+
+                # OperatingPoint must accept the result.
+                ps.operating_point.OperatingPoint(alpha=alpha, beta=beta)
+
+    def test_beta_boundaries_return_zero_alpha(self) -> None:
+        """Tests that a freestream along the body y axis yields beta = +/-90.0 and
+        alpha = 0.0, regardless of the signs of the zero x and z components.
+
+        Alpha is defined to be 0.0 at these boundaries so that each velocity direction
+        corresponds to exactly one pair of alpha and beta. Signed zeros in the
+        arctangent's inputs must not pick a different value.
+
+        :return: None
+        """
+        vCg__E = 10.0
+        cases = [
+            (np.array([0.0, -vCg__E, 0.0]), 90.0),
+            (np.array([-0.0, -vCg__E, -0.0]), 90.0),
+            (np.array([-0.0, -vCg__E, 0.0]), 90.0),
+            (np.array([0.0, vCg__E, 0.0]), -90.0),
+            (np.array([-0.0, vCg__E, -0.0]), -90.0),
+        ]
+
+        for vInf_BP1__E, expected_beta in cases:
+            with self.subTest(vInf_BP1__E=vInf_BP1__E):
+                alpha, beta = _transformations.alpha_and_beta_from_vInf_BP1(
+                    vInf_BP1__E, vCg__E
+                )
+
+                self.assertEqual(alpha, 0.0)
+                self.assertEqual(beta, expected_beta)
+
+                # OperatingPoint must accept the result.
+                ps.operating_point.OperatingPoint(alpha=alpha, beta=beta)
 
     def test_round_trip_consistent_with_operating_point(self) -> None:
         """Tests that this function exactly inverts the OperatingPoint's alpha and beta

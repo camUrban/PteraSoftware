@@ -85,10 +85,10 @@ _MULTI_SAMPLES = 4
 # quantity from the legend label, its axes, point, and frame from the subtitle, and its
 # unit from the y axis label, while a logged group header pairs a quantity with the same
 # subtitle. Naming them once is what keeps the three describing a quantity the same way.
-_FORCE_LABELS = ["Induced Drag", "Side Force", "Lift"]
+_FORCE_LABELS = ["Induced Drag", "Crosswind Force", "Lift"]
 _FORCE_COEFFICIENT_LABELS = [
     "Induced Drag Coefficient",
-    "Side Force Coefficient",
+    "Crosswind Force Coefficient",
     "Lift Coefficient",
 ]
 _MOMENT_LABELS = ["Rolling Moment", "Pitching Moment", "Yawing Moment"]
@@ -173,14 +173,14 @@ def draw(
         | unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver
     ),
     scalar_type: str | None = None,
-    show_streamlines: bool | np.bool_ = False,
-    show_wake_vortices: bool | np.bool_ = False,
-    show_mujoco_geometry: bool | np.bool_ = False,
+    show_streamlines: bool | np.bool = False,
+    show_wake_vortices: bool | np.bool = False,
+    show_mujoco_geometry: bool | np.bool = False,
     window_size: Sequence[int] = (1024, 768),
-    save: bool | np.bool_ = False,
+    save: bool | np.bool = False,
     path: str | Path = "draw.webp",
     quality: int | float = 75.0,
-    testing: bool | np.bool_ = False,
+    testing: bool | np.bool = False,
 ) -> None:
     """Draws a solver's Airplane(s).
 
@@ -205,8 +205,8 @@ def draw(
         FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
     :param scalar_type: Determines how to color the Panels. Setting this to None colors
         the Panels uniformly. If the solver has been run, it can also be "induced drag",
-        "side force", or "lift", which respectively use each Panel's induced drag, side
-        force, and lift coefficient. The default is None.
+        "crosswind force", or "lift", which respectively use each Panel's induced drag,
+        crosswind force, and lift coefficient. The default is None.
     :param show_streamlines: Set this to True to show the streamlines emanating from the
         back of the Wings. If True, the solver's streamlines must have already been
         calculated. Can be a bool or a numpy bool and will be converted internally to a
@@ -231,7 +231,7 @@ def draw(
     :param save: Set this to True to save the image as a WebP. It can be a bool or a
         numpy bool and will be converted internally to a bool. The default is False.
     :param path: The file path to save the image to. It can be a str or a Path, must end
-        with '.webp', and its directory must already exist. This has no effect unless
+        with ".webp", and its directory must already exist. This has no effect unless
         save is True. The default is "draw.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
@@ -265,10 +265,10 @@ def draw(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
             valid_types = ", ".join(
-                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+                f'"{t}"' for t in _output_rendering.VALID_SCALAR_TYPES
             )
             raise ValueError(
-                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
+                f'scalar_type must be None, {valid_types}, got "{scalar_type}".'
             )
 
     show_streamlines = _parameter_validation.boolLike_return_bool(
@@ -432,7 +432,7 @@ def draw(
     # Choose the scalar coloring for the Panels, leaving it None to color them
     # uniformly.
     coloring: _output_rendering.ScalarColoring | None = None
-    if scalar_type in ("induced drag", "side force", "lift"):
+    if scalar_type in ("induced drag", "crosswind force", "lift"):
         these_scalars = _output_rendering.get_scalars(airplanes, scalar_type, qInf__E)
         color_map, c_min, c_max = _output_rendering.choose_color_map(these_scalars)
         coloring = _output_rendering.ScalarColoring(
@@ -687,14 +687,14 @@ def draw(
 def animate(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
     scalar_type: str | None = None,
-    show_wake_vortices: bool | np.bool_ = False,
-    show_mujoco_geometry: bool | np.bool_ = False,
+    show_wake_vortices: bool | np.bool = False,
+    show_mujoco_geometry: bool | np.bool = False,
     window_size: Sequence[int] = (1024, 768),
-    save: bool | np.bool_ = False,
+    save: bool | np.bool = False,
     path: str | Path = "animate.webp",
     quality: int | float = 75.0,
     speed: int | float | None = None,
-    testing: bool | np.bool_ = False,
+    testing: bool | np.bool = False,
 ) -> None:
     """Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
     its subclasses (the aeroelastic or free flight solver).
@@ -710,8 +710,8 @@ def animate(
         FreeFlightUnsteadyRingVortexLatticeMethodSolver, are also accepted.
     :param scalar_type: Determines how to color the Panels. Setting this to None colors
         the Panels uniformly. If the solver has been run, it can also be "induced drag",
-        "side force", or "lift", which respectively use each Panel's induced drag, side
-        force, and lift coefficient. The default is None.
+        "crosswind force", or "lift", which respectively use each Panel's induced drag,
+        crosswind force, and lift coefficient. The default is None.
     :param show_wake_vortices: Set this to True to show any wake ring vortices. If True,
         the solver must have already been run. Can be a bool or a numpy bool and will be
         converted internally to a bool. The default is False.
@@ -732,7 +732,7 @@ def animate(
         bool or a numpy bool and will be converted internally to a bool. The default is
         False.
     :param path: The file path to save the animation to. It can be a str or a Path, must
-        end with '.webp', and its directory must already exist. This has no effect
+        end with ".webp", and its directory must already exist. This has no effect
         unless save is True. The default is "animate.webp".
     :param quality: The quality of the saved WebP, where 0.0 is the smallest file with
         the most compression artifacts and 100.0 is the largest file with the fewest. It
@@ -772,10 +772,10 @@ def animate(
         scalar_type = _parameter_validation.str_return_str(scalar_type, "scalar_type")
         if scalar_type not in _output_rendering.VALID_SCALAR_TYPES:
             valid_types = ", ".join(
-                f"'{t}'" for t in _output_rendering.VALID_SCALAR_TYPES
+                f'"{t}"' for t in _output_rendering.VALID_SCALAR_TYPES
             )
             raise ValueError(
-                f"scalar_type must be None, {valid_types}, got '{scalar_type}'."
+                f'scalar_type must be None, {valid_types}, got "{scalar_type}".'
             )
 
     show_wake_vortices = _parameter_validation.boolLike_return_bool(
@@ -1461,10 +1461,10 @@ def animate(
 
 def plot_results_versus_time(
     unsteady_solver: unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,
-    show: bool | np.bool_ = True,
+    show: bool | np.bool = True,
     figure_size_in: Sequence[int | float] = (6.4, 4.8),
-    save: bool | np.bool_ = False,
-    save_csv: bool | np.bool_ = False,
+    save: bool | np.bool = False,
+    save_csv: bool | np.bool = False,
     directory: str | Path = ".",
     prefix: str = "",
     resolution_dpi: int | float = 300.0,
@@ -1548,10 +1548,10 @@ def plot_results_versus_time(
         raise TypeError("directory must be a str or a Path.")
     directory = Path(directory)
     if directory.exists() and not directory.is_dir():
-        raise ValueError(f"directory must be a directory, got file '{directory}'.")
+        raise ValueError(f'directory must be a directory, got file "{directory}".')
     if not directory.is_dir():
         raise ValueError(
-            f"directory '{directory}' does not exist. Create it first, or choose a "
+            f'directory "{directory}" does not exist. Create it first, or choose a '
             f"destination that already exists."
         )
 
@@ -1563,7 +1563,7 @@ def plot_results_versus_time(
     prefix = _parameter_validation.str_return_str(prefix, "prefix")
     if prefix != os.path.basename(prefix):
         raise ValueError(
-            f"prefix must be a file name component rather than a path, got '{prefix}'."
+            f'prefix must be a file name component rather than a path, got "{prefix}".'
         )
 
     resolution_dpi = _parameter_validation.number_in_range_return_float(
@@ -1584,7 +1584,7 @@ def plot_results_versus_time(
             airplane_name_snake = airplane.name.lower().replace(" ", "_")
             if airplane_name_snake != os.path.basename(airplane_name_snake):
                 raise ValueError(
-                    f"An Airplane's name, '{airplane.name}', cannot be used in a file "
+                    f'An Airplane\'s name, "{airplane.name}", cannot be used in a file '
                     f"name, since it contains a path separator."
                 )
 
@@ -1631,13 +1631,13 @@ def plot_results_versus_time(
         # Iterate through this time step's Airplanes.
         for airplane_id, airplane in enumerate(airplanes):
             namedForces_W[airplane_id, 0, results_step] = airplane.inducedDrag_W
-            namedForces_W[airplane_id, 1, results_step] = airplane.sideForce_W
+            namedForces_W[airplane_id, 1, results_step] = airplane.crosswindForce_W
             namedForces_W[airplane_id, 2, results_step] = airplane.lift_W
             namedForceCoefficients_W[airplane_id, 0, results_step] = (
                 airplane.inducedDragCoefficient_W
             )
             namedForceCoefficients_W[airplane_id, 1, results_step] = (
-                airplane.sideForceCoefficient_W
+                airplane.crosswindForceCoefficient_W
             )
             namedForceCoefficients_W[airplane_id, 2, results_step] = (
                 airplane.liftCoefficient_W
@@ -2123,7 +2123,7 @@ def log_results(
 
                 theseNamedForces_W = [
                     airplane.inducedDrag_W,
-                    airplane.sideForce_W,
+                    airplane.crosswindForce_W,
                     airplane.lift_W,
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2133,7 +2133,7 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     airplane.inducedDragCoefficient_W,
-                    airplane.sideForceCoefficient_W,
+                    airplane.crosswindForceCoefficient_W,
                     airplane.liftCoefficient_W,
                 ]
                 theseNamedMomentCoefficients_W_Cg = [
@@ -2169,7 +2169,7 @@ def log_results(
                 )
                 theseNamedForces_W = [
                     unsteady_problem.finalInducedDrags_W[airplane_num],
-                    unsteady_problem.finalSideForces_W[airplane_num],
+                    unsteady_problem.finalCrosswindForces_W[airplane_num],
                     unsteady_problem.finalLifts_W[airplane_num],
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2179,7 +2179,7 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     unsteady_problem.finalInducedDragCoefficients_W[airplane_num],
-                    unsteady_problem.finalSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalCrosswindForceCoefficients_W[airplane_num],
                     unsteady_problem.finalLiftCoefficients_W[airplane_num],
                 ]
                 theseNamedMomentCoefficients_W_Cg = [
@@ -2214,7 +2214,7 @@ def log_results(
                 )
                 theseNamedForces_W = [
                     unsteady_problem.finalMeanInducedDrags_W[airplane_num],
-                    unsteady_problem.finalMeanSideForces_W[airplane_num],
+                    unsteady_problem.finalMeanCrosswindForces_W[airplane_num],
                     unsteady_problem.finalMeanLifts_W[airplane_num],
                 ]
                 theseNamedMoments_W_Cg = [
@@ -2224,7 +2224,9 @@ def log_results(
                 ]
                 theseNamedForceCoefficients_W = [
                     unsteady_problem.finalMeanInducedDragCoefficients_W[airplane_num],
-                    unsteady_problem.finalMeanSideForceCoefficients_W[airplane_num],
+                    unsteady_problem.finalMeanCrosswindForceCoefficients_W[
+                        airplane_num
+                    ],
                     unsteady_problem.finalMeanLiftCoefficients_W[airplane_num],
                 ]
                 theseNamedMomentCoefficients_W_Cg = [

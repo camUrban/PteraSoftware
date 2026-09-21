@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import sys
 import warnings
 
 import numba
@@ -18,25 +19,45 @@ _logger = _logging.get_logger("_aerodynamics_functions")
 # the stability of the result. I'm using this value, as cited for use in flapping-wing
 # vehicles in "Role of Filament Strain in the Free-Vortex Modeling of Rotor Wakes"
 # (Ananthan and Leishman, 2004). It is unitless.
-_squire = 1.0e-4
+_SQUIRE = 1.0e-4
 
 # Lamb's constant relates to the size of the vortex cores and the rate at which they
 # grow. The value of this parameter is well agreed upon, and published in "Extended
 # Unsteady Vortex-Lattice Method for Insect Flapping Wings" (Nguyen et al., 2016). It is
 # unitless.
-_lamb = 1.25643
+_LAMB = 1.25643
 
 # The local machine error is used to detect degenerate (zero length) line vortices.
-_eps = np.finfo(float).eps
+_EPS = sys.float_info.epsilon
 
-# The relative tolerance for scale invariant singularity checks. It provides two orders
-# of magnitude of safety margin before catastrophic cancellation in 1.0 - cos(theta)
-# begins at theta ~ 2.1e-8.
-_tol = 1.0e-10
+# The minimum core radius of a line vortex, as a fraction of its length. Every line
+# vortex gets at least this core, so a zero initial core radius means the floor.
+#
+# The floor trades two errors against each other. First, a core biases legitimate
+# evaluations, especially those close to the line vortex. The most critical legitimate
+# close evaluation is between a bound line vortex and its own Panel's collocation point,
+# where the distance is on the order of the line vortex's own length. There, a core that
+# is a fraction f of the length scales the induced velocity by about 1 - f^2, a relative
+# error of f^2. Second, a core bounds the spurious velocity at a point that should lie
+# on the line vortex, such as a load evaluation point at a leg's center. Rounding leaves
+# such a point about _EPS times its distance from the reference point off the line
+# vortex, and with a core the velocity there is about strength * offset / (2 * pi *
+# core^2). Relative to a typical near field velocity of strength / (2 * pi * length),
+# that is _EPS / f^2 when the point's distance from the reference point is about a
+# length. Growing f shrinks the spurious error and grows the bias, and the two are equal
+# at f = _EPS^(1 / 4), where both are about _EPS^(1 / 2).
+#
+# Two ratios were taken as one above. Evaluations closer than a length, such as a
+# collocation point half a Panel chord from a long spanwise leg, raise the bias by the
+# inverse square of their distance over the length. Reference points farther than a
+# length from the line vortex raise the spurious error linearly in that distance over
+# the length. Across all plausible ranges of both ratios, these cause relative errors
+# much lower than the solvers' own accuracies, so the fraction is not adjusted for them.
+_CORE_FRACTION = _EPS**0.25
 
-# Pre compute 4 * pi and 4.0 * _lamb as they used repeatedly.
-_four_pi = 4.0 * math.pi
-_four_lamb = 4.0 * _lamb
+# Pre compute 4 * pi and 4.0 * _LAMB as they used repeatedly.
+_FOUR_PI = 4.0 * math.pi
+_FOUR_LAMB = 4.0 * _LAMB
 
 # The smallest number of evaluations worth handing one thread of a parallel kernel
 # launch, where one evaluation is computing one line vortex's induced velocity at one
@@ -190,14 +211,16 @@ def collapsed_velocities_from_ring_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
         vortices. The units are in meters squared per second.
-    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across all four legs.
+    :param r_c0s: A (M,4) ndarray of floats representing the initial core radii of the M
+        ring vortices' right, front, left, and back legs. Pass zeros for bound legs,
+        which then take the kernels' numerical floor. For wake legs, and for the
+        trailing edge bound ring vortices' back legs that coincide with the first wake
+        row's front legs, a reasonable value based on results from Ramasamy and Leishman
+        (2007) is 3.0% the chord length of the parent Wing. The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across all four legs.
     :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M ring vortices in seconds. The default is None.
@@ -219,6 +242,8 @@ def collapsed_velocities_from_ring_vortices(
         stackBlrvp_GP1_CgP1,
         stackBrrvp_GP1_CgP1,
     ]
+
+    list_r_c0s = [np.ascontiguousarray(r_c0s[:, i]) for i in range(4)]
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
@@ -242,7 +267,7 @@ def collapsed_velocities_from_ring_vortices(
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
                 strengths=strengths,
-                r_c0s=r_c0s,
+                r_c0s=list_r_c0s[i],
                 singularity_counts=singularity_counts,
                 ages=ages,
                 nu=nu,
@@ -291,14 +316,16 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
         vortices. The units are in meters squared per second.
-    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across both legs.
+    :param r_c0s: A (M,4) ndarray of floats representing the initial core radii of the M
+        ring vortices' right, front, left, and back legs. Pass zeros for bound legs,
+        which then take the kernels' numerical floor. For wake legs, and for the
+        trailing edge bound ring vortices' back legs that coincide with the first wake
+        row's front legs, a reasonable value based on results from Ramasamy and Leishman
+        (2007) is 3.0% the chord length of the parent Wing. The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across both legs.
     :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M ring vortices in seconds. The default is None.
@@ -317,6 +344,9 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
         stackFrrvp_GP1_CgP1,
         stackBlrvp_GP1_CgP1,
     ]
+
+    # The right and left legs' initial core radii are in the first and third columns.
+    list_r_c0s = [np.ascontiguousarray(r_c0s[:, i]) for i in (0, 2)]
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
@@ -340,7 +370,7 @@ def collapsed_velocities_from_ring_vortices_chordwise_segments(
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
                 strengths=strengths,
-                r_c0s=r_c0s,
+                r_c0s=list_r_c0s[i],
                 singularity_counts=singularity_counts,
                 ages=ages,
                 nu=nu,
@@ -381,13 +411,14 @@ def collapsed_velocities_from_line_vortices(
     :param strengths: A (M,) ndarray of floats representing the strengths of the M line
         vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across calls.
+        line vortices. Pass zeros for bound line vortices, which then take the kernels'
+        numerical floor. For wake line vortices, a reasonable value based on results
+        from Ramasamy and Leishman (2007) is 3.0% the chord length of the parent Wing.
+        The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across calls.
     :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M line vortices in seconds. The default is None.
@@ -466,14 +497,16 @@ def expanded_velocities_from_ring_vortices(
         relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M ring
         vortices. The units are in meters squared per second.
-    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        ring vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across all four legs.
+    :param r_c0s: A (M,4) ndarray of floats representing the initial core radii of the M
+        ring vortices' right, front, left, and back legs. Pass zeros for bound legs,
+        which then take the kernels' numerical floor. For wake legs, and for the
+        trailing edge bound ring vortices' back legs that coincide with the first wake
+        row's front legs, a reasonable value based on results from Ramasamy and Leishman
+        (2007) is 3.0% the chord length of the parent Wing. The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across all four legs.
     :param ages: For bound ring vortices, this must be None. For ring vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M ring vortices in seconds. The default is None.
@@ -495,6 +528,8 @@ def expanded_velocities_from_ring_vortices(
         stackBlrvp_GP1_CgP1,
         stackBrrvp_GP1_CgP1,
     ]
+
+    list_r_c0s = [np.ascontiguousarray(r_c0s[:, i]) for i in range(4)]
 
     gridVInd_GP1__E = np.zeros(
         (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
@@ -520,7 +555,7 @@ def expanded_velocities_from_ring_vortices(
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
                 strengths=strengths,
-                r_c0s=r_c0s,
+                r_c0s=list_r_c0s[i],
                 singularity_counts=singularity_counts,
                 ages=ages,
                 nu=nu,
@@ -569,14 +604,16 @@ def collapsed_velocities_from_horseshoe_vortices(
         axes, relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of the M
         horseshoe vortices. The units are in meters squared per second.
-    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        horseshoe vortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 3.0% the chord length of each line
-        vortex's parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across all three legs.
+    :param r_c0s: A (M,3) ndarray of floats representing the initial core radii of the M
+        horseshoe vortices' right, front, and left legs. Pass zeros for bound front
+        legs, which then take the kernels' numerical floor. For the right and left legs,
+        which model the wake, a reasonable value based on results from Ramasamy and
+        Leishman (2007) is 3.0% the chord length of the parent Wing. The units are in
+        meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across all three legs.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,3) ndarray of floats for the cumulative induced velocity at each of
@@ -593,6 +630,8 @@ def collapsed_velocities_from_horseshoe_vortices(
         stackFlhvp_GP1_CgP1,
         stackBlhvp_GP1_CgP1,
     ]
+
+    list_r_c0s = [np.ascontiguousarray(r_c0s[:, i]) for i in range(3)]
 
     stackVInd_GP1__E = np.zeros((stackP_GP1_CgP1.shape[0], 3), dtype=float)
 
@@ -616,7 +655,7 @@ def collapsed_velocities_from_horseshoe_vortices(
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
                 strengths=strengths,
-                r_c0s=r_c0s,
+                r_c0s=list_r_c0s[i],
                 singularity_counts=singularity_counts,
                 ages=None,
                 nu=nu,
@@ -665,14 +704,16 @@ def expanded_velocities_from_horseshoe_vortices(
         axes, relative to the first Airplane's CG). The units are in meters.
     :param strengths: A (M,) ndarray of floats representing the strengths of M horseshoe
         vortices. The units are in meters squared per second.
-    :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        horseshoe vortices. Based on results from Ramasamy and Leishman (2007), a
-        reasonable value that works across scales is 3.0% the chord length of each line
-        vortex's parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across all three legs.
+    :param r_c0s: A (M,3) ndarray of floats representing the initial core radii of the M
+        horseshoe vortices' right, front, and left legs. Pass zeros for bound front
+        legs, which then take the kernels' numerical floor. For the right and left legs,
+        which model the wake, a reasonable value based on results from Ramasamy and
+        Leishman (2007) is 3.0% the chord length of the parent Wing. The units are in
+        meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across all three legs.
     :param nu: A non negative float representing the kinematic viscosity of the fluid.
         The units are in meters squared per second. The default is 0.0.
     :return: A (N,M,3) ndarray of floats for the induced velocity at each of the N
@@ -689,6 +730,8 @@ def expanded_velocities_from_horseshoe_vortices(
         stackFlhvp_GP1_CgP1,
         stackBlhvp_GP1_CgP1,
     ]
+
+    list_r_c0s = [np.ascontiguousarray(r_c0s[:, i]) for i in range(3)]
 
     gridVInd_GP1__E = np.zeros(
         (stackP_GP1_CgP1.shape[0], strengths.shape[0], 3), dtype=float
@@ -714,7 +757,7 @@ def expanded_velocities_from_horseshoe_vortices(
                 stackSlvp_GP1_CgP1=listStackSlvp_GP1_CgP1[i],
                 stackElvp_GP1_CgP1=listStackElvp_GP1_CgP1[i],
                 strengths=strengths,
-                r_c0s=r_c0s,
+                r_c0s=list_r_c0s[i],
                 singularity_counts=singularity_counts,
                 ages=None,
                 nu=nu,
@@ -770,13 +813,14 @@ def _collapsed_velocities_from_line_vortices(
     :param strengths: A (M,) ndarray of floats representing the strengths of the M line
         vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across calls.
+        line vortices. Pass zeros for bound line vortices, which then take the kernels'
+        numerical floor. For wake line vortices, a reasonable value based on results
+        from Ramasamy and Leishman (2007) is 3.0% the chord length of the parent Wing.
+        The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across calls.
     :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M line vortices in seconds. The default is None.
@@ -801,10 +845,9 @@ def _collapsed_velocities_from_line_vortices(
     # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
     # which are a per line vortex property, not per point.
-    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_valid = np.empty(num_vortices, dtype=np.bool)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
-    vortex_r0_times_tol = np.empty(num_vortices)
 
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
@@ -820,7 +863,7 @@ def _collapsed_velocities_from_line_vortices(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _eps:
+        if r0 < _EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -829,22 +872,20 @@ def _collapsed_velocities_from_line_vortices(
 
         strength = strengths[vortex_id]
         age = ages[vortex_id]
-        r_c0 = r_c0s[vortex_id]
 
-        # Pre compute r0 * _tol outside the parallel loop.
-        vortex_r0_times_tol[vortex_id] = r0 * _tol
+        # Clamp the initial core radius to the numerical floor.
+        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
 
-        # Calculate the radius of the line vortex's core squared. The initial core
-        # radius ensures nonzero regularization even for bound vortices with zero age.
-        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+        # Calculate the radius of the line vortex's core squared.
+        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c1[vortex_id] = strength / _FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index
-    # mapping: [1] vertex start proximity, [2] vertex end proximity, [3] collinearity.
-    # Index [0] (degenerate filament) is handled in the serial pre pass above.
-    point_singularity_counts = np.zeros((num_points, 4), dtype=np.int64)
+    # mapping: [1] point on start vertex, [2] point on end vertex. Index [0] (degenerate
+    # filament) is handled in the serial pre pass above.
+    point_singularity_counts = np.zeros((num_points, 3), dtype=np.int64)
 
     # Numba does not annotate prange.__new__, so mypy cannot tell that calling prange
     # returns an iterable. Once this is fixed upstream, warn_unused_ignores will flag
@@ -859,6 +900,12 @@ def _collapsed_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
+            # The r0_GP1 vector goes from the line vortex's start point to its end point
+            # (in the first Airplane's geometry axes).
+            r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
+            r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
+            r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
+
             # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point
             # (in the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
@@ -872,68 +919,50 @@ def _collapsed_velocities_from_line_vortices(
             r2Z_GP1 = Elvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
             # The r3_GP1 vector is the cross product of r1_GP1 and r2_GP1 (in the first
-            # Airplane's geometry axes).
-            r3X_GP1 = r1Y_GP1 * r2Z_GP1 - r1Z_GP1 * r2Y_GP1
-            r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
-            r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
+            # Airplane's geometry axes). It is computed as r1_GP1 x r0_GP1, which is
+            # equal because r2_GP1 = r1_GP1 + r0_GP1, but avoids cancellation when the
+            # point is far from the line vortex relative to its length.
+            r3X_GP1 = r1Y_GP1 * r0Z_GP1 - r1Z_GP1 * r0Y_GP1
+            r3Y_GP1 = r1Z_GP1 * r0X_GP1 - r1X_GP1 * r0Z_GP1
+            r3Z_GP1 = r1X_GP1 * r0Y_GP1 - r1Y_GP1 * r0X_GP1
 
             # Find the lengths of r1_GP1 and r2_GP1.
             r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
             r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
-            # Check for singularities using scale invariant criteria. The vertex
-            # proximity checks (r1/r0 and r2/r0 but refactored below to use
-            # multiplication instead of slower division) guard 1/r singularities.
-            r0_times_tol = vortex_r0_times_tol[vortex_id]
-            if r1 < r0_times_tol:
-                point_singularity_counts[point_id, 1] += 1
-                continue
-            if r2 < r0_times_tol:
-                point_singularity_counts[point_id, 2] += 1
-                continue
-
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
             r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
 
-            # Find the length of r3_GP1.
-            r3 = math.sqrt(r3_sq)
-
-            # Cache r1 * r2 as it is used for the collinearity check and twice in the
-            # c_4 calculation.
+            # Cache r1 * r2 as it is used twice in the c_4 calculation.
             r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
 
-            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
-            # multiplication instead of division refactor) guards catastrophic
-            # cancellation in 1-cos(theta).
-            if r3 < (_tol * r1_times_r2):
-                # Collinearity can indicate one of two things. If the point is collinear
-                # and between the filament's vertices, it is a true singularity (the
-                # Biot-Savart equation diverges), so we exclude the contribution as it
-                # is the influence of the filament on itself. If the point is collinear
-                # and off to one side of the filament, it isn't a true singularity, as
-                # the Biot-Savart equation (if calculated with infinite precision)
-                # correctly returns zero induced velocity. However, we still run into
-                # the catastrophic cancellation issue, so we again manually return zero
-                # induced velocity contribution. These two situations are distinguished
-                # by the sign of the c_3 (the dot product of r1 and r2).
-                if c_3 < 0.0:
-                    point_singularity_counts[point_id, 3] += 1
+            # The denominator is zero only if the point is on a vertex, as the core
+            # radius is always positive. Skip these true singularities.
+            denominator = r1_times_r2 * (r3_sq + vortex_c2[vortex_id])
+            if denominator == 0.0:
+                if r1 == 0.0:
+                    point_singularity_counts[point_id, 1] += 1
+                elif r2 == 0.0:
+                    point_singularity_counts[point_id, 2] += 1
                 continue
 
-            c_4 = (
-                vortex_c1[vortex_id]
-                * (r1 + r2)
-                * (r1_times_r2 - c_3)
-                / (r1_times_r2 * (r3_sq + vortex_c2[vortex_id]))
-            )
+            # Find r1 * r2 - c_3 in the form that doesn't cancel for this angle. For c_3
+            # >= 0.0 (theta <= 90 degrees), use the identity r1 * r2 - c_3 = r3_sq / (r1
+            # * r2 + c_3). For c_3 < 0.0, the direct difference is safe.
+            if c_3 >= 0.0:
+                numerator = r3_sq / (r1_times_r2 + c_3)
+            else:
+                numerator = r1_times_r2 - c_3
+
+            c_4 = vortex_c1[vortex_id] * (r1 + r2) * numerator / denominator
             stackVInd_GP1__E[point_id, 0] += c_4 * r3X_GP1
             stackVInd_GP1__E[point_id, 1] += c_4 * r3Y_GP1
             stackVInd_GP1__E[point_id, 2] += c_4 * r3Z_GP1
 
     # Aggregate per point singularity counts into the output array.
-    for k in range(1, 4):
+    for k in range(1, 3):
         for p in range(num_points):
             singularity_counts[k] += point_singularity_counts[p, k]
 
@@ -986,13 +1015,14 @@ def _expanded_velocities_from_line_vortices(
     :param strengths: A (M,) ndarray of floats representing the strengths of the M line
         vortices. The units are in meters squared per second.
     :param r_c0s: A (M,) ndarray of floats representing the initial core radii of the M
-        line vortices. Based on results from Ramasamy and Leishman (2007), a reasonable
-        value that works across scales is 3.0% the chord length of each line vortex's
-        parent Wing. The units are in meters.
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity. Counts are
-        incremented in place and accumulate across calls.
+        line vortices. Pass zeros for bound line vortices, which then take the kernels'
+        numerical floor. For wake line vortices, a reasonable value based on results
+        from Ramasamy and Leishman (2007) is 3.0% the chord length of the parent Wing.
+        The units are in meters.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex. Counts are incremented in place and
+        accumulate across calls.
     :param ages: For bound line vortices, this must be None. For line vortices that have
         been shed into the wake, it must be a (M,) ndarray of floats representing the
         ages of the M line vortices in seconds. The default is None.
@@ -1017,10 +1047,9 @@ def _expanded_velocities_from_line_vortices(
     # Pre compute per line vortex quantities in a serial pass. This hoists invariant
     # work out of the parallel point loop and correctly counts degenerate filaments,
     # which are a per line vortex property, not per point.
-    vortex_valid = np.empty(num_vortices, dtype=np.bool_)
+    vortex_valid = np.empty(num_vortices, dtype=np.bool)
     vortex_c1 = np.empty(num_vortices)
     vortex_c2 = np.empty(num_vortices)
-    vortex_r0_times_tol = np.empty(num_vortices)
 
     for vortex_id in range(num_vortices):
         Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
@@ -1036,7 +1065,7 @@ def _expanded_velocities_from_line_vortices(
         r0 = math.sqrt(r0X_GP1**2.0 + r0Y_GP1**2.0 + r0Z_GP1**2.0)
 
         # Skip degenerate filaments where the start and end points coincide.
-        if r0 < _eps:
+        if r0 < _EPS:
             singularity_counts[0] += 1
             vortex_valid[vortex_id] = False
             continue
@@ -1045,22 +1074,20 @@ def _expanded_velocities_from_line_vortices(
 
         strength = strengths[vortex_id]
         age = ages[vortex_id]
-        r_c0 = r_c0s[vortex_id]
 
-        # Pre compute r0 * _tol outside the parallel loop.
-        vortex_r0_times_tol[vortex_id] = r0 * _tol
+        # Clamp the initial core radius to the numerical floor.
+        r_c0 = max(r_c0s[vortex_id], _CORE_FRACTION * r0)
 
-        # Calculate the radius of the line vortex's core squared. The initial core
-        # radius ensures nonzero regularization even for bound vortices with zero age.
-        r_c_sq = r_c0**2.0 + _four_lamb * (nu + _squire * abs(strength)) * age
+        # Calculate the radius of the line vortex's core squared.
+        r_c_sq = r_c0**2.0 + _FOUR_LAMB * (nu + _SQUIRE * abs(strength)) * age
 
-        vortex_c1[vortex_id] = strength / _four_pi
+        vortex_c1[vortex_id] = strength / _FOUR_PI
         vortex_c2[vortex_id] = r0**2.0 * r_c_sq
 
     # Use per point singularity counts to avoid write races in the parallel loop. Index
-    # mapping: [1] vertex start proximity, [2] vertex end proximity, [3] collinearity.
-    # Index [0] (degenerate filament) is handled in the serial pre pass above.
-    point_singularity_counts = np.zeros((num_points, 4), dtype=np.int64)
+    # mapping: [1] point on start vertex, [2] point on end vertex. Index [0] (degenerate
+    # filament) is handled in the serial pre pass above.
+    point_singularity_counts = np.zeros((num_points, 3), dtype=np.int64)
 
     # Numba does not annotate prange.__new__, so mypy cannot tell that calling prange
     # returns an iterable. Once this is fixed upstream, warn_unused_ignores will flag
@@ -1075,6 +1102,12 @@ def _expanded_velocities_from_line_vortices(
             Slvp_GP1_CgP1 = stackSlvp_GP1_CgP1[vortex_id]
             Elvp_GP1_CgP1 = stackElvp_GP1_CgP1[vortex_id]
 
+            # The r0_GP1 vector goes from the line vortex's start point to its end point
+            # (in the first Airplane's geometry axes).
+            r0X_GP1 = Elvp_GP1_CgP1[0] - Slvp_GP1_CgP1[0]
+            r0Y_GP1 = Elvp_GP1_CgP1[1] - Slvp_GP1_CgP1[1]
+            r0Z_GP1 = Elvp_GP1_CgP1[2] - Slvp_GP1_CgP1[2]
+
             # The r1_GP1 vector goes from P_GP1_CgP1 to the line vortex's start point
             # (in the first Airplane's geometry axes).
             r1X_GP1 = Slvp_GP1_CgP1[0] - P_GP1_CgP1[0]
@@ -1088,68 +1121,50 @@ def _expanded_velocities_from_line_vortices(
             r2Z_GP1 = Elvp_GP1_CgP1[2] - P_GP1_CgP1[2]
 
             # The r3_GP1 vector is the cross product of r1_GP1 and r2_GP1 (in the first
-            # Airplane's geometry axes).
-            r3X_GP1 = r1Y_GP1 * r2Z_GP1 - r1Z_GP1 * r2Y_GP1
-            r3Y_GP1 = r1Z_GP1 * r2X_GP1 - r1X_GP1 * r2Z_GP1
-            r3Z_GP1 = r1X_GP1 * r2Y_GP1 - r1Y_GP1 * r2X_GP1
+            # Airplane's geometry axes). It is computed as r1_GP1 x r0_GP1, which is
+            # equal because r2_GP1 = r1_GP1 + r0_GP1, but avoids cancellation when the
+            # point is far from the line vortex relative to its length.
+            r3X_GP1 = r1Y_GP1 * r0Z_GP1 - r1Z_GP1 * r0Y_GP1
+            r3Y_GP1 = r1Z_GP1 * r0X_GP1 - r1X_GP1 * r0Z_GP1
+            r3Z_GP1 = r1X_GP1 * r0Y_GP1 - r1Y_GP1 * r0X_GP1
 
             # Find the lengths of r1_GP1 and r2_GP1.
             r1 = math.sqrt(r1X_GP1**2.0 + r1Y_GP1**2.0 + r1Z_GP1**2.0)
             r2 = math.sqrt(r2X_GP1**2.0 + r2Y_GP1**2.0 + r2Z_GP1**2.0)
 
-            # Check for singularities using scale invariant criteria. The vertex
-            # proximity checks (r1/r0 and r2/r0 but refactored below to use
-            # multiplication instead of slower division) guard 1/r singularities.
-            r0_times_tol = vortex_r0_times_tol[vortex_id]
-            if r1 < r0_times_tol:
-                point_singularity_counts[point_id, 1] += 1
-                continue
-            if r2 < r0_times_tol:
-                point_singularity_counts[point_id, 2] += 1
-                continue
-
             # Cache squared length of r3_GP1 as it is used in the c_4 calculation.
             r3_sq = r3X_GP1**2.0 + r3Y_GP1**2.0 + r3Z_GP1**2.0
 
-            # Find the length of r3_GP1.
-            r3 = math.sqrt(r3_sq)
-
-            # Cache r1 * r2 as it is used for the collinearity check and twice in the
-            # c_4 calculation.
+            # Cache r1 * r2 as it is used twice in the c_4 calculation.
             r1_times_r2 = r1 * r2
 
             c_3 = r1X_GP1 * r2X_GP1 + r1Y_GP1 * r2Y_GP1 + r1Z_GP1 * r2Z_GP1
 
-            # The collinearity check (r3/(r1*r2) = |sin(theta)| but with the same
-            # multiplication instead of division refactor) guards catastrophic
-            # cancellation in 1-cos(theta).
-            if r3 < (_tol * r1_times_r2):
-                # Collinearity can indicate one of two things. If the point is collinear
-                # and between the filament's vertices, it is a true singularity (the
-                # Biot-Savart equation diverges), so we exclude the contribution as it
-                # is the influence of the filament on itself. If the point is collinear
-                # and off to one side of the filament, it isn't a true singularity, as
-                # the Biot-Savart equation (if calculated with infinite precision)
-                # correctly returns zero induced velocity. However, we still run into
-                # the catastrophic cancellation issue, so we again manually return zero
-                # induced velocity contribution. These two situations are distinguished
-                # by the sign of the c_3 (the dot product of r1 and r2).
-                if c_3 < 0.0:
-                    point_singularity_counts[point_id, 3] += 1
+            # The denominator is zero only if the point is on a vertex, as the core
+            # radius is always positive. Skip these true singularities.
+            denominator = r1_times_r2 * (r3_sq + vortex_c2[vortex_id])
+            if denominator == 0.0:
+                if r1 == 0.0:
+                    point_singularity_counts[point_id, 1] += 1
+                elif r2 == 0.0:
+                    point_singularity_counts[point_id, 2] += 1
                 continue
 
-            c_4 = (
-                vortex_c1[vortex_id]
-                * (r1 + r2)
-                * (r1_times_r2 - c_3)
-                / (r1_times_r2 * (r3_sq + vortex_c2[vortex_id]))
-            )
+            # Find r1 * r2 - c_3 in the form that doesn't cancel for this angle. For c_3
+            # >= 0.0 (theta <= 90 degrees), use the identity r1 * r2 - c_3 = r3_sq / (r1
+            # * r2 + c_3). For c_3 < 0.0, the direct difference is safe.
+            if c_3 >= 0.0:
+                numerator = r3_sq / (r1_times_r2 + c_3)
+            else:
+                numerator = r1_times_r2 - c_3
+
+            c_4 = vortex_c1[vortex_id] * (r1 + r2) * numerator / denominator
             gridVInd_GP1__E[point_id, vortex_id, 0] = c_4 * r3X_GP1
             gridVInd_GP1__E[point_id, vortex_id, 1] = c_4 * r3Y_GP1
             gridVInd_GP1__E[point_id, vortex_id, 2] = c_4 * r3Z_GP1
 
     # Aggregate per point singularity counts into the output array.
-    for k in range(1, 4):
+    for k in range(1, 3):
         for p in range(num_points):
             singularity_counts[k] += point_singularity_counts[p, k]
 

@@ -45,15 +45,16 @@ class Airplane:
     inducedDrag_W: The total induced drag force experienced by this Airplane (in wind
     axes).
 
-    sideForce_W: The total side force experienced by this Airplane (in wind axes).
+    crosswindForce_W: The total crosswind force experienced by this Airplane (in wind
+    axes).
 
     lift_W: The total lift force experienced by this Airplane (in wind axes).
 
     inducedDragCoefficient_W: The total induced drag force coefficient experienced by
     this Airplane (in wind axes).
 
-    sideForceCoefficient_W: The total side force coefficient experienced by this
-    Airplane (in wind axes).
+    crosswindForceCoefficient_W: The total crosswind force coefficient experienced by
+    this Airplane (in wind axes).
 
     liftCoefficient_W: The total lift force coefficient experienced by this Airplane (in
     wind axes).
@@ -185,7 +186,7 @@ class Airplane:
             equal to zero. The default is 0.0. In free flight, it must also be
             consistent with the FreeFlightUnsteadyProblem's mass and the
             OperatingPoint's gravitational acceleration, satisfying weight == mass *
-            |g_E| within floating point tolerance.
+            np.linalg.norm(g_E) within floating point tolerance.
         :param s_ref: A number (int or float) representing the reference wetted area. If
             not set or set to None (the default), it populates from first Wing. If set,
             it must be greater than zero, and will be converted to a float internally.
@@ -350,16 +351,9 @@ class Airplane:
         This method is used by AirplaneMovement to create Airplanes at different time
         steps that share the same geometry but have different positions in the
         formation. It maintains immutability by returning a new Airplane rather than
-        modifying the existing one.
-
-        Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to differ
-        from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs, panels, etc.)
-        is defined relative to this Airplane's own CG, not the formation position, so it
-        remains valid, (2) Panel local coordinates (_G_Cg) are independent of formation
-        position (global coordinates (_GP1_CgP1) are reset to None by Panel's
-        __deepcopy__ and will be recomputed by the Problem using the new transformation
-        matrix), and (3) all other child objects (WingCrossSections, Airfoils, vortices)
-        have no dependency on Cg_GP1_CgP1.
+        modifying the existing one. The Wings and their child objects are deep copied
+        unchanged, since their geometry is defined relative to this Airplane's own CG
+        rather than its position in the formation.
 
         :param new_Cg_GP1_CgP1: An array-like object of 3 numbers representing the
             position of the new Airplane's CG (in the first Airplane's geometry axes,
@@ -367,6 +361,15 @@ class Airplane:
             Values are converted to floats internally. The units are in meters.
         :return: A new Airplane with the specified position and deep copied geometry.
         """
+        # Only Cg_GP1_CgP1 and its derived cache (_T_pas_G_Cg_to_GP1_CgP1) need to
+        # differ from a standard deep copy because (1) Wing geometry (Ler_Gs_Cgs,
+        # panels, etc.) is defined relative to this Airplane's own CG, not the formation
+        # position, so it remains valid, (2) Panel local coordinates (_G_Cg) are
+        # independent of formation position (global coordinates (_GP1_CgP1) are reset to
+        # None by Panel's __deepcopy__ and will be recomputed by the Problem using the
+        # new transformation matrix), and (3) all other child objects
+        # (WingCrossSections, Airfoils, vortices) have no dependency on Cg_GP1_CgP1.
+
         # Validate the new position.
         validated_Cg_GP1_CgP1 = (
             _parameter_validation.threeD_number_vectorLike_return_float(
@@ -469,7 +472,7 @@ class Airplane:
             Airplane's geometry axes, relative to its CG.
         """
         if self._T_pas_G_Cg_to_GP1_CgP1 is None:
-            # generate_trans_T with passive=True expects the `translations` parameter to
+            # generate_trans_T with passive=True expects the translations parameter to
             # be the position of the target reference point (CgP1) relative to the
             # source reference point (Cg). Using the notation from
             # AXES_POINTS_AND_FRAMES.md: translations = CgP1_G_Cg. However, we have
@@ -498,17 +501,17 @@ class Airplane:
         return float(-self.forces_W[0])
 
     @property
-    def sideForce_W(self) -> float | None:
-        """The total side force experienced by this Airplane (in wind axes).
+    def crosswindForce_W(self) -> float | None:
+        """The total crosswind force experienced by this Airplane (in wind axes).
 
-        Side force points along the wind axes' +y basis direction, so it equals the wind
-        axes' y force component.
+        Crosswind force points along the wind axes' -y basis direction, so it is the
+        negative of the wind axes' y force component.
 
-        :return: The side force in Newtons, or None if forces_W has not been set.
+        :return: The crosswind force in Newtons, or None if forces_W has not been set.
         """
         if self.forces_W is None:
             return None
-        return float(self.forces_W[1])
+        return float(-self.forces_W[1])
 
     @property
     def lift_W(self) -> float | None:
@@ -539,18 +542,19 @@ class Airplane:
         return float(-self.forceCoefficients_W[0])
 
     @property
-    def sideForceCoefficient_W(self) -> float | None:
-        """The total side force coefficient experienced by this Airplane (in wind axes).
+    def crosswindForceCoefficient_W(self) -> float | None:
+        """The total crosswind force coefficient experienced by this Airplane (in wind
+        axes).
 
-        Side force coefficient corresponds to the wind axes' +y basis direction, so it
-        equals the wind axes' y force coefficient component.
+        Crosswind force coefficient corresponds to the wind axes' -y basis direction, so
+        it is the negative of the wind axes' y force coefficient component.
 
-        :return: The side force coefficient, or None if forceCoefficients_W has not been
-            set.
+        :return: The crosswind force coefficient, or None if forceCoefficients_W has not
+            been set.
         """
         if self.forceCoefficients_W is None:
             return None
-        return float(self.forceCoefficients_W[1])
+        return float(-self.forceCoefficients_W[1])
 
     @property
     def liftCoefficient_W(self) -> float | None:
@@ -657,7 +661,7 @@ class Airplane:
 
     # --- Other methods ---
     def draw(
-        self, save: bool | np.bool_ = False, testing: bool | np.bool_ = False
+        self, save: bool | np.bool = False, testing: bool | np.bool = False
     ) -> None:
         """Draws the 3D geometry of this Airplane.
 
@@ -785,7 +789,7 @@ class Airplane:
         pv.close_all()
 
     def get_plottable_data(
-        self, show: bool | np.bool_ = False
+        self, show: bool | np.bool = False
     ) -> list[list[list[np.ndarray]]] | None:
         """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
         lines.
@@ -1183,7 +1187,7 @@ class Airplane:
                 and root_wing_cross_section.control_surface_deflection != 0.0
             ):
                 raise ValueError(
-                    "control_surface_symmetry_type cannot be 'asymmetric' with a "
+                    'control_surface_symmetry_type cannot be "asymmetric" with a '
                     "nonzero control_surface_deflection on the root WingCrossSection "
                     "of a Wing with a coincident symmetry plane"
                 )

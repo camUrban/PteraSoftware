@@ -500,7 +500,7 @@ class WingCrossSection:
     # --- Other methods ---
     def get_plottable_data(
         self,
-        show: bool | np.bool_ = False,
+        show: bool | np.bool = False,
     ) -> list[np.ndarray] | None:
         """Returns plottable data for this WingCrossSection's Airfoil's outline and mean
         camber line.

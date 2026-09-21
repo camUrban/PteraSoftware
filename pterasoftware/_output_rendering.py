@@ -46,7 +46,7 @@ TEXT_COLOR_SURFACE = (220, 220, 220)
 PLOTTER_BACKGROUND_COLOR = "black"
 
 # Define the valid scalar types for coloring Panels.
-VALID_SCALAR_TYPES = ("induced drag", "side force", "lift")
+VALID_SCALAR_TYPES = ("induced drag", "crosswind force", "lift")
 
 # Define the shading coefficients for the MuJoCo geom actors, which are the only lit
 # actors in any scene. Every other actor is added with lighting disabled, so the
@@ -892,8 +892,8 @@ def get_scalars(
 
     :param airplanes: The tuple of Airplanes with the scalars to return.
     :param scalar_type: Determines which load coefficient to return as scalars. Can be
-        "induced drag", "side force", or "lift", which respectively use each Panel's
-        induced drag, side force, and lift coefficient.
+        "induced drag", "crosswind force", or "lift", which respectively use each
+        Panel's induced drag, crosswind force, and lift coefficient.
     :param qInf__E: The current freestream dynamic pressure experienced by this
         SteadyProblem's Airplane(s) (observed in the Earth frame). The units are in
         Pascals.
@@ -904,7 +904,7 @@ def get_scalars(
     # Map the scalar type string to the corresponding Panel named force attribute.
     panel_force_attributes = {
         "induced drag": "inducedDrag_W",
-        "side force": "sideForce_W",
+        "crosswind force": "crosswindForce_W",
         "lift": "lift_W",
     }
 
@@ -1183,7 +1183,7 @@ def _plot_scalars(
     :param these_scalars: A (N,) ndarray of floats representing the N Panels' load
         coefficients.
     :param scalar_type: Which load coefficient is represented by the scalars. Can be
-        "induced drag", "side force", or "lift".
+        "induced drag", "crosswind force", or "lift".
     :param min_scalar: Minimum scalar value, which is displayed as text on the Plotter.
     :param max_scalar: Maximum scalar value, which is displayed as text on the Plotter.
     :param color_map: The color map to use for scalar visualization.

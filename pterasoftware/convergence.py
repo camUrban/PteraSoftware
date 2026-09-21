@@ -60,7 +60,7 @@ def analyze_steady_convergence(
     rtol: float | int = 0.05,
     atol: float | int = 0.001,
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
-    resolve_converged_solver: bool | np.bool_ = False,
+    resolve_converged_solver: bool | np.bool = False,
     cache_path: str | Path | None = None,
 ) -> (
     tuple[
@@ -220,11 +220,11 @@ def analyze_steady_convergence(
         cache_path = Path(cache_path)
         if cache_path.suffix != ".json":
             raise ValueError(
-                f"cache_path must end with '.json', got '{cache_path.name}'."
+                f'cache_path must end with ".json", got "{cache_path.name}".'
             )
         if cache_path.is_dir():
             raise ValueError(
-                f"cache_path must be a file path, got directory '{cache_path}'."
+                f'cache_path must be a file path, got directory "{cache_path}".'
             )
 
     run_start_time = time.time()
@@ -702,8 +702,8 @@ def analyze_steady_convergence(
 
 def analyze_unsteady_convergence(
     ref_problem: problems.UnsteadyProblem,
-    prescribed_wake: bool | np.bool_ = True,
-    free_wake: bool | np.bool_ = True,
+    prescribed_wake: bool | np.bool = True,
+    free_wake: bool | np.bool = True,
     num_cycles_bounds: tuple[int, int] | None = None,
     num_chords_bounds: tuple[int, int] | None = None,
     panel_aspect_ratio_bounds: tuple[int, int] = (4, 1),
@@ -711,8 +711,8 @@ def analyze_unsteady_convergence(
     rtol: float | int = 0.05,
     atol: float | int = 0.001,
     coefficient_mask: tuple[bool, bool, bool, bool, bool, bool] | None = None,
-    show_solver_progress: bool | np.bool_ = True,
-    resolve_converged_solver: bool | np.bool_ = False,
+    show_solver_progress: bool | np.bool = True,
+    resolve_converged_solver: bool | np.bool = False,
     cache_path: str | Path | None = None,
     force_method: str = "joukowski",
 ) -> (
@@ -801,25 +801,25 @@ def analyze_unsteady_convergence(
         truncate its wake, because this analysis sweeps the wake's length, so its
         max_wake_rows, max_wake_chords, and max_wake_cycles parameters must all be None.
     :param prescribed_wake: Determines if a prescribed wake state should be analyzed. If
-        this parameter is False, then the ``free_wake`` parameter must be set to True.
-        Can be a bool or a numpy bool and will be converted to a bool internally. The
+        this parameter is False, then the free_wake parameter must be set to True. Can
+        be a bool or a numpy bool and will be converted to a bool internally. The
         default is True.
     :param free_wake: Determines if a free wake state should be analyzed. If this
-        parameter is False, then the ``prescribed_wake`` parameter must be set to True.
-        Can be a bool or a numpy bool and will be converted to a bool internally. The
+        parameter is False, then the prescribed_wake parameter must be set to True. Can
+        be a bool or a numpy bool and will be converted to a bool internally. The
         default is True.
     :param num_cycles_bounds: For problems with non static geometry, determines the
         range of wake lengths (measured in number of maximum-period motion cycles) to
         simulate. For problems with static geometry, this must be None, and the
-        ``num_chords_bounds`` parameter will control the range of wake lengths instead.
+        num_chords_bounds parameter will control the range of wake lengths instead.
         Otherwise, it must be a tuple of two positive ints with the first value less
         than or equal to the second value. Reasonable values range from 1 to 10,
         depending strongly on the Strouhal number. The default is None.
     :param num_chords_bounds: For problems with static geometry, determines the range of
         wake lengths (measured in number of reference chords) to simulate. For problems
-        with non static geometry, it must be None, and the ``num_cycles_bounds``
-        parameter will control the wake length instead. Otherwise, it must be a tuple of
-        two positive ints with the first value less than or equal to the second value.
+        with non static geometry, it must be None, and the num_cycles_bounds parameter
+        will control the wake length instead. Otherwise, it must be a tuple of two
+        positive ints with the first value less than or equal to the second value.
         Reasonable values range from 3 to 20. The default is None.
     :param panel_aspect_ratio_bounds: A tuple of two ints, in descending order, that
         determines the range of Panel aspect ratios to consider, from largest to
@@ -988,18 +988,18 @@ def analyze_unsteady_convergence(
         cache_path = Path(cache_path)
         if cache_path.suffix != ".json":
             raise ValueError(
-                f"cache_path must end with '.json', got '{cache_path.name}'."
+                f'cache_path must end with ".json", got "{cache_path.name}".'
             )
         if cache_path.is_dir():
             raise ValueError(
-                f"cache_path must be a file path, got directory '{cache_path}'."
+                f'cache_path must be a file path, got directory "{cache_path}".'
             )
 
     # Validate the force_method parameter.
     force_method = _parameter_validation.str_return_str(force_method, "force_method")
     if force_method not in ("joukowski", "katz"):
         raise ValueError(
-            f"force_method must be 'joukowski' or 'katz', got '{force_method}'."
+            f'force_method must be "joukowski" or "katz", got "{force_method}".'
         )
 
     run_start_time = time.time()

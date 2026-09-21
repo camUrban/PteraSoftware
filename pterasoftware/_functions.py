@@ -32,9 +32,8 @@ _logger = _logging.get_logger("_functions")
 
 _SINGULARITY_NAMES: tuple[str, ...] = (
     "degenerate filament",
-    "vertex start proximity",
-    "vertex end proximity",
-    "collinearity",
+    "point on start vertex",
+    "point on end vertex",
 )
 
 
@@ -50,9 +49,9 @@ def log_unexpected_singularity_counts(
     :param level: The logging level (e.g., logging.ERROR, logging.INFO).
     :param context: A string describing the call site context (e.g.,
         "_calculate_wing_wing_influences").
-    :param singularity_counts: A (4,) ndarray of int64 representing the cumulative
-        counts of singularity events. Index mapping: [0] degenerate filament, [1] vertex
-        start proximity, [2] vertex end proximity, [3] collinearity.
+    :param singularity_counts: A (3,) ndarray of int64 representing the cumulative
+        counts of singularity events. Index mapping: [0] degenerate filament, [1] point
+        on start vertex, [2] point on end vertex.
     :return: None
     """
     total = singularity_counts.sum()
@@ -60,7 +59,7 @@ def log_unexpected_singularity_counts(
         return
 
     parts = []
-    for i in range(4):
+    for i in range(3):
         count = singularity_counts[i]
         if count > 0:
             parts.append(f"{_SINGULARITY_NAMES[i]}={count}")
@@ -180,7 +179,7 @@ def calculate_streamlines(
         solver.stackSeedPoints_GP1_CgP1, axis=0
     )
 
-    bound_singularity_counts = np.zeros(4, dtype=np.int64)
+    bound_singularity_counts = np.zeros(3, dtype=np.int64)
 
     # Iterate through the streamline time steps.
     for step in range(num_steps):
@@ -787,8 +786,8 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
     Only one solve loop may be active per process. A second one entered while the first
     is still running raises, rather than silently corrupting the process-wide BLAS
     thread count that both would be saving and restoring. Run simulations in parallel
-    with separate processes using the 'spawn' or 'forkserver' start method (for example,
-    mp_context=multiprocessing.get_context('spawn') for ProcessPoolExecutor) rather than
+    with separate processes using the "spawn" or "forkserver" start method (for example,
+    mp_context=multiprocessing.get_context("spawn") for ProcessPoolExecutor) rather than
     with separate threads or with fork-method multiprocessing after a solve has run.
     Forking after a solve that has initialized Numba's GNU OpenMP layer would abort at
     the child kernel launch on GCC Linux builds, so a forked child that inherited a live
@@ -816,23 +815,23 @@ def solve_loop_thread_limits(num_panels: int) -> Iterator[None]:
                 "layer from its parent after a solver run. Fork-method "
                 "multiprocessing cannot be used after a solve has run in the "
                 "parent process, because the child would abort at its first "
-                "parallel kernel launch on GCC Linux builds. Use the 'spawn' or "
-                "'forkserver' start method instead, for example "
-                "mp_context=multiprocessing.get_context('spawn') for "
+                'parallel kernel launch on GCC Linux builds. Use the "spawn" or '
+                '"forkserver" start method instead, for example '
+                'mp_context=multiprocessing.get_context("spawn") for '
                 "ProcessPoolExecutor, or create worker processes before the first "
                 "solve."
             )
         if _solve_loop_owner is not None:
             raise RuntimeError(
                 f"A solver run is already in progress in thread "
-                f"'{_solve_loop_owner}', and thread '{this_thread}' tried to start "
+                f'"{_solve_loop_owner}", and thread "{this_thread}" tried to start '
                 f"another. Ptera Software's solvers cannot run concurrently within one "
                 f"process, because limiting the BLAS thread pool around a run's linear "
                 f"solves changes process-wide state that concurrent runs would corrupt, "
                 f"silently capping the process at a single BLAS thread. Run simulations "
-                f"in parallel with separate processes using the 'spawn' or "
-                f"'forkserver' start method, for example "
-                f"mp_context=multiprocessing.get_context('spawn') for "
+                f'in parallel with separate processes using the "spawn" or '
+                f'"forkserver" start method, for example '
+                f'mp_context=multiprocessing.get_context("spawn") for '
                 f"ProcessPoolExecutor, rather than with separate threads or with "
                 f"fork-method multiprocessing after a solve has run. Threads "
                 f"would not speed the solvers up in any case, because the compiled "

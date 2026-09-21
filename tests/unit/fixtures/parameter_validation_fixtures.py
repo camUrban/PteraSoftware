@@ -26,12 +26,12 @@ def make_empty_str_fixture() -> str:
 # Valid bool fixtures.
 
 
-def make_valid_numpy_bool_fixture() -> np.bool_:
+def make_valid_numpy_bool_fixture() -> np.bool:
     """Makes a fixture that is a valid numpy bool for boolLike_return_bool.
 
     :return: A valid numpy bool.
     """
-    return np.bool_(False)
+    return np.bool(False)
 
 
 # Valid int in range fixtures.

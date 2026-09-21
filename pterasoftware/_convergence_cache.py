@@ -153,6 +153,7 @@ def write_cache(
     temp_path = cache_path.parent / (cache_path.name + ".tmp")
     with open(temp_path, "w") as cache_file:
         json.dump(data, cache_file)
+        cache_file.write("\n")
     os.replace(temp_path, cache_path)
 
 

@@ -1,13 +1,4 @@
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Airfoil class."""
 
 from __future__ import annotations
 
@@ -28,22 +19,7 @@ _UNSET: Any = object()
 
 
 class Airfoil:
-    """A class used to contain the Airfoil of a WingCrossSection.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Returns an independent deep copy of this Airfoil.
-
-    add_control_surface: Returns a version of the Airfoil with a control surface added
-    at a given point.
-
-    draw: Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
-
-    get_plottable_data: Returns plottable data for this Airfoil's outline and mean
-    camber line.
-
-    get_resampled_mcl: Returns a ndarray of points along the mean camber line (MCL),
-    resampled from the mcl_A_Lp attribute. It is used to discretize the MCL for meshing.
+    """A class used to contain the airfoil of a WingCrossSection.
 
     **Citation:**
 

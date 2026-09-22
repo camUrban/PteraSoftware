@@ -275,7 +275,7 @@ def custom_spacing(x: float) -> float:
 5. **Use present tense for descriptions** (e.g., "Returns..." not "Will return...")
 6. **Avoid starting descriptions with "This..."**
 7. **Follow the ASCII Only rule in [WRITING_STYLE.md](WRITING_STYLE.md)**, which covers all character substitutions (dashes, math symbols, smart quotes, ellipsis, arrows, emojis, and other typographic Unicode) used across the project's prose, comments, and docstrings.
-8. **Place closing triple-quotes on their own line**
+8. **If the docstring is multiple paragraphs or contains any blank lines, place closing triple-quotes on their own line (otherwise, place them directly behind the last sentence)**
 9. **Summary line is a single sentence.** Any additional description goes in a new paragraph after a blank line. docformatter enforces this: if the first paragraph contains multiple sentences, it moves all but the first into a new paragraph.
 10. **No blank line between the closing triple-quotes and the next line of code.** docformatter enforces this too: a blank gap after the docstring will be removed.
 11. **No backticks in prose.** Write identifiers, expressions, calls, and keyword assignments bare (the free_wake parameter, passive=True, get_logger("trim")). Single backticks are not code markup in rST (they render as italics), and the identifier casing already sets names apart from prose. The one place double backticks belong is inside an rST line block (a line starting with `|`) holding a standalone code example, as in the use-case blocks of `_transformations.py`. Comments follow the same rule, as the Markup and Quoting section of [WRITING_STYLE.md](WRITING_STYLE.md) records, along with the code span rules for Markdown files.
@@ -284,80 +284,20 @@ def custom_spacing(x: float) -> float:
 
 ### Module-Level Docstrings
 
-Module-level docstrings appear at the very top of each Python file and describe the module's contents. The style varies based on the type of module.
-
-#### Public Package `__init__.py` Files
-
-`__init__.py` files for a public package list subpackages, directories, and modules:
+Module-level docstrings appear at the very top of each Python file and describe the module's contents. For a package's `__init__.py` module, it should instead describe the package's contents.
 
 ```python
-"""Contains the geometry classes.
+"""Contains the <placeholder> classes/functions/subpackages/directories/modules.
 
-**Contains the following subpackages:**
+<Optional longer description block.>
 
-None
-
-**Contains the following directories:**
-
-None
-
-**Contains the following modules:**
-
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
+<Optional citation block.>
 """
 ```
 
 **Pattern:**
 
 - Brief description using "Contains" (present tense)
-- List public subpackages (or "None")
-- List public directories (or "None")
-- List public modules with one-line descriptions
-- Use blank lines between subpackages/directories/module entries for readability
-
-#### Public Modules
-
-Public modules (e.g., `airfoil.py`, `wing.py`) have structured docstrings listing their contents:
-
-```python
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
-```
-
-**Pattern:**
-
-- Brief description using "Contains" (present tense)
-- List public classes with brief descriptions (use "A class used to..." or similar)
-- List public functions (or "None")
-- Use blank lines between class/function entries if there are multiple
-
-#### Private Modules
-
-Private modules (e.g., `_meshing.py`, `_functions.py`) have minimal docstrings:
-
-```python
-"""Contains the function for meshing Wings."""
-```
-
-**Pattern:**
-
-- Single brief sentence
-- No listing of functions or classes
-- Keep it concise since these are internal implementation details
 
 ### Function and Method Docstrings
 
@@ -367,20 +307,11 @@ def function_name(
     param2: Type2,
     param3: Type3,
 ) -> ReturnType:
-    """Short description of what the function does.
+    """Short description of what the function/method does.
 
-    Optional longer description providing more context. This provides detailed
-    explanations of the function's behavior. It can be one or more paragraphs.
+    <Optional longer description block.>
 
-    Optional citation block:
-
-    **Citation:**
-
-    Adapted from (can be more specific if the whole function wasn't adapted): <source>
-
-    Author (or "Authors"): <author>
-
-    Date of retrieval (don't include if not known): <date>
+    <Optional citation block.>
 
     :param param1: A (shape) dtype description of param1. Additional details about
         what it represents, valid ranges, units, etc. Can wrap to multiple lines.
@@ -422,30 +353,9 @@ For numpy arrays, always include:
 class ClassName:
     """Short description of the class.
 
-    **Contains the following methods:**
+    <Optional longer description block.>
 
-    public_method_1: Short description (identical to method's docstring's short
-    description).
-
-    public_method_2: Short description (identical to method's docstring's short
-    description).
-
-    Optional notes block
-
-    **Notes:**
-
-    Detailed description of the class's purpose, behavior, or usage. Can be one or more
-    paragraphs. Avoid numbered or bulleted lists.
-
-    Optional citation block:
-
-    **Citation:**
-
-    Adapted from (can be more specific if the whole class wasn't adapted): <source>
-
-    Author (or "Authors"): <author>
-
-    Date of retrieval (don't include if not known): <date>
+    <Optional citation block.>
     """
 ```
 
@@ -459,26 +369,18 @@ When a class inherits from another class, use a modified pattern that avoids dup
 class ChildClass(ParentClass):
     """A subclass of ParentClass used to <description>.
 
-    **Notes:**
-
     Inherits all parameters and methods from ParentClass without modification.
 
-    Additional notes specific to the subclass. Can be one or more paragraphs.
+    <Optional longer description block.>
 
-    **Contains the following methods:**
-
-    new_method_1: Short description of new method (if any).
-
-    None (if no new methods are added)
+    <Optional citation block.>
     """
 ```
 
 **Key points:**
 
 - Short description explicitly mentions "A subclass of ParentClass"
-- Notes section states what is inherited from the parent
-- "Contains the following methods:" lists only NEW methods unique to this subclass
-- Write "None" if no new methods are added
+- States what is inherited from the parent
 
 #### Subclass `__init__` Docstring Template
 
@@ -493,6 +395,10 @@ def __init__(
 
     See ParentClass's initialization method for descriptions of inherited
     parameters.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param new_param: Description of the new parameter unique to this subclass.
     :return: None
@@ -526,9 +432,9 @@ class _CoreClass:
 
     See PublicClass for full documentation of the shared interface.
 
-    <Brief description of what the core class provides and why it exists as a
-    separate class, aimed at contributors who need to understand the internal
-    architecture.>
+    <Optional longer description block.>
+
+    <Optional citation block.>
     """
 ```
 
@@ -536,7 +442,6 @@ class _CoreClass:
 
 - Reference the public child for full documentation of the shared interface
 - Include a brief architectural description for contributors
-- Do not duplicate the full method listing or parameter documentation
 
 #### Private Parent `__init__` Docstring Template
 
@@ -549,6 +454,10 @@ def __init__(
     """The initialization method.
 
     See PublicClass's initialization method for full parameter descriptions.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param param1: Brief description.
     :param param2: Brief description.
@@ -567,20 +476,15 @@ def __init__(
 class PublicClass(_core.CoreClass):
     """A class used to <description>.
 
-    **Contains the following methods:**
+    <Optional longer description block.>
 
-    inherited_method_1: Short description.
-
-    inherited_method_2: Short description.
-
-    new_method_1: Short description (if any).
+    <Optional citation block.>
     """
 ```
 
 **Key points:**
 
-- Do not mention the private parent in the short description or the methods listing
-- List all methods (inherited and new) as if they were the child's own
+- Do not mention the private parent in the short description
 - The class reads as a standalone public API entry point
 
 #### Public Child `__init__` Docstring Template
@@ -593,6 +497,10 @@ def __init__(
     new_param: Type3,
 ) -> None:
     """The initialization method.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param inherited_param1: Full description.
     :param inherited_param2: Full description.
@@ -665,9 +573,8 @@ The API reference documents only the public modules. Anything defined in a priva
 2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
 3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
 4. **Do not defer to a private parent.** "See _CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
-5. **Module docstrings follow the same rules.** The entries under **Contains the following classes:** render on the module page, so they get the same wording as the class docstrings they summarize.
-6. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
-7. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
+5. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
+6. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
 
 #### Signatures
 
@@ -691,6 +598,10 @@ Do not move the `warnings.warn` call into a helper function, since the detection
 @property
 def property_name(self) -> ReturnType:
     """Short description of what the property represents.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :return: Description of what is returned, including type, shape, units.
     """
@@ -753,21 +664,11 @@ For computed properties that are now cached (e.g., `rightLeg_G`, `area`), the ex
 
 #### Class Docstring for Classes with Caching
 
-When a class uses this caching pattern, add a **Notes:** section to the class docstring explaining the caching behavior. Don't add the getters and setter methods for the non-computed properties to the list of methods:
+When a class uses this caching pattern, add a section to the class docstring explaining the caching behavior:
 
 ```python
 class Panel:
     """A class used to contain the panels of a Wing.
-
-    **Contains the following methods:**
-
-    rightLeg_G: The Panel's right leg vector (in geometry axes).
-
-    area: An estimate of the Panel's area.
-
-    [... other methods (don't include Frpp_G_Cg or Frpp_GP1_CgP1 ...]
-
-    **Notes:**
 
     Computed geometric properties (leg vectors, bound vortex points, collocation points,
     unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
@@ -779,6 +680,24 @@ class Panel:
     """
 ```
 
+### Optional Longer Description Blocks
+
+Provides detailed explanations of the function/method's behavior. It can be one or more paragraphs. It can also be broken up with sections separated by sentence-case headers, wrapped with double-asterisks and padded with a blank line above and below. Avoid numbered or bulleted lists.
+
+### Optional Citation Blocks
+
+```python
+"""
+**Citation(s):**
+
+Adapted from (can be more specific if the whole function/method wasn't adapted): <source>
+
+Author(s): <author>
+
+Date of retrieval (don't include if not known): <date>
+"""
+```
+
 ---
 
 ## Examples
@@ -788,41 +707,13 @@ class Panel:
 #### Public Package `__init__.py`
 
 ```python
-"""Contains the geometry classes.
-
-**Contains the following subpackages:**
-
-None
-
-**Contains the following directories:**
-
-None
-
-**Contains the following modules:**
-
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
-"""
+"""Contains the geometry classes."""
 ```
 
 #### Public Module
 
 ```python
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Airfoil class."""
 ```
 
 #### Private Module
@@ -1034,11 +925,6 @@ param: Type1 | Type2
 ```python
 # Module level
 "Contains the <description>."
-"Contains the following subpackages:"
-"Contains the following directories:"
-"Contains the following modules:"
-"Contains the following classes:"
-"Contains the following functions:"
 
 # Array parameters
 ":param name: A (shape) ndarray of dtype representing..."

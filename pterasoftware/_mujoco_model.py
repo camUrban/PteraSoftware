@@ -44,30 +44,6 @@ class RenderGeom(NamedTuple):
 class MuJoCoModel:
     """A class used to interface with MuJoCo for free flight simulations.
 
-    **Contains the following methods:**
-
-    apply_loads: Applies loads to the model.
-
-    step: Advances the MuJoCo simulation by one time step.
-
-    get_state: Extracts the current position, orientation, velocity, and angular
-    velocity from the model.
-
-    reset: Resets the model's state to the initial conditions, time to zero seconds, and
-    removes any applied loads.
-
-    save_state: Saves and returns a snapshot of the model's current integration state.
-
-    restore_state: Restores the model to a previously saved integration state.
-
-    get_render_geometry: Extracts the renderable geometry of every geom in the compiled
-    model.
-
-    uncovered_file_references: Returns the file references in the model XML that the
-    assets dict does not cover.
-
-    **Notes:**
-
     Wraps MuJoCo models and data objects to provide a clean interface for applying
     aerodynamic loads to the first Airplane, advancing the MuJoCo simulation, and
     extracting the current state of the first Airplane.
@@ -305,8 +281,6 @@ class MuJoCoModel:
     ) -> None:
         """Applies loads to the model.
 
-        **Notes:**
-
         xfrc_applied[0:3] = forces_E: The current force applied to the first Airplane's
         CG (in Earth axes) in Newtons.
 
@@ -344,8 +318,6 @@ class MuJoCoModel:
     def get_state(self) -> MuJoCoState:
         """Extracts the current position, orientation, velocity, and angular velocity of
         the model.
-
-        **Notes:**
 
         qpos[0:3] = position_E_Eo: The current position of the first Airplane's CG (in
         Earth axes, relative to the Earth origin) in meters.
@@ -413,8 +385,6 @@ class MuJoCoModel:
     def save_state(self) -> np.ndarray:
         """Saves and returns a snapshot of the model's current integration state.
 
-        **Notes:**
-
         The snapshot is MuJoCo's integration state (the generalized positions and
         velocities, the time, the applied loads in xfrc_applied, and the constraint
         solver warm start), captured through MuJoCo's native state API. Its size and
@@ -439,8 +409,6 @@ class MuJoCoModel:
     def restore_state(self, state: np.ndarray) -> None:
         """Restores the model to a previously saved integration state.
 
-        **Notes:**
-
         Takes a snapshot produced by save_state and writes it back through MuJoCo's
         native state API, then runs forward kinematics so the derived quantities (such
         as the orientation matrix get_state reads) match the restored configuration.
@@ -462,8 +430,6 @@ class MuJoCoModel:
 
     def get_render_geometry(self) -> list[RenderGeom]:
         """Extracts the renderable geometry of every geom in the compiled model.
-
-        **Notes:**
 
         The generated model XML contains no geoms of its own, so every geom in the
         compiled model comes from the extra_xml fragments, and any mesh assets have

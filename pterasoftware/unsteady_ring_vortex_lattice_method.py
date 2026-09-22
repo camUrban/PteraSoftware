@@ -1,14 +1,4 @@
-"""Contains the UnsteadyRingVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-UnsteadyRingVortexLatticeMethodSolver: A class used to solve UnsteadyProblems with the
-unsteady ring vortex lattice method.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the UnsteadyRingVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -42,19 +32,7 @@ _logger = _logging.get_logger("unsteady_ring_vortex_lattice_method")
 #  extend them if needed.
 class UnsteadyRingVortexLatticeMethodSolver:
     """A class used to solve UnsteadyProblems with the unsteady ring vortex lattice
-    method.
-
-    **Contains the following methods:**
-
-    run: Runs the solver on the UnsteadyProblem.
-
-    initialize_step_geometry: Initializes geometry for a specific step without solving.
-
-    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
-    geometry axes, observed from the Earth frame) at one or more points (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
-    velocity and the induced velocity from every ring vortex.
-    """
+    method."""
 
     __slots__ = (
         "unsteady_problem",
@@ -1091,8 +1069,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the current time step's body angular velocity (in the first Airplane's
         geometry axes, observed from the Earth frame).
 
-        **Notes:**
-
         The base solver does not model body rotation and returns a zero vector, which
         makes _apply_body_rate a no-op. The free-flight solver overrides this to return
         the current OperatingPoint's body rate, converted from the body axes (in degrees
@@ -1109,8 +1085,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
         """Finds the body angular velocity (in the first Airplane's geometry axes,
         observed from the Earth frame) used to convect the wake to the next time step.
-
-        **Notes:**
 
         The wake convects over the interval that ends at the next time step, so its
         apparent velocity from body rotation is evaluated with the next time step's body
@@ -1136,8 +1110,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
     ) -> np.ndarray:
         """Adds the apparent velocity from body rotation (omega cross r) to a stack of
         velocities.
-
-        **Notes:**
 
         The apparent velocity at a point due to body rotation is opposite the motion of
         that point, so it is the negative of the cross product of the body angular
@@ -1171,8 +1143,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
     def _calculate_freestream_wing_influences(self) -> None:
         """Finds the 1D ndarray of freestream Wing influence coefficients (observed from
         the Earth frame) at the current time step.
-
-        **Notes:**
 
         This method also includes the influence coefficients due to motion defined in
         Movement and, for solvers that model body rotation, due to the body angular rate
@@ -1224,8 +1194,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         When an image surface is defined on the OperatingPoint, the influence
         coefficients also include the contributions from image wake ring vortices
         reflected across that surface.
-
-        **Notes:**
 
         If the current time step is the first time step, no wake has been shed, so this
         method will return zero for all the wake Wing influence coefficients (observed
@@ -1333,8 +1301,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         also includes the induced velocity from image bound and wake ring vortices
         reflected across that surface.
 
-        **Notes:**
-
         This method assumes that the correct strengths for the ring vortices have
         already been calculated and set.
 
@@ -1382,8 +1348,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         When an image surface is defined on the OperatingPoint, the returned velocity
         also includes the induced velocity from image bound and wake ring vortices
         reflected across that surface.
-
-        **Notes:**
 
         This is the induced part of calculate_solution_velocity, which adds the current
         time step's freestream velocity to this result. Wake convection calls this
@@ -1523,8 +1487,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         the first Airplane's geometry axes, relative to the first Airplane's CG) on
         every Panel at the current time step using the Kutta Joukowski theorem applied
         to each RingVortex leg.
-
-        **Notes:**
 
         This method assumes that the correct strengths for the ring vortices have
         already been calculated and set.
@@ -3001,8 +2963,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
         """Finds the apparent velocities (in the first Airplane's geometry axes,
         observed from the Earth frame) at a stack of points due to any motion defined in
         Movement at the current time step.
-
-        **Notes:**
 
         At each point, any apparent velocity due to Movement is opposite the motion due
         to Movement.

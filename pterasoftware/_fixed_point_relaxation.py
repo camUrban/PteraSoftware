@@ -30,8 +30,6 @@ def is_converged(
 ) -> bool:
     """Returns whether a sub-iteration's residual passes the mixed convergence test.
 
-    **Notes:**
-
     The test is the standard mixed local-error form: the weighted residual norm must not
     exceed a relative term scaled by the weighted increment norm plus an absolute floor.
     The weighting nondimensionalizes both norms, so the two tolerances are dimensionless
@@ -68,8 +66,6 @@ def aitken_relaxation_factor(
     divergence_tolerance: float,
 ) -> float:
     """Returns the Aitken delta-squared relaxation factor for a sub-iteration.
-
-    **Notes:**
 
     The factor is the Aitken delta-squared update computed in the weighted inner
     product, from the residual and relaxation factor of the previous sub-iteration. It

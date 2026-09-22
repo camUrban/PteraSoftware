@@ -1,18 +1,5 @@
 """Contains functions to analyze the trim conditions of SteadyProblems and
-UnsteadyProblems.
-
-**Contains the following classes:**
-
-None
-
-**Contains the following functions:**
-
-analyze_steady_trim: Attempts to calculate a trim condition of a SteadyProblem by
-varying the operating conditions until the net loads are sufficiently low.
-
-analyze_unsteady_trim: Attempts to calculate a trim condition of an UnsteadyProblem by
-varying the base operating conditions until the net loads are sufficiently low.
-"""
+UnsteadyProblems."""
 
 from __future__ import annotations
 

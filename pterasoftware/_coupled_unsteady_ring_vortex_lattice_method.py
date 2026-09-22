@@ -1,15 +1,4 @@
-"""Contains the CoupledUnsteadyRingVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-CoupledUnsteadyRingVortexLatticeMethodSolver: A subclass of
-UnsteadyRingVortexLatticeMethodSolver that solves _CoupledUnsteadyProblems, whose
-geometry is initialized and updated step by step rather than being fully precomputed.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the CoupledUnsteadyRingVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -34,10 +23,6 @@ class CoupledUnsteadyRingVortexLatticeMethodSolver(
     _update_next_step_hook (calls _CoupledUnsteadyProblem.initialize_next_problem
     between steps), and _get_steady_problem_at (dynamic dispatch through the problem's
     get_steady_problem accessor).
-
-    **Contains the following methods:**
-
-    None
     """
 
     __slots__ = ()

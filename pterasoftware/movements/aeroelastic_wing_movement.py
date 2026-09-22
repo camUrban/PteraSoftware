@@ -1,14 +1,4 @@
-"""Contains the AeroelasticWingMovement class.
-
-**Contains the following classes:**
-
-AeroelasticWingMovement: A class used to contain a Wing's movement in an aeroelastic
-simulation.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the AeroelasticWingMovement class."""
 
 from __future__ import annotations
 
@@ -32,23 +22,6 @@ class AeroelasticWingMovement(_core.CoreWingMovement):
     generate_wing_at_time_step to accept per WingCrossSection deformation angles (which
     perturb the WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to
     its AeroelasticWingCrossSectionMovement children.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this AeroelasticWingMovement.
-
-    all_periods: All unique non zero periods from this AeroelasticWingMovement and its
-    AeroelasticWingCrossSectionMovements.
-
-    max_period: The longest period of AeroelasticWingMovement's own motion and that of
-    its sub movement objects.
-
-    generate_wing_at_time_step: Creates the Wing at a single time step, optionally
-    applying structural deformation to each WingCrossSection.
-
-    generate_wings: Creates the Wing at each time step, and returns them in a list.
-
-    **Notes:**
 
     Wings cannot undergo motion that causes them to switch symmetry types. A transition
     between types could change the number of Wings and the Panel structure, which is

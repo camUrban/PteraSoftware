@@ -1,13 +1,4 @@
-"""Contains the WingCrossSectionMovement class.
-
-**Contains the following classes:**
-
-WingCrossSectionMovement: A class used to contain a WingCrossSection's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the WingCrossSectionMovement class."""
 
 from __future__ import annotations
 
@@ -19,22 +10,7 @@ from .. import _core, geometry
 
 
 class WingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
-    """A class used to contain a WingCrossSection's movement.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this WingCrossSectionMovement.
-
-    all_periods: All unique non zero periods from this WingCrossSectionMovement.
-
-    max_period: WingCrossSectionMovement's longest period of motion.
-
-    generate_wing_cross_section_at_time_step: Creates the WingCrossSection at a single
-    time step.
-
-    generate_wing_cross_sections: Creates the WingCrossSection at each time step, and
-    returns them in a list.
-    """
+    """A class used to contain a WingCrossSection's movement."""
 
     __slots__ = ()
 

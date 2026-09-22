@@ -1,13 +1,4 @@
-"""Contains the WingCrossSection class.
-
-**Contains the following classes:**
-
-WingCrossSection: A class used to contain wing cross sections of a Wing.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the WingCrossSection class."""
 
 from __future__ import annotations
 
@@ -23,39 +14,6 @@ from . import airfoil as airfoil_mod
 
 class WingCrossSection:
     """A class used to contain the wing cross sections of a Wing.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this WingCrossSection.
-
-    T_pas_Wcsp_Lpp_to_Wcs_Lp: Defines a property for the passive transformation matrix
-    which maps in homogeneous coordinates from parent wing cross section axes, relative
-    to the parent leading point, to wing cross section axes, relative to the leading
-    point. Is None if the WingCrossSection hasn't been fully validated yet.
-
-    T_pas_Wcs_Lp_to_Wcsp_Lpp: Defines a property for the passive transformation matrix
-    which maps in homogeneous coordinates from wing cross section axes, relative to the
-    leading point, to parent wing cross section axes, relative to the parent leading
-    point. Is None if the WingCrossSection hasn't been fully validated yet.
-
-    validated: A flag indicating if this WingCrossSection has been fully validated by
-    its parent Wing.
-
-    symmetry_type: The symmetry type inherited from the parent Wing.
-
-    get_plottable_data: Returns plottable data for this WingCrossSection's Airfoil's
-    outline and mean camber line.
-
-    validate_root_constraints: Called by the parent Wing to validate constraints
-    specific to root WingCrossSections.
-
-    validate_mid_constraints: Called by the parent Wing to validate constraints specific
-    to middle WingCrossSections.
-
-    validate_tip_constraints: Called by the parent Wing to validate constraints specific
-    to tip WingCrossSections.
-
-    **Notes:**
 
     Immutable attributes (airfoil, num_spanwise_panels, chord, Lp_Wcsp_Lpp,
     angles_Wcsp_to_Wcs_ixyz, control_surface_hinge_point, control_surface_deflection,

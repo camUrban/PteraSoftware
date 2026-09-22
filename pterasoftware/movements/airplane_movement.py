@@ -1,13 +1,4 @@
-"""Contains the AirplaneMovement class.
-
-**Contains the following classes:**
-
-AirplaneMovement: A class used to contain an Airplane's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the AirplaneMovement class."""
 
 from __future__ import annotations
 
@@ -21,23 +12,7 @@ from . import wing_movement as wing_movement_mod
 
 
 class AirplaneMovement(_core.CoreAirplaneMovement):
-    """A class used to contain an Airplane's movement.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this AirplaneMovement.
-
-    all_periods: All unique non zero periods from this AirplaneMovement, its
-    WingMovement(s), and their WingCrossSectionMovements.
-
-    max_period: The longest period of AirplaneMovement's own motion, the motion(s) of
-    its sub movement object(s), and the motions of its sub sub  movement objects.
-
-    generate_airplane_at_time_step: Creates the Airplane at a single time step.
-
-    generate_airplanes: Creates the Airplane at each time step, and returns them in a
-    list.
-    """
+    """A class used to contain an Airplane's movement."""
 
     __slots__ = ()
 

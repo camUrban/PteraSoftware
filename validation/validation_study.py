@@ -41,9 +41,9 @@ chord = 0.072
 # Set the given forward flight velocity in meters per second.
 validation_velocity = 2.9
 
-# Set the given angle of attack in degrees. Note: If you analyze a different operating
-# point where this is not zero, you need to modify the code to rotate the experimental
-# lift into the wind axes.
+# Set the given angle of attack in degrees. If you analyze a different operating point
+# where this is not zero, you need to modify the code to rotate the experimental lift
+# into the wind axes.
 validation_alpha = 0
 
 # Set the given flapping frequency in Hertz.

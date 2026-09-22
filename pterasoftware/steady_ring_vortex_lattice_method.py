@@ -1,14 +1,4 @@
-"""Contains the SteadyRingVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-SteadyRingVortexLatticeMethodSolver: A class used to solve SteadyProblems with the ring
-vortex lattice method.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the SteadyRingVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -39,15 +29,6 @@ _logger = _logging.get_logger("steady_ring_vortex_lattice_method")
 #  extend them if needed.
 class SteadyRingVortexLatticeMethodSolver:
     """A class used to solve SteadyProblems with the ring vortex lattice method.
-
-    **Contains the following methods:**
-
-    run: Runs the solver on the SteadyProblem.
-
-    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
-    geometry axes, observed from the Earth frame) at one or more points (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
-    velocity and the induced velocity from every ring vortex and horseshoe vortex.
 
     **Citation:**
 
@@ -578,8 +559,6 @@ class SteadyRingVortexLatticeMethodSolver:
         also includes the induced velocity from image ring vortices and image horseshoe
         vortices reflected across that surface.
 
-        **Notes:**
-
         This method assumes that the correct strengths for the ring vortices and
         horseshoe vortices have already been calculated and set.
 
@@ -691,8 +670,6 @@ class SteadyRingVortexLatticeMethodSolver:
         """Calculates the forces (in the first Airplane's geometry axes) and moments (in
         the first Airplane's geometry axes, relative to the first Airplane's CG) on
         every Panel.
-
-        **Notes:**
 
         This method assumes that the correct strengths for the ring vortices and
         horseshoe vortices have already been calculated and set.

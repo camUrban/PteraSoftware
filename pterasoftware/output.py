@@ -1,24 +1,4 @@
-"""Contains functions for visualizing geometry and results.
-
-**Contains the following classes:**
-
-None
-
-**Contains the following functions:**
-
-draw: Draws a solver's Airplane(s).
-
-animate: Animates the Airplane(s) of an UnsteadyRingVortexLatticeMethodSolver or one of
-its subclasses (the aeroelastic or free flight solver).
-
-plot_results_versus_time: Plots the loads and load coefficients of an
-UnsteadyRingVortexLatticeMethodSolver or one of its subclasses (the aeroelastic or free
-flight solver) as a function of time. For a free flight solver, it also plots the first
-Airplane's six-degree-of-freedom state history.
-
-log_results: Logs a solver's load and load coefficients, and, for a free flight solver,
-the first Airplane's initial and final six-degree-of-freedom state.
-"""
+"""Contains functions for visualizing geometry and results."""
 
 from __future__ import annotations
 

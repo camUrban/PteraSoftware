@@ -1,13 +1,4 @@
-"""Contains the Movement class.
-
-**Contains the following classes:**
-
-Movement: A class used to contain an UnsteadyProblem's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Movement class."""
 
 from __future__ import annotations
 
@@ -36,24 +27,7 @@ _MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
 
 
 class Movement(_core.CoreMovement):
-    """A class used to contain an UnsteadyProblem's movement.
-
-    **Contains the following methods:**
-
-    lcm_period: The least common multiple of all motion periods, ensuring all motions
-    complete an integer number of cycles when cycle averaging forces and moments.
-
-    max_period: The longest period of motion of Movement's sub movement objects, the
-    motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
-    movement objects.
-
-    min_period: The shortest non zero period of motion of Movement's sub movement
-    objects, the motion(s) of its sub sub movement object(s), and the motions of its sub
-    sub sub movement objects.
-
-    static: Flags if Movement's sub movement objects, its sub sub movement object(s),
-    and its sub sub sub movement objects all represent no motion.
-    """
+    """A class used to contain an UnsteadyProblem's movement."""
 
     __slots__ = (
         "_num_cycles",

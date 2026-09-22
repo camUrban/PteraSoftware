@@ -95,12 +95,6 @@ class UnboundCallable:
     """A placeholder standing in for a custom callable that could not be rebuilt when a
     saved object was loaded.
 
-    **Contains the following methods:**
-
-    None
-
-    **Notes:**
-
     Saved files store a custom callable (a custom spacing function, an
     AeroelasticWingMovement's second-derivative function, or a
     FreeFlightUnsteadyProblem's external_loads_fn) as an inert marker holding the

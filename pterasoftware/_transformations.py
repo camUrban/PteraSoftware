@@ -62,7 +62,7 @@ def generate_rot_T(
 ) -> np.ndarray:
     """Generates a rotational transformation matrix.
 
-    **Passive Use-Case:**
+    **Passive use-case:**
 
     Let r_A be a non-position vector in "A" axes, but we want to find r_B, which is the
     same vector, but expressed in "B" axes. The orientation of "B" axes relative to "A"
@@ -73,7 +73,7 @@ def generate_rot_T(
 
     | ``r_B=apply_T_to_vectors(T_pas_A_to_B,r_A,is_position=False)``
 
-    **Active Use-Case:**
+    **Active use-case:**
 
     Let r_A be a non-position vector in "A" axes, but we want to find rPrime_A, which is
     r_A rotated by the specified sequence: about the fixed "A" axes if intrinsic=False,
@@ -177,7 +177,7 @@ def generate_2D_rot_R(
 ) -> np.ndarray:
     """Generates a 2D rotational matrix.
 
-    **Passive Use-Case:**
+    **Passive use-case:**
 
     Let r_A be a 2D non-position vector in "A" axes, but we want to find r_B, which is
     the same vector, but expressed in "B" axes. The orientation of "B" axes relative to
@@ -187,7 +187,7 @@ def generate_2D_rot_R(
 
     | ``r_B=R_pas_A_to_B@r_A``
 
-    **Active Use-Case:**
+    **Active use-case:**
 
     Let r_A be a 2D non-position vector in "A" axes, but we want to find rPrime_A, which
     is r_A rotated by angle. Then:
@@ -227,7 +227,7 @@ def generate_trans_T(
 ) -> np.ndarray:
     """Generates a translational transformation matrix.
 
-    **Passive Use-Case:**
+    **Passive use-case:**
 
     Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
     relative to the "a" point). We want to find c_A_b, which describes the location of
@@ -238,7 +238,7 @@ def generate_trans_T(
 
     | ``c_A_b=apply_T_to_vectors(T_pas_A_a_to_A_b,c_A_a,is_position=True)``
 
-    **Active Use-Case:**
+    **Active use-case:**
 
     Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
     relative to the "a" point). We want to find cPrime_A_a, which is the position of
@@ -274,7 +274,11 @@ def generate_reflect_T(
     """Generates a reflectional transformation matrix about a plane defined by a point
     (in "A" axes, relative to point "a") and a normal vector (in "A" axes).
 
-    **Passive Use-Case:**
+    This function generates identical matrices for both passive and active cases, which
+    is correct. However, it retains the passive flag for API consistency and as a
+    reminder to consider what the final matrix represents.
+
+    **Passive use-case:**
 
     Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
     relative to the "a" point). We want to find c_B_b, which describes the location of
@@ -286,7 +290,7 @@ def generate_reflect_T(
 
     | ``c_B_b=apply_T_to_vectors(T_pas_A_a_to_B_b,c_A_a,is_position=True)``
 
-    **Active Use-Case:**
+    **Active use-case:**
 
     Let c_A_a be a vector which describes the location of point "c" (in "A" axes,
     relative to the "a" point). We want to find cPrime_A_a, which is the position of
@@ -296,12 +300,6 @@ def generate_reflect_T(
     | ``reflect_T_act=generate_reflect_T(plane_point_A_a,plane_normal_A,False)``
 
     | ``c_A_a=apply_T_to_vectors(reflect_T_act,c_A_a,is_position=True)``
-
-    **Notes:**
-
-    This function generates identical matrices for both passive and active cases, which
-    is correct. However, it retains the passive flag for API consistency and as a
-    reminder to consider what the final matrix represents.
 
     **Warning:**
 
@@ -364,7 +362,7 @@ def compose_T_pas(
 ) -> np.ndarray:
     """Compose a chain of passive homogeneous transformations.
 
-    **Use-Case:**
+    **Use-case:**
 
     | ``T_pas_A_a_to_C_c=compose_T_pas(T_pas_A_a_to_B_b,T_pas_B_b_to_C_c)``
 
@@ -384,11 +382,9 @@ def compose_T_act(
 ) -> np.ndarray:
     """Compose a chain of active homogeneous transformations.
 
-    **Use-Case:**
+    **Use-case:**
 
     | ``composed_T_act=compose_T_act(reflect_T_act,rot_T_act,trans_T_act)``
-
-    **Notes:**
 
     This function left-composes the supplied active transforms: given
     compose_T_act(T1,T2,...,Tn) it returns Tn@...@T2@T1. Interpreting these as active
@@ -426,8 +422,6 @@ def compose_T_act(
 
 def _invert_T_rigid(valid_T: np.ndarray) -> np.ndarray:
     """Invert a rigid homogeneous transform.
-
-    **Notes:**
 
     A valid rigid homogeneous transform can be broken down into two components:
 
@@ -468,8 +462,6 @@ def invert_T_pas(T_pas: np.ndarray) -> np.ndarray:
 
     | ``rHomog_A_a=T_pas_B_b_to_A_a@rHomog_B_b``
 
-    **Notes:**
-
     For position vectors (is_position=True), the translation component matters.
     Otherwise (is_position=False, for example a velocity, force, or moment), translation
     has no effect because the homogeneous last coordinate is 0.0.
@@ -491,8 +483,6 @@ def invert_T_act(T_act: np.ndarray) -> np.ndarray:
     axes) to the non-position vector qPrime_A (in "A" axes), then:
 
     | ``q_A=apply_T_to_vectors(invert_T_act(T_act),qPrime_A,is_position=False)``
-
-    **Notes:**
 
     For position vectors (is_position=True), both orientation and translation are
     undone. Otherwise (is_position=False, for example a velocity, force, or moment),

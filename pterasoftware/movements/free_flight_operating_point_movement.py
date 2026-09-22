@@ -1,14 +1,4 @@
-"""Contains the FreeFlightOperatingPointMovement class.
-
-**Contains the following classes:**
-
-FreeFlightOperatingPointMovement: A class used to contain an OperatingPoint's movements
-in a free flight simulation.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the FreeFlightOperatingPointMovement class."""
 
 from __future__ import annotations
 
@@ -25,16 +15,6 @@ class FreeFlightOperatingPointMovement(_core.CoreOperatingPointMovement):
     each time step. FreeFlightOperatingPointMovement holds the initial OperatingPoint
     and provides a mutable list that the solver populates as dynamics integration
     produces new states.
-
-    **Contains the following methods:**
-
-    max_period: FreeFlightOperatingPointMovement's longest period of motion.
-
-    generate_operating_point_at_time_step: Creates the OperatingPoint at a single time
-    step.
-
-    generate_operating_points: Creates the OperatingPoint at each time step, and returns
-    them in a list.
     """
 
     __slots__ = ("operating_points",)

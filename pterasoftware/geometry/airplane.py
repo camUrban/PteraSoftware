@@ -1,13 +1,4 @@
-"""Contains the Airplane class.
-
-**Contains the following classes:**
-
-Airplane: A class used to contain airplanes.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Airplane class."""
 
 from __future__ import annotations
 
@@ -27,69 +18,6 @@ from . import wing_cross_section as wing_cross_section_mod
 
 class Airplane:
     """A class used to contain airplanes.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this Airplane, preserving mesh geometry but
-    resetting solver state.
-
-    deep_copy_with_Cg_GP1_CgP1: Creates a deep copy of this Airplane with a different
-    Cg_GP1_CgP1 position.
-
-    num_panels: The total number of Panels across all Wings.
-
-    T_pas_G_Cg_to_GP1_CgP1: The passive transformation matrix from this Airplane's
-    geometry axes, relative to this Airplane's CG to the first Airplane's geometry axes,
-    relative to the first Airplane's CG.
-
-    inducedDrag_W: The total induced drag force experienced by this Airplane (in wind
-    axes).
-
-    crosswindForce_W: The total crosswind force experienced by this Airplane (in wind
-    axes).
-
-    lift_W: The total lift force experienced by this Airplane (in wind axes).
-
-    inducedDragCoefficient_W: The total induced drag force coefficient experienced by
-    this Airplane (in wind axes).
-
-    crosswindForceCoefficient_W: The total crosswind force coefficient experienced by
-    this Airplane (in wind axes).
-
-    liftCoefficient_W: The total lift force coefficient experienced by this Airplane (in
-    wind axes).
-
-    rollingMoment_W_Cg: The total rolling moment experienced by this Airplane (in wind
-    axes, relative to the CG).
-
-    pitchingMoment_W_Cg: The total pitching moment experienced by this Airplane (in wind
-    axes, relative to the CG).
-
-    yawingMoment_W_Cg: The total yawing moment experienced by this Airplane (in wind
-    axes, relative to the CG).
-
-    rollingMomentCoefficient_W_Cg: The total rolling moment coefficient experienced by
-    this Airplane (in wind axes, relative to the CG).
-
-    pitchingMomentCoefficient_W_Cg: The total pitching moment coefficient experienced by
-    this Airplane (in wind axes, relative to the CG).
-
-    yawingMomentCoefficient_W_Cg: The total yawing moment coefficient experienced by
-    this Airplane (in wind axes, relative to the CG).
-
-    draw: Draws the 3D geometry of this Airplane.
-
-    get_plottable_data: Returns plottable data for this Airplane's Airfoils' outlines
-    and mean camber lines.
-
-    validate_first_airplane_constraints: Validates that the first Airplane in a
-    simulation has Cg_GP1_CgP1 set to zeros.
-
-    process_wing_symmetry: Processes a Wing to determine what type of symmetry it has.
-    If necessary, it then modifies the Wing. If type 5 symmetry is detected, it also
-    creates a second reflected Wing. Finally, it returns a list of Wings.
-
-    **Notes:**
 
     The Airplane class is responsible for: (1) Defining the local body axes and geometry
     axes, (2) managing Wings and their coordinate transformations, (3) processing

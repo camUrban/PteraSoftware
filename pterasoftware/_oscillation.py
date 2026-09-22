@@ -17,8 +17,6 @@ def oscillating_sin_at_time(
 ) -> float:
     """Returns the result of a customizable sine function evaluated at a time.
 
-    **Note:**
-
     This function doesn't perform any input validation on its parameters. The
     requirements for the parameters must be validated before passing them in.
 
@@ -56,8 +54,6 @@ def oscillating_lin_at_time(
 ) -> float:
     """Returns the result of a customizable triangular wave function evaluated at a
     time.
-
-    **Note:**
 
     This function doesn't perform any input validation on its parameters. The
     requirements for the parameters must be validated before passing them in.
@@ -102,12 +98,10 @@ def oscillating_custom_at_time(
     ensure it meets requirements, but users should thoroughly test their functions
     before use in simulations.
 
-    **Note:**
-
     This function only performs input validation on the custom_function parameter. The
     requirements for the other parameters must be validated before passing them in.
 
-    **Custom Function Requirements:**
+    **Custom function requirements:**
 
     Must start at 0.0 with f(0.0) = 0.0.
 
@@ -125,7 +119,7 @@ def oscillating_custom_at_time(
     oscillation away from the base value. This can be useful for creating asymmetric
     motion (e.g., faster upstroke than downstroke in flapping).
 
-    **Parameter Interaction:**
+    **Parameter interaction:**
 
     The custom function is transformed by the amps, periods, phases, and bases
     parameters. The output is calculated as amps * custom_function(2.0 * pi * time /

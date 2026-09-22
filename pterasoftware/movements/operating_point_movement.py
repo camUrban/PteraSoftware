@@ -1,13 +1,4 @@
-"""Contains the OperatingPointMovement class.
-
-**Contains the following classes:**
-
-OperatingPointMovement: A class used to contain an OperatingPoint's movements.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the OperatingPointMovement class."""
 
 from __future__ import annotations
 
@@ -18,18 +9,7 @@ from .. import operating_point as operating_point_mod
 
 
 class OperatingPointMovement(_core.CoreOperatingPointMovement):
-    """A class used to contain an OperatingPoint's movements.
-
-    **Contains the following methods:**
-
-    max_period: OperatingPointMovement's longest period of motion.
-
-    generate_operating_point_at_time_step: Creates the OperatingPoint at a single time
-    step.
-
-    generate_operating_points: Creates the OperatingPoint at each time step, and returns
-    them in a list.
-    """
+    """A class used to contain an OperatingPoint's movements."""
 
     __slots__ = ()
 

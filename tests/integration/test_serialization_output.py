@@ -1,8 +1,8 @@
 """This module tests that output functions accept deserialized solver objects.
 
-Note: These tests do not verify specific output values. They verify that the output
-functions in output.py accept solver objects that have been serialized and deserialized
-via save and load without throwing any errors.
+These tests do not verify specific output values. They verify that the output functions
+in output.py accept solver objects that have been serialized and deserialized via save
+and load without throwing any errors.
 """
 
 import tempfile

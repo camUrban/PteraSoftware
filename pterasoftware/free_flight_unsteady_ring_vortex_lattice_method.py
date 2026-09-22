@@ -1,17 +1,4 @@
-"""Contains the FreeFlightUnsteadyRingVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-FreeFlightUnsteadyRingVortexLatticeMethodSolver: A class used to solve
-FreeFlightUnsteadyProblems with the unsteady ring vortex lattice method, contributing
-the body angular rate (omega cross r) to the apparent velocity at every evaluation point
-so that the method models the six-degree-of-freedom motion that the coupled MuJoCo
-dynamics produce.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the FreeFlightUnsteadyRingVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -44,17 +31,20 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     the apparent velocity from that body rate (omega cross r) at every collocation point
     and bound line vortex leg center.
 
-    **Key additions over the unsteady ring vortex lattice method:** permits non-zero
-    body rates, and supplies the current and next OperatingPoints' body angular rates
-    (in the first Airplane's geometry axes, in radians per second) to the velocity
-    calculations, the latter used when convecting the wake to the next time step.
+    **Key additions over the unsteady ring vortex lattice method:**
 
-    **Strongly coupled solve interface:** freeze_substep, evaluate_trial_aero_loads, and
-    restore_substep are the public methods the FreeFlightUnsteadyProblem's step solve
-    drives to evaluate the aerodynamics at successive trial body states within a single
-    time step. They share transient working state (the frozen wake induced velocities
-    and the snapshot bound ring vortex strengths) that freeze_substep establishes and
-    restore_substep clears.
+    Permits non-zero body rates, and supplies the current and next OperatingPoints' body
+    angular rates (in the first Airplane's geometry axes, in radians per second) to the
+    velocity calculations, the latter used when convecting the wake to the next time
+    step.
+
+    **Strongly coupled solve interface:**
+
+    freeze_substep, evaluate_trial_aero_loads, and restore_substep are the public
+    methods the FreeFlightUnsteadyProblem's step solve drives to evaluate the
+    aerodynamics at successive trial body states within a single time step. They share
+    transient working state (the frozen wake induced velocities and the snapshot bound
+    ring vortex strengths) that freeze_substep establishes and restore_substep clears.
     """
 
     __slots__ = (
@@ -158,8 +148,6 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
         """Finds the current time step's body angular velocity (in the first Airplane's
         geometry axes, observed from the Earth frame).
 
-        **Notes:**
-
         The current OperatingPoint stores the body angular rate in the first Airplane's
         body axes, in degrees per second. This method transforms it to the first
         Airplane's geometry axes and converts it to radians per second for the omega
@@ -175,8 +163,6 @@ class FreeFlightUnsteadyRingVortexLatticeMethodSolver(
     def _convectionOmegasRad_GP1__E(self) -> np.ndarray:
         """Finds the next time step's body angular velocity (in the first Airplane's
         geometry axes, observed from the Earth frame) used to convect the wake.
-
-        **Notes:**
 
         The wake convects over the interval ending at the next time step, so its
         apparent velocity from body rotation uses the next OperatingPoint's body rate

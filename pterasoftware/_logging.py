@@ -60,14 +60,6 @@ def nested(levels: int = 1) -> Iterator[None]:
 class _TqdmLoggingHandler(logging.Handler):
     """A logging handler that writes messages through tqdm.write().
 
-    **Contains the following methods:**
-
-    emit: Emits a log record using tqdm.write().
-
-    flush: Flushes the stream.
-
-    **Notes:**
-
     This prevents log messages from breaking TQDM progress bars by using tqdm's write
     mechanism which properly handles terminal output.
     """
@@ -135,12 +127,6 @@ def _max_module_logger_display_name_length() -> int:
 
 class _PackageLogFormatter(logging.Formatter):
     """A logging formatter that adds each record's display name.
-
-    **Contains the following methods:**
-
-    format: Formats a log record after adding its display name.
-
-    **Notes:**
 
     The display name is the logger's name with the leading "pterasoftware." stripped.
     Every line of a Ptera Software log would otherwise carry that constant prefix, so

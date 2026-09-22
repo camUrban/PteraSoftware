@@ -1,7 +1,7 @@
 """This is a testing case for the UnsteadyRingVortexLatticeMethodSolver with variable,
 multi-wing geometry.
 
-Note: This case does not currently test the solver's output against an expected output.
+This case does not currently test the solver's output against an expected output.
 Instead, it just tests that the solver doesn't throw an error.
 """
 

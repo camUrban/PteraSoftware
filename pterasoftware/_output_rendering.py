@@ -989,14 +989,6 @@ def screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
 class AnimationWriter:
     """Encodes an animation's frames into a WebP file as they are captured.
 
-    **Contains the following methods:**
-
-    add_frame: Hands a captured frame to the writer.
-
-    close: Finishes the animation and writes it to its file.
-
-    **Notes:**
-
     The frames are handed to a background thread that feeds them to libwebp's animation
     encoder one at a time, so the raw frames never accumulate. The queue between the
     capture loop and the thread is bounded, so a capture loop that outruns the encode

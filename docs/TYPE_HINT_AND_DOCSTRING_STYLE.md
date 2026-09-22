@@ -5,13 +5,29 @@ This document defines the conventions for type hints and docstrings in the Ptera
 ## Table of Contents
 
 - [Type Hints](#type-hints)
+    - [General Principles](#general-principles)
+    - [Import Requirements](#import-requirements)
+    - [Type Hint Patterns by Parameter Type](#type-hint-patterns-by-parameter-type)
+    - [Type Narrowing Patterns](#type-narrowing-patterns)
+    - [Module Alias Pattern](#module-alias-pattern)
+    - [Avoiding Circular Imports with Type Hints](#avoiding-circular-imports-with-type-hints)
     - [Type Hints in Tests](#type-hints-in-tests)
 - [Docstring Format](#docstring-format)
+    - [General Principles](#general-principles-1)
     - [Module-Level Docstrings](#module-level-docstrings)
-    - [Class Docstrings](#class-docstrings)
-    - [Public Subclasses of Private Parents](#public-subclasses-of-private-parents)
     - [Function and Method Docstrings](#function-and-method-docstrings)
+    - [Array Parameter Descriptions](#array-parameter-descriptions)
+    - [Class Docstrings](#class-docstrings)
+    - [Subclass Docstrings](#subclass-docstrings)
+    - [Public Subclasses of Private Parents](#public-subclasses-of-private-parents)
+    - [Private Names in Public Docstrings and Signatures](#private-names-in-public-docstrings-and-signatures)
+    - [Property Docstring Template](#property-docstring-template)
+    - [Cached Properties with Invalidating Setters](#cached-properties-with-invalidating-setters)
+    - [Optional Longer Description Blocks](#optional-longer-description-blocks)
+    - [Optional Citation Blocks](#optional-citation-blocks)
 - [Examples](#examples)
+- [Quick Reference](#quick-reference)
+- [Notes](#notes)
 
 ---
 
@@ -55,10 +71,10 @@ import numpy as np
 
 #### Class Types
 
-| Parameter Description      | Type Hint                | Notes                                      |
-|----------------------------|--------------------------|--------------------------------------------|
-| Class from same package    | `ClassName`              | Direct reference                           |
-| Class from imported module | `module_alias.ClassName` | Use module alias to avoid circular imports |
+| Parameter Description      | Type Hint                | Notes                                                       |
+|----------------------------|--------------------------|-------------------------------------------------------------|
+| Class from same module     | `ClassName`              | Direct reference                                            |
+| Class from imported module | `module_alias.ClassName` | Import the module, not the class, to avoid circular imports |
 
 #### Optional and Union Types
 
@@ -176,7 +192,8 @@ This approach:
 - Keeps all imports at the top of the file
 - Prevents circular import errors
 - Requires no string quotes around type hints
-- Is the default behavior in Python 3.11+
+
+Python 3.11 does not defer annotation evaluation by default, so every module that needs this behavior must include the import.
 
 #### Casting Across a Circular Dependency
 
@@ -313,12 +330,12 @@ def function_name(
 
     <Optional citation block.>
 
-    :param param1: A (shape) dtype description of param1. Additional details about
-        what it represents, valid ranges, units, etc. Can wrap to multiple lines.
+    :param param1: A (shape) dtype description of param1. Additional details about what
+        it represents, valid ranges, units, etc. Can wrap to multiple lines.
     :param param2: Description of param2.
     :param param3: Description of param3.
-    :return: A (shape) dtype description of what is returned. Additional details
-        about the return value.
+    :return: A (shape) dtype description of what is returned. Additional details about
+        the return value.
     """
 ```
 
@@ -334,14 +351,14 @@ For numpy arrays, always include:
 
 #### Pattern for Array Parameters
 
-```python
+```rst
 :param parameter_name: A (shape) ndarray of dtype representing <description>.
     Additional context about coordinate systems, valid ranges, units, default value, etc.
 ```
 
 #### Pattern for Array-Like Parameters
 
-```python
+```rst
 :param parameter_name: An array-like object of numbers (int or float) with shape
     (N,M) representing <description>. Can be a tuple, list, or ndarray. Values are
     converted to floats internally. The units are <units>. The default is <default>.
@@ -393,8 +410,7 @@ def __init__(
 ) -> None:
     """The initialization method.
 
-    See ParentClass's initialization method for descriptions of inherited
-    parameters.
+    See ParentClass's initialization method for descriptions of inherited parameters.
 
     <Optional longer description block.>
 
@@ -427,8 +443,8 @@ This is because:
 
 ```python
 class _CoreClass:
-    """A core class used to contain the shared foundation of PublicClass and its
-    feature variant siblings.
+    """A core class used to contain the shared foundation of PublicClass and its feature
+    variant siblings.
 
     See PublicClass for full documentation of the shared interface.
 
@@ -545,15 +561,21 @@ def wing_cross_section_movements(self) -> tuple:
 @property
 def wing_cross_section_movements(self) -> tuple:
     """The WingCrossSectionMovements for this WingMovement.
-    ...
+
+    :return: A tuple of WingCrossSectionMovements, one per WingCrossSection.
     """
 
+
 # Uses deferral language
-def generate_wing_at_time_step(self, ...) -> Wing:
-    """Generates a Wing at a single time step.
+def generate_wing_at_time_step(self, step: int, delta_time: float | int) -> Wing:
+    """Creates the Wing at a single time step.
 
     See WingMovement for full details.
-    ...
+
+    :param step: The time step index. Must be a non negative int.
+    :param delta_time: The time between each time step in seconds. Must be a positive
+        number (int or float).
+    :return: The Wing at this time step.
     """
 ```
 
@@ -625,7 +647,7 @@ def Frpp_G_Cg(self) -> np.ndarray:
 
 
 @property
-def Frpp_GP1_CgP1(self) -> np.ndarray:
+def Frpp_GP1_CgP1(self) -> np.ndarray | None:
     """The position of the Panel's front right vertex (in the first Airplane's geometry
     axes, relative to the first Airplane's CG).
 
@@ -673,8 +695,8 @@ class Panel:
     Computed geometric properties (leg vectors, bound vortex points, collocation points,
     unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
     corner point position invalidates all dependent cached values, ensuring consistency
-    while avoiding redundant computation. Setting a corner point's local position
-    (one of the parameters with a _G_Cg suffix), sets the corresponding global position
+    while avoiding redundant computation. Setting a corner point's local position (one
+    of the parameters with a _G_Cg suffix), sets the corresponding global position
     (_GP1_CgP1 suffix) to None. It also sets this Panel's bound vortices and the loads
     on the Panel to None.
     """
@@ -687,15 +709,18 @@ Provides detailed explanations of the function/method's behavior. It can be one 
 ### Optional Citation Blocks
 
 ```python
-"""
-**Citation(s):**
+def function_name() -> None:
+    """Short description of what the function/method does.
 
-Adapted from (can be more specific if the whole function/method wasn't adapted): <source>
+    **Citation(s):**
 
-Author(s): <author>
+    Adapted from (can be more specific if the whole function/method wasn't adapted):
+    <source>
 
-Date of retrieval (don't include if not known): <date>
-"""
+    Author(s): <author>
+
+    Date of retrieval (don't include if not known): <date>
+    """
 ```
 
 ---
@@ -733,22 +758,22 @@ def _get_mcl_points(
     """Takes in the inner and outer Airfoils of a wing section and its normalized
     chordwise coordinates.
 
-    It returns a list of four column vectors containing the normalized components of
-    the positions of points along the mean camber line (MCL) (in each Airfoil's axes,
+    It returns a list of four column vectors containing the normalized components of the
+    positions of points along the mean camber line (MCL) (in each Airfoil's axes,
     relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
     :param outer_airfoil: The wing section's outer Airfoil.
-    :param chordwise_coordinates: A (N,) ndarray of floats for the normalized
-        chordwise coordinates where we'd like to sample each Airfoil's MCL. The values
-        are normalized from 0.0 to 1.0 and are unitless.
-    :return: A list of four (N,1) ndarrays of floats, where N is the number of points
-        at which we'd like to sample each Airfoil's MCL. The ndarrays contain components
-        of the positions of points along each Airfoil's MCL. In order, the ndarrays
+    :param chordwise_coordinates: A (N,) ndarray of floats for the normalized chordwise
+        coordinates where we'd like to sample each Airfoil's MCL. The values are
+        normalized from 0.0 to 1.0 and are unitless.
+    :return: A list of four (N,1) ndarrays of floats, where N is the number of points at
+        which we'd like to sample each Airfoil's MCL. The ndarrays contain components of
+        the positions of points along each Airfoil's MCL. In order, the ndarrays
         returned are, (1) the inner Airfoil's MCL points' y components, (2) the inner
-        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points'
-        y components, and (4) the outer Airfoil's MCL points' x components. The values
-        are normalized from 0.0 to 1.0 and are unitless.
+        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points' y
+        components, and (4) the outer Airfoil's MCL points' x components. The values are
+        normalized from 0.0 to 1.0 and are unitless.
     """
 ```
 
@@ -779,16 +804,34 @@ def _get_mcs_points(
         the leading edge root point.
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
-    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the
-        number of chordwise points in the mesh. Each element represents the y component
-        of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
-        inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
-        are unitless.
+    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the y component of the
+        inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param inner_mcl_pointsX_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the x component of the
+        inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param outer_mcl_pointsY_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the y component of the
+        outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param outer_mcl_pointsX_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the x component of the
+        outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param spanwise_coordinates: A (N,1) ndarray of floats, where N is the number of
+        spanwise points. It holds the distances of each spanwise point along the wing
+        section. The values are normalized from 0.0 to 1.0 and are unitless.
     :return: A list of four (M,N,3) ndarrays of floats, where M is the number of
         chordwise points and N is the number of spanwise points. The four ndarrays are,
-        in order, this wing section's Panel's (1) forward inner, (2) forward outer,
-        (3) backward inner, and (4) backward outer panel points (in wing axes, relative
-        to the leading edge root point). The units are in meters.
+        in order, this wing section's Panel's (1) forward inner, (2) forward outer, (3)
+        backward inner, and (4) backward outer panel points (in wing axes, relative to
+        the leading edge root point). The units are in meters.
     """
 ```
 
@@ -809,16 +852,16 @@ def __init__(
         lower-case and stripped of leading and trailing whitespace) unless you are
         passing in your own array of points using outline_A_Lp. Note that NACA0000 isn't
         a valid NACA-series airfoil. The default is "NACA0012".
-    :param outline_A_Lp: An array-like object of numbers (int or float) with shape
-        (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
-        axes, relative to the leading point). If you wish to load coordinates from the
+    :param outline_A_Lp: An array-like object of numbers (int or float) with shape (N,2)
+        representing the 2D points making up the Airfoil's outline (in airfoil axes,
+        relative to the leading point). If you wish to load coordinates from the
         airfoils directory, leave this as None, which is the default. Can be a tuple,
-        list, or ndarray. Values are converted to floats internally. Make sure all
-        x component values are in the range [0.0, 1.0]. The default value is None.
+        list, or ndarray. Values are converted to floats internally. Make sure all x
+        component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: Determines whether to resample the points defining the Airfoil's
         outline. This applies to points passed in by the user or to those from the
-        airfoils directory. I highly recommend setting this to True. Can be a bool or
-        a numpy bool and will be converted internally to a bool. The default is True.
+        airfoils directory. I highly recommend setting this to True. Can be a bool or a
+        numpy bool and will be converted internally to a bool. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
         must be a positive int greater than or equal to 3. The resampled outline will
@@ -841,9 +884,9 @@ def add_control_surface(
     :param deflection: The control deflection in degrees. Deflection downwards is
         positive. It must be a number (int or float) in the range [-5.0, 5.0] degrees.
         Values are converted to floats internally.
-    :param hinge_point: The location of the hinge as a fraction of chord length. It
-        must be a number (int or float) in the range (0.0, 1.0). Values are converted
-        to floats internally.
+    :param hinge_point: The location of the hinge as a fraction of chord length. It must
+        be a number (int or float) in the range (0.0, 1.0). Values are converted to
+        floats internally.
     :return: The new Airfoil with the control surface added.
     """
 ```
@@ -858,8 +901,8 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
         and will be converted internally to a bool. If True, the method displays the
         plot and returns None. If False, the method returns the data without displaying.
         The default is False.
-    :return: A list of two ndarrays containing the outline and MCL data, or None if
-        show is True.
+    :return: A list of two ndarrays containing the outline and MCL data, or None if show
+        is True.
     """
 ```
 
@@ -874,13 +917,13 @@ def get_resampled_mcl(
 
     It is used to discretize the MCL for meshing.
 
-    :param mcl_fractions: A (N,) array-like object of floats representing normalized
-        distances along the MCL (from the leading to the trailing edge) at which to
-        return the resampled MCL points. Can be a tuple, list, or ndarray. The first
-        value must be 0.0, the last must be 1.0, and the remaining must be in the range
-        [0.0, 1.0]. All values must be non duplicated and in ascending order.
-    :return: A (N,2) ndarray of floats that contains the positions of the resampled
-        MCL points (in airfoil axes, relative to the leading point).
+    :param mcl_fractions: An array-like object of floats with shape (N,) representing
+        normalized distances along the MCL (from the leading to the trailing edge) at
+        which to return the resampled MCL points. Can be a tuple, list, or ndarray. The
+        first value must be 0.0, the last must be 1.0, and the remaining must be in the
+        range [0.0, 1.0]. All values must be non duplicated and in ascending order.
+    :return: A (N,2) ndarray of floats that contains the positions of the resampled MCL
+        points (in airfoil axes, relative to the leading point).
     """
 ```
 
@@ -909,7 +952,7 @@ param: np.ndarray
 # Classes
 param: ClassName  # Same module
 param: module_alias.ClassName  # Different module
--> "ClassName"  # Self-reference
+-> ClassName  # Self-reference (no quotes needed with the __future__ import)
 
 # Optional/Union
 param: Type | None
@@ -962,5 +1005,4 @@ param: Type1 | Type2
 
 - This style guide should be updated as new patterns emerge
 - All existing code should gradually be updated to match this style
-- Use `docformatter` or similar tools to help maintain consistent formatting
 - Shape information is critical and must always be included in docstrings for arrays

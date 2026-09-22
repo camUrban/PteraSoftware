@@ -25,6 +25,12 @@ _logger = _logging.get_logger("movements.movement")
 # resolution to guard against that.
 _MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
 
+# Oversampling factor for the non static cached path. The high resolution Movement is
+# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
+# more snapshot) so the maximum and half maximum candidates have integer strides and
+# other candidates stay within roughly half a high resolution step of the nominal time.
+_NON_STATIC_CACHE_OVERSAMPLE: int = 2
+
 
 class Movement(_core.CoreMovement):
     """A class used to contain an UnsteadyProblem's movement."""
@@ -468,13 +474,6 @@ class Movement(_core.CoreMovement):
     @property
     def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
         return self._operating_points
-
-
-# Oversampling factor for the non static cached path. The high resolution Movement is
-# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
-# more snapshot) so the maximum and half maximum candidates have integer strides and
-# other candidates stay within roughly half a high resolution step of the nominal time.
-_NON_STATIC_CACHE_OVERSAMPLE: int = 2
 
 
 def _compute_wake_area_mismatch(

@@ -40,6 +40,39 @@ if TYPE_CHECKING:
 
 _logger = _logging.get_logger("problems")
 
+# These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
+# injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
+# generated model XML at the matching location.
+_EXTRA_XML_INJECTION_POINTS = frozenset(
+    {"default", "asset", "visual", "worldbody", "body"}
+)
+
+# These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
+# Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
+# XML's option element.
+_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
+
+# These are the strongly coupled free-flight sub-iteration tunables. The relative and
+# absolute tolerances form the mixed convergence test on the nondimensionalized state
+# residual. The divergence tolerance guards the Aitken relaxation factor against a
+# collapsing denominator. The initial relaxation factor under-relaxes the first update
+# before the Aitken formula takes over.
+_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
+_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
+_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
+_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
+
+# These are tolerances for the torsional spring-damper ODE integration in
+# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# defaults because the integration is re-seeded from the previous state at every outer
+# time step, so its local errors compound across a simulation, and because a loose
+# absolute tolerance would swamp small torsional responses. The absolute tolerance
+# bounds both state components, the torsional angle (radians) and its time derivative
+# (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
+# makes the ODE stiff and the strict tolerances expensive).
+_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
+_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
+
 
 class SteadyProblem:
     """A class used to contain steady aerodynamics problems."""
@@ -343,29 +376,6 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         :raises NotImplementedError: Always. Subclasses must override this method.
         """
         raise NotImplementedError("Subclasses must implement initialize_next_problem.")
-
-
-# These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
-# injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
-# generated model XML at the matching location.
-_EXTRA_XML_INJECTION_POINTS = frozenset(
-    {"default", "asset", "visual", "worldbody", "body"}
-)
-
-# These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
-# Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
-# XML's option element.
-_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
-
-# These are the strongly coupled free-flight sub-iteration tunables. The relative and
-# absolute tolerances form the mixed convergence test on the nondimensionalized state
-# residual. The divergence tolerance guards the Aitken relaxation factor against a
-# collapsing denominator. The initial relaxation factor under-relaxes the first update
-# before the Aitken formula takes over.
-_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
-_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
-_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
-_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
 
 
 class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
@@ -1286,18 +1296,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                     new_state, current_operating_point
                 )
                 self._commit_next_problem(next_operating_point, step)
-
-
-# These are tolerances for the torsional spring-damper ODE integration in
-# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
-# defaults because the integration is re-seeded from the previous state at every outer
-# time step, so its local errors compound across a simulation, and because a loose
-# absolute tolerance would swamp small torsional responses. The absolute tolerance
-# bounds both state components, the torsional angle (radians) and its time derivative
-# (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
-# makes the ODE stiff and the strict tolerances expensive).
-_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
-_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
 
 
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):

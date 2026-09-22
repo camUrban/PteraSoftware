@@ -36,6 +36,23 @@ _SINGULARITY_NAMES: tuple[str, ...] = (
     "point on end vertex",
 )
 
+# The width to which format_duration left-pads its results when requested: the length of
+# the widest possible form, "-999 hr, 59 min, and 1.23E-305 s", built from the widest
+# possible components (a negative sign, three-digit hours, and a seconds portion whose
+# three-significant-figure form needs a three-digit exponent, the widest a float can
+# produce).
+_DURATION_PAD_WIDTH: int = 32
+
+# The Panel count at or above which letting the BLAS library multi-thread the linear
+# solves wins whole runs. Below it, a multi-threaded solve's post-work spin window taxes
+# the parallel kernel launches that follow it by more than the threaded solve itself
+# saves, so the solve runs single-threaded instead. Derived by timing whole solver runs
+# with the kernel thread dispatch in place, rather than the solve in isolation, because
+# an isolated timing cannot see the spin window's effect on the launches around it and
+# so puts the crossover well below its in-solver value. One threshold serves both solver
+# families.
+_SOLVE_THREAD_THRESHOLD = 3_000
+
 
 def log_unexpected_singularity_counts(
     logger: logging.Logger,
@@ -655,14 +672,6 @@ def interp_between_points(
     return gridInterpolatedPoints_A_a
 
 
-# The width to which format_duration left-pads its results when requested: the length of
-# the widest possible form, "-999 hr, 59 min, and 1.23E-305 s", built from the widest
-# possible components (a negative sign, three-digit hours, and a seconds portion whose
-# three-significant-figure form needs a three-digit exponent, the widest a float can
-# produce).
-_DURATION_PAD_WIDTH: int = 32
-
-
 def format_duration(total_seconds: float, left_pad: bool = False) -> str:
     """Formats a duration as an hours, minutes, and seconds string.
 
@@ -719,16 +728,6 @@ def format_duration(total_seconds: float, left_pad: bool = False) -> str:
         return formatted_duration.rjust(_DURATION_PAD_WIDTH)
     return formatted_duration
 
-
-# The Panel count at or above which letting the BLAS library multi-thread the linear
-# solves wins whole runs. Below it, a multi-threaded solve's post-work spin window taxes
-# the parallel kernel launches that follow it by more than the threaded solve itself
-# saves, so the solve runs single-threaded instead. Derived by timing whole solver runs
-# with the kernel thread dispatch in place, rather than the solve in isolation, because
-# an isolated timing cannot see the spin window's effect on the launches around it and
-# so puts the crossover well below its in-solver value. One threshold serves both solver
-# families.
-_SOLVE_THREAD_THRESHOLD = 3_000
 
 # Guards the process-wide BLAS thread limit that a solve loop installs. A BLAS library
 # has one thread count per process, and threadpoolctl neither locks nor reference

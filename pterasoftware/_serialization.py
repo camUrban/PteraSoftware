@@ -90,118 +90,6 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 # loudly instead of being read under the new one.
 _FORMAT_VERSION = 30
 
-
-class UnboundCallable:
-    """A placeholder standing in for a custom callable that could not be rebuilt when a
-    saved object was loaded.
-
-    Saved files store a custom callable (a custom spacing function, an
-    AeroelasticWingMovement's second-derivative function, or a
-    FreeFlightUnsteadyProblem's external_loads_fn) as an inert marker holding the
-    callable's qualified name, its source text when that could be retrieved, and a
-    SHA-256 hash of that text. Nothing in the file is ever executed, so loading rebuilds
-    the marker as an UnboundCallable rather than as the original function.
-
-    An UnboundCallable passes callable checks, so a loaded object keeps the same
-    structure as the one that was saved, and saving it again writes the same marker back
-    out. It cannot be invoked: calling it raises a RuntimeError that names the original
-    function and prints its recorded source. Loading a solved simulation never invokes
-    these callables, so a file holding them loads and can be visualized without any of
-    them. A user who needs to re-solve or regenerate motion passes the original
-    functions to load's callables argument, keyed by the qualified names recorded in the
-    file, and load restores them in place of the placeholders.
-    """
-
-    __slots__ = ("_qualname", "_source", "_source_hash")
-
-    def __init__(
-        self, qualname: str, source: str | None, source_hash: str | None
-    ) -> None:
-        """The initialization method.
-
-        :param qualname: The original callable's qualified name, including its module.
-        :param source: The original callable's dedented source text, or None if it could
-            not be retrieved when the object was saved.
-        :param source_hash: The lowercase hexadecimal SHA-256 digest of source encoded
-            as UTF-8, or None if source is None.
-        :return: None
-        """
-        if not isinstance(qualname, str):
-            raise TypeError(f"qualname must be a str, got {type(qualname).__name__}.")
-        self._qualname = qualname
-
-        if source is not None and not isinstance(source, str):
-            raise TypeError(
-                f"source must be a str or None, got {type(source).__name__}."
-            )
-        self._source = source
-
-        if source_hash is not None and not isinstance(source_hash, str):
-            raise TypeError(
-                f"source_hash must be a str or None, got {type(source_hash).__name__}."
-            )
-        self._source_hash = source_hash
-
-    # --- Immutable: read only properties ---
-    @property
-    def qualname(self) -> str:
-        return self._qualname
-
-    @property
-    def source(self) -> str | None:
-        return self._source
-
-    @property
-    def source_hash(self) -> str | None:
-        return self._source_hash
-
-    def __call__(self, *args: object, **kwargs: object) -> object:
-        """Raises a RuntimeError naming the original callable and its source.
-
-        :param args: Ignored positional arguments, accepted so the placeholder can stand
-            wherever the original callable stood.
-        :param kwargs: Ignored keyword arguments, accepted for the same reason.
-        :return: Never returns.
-        """
-        if self._source is None:
-            source_note = (
-                "Its source text could not be retrieved when the object was saved."
-            )
-        else:
-            source_note = "Its recorded source is:\n\n" + self._source
-        raise RuntimeError(
-            f"The custom callable {self._qualname} was replaced by a placeholder when "
-            "the object was loaded, because saved files store only a callable's name "
-            "and source text and never execute anything they contain. To use it, load "
-            "the file again and pass the function as load(path, callables="
-            f'{{"{self._qualname}": function}}). {source_note}'
-        )
-
-    def __repr__(self) -> str:
-        """Returns a string naming the original callable.
-
-        :return: The repr string.
-        """
-        return f'UnboundCallable(qualname="{self._qualname}")'
-
-
-def _all_slots(cls: type) -> list[str]:
-    """Collects all __slots__ from a class and its parents via the MRO.
-
-    Walks the method resolution order so that inherited slots (e.g., those on
-    CoreMovement) are included alongside the class's own slots.
-
-    :param cls: The class to inspect.
-    :return: A list of slot names in MRO order (parent slots first).
-    """
-    slots: list[str] = []
-    for klass in reversed(cls.__mro__):
-        for slot in getattr(klass, "__slots__", ()):
-            if slot not in slots:
-                slots.append(slot)
-    return slots
-
-
 # This is the default maximum decompressed size in bytes when reading archives. The cap
 # is cumulative across every member read during one load(). Prevents zip bombs from
 # exhausting memory. Users can override this via the max_size parameter on load().
@@ -322,6 +210,117 @@ _CHUNKED_SLOTS: tuple[tuple[type, tuple[str, ...]], ...] = (
     (UnsteadyProblem, ("_steady_problems",)),
     (_CoupledUnsteadyProblem, ("_steady_problems",)),
 )
+
+
+class UnboundCallable:
+    """A placeholder standing in for a custom callable that could not be rebuilt when a
+    saved object was loaded.
+
+    Saved files store a custom callable (a custom spacing function, an
+    AeroelasticWingMovement's second-derivative function, or a
+    FreeFlightUnsteadyProblem's external_loads_fn) as an inert marker holding the
+    callable's qualified name, its source text when that could be retrieved, and a
+    SHA-256 hash of that text. Nothing in the file is ever executed, so loading rebuilds
+    the marker as an UnboundCallable rather than as the original function.
+
+    An UnboundCallable passes callable checks, so a loaded object keeps the same
+    structure as the one that was saved, and saving it again writes the same marker back
+    out. It cannot be invoked: calling it raises a RuntimeError that names the original
+    function and prints its recorded source. Loading a solved simulation never invokes
+    these callables, so a file holding them loads and can be visualized without any of
+    them. A user who needs to re-solve or regenerate motion passes the original
+    functions to load's callables argument, keyed by the qualified names recorded in the
+    file, and load restores them in place of the placeholders.
+    """
+
+    __slots__ = ("_qualname", "_source", "_source_hash")
+
+    def __init__(
+        self, qualname: str, source: str | None, source_hash: str | None
+    ) -> None:
+        """The initialization method.
+
+        :param qualname: The original callable's qualified name, including its module.
+        :param source: The original callable's dedented source text, or None if it could
+            not be retrieved when the object was saved.
+        :param source_hash: The lowercase hexadecimal SHA-256 digest of source encoded
+            as UTF-8, or None if source is None.
+        :return: None
+        """
+        if not isinstance(qualname, str):
+            raise TypeError(f"qualname must be a str, got {type(qualname).__name__}.")
+        self._qualname = qualname
+
+        if source is not None and not isinstance(source, str):
+            raise TypeError(
+                f"source must be a str or None, got {type(source).__name__}."
+            )
+        self._source = source
+
+        if source_hash is not None and not isinstance(source_hash, str):
+            raise TypeError(
+                f"source_hash must be a str or None, got {type(source_hash).__name__}."
+            )
+        self._source_hash = source_hash
+
+    # --- Immutable: read only properties ---
+    @property
+    def qualname(self) -> str:
+        return self._qualname
+
+    @property
+    def source(self) -> str | None:
+        return self._source
+
+    @property
+    def source_hash(self) -> str | None:
+        return self._source_hash
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        """Raises a RuntimeError naming the original callable and its source.
+
+        :param args: Ignored positional arguments, accepted so the placeholder can stand
+            wherever the original callable stood.
+        :param kwargs: Ignored keyword arguments, accepted for the same reason.
+        :return: Never returns.
+        """
+        if self._source is None:
+            source_note = (
+                "Its source text could not be retrieved when the object was saved."
+            )
+        else:
+            source_note = "Its recorded source is:\n\n" + self._source
+        raise RuntimeError(
+            f"The custom callable {self._qualname} was replaced by a placeholder when "
+            "the object was loaded, because saved files store only a callable's name "
+            "and source text and never execute anything they contain. To use it, load "
+            "the file again and pass the function as load(path, callables="
+            f'{{"{self._qualname}": function}}). {source_note}'
+        )
+
+    def __repr__(self) -> str:
+        """Returns a string naming the original callable.
+
+        :return: The repr string.
+        """
+        return f'UnboundCallable(qualname="{self._qualname}")'
+
+
+def _all_slots(cls: type) -> list[str]:
+    """Collects all __slots__ from a class and its parents via the MRO.
+
+    Walks the method resolution order so that inherited slots (e.g., those on
+    CoreMovement) are included alongside the class's own slots.
+
+    :param cls: The class to inspect.
+    :return: A list of slot names in MRO order (parent slots first).
+    """
+    slots: list[str] = []
+    for klass in reversed(cls.__mro__):
+        for slot in getattr(klass, "__slots__", ()):
+            if slot not in slots:
+                slots.append(slot)
+    return slots
 
 
 def save(path: str | Path, obj: object) -> None:

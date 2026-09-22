@@ -49,6 +49,36 @@ _MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
 _DEFAULT_DRAW_PATH = "draw.webp"
 _DEFAULT_ANIMATE_PATH = "animate.webp"
 
+_SUBPROCESS_WRAPPER = """\
+import runpy
+import sys
+from unittest.mock import patch
+
+import matplotlib.pyplot as plt
+import pterasoftware as ps
+
+ORIGINAL_DRAW = ps.output.draw
+ORIGINAL_ANIMATE = ps.output.animate
+
+
+def _draw_testing(*args, **kwargs):
+    kwargs["testing"] = True
+    ORIGINAL_DRAW(*args, **kwargs)
+
+
+def _animate_testing(*args, **kwargs):
+    kwargs["testing"] = True
+    ORIGINAL_ANIMATE(*args, **kwargs)
+
+
+with (
+    patch.object(ps.output, "draw", _draw_testing),
+    patch.object(ps.output, "animate", _animate_testing),
+    patch.object(plt, "show", lambda *_args, **_kwargs: None),
+):
+    runpy.run_path(sys.argv[1], run_name="__main__")
+"""
+
 
 def _extract_output_kwargs(
     script_path: Path,
@@ -230,37 +260,6 @@ def _discover_examples() -> list[Path]:
     :return: A sorted list of Paths to example scripts, excluding __init__.py.
     """
     return sorted(p for p in EXAMPLES_DIR.glob("*.py") if p.name != "__init__.py")
-
-
-_SUBPROCESS_WRAPPER = """\
-import runpy
-import sys
-from unittest.mock import patch
-
-import matplotlib.pyplot as plt
-import pterasoftware as ps
-
-ORIGINAL_DRAW = ps.output.draw
-ORIGINAL_ANIMATE = ps.output.animate
-
-
-def _draw_testing(*args, **kwargs):
-    kwargs["testing"] = True
-    ORIGINAL_DRAW(*args, **kwargs)
-
-
-def _animate_testing(*args, **kwargs):
-    kwargs["testing"] = True
-    ORIGINAL_ANIMATE(*args, **kwargs)
-
-
-with (
-    patch.object(ps.output, "draw", _draw_testing),
-    patch.object(ps.output, "animate", _animate_testing),
-    patch.object(plt, "show", lambda *_args, **_kwargs: None),
-):
-    runpy.run_path(sys.argv[1], run_name="__main__")
-"""
 
 
 def _run_example(script_path: Path, output_subdir: Path) -> bool:

@@ -10,6 +10,37 @@ from typing import Any
 # Add project root to sys.path so sphinx.ext.autodoc can import pterasoftware.
 sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+_TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
+_TUTORIALS_TARGET = Path(__file__).resolve().parent / "tutorials"
+
+# Parameter annotations to show in place of the source annotation, keyed by the fully
+# qualified class (for constructor parameters) or method, and then by parameter name.
+# These are signatures whose source annotation names a class from a private module,
+# which the API reference does not document, and is wider than what the implementation
+# accepts: the hook methods are widened to the shared parent solver type because an
+# override cannot narrow a parameter type, and the base unsteady solver's constructor is
+# widened to the shared parent problem type so the derived solvers can pass their own
+# problem types through it. The docs show the type that actually works, and contributors
+# can read the source for the formal contract.
+_ANNOTATION_OVERRIDES = {
+    "pterasoftware.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver": {
+        "unsteady_problem": "pterasoftware.problems.UnsteadyProblem",
+    },
+    "pterasoftware.problems.FreeFlightUnsteadyProblem.initialize_next_problem": {
+        "solver": (
+            "pterasoftware.free_flight_unsteady_ring_vortex_lattice_method."
+            "FreeFlightUnsteadyRingVortexLatticeMethodSolver"
+        ),
+    },
+    "pterasoftware.problems.AeroelasticUnsteadyProblem.initialize_next_problem": {
+        "solver": (
+            "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method."
+            "AeroelasticUnsteadyRingVortexLatticeMethodSolver"
+        ),
+    },
+}
+
 # Mock all runtime dependencies so autodoc can import pterasoftware (via the
 # autofunction directives for save, load, and set_up_logging) without them installed.
 # This is safe because the documented functions only use stdlib types in their
@@ -210,14 +241,10 @@ html_theme_options = {
     "sidebar_hide_name": True,
 }
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
 # Sphinx only renders documents that live inside the source directory, so copy the
 # tutorial notebooks (and the images they embed) from the repo root's tutorials/
 # directory into docs/website/tutorials/. The copies are gitignored, and tutorials/
 # stays the single source of truth.
-_TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
-_TUTORIALS_TARGET = Path(__file__).resolve().parent / "tutorials"
 _TUTORIALS_TARGET.mkdir(exist_ok=True)
 for _tutorial_file in sorted(_TUTORIALS_SOURCE.iterdir()):
     if _tutorial_file.suffix in {".ipynb", ".png", ".webp"}:
@@ -239,34 +266,6 @@ def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:
         text = contributing_path.read_text()
         text = re.sub(r"\(docs/([A-Z_]+\.md)\)", r"(\1)", text)
         source[0] = text
-
-
-# Parameter annotations to show in place of the source annotation, keyed by the fully
-# qualified class (for constructor parameters) or method, and then by parameter name.
-# These are signatures whose source annotation names a class from a private module,
-# which the API reference does not document, and is wider than what the implementation
-# accepts: the hook methods are widened to the shared parent solver type because an
-# override cannot narrow a parameter type, and the base unsteady solver's constructor is
-# widened to the shared parent problem type so the derived solvers can pass their own
-# problem types through it. The docs show the type that actually works, and contributors
-# can read the source for the formal contract.
-_ANNOTATION_OVERRIDES = {
-    "pterasoftware.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver": {
-        "unsteady_problem": "pterasoftware.problems.UnsteadyProblem",
-    },
-    "pterasoftware.problems.FreeFlightUnsteadyProblem.initialize_next_problem": {
-        "solver": (
-            "pterasoftware.free_flight_unsteady_ring_vortex_lattice_method."
-            "FreeFlightUnsteadyRingVortexLatticeMethodSolver"
-        ),
-    },
-    "pterasoftware.problems.AeroelasticUnsteadyProblem.initialize_next_problem": {
-        "solver": (
-            "pterasoftware.aeroelastic_unsteady_ring_vortex_lattice_method."
-            "AeroelasticUnsteadyRingVortexLatticeMethodSolver"
-        ),
-    },
-}
 
 
 def _is_deprecation_warning(node: ast.AST) -> bool:

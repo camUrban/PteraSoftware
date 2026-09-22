@@ -240,18 +240,18 @@ from unittest.mock import patch
 import matplotlib.pyplot as plt
 import pterasoftware as ps
 
-original_draw = ps.output.draw
-original_animate = ps.output.animate
+ORIGINAL_DRAW = ps.output.draw
+ORIGINAL_ANIMATE = ps.output.animate
 
 
 def _draw_testing(*args, **kwargs):
     kwargs["testing"] = True
-    original_draw(*args, **kwargs)
+    ORIGINAL_DRAW(*args, **kwargs)
 
 
 def _animate_testing(*args, **kwargs):
     kwargs["testing"] = True
-    original_animate(*args, **kwargs)
+    ORIGINAL_ANIMATE(*args, **kwargs)
 
 
 with (

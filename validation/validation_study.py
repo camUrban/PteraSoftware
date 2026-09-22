@@ -26,8 +26,8 @@ import pterasoftware as ps
 # Find this script's directory so that the data files it reads and the figure it saves
 # resolve correctly regardless of the current working directory. The experimental data
 # extracted from the paper is stored in CSV files in a subdirectory.
-validation_directory = Path(__file__).resolve().parent
-experimental_data_directory = validation_directory / "experimental_data"
+VALIDATION_DIRECTORY = Path(__file__).resolve().parent
+EXPERIMENTAL_DATA_DIRECTORY = VALIDATION_DIRECTORY / "experimental_data"
 
 # Configure logging to display info level messages on the console alongside progress
 # bars. Keep the configured logger so this script can log its own results alongside the
@@ -35,27 +35,27 @@ experimental_data_directory = validation_directory / "experimental_data"
 validation_logger = ps.set_up_logging(level="Info")
 
 # Set the given characteristics of the wing in meters.
-half_span = 0.213
-chord = 0.072
+HALF_SPAN = 0.213
+CHORD = 0.072
 
 # Set the given forward flight velocity in meters per second.
-validation_velocity = 2.9
+VALIDATION_VELOCITY = 2.9
 
 # Set the given angle of attack in degrees. If you analyze a different operating point
 # where this is not zero, you need to modify the code to rotate the experimental lift
 # into the wind axes.
-validation_alpha = 0
+VALIDATION_ALPHA = 0
 
 # Set the given flapping frequency in Hertz.
-validation_flapping_frequency = 3.3
+VALIDATION_FLAPPING_FREQUENCY = 3.3
 
 # This wing planform has a rounded tip so the outermost WingCrossSection needs to be
 # inset some amount. This value is in meters.
-tip_inset = 0.005
+TIP_INSET = 0.005
 
 # A similar constraint is that Ptera Software requires symmetric, flapping Wings have
 # some small midline offset. This value is in meters.
-wing_midline_offset = 0.005
+WING_MIDLINE_OFFSET = 0.005
 
 # Import the extracted points from the paper's diagram of the planform. The resulting
 # array is of the form [spanwise coordinate, chordwise coordinate], and is ordered from
@@ -64,7 +64,7 @@ wing_midline_offset = 0.005
 # positive chordwise axis from trailing edge to leading edge. The values are in
 # millimeters. I'll call this the Yeo axis system.
 stackPlanformPointsMm_Yeo_Ter = np.genfromtxt(
-    experimental_data_directory / "extracted_planform_coordinates.csv", delimiter=","
+    EXPERIMENTAL_DATA_DIRECTORY / "extracted_planform_coordinates.csv", delimiter=","
 )
 
 # Convert the points to SI units.
@@ -72,7 +72,7 @@ stackPlanformPoints_Yeo_Ter = stackPlanformPointsMm_Yeo_Ter / 1000
 
 # Set the origin to the leading edge root point.
 stackPlanformPoints_Yeo_Ler = stackPlanformPoints_Yeo_Ter - np.array(
-    [0, chord], dtype=float
+    [0, CHORD], dtype=float
 )
 
 # Switch the sign of the points' chordwise components.
@@ -87,7 +87,7 @@ stackPlanformPointsXY_Wn_Ler = stackPlanformPoints_YeoXReversed_Ler[:, [1, 0]]
 
 # Find the index of the point where the planform point's y component equals the half
 # span.
-tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == half_span)[0][0]
+tip_index = np.where(stackPlanformPointsXY_Wn_Ler[:, 1] == HALF_SPAN)[0][0]
 
 # Using the tip index, split the points into two ndarrays of leading and trailing edge
 # points (in wing axes projected onto its xy plane, relative to the leading edge root
@@ -113,13 +113,13 @@ trailingEdgePoints_Wn_Ler = np.column_stack(
 # end of its sweep (3 spanwise sections gives an average Panel aspect ratio of about 4
 # at 3 chordwise Panels). The validation results come from the solver that analysis runs
 # at whatever values it finds are converged.
-num_flaps = 1
-num_chordwise_panels = 3
-num_spanwise_sections = 3
+NUM_FLAPS = 1
+NUM_CHORDWISE_PANELS = 3
+NUM_SPANWISE_SECTIONS = 3
 
 # Set the chordwise spacing scheme for the Panels. This is set to uniform, as is
 # standard for UVLM simulations.
-chordwise_spacing = "uniform"
+CHORDWISE_SPACING = "uniform"
 
 
 def validation_flap_angle_series(
@@ -210,20 +210,20 @@ validation_airplane = ps.geometry.airplane.Airplane(
         ps.geometry.wing.Wing.from_edge_points(
             leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
             trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
-            num_wing_cross_sections=num_spanwise_sections + 1,
+            num_wing_cross_sections=NUM_SPANWISE_SECTIONS + 1,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca0012",
             ),
             name="Main Wing",
-            Ler_Gs_Cgs=(0.0, wing_midline_offset / 2, 0.0),
+            Ler_Gs_Cgs=(0.0, WING_MIDLINE_OFFSET / 2, 0.0),
             angles_Gs_to_Wn_ixyz=(validation_flap_angle_at_start, 0.0, 0.0),
             symmetric=True,
             mirror_only=False,
             symmetryNormal_G=(0.0, 1.0, 0.0),
             symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
-            num_chordwise_panels=num_chordwise_panels,
-            chordwise_spacing=chordwise_spacing,
-            tip_trim_fraction=tip_inset / half_span,
+            num_chordwise_panels=NUM_CHORDWISE_PANELS,
+            chordwise_spacing=CHORDWISE_SPACING,
+            tip_trim_fraction=TIP_INSET / HALF_SPAN,
         ),
     ],
     name="Validation Airplane",
@@ -236,7 +236,7 @@ reflected_main_wing_cross_section_movements = []
 
 # Create static WingCrossSectionMovements for each WingCrossSection in the main and
 # reflected main Wings.
-for i in range(num_spanwise_sections + 1):
+for i in range(NUM_SPANWISE_SECTIONS + 1):
     this_main_wing_cross_section_movement = (
         ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
             base_wing_cross_section=validation_airplane.wings[0].wing_cross_sections[i]
@@ -301,7 +301,7 @@ main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[0],
     wing_cross_section_movements=main_wing_cross_section_movements,
     ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
-    periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(1 / VALIDATION_FLAPPING_FREQUENCY, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
@@ -309,7 +309,7 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     base_wing=validation_airplane.wings[1],
     wing_cross_section_movements=reflected_main_wing_cross_section_movements,
     ampAngles_Gs_to_Wn_ixyz=(validation_flap_angle_amplitude, 0.0, 0.0),
-    periodAngles_Gs_to_Wn_ixyz=(1 / validation_flapping_frequency, 0.0, 0.0),
+    periodAngles_Gs_to_Wn_ixyz=(1 / VALIDATION_FLAPPING_FREQUENCY, 0.0, 0.0),
     phaseAngles_Gs_to_Wn_ixyz=(0.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=(validation_flap_angle_shape, "sine", "sine"),
 )
@@ -332,7 +332,7 @@ del reflected_main_wing_movement
 # Define an OperatingPoint and OperatingPointMovement corresponding to the conditions of
 # the validation study.
 validation_operating_point = ps.operating_point.OperatingPoint(
-    vCg__E=validation_velocity, alpha=validation_alpha
+    vCg__E=VALIDATION_VELOCITY, alpha=VALIDATION_ALPHA
 )
 validation_operating_point_movement = (
     ps.movements.operating_point_movement.OperatingPointMovement(
@@ -344,7 +344,7 @@ validation_operating_point_movement = (
 validation_movement = ps.movements.movement.Movement(
     airplane_movements=[validation_airplane_movement],
     operating_point_movement=validation_operating_point_movement,
-    num_cycles=num_flaps,
+    num_cycles=NUM_FLAPS,
 )
 
 # Delete the extraneous pointers.
@@ -389,7 +389,7 @@ del validation_movement
     atol=0.001,
     show_solver_progress=True,
     resolve_converged_solver=True,
-    cache_path=validation_directory / "validation_convergence_cache.json",
+    cache_path=VALIDATION_DIRECTORY / "validation_convergence_cache.json",
 )
 
 # Delete the extraneous pointer.
@@ -428,23 +428,23 @@ del trailingEdgePoints_Wn_Ler
 # Define the position of the points of interest and the area of their rectangles. These
 # values were extracted by digitizing the figures in Yeo et al., 2011.
 blueTrailingPointsXY_Wn_Ler = [0.060, 0.036]
-blue_trailing_area = 0.072 * 0.024
+BLUE_TRAILING_AREA = 0.072 * 0.024
 blueMiddlePointsXY_Wn_Ler = [0.036, 0.036]
-blue_middle_area = 0.072 * 0.024
+BLUE_MIDDLE_AREA = 0.072 * 0.024
 blueLeadingPointsXY_Wn_Ler = [0.012, 0.036]
-blue_leading_area = 0.072 * 0.024
+BLUE_LEADING_AREA = 0.072 * 0.024
 orangeTrailingPointsXY_Wn_Ler = [0.05532, 0.107]
-orange_trailing_area = 0.07 * 0.02112
+ORANGE_TRAILING_AREA = 0.07 * 0.02112
 orangeMiddlePointsXY_Wn_Ler = [0.0342, 0.107]
-orange_middle_area = 0.07 * 0.02112
+ORANGE_MIDDLE_AREA = 0.07 * 0.02112
 orangeLeadingPointsXY_Wn_Ler = [0.01308, 0.107]
-orange_leading_area = 0.07 * 0.02112
+ORANGE_LEADING_AREA = 0.07 * 0.02112
 greenTrailingPointsXY_Wn_Ler = [0.04569, 0.162825]
-green_trailing_area = 0.04165 * 0.015
+GREEN_TRAILING_AREA = 0.04165 * 0.015
 greenMiddlePointsXY_Wn_Ler = [0.03069, 0.176]
-green_middle_area = 0.06565 * 0.015
+GREEN_MIDDLE_AREA = 0.06565 * 0.015
 greenLeadingPointsXY_Wn_Ler = [0.01569, 0.1775]
-green_leading_area = 0.071 * 0.015
+GREEN_LEADING_AREA = 0.071 * 0.015
 
 # The converged solver has already been run, and its results are compared to the
 # experimental results directly. It was run with only final results, so it holds loads
@@ -461,8 +461,8 @@ times = (
 # Discretize the time period of the final flap analyzed into 100 steps. Store this to a
 # ndarray.
 final_flap_times = np.linspace(
-    (converged_num_flaps - 1) / validation_flapping_frequency,
-    converged_num_flaps / validation_flapping_frequency,
+    (converged_num_flaps - 1) / VALIDATION_FLAPPING_FREQUENCY,
+    converged_num_flaps / VALIDATION_FLAPPING_FREQUENCY,
     100,
     endpoint=False,
 )
@@ -474,39 +474,39 @@ normalized_times = np.linspace(0, 1, 100, endpoint=False)
 # sets are stored in CSV files in the experimental data subdirectory. The pressure units
 # used are inAq and time units are normalized flap cycle times from 0 to 1.
 exp_blue_trailing_point_pressures = np.genfromtxt(
-    experimental_data_directory / "blue_trailing_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "blue_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_middle_point_pressures = np.genfromtxt(
-    experimental_data_directory / "blue_middle_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "blue_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_blue_leading_point_pressures = np.genfromtxt(
-    experimental_data_directory / "blue_leading_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "blue_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_trailing_point_pressures = np.genfromtxt(
-    experimental_data_directory / "orange_trailing_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "orange_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_middle_point_pressures = np.genfromtxt(
-    experimental_data_directory / "orange_middle_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "orange_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_orange_leading_point_pressures = np.genfromtxt(
-    experimental_data_directory / "orange_leading_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "orange_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_trailing_point_pressures = np.genfromtxt(
-    experimental_data_directory / "green_trailing_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "green_trailing_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_middle_point_pressures = np.genfromtxt(
-    experimental_data_directory / "green_middle_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "green_middle_point_experimental_pressures.csv",
     delimiter=",",
 )
 exp_green_leading_point_pressures = np.genfromtxt(
-    experimental_data_directory / "green_leading_point_experimental_pressures.csv",
+    EXPERIMENTAL_DATA_DIRECTORY / "green_leading_point_experimental_pressures.csv",
     delimiter=",",
 )
 
@@ -560,31 +560,31 @@ exp_green_leading_point_pressures_norm = np.interp(
 
 # Find the normal force time history on each of the experimental panels in Newtons.
 exp_blue_trailing_normal_forces = (
-    248.84 * exp_blue_trailing_point_pressures_norm * blue_trailing_area
+    248.84 * exp_blue_trailing_point_pressures_norm * BLUE_TRAILING_AREA
 )
 exp_blue_middle_normal_forces = (
-    248.84 * exp_blue_middle_point_pressures_norm * blue_middle_area
+    248.84 * exp_blue_middle_point_pressures_norm * BLUE_MIDDLE_AREA
 )
 exp_blue_leading_normal_forces = (
-    248.84 * exp_blue_leading_point_pressures_norm * blue_leading_area
+    248.84 * exp_blue_leading_point_pressures_norm * BLUE_LEADING_AREA
 )
 exp_orange_trailing_normal_forces = (
-    248.84 * exp_orange_trailing_point_pressures_norm * orange_trailing_area
+    248.84 * exp_orange_trailing_point_pressures_norm * ORANGE_TRAILING_AREA
 )
 exp_orange_middle_normal_forces = (
-    248.84 * exp_orange_middle_point_pressures_norm * orange_middle_area
+    248.84 * exp_orange_middle_point_pressures_norm * ORANGE_MIDDLE_AREA
 )
 exp_orange_leading_normal_forces = (
-    248.84 * exp_orange_leading_point_pressures_norm * orange_leading_area
+    248.84 * exp_orange_leading_point_pressures_norm * ORANGE_LEADING_AREA
 )
 exp_green_trailing_normal_forces = (
-    248.84 * exp_green_trailing_point_pressures_norm * green_trailing_area
+    248.84 * exp_green_trailing_point_pressures_norm * GREEN_TRAILING_AREA
 )
 exp_green_middle_normal_forces = (
-    248.84 * exp_green_middle_point_pressures_norm * green_middle_area
+    248.84 * exp_green_middle_point_pressures_norm * GREEN_MIDDLE_AREA
 )
 exp_green_leading_normal_forces = (
-    248.84 * exp_green_leading_point_pressures_norm * green_leading_area
+    248.84 * exp_green_leading_point_pressures_norm * GREEN_LEADING_AREA
 )
 
 # Convert each experimental panel's normal force time history to a time history of the
@@ -677,26 +677,26 @@ sim_lifts = -1 * stackSimForces_W[2, :]
 # final flap timescale.
 final_flap_sim_lifts = np.interp(final_flap_times, times, sim_lifts[:])
 
-sim_lift_color = "#D81E5B"
-exp_lift_color = "#003F91"
+SIM_LIFT_COLOR = "#D81E5B"
+EXP_LIFT_COLOR = "#003F91"
 
-num_markers = 6
-marker_size = 8
-text_color = "black"
-figure_background_color = "None"
+NUM_MARKERS = 6
+MARKER_SIZE = 8
+TEXT_COLOR = "black"
+FIGURE_BACKGROUND_COLOR = "None"
 
 lift_axes.spines.right.set_visible(False)
 lift_axes.spines.top.set_visible(False)
-lift_axes.spines.bottom.set_color(text_color)
-lift_axes.spines.left.set_color(text_color)
-lift_axes.xaxis.label.set_color(text_color)
-lift_axes.yaxis.label.set_color(text_color)
-lift_axes.tick_params(axis="x", colors=text_color)
-lift_axes.tick_params(axis="y", colors=text_color)
-lift_figure.patch.set_facecolor(figure_background_color)
-lift_axes.set_facecolor(figure_background_color)
+lift_axes.spines.bottom.set_color(TEXT_COLOR)
+lift_axes.spines.left.set_color(TEXT_COLOR)
+lift_axes.xaxis.label.set_color(TEXT_COLOR)
+lift_axes.yaxis.label.set_color(TEXT_COLOR)
+lift_axes.tick_params(axis="x", colors=TEXT_COLOR)
+lift_axes.tick_params(axis="y", colors=TEXT_COLOR)
+lift_figure.patch.set_facecolor(FIGURE_BACKGROUND_COLOR)
+lift_axes.set_facecolor(FIGURE_BACKGROUND_COLOR)
 
-marker_spacing = 1.0 / num_markers
+marker_spacing = 1.0 / NUM_MARKERS
 
 # Plot the simulated lift values. The x axis is set to the normalized times, which may
 # seem odd because we just interpolated to get them in terms of the normalized final
@@ -706,10 +706,10 @@ lift_axes.plot(
     normalized_times,
     final_flap_sim_lifts,
     label="Simulated",
-    color=sim_lift_color,
+    color=SIM_LIFT_COLOR,
     marker=".",
     markevery=(marker_spacing * 0 / 2, marker_spacing),
-    markersize=marker_size,
+    markersize=MARKER_SIZE,
 )
 
 # Plot the experimental lift values.
@@ -717,10 +717,10 @@ lift_axes.plot(
     normalized_times,
     exp_lifts,
     label="Experimental",
-    color=exp_lift_color,
+    color=EXP_LIFT_COLOR,
     marker=".",
     markevery=(marker_spacing * 1 / 2, marker_spacing),
-    markersize=marker_size,
+    markersize=MARKER_SIZE,
 )
 
 # Add a gray box to signify which part of the graph is the downstroke.
@@ -738,14 +738,14 @@ lift_axes.set_title(
 )
 lift_axes.legend(
     loc="upper left",
-    facecolor=figure_background_color,
-    edgecolor=figure_background_color,
-    labelcolor=text_color,
+    facecolor=FIGURE_BACKGROUND_COLOR,
+    edgecolor=FIGURE_BACKGROUND_COLOR,
+    labelcolor=TEXT_COLOR,
 )
 
 # Save the lift comparison figure.
 lift_figure.savefig(
-    fname=validation_directory / "lift_validation.png",
+    fname=VALIDATION_DIRECTORY / "lift_validation.png",
     dpi=300,
     bbox_inches="tight",
 )
@@ -791,5 +791,5 @@ ps.output.draw(
     show_wake_vortices=True,
     scalar_type="lift",
     save=True,
-    path=validation_directory / "draw.webp",
+    path=VALIDATION_DIRECTORY / "draw.webp",
 )

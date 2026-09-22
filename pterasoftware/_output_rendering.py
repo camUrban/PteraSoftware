@@ -949,7 +949,7 @@ def choose_color_map(
         upper limit to apply to it.
     """
     if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
-        color_map: matplotlib.colors.Colormap = _colormaps.sequential_color_map
+        color_map: matplotlib.colors.Colormap = _colormaps.SEQUENTIAL_COLOR_MAP
         c_min = max(
             float(np.mean(scalars)) - _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.min(scalars)),
@@ -959,7 +959,7 @@ def choose_color_map(
             float(np.max(scalars)),
         )
     else:
-        color_map = _colormaps.diverging_color_map
+        color_map = _colormaps.DIVERGING_COLOR_MAP
         c_min = -_COLOR_MAP_NUM_SIG * float(np.std(scalars))
         c_max = _COLOR_MAP_NUM_SIG * float(np.std(scalars))
 

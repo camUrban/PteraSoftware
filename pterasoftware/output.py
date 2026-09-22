@@ -57,7 +57,7 @@ _MULTI_SAMPLES = 4
     _ANGULAR_X_COLOR,
     _ANGULAR_Y_COLOR,
     _ANGULAR_Z_COLOR,
-] = _colormaps.prism[1:9]
+] = _colormaps.PRISM[1:9]
 
 # Define the text that the results outputs share. Every figure's legend labels,
 # subtitle, and y axis label are named once here because the other two outputs restate

@@ -803,26 +803,26 @@ class TestMuteColormap(unittest.TestCase):
 
     def test_a_factor_of_zero_leaves_the_colors_alone(self) -> None:
         """Test that muting a color map by nothing returns its colors."""
-        muted = _output_rendering.mute_colormap(_colormaps.sequential_color_map, 0.0)
-        npt.assert_allclose(muted(0.0), _colormaps.sequential_color_map(0.0))
-        npt.assert_allclose(muted(1.0), _colormaps.sequential_color_map(1.0))
+        muted = _output_rendering.mute_colormap(_colormaps.SEQUENTIAL_COLOR_MAP, 0.0)
+        npt.assert_allclose(muted(0.0), _colormaps.SEQUENTIAL_COLOR_MAP(0.0))
+        npt.assert_allclose(muted(1.0), _colormaps.SEQUENTIAL_COLOR_MAP(1.0))
 
     def test_a_factor_of_one_returns_middle_gray(self) -> None:
         """Test that muting a color map fully leaves every color middle gray."""
-        muted = _output_rendering.mute_colormap(_colormaps.sequential_color_map, 1.0)
+        muted = _output_rendering.mute_colormap(_colormaps.SEQUENTIAL_COLOR_MAP, 1.0)
         npt.assert_allclose(muted(0.0)[:3], (0.5, 0.5, 0.5))
         npt.assert_allclose(muted(0.5)[:3], (0.5, 0.5, 0.5))
         npt.assert_allclose(muted(1.0)[:3], (0.5, 0.5, 0.5))
 
     def test_returns_a_listed_color_map_of_256_colors(self) -> None:
         """Test that the muted color map is a ListedColormap sampled at 256 colors."""
-        muted = _output_rendering.mute_colormap(_colormaps.sequential_color_map, 0.5)
+        muted = _output_rendering.mute_colormap(_colormaps.SEQUENTIAL_COLOR_MAP, 0.5)
         self.assertIsInstance(muted, matplotlib.colors.ListedColormap)
         self.assertEqual(muted.N, 256)
 
     def test_leaves_the_alpha_channel_alone(self) -> None:
         """Test that muting reaches the colors rather than their opacity."""
-        muted = _output_rendering.mute_colormap(_colormaps.sequential_color_map, 1.0)
+        muted = _output_rendering.mute_colormap(_colormaps.SEQUENTIAL_COLOR_MAP, 1.0)
         self.assertEqual(muted(0.0)[3], 1.0)
 
 
@@ -886,13 +886,13 @@ class TestChooseColorMap(unittest.TestCase):
         """Test that scalars that keep one sign run in a single direction."""
         scalars = np.array([1.0, 2.0, 3.0, 4.0], dtype=float)
         color_map, _, _ = _output_rendering.choose_color_map(scalars)
-        self.assertIs(color_map, _colormaps.sequential_color_map)
+        self.assertIs(color_map, _colormaps.SEQUENTIAL_COLOR_MAP)
 
     def test_sign_changing_scalars_get_the_diverging_color_map(self) -> None:
         """Test that scalars that change sign are colored about their midpoint."""
         scalars = np.array([-2.0, -1.0, 1.0, 2.0], dtype=float)
         color_map, _, _ = _output_rendering.choose_color_map(scalars)
-        self.assertIs(color_map, _colormaps.diverging_color_map)
+        self.assertIs(color_map, _colormaps.DIVERGING_COLOR_MAP)
 
     def test_the_diverging_limits_sit_symmetrically_about_zero(self) -> None:
         """Test that the diverging map's midpoint marks where the scalar changes

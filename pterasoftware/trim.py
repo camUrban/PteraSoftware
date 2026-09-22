@@ -29,7 +29,7 @@ from . import (
 _logger = _logging.get_logger("trim")
 
 # Set a seed for reproducibility in the dual annealing optimizer.
-_seed = 42
+_SEED = 42
 
 
 # TEST: Consider adding unit tests for this function.
@@ -479,7 +479,7 @@ def analyze_steady_trim(
             x0=initial_guess,
             maxfun=num_calls,
             minimizer_kwargs=minimizer_kwargs,
-            seed=_seed,
+            seed=_SEED,
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")
@@ -1019,7 +1019,7 @@ def analyze_unsteady_trim(
             x0=initial_guess,
             maxfun=num_calls,
             minimizer_kwargs=minimizer_kwargs,
-            seed=_seed,
+            seed=_SEED,
         )
     except StopIteration:
         _logger.info(_logging.indent() + "Acceptable global minima found")

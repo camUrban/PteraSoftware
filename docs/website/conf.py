@@ -30,9 +30,9 @@ autodoc_mock_imports = [
 
 project = "PteraSoftware"
 author = "Cameron Urban and contributors"
-current_year = datetime.now().year
+CURRENT_YEAR = datetime.now().year
 # noinspection PyShadowingBuiltins
-copyright = f"{current_year}, {author}"
+copyright = f"{CURRENT_YEAR}, {author}"
 
 # -- General configuration ---------------------------------------------------
 
@@ -216,12 +216,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # tutorial notebooks (and the images they embed) from the repo root's tutorials/
 # directory into docs/website/tutorials/. The copies are gitignored, and tutorials/
 # stays the single source of truth.
-_tutorials_source = REPO_ROOT / "tutorials"
-_tutorials_target = Path(__file__).resolve().parent / "tutorials"
-_tutorials_target.mkdir(exist_ok=True)
-for _tutorial_file in sorted(_tutorials_source.iterdir()):
+_TUTORIALS_SOURCE = REPO_ROOT / "tutorials"
+_TUTORIALS_TARGET = Path(__file__).resolve().parent / "tutorials"
+_TUTORIALS_TARGET.mkdir(exist_ok=True)
+for _tutorial_file in sorted(_TUTORIALS_SOURCE.iterdir()):
     if _tutorial_file.suffix in {".ipynb", ".png", ".webp"}:
-        shutil.copy2(_tutorial_file, _tutorials_target / _tutorial_file.name)
+        shutil.copy2(_tutorial_file, _TUTORIALS_TARGET / _tutorial_file.name)
 
 
 def _rewrite_repo_root_links(app: Any, docname: str, source: list[str]) -> None:

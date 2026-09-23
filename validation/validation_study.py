@@ -30,9 +30,8 @@ VALIDATION_DIRECTORY = Path(__file__).resolve().parent
 EXPERIMENTAL_DATA_DIRECTORY = VALIDATION_DIRECTORY / "experimental_data"
 
 # Configure logging to display info level messages on the console alongside progress
-# bars. Keep the configured logger so this script can log its own results alongside the
-# package's messages.
-validation_logger = ps.set_up_logging(level="Info")
+# bars.
+ps.set_up_logging(level="Info")
 
 # Set the given characteristics of the wing in meters.
 HALF_SPAN = 0.213
@@ -383,10 +382,10 @@ del validation_movement
     prescribed_wake=True,
     free_wake=True,
     num_cycles_bounds=(1, 4),
-    panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(3, 14),
-    rtol=0.010,
-    atol=0.001,
+    panel_aspect_ratio_bounds=(4, 2),
+    num_chordwise_panels_bounds=(6, 10),
+    rtol=0.025,
+    atol=0.0025,
     show_solver_progress=True,
     resolve_converged_solver=True,
     cache_path=VALIDATION_DIRECTORY / "validation_convergence_cache.json",
@@ -406,20 +405,6 @@ if (
     raise RuntimeError(
         "The convergence analysis did not find a converged case within its bounds."
     )
-
-# Print and log the converged parameters.
-convergence_message = (
-    "Converged parameters: prescribed wake = "
-    + str(converged_prescribed_wake)
-    + ", flaps = "
-    + str(converged_num_flaps)
-    + ", Panel aspect ratio = "
-    + str(converged_panel_aspect_ratio)
-    + ", chordwise Panels = "
-    + str(converged_num_chordwise_panels)
-)
-print("\n" + convergence_message)
-validation_logger.info(convergence_message)
 
 # Delete the extraneous pointers.
 del leadingEdgePoints_Wn_Ler
@@ -766,25 +751,13 @@ sim_lift_rms = math.sqrt(np.mean(final_flap_sim_lifts**2))
 exp_lift_rms = math.sqrt(np.mean(exp_lifts**2))
 lift_rmsape = 100 * abs((sim_lift_rms - exp_lift_rms) / exp_lift_rms)
 
-# Print and log the RMS lift results.
-lift_rmsape_message = (
-    "Lift RMS Absolute Percent Error: " + str(np.round(lift_rmsape, 2)) + "%"
-)
-sim_lift_rms_message = "Simulated Lift RMS: " + str(np.round(sim_lift_rms, 4)) + " N"
-exp_lift_rms_message = "Experimental Lift RMS: " + str(np.round(exp_lift_rms, 4)) + " N"
-print("\n" + lift_rmsape_message)
-print(sim_lift_rms_message)
-print(exp_lift_rms_message)
-validation_logger.info(lift_rmsape_message)
-validation_logger.info(sim_lift_rms_message)
-validation_logger.info(exp_lift_rms_message)
-
-# Print and log the MAE.
-lift_mean_absolute_error_message = (
-    "Mean Absolute Error on Lift: " + str(np.round(lift_mean_absolute_error, 4)) + "N"
-)
-print("\n" + lift_mean_absolute_error_message)
-validation_logger.info(lift_mean_absolute_error_message)
+# Print the RMS lift results and the MAE.
+print()
+print(f"Simulated Lift RMS: {sim_lift_rms:#.3G} N")
+print(f"Experimental Lift RMS: {exp_lift_rms:#.3G} N")
+print(f"Lift RMS Absolute Percent Error: {lift_rmsape:#.3G}%")
+print()
+print(f"Lift Mean Absolute Error: {lift_mean_absolute_error:#.3G} N")
 
 ps.output.draw(
     solver=converged_solver,

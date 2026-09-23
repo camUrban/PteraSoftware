@@ -107,15 +107,12 @@ Requires Python 3.11, but active development is done in 3.14
     - `trim.py`: Trim analysis functionality
     - `unsteady_ring_vortex_lattice_method.py`: Unsteady ring UVLM solver
 - `scripts/`: Directory with maintenance and tooling scripts
-    - `hero_generation/`: Scripts for creating and finalizing the README hero graphic
-        - `create_solve_and_save_hero.py`: Creates, solves, and saves the hero simulation
-        - `finalize_and_save_hero.py`: Renames preview hero graphics to their permanent names
-        - `load_and_visualize_hero.py`: Loads the saved hero simulation and generates preview graphics
     - `analyze_webp.py`: Renders WebP frames to PNG files for inspection (backs the `analyze-webp` slash command)
     - `check_ascii_only.py`: Pre-commit hook script that flags non-ASCII characters in text files
     - `check_pinned_versions.py`: Pre-commit hook script that verifies the active environment holds the exact versions pinned in `requirements_dev.txt`
     - `execute_tutorials.py`: Executes all tutorial notebooks (or a single named notebook) in `tutorials/` and stores their outputs in the notebook files for the documentation site to render
     - `find_unused_fixtures.py`: Finds and optionally deletes unused fixtures and dead `setUp` attributes across the test suite (backs the `delete-unused-fixtures` slash command)
+    - `generate_hero_graphics.py`: Solves the hero simulation and renders the README hero graphics into `docs/hero_graphics/`, re-rendering oversized WebP files at lower quality
     - `regenerate_example_outputs.py`: Runs all example scripts (or a single named example) and collects their outputs into `docs/examples_expected_output/`, re-rendering oversized WebP files at lower quality
 - `tests/`: Directory with unit and integration tests
     - `integration/`: Integration tests for combined functionality, with shared fixtures in a `fixtures/` subpackage. There is one test module per solver configuration worth exercising end-to-end (each solver, plus its surface-effect, wake-truncation, multiple-wing, and variable-geometry variants), along with modules for convergence, trim, output, and serialized output

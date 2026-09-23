@@ -21,6 +21,14 @@ saved render, land next to it. Images must be saved to files and embedded from m
 cells rather than displayed inline, which keeps base64 image data out of the notebook
 JSON. The script fails if any cell stores an image output.
 
+When the script runs without a display, such as over SSH, VTK prints a warning that it
+cannot connect to an X server before falling back to off-screen rendering. The kernel
+captures that warning as a cell output, so it is removed after execution.
+
+Run times and saved file sizes in the stored stream outputs are replaced with
+placeholders. These values change on every run, so masking them keeps a regeneration's
+notebook diff down to the outputs whose results actually changed.
+
 After execution, consecutive stream outputs on the same stream are merged into one,
 which is how a Jupyter frontend stores them, and all cell metadata and the notebook's
 language_info block are stripped so the file holds no execution timestamps and no
@@ -30,6 +38,7 @@ details about the machine that ran it.
 import argparse
 import importlib.util
 import os
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -44,6 +53,18 @@ TUTORIALS_DIR = PROJECT_ROOT / "tutorials"
 
 _KERNEL_NAME = "python3"
 _CELL_TIMEOUT_S = 600
+
+# A substring of the warning VTK prints when it cannot open an on-screen render window.
+_NO_DISPLAY_WARNING = "bad X server connection"
+
+# The output values that vary between otherwise identical runs, paired with their
+# replacements. Every run time is logged at the end of its line, so each duration
+# pattern masks through the end of the line.
+_OUTPUT_MASKS = (
+    (re.compile(r"(completed in ).*$", re.MULTILINE), r"\1<time>"),
+    (re.compile(r"(Simulation time: ).*$", re.MULTILINE), r"\1<time>"),
+    (re.compile(r"\(\d+ bytes\)"), "(<size> bytes)"),
+)
 
 
 def _discover_notebooks() -> list[Path]:
@@ -79,6 +100,30 @@ def _merge_stream_outputs(
         else:
             merged.append(output)
     return merged
+
+
+def _remove_no_display_warnings(
+    outputs: list[nbformat.NotebookNode],
+) -> list[nbformat.NotebookNode]:
+    """Removes VTK's no display warning lines from a cell's stderr outputs.
+
+    A stderr output left with no text after its warning lines are removed is dropped.
+
+    :param outputs: The list of a cell's outputs in order.
+    :return: A new list of outputs without the warning lines.
+    """
+    kept: list[nbformat.NotebookNode] = []
+    for output in outputs:
+        if output.output_type == "stream" and output.name == "stderr":
+            output.text = "".join(
+                line
+                for line in output.text.splitlines(keepends=True)
+                if _NO_DISPLAY_WARNING not in line
+            )
+            if not output.text:
+                continue
+        kept.append(output)
+    return kept
 
 
 def _execute_notebook(notebook_path: Path) -> bool:
@@ -125,8 +170,11 @@ def _execute_notebook(notebook_path: Path) -> bool:
         cell.metadata = nbformat.NotebookNode()
         if cell.cell_type != "code":
             continue
-        cell.outputs = _merge_stream_outputs(cell.outputs)
+        cell.outputs = _merge_stream_outputs(_remove_no_display_warnings(cell.outputs))
         for output in cell.outputs:
+            if output.output_type == "stream":
+                for pattern, replacement in _OUTPUT_MASKS:
+                    output.text = pattern.sub(replacement, output.text)
             data = output.get("data", {})
             image_types = [mime for mime in data if mime.startswith("image/")]
             if image_types:

@@ -14,11 +14,16 @@ the saved solver at progressively lower quality until it fits, though never belo
 quality floor where the visualizations' text stops being readable. This avoids
 generation loss from recompression and keeps the expected output tree suitable for
 display on GitHub and ReadTheDocs without manual size management.
+
+Each example's log files then have their run times and saved file sizes replaced with
+placeholders. These values change on every run, so masking them keeps a regeneration's
+log diffs down to the lines whose results actually changed.
 """
 
 import argparse
 import ast
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -48,6 +53,15 @@ _MANAGED_KWARGS = {"solver", "unsteady_solver", "save", "quality", "testing"}
 # The destinations draw and animate write to when an example names none.
 _DEFAULT_DRAW_PATH = "draw.webp"
 _DEFAULT_ANIMATE_PATH = "animate.webp"
+
+# The log values that vary between otherwise identical runs, paired with their
+# replacements. Every run time is logged at the end of its line, so each duration
+# pattern masks through the end of the line.
+_LOG_MASKS = (
+    (re.compile(r"(completed in ).*$", re.MULTILINE), r"\1<time>"),
+    (re.compile(r"(Simulation time: ).*$", re.MULTILINE), r"\1<time>"),
+    (re.compile(r"\(\d+ bytes\)"), "(<size> bytes)"),
+)
 
 _SUBPROCESS_WRAPPER = """\
 import runpy
@@ -254,6 +268,20 @@ def _rerender_oversized_webps(output_subdir: Path, script_path: Path) -> None:
             os.chdir(original_cwd)
 
 
+def _mask_log_files(output_subdir: Path) -> None:
+    """Replaces the run times and saved file sizes in an example's log files with
+    placeholders.
+
+    :param output_subdir: The directory containing the example's output files.
+    :return: None
+    """
+    for log_path in sorted(output_subdir.rglob("*.log")):
+        text = log_path.read_text()
+        for pattern, replacement in _LOG_MASKS:
+            text = pattern.sub(replacement, text)
+        log_path.write_text(text)
+
+
 def _discover_examples() -> list[Path]:
     """Discovers all example scripts in the examples directory.
 
@@ -344,6 +372,7 @@ def main() -> int:
                     f"  Saved {n_files} file(s) to {output_subdir.relative_to(PROJECT_ROOT)}"
                 )
                 _rerender_oversized_webps(output_subdir, script_path)
+                _mask_log_files(output_subdir)
                 solver_file = _find_solver_file(output_subdir)
                 if solver_file is not None:
                     solver_file.unlink()

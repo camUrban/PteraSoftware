@@ -578,7 +578,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         _logger.info(
             _logging.indent()
-            + "Unsteady ring vortex lattice method solver completed in "
+            + "Solver completed in "
             + _functions.format_duration(time.time() - run_start_time)
         )
 

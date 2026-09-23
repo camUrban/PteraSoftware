@@ -1,6 +1,6 @@
-INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0347 s
+INFO    |steady_ring_vortex_lattice_method           |Solver completed in <time>
 INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.psz
-INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.psz (736698 bytes)
+INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.psz (<size> bytes)
 INFO    |_serialization                              |Loading from example_solver.psz
 WARNING |_serialization                              |The file was saved with uncommitted changes, so the hash may not fully represent the code state
 WARNING |_serialization                              |The current working tree has uncommitted changes

@@ -257,7 +257,7 @@ class SteadyRingVortexLatticeMethodSolver:
 
         _logger.info(
             _logging.indent()
-            + "Steady ring vortex lattice method solver completed in "
+            + "Solver completed in "
             + _functions.format_duration(time.time() - run_start_time)
         )
 

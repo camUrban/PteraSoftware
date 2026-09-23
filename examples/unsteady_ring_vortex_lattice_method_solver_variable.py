@@ -352,14 +352,15 @@ print("Finished loading the saved solver.")
 # wake being shed, saved in the same directory as this script. Press any key, after
 # orienting the view, to begin the animation.
 #
-# The speed parameter plays the saved animation back at a fraction of real time. A
-# quarter speed is slow enough to follow a single flap, which is what makes the wake
-# readable: at true speed each stroke of this airplane's one second flapping cycle
-# passes too quickly to see where the vortices are shed.
+# The speed parameter plays the saved animation back at a fraction of real time. Half
+# speed makes it easier to follow a single flap and see where the vortices are shed,
+# since at true speed each stroke of this airplane's one second flapping cycle passes
+# quickly. Slowing it further would make the playback choppy, because a slower speed
+# holds each frame on screen longer rather than adding frames.
 ps.output.animate(
     unsteady_solver=loaded_solver,
     scalar_type="lift",
     show_wake_vortices=True,
     save=True,
-    speed=0.25,
+    speed=0.5,
 )

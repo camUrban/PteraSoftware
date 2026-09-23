@@ -1,4 +1,4 @@
-INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0342 s
+INFO    |steady_ring_vortex_lattice_method           |Steady ring vortex lattice method solver completed in 0.0338 s
 INFO    |_serialization                              |Saving SteadyRingVortexLatticeMethodSolver to example_solver.psz
 INFO    |_serialization                              |Saved SteadyRingVortexLatticeMethodSolver to example_solver.psz (896280 bytes)
 INFO    |_serialization                              |Loading from example_solver.psz

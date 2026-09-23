@@ -1,4 +1,4 @@
-INFO    |steady_horseshoe_vortex_lattice_method      |Steady horseshoe vortex lattice method solver completed in 0.0243 s
+INFO    |steady_horseshoe_vortex_lattice_method      |Steady horseshoe vortex lattice method solver completed in 0.0240 s
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Reynolds Number: 1.08E+06
 INFO    |output                                      |  Forces (in Geometry Axes):

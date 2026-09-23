@@ -1,14 +1,4 @@
-"""Contains the OperatingPoint class.
-
-**Contains the following classes:**
-
-OperatingPoint: A class used to contain the operating conditions of an aerodynamic
-problem.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the OperatingPoint class."""
 
 from __future__ import annotations
 
@@ -22,27 +12,6 @@ from . import _parameter_validation, _transformations
 
 class OperatingPoint:
     """A class used to contain the operating conditions of an aerodynamic problem.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this OperatingPoint.
-
-    qInf__E: The freestream dynamic pressure experienced by the Airplane (observed in
-    the Earth frame).
-
-    T_pas_GP1_CgP1_to_W_CgP1: The passive transformation matrix which maps in
-    homogeneous coordinates from the first Airplane's geometry axes relative to the
-    first Airplane's CG to wind axes relative to the first Airplane's CG.
-
-    T_pas_W_CgP1_to_GP1_CgP1: The passive transformation matrix which maps in
-    homogeneous coordinates from wind axes relative to the first Airplane's CG to the
-    first Airplane's geometry axes relative to the first Airplane's CG.
-
-    vInfHat_GP1__E: The freestream direction (in the first Airplane's geometry axes,
-    observed from the Earth frame).
-
-    vInf_GP1__E: The freestream velocity (in the first Airplane's geometry axes,
-    observed from the Earth frame).
 
     **Citation:**
 
@@ -881,8 +850,6 @@ class OperatingPoint:
         """The freestream direction (in the first Airplane's geometry axes, observed
         from the Earth frame).
 
-        **Notes:**
-
         See the docstring for vInf_GP1__E for details on how to interpret this property.
 
         :return: The unit vector along the freestream velocity vector (in the first
@@ -901,8 +868,6 @@ class OperatingPoint:
     def vInf_GP1__E(self) -> np.ndarray:
         """The freestream velocity (in the first Airplane's geometry axes, observed from
         the Earth frame).
-
-        **Notes:**
 
         I'm defining vInf_GP1__E to be -1 * vCgX_GP1__E. This may seem obvious, but the
         important takeaways are that the freestream velocity is (1) entirely due to the

@@ -1,14 +1,4 @@
-"""Contains the SteadyHorseshoeVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-SteadyHorseshoeVortexLatticeMethodSolver: A class used to solve SteadyProblems with the
-horseshoe vortex lattice method.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the SteadyHorseshoeVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -39,15 +29,6 @@ _logger = _logging.get_logger("steady_horseshoe_vortex_lattice_method")
 #  extend them if needed.
 class SteadyHorseshoeVortexLatticeMethodSolver:
     """A class used to solve SteadyProblems with the horseshoe vortex lattice method.
-
-    **Contains the following methods:**
-
-    run: Runs the solver on the SteadyProblem.
-
-    calculate_solution_velocity: Finds the fluid velocity (in the first Airplane's
-    geometry axes, observed from the Earth frame) at one or more points (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG) due to the freestream
-    velocity and the induced velocity from every horseshoe vortex.
 
     **Citation:**
 
@@ -428,8 +409,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         also includes the induced velocity from image horseshoe vortices reflected
         across that surface.
 
-        **Notes:**
-
         This method assumes that the correct strengths for the horseshoe vortices have
         already been calculated and set.
 
@@ -504,8 +483,6 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         """Calculates the forces (in the first Airplane's geometry axes) and moments (in
         the first Airplane's geometry axes, relative to the first Airplane's CG) on
         every Panel.
-
-        **Notes:**
 
         This method assumes that the correct strengths for the horseshoe vortices have
         already been calculated and set.

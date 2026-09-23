@@ -16,7 +16,7 @@ from typing import Any
 
 import pterasoftware as ps
 
-_hero_graphics_dir = (
+_HERO_GRAPHICS_DIR = (
     Path(__file__).resolve().parent.parent.parent / "docs" / "hero_graphics"
 )
 
@@ -40,7 +40,7 @@ _ANIMATE_KWARGS: dict[str, Any] = {
 
 ps.set_up_logging()
 
-loaded_hero_solver = ps.load(_hero_graphics_dir / "hero_solver.psz")
+loaded_hero_solver = ps.load(_HERO_GRAPHICS_DIR / "hero_solver.psz")
 assert isinstance(
     loaded_hero_solver,
     ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver,

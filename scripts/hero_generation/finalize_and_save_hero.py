@@ -7,18 +7,18 @@ new previews.
 
 from pathlib import Path
 
-_hero_graphics_dir = (
+_HERO_GRAPHICS_DIR = (
     Path(__file__).resolve().parent.parent.parent / "docs" / "hero_graphics"
 )
 
-preview_to_final = {
+PREVIEW_TO_FINAL = {
     "animate.webp": "hero_animated.webp",
     "draw.webp": "hero_static.webp",
 }
 
-for preview_name, final_name in preview_to_final.items():
+for preview_name, final_name in PREVIEW_TO_FINAL.items():
     preview = Path(preview_name)
-    final = _hero_graphics_dir / final_name
+    final = _HERO_GRAPHICS_DIR / final_name
     if not preview.exists():
         print(f"Skipping {preview_name}: file not found.")
         continue

@@ -1,13 +1,4 @@
-"""Contains the FreeFlightMovement class.
-
-**Contains the following classes:**
-
-FreeFlightMovement: A class used to contain a FreeFlightUnsteadyProblem's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the FreeFlightMovement class."""
 
 from __future__ import annotations
 
@@ -33,22 +24,6 @@ class FreeFlightMovement(_core.CoreMovement):
     uses the operating conditions from the initial OperatingPoint. During the free
     flight phase, the solver integrates rigid body dynamics using MuJoCo and creates new
     OperatingPoints from the resulting state at each time step.
-
-    **Contains the following methods:**
-
-    lcm_period: The least common multiple of all motion periods, ensuring all motions
-    complete an integer number of cycles when cycle averaging forces and moments.
-
-    max_period: The longest period of motion of FreeFlightMovement's sub movement
-    objects, the motion(s) of its sub sub movement object(s), and the motions of its sub
-    sub sub movement objects.
-
-    min_period: The shortest non zero period of motion of FreeFlightMovement's sub
-    movement objects, the motion(s) of its sub sub movement object(s), and the motions
-    of its sub sub sub movement objects.
-
-    static: Flags if FreeFlightMovement's sub movement objects, its sub sub movement
-    object(s), and its sub sub sub movement objects all represent no motion.
     """
 
     __slots__ = (

@@ -1,14 +1,4 @@
-"""Contains the AeroelasticAirplaneMovement class.
-
-**Contains the following classes:**
-
-AeroelasticAirplaneMovement: A class used to contain an Airplane's movement in an
-aeroelastic simulation.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the AeroelasticAirplaneMovement class."""
 
 from __future__ import annotations
 
@@ -31,23 +21,6 @@ class AeroelasticAirplaneMovement(_core.CoreAirplaneMovement):
     generate_airplane_at_time_step to accept per Wing deformation angles (which perturb
     the Wings' WingCrossSections' angles_Wcsp_to_Wcs_ixyz) that are threaded down to its
     AeroelasticWingMovement children.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this AeroelasticAirplaneMovement.
-
-    all_periods: All unique non zero periods from this AeroelasticAirplaneMovement, its
-    AeroelasticWingMovement(s), and their AeroelasticWingCrossSectionMovements.
-
-    max_period: The longest period of AeroelasticAirplaneMovement's own motion, the
-    motion(s) of its sub movement object(s), and the motions of its sub sub movement
-    objects.
-
-    generate_airplane_at_time_step: Creates the Airplane at a single time step,
-    optionally applying structural deformation to each Wing.
-
-    generate_airplanes: Creates the Airplane at each time step, and returns them in a
-    list.
     """
 
     __slots__ = ()

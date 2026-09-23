@@ -1,22 +1,5 @@
 """Contains the SteadyProblem, UnsteadyProblem, AeroelasticUnsteadyProblem, and
-FreeFlightUnsteadyProblem classes.
-
-**Contains the following classes:**
-
-SteadyProblem: A class used to contain steady aerodynamics problems.
-
-UnsteadyProblem: A class used to contain unsteady aerodynamics problems.
-
-AeroelasticUnsteadyProblem: A class used to couple unsteady aerodynamics with wing
-structural dynamics (torsional spring-mass-damper model) for aeroelastic simulations.
-
-FreeFlightUnsteadyProblem: A class used to contain problems with coupled unsteady
-aerodynamics and rigid body dynamics.
-
-**Contains the following functions:**
-
-None
-"""
+FreeFlightUnsteadyProblem classes."""
 
 from __future__ import annotations
 
@@ -57,15 +40,42 @@ if TYPE_CHECKING:
 
 _logger = _logging.get_logger("problems")
 
+# These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
+# injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
+# generated model XML at the matching location.
+_EXTRA_XML_INJECTION_POINTS = frozenset(
+    {"default", "asset", "visual", "worldbody", "body"}
+)
+
+# These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
+# Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
+# XML's option element.
+_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
+
+# These are the strongly coupled free-flight sub-iteration tunables. The relative and
+# absolute tolerances form the mixed convergence test on the nondimensionalized state
+# residual. The divergence tolerance guards the Aitken relaxation factor against a
+# collapsing denominator. The initial relaxation factor under-relaxes the first update
+# before the Aitken formula takes over.
+_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
+_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
+_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
+_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
+
+# These are tolerances for the torsional spring-damper ODE integration in
+# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
+# defaults because the integration is re-seeded from the previous state at every outer
+# time step, so its local errors compound across a simulation, and because a loose
+# absolute tolerance would swamp small torsional responses. The absolute tolerance
+# bounds both state components, the torsional angle (radians) and its time derivative
+# (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
+# makes the ODE stiff and the strict tolerances expensive).
+_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
+_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
+
 
 class SteadyProblem:
-    """A class used to contain steady aerodynamics problems.
-
-    **Contains the following methods:**
-
-    reynolds_numbers: A tuple of Reynolds numbers, one for each Airplane in the
-    SteadyProblem.
-    """
+    """A class used to contain steady aerodynamics problems."""
 
     __slots__ = (
         "_airplanes",
@@ -146,8 +156,6 @@ class SteadyProblem:
     def reynolds_numbers(self) -> tuple[float, ...]:
         """A tuple of Reynolds numbers, one for each Airplane in the SteadyProblem.
 
-        **Notes:**
-
         The Reynolds number is calculated as: Re = (V x L) / nu, where V is the
         freestream speed, observed from the Earth frame (vCg__E from OperatingPoint,
         m/s), L is the characteristic length (c_ref from Airplane, m), and nu is the
@@ -177,99 +185,6 @@ class SteadyProblem:
 
 class UnsteadyProblem(_core.CoreUnsteadyProblem):
     """A class used to contain unsteady aerodynamics problems.
-
-    **Contains the following methods:**
-
-    only_final_results: Determines whether the solver will only calculate loads for the
-    final time step or final cycle.
-
-    num_steps: The number of time steps.
-
-    delta_time: The time step size in seconds.
-
-    first_averaging_step: The first time step included in cycle averaging.
-
-    first_results_step: The first time step for which loads are calculated.
-
-    max_wake_rows: The maximum chordwise wake rows per Wing.
-
-    movement: The Movement that contains this UnsteadyProblem's OperatingPointMovement
-    and AirplaneMovements.
-
-    steady_problems: A tuple of SteadyProblems, one for each time step.
-
-    finalInducedDrags_W: The final induced drag force experienced by each Airplane (in
-    wind axes).
-
-    finalCrosswindForces_W: The final crosswind force experienced by each Airplane (in
-    wind axes).
-
-    finalLifts_W: The final lift force experienced by each Airplane (in wind axes).
-
-    finalInducedDragCoefficients_W: The final induced drag force coefficient experienced
-    by each Airplane (in wind axes).
-
-    finalCrosswindForceCoefficients_W: The final crosswind force coefficient experienced
-    by each Airplane (in wind axes).
-
-    finalLiftCoefficients_W: The final lift force coefficient experienced by each
-    Airplane (in wind axes).
-
-    finalRollingMoments_W_Cg: The final rolling moment experienced by each Airplane (in
-    wind axes, relative to its own CG).
-
-    finalPitchingMoments_W_Cg: The final pitching moment experienced by each Airplane
-    (in wind axes, relative to its own CG).
-
-    finalYawingMoments_W_Cg: The final yawing moment experienced by each Airplane (in
-    wind axes, relative to its own CG).
-
-    finalRollingMomentCoefficients_W_Cg: The final rolling moment coefficient
-    experienced by each Airplane (in wind axes, relative to its own CG).
-
-    finalPitchingMomentCoefficients_W_Cg: The final pitching moment coefficient
-    experienced by each Airplane (in wind axes, relative to its own CG).
-
-    finalYawingMomentCoefficients_W_Cg: The final yawing moment coefficient experienced
-    by each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanInducedDrags_W: The final cycle averaged induced drag force experienced by
-    each Airplane (in wind axes).
-
-    finalMeanCrosswindForces_W: The final cycle averaged crosswind force experienced by
-    each Airplane (in wind axes).
-
-    finalMeanLifts_W: The final cycle averaged lift force experienced by each Airplane
-    (in wind axes).
-
-    finalMeanInducedDragCoefficients_W: The final cycle averaged induced drag force
-    coefficient experienced by each Airplane (in wind axes).
-
-    finalMeanCrosswindForceCoefficients_W: The final cycle averaged crosswind force
-    coefficient experienced by each Airplane (in wind axes).
-
-    finalMeanLiftCoefficients_W: The final cycle averaged lift force coefficient
-    experienced by each Airplane (in wind axes).
-
-    finalMeanRollingMoments_W_Cg: The final cycle averaged rolling moment experienced by
-    each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanPitchingMoments_W_Cg: The final cycle averaged pitching moment experienced
-    by each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanYawingMoments_W_Cg: The final cycle averaged yawing moment experienced by
-    each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanRollingMomentCoefficients_W_Cg: The final cycle averaged rolling moment
-    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanPitchingMomentCoefficients_W_Cg: The final cycle averaged pitching moment
-    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
-
-    finalMeanYawingMomentCoefficients_W_Cg: The final cycle averaged yawing moment
-    coefficient experienced by each Airplane (in wind axes, relative to its own CG).
-
-    **Notes:**
 
     The solver populates the mutable load lists during simulation, with one entry per
     Airplane: the final lists for static motion, the final cycle averaged lists for
@@ -369,18 +284,6 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
     This class extends CoreUnsteadyProblem to manage SteadyProblems for coupled
     simulations where the geometry at each time step depends on the solver's results
     from previous time steps.
-
-    **Contains the following methods:**
-
-    movement: The CoreMovement that defines the motion parameters for this problem.
-
-    steady_problems: A tuple of SteadyProblems, one for each time step that has been
-    initialized so far.
-
-    get_steady_problem: Gets the SteadyProblem at a specified time step.
-
-    initialize_next_problem: Initializes the next time step's SteadyProblem. Must be
-    overridden by subclasses.
     """
 
     __slots__ = (
@@ -475,70 +378,9 @@ class _CoupledUnsteadyProblem(_core.CoreUnsteadyProblem):
         raise NotImplementedError("Subclasses must implement initialize_next_problem.")
 
 
-# These are the permitted top-level keys for FreeFlightUnsteadyProblem's extra_xml
-# injection-point dict. Each maps to an XML fragment that MuJoCoModel injects into the
-# generated model XML at the matching location.
-_EXTRA_XML_INJECTION_POINTS = frozenset(
-    {"default", "asset", "visual", "worldbody", "body"}
-)
-
-# These are the permitted values for FreeFlightUnsteadyProblem's integrator parameter.
-# Each names a MuJoCo numerical integrator that MuJoCoModel sets in the generated model
-# XML's option element.
-_MUJOCO_INTEGRATORS = frozenset({"Euler", "RK4", "implicit", "implicitfast"})
-
-# These are the strongly coupled free-flight sub-iteration tunables. The relative and
-# absolute tolerances form the mixed convergence test on the nondimensionalized state
-# residual. The divergence tolerance guards the Aitken relaxation factor against a
-# collapsing denominator. The initial relaxation factor under-relaxes the first update
-# before the Aitken formula takes over.
-_SUBITERATION_RELATIVE_TOLERANCE = 1e-6
-_SUBITERATION_ABSOLUTE_TOLERANCE = 1e-10
-_SUBITERATION_DIVERGENCE_TOLERANCE = 1e-20
-_SUBITERATION_INITIAL_RELAXATION_FACTOR = 0.5
-
-
 class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
     """A class used to contain problems with coupled unsteady aerodynamics and rigid
-    body dynamics.
-
-    **Contains the following methods:**
-
-    only_final_results: Determines whether the solver will only calculate loads for the
-    final time step or final cycle.
-
-    num_steps: The number of time steps.
-
-    delta_time: The time step size in seconds.
-
-    first_averaging_step: The first time step included in cycle averaging.
-
-    first_results_step: The first time step for which loads are calculated.
-
-    max_wake_rows: The maximum chordwise wake rows per Wing.
-
-    movement: The FreeFlightMovement that defines the motion parameters for this
-    FreeFlightUnsteadyProblem.
-
-    steady_problems: A tuple of SteadyProblems, one for each time step that has been
-    initialized so far.
-
-    get_steady_problem: Gets the SteadyProblem at a specified time step.
-
-    initialize_next_problem: Initializes the next time step's SteadyProblem from rigid
-    body dynamics.
-
-    mass: The mass of the Airplane in kilograms.
-
-    I_BP1_CgP1: The inertia matrix of the Airplane (in the first Airplane's body axes,
-    relative to the first Airplane's CG) in kilogram square meters.
-
-    k_max: The maximum number of strongly coupled sub-iterations per free-flight time
-    step.
-
-    external_loads_fn: A callable that computes additional forces and moments to apply
-    to the Airplane during the simulation, or None.
-    """
+    body dynamics."""
 
     __slots__ = (
         "_I_BP1_CgP1",
@@ -1456,18 +1298,6 @@ class FreeFlightUnsteadyProblem(_CoupledUnsteadyProblem):
                 self._commit_next_problem(next_operating_point, step)
 
 
-# These are tolerances for the torsional spring-damper ODE integration in
-# _spring_numerical_ode. They are a few orders of magnitude stricter than scipy's
-# defaults because the integration is re-seeded from the previous state at every outer
-# time step, so its local errors compound across a simulation, and because a loose
-# absolute tolerance would swamp small torsional responses. The absolute tolerance
-# bounds both state components, the torsional angle (radians) and its time derivative
-# (rad/s). Loosen these only for local debugging (for example, a nearly massless wing
-# makes the ODE stiff and the strict tolerances expensive).
-_SPRING_ODE_RELATIVE_TOLERANCE = 1e-6
-_SPRING_ODE_ABSOLUTE_TOLERANCE_RAD = 1e-9
-
-
 class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     """A class used to contain problems that couple aeroelastic wing deformations with
     unsteady aerodynamics.
@@ -1478,43 +1308,6 @@ class AeroelasticUnsteadyProblem(_CoupledUnsteadyProblem):
     aerodynamic, inertial, and spring-damper restoring torsional moments, all taken as y
     components (in the first Airplane's geometry axes) of moments relative to the
     strip's leading edge point.
-
-    **Contains the following methods:**
-
-    only_final_results: Determines whether the solver will only calculate loads for the
-    final time step or final cycle.
-
-    num_steps: The number of time steps.
-
-    delta_time: The time step size in seconds.
-
-    first_averaging_step: The first time step included in cycle averaging.
-
-    first_results_step: The first time step for which loads are calculated.
-
-    max_wake_rows: The maximum chordwise wake rows per Wing.
-
-    movement: The AeroelasticMovement that defines the motion parameters for this
-    AeroelasticUnsteadyProblem.
-
-    steady_problems: A tuple of SteadyProblems, one for each time step that has been
-    initialized so far.
-
-    get_steady_problem: Gets the SteadyProblem at a specified time step.
-
-    initialize_next_problem: Initializes the next time step's SteadyProblem from the
-    deformed geometry.
-
-    wing_density: The mass per unit span area of the wing (kg/m^2).
-
-    spring_constant_rad: The torsional spring stiffness for the spring-mass-damper model
-    (N*m/rad).
-
-    damping_constant_rad: The torsional damping coefficient (N*m*s/rad).
-
-    step_discards: The number of initial time steps to discard for numerical stability.
-
-    **Notes:**
 
     The aeroelastic coupling assumes a torsional spring-mass-damper model for each
     spanwise section. Wing motion is prescribed through wing flapping, and each strip's

@@ -5,13 +5,29 @@ This document defines the conventions for type hints and docstrings in the Ptera
 ## Table of Contents
 
 - [Type Hints](#type-hints)
+    - [General Principles](#general-principles)
+    - [Import Requirements](#import-requirements)
+    - [Type Hint Patterns by Parameter Type](#type-hint-patterns-by-parameter-type)
+    - [Type Narrowing Patterns](#type-narrowing-patterns)
+    - [Module Alias Pattern](#module-alias-pattern)
+    - [Avoiding Circular Imports with Type Hints](#avoiding-circular-imports-with-type-hints)
     - [Type Hints in Tests](#type-hints-in-tests)
 - [Docstring Format](#docstring-format)
+    - [General Principles](#general-principles-1)
     - [Module-Level Docstrings](#module-level-docstrings)
-    - [Class Docstrings](#class-docstrings)
-    - [Public Subclasses of Private Parents](#public-subclasses-of-private-parents)
     - [Function and Method Docstrings](#function-and-method-docstrings)
+    - [Array Parameter Descriptions](#array-parameter-descriptions)
+    - [Class Docstrings](#class-docstrings)
+    - [Subclass Docstrings](#subclass-docstrings)
+    - [Public Subclasses of Private Parents](#public-subclasses-of-private-parents)
+    - [Private Names in Public Docstrings and Signatures](#private-names-in-public-docstrings-and-signatures)
+    - [Property Docstring Template](#property-docstring-template)
+    - [Cached Properties with Invalidating Setters](#cached-properties-with-invalidating-setters)
+    - [Optional Longer Description Blocks](#optional-longer-description-blocks)
+    - [Optional Citation Blocks](#optional-citation-blocks)
 - [Examples](#examples)
+- [Quick Reference](#quick-reference)
+- [Notes](#notes)
 
 ---
 
@@ -55,10 +71,10 @@ import numpy as np
 
 #### Class Types
 
-| Parameter Description      | Type Hint                | Notes                                      |
-|----------------------------|--------------------------|--------------------------------------------|
-| Class from same package    | `ClassName`              | Direct reference                           |
-| Class from imported module | `module_alias.ClassName` | Use module alias to avoid circular imports |
+| Parameter Description      | Type Hint                | Notes                                                       |
+|----------------------------|--------------------------|-------------------------------------------------------------|
+| Class from same module     | `ClassName`              | Direct reference                                            |
+| Class from imported module | `module_alias.ClassName` | Import the module, not the class, to avoid circular imports |
 
 #### Optional and Union Types
 
@@ -176,7 +192,8 @@ This approach:
 - Keeps all imports at the top of the file
 - Prevents circular import errors
 - Requires no string quotes around type hints
-- Is the default behavior in Python 3.11+
+
+Python 3.11 does not defer annotation evaluation by default, so every module that needs this behavior must include the import.
 
 #### Casting Across a Circular Dependency
 
@@ -275,7 +292,7 @@ def custom_spacing(x: float) -> float:
 5. **Use present tense for descriptions** (e.g., "Returns..." not "Will return...")
 6. **Avoid starting descriptions with "This..."**
 7. **Follow the ASCII Only rule in [WRITING_STYLE.md](WRITING_STYLE.md)**, which covers all character substitutions (dashes, math symbols, smart quotes, ellipsis, arrows, emojis, and other typographic Unicode) used across the project's prose, comments, and docstrings.
-8. **Place closing triple-quotes on their own line**
+8. **If the docstring is multiple paragraphs or contains any blank lines, place closing triple-quotes on their own line (otherwise, place them directly behind the last sentence)**
 9. **Summary line is a single sentence.** Any additional description goes in a new paragraph after a blank line. docformatter enforces this: if the first paragraph contains multiple sentences, it moves all but the first into a new paragraph.
 10. **No blank line between the closing triple-quotes and the next line of code.** docformatter enforces this too: a blank gap after the docstring will be removed.
 11. **No backticks in prose.** Write identifiers, expressions, calls, and keyword assignments bare (the free_wake parameter, passive=True, get_logger("trim")). Single backticks are not code markup in rST (they render as italics), and the identifier casing already sets names apart from prose. The one place double backticks belong is inside an rST line block (a line starting with `|`) holding a standalone code example, as in the use-case blocks of `_transformations.py`. Comments follow the same rule, as the Markup and Quoting section of [WRITING_STYLE.md](WRITING_STYLE.md) records, along with the code span rules for Markdown files.
@@ -284,80 +301,20 @@ def custom_spacing(x: float) -> float:
 
 ### Module-Level Docstrings
 
-Module-level docstrings appear at the very top of each Python file and describe the module's contents. The style varies based on the type of module.
-
-#### Public Package `__init__.py` Files
-
-`__init__.py` files for a public package list subpackages, directories, and modules:
+Module-level docstrings appear at the very top of each Python file and describe the module's contents. For a package's `__init__.py` module, it should instead describe the package's contents.
 
 ```python
-"""Contains the geometry classes.
+"""Contains the <placeholder> classes/functions/subpackages/directories/modules.
 
-**Contains the following subpackages:**
+<Optional longer description block.>
 
-None
-
-**Contains the following directories:**
-
-None
-
-**Contains the following modules:**
-
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
+<Optional citation block.>
 """
 ```
 
 **Pattern:**
 
 - Brief description using "Contains" (present tense)
-- List public subpackages (or "None")
-- List public directories (or "None")
-- List public modules with one-line descriptions
-- Use blank lines between subpackages/directories/module entries for readability
-
-#### Public Modules
-
-Public modules (e.g., `airfoil.py`, `wing.py`) have structured docstrings listing their contents:
-
-```python
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
-```
-
-**Pattern:**
-
-- Brief description using "Contains" (present tense)
-- List public classes with brief descriptions (use "A class used to..." or similar)
-- List public functions (or "None")
-- Use blank lines between class/function entries if there are multiple
-
-#### Private Modules
-
-Private modules (e.g., `_meshing.py`, `_functions.py`) have minimal docstrings:
-
-```python
-"""Contains the function for meshing Wings."""
-```
-
-**Pattern:**
-
-- Single brief sentence
-- No listing of functions or classes
-- Keep it concise since these are internal implementation details
 
 ### Function and Method Docstrings
 
@@ -367,27 +324,18 @@ def function_name(
     param2: Type2,
     param3: Type3,
 ) -> ReturnType:
-    """Short description of what the function does.
+    """Short description of what the function/method does.
 
-    Optional longer description providing more context. This provides detailed
-    explanations of the function's behavior. It can be one or more paragraphs.
+    <Optional longer description block.>
 
-    Optional citation block:
+    <Optional citation block.>
 
-    **Citation:**
-
-    Adapted from (can be more specific if the whole function wasn't adapted): <source>
-
-    Author (or "Authors"): <author>
-
-    Date of retrieval (don't include if not known): <date>
-
-    :param param1: A (shape) dtype description of param1. Additional details about
-        what it represents, valid ranges, units, etc. Can wrap to multiple lines.
+    :param param1: A (shape) dtype description of param1. Additional details about what
+        it represents, valid ranges, units, etc. Can wrap to multiple lines.
     :param param2: Description of param2.
     :param param3: Description of param3.
-    :return: A (shape) dtype description of what is returned. Additional details
-        about the return value.
+    :return: A (shape) dtype description of what is returned. Additional details about
+        the return value.
     """
 ```
 
@@ -403,14 +351,14 @@ For numpy arrays, always include:
 
 #### Pattern for Array Parameters
 
-```python
+```rst
 :param parameter_name: A (shape) ndarray of dtype representing <description>.
     Additional context about coordinate systems, valid ranges, units, default value, etc.
 ```
 
 #### Pattern for Array-Like Parameters
 
-```python
+```rst
 :param parameter_name: An array-like object of numbers (int or float) with shape
     (N,M) representing <description>. Can be a tuple, list, or ndarray. Values are
     converted to floats internally. The units are <units>. The default is <default>.
@@ -422,30 +370,9 @@ For numpy arrays, always include:
 class ClassName:
     """Short description of the class.
 
-    **Contains the following methods:**
+    <Optional longer description block.>
 
-    public_method_1: Short description (identical to method's docstring's short
-    description).
-
-    public_method_2: Short description (identical to method's docstring's short
-    description).
-
-    Optional notes block
-
-    **Notes:**
-
-    Detailed description of the class's purpose, behavior, or usage. Can be one or more
-    paragraphs. Avoid numbered or bulleted lists.
-
-    Optional citation block:
-
-    **Citation:**
-
-    Adapted from (can be more specific if the whole class wasn't adapted): <source>
-
-    Author (or "Authors"): <author>
-
-    Date of retrieval (don't include if not known): <date>
+    <Optional citation block.>
     """
 ```
 
@@ -459,26 +386,18 @@ When a class inherits from another class, use a modified pattern that avoids dup
 class ChildClass(ParentClass):
     """A subclass of ParentClass used to <description>.
 
-    **Notes:**
-
     Inherits all parameters and methods from ParentClass without modification.
 
-    Additional notes specific to the subclass. Can be one or more paragraphs.
+    <Optional longer description block.>
 
-    **Contains the following methods:**
-
-    new_method_1: Short description of new method (if any).
-
-    None (if no new methods are added)
+    <Optional citation block.>
     """
 ```
 
 **Key points:**
 
 - Short description explicitly mentions "A subclass of ParentClass"
-- Notes section states what is inherited from the parent
-- "Contains the following methods:" lists only NEW methods unique to this subclass
-- Write "None" if no new methods are added
+- States what is inherited from the parent
 
 #### Subclass `__init__` Docstring Template
 
@@ -491,8 +410,11 @@ def __init__(
 ) -> None:
     """The initialization method.
 
-    See ParentClass's initialization method for descriptions of inherited
-    parameters.
+    See ParentClass's initialization method for descriptions of inherited parameters.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param new_param: Description of the new parameter unique to this subclass.
     :return: None
@@ -521,14 +443,14 @@ This is because:
 
 ```python
 class _CoreClass:
-    """A core class used to contain the shared foundation of PublicClass and its
-    feature variant siblings.
+    """A core class used to contain the shared foundation of PublicClass and its feature
+    variant siblings.
 
     See PublicClass for full documentation of the shared interface.
 
-    <Brief description of what the core class provides and why it exists as a
-    separate class, aimed at contributors who need to understand the internal
-    architecture.>
+    <Optional longer description block.>
+
+    <Optional citation block.>
     """
 ```
 
@@ -536,7 +458,6 @@ class _CoreClass:
 
 - Reference the public child for full documentation of the shared interface
 - Include a brief architectural description for contributors
-- Do not duplicate the full method listing or parameter documentation
 
 #### Private Parent `__init__` Docstring Template
 
@@ -549,6 +470,10 @@ def __init__(
     """The initialization method.
 
     See PublicClass's initialization method for full parameter descriptions.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param param1: Brief description.
     :param param2: Brief description.
@@ -567,20 +492,15 @@ def __init__(
 class PublicClass(_core.CoreClass):
     """A class used to <description>.
 
-    **Contains the following methods:**
+    <Optional longer description block.>
 
-    inherited_method_1: Short description.
-
-    inherited_method_2: Short description.
-
-    new_method_1: Short description (if any).
+    <Optional citation block.>
     """
 ```
 
 **Key points:**
 
-- Do not mention the private parent in the short description or the methods listing
-- List all methods (inherited and new) as if they were the child's own
+- Do not mention the private parent in the short description
 - The class reads as a standalone public API entry point
 
 #### Public Child `__init__` Docstring Template
@@ -593,6 +513,10 @@ def __init__(
     new_param: Type3,
 ) -> None:
     """The initialization method.
+
+    <Optional longer description block.>
+
+    <Optional citation block.>
 
     :param inherited_param1: Full description.
     :param inherited_param2: Full description.
@@ -637,15 +561,21 @@ def wing_cross_section_movements(self) -> tuple:
 @property
 def wing_cross_section_movements(self) -> tuple:
     """The WingCrossSectionMovements for this WingMovement.
-    ...
+
+    :return: A tuple of WingCrossSectionMovements, one per WingCrossSection.
     """
 
+
 # Uses deferral language
-def generate_wing_at_time_step(self, ...) -> Wing:
-    """Generates a Wing at a single time step.
+def generate_wing_at_time_step(self, step: int, delta_time: float | int) -> Wing:
+    """Creates the Wing at a single time step.
 
     See WingMovement for full details.
-    ...
+
+    :param step: The time step index. Must be a non negative int.
+    :param delta_time: The time between each time step in seconds. Must be a positive
+        number (int or float).
+    :return: The Wing at this time step.
     """
 ```
 
@@ -665,9 +595,8 @@ The API reference documents only the public modules. Anything defined in a priva
 2. **Do not substitute a specific public sibling when several would work.** A statement must not become incorrect by omission. "The AirplaneMovement that owns this Wing's movement" is wrong when an `AeroelasticAirplaneMovement` also fits, so write "the Airplane movement class that owns this Wing's movement". When only one public class fits, name it.
 3. **Never name a private hook or helper method.** Describe when the work happens instead of which override does it: "resets them at the start of each time step, and computes the moments about the strip leading edge points once those loads are known", not "overrides _reinitialize_step_arrays_hook to reset the SLEP arrays and overrides _process_panel_loads_hook to compute the moments".
 4. **Do not defer to a private parent.** "See _CoupledUnsteadyProblem's initialization method for descriptions of inherited parameters" points the reader at a page that does not exist. Document the inherited parameters in the public child, as "Public Subclasses of Private Parents" requires.
-5. **Module docstrings follow the same rules.** The entries under **Contains the following classes:** render on the module page, so they get the same wording as the class docstrings they summarize.
-6. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
-7. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
+5. **Contributor detail that needs private names goes in a comment.** The justification for why `Airplane.deep_copy_with_Cg_GP1_CgP1` copies what it copies names `_T_pas_G_Cg_to_GP1_CgP1` and `Panel.__deepcopy__`, so it lives in a comment at the top of the method body while the docstring keeps a one-sentence public summary. The comment is the right home for anything a contributor needs and a user does not.
+6. **`Panel` is the standing exception.** Public docstrings name `Panel` throughout because it is the vocabulary of the mesh, and whether it becomes a public class or is reworded is an open decision. Leave existing `Panel` mentions as they are and do not add new private names on the strength of this exception.
 
 #### Signatures
 
@@ -692,6 +621,10 @@ Do not move the `warnings.warn` call into a helper function, since the detection
 def property_name(self) -> ReturnType:
     """Short description of what the property represents.
 
+    <Optional longer description block.>
+
+    <Optional citation block.>
+
     :return: Description of what is returned, including type, shape, units.
     """
 ```
@@ -714,7 +647,7 @@ def Frpp_G_Cg(self) -> np.ndarray:
 
 
 @property
-def Frpp_GP1_CgP1(self) -> np.ndarray:
+def Frpp_GP1_CgP1(self) -> np.ndarray | None:
     """The position of the Panel's front right vertex (in the first Airplane's geometry
     axes, relative to the first Airplane's CG).
 
@@ -753,29 +686,40 @@ For computed properties that are now cached (e.g., `rightLeg_G`, `area`), the ex
 
 #### Class Docstring for Classes with Caching
 
-When a class uses this caching pattern, add a **Notes:** section to the class docstring explaining the caching behavior. Don't add the getters and setter methods for the non-computed properties to the list of methods:
+When a class uses this caching pattern, add a section to the class docstring explaining the caching behavior:
 
 ```python
 class Panel:
     """A class used to contain the panels of a Wing.
 
-    **Contains the following methods:**
-
-    rightLeg_G: The Panel's right leg vector (in geometry axes).
-
-    area: An estimate of the Panel's area.
-
-    [... other methods (don't include Frpp_G_Cg or Frpp_GP1_CgP1 ...]
-
-    **Notes:**
-
     Computed geometric properties (leg vectors, bound vortex points, collocation points,
     unit normals, area, and aspect ratio) are lazily evaluated and cached. Setting any
     corner point position invalidates all dependent cached values, ensuring consistency
-    while avoiding redundant computation. Setting a corner point's local position
-    (one of the parameters with a _G_Cg suffix), sets the corresponding global position
+    while avoiding redundant computation. Setting a corner point's local position (one
+    of the parameters with a _G_Cg suffix), sets the corresponding global position
     (_GP1_CgP1 suffix) to None. It also sets this Panel's bound vortices and the loads
     on the Panel to None.
+    """
+```
+
+### Optional Longer Description Blocks
+
+Provides detailed explanations of the function/method's behavior. It can be one or more paragraphs. It can also be broken up with sections separated by sentence-case headers, wrapped with double-asterisks and padded with a blank line above and below. Avoid numbered or bulleted lists.
+
+### Optional Citation Blocks
+
+```python
+def function_name() -> None:
+    """Short description of what the function/method does.
+
+    **Citation(s):**
+
+    Adapted from (can be more specific if the whole function/method wasn't adapted):
+    <source>
+
+    Author(s): <author>
+
+    Date of retrieval (don't include if not known): <date>
     """
 ```
 
@@ -788,41 +732,13 @@ class Panel:
 #### Public Package `__init__.py`
 
 ```python
-"""Contains the geometry classes.
-
-**Contains the following subpackages:**
-
-None
-
-**Contains the following directories:**
-
-None
-
-**Contains the following modules:**
-
-airfoil.py: Contains the Airfoil class.
-
-airplane.py: Contains the Airplane class.
-
-wing.py: Contains the Wing class.
-
-wing_cross_section.py: Contains the WingCrossSection class.
-"""
+"""Contains the geometry classes."""
 ```
 
 #### Public Module
 
 ```python
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Airfoil class."""
 ```
 
 #### Private Module
@@ -842,22 +758,22 @@ def _get_mcl_points(
     """Takes in the inner and outer Airfoils of a wing section and its normalized
     chordwise coordinates.
 
-    It returns a list of four column vectors containing the normalized components of
-    the positions of points along the mean camber line (MCL) (in each Airfoil's axes,
+    It returns a list of four column vectors containing the normalized components of the
+    positions of points along the mean camber line (MCL) (in each Airfoil's axes,
     relative to each Airfoil's leading point).
 
     :param inner_airfoil: The wing section's inner Airfoil.
     :param outer_airfoil: The wing section's outer Airfoil.
-    :param chordwise_coordinates: A (N,) ndarray of floats for the normalized
-        chordwise coordinates where we'd like to sample each Airfoil's MCL. The values
-        are normalized from 0.0 to 1.0 and are unitless.
-    :return: A list of four (N,1) ndarrays of floats, where N is the number of points
-        at which we'd like to sample each Airfoil's MCL. The ndarrays contain components
-        of the positions of points along each Airfoil's MCL. In order, the ndarrays
+    :param chordwise_coordinates: A (N,) ndarray of floats for the normalized chordwise
+        coordinates where we'd like to sample each Airfoil's MCL. The values are
+        normalized from 0.0 to 1.0 and are unitless.
+    :return: A list of four (N,1) ndarrays of floats, where N is the number of points at
+        which we'd like to sample each Airfoil's MCL. The ndarrays contain components of
+        the positions of points along each Airfoil's MCL. In order, the ndarrays
         returned are, (1) the inner Airfoil's MCL points' y components, (2) the inner
-        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points'
-        y components, and (4) the outer Airfoil's MCL points' x components. The values
-        are normalized from 0.0 to 1.0 and are unitless.
+        Airfoil's MCL points' x components (3) the outer Airfoil's MCL points' y
+        components, and (4) the outer Airfoil's MCL points' x components. The values are
+        normalized from 0.0 to 1.0 and are unitless.
     """
 ```
 
@@ -888,16 +804,34 @@ def _get_mcs_points(
         the leading edge root point.
     :param inner_wing_cross_section: The wing section's inner WingCrossSection.
     :param outer_wing_cross_section: The wing section's outer WingCrossSection.
-    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the
-        number of chordwise points in the mesh. Each element represents the y component
-        of the inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the
-        inner Airfoil's leading point). The values are normalized from 0.0 to 1.0 and
-        are unitless.
+    :param inner_mcl_pointsY_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the y component of the
+        inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param inner_mcl_pointsX_Ai_LpAi: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the x component of the
+        inner Airfoil's MCL points (in the inner Airfoil's axes, relative to the inner
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param outer_mcl_pointsY_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the y component of the
+        outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param outer_mcl_pointsX_Ao_LpAo: A (M,1) ndarray of floats, where M is the number
+        of chordwise points in the mesh. Each element represents the x component of the
+        outer Airfoil's MCL points (in the outer Airfoil's axes, relative to the outer
+        Airfoil's leading point). The values are normalized from 0.0 to 1.0 and are
+        unitless.
+    :param spanwise_coordinates: A (N,1) ndarray of floats, where N is the number of
+        spanwise points. It holds the distances of each spanwise point along the wing
+        section. The values are normalized from 0.0 to 1.0 and are unitless.
     :return: A list of four (M,N,3) ndarrays of floats, where M is the number of
         chordwise points and N is the number of spanwise points. The four ndarrays are,
-        in order, this wing section's Panel's (1) forward inner, (2) forward outer,
-        (3) backward inner, and (4) backward outer panel points (in wing axes, relative
-        to the leading edge root point). The units are in meters.
+        in order, this wing section's Panel's (1) forward inner, (2) forward outer, (3)
+        backward inner, and (4) backward outer panel points (in wing axes, relative to
+        the leading edge root point). The units are in meters.
     """
 ```
 
@@ -918,16 +852,16 @@ def __init__(
         lower-case and stripped of leading and trailing whitespace) unless you are
         passing in your own array of points using outline_A_Lp. Note that NACA0000 isn't
         a valid NACA-series airfoil. The default is "NACA0012".
-    :param outline_A_Lp: An array-like object of numbers (int or float) with shape
-        (N,2) representing the 2D points making up the Airfoil's outline (in airfoil
-        axes, relative to the leading point). If you wish to load coordinates from the
+    :param outline_A_Lp: An array-like object of numbers (int or float) with shape (N,2)
+        representing the 2D points making up the Airfoil's outline (in airfoil axes,
+        relative to the leading point). If you wish to load coordinates from the
         airfoils directory, leave this as None, which is the default. Can be a tuple,
-        list, or ndarray. Values are converted to floats internally. Make sure all
-        x component values are in the range [0.0, 1.0]. The default value is None.
+        list, or ndarray. Values are converted to floats internally. Make sure all x
+        component values are in the range [0.0, 1.0]. The default value is None.
     :param resample: Determines whether to resample the points defining the Airfoil's
         outline. This applies to points passed in by the user or to those from the
-        airfoils directory. I highly recommend setting this to True. Can be a bool or
-        a numpy bool and will be converted internally to a bool. The default is True.
+        airfoils directory. I highly recommend setting this to True. Can be a bool or a
+        numpy bool and will be converted internally to a bool. The default is True.
     :param n_points_per_side: The number of points to use when creating the Airfoil's
         MCL and when resampling the upper and lower parts of the Airfoil's outline. It
         must be a positive int greater than or equal to 3. The resampled outline will
@@ -950,9 +884,9 @@ def add_control_surface(
     :param deflection: The control deflection in degrees. Deflection downwards is
         positive. It must be a number (int or float) in the range [-5.0, 5.0] degrees.
         Values are converted to floats internally.
-    :param hinge_point: The location of the hinge as a fraction of chord length. It
-        must be a number (int or float) in the range (0.0, 1.0). Values are converted
-        to floats internally.
+    :param hinge_point: The location of the hinge as a fraction of chord length. It must
+        be a number (int or float) in the range (0.0, 1.0). Values are converted to
+        floats internally.
     :return: The new Airfoil with the control surface added.
     """
 ```
@@ -967,8 +901,8 @@ def get_plottable_data(self, show: bool = False) -> list[np.ndarray] | None:
         and will be converted internally to a bool. If True, the method displays the
         plot and returns None. If False, the method returns the data without displaying.
         The default is False.
-    :return: A list of two ndarrays containing the outline and MCL data, or None if
-        show is True.
+    :return: A list of two ndarrays containing the outline and MCL data, or None if show
+        is True.
     """
 ```
 
@@ -983,13 +917,13 @@ def get_resampled_mcl(
 
     It is used to discretize the MCL for meshing.
 
-    :param mcl_fractions: A (N,) array-like object of floats representing normalized
-        distances along the MCL (from the leading to the trailing edge) at which to
-        return the resampled MCL points. Can be a tuple, list, or ndarray. The first
-        value must be 0.0, the last must be 1.0, and the remaining must be in the range
-        [0.0, 1.0]. All values must be non duplicated and in ascending order.
-    :return: A (N,2) ndarray of floats that contains the positions of the resampled
-        MCL points (in airfoil axes, relative to the leading point).
+    :param mcl_fractions: An array-like object of floats with shape (N,) representing
+        normalized distances along the MCL (from the leading to the trailing edge) at
+        which to return the resampled MCL points. Can be a tuple, list, or ndarray. The
+        first value must be 0.0, the last must be 1.0, and the remaining must be in the
+        range [0.0, 1.0]. All values must be non duplicated and in ascending order.
+    :return: A (N,2) ndarray of floats that contains the positions of the resampled MCL
+        points (in airfoil axes, relative to the leading point).
     """
 ```
 
@@ -1018,7 +952,7 @@ param: np.ndarray
 # Classes
 param: ClassName  # Same module
 param: module_alias.ClassName  # Different module
--> "ClassName"  # Self-reference
+-> ClassName  # Self-reference (no quotes needed with the __future__ import)
 
 # Optional/Union
 param: Type | None
@@ -1034,11 +968,6 @@ param: Type1 | Type2
 ```python
 # Module level
 "Contains the <description>."
-"Contains the following subpackages:"
-"Contains the following directories:"
-"Contains the following modules:"
-"Contains the following classes:"
-"Contains the following functions:"
 
 # Array parameters
 ":param name: A (shape) ndarray of dtype representing..."
@@ -1076,5 +1005,4 @@ param: Type1 | Type2
 
 - This style guide should be updated as new patterns emerge
 - All existing code should gradually be updated to match this style
-- Use `docformatter` or similar tools to help maintain consistent formatting
 - Shape information is critical and must always be included in docstrings for arrays

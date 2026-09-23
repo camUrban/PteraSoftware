@@ -27,21 +27,21 @@ ps.set_up_logging(level="Info", handler=logging.FileHandler("example_solver.log"
 # expressed in wing axes, relative to the leading edge root point, in meters. We sample
 # them densely here. from_edge_points resamples both curves to the requested number of
 # WingCrossSections, so this input resolution is independent of the final mesh.
-root_chord = 1.5
-span = 6.0
-num_edge_samples = 100
-ys_Wn_Ler = np.linspace(0.0, span, num_edge_samples)
+ROOT_CHORD = 1.5
+SPAN = 6.0
+NUM_EDGE_SAMPLES = 100
+ys_Wn_Ler = np.linspace(0.0, SPAN, NUM_EDGE_SAMPLES)
 
 # An elliptical chord distribution tapers smoothly from the root chord to a point at the
 # tip.
-chords = root_chord * np.sqrt(1.0 - (ys_Wn_Ler / span) ** 2)
+chords = ROOT_CHORD * np.sqrt(1.0 - (ys_Wn_Ler / SPAN) ** 2)
 
 # Keep the quarter chord line straight along the span, which is what makes the planform
 # a true ellipse. The leading edge and trailing edge then follow from the quarter chord
 # position and the local chord. The leading edge starts at the origin (the leading edge
 # root point) and the trailing edge starts at the root chord, as from_edge_points
 # requires.
-quarter_chord_x = root_chord / 4.0
+quarter_chord_x = ROOT_CHORD / 4.0
 leading_edge_xs = quarter_chord_x - 0.25 * chords
 trailing_edge_xs = quarter_chord_x + 0.75 * chords
 

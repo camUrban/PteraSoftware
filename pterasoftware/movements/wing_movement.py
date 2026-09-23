@@ -1,13 +1,4 @@
-"""Contains the WingMovement class.
-
-**Contains the following classes:**
-
-WingMovement: A class used to contain a Wing's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the WingMovement class."""
 
 from __future__ import annotations
 
@@ -21,22 +12,6 @@ from . import wing_cross_section_movement as wing_cross_section_movement_mod
 
 class WingMovement(_core.CoreWingMovement):
     """A class used to contain a Wing's movement.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this WingMovement.
-
-    all_periods: All unique non zero periods from this WingMovement and its
-    WingCrossSectionMovements.
-
-    max_period: The longest period of WingMovement's own motion and that of its sub
-    movement objects.
-
-    generate_wing_at_time_step: Creates the Wing at a single time step.
-
-    generate_wings: Creates the Wing at each time step, and returns them in a list.
-
-    **Notes:**
 
     Wings cannot undergo motion that causes them to switch symmetry types. A transition
     between types could change the number of Wings and the Panel structure, which is

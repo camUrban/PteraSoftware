@@ -1,13 +1,4 @@
-"""Contains the Wing class.
-
-**Contains the following classes:**
-
-Wing: A class used to contain wings of an Airplane.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Wing class."""
 
 from __future__ import annotations
 
@@ -26,90 +17,6 @@ from . import wing_cross_section as wing_cross_section_mod
 
 class Wing:
     """A class used to contain the wings of an Airplane.
-
-    **Contains the following methods:**
-
-    from_edge_points: Builds a planar, untwisted Wing directly from leading edge and
-    trailing edge curves, approximating an arbitrary planform with a sequence of
-    WingCrossSections joined by single-panel strips.
-
-    __deepcopy__: Creates a deep copy of this Wing, preserving mesh geometry but
-    resetting wake state.
-
-    T_pas_G_Cg_to_Wn_Ler: The passive transformation matrix which maps in homogeneous
-    coordinates from geometry axes relative to the CG to wing axes relative to the
-    leading edge root point. It is None if the Wing's symmetry type hasn't been defined
-    yet.
-
-    T_pas_Wn_Ler_to_G_Cg: The passive transformation matrix which maps in homogeneous
-    coordinates from wing axes relative to the leading edge root point to geometry axes
-    relative to the CG point. It is None if the Wing's symmetry type hasn't been defined
-    yet.
-
-    WnX_G: The wing axes' first basis vector (in geometry axes).
-
-    WnY_G: The wing axes' second basis vector (in geometry axes).
-
-    WnZ_G: The wing axes' third basis vector (in geometry axes).
-
-    children_T_pas_Wn_Ler_to_Wcs_Lp: A list of passive transformation matrices which map
-    in homogeneous coordinates from wing axes, relative to the leading edge root point,
-    to each of this Wing's WingCrossSection's axes, relative to their respective leading
-    points.
-
-    children_T_pas_Wcs_Lp_to_Wn_Ler: A list of passive transformation matrices which map
-    in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
-    relative to their respective leading points, to wing axes, relative to the leading
-    edge root point.
-
-    children_T_pas_G_Cg_to_Wcs_Lp: A list of passive transformation matrices which map
-    in homogeneous coordinates from geometry axes, relative to the CG, to each of this
-    Wing's WingCrossSection's axes, relative to their respective leading points.
-
-    children_T_pas_Wcs_Lp_to_G_Cg: A list of passive transformation matrices which map
-    in homogeneous coordinates from each of this Wing's WingCrossSection's axes,
-    relative to their respective leading points, to geometry axes, relative to the CG.
-
-    symmetry_type: The symmetry type of this Wing.
-
-    num_spanwise_panels: The number of spanwise Panels on this Wing.
-
-    num_panels: The total number of Panels on this Wing.
-
-    panels: The 2D array of Panels on this Wing.
-
-    projected_area: The area of the Wing projected onto the plane defined by the wing
-    axes' xy plane.
-
-    wetted_area: The Wing's wetted area.
-
-    average_panel_aspect_ratio: The average aspect ratio of the Wing's Panels.
-
-    span: The Wing's span.
-
-    standard_mean_chord: The Wing's standard mean chord.
-
-    mean_aerodynamic_chord: The Wing's mean aerodynamic chord.
-
-    spanwise_mesh: How this Wing's spanwise mesh was defined.
-
-    leadingEdgePoints_Wn_Ler: The original leading edge curve this Wing was built from,
-    or None.
-
-    trailingEdgePoints_Wn_Ler: The original trailing edge curve this Wing was built
-    from, or None.
-
-    tip_trim_fraction: The fraction of the span dropped off the tip when this Wing was
-    built, or None.
-
-    generate_mesh: Generates this Wing's mesh, which finishes the process of preparing
-    the Wing to be used in a simulation. It is called by the Wing's parent Airplane,
-    after it's determined its symmetry type.
-
-    get_plottable_data: Returns plottable data for this Wing's Airfoils' outlines and
-    mean camber lines.
-
-    **Notes:**
 
     Immutable attributes (wing_cross_sections, name, Ler_Gs_Cgs, angles_Gs_to_Wn_ixyz,
     num_chordwise_panels, chordwise_spacing, spanwise_mesh, leadingEdgePoints_Wn_Ler,
@@ -499,8 +406,6 @@ class Wing:
         be resampled to a different number of WingCrossSections later. There is
         intentionally no explode_into_strips parameter: a Wing built from edge points is
         already in single-panel-strip form.
-
-        **Notes:**
 
         This builds a planar, untwisted Wing. Every leading edge and trailing edge point
         must have a zero z component, every WingCrossSection keeps a zero angle vector,
@@ -1289,8 +1194,6 @@ class Wing:
         """The area of the Wing projected onto the plane defined by the wing axes' xy
         plane.
 
-        **Notes:**
-
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
 
@@ -1328,8 +1231,6 @@ class Wing:
     @property
     def wetted_area(self) -> None | float:
         """The Wing's wetted area.
-
-        **Notes:**
 
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
@@ -1398,8 +1299,6 @@ class Wing:
     def span(self) -> None | float:
         """The Wing's span.
 
-        **Notes:**
-
         The span is derived by first finding the vector connecting the leading edges of
         the root and tip WingCrossSections. Then, this vector is projected onto the wing
         axes' second basis vector. The span is defined as the magnitude of this
@@ -1446,8 +1345,6 @@ class Wing:
     @property
     def standard_mean_chord(self) -> None | float:
         """The Wing's standard mean chord.
-
-        **Notes:**
 
         The standard mean chord is defined as the projected area divided by the span.
         See their respective methods for the definitions of span and projected area.

@@ -1,13 +1,4 @@
-"""Contains the Airfoil class.
-
-**Contains the following classes:**
-
-Airfoil: A class used to contain the Airfoil of a WingCrossSection.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Airfoil class."""
 
 from __future__ import annotations
 
@@ -28,22 +19,7 @@ _UNSET: Any = object()
 
 
 class Airfoil:
-    """A class used to contain the Airfoil of a WingCrossSection.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Returns an independent deep copy of this Airfoil.
-
-    add_control_surface: Returns a version of the Airfoil with a control surface added
-    at a given point.
-
-    draw: Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
-
-    get_plottable_data: Returns plottable data for this Airfoil's outline and mean
-    camber line.
-
-    get_resampled_mcl: Returns a ndarray of points along the mean camber line (MCL),
-    resampled from the mcl_A_Lp attribute. It is used to discretize the MCL for meshing.
+    """A class used to contain the airfoil of a WingCrossSection.
 
     **Citation:**
 
@@ -81,7 +57,7 @@ class Airfoil:
             both be zero (symmetric) or both be non zero (cambered), and for cambered
             airfoils the position of maximum camber must be greater than or equal to the
             maximum camber plus half the maximum thickness. The default is "NACA0012".
-        :param outline_A_Lp: An array like object of numbers (int or float) with shape
+        :param outline_A_Lp: An array-like object of numbers (int or float) with shape
             (N,2) representing the 2D points making up the Airfoil's outline. If you
             wish to load coordinates from the airfoils directory, leave this as None,
             which is the default. Can be a tuple, list, or ndarray. Values are converted
@@ -521,11 +497,12 @@ class Airfoil:
         """Returns a ndarray of points along the mean camber line (MCL), resampled from
         the mcl_A_Lp attribute. It is used to discretize the MCL for meshing.
 
-        :param mcl_fractions: A (N,) array like object of floats representing normalized
-            distances along the MCL (from the leading to the trailing edge) at which to
-            return the resampled MCL points. Can be a tuple, list, or ndarray. The first
-            value must be 0.0, the last must be 1.0, and the remaining must be in the
-            range [0.0, 1.0]. All values must be non duplicated and in ascending order.
+        :param mcl_fractions: An array-like object of floats with shape (N,)
+            representing normalized distances along the MCL (from the leading to the
+            trailing edge) at which to return the resampled MCL points. Can be a tuple,
+            list, or ndarray. The first value must be 0.0, the last must be 1.0, and the
+            remaining must be in the range [0.0, 1.0]. All values must be non duplicated
+            and in ascending order.
         :return: A (N,2) ndarray of floats that contains the positions of the resampled
             MCL points (in airfoil axes, relative to the leading point).
         """

@@ -2445,9 +2445,9 @@ class TestOptimizeDeltaTimeNonStaticWarnings(unittest.TestCase):
 class TestOptimizeDeltaTimeStaticWarnings(unittest.TestCase):
     """Tests for warning logic in _optimize_delta_time_static.
 
-    Note: scipy's bounded optimizer uses xatol=0.001 tolerance, so it may not converge
-    exactly to bounds. These tests verify the warning logic by mocking the optimizer to
-    return values exactly at the bounds.
+    scipy's bounded optimizer uses xatol=0.001 tolerance, so it may not converge exactly
+    to bounds. These tests verify the warning logic by mocking the optimizer to return
+    values exactly at the bounds.
     """
 
     def test_warning_logic_for_lower_bound(self) -> None:

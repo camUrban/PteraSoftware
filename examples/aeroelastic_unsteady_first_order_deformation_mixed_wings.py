@@ -12,9 +12,9 @@ airplane.
 import pterasoftware as ps
 
 # Initialize the WingCrossSection parameters. Define the offsets for the spacing.
-num_spanwise_panels = 2
+NUM_SPANWISE_PANELS = 2
 Lp_Wcsp_Lpp_Offsets = (0.1, 0.5, 0.0)
-cross_section_chords = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
+CROSS_SECTION_CHORDS = [1.75, 1.75, 1.75, 1.75, 1.65, 1.55, 1.4, 1.2, 1.0]
 wing_cross_sections = []
 
 # Define WingCrossSections with a variable set of chords. All WingCrossSections for the
@@ -24,19 +24,19 @@ wing_cross_sections = []
 # thinner for the same base definition, increase the number of spanwise panels and set
 # the explode_into_strips parameter to True on the Wing, which splits it back into
 # single strips for deformation.
-for i in range(len(cross_section_chords)):
+for i in range(len(CROSS_SECTION_CHORDS)):
     wing_cross_sections.append(
         ps.geometry.wing_cross_section.WingCrossSection(
             num_spanwise_panels=(
-                num_spanwise_panels if i < len(cross_section_chords) - 1 else None
+                NUM_SPANWISE_PANELS if i < len(CROSS_SECTION_CHORDS) - 1 else None
             ),
-            chord=cross_section_chords[i],
+            chord=CROSS_SECTION_CHORDS[i],
             Lp_Wcsp_Lpp=Lp_Wcsp_Lpp_Offsets if i > 0 else (0.0, 0.0, 0.0),
             angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
             control_surface_symmetry_type="symmetric",
             control_surface_hinge_point=0.75,
             control_surface_deflection=0.0,
-            spanwise_spacing="uniform" if i < len(cross_section_chords) - 1 else None,
+            spanwise_spacing="uniform" if i < len(CROSS_SECTION_CHORDS) - 1 else None,
             airfoil=ps.geometry.airfoil.Airfoil(
                 name="naca2412",
                 outline_A_Lp=None,
@@ -135,17 +135,17 @@ example_airplane = ps.geometry.airplane.Airplane(
 # and tip WingCrossSections' WingCrossSectionMovements.
 
 # Define the WingCrossSectionMovement parameters.
-dephase_x = 0.0
-period_x = 0.0
-amplitude_x = 0.0
+DEPHASE_X = 0.0
+PERIOD_X = 0.0
+AMPLITUDE_X = 0.0
 
-dephase_y = 0.0
-period_y = 0.0
-amplitude_y = 0.0
+DEPHASE_Y = 0.0
+PERIOD_Y = 0.0
+AMPLITUDE_Y = 0.0
 
-dephase_z = 0.0
-period_z = 0.0
-amplitude_z = 0.0
+DEPHASE_Z = 0.0
+PERIOD_Z = 0.0
+AMPLITUDE_Z = 0.0
 
 # Create a list of aeroelastic WingCrossSectionMovements for the main Wing.
 main_wing_cross_section_movements_list = []
@@ -167,10 +167,10 @@ for i in range(len(example_airplane.wings[0].wing_cross_sections)):
             periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
             spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
             phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-            ampAngles_Wcsp_to_Wcs_ixyz=(amplitude_x, amplitude_y, amplitude_z),
-            periodAngles_Wcsp_to_Wcs_ixyz=(period_x, period_y, period_z),
+            ampAngles_Wcsp_to_Wcs_ixyz=(AMPLITUDE_X, AMPLITUDE_Y, AMPLITUDE_Z),
+            periodAngles_Wcsp_to_Wcs_ixyz=(PERIOD_X, PERIOD_Y, PERIOD_Z),
             spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-            phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
+            phaseAngles_Wcsp_to_Wcs_ixyz=(DEPHASE_X, DEPHASE_Y, DEPHASE_Z),
         )
         main_wing_cross_section_movements_list.append(wing_cross_section_movement)
 
@@ -206,10 +206,10 @@ for i in range(len(example_airplane.wings[1].wing_cross_sections)):
                 periodLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
                 spacingLp_Wcsp_Lpp=("sine", "sine", "sine"),
                 phaseLp_Wcsp_Lpp=(0.0, 0.0, 0.0),
-                ampAngles_Wcsp_to_Wcs_ixyz=(amplitude_x, amplitude_y, amplitude_z),
-                periodAngles_Wcsp_to_Wcs_ixyz=(period_x, period_y, period_z),
+                ampAngles_Wcsp_to_Wcs_ixyz=(AMPLITUDE_X, AMPLITUDE_Y, AMPLITUDE_Z),
+                periodAngles_Wcsp_to_Wcs_ixyz=(PERIOD_X, PERIOD_Y, PERIOD_Z),
                 spacingAngles_Wcsp_to_Wcs_ixyz=("sine", "sine", "sine"),
-                phaseAngles_Wcsp_to_Wcs_ixyz=(dephase_x, dephase_y, dephase_z),
+                phaseAngles_Wcsp_to_Wcs_ixyz=(DEPHASE_X, DEPHASE_Y, DEPHASE_Z),
             )
         )
     reflected_wing_cross_section_movements_list.append(
@@ -251,7 +251,7 @@ v_tail_tip_wing_cross_section_movement = (
 # original V-tail. Both halves are symmetric and neither deforms.
 
 # This dephase parameter is used to make the Wing start in a flat position.
-dephase = 169.0
+DEPHASE = 169.0
 
 # Now define the main Wing's AeroelasticWingMovement, the reflected main Wing's standard
 # WingMovement (no aeroelastic deformation), and the V-tail's WingMovement.
@@ -265,7 +265,7 @@ main_wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovem
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(DEPHASE, 0.0, 0.0),
 )
 
 # The reflected Wing uses a standard WingMovement so it follows the same prescribed
@@ -281,7 +281,7 @@ reflected_main_wing_movement = ps.movements.wing_movement.WingMovement(
     ampAngles_Gs_to_Wn_ixyz=(15.0, 0.0, 0.0),
     periodAngles_Gs_to_Wn_ixyz=(1.0, 0.0, 0.0),
     spacingAngles_Gs_to_Wn_ixyz=("sine", "sine", "sine"),
-    phaseAngles_Gs_to_Wn_ixyz=(dephase, 0.0, 0.0),
+    phaseAngles_Gs_to_Wn_ixyz=(DEPHASE, 0.0, 0.0),
 )
 
 v_tail_wing_movement = ps.movements.wing_movement.WingMovement(

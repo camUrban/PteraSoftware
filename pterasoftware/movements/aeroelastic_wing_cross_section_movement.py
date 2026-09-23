@@ -1,14 +1,4 @@
-"""Contains the AeroelasticWingCrossSectionMovement class.
-
-**Contains the following classes:**
-
-AeroelasticWingCrossSectionMovement: A class used to contain a WingCrossSection's
-movement in an aeroelastic simulation.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the AeroelasticWingCrossSectionMovement class."""
 
 from __future__ import annotations
 
@@ -28,21 +18,6 @@ class AeroelasticWingCrossSectionMovement(_core.CoreWingCrossSectionMovement):
     WingCrossSectionMovement), but the solver adds structural deformation angles at each
     time step. This class overrides generate_wing_cross_section_at_time_step to accept
     an optional deformation that is added to the prescribed angles_Wcsp_to_Wcs_ixyz.
-
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this AeroelasticWingCrossSectionMovement.
-
-    all_periods: All unique non zero periods from this
-    AeroelasticWingCrossSectionMovement.
-
-    max_period: AeroelasticWingCrossSectionMovement's longest period of motion.
-
-    generate_wing_cross_section_at_time_step: Creates the WingCrossSection at a single
-    time step, optionally applying structural deformation.
-
-    generate_wing_cross_sections: Creates the WingCrossSection at each time step, and
-    returns them in a list.
     """
 
     __slots__ = ()

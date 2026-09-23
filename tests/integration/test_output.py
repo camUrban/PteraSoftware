@@ -1,6 +1,6 @@
 """This module is a testing case for the output module.
 
-Note: Most of the tests in this case do not currently test against an expected result.
+Most of the tests in this case do not currently test against an expected result.
 Instead, they test that the functions in output.py don't throw any errors.
 """
 

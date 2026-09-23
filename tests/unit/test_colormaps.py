@@ -39,21 +39,21 @@ class TestSequentialColorMap(unittest.TestCase):
     def test_is_a_listed_color_map_with_256_colors(self) -> None:
         """The sequential color map should be a ListedColormap with 256 colors."""
         self.assertIsInstance(
-            _colormaps.sequential_color_map, matplotlib.colors.ListedColormap
+            _colormaps.SEQUENTIAL_COLOR_MAP, matplotlib.colors.ListedColormap
         )
-        self.assertEqual(_colormaps.sequential_color_map.N, 256)
+        self.assertEqual(_colormaps.SEQUENTIAL_COLOR_MAP.N, 256)
 
     def test_has_the_expected_first_color(self) -> None:
         """The sequential color map's first color should be pale yellow."""
         npt.assert_allclose(
-            _colormaps.sequential_color_map(0.0),
+            _colormaps.SEQUENTIAL_COLOR_MAP(0.0),
             (0.9996253193176977, 0.9913711226010461, 0.8041012438578545, 1.0),
         )
 
     def test_has_the_expected_last_color(self) -> None:
         """The sequential color map's last color should be dark green."""
         npt.assert_allclose(
-            _colormaps.sequential_color_map(1.0),
+            _colormaps.SEQUENTIAL_COLOR_MAP(1.0),
             (0.09053276383981979, 0.13733860758438335, 0.07325761429945674, 1.0),
         )
 
@@ -69,21 +69,21 @@ class TestDivergingColorMap(unittest.TestCase):
     def test_is_a_listed_color_map_with_512_colors(self) -> None:
         """The diverging color map should be a ListedColormap with 512 colors."""
         self.assertIsInstance(
-            _colormaps.diverging_color_map, matplotlib.colors.ListedColormap
+            _colormaps.DIVERGING_COLOR_MAP, matplotlib.colors.ListedColormap
         )
-        self.assertEqual(_colormaps.diverging_color_map.N, 512)
+        self.assertEqual(_colormaps.DIVERGING_COLOR_MAP.N, 512)
 
     def test_has_the_expected_first_color(self) -> None:
         """The diverging color map's first color should be dark blue."""
         npt.assert_allclose(
-            _colormaps.diverging_color_map(0.0),
+            _colormaps.DIVERGING_COLOR_MAP(0.0),
             (0.0659773860137986, 0.12386004993819841, 0.24948115997128678, 1.0),
         )
 
     def test_has_the_expected_last_color(self) -> None:
         """The diverging color map's last color should be dark green."""
         npt.assert_allclose(
-            _colormaps.diverging_color_map(1.0),
+            _colormaps.DIVERGING_COLOR_MAP(1.0),
             (0.09053276383981979, 0.13733860758438335, 0.07325761429945674, 1.0),
         )
 
@@ -96,17 +96,17 @@ class TestPrism(unittest.TestCase):
 
     def test_has_12_colors(self) -> None:
         """The Prism palette should have 12 colors."""
-        self.assertEqual(len(_colormaps.prism), 12)
+        self.assertEqual(len(_colormaps.PRISM), 12)
 
     def test_colors_are_uppercase_hex_strings(self) -> None:
         """The Prism palette's colors should all be uppercase hex strings."""
-        for color in _colormaps.prism:
+        for color in _colormaps.PRISM:
             self.assertRegex(color, re.compile(r"^#[0-9A-F]{6}$"))
 
     def test_has_the_expected_first_color(self) -> None:
         """The Prism palette's first color should be purple."""
-        self.assertEqual(_colormaps.prism[0], "#5F4690")
+        self.assertEqual(_colormaps.PRISM[0], "#5F4690")
 
     def test_has_the_expected_last_color(self) -> None:
         """The Prism palette's last color should be gray."""
-        self.assertEqual(_colormaps.prism[-1], "#666666")
+        self.assertEqual(_colormaps.PRISM[-1], "#666666")

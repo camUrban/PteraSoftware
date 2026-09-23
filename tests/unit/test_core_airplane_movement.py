@@ -451,9 +451,9 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
 
-        # Check that non-changing attributes are preserved. Note: s_ref, c_ref, and
-        # b_ref are not included because they are calculated from the Wings, which
-        # change due to WingMovement or WingCrossSectionMovement.
+        # Check that non-changing attributes are preserved. s_ref, c_ref, and b_ref are
+        # not included because they are calculated from the Wings, which change due to
+        # WingMovement or WingCrossSectionMovement.
         for airplane in airplanes:
             self.assertEqual(airplane.name, base_airplane.name)
             self.assertEqual(airplane.weight, base_airplane.weight)

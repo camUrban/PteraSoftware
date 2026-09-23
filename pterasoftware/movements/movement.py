@@ -1,13 +1,4 @@
-"""Contains the Movement class.
-
-**Contains the following classes:**
-
-Movement: A class used to contain an UnsteadyProblem's movement.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the Movement class."""
 
 from __future__ import annotations
 
@@ -34,26 +25,15 @@ _logger = _logging.get_logger("movements.movement")
 # resolution to guard against that.
 _MIN_TIME_STEPS_PER_LCM_PERIOD: int = 30
 
+# Oversampling factor for the non static cached path. The high resolution Movement is
+# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
+# more snapshot) so the maximum and half maximum candidates have integer strides and
+# other candidates stay within roughly half a high resolution step of the nominal time.
+_NON_STATIC_CACHE_OVERSAMPLE: int = 2
+
 
 class Movement(_core.CoreMovement):
-    """A class used to contain an UnsteadyProblem's movement.
-
-    **Contains the following methods:**
-
-    lcm_period: The least common multiple of all motion periods, ensuring all motions
-    complete an integer number of cycles when cycle averaging forces and moments.
-
-    max_period: The longest period of motion of Movement's sub movement objects, the
-    motion(s) of its sub sub movement object(s), and the motions of its sub sub sub
-    movement objects.
-
-    min_period: The shortest non zero period of motion of Movement's sub movement
-    objects, the motion(s) of its sub sub movement object(s), and the motions of its sub
-    sub sub movement objects.
-
-    static: Flags if Movement's sub movement objects, its sub sub movement object(s),
-    and its sub sub sub movement objects all represent no motion.
-    """
+    """A class used to contain an UnsteadyProblem's movement."""
 
     __slots__ = (
         "_num_cycles",
@@ -494,13 +474,6 @@ class Movement(_core.CoreMovement):
     @property
     def operating_points(self) -> tuple[operating_point_mod.OperatingPoint, ...]:
         return self._operating_points
-
-
-# Oversampling factor for the non static cached path. The high resolution Movement is
-# built with _NON_STATIC_CACHE_OVERSAMPLE * max_num_steps intervals (and therefore one
-# more snapshot) so the maximum and half maximum candidates have integer strides and
-# other candidates stay within roughly half a high resolution step of the nominal time.
-_NON_STATIC_CACHE_OVERSAMPLE: int = 2
 
 
 def _compute_wake_area_mismatch(

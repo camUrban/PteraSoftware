@@ -6,8 +6,8 @@ is:     CL:     0.789     CDi:    0.020     Cm:     -0.685
 Based on an identical XFLR5 testing case, the expected output for the multi-wing case
 is:     CL:     0.513     CDi:    0.008     Cm:     -0.336
 
-Note: The expected output was created using XFLR5's inviscid VLM1 analysis type, which
-is a horseshoe vortex lattice method solver.
+The expected output was created using XFLR5's inviscid VLM1 analysis type, which is a
+horseshoe vortex lattice method solver.
 """
 
 import unittest

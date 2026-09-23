@@ -492,8 +492,8 @@ def make_type_5_wing_fixture() -> ps.geometry.wing.Wing:
     """This method makes a fixture that is a Wing with type 5 symmetry (symmetric=True,
     coincident_symmetry_plane=False).
 
-    Note: Type 5 wings are automatically processed by Airplane.process_wing_symmetry()
-    into type 1 and type 3 wings, so this fixture represents the initial state before
+    Type 5 wings are automatically processed by Airplane.process_wing_symmetry() into
+    type 1 and type 3 wings, so this fixture represents the initial state before
     processing.
 
     :return type_5_wing_fixture: Wing This is the Wing configured for type 5 symmetry

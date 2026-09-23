@@ -3,8 +3,8 @@ airplanes flying in formation, each with custom flapping wings."""
 
 import pterasoftware as ps
 
-x_spacing = 13
-y_spacing = 13
+X_SPACING = 13
+Y_SPACING = 13
 
 # Create the lead Airplane.
 lead_airplane = ps.geometry.airplane.Airplane(
@@ -132,7 +132,7 @@ trailing_right_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Right Airplane",
-    Cg_GP1_CgP1=(x_spacing, y_spacing, 0.0),
+    Cg_GP1_CgP1=(X_SPACING, Y_SPACING, 0.0),
 )
 
 # Create the trailing right Airplane's AirplaneMovement.
@@ -216,7 +216,7 @@ trailing_left_airplane = ps.geometry.airplane.Airplane(
         ),
     ],
     name="Trailing Left Airplane",
-    Cg_GP1_CgP1=(x_spacing, -y_spacing, 0.0),
+    Cg_GP1_CgP1=(X_SPACING, -Y_SPACING, 0.0),
 )
 
 # Create the trailing left Airplane's AirplaneMovement.

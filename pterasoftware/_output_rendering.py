@@ -949,7 +949,7 @@ def choose_color_map(
         upper limit to apply to it.
     """
     if np.sign(np.min(scalars)) == np.sign(np.max(scalars)):
-        color_map: matplotlib.colors.Colormap = _colormaps.sequential_color_map
+        color_map: matplotlib.colors.Colormap = _colormaps.SEQUENTIAL_COLOR_MAP
         c_min = max(
             float(np.mean(scalars)) - _COLOR_MAP_NUM_SIG * float(np.std(scalars)),
             float(np.min(scalars)),
@@ -959,7 +959,7 @@ def choose_color_map(
             float(np.max(scalars)),
         )
     else:
-        color_map = _colormaps.diverging_color_map
+        color_map = _colormaps.DIVERGING_COLOR_MAP
         c_min = -_COLOR_MAP_NUM_SIG * float(np.std(scalars))
         c_max = _COLOR_MAP_NUM_SIG * float(np.std(scalars))
 
@@ -988,14 +988,6 @@ def screenshot_image(plotter: pv.Plotter) -> webp.Image.Image:
 
 class AnimationWriter:
     """Encodes an animation's frames into a WebP file as they are captured.
-
-    **Contains the following methods:**
-
-    add_frame: Hands a captured frame to the writer.
-
-    close: Finishes the animation and writes it to its file.
-
-    **Notes:**
 
     The frames are handed to a background thread that feeds them to libwebp's animation
     encoder one at a time, so the raw frames never accumulate. The queue between the

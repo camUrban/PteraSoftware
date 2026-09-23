@@ -1,18 +1,5 @@
 """Contains functions for analyzing the convergence of SteadyProblems and
-UnsteadyProblems.
-
-**Contains the following classes:**
-
-None
-
-**Contains the following functions:**
-
-analyze_steady_convergence: Finds the converged parameters of a SteadyProblem solved
-using a given steady solver.
-
-analyze_unsteady_convergence: Finds the converged parameters of an UnsteadyProblem
-solved using the UnsteadyRingVortexLatticeMethodSolver.
-"""
+UnsteadyProblems."""
 
 from __future__ import annotations
 
@@ -98,8 +85,6 @@ def analyze_steady_convergence(
     actually the values incrementally coarser than the final values, because refining
     from the coarser values to the final ones changed every unmasked coefficient by
     within the tolerance.
-
-    **Notes:**
 
     There are two edge cases to this function. The first is if the user inputs equal
     values for the coarsest and finest values of either the Panel aspect ratio or the
@@ -761,8 +746,6 @@ def analyze_unsteady_convergence(
     parameters are actually the values incrementally coarser than the final values,
     because refining from the coarser values to the final ones changed every unmasked
     coefficient by within the tolerance.
-
-    **Notes:**
 
     There are two edge cases to this function. The first occurs when the user indicates
     that they only want check a single value for any of the four parameters (e.g.

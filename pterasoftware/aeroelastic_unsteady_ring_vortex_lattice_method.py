@@ -1,17 +1,4 @@
-"""Contains the AeroelasticUnsteadyRingVortexLatticeMethodSolver class.
-
-**Contains the following classes:**
-
-AeroelasticUnsteadyRingVortexLatticeMethodSolver: A class used to solve
-AeroelasticUnsteadyProblems with the unsteady ring vortex lattice method, extended with
-Strip Leading Edge Point (SLEP) functionality for computing the aerodynamic moments (in
-the first Airplane's geometry axes, relative to the strip leading edge points) so that
-wing deformations can be coupled with aerodynamic loads.
-
-**Contains the following functions:**
-
-None
-"""
+"""Contains the AeroelasticUnsteadyRingVortexLatticeMethodSolver class."""
 
 from __future__ import annotations
 
@@ -36,19 +23,21 @@ class AeroelasticUnsteadyRingVortexLatticeMethodSolver(
     edge point (SLEP), which is important for analyzing wing loading and deformation
     characteristics relative to the wing root.
 
-    **Key additions over the unsteady ring vortex lattice method:** initializes and
-    maintains the SLEP index mapping and position arrays, resets them at the start of
-    each time step, and computes the moments (in the first Airplane's geometry axes)
-    about the strip leading edge points from the per Panel total loads once those loads
-    are known.
+    **Key additions over the unsteady ring vortex lattice method:**
 
-    **Structural coupling output:** moments_GP1_Slep is the solver's one public SLEP
-    attribute: a (num_panels, 3) ndarray of floats representing the moments (in the
-    first Airplane's geometry axes, each relative to its panel's strip leading edge
-    point) on every Panel at the current time step, which the
-    AeroelasticUnsteadyProblem's structural solve reads as its aerodynamic forcing. The
-    SLEP index mapping and the relative-position arrays that produce it are private
-    working state.
+    Initializes and maintains the SLEP index mapping and position arrays, resets them at
+    the start of each time step, and computes the moments (in the first Airplane's
+    geometry axes) about the strip leading edge points from the per Panel total loads
+    once those loads are known.
+
+    **Structural coupling output:**
+
+    moments_GP1_Slep is the solver's one public SLEP attribute: a (num_panels, 3)
+    ndarray of floats representing the moments (in the first Airplane's geometry axes,
+    each relative to its panel's strip leading edge point) on every Panel at the current
+    time step, which the AeroelasticUnsteadyProblem's structural solve reads as its
+    aerodynamic forcing. The SLEP index mapping and the relative-position arrays that
+    produce it are private working state.
     """
 
     __slots__ = (

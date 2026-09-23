@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pterasoftware as ps
 
-_hero_graphics_dir = (
+_HERO_GRAPHICS_DIR = (
     Path(__file__).resolve().parent.parent.parent / "docs" / "hero_graphics"
 )
 
@@ -220,4 +220,4 @@ hero_solver.run(
     show_progress=True,
 )
 
-ps.save(_hero_graphics_dir / "hero_solver.psz", hero_solver)
+ps.save(_HERO_GRAPHICS_DIR / "hero_solver.psz", hero_solver)

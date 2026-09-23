@@ -10,91 +10,6 @@ import numpy as np
 class Panel:
     """A class used to contain the panels of a Wing.
 
-    **Contains the following methods:**
-
-    __deepcopy__: Creates a deep copy of this Panel, preserving mesh geometry but
-    resetting solver state.
-
-    rightLeg_G: This Panel's right leg vector (in geometry axes).
-
-    frontLeg_G: This Panel's front leg vector (in geometry axes).
-
-    leftLeg_G: This Panel's left leg vector (in geometry axes).
-
-    backLeg_G: This Panel's back leg vector (in geometry axes).
-
-    Frbvp_G_Cg: The position of this Panel's front right bound vortex point (in geometry
-    axes, relative to the CG).
-
-    Flbvp_G_Cg: The position of this Panel's front left bound vortex point (in geometry
-    axes, relative to the CG).
-
-    Cpp_G_Cg: The position of this Panel's collocation point (in geometry axes, relative
-    to the CG).
-
-    unitNormal_G: An estimate of this Panel's unit normal vector (in geometry axes).
-
-    area: An estimate of this Panel's area.
-
-    aspect_ratio: The aspect ratio of this Panel.
-
-    Frpp_GP1_CgP1: The position of the Panel's front right vertex (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    Flpp_GP1_CgP1: The position of the Panel's front left vertex (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    Blpp_GP1_CgP1: The position of the Panel's back left vertex (in the first Airplane's
-    geometry axes, relative to the first Airplane's CG).
-
-    Brpp_GP1_CgP1: The position of the Panel's back right vertex (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    right_edge: Flags if this Panel is at its parent Wing's right edge.
-
-    left_edge: Flags if this Panel is at its parent Wing's left edge.
-
-    local_chordwise_position: This Panel's local chordwise position in its parent Wing's
-    mesh.
-
-    local_spanwise_position: This Panel's local spanwise position in its parent Wing's
-    mesh.
-
-    rightLeg_GP1: This Panel's right leg vector ( in the first Airplane's geometry
-    axes).
-
-    frontLeg_GP1: This Panel's front leg vector ( in the first Airplane's geometry
-    axes).
-
-    leftLeg_GP1: This Panel's left leg vector (in the first Airplane's geometry axes).
-
-    backLeg_GP1: This Panel's back leg vector (in the first Airplane's geometry axes).
-
-    Frbvp_GP1_CgP1: The position of this Panel's front right bound vortex point (in the
-    first Airplane's geometry axes, relative to the first Airplane's CG).
-
-    Flbvp_GP1_CgP1: The position of this Panel's front left bound vortex point (in the
-    first Airplane's geometry axes, relative to the first Airplane's CG).
-
-    Cpp_GP1_CgP1: The position of this Panel's collocation point (in the first
-    Airplane's geometry axes, relative to the first Airplane's CG).
-
-    unitNormal_GP1: An estimate of this Panel's unit normal vector (in the first
-    Airplane's geometry axes).
-
-    inducedDrag_W: The total induced drag force experienced by this Panel (in wind
-    axes).
-
-    crosswindForce_W: The total crosswind force experienced by this Panel (in wind
-    axes).
-
-    lift_W: The total lift force experienced by this Panel (in wind axes).
-
-    calculate_projected_area: The area of this Panel projected on a plane defined by a
-    given normal vector (in geometry axes).
-
-    **Notes:**
-
     Computed geometric properties (leg vectors, bound vortex points, collocation points,
     unit normals, area, and aspect ratio) are lazily evaluated and cached.
     """
@@ -386,7 +301,7 @@ class Panel:
     # --- Immutable derived: manual lazy caching ---
     @property
     def rightLeg_G(self) -> np.ndarray:
-        """This Panel's right leg vector (in geometry axes).
+        """The Panel's right leg vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's right leg vector,
             which is defined from back to front. The units are in meters.
@@ -398,7 +313,7 @@ class Panel:
 
     @property
     def frontLeg_G(self) -> np.ndarray:
-        """This Panel's front leg vector (in geometry axes).
+        """The Panel's front leg vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's front leg vector,
             which is defined from right to left. The units are in meters.
@@ -410,7 +325,7 @@ class Panel:
 
     @property
     def leftLeg_G(self) -> np.ndarray:
-        """This Panel's left leg vector (in geometry axes).
+        """The Panel's left leg vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's left leg vector,
             which is defined from front to back. The units are in meters.
@@ -422,7 +337,7 @@ class Panel:
 
     @property
     def backLeg_G(self) -> np.ndarray:
-        """This Panel's back leg vector (in geometry axes).
+        """The Panel's back leg vector (in geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's back leg vector,
             which is defined from left to right. The units are in meters.
@@ -659,7 +574,7 @@ class Panel:
 
     @property
     def local_chordwise_position(self) -> int | None:
-        """This Panel's local chordwise position in its parent Wing's mesh.
+        """The Panel's local chordwise position in its parent Wing's mesh.
 
         :return: The local chordwise position of this Panel. Returns None if not yet
             set, and can only be set once.
@@ -674,7 +589,7 @@ class Panel:
 
     @property
     def local_spanwise_position(self) -> int | None:
-        """This Panel's local spanwise position in its parent Wing's mesh.
+        """The Panel's local spanwise position in its parent Wing's mesh.
 
         :return: The local spanwise position of this Panel. Returns None if not yet set,
             and can only be set once.
@@ -690,7 +605,7 @@ class Panel:
     # --- Set once derived: manual lazy caching ---
     @property
     def rightLeg_GP1(self) -> np.ndarray | None:
-        """This Panel's right leg vector (in the first Airplane's geometry axes).
+        """The Panel's right leg vector (in the first Airplane's geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's right leg vector,
             which is defined from back to front. The units are in meters. Returns None
@@ -708,9 +623,9 @@ class Panel:
 
     @property
     def frontLeg_GP1(self) -> np.ndarray | None:
-        """This Panel's front leg vector (in the first Airplane's geometry axes).
+        """The Panel's front leg vector (in the first Airplane's geometry axes).
 
-        :return: A (3,) ndarray of floats representing this Panel's left leg vector,
+        :return: A (3,) ndarray of floats representing this Panel's front leg vector,
             which is defined from right to left. The units are in meters. Returns None
             if this Panel is not part of a SteadyProblem or UnsteadyProblem.
         """
@@ -726,7 +641,7 @@ class Panel:
 
     @property
     def leftLeg_GP1(self) -> np.ndarray | None:
-        """This Panel's left leg vector (in the first Airplane's geometry axes).
+        """The Panel's left leg vector (in the first Airplane's geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's left leg vector,
             which is defined from front to back. The units are in meters. Returns None
@@ -744,7 +659,7 @@ class Panel:
 
     @property
     def backLeg_GP1(self) -> np.ndarray | None:
-        """This Panel's back leg vector (in the first Airplane's geometry axes).
+        """The Panel's back leg vector (in the first Airplane's geometry axes).
 
         :return: A (3,) ndarray of floats representing this Panel's back leg vector,
             which is defined from left to right. The units are in meters. Returns None

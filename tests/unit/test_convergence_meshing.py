@@ -200,6 +200,7 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         :return: None
         """
         self.ref_wing = self._make_edge_wing()
+        self.ref_airplane = ps.geometry.airplane.Airplane(wings=[self.ref_wing])
         self.num_chordwise_panels = 4
 
     def _average_panel_aspect_ratio(self, num_wing_cross_sections: int) -> float:
@@ -214,14 +215,17 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         return average_panel_aspect_ratio
 
     def _num_wing_cross_sections_for(
-        self, target: int, ref_wing: ps.geometry.wing.Wing | None = None
+        self, target: int, ref_airplane: ps.geometry.airplane.Airplane | None = None
     ) -> int:
         """Searches for the number of WingCrossSections that hits a target average Panel
         aspect ratio, starting from the smallest valid count."""
+        if ref_airplane is None:
+            ref_airplane = self.ref_airplane
         return _convergence_meshing._get_num_wing_cross_sections_for_panel_ar(
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
-            ref_wing=self.ref_wing if ref_wing is None else ref_wing,
+            ref_airplane=ref_airplane,
+            ref_wing=ref_airplane.wings[0],
             start_val=2,
         )
 
@@ -258,10 +262,16 @@ class TestGetNumWingCrossSectionsForPanelAr(unittest.TestCase):
         """Test that the count is measured on the half span, so a symmetric Wing and an
         asymmetric Wing built from the same half-span curves need the same count."""
         asymmetric_result = self._num_wing_cross_sections_for(
-            4, ref_wing=self._make_edge_wing(symmetric=False)
+            4,
+            ref_airplane=ps.geometry.airplane.Airplane(
+                wings=[self._make_edge_wing(symmetric=False)]
+            ),
         )
         symmetric_result = self._num_wing_cross_sections_for(
-            4, ref_wing=self._make_edge_wing(symmetric=True)
+            4,
+            ref_airplane=ps.geometry.airplane.Airplane(
+                wings=[self._make_edge_wing(symmetric=True)]
+            ),
         )
         self.assertEqual(asymmetric_result, symmetric_result)
 

@@ -429,9 +429,9 @@ class TestUnsteadyConvergence(unittest.TestCase):
         converged_num_chordwise = converged_parameters[3]
 
         wake_state_ans = True
-        num_chords_ans = 3
+        num_chords_ans = 2
         panel_ar_ans = 4
-        num_chordwise_ans = 1
+        num_chordwise_ans = 2
 
         self.assertEqual(converged_wake_state, wake_state_ans)
         self.assertEqual(converged_num_chords, num_chords_ans)

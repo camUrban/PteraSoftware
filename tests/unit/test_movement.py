@@ -5,11 +5,13 @@ from typing import Any
 from unittest.mock import patch
 
 import pterasoftware as ps
+from pterasoftware.movements.movement import _mean_trailing_edge_panel_chord
 from tests.unit.fixtures import (
     airplane_movement_fixtures,
     geometry_fixtures,
     movement_fixtures,
     operating_point_fixtures,
+    wing_movement_fixtures,
 )
 
 
@@ -1024,6 +1026,147 @@ class TestMovement(unittest.TestCase):
             # Verify the Movement used the optimizer's return value without clamping it.
             self.assertEqual(movement.delta_time, fake_optimized_delta_time)
 
+    def test_delta_time_estimate_for_static_movement_measures_mesh(self) -> None:
+        """Test that a static Movement's default delta_time is the time the freestream
+        takes to cross one trailing edge Panel chord, measured from the mesh, and that
+        an explicitly set reference chord does not change it.
+
+        The reference chord is a normalization convention for load coefficients, so it
+        must not affect wake sizing.
+        """
+        operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
+
+        delta_times = []
+        for c_ref in [None, 5.0]:
+            with self.subTest(c_ref=c_ref):
+                base_wing = geometry_fixtures.make_origin_wing_fixture()
+                base_airplane = ps.geometry.airplane.Airplane(
+                    wings=[base_wing],
+                    Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+                    c_ref=c_ref,
+                )
+                assert base_airplane.c_ref is not None
+                assert base_wing.mean_aerodynamic_chord is not None
+                if c_ref is not None:
+                    self.assertNotEqual(
+                        base_airplane.c_ref, base_wing.mean_aerodynamic_chord
+                    )
+
+                airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+                    base_airplane=base_airplane,
+                    wing_movements=[
+                        wing_movement_fixtures.make_static_wing_movement_fixture(
+                            base_wing
+                        )
+                    ],
+                )
+                operating_point_movement = (
+                    ps.movements.operating_point_movement.OperatingPointMovement(
+                        base_operating_point=operating_point
+                    )
+                )
+
+                # Use num_chords=1 to speed up the test.
+                movement = ps.movements.movement.Movement(
+                    airplane_movements=[airplane_movement],
+                    operating_point_movement=operating_point_movement,
+                    num_chords=1,
+                )
+
+                self.assertAlmostEqual(
+                    movement.delta_time,
+                    _mean_trailing_edge_panel_chord(base_wing) / operating_point.vCg__E,
+                )
+                delta_times.append(movement.delta_time)
+
+        self.assertEqual(delta_times[0], delta_times[1])
+
+    def test_delta_time_estimate_pools_all_wings_of_all_airplanes(self) -> None:
+        """Test that a static Movement's default delta_time pools the trailing edge
+        Panel chord over every Wing of every Airplane into one mean, weighted by each
+        Wing's number of spanwise Panels, rather than measuring each Airplane's first
+        Wing or averaging per Airplane means."""
+        operating_point = operating_point_fixtures.make_basic_operating_point_fixture()
+
+        # The first Airplane holds two Wings with different chords and spanwise Panel
+        # counts, and the second Airplane holds one Wing.
+        first_wing = geometry_fixtures.make_origin_wing_fixture()
+        second_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        third_wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        first_airplane = ps.geometry.airplane.Airplane(
+            wings=[first_wing, second_wing],
+            Cg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+        second_airplane = ps.geometry.airplane.Airplane(
+            wings=[third_wing],
+            Cg_GP1_CgP1=(10.0, 0.0, 0.0),
+        )
+
+        airplane_movements = [
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=first_airplane,
+                wing_movements=[
+                    wing_movement_fixtures.make_static_wing_movement_fixture(
+                        first_wing
+                    ),
+                    wing_movement_fixtures.make_static_wing_movement_fixture(
+                        second_wing
+                    ),
+                ],
+            ),
+            ps.movements.airplane_movement.AirplaneMovement(
+                base_airplane=second_airplane,
+                wing_movements=[
+                    wing_movement_fixtures.make_static_wing_movement_fixture(
+                        third_wing
+                    ),
+                ],
+            ),
+        ]
+        operating_point_movement = (
+            ps.movements.operating_point_movement.OperatingPointMovement(
+                base_operating_point=operating_point
+            )
+        )
+
+        # Use num_chords=1 to speed up the test.
+        movement = ps.movements.movement.Movement(
+            airplane_movements=airplane_movements,
+            operating_point_movement=operating_point_movement,
+            num_chords=1,
+        )
+
+        chords = []
+        nums_spanwise = []
+        for wing in [first_wing, second_wing, third_wing]:
+            chords.append(_mean_trailing_edge_panel_chord(wing))
+            _num_spanwise = wing.num_spanwise_panels
+            assert _num_spanwise is not None
+            nums_spanwise.append(_num_spanwise)
+        self.assertNotAlmostEqual(chords[0], chords[1])
+        self.assertNotEqual(nums_spanwise[0], nums_spanwise[1])
+
+        pooled_mean_chord = sum(
+            chord * num_spanwise for chord, num_spanwise in zip(chords, nums_spanwise)
+        ) / sum(nums_spanwise)
+
+        self.assertAlmostEqual(
+            movement.delta_time, pooled_mean_chord / operating_point.vCg__E
+        )
+
+        # The pooled mean differs from the first Wing's value and from the mean of the
+        # per Airplane weighted means.
+        first_airplane_mean_chord = (
+            chords[0] * nums_spanwise[0] + chords[1] * nums_spanwise[1]
+        ) / (nums_spanwise[0] + nums_spanwise[1])
+        mean_of_airplane_means = (first_airplane_mean_chord + chords[2]) / 2.0
+        self.assertNotAlmostEqual(
+            movement.delta_time, chords[0] / operating_point.vCg__E
+        )
+        self.assertNotAlmostEqual(
+            movement.delta_time, mean_of_airplane_means / operating_point.vCg__E
+        )
+
     def test_max_wake_rows_default_none(self) -> None:
         """Test that max_wake_rows defaults to None."""
         self.assertIsNone(self.static_movement.max_wake_rows)
@@ -1208,6 +1351,62 @@ class TestMovement(unittest.TestCase):
                 max_wake_chords=2,
                 max_wake_cycles=2,
             )
+
+
+class TestMeanTrailingEdgePanelChord(unittest.TestCase):
+    """This is a class with functions to test the _mean_trailing_edge_panel_chord
+    function."""
+
+    def test_uniform_rectangular_wing(self) -> None:
+        """Test that a rectangular Wing with uniform chordwise spacing has trailing edge
+        Panels whose mean chord is the Wing's chord divided by its number of chordwise
+        Panels.
+
+        The Panels lie on the Airfoil's mean camber line, so a symmetric Airfoil is used
+        to keep the trailing edge Panels' legs on the chord line.
+        """
+        airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
+        root_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=airfoil,
+            num_spanwise_panels=8,
+            chord=1.0,
+            spanwise_spacing="uniform",
+        )
+        tip_wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=airfoil,
+            num_spanwise_panels=None,
+            chord=1.0,
+            Lp_Wcsp_Lpp=(0.0, 2.0, 0.0),
+        )
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[root_wing_cross_section, tip_wing_cross_section],
+            num_chordwise_panels=4,
+            chordwise_spacing="uniform",
+        )
+
+        # Wrapping the Wing in an Airplane meshes it.
+        ps.geometry.airplane.Airplane(wings=[wing])
+
+        self.assertAlmostEqual(_mean_trailing_edge_panel_chord(wing), 0.25)
+
+    def test_works_without_formation_frame_positions(self) -> None:
+        """Test that _mean_trailing_edge_panel_chord works on a Wing that has never been
+        placed in a problem, so its Panels' positions in the first Airplane's geometry
+        axes are still unset."""
+        wing = geometry_fixtures.make_origin_wing_fixture()
+
+        # Wrapping the Wing in an Airplane meshes it without setting the formation frame
+        # positions, which only a problem sets.
+        ps.geometry.airplane.Airplane(wings=[wing])
+
+        _panels = wing.panels
+        assert _panels is not None
+        self.assertIsNone(_panels[-1, 0].leftLeg_GP1)
+
+        mean_chord = _mean_trailing_edge_panel_chord(wing)
+
+        self.assertIsInstance(mean_chord, float)
+        self.assertGreater(mean_chord, 0.0)
 
 
 class TestAnalyticallyOptimizeDeltaTime(unittest.TestCase):

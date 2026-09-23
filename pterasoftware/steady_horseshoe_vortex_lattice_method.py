@@ -199,7 +199,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
 
         _logger.info(
             _logging.indent()
-            + "Steady horseshoe vortex lattice method solver completed in "
+            + "Solver completed in "
             + _functions.format_duration(time.time() - run_start_time)
         )
 

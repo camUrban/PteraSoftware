@@ -20,11 +20,14 @@ from tests.unit.fixtures import geometry_fixtures, operating_point_fixtures
 # parameter, so a parameter added to one of these classes fails there until it is
 # classified here and passed at every site that constructs the class. Airfoil needs no
 # partition, because a build shares each reference Airfoil rather than rebuilding one.
-_AIRPLANE_COPIED_PARAMETERS = frozenset({"name", "Cg_GP1_CgP1", "weight"})
+_AIRPLANE_COPIED_PARAMETERS = frozenset(
+    {"name", "Cg_GP1_CgP1", "weight", "s_ref", "c_ref", "b_ref"}
+)
 
-# A build gives each Airplane copy this iteration's Wings, and passes None for the
-# reference dimensions so that the copy recalculates them for its own refined geometry.
-_AIRPLANE_CHANGED_PARAMETERS = frozenset({"wings", "s_ref", "c_ref", "b_ref"})
+# A build gives each Airplane copy this iteration's Wings. The reference dimensions are
+# copied rather than recalculated for the refined geometry, so that every iteration's
+# load coefficients share one normalization.
+_AIRPLANE_CHANGED_PARAMETERS = frozenset({"wings"})
 _AIRPLANE_OMITTED_PARAMETERS: frozenset[str] = frozenset()
 
 _WING_COPIED_PARAMETERS = frozenset(
@@ -485,19 +488,27 @@ class TestBuildSteadyProblem(unittest.TestCase):
         )
 
         # The first Airplane in a simulation must keep a zero Cg_GP1_CgP1, so only the
-        # second carries the nonzero value that the copy is checked for.
+        # second carries the nonzero value that the copy is checked for. Both carry
+        # explicit reference dimensions that differ from what their Wings measure, so
+        # that a copy which recalculated them would fail the copy tests.
         self.ref_problem = ps.problems.SteadyProblem(
             airplanes=[
                 ps.geometry.airplane.Airplane(
                     wings=[self.trapezoidal_wing],
                     name="Trapezoidal Airplane",
                     weight=10.0,
+                    s_ref=15.0,
+                    c_ref=2.0,
+                    b_ref=10.0,
                 ),
                 ps.geometry.airplane.Airplane(
                     wings=[self.edge_defined_wing],
                     name="Edge Airplane",
                     Cg_GP1_CgP1=(1.0, 2.0, 3.0),
                     weight=20.0,
+                    s_ref=20.0,
+                    c_ref=1.5,
+                    b_ref=8.0,
                 ),
             ],
             operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
@@ -657,14 +668,23 @@ class TestBuildSteadyProblem(unittest.TestCase):
             _AIRPLANE_COPIED_PARAMETERS,
         )
 
-    def test_airplane_reference_values_are_recalculated(self) -> None:
-        """Test that each Airplane copy calculates its own reference dimensions, because
-        refining the mesh changes the geometry they describe."""
+    def test_airplane_reference_dimensions_are_not_recalculated(self) -> None:
+        """Test that an Airplane copy carries its reference's reference dimensions
+        rather than recalculating them from its own refined Wings, so that every
+        convergence iteration's load coefficients share one normalization."""
         this_airplane = self._build().airplanes[self.trapezoidal_airplane_id]
+        ref_airplane = self.ref_problem.airplanes[self.trapezoidal_airplane_id]
 
-        self.assertIsNotNone(this_airplane.s_ref)
-        self.assertIsNotNone(this_airplane.c_ref)
-        self.assertIsNotNone(this_airplane.b_ref)
+        # The reference's explicit values differ from what the copy's own Wing measures,
+        # so a copy that recalculated them would fail the comparison below.
+        this_wing = this_airplane.wings[0]
+        self.assertNotEqual(ref_airplane.s_ref, this_wing.projected_area)
+        self.assertNotEqual(ref_airplane.c_ref, this_wing.mean_aerodynamic_chord)
+        self.assertNotEqual(ref_airplane.b_ref, this_wing.span)
+
+        self.assertEqual(this_airplane.s_ref, ref_airplane.s_ref)
+        self.assertEqual(this_airplane.c_ref, ref_airplane.c_ref)
+        self.assertEqual(this_airplane.b_ref, ref_airplane.b_ref)
 
     def test_wing_parameters_are_copied(self) -> None:
         """Test that a trapezoidal Wing's copy carries every one of its reference's
@@ -787,6 +807,15 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         "phaseAngles_Wcsp_to_Wcs_ixyz": (40.0, 50.0, 60.0),
     }
 
+    # Each base Airplane carries explicit reference dimensions that differ from what its
+    # Wing measures, so that a copy which recalculated them for the refined mesh would
+    # fail the comparison in the test below.
+    airplane_reference_dimensions: dict[str, float] = {
+        "s_ref": 15.0,
+        "c_ref": 2.0,
+        "b_ref": 10.0,
+    }
+
     def setUp(self) -> None:
         """Set up a reference UnsteadyProblem whose Airplanes hold a trapezoidal Wing
         and an edge-defined Wing, each wrapped in an AirplaneMovement and a WingMovement
@@ -823,7 +852,12 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         ):
             airplane_movements.append(
                 ps.movements.airplane_movement.AirplaneMovement(
-                    base_airplane=ps.geometry.airplane.Airplane(wings=[wing]),
+                    base_airplane=ps.geometry.airplane.Airplane(
+                        wings=[wing],
+                        s_ref=self.airplane_reference_dimensions["s_ref"],
+                        c_ref=self.airplane_reference_dimensions["c_ref"],
+                        b_ref=self.airplane_reference_dimensions["b_ref"],
+                    ),
                     wing_movements=[
                         ps.movements.wing_movement.WingMovement(
                             base_wing=wing,
@@ -1010,6 +1044,26 @@ class TestBuildUnsteadyProblemCopiesMotion(unittest.TestCase):
         self._assert_parameters_match(
             self._built_airplane_movements()[1], self.airplane_motion_parameters
         )
+
+    def test_airplane_reference_dimensions_are_copied(self) -> None:
+        """Test that both AirplaneMovement copies' base Airplanes carry their
+        reference's reference dimensions rather than recalculating them from their own
+        refined Wings, so that every convergence iteration's load coefficients share one
+        normalization."""
+        measured_names = {
+            "s_ref": "projected_area",
+            "c_ref": "mean_aerodynamic_chord",
+            "b_ref": "span",
+        }
+        for this_airplane_movement in self._built_airplane_movements():
+            this_airplane = this_airplane_movement.base_airplane
+            for name, expected in self.airplane_reference_dimensions.items():
+                # The explicit value differs from what the copy's own Wing measures, so
+                # a copy that recalculated it would fail the next assertion.
+                self.assertNotEqual(
+                    getattr(this_airplane.wings[0], measured_names[name]), expected
+                )
+                self.assertEqual(getattr(this_airplane, name), expected)
 
     def test_every_wing_cross_section_motion_parameter_is_copied(self) -> None:
         """Test that the trapezoidal branch's WingCrossSectionMovement copies carry

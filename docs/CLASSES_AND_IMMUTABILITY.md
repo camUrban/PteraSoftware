@@ -513,9 +513,11 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 | `name`        | `str`              | Airplane identifier                                          |
 | `Cg_GP1_CgP1` | `np.ndarray`       | CG position in formation coordinates                         |
 | `weight`      | `float`            | Aircraft weight in Newtons                                   |
-| `s_ref`       | `float`            | Reference wetted area                                        |
+| `s_ref`       | `float`            | Reference area (defaults to first `Wing`'s projected area)   |
 | `c_ref`       | `float`            | Reference chord length                                       |
 | `b_ref`       | `float`            | Reference span                                               |
+
+**Note on reference dimensions**: `s_ref`, `c_ref`, and `b_ref` are normalization conventions for the vehicle as a whole, not measurements of any one mesh or time step. When one is left as `None`, `__init__` fills it once from the first `Wing`'s `projected_area`, `mean_aerodynamic_chord`, or `span`, and from then on the number is the vehicle's reference regardless of how it was obtained. Every `Airplane` derived from an existing one (the per time step `Airplane`s that the movement classes generate, the refined `Airplane`s that the convergence tools build, and the trial `Airplane`s that the trim tools deep copy) inherits these values from its base or reference `Airplane` rather than recalculating them from its own `Wing`s, so the load coefficients of every derived `Airplane` share one normalization. This is the opposite of the `Wing` class's derived properties, which are measurements of that `Wing`'s own mesh: they are recomputed for every freshly meshed `Wing` and reset by `__deepcopy__`.
 
 #### Derived from Immutable (use manual lazy caching)
 

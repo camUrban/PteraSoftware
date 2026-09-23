@@ -173,15 +173,17 @@ def build_steady_problem(
 
         these_airplanes.append(
             geometry.airplane.Airplane(
-                # These values are copied from the reference Airplane.
+                # These values are copied from the reference Airplane. The reference
+                # dimensions are copied rather than recomputed from the refined Wings,
+                # so every iteration's load coefficients share one normalization.
                 name=ref_airplane.name,
                 Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
                 weight=ref_airplane.weight,
+                s_ref=ref_airplane.s_ref,
+                c_ref=ref_airplane.c_ref,
+                b_ref=ref_airplane.b_ref,
                 # These values change.
                 wings=these_wings,
-                s_ref=None,
-                c_ref=None,
-                b_ref=None,
             )
         )
 
@@ -549,15 +551,17 @@ def build_unsteady_problem(
 
         # 6. Create a copy of the base Airplane.
         this_base_airplane = geometry.airplane.Airplane(
-            # These values are copied from the reference Airplane.
+            # These values are copied from the reference Airplane. The reference
+            # dimensions are copied rather than recomputed from the refined Wings, so
+            # every iteration's load coefficients share one normalization.
             name=ref_base_airplane.name,
             Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
             weight=ref_base_airplane.weight,
+            s_ref=ref_base_airplane.s_ref,
+            c_ref=ref_base_airplane.c_ref,
+            b_ref=ref_base_airplane.b_ref,
             # These values change.
             wings=these_base_wings,
-            s_ref=None,
-            c_ref=None,
-            b_ref=None,
         )
 
         # 7. Create a copy of the AirplaneMovement.

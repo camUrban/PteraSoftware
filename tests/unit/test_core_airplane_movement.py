@@ -451,12 +451,57 @@ class TestCoreAirplaneMovement(unittest.TestCase):
 
         airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
 
-        # Check that non-changing attributes are preserved. s_ref, c_ref, and b_ref are
-        # not included because they are calculated from the Wings, which change due to
-        # WingMovement or WingCrossSectionMovement.
+        # Check that non-changing attributes are preserved. The reference dimensions are
+        # inherited from the base Airplane rather than recalculated from each time
+        # step's Wings.
         for airplane in airplanes:
             self.assertEqual(airplane.name, base_airplane.name)
             self.assertEqual(airplane.weight, base_airplane.weight)
+            self.assertEqual(airplane.s_ref, base_airplane.s_ref)
+            self.assertEqual(airplane.c_ref, base_airplane.c_ref)
+            self.assertEqual(airplane.b_ref, base_airplane.b_ref)
+
+    def test_generate_airplanes_inherits_explicit_reference_dimensions(self) -> None:
+        """Test that every generated Airplane carries the base Airplane's explicitly set
+        reference dimensions rather than recalculating them from its own Wings."""
+        # Build the base Airplane with reference dimensions that differ from what its
+        # Wing measures, so that a generated Airplane which recalculated them would fail
+        # the comparison. Then build a moving CoreWingMovement around its own Wing, so
+        # that each time step's Airplane is generated afresh rather than deep copied.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_origin_wing_fixture()],
+            s_ref=15.0,
+            c_ref=2.0,
+            b_ref=10.0,
+        )
+        base_wing = base_airplane.wings[0]
+        self.assertNotEqual(base_airplane.s_ref, base_wing.projected_area)
+        self.assertNotEqual(base_airplane.c_ref, base_wing.mean_aerodynamic_chord)
+        self.assertNotEqual(base_airplane.b_ref, base_wing.span)
+
+        airplane_movement = ps._core.CoreAirplaneMovement(
+            base_airplane=base_airplane,
+            wing_movements=[
+                core_wing_movement_fixtures.make_basic_core_wing_movement_fixture(
+                    base_wing
+                )
+            ],
+            ampCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            periodCg_GP1_CgP1=(0.0, 0.0, 0.0),
+            spacingCg_GP1_CgP1=("sine", "sine", "sine"),
+            phaseCg_GP1_CgP1=(0.0, 0.0, 0.0),
+        )
+        self.assertGreater(airplane_movement.max_period, 0.0)
+
+        airplanes = airplane_movement.generate_airplanes(num_steps=10, delta_time=0.01)
+        airplanes.append(
+            airplane_movement.generate_airplane_at_time_step(step=3, delta_time=0.01)
+        )
+
+        for airplane in airplanes:
+            self.assertEqual(airplane.s_ref, 15.0)
+            self.assertEqual(airplane.c_ref, 2.0)
+            self.assertEqual(airplane.b_ref, 10.0)
 
     def test_generate_airplanes_static_movement(self) -> None:
         """Test that static movement produces constant positions and angles."""

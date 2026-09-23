@@ -176,6 +176,16 @@ class TestSolveCache(unittest.TestCase):
             npt.assert_array_equal(reloaded[key][0], cache[key][0])
             self.assertEqual(reloaded[key][1], cache[key][1])
 
+    def test_write_ends_file_with_single_newline(self) -> None:
+        """Test that writing a cache ends the file with exactly one newline."""
+        cache = {"key": (np.array([[1.0, 2.0, 3.0, 4.0, 5.0, 6.0]], dtype=float), 42.5)}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "cache.json"
+            _convergence_cache.write_cache(path, cache, {})
+            text = path.read_text()
+        self.assertTrue(text.endswith("\n"))
+        self.assertFalse(text.endswith("\n\n"))
+
     def test_load_invalid_json_returns_empty(self) -> None:
         """Test that a cache file that is not valid JSON is ignored with a warning."""
         with tempfile.TemporaryDirectory() as tmp:

@@ -9,7 +9,7 @@ from typing import cast
 import numpy as np
 import scipy.optimize as sp_opt
 
-from .. import _core, _logging, _parameter_validation, geometry
+from .. import _core, _logging, _panel, _parameter_validation, geometry
 from .. import operating_point as operating_point_mod
 from .. import problems
 from . import airplane_movement as airplane_movement_mod
@@ -177,20 +177,28 @@ class Movement(_core.CoreMovement):
                 delta_time, "delta_time", min_val=0.0, min_inclusive=False
             )
         else:
-            # Calculate a fast initial delta_time estimate based on freestream velocity.
+            # Calculate a fast initial delta_time estimate: the time the freestream
+            # takes to travel one trailing edge Panel chord, so that the shed wake ring
+            # vortices are roughly as long as the bound ring vortices that shed them.
             # This is used as a fallback for static Movements and as a starting point
-            # for the analytical optimization.
-            delta_times = []
+            # for the analytical optimization. Every Wing of every Airplane is pooled
+            # into one mean, weighted by its spanwise Panel count, matching the
+            # analytical optimization.
+            total_weighted_chord = 0.0
+            total_num_spanwise = 0
             for airplane_movement in airplane_movements:
-                # TODO: Consider making this also average across each Airplane's Wings.
-                c_ref = airplane_movement.base_airplane.c_ref
-                assert c_ref is not None
-                delta_times.append(
-                    c_ref
-                    / airplane_movement.base_airplane.wings[0].num_chordwise_panels
-                    / operating_point_movement.base_operating_point.vCg__E
-                )
-            fast_estimate = sum(delta_times) / len(delta_times)
+                for wing in airplane_movement.base_airplane.wings:
+                    _num_spanwise = wing.num_spanwise_panels
+                    assert _num_spanwise is not None
+                    total_weighted_chord += (
+                        _mean_trailing_edge_panel_chord(wing) * _num_spanwise
+                    )
+                    total_num_spanwise += _num_spanwise
+            fast_estimate = (
+                total_weighted_chord
+                / total_num_spanwise
+                / operating_point_movement.base_operating_point.vCg__E
+            )
 
             # Run analytical optimization to get a better delta_time that accounts for
             # both freestream and geometry motion velocities.
@@ -1286,6 +1294,36 @@ def _optimize_delta_time_non_static(
     return optimized_delta_time
 
 
+def _mean_trailing_edge_panel_chord(wing: geometry.wing.Wing) -> float:
+    """Finds the mean chordwise length of a Wing's trailing edge Panels.
+
+    This is the target chord length for the wake ring vortices the Wing sheds. The
+    trailing edge Panels are measured directly (rather than dividing the standard mean
+    chord by the number of chordwise Panels) because non uniform chordwise spacing can
+    give the trailing edge Panels a different chord than the average.
+
+    :param wing: The Wing to measure. It must be meshed.
+    :return: The mean over the trailing edge Panels of the average of each Panel's left
+        and right leg lengths. Its units are in meters.
+    """
+    _panels = wing.panels
+    assert _panels is not None
+    num_spanwise = wing.num_spanwise_panels
+    assert num_spanwise is not None
+
+    # The leg vectors in the Wing's own Airplane's geometry axes are available as soon
+    # as the Wing is meshed, unlike those in the first Airplane's geometry axes, which a
+    # problem populates later. Leg lengths are the same in either.
+    total_te_panel_chord = 0.0
+    for spanwise_id in range(num_spanwise):
+        te_panel: _panel.Panel = _panels[wing.num_chordwise_panels - 1, spanwise_id]
+        total_te_panel_chord += (
+            float(np.linalg.norm(te_panel.leftLeg_G))
+            + float(np.linalg.norm(te_panel.rightLeg_G))
+        ) / 2.0
+    return total_te_panel_chord / num_spanwise
+
+
 def _analytically_optimize_delta_time(
     airplane_movements: list[airplane_movement_mod.AirplaneMovement],
     operating_point_movement: operating_point_movement_mod.OperatingPointMovement,
@@ -1392,25 +1430,8 @@ def _analytically_optimize_delta_time(
             assert _panels is not None
             num_spanwise = _panels.shape[1]
 
-            # Compute the mean chordwise width of trailing edge Panels. This is the
-            # target chord length for wake ring vortices. We use the trailing edge Panel
-            # chord directly (rather than standard_mean_chord / num_chordwise) because
-            # non uniform chordwise spacing can cause trailing edge Panels to have
-            # different chords than average.
-            total_te_panel_chord = 0.0
-            for spanwise_id in range(num_spanwise):
-                te_panel = _panels[num_chordwise - 1, spanwise_id]
-                _leftLeg_GP1 = te_panel.leftLeg_GP1
-                _rightLeg_GP1 = te_panel.rightLeg_GP1
-                assert _leftLeg_GP1 is not None
-                assert _rightLeg_GP1 is not None
-                # Average the left and right leg magnitudes for this Panel.
-                panel_chord = (
-                    float(np.linalg.norm(_leftLeg_GP1))
-                    + float(np.linalg.norm(_rightLeg_GP1))
-                ) / 2.0
-                total_te_panel_chord += panel_chord
-            mean_te_panel_chord = total_te_panel_chord / num_spanwise
+            # The target chord length for this Wing's wake ring vortices.
+            mean_te_panel_chord = _mean_trailing_edge_panel_chord(wing)
 
             # Accumulate displacement distance across all trailing edge Panels across
             # all consecutive time step pairs.

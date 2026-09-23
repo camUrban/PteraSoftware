@@ -115,18 +115,24 @@ class Airplane:
             consistent with the FreeFlightUnsteadyProblem's mass and the
             OperatingPoint's gravitational acceleration, satisfying weight == mass *
             np.linalg.norm(g_E) within floating point tolerance.
-        :param s_ref: A number (int or float) representing the reference wetted area. If
-            not set or set to None (the default), it populates from first Wing. If set,
-            it must be greater than zero, and will be converted to a float internally.
-            The units are square meters.
+        :param s_ref: A number (int or float) representing the reference area. If not
+            set or set to None (the default), it populates from the first Wing's
+            projected_area. If set, it must be greater than zero, and will be converted
+            to a float internally. The units are square meters. Airplanes derived from
+            this one (those at each time step of an unsteady simulation, those refined
+            by a convergence analysis, and those tried by a trim analysis) inherit the
+            resulting value rather than recomputing it from their own Wings, so all of
+            their load coefficients share one normalization.
         :param c_ref: A number (int or float) representing the reference chord length.
             If not set or set to None (the default), it populates from first Wing. If
             set, it must be greater than zero, and will be converted to a float
-            internally. The units are meters.
+            internally. The units are meters. Derived Airplanes inherit the resulting
+            value in the same way as s_ref.
         :param b_ref: A number (int or float) representing the reference span. If not
             set or set to None (the default value), it populates from first Wing. If
             set, it must be greater than zero, and will be converted to a float
-            internally. The units are meters.
+            internally. The units are meters. Derived Airplanes inherit the resulting
+            value in the same way as s_ref.
         """
         # Initialize the immutable attributes. Set those that are numpy arrays to be
         # read only. Store wings as a tuple to prevent external mutation.

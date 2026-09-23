@@ -103,6 +103,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         "_currentStackBlwrvp_GP1_CgP1",
         "list_num_wake_vortices",
         "_list_wake_vortex_strengths",
+        "_list_wake_r_c0s",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",
@@ -283,6 +284,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._list_wake_vortex_strengths: list[np.ndarray] = [
             np.zeros(n, dtype=float) for n in wake_sizes_per_step
         ]
+        # Each wake ring vortex keeps the initial core radius it was shed with, so these
+        # are carried forward with the strengths rather than rebuilt from the current
+        # step's Wings.
+        self._list_wake_r_c0s: list[np.ndarray] = [
+            np.zeros(n, dtype=float) for n in wake_sizes_per_step
+        ]
         self.listStackBrwrvp_GP1_CgP1: list[np.ndarray] = [
             np.zeros((n, 3), dtype=float) for n in wake_sizes_per_step
         ]
@@ -342,8 +349,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._currentStackBlwrvp_GP1_CgP1: np.ndarray = np.empty(0, dtype=float)
 
         # The list attributes above (list_num_wake_vortices,
-        # _list_wake_vortex_strengths, listStack{Br,Fr,Fl,Bl}wrvp_GP1_CgP1) were
-        # pre-allocated above this block.
+        # _list_wake_vortex_strengths, _list_wake_r_c0s,
+        # listStack{Br,Fr,Fl,Bl}wrvp_GP1_CgP1) were pre-allocated above this block.
 
         self._current_bound_r_c0s: np.ndarray = np.empty((0, 4), dtype=float)
         self._current_wake_r_c0s: np.ndarray = np.empty((0, 4), dtype=float)
@@ -672,7 +679,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
         self._current_bound_r_c0s = np.zeros((self.num_panels, 4), dtype=float)
         num_wake_vortices = self.list_num_wake_vortices[step]
         self._current_wake_vortex_ages = np.zeros(num_wake_vortices, dtype=float)
-        self._current_wake_r_c0s = np.zeros((num_wake_vortices, 4), dtype=float)
+
+        # Every leg of a wake ring vortex shares the initial core radius it was shed
+        # with, which _populate_next_airplanes_wake_vortices wrote into this step's
+        # entry of the per step list at the previous step.
+        self._current_wake_r_c0s = np.repeat(
+            self._list_wake_r_c0s[step][:, np.newaxis], 4, axis=1
+        )
 
         self.stackSeedPoints_GP1_CgP1 = np.zeros((0, 3), dtype=float)
 
@@ -833,8 +846,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 # core radius is 3.0% of this Wing's standard mean chord. The bound ring
                 # vortices' initial core radii stay zero, so they take the kernels'
                 # numerical floor, except for the trailing edge Panels' back legs, which
-                # coincide with the first wake row's front legs and take the wake's
-                # value.
+                # coincide with the wake row this step will shed and take the wake's
+                # value. _populate_next_airplanes_wake_vortices gives that row the same
+                # value when it writes the next step's wake.
                 _standard_mean_chord = wing.standard_mean_chord
                 assert _standard_mean_chord is not None
                 wing_r_c0 = 0.03 * _standard_mean_chord
@@ -865,13 +879,12 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         self._current_bound_r_c0s[global_panel_position, 3] = wing_r_c0
                     global_panel_position += 1
 
-                # Set the wake characteristic core radius for every wake ring vortex
-                # contributed by this Wing at this step. The wake corner positions and
-                # strengths are stored in the per step list arrays aliased to
-                # self._currentStack* in run() and populated by
-                # _populate_next_airplanes_wake_vortices. Ages are derived from row
-                # position because each retained wake row is one delta_time older than
-                # the row before it.
+                # Set the age of every wake ring vortex contributed by this Wing at this
+                # step. The wake corner positions, strengths, and initial core radii are
+                # stored in the per step list arrays aliased to self._current* in run()
+                # and populated by _populate_next_airplanes_wake_vortices. Ages are
+                # derived from row position because each retained wake row is one
+                # delta_time older than the row before it.
                 num_chordwise_wake_rows = step
                 if self._max_wake_rows is not None:
                     num_chordwise_wake_rows = min(step, self._max_wake_rows)
@@ -879,10 +892,6 @@ class UnsteadyRingVortexLatticeMethodSolver:
                 if num_wing_wake_vortices > 0:
                     block_start = global_wake_ring_vortex_position
                     block_end = block_start + num_wing_wake_vortices
-
-                    # The initial core radius is constant across this Wing's wake block,
-                    # so it fills in a single slice.
-                    self._current_wake_r_c0s[block_start:block_end, :] = wing_r_c0
 
                     # Each chordwise wake row is one delta_time older than the row shed
                     # after it, so row index c (0-based, newest first) has age (c + 1) *
@@ -2837,15 +2846,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
             )
 
     def _populate_next_airplanes_wake_vortices(self) -> None:
-        """Populates the next time step's wake corner stacks and strengths.
+        """Populates the next time step's wake corner stacks, strengths, and initial
+        core radii.
 
         Each Wing's wake POINT grid (Wing.gridWrvp_GP1_CgP1) was already advected by
         _populate_next_airplanes_wake_vortex_points. This method derives the next step's
-        per wake-cell corner positions and strengths and writes them directly into the
-        per step list arrays. Strengths come from this step's solved bound ring vortex
-        strengths (for the new front row) and from this step's wake (for inherited
-        rows). The oldest row of this step's wake is dropped when truncation is in
-        effect.
+        per wake-cell corner positions, strengths, and initial core radii and writes
+        them directly into the per step list arrays. Strengths come from this step's
+        solved bound ring vortex strengths (for the new front row) and from this step's
+        wake (for inherited rows). Initial core radii come from this step's Wings (for
+        the new front row, which they shed) and from this step's wake (for inherited
+        rows), so each wake ring vortex keeps the value it was shed with even if its
+        Wing's chord later changes. The oldest row of this step's wake is dropped when
+        truncation is in effect.
 
         :return: None
         """
@@ -2865,6 +2878,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Output buffers for the next step.
         next_strengths = self._list_wake_vortex_strengths[next_step]
+        next_r_c0s = self._list_wake_r_c0s[next_step]
         next_stackFr = self.listStackFrwrvp_GP1_CgP1[next_step]
         next_stackFl = self.listStackFlwrvp_GP1_CgP1[next_step]
         next_stackBl = self.listStackBlwrvp_GP1_CgP1[next_step]
@@ -2874,10 +2888,19 @@ class UnsteadyRingVortexLatticeMethodSolver:
         # this_num_chordwise_rows is 0 (i.e. step 0 -> 1), they are zero length and
         # never indexed.
         this_strengths = self._list_wake_vortex_strengths[this_step]
+        this_r_c0s = self._list_wake_r_c0s[this_step]
 
         next_problem = self._get_steady_problem_at(next_step)
         for airplane_id, next_airplane in enumerate(next_problem.airplanes):
             for wing_id, next_wing in enumerate(next_airplane.wings):
+                # The new front row is shed by this step's Wing, so it takes 3.0% of
+                # this Wing's standard mean chord as its initial core radius, matching
+                # the trailing edge back legs in _collapse_geometry.
+                this_wing = self.current_airplanes[airplane_id].wings[wing_id]
+                _standard_mean_chord = this_wing.standard_mean_chord
+                assert _standard_mean_chord is not None
+                this_wing_r_c0 = 0.03 * _standard_mean_chord
+
                 wing_num_spanwise = self._per_wing_num_spanwise_panels[airplane_id][
                     wing_id
                 ]
@@ -2928,6 +2951,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                         te_panel_base : te_panel_base + wing_num_spanwise
                     ]
                 )
+                next_r_c0s[front_start:front_end] = this_wing_r_c0
 
                 # The inherited rows (c >= 1) are aged versions of this step's rows 0 ..
                 # inherited_rows - 1. When wake truncation drops the oldest row, the
@@ -2954,6 +2978,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
                     next_strengths[new_start:new_end] = this_strengths[
                         old_start:old_end
                     ]
+                    next_r_c0s[new_start:new_end] = this_r_c0s[old_start:old_end]
 
     def _calculate_current_movement_velocities(
         self,

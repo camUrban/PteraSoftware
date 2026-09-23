@@ -1763,6 +1763,7 @@ class TestChunkedSaveLoad(unittest.TestCase):
         "_listStackBlbrvp_GP1_CgP1",
         "list_num_wake_vortices",
         "_list_wake_vortex_strengths",
+        "_list_wake_r_c0s",
         "listStackBrwrvp_GP1_CgP1",
         "listStackFrwrvp_GP1_CgP1",
         "listStackFlwrvp_GP1_CgP1",

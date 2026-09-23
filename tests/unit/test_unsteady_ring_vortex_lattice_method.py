@@ -130,6 +130,61 @@ class TestUnsteadyRingVortexLatticeMethodSolver(unittest.TestCase):
                     solver.run(force_method=invalid, show_progress=False)
 
 
+class TestUnsteadyRingVortexLatticeMethodSolverWakeCoreRadii(unittest.TestCase):
+    """Tests that each wake ring vortex keeps the initial core radius it was shed with,
+    rather than taking the current step's Wing's value."""
+
+    def setUp(self) -> None:
+        """Solve an unsteady problem whose Wing's standard mean chord changes every time
+        step."""
+        self.problem = problem_fixtures.make_pitching_tip_unsteady_problem_fixture()
+        self.solver = ps.unsteady_ring_vortex_lattice_method.UnsteadyRingVortexLatticeMethodSolver(
+            self.problem
+        )
+        self.solver.run(show_progress=False)
+
+        # The per step initial core radii that _collapse_geometry assigns to each Wing's
+        # trailing edge back legs. The fixture has one Wing per step.
+        self.step_r_c0s = []
+        for steady_problem in self.problem.steady_problems:
+            wing = steady_problem.airplanes[0].wings[0]
+            assert wing.standard_mean_chord is not None
+            self.step_r_c0s.append(0.03 * wing.standard_mean_chord)
+
+        wing = self.problem.steady_problems[0].airplanes[0].wings[0]
+        assert wing.num_spanwise_panels is not None
+        self.num_spanwise_panels = wing.num_spanwise_panels
+
+    def test_fixture_chord_changes_every_step(self) -> None:
+        """Test that the fixture gives every step a distinct initial core radius, so the
+        other tests in this class can tell a frozen value from a recomputed one."""
+        self.assertEqual(len(set(self.step_r_c0s)), self.solver.num_steps)
+
+    def test_wake_rows_keep_shedding_steps_core_radii(self) -> None:
+        """Test that row c of step s's wake (0-based, newest first) holds the initial
+        core radius of the Wing at step s - 1 - c, which shed it."""
+        for step in range(1, self.solver.num_steps):
+            step_r_c0s = self.solver._list_wake_r_c0s[step]
+            self.assertEqual(step_r_c0s.shape, (step * self.num_spanwise_panels,))
+            for row in range(step):
+                start = row * self.num_spanwise_panels
+                end = start + self.num_spanwise_panels
+                with self.subTest(step=step, row=row):
+                    np.testing.assert_allclose(
+                        step_r_c0s[start:end],
+                        self.step_r_c0s[step - 1 - row],
+                    )
+
+    def test_current_wake_core_radii_match_final_step_list(self) -> None:
+        """Test that the current wake core radius array after run holds the final step's
+        per step list values on all four legs of every wake ring vortex."""
+        final_step = self.solver.num_steps - 1
+        expected = np.repeat(
+            self.solver._list_wake_r_c0s[final_step][:, np.newaxis], 4, axis=1
+        )
+        np.testing.assert_array_equal(self.solver._current_wake_r_c0s, expected)
+
+
 class TestUnsteadyRingVortexLatticeMethodSolverHookDefaults(unittest.TestCase):
     """Tests for the default implementations of the three solver extension hooks added
     to support coupled subclasses: _initialize_step_vortices,

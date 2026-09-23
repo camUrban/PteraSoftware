@@ -80,6 +80,7 @@ def build_steady_problem(
                         lambda start: _get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
+                            ref_airplane,
                             ref_wing,
                             start,
                         ),
@@ -173,15 +174,17 @@ def build_steady_problem(
 
         these_airplanes.append(
             geometry.airplane.Airplane(
-                # These values are copied from the reference Airplane.
+                # These values are copied from the reference Airplane. The reference
+                # dimensions are copied rather than recomputed from the refined Wings,
+                # so every iteration's load coefficients share one normalization.
                 name=ref_airplane.name,
                 Cg_GP1_CgP1=ref_airplane.Cg_GP1_CgP1,
                 weight=ref_airplane.weight,
+                s_ref=ref_airplane.s_ref,
+                c_ref=ref_airplane.c_ref,
+                b_ref=ref_airplane.b_ref,
                 # These values change.
                 wings=these_wings,
-                s_ref=None,
-                c_ref=None,
-                b_ref=None,
             )
         )
 
@@ -355,6 +358,7 @@ def build_unsteady_problem(
                         lambda start: _get_num_wing_cross_sections_for_panel_ar(
                             panel_aspect_ratio,
                             num_chordwise_panels,
+                            ref_base_airplane,
                             ref_base_wing,
                             start,
                         ),
@@ -549,15 +553,17 @@ def build_unsteady_problem(
 
         # 6. Create a copy of the base Airplane.
         this_base_airplane = geometry.airplane.Airplane(
-            # These values are copied from the reference Airplane.
+            # These values are copied from the reference Airplane. The reference
+            # dimensions are copied rather than recomputed from the refined Wings, so
+            # every iteration's load coefficients share one normalization.
             name=ref_base_airplane.name,
             Cg_GP1_CgP1=ref_base_airplane.Cg_GP1_CgP1,
             weight=ref_base_airplane.weight,
+            s_ref=ref_base_airplane.s_ref,
+            c_ref=ref_base_airplane.c_ref,
+            b_ref=ref_base_airplane.b_ref,
             # These values change.
             wings=these_base_wings,
-            s_ref=None,
-            c_ref=None,
-            b_ref=None,
         )
 
         # 7. Create a copy of the AirplaneMovement.
@@ -856,6 +862,10 @@ def _get_wing_section_average_panel_aspect_ratio(
         wing cross section parent axes) divided by their average x component width (in
         wing cross section parent axes).
     """
+    # This Airplane is a measurement probe, not a derivative of the reference Airplane:
+    # it wraps a synthetic Wing made from one wing section, so the reference Airplane's
+    # reference dimensions would not describe it. Its own reference dimensions default
+    # from the probe Wing and are never read.
     this_airplane = geometry.airplane.Airplane(
         wings=[
             geometry.wing.Wing(
@@ -943,6 +953,7 @@ def _build_edge_defined_wing(
 def _get_num_wing_cross_sections_for_panel_ar(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
+    ref_airplane: geometry.airplane.Airplane,
     ref_wing: geometry.wing.Wing,
     start_val: int,
 ) -> int:
@@ -973,6 +984,8 @@ def _get_num_wing_cross_sections_for_panel_ar(
         wing cross section parent axes). It must be a positive int.
     :param num_chordwise_panels: The number of chordwise Panels to use. It must be a
         positive int.
+    :param ref_airplane: The reference Airplane that holds ref_wing. Each trial Wing is
+        wrapped in an Airplane that inherits its reference dimensions.
     :param ref_wing: The reference edge-defined Wing whose stored edge curves are
         resampled. Its spanwise_mesh must be "edge_defined".
     :param start_val: The initial number of WingCrossSections to start the search from.
@@ -988,7 +1001,15 @@ def _get_num_wing_cross_sections_for_panel_ar(
             refined_wing = _build_edge_defined_wing(
                 ref_wing, num_chordwise_panels, num_wing_cross_sections
             )
-            refined_airplane = geometry.airplane.Airplane(wings=[refined_wing])
+            # This Airplane exists only to mesh the trial Wing and measure it, but it is
+            # a derivative of the reference Airplane, so it inherits the reference
+            # dimensions like every other derived Airplane.
+            refined_airplane = geometry.airplane.Airplane(
+                wings=[refined_wing],
+                s_ref=ref_airplane.s_ref,
+                c_ref=ref_airplane.c_ref,
+                b_ref=ref_airplane.b_ref,
+            )
             this_average_panel_aspect_ratio = refined_airplane.wings[
                 0
             ].average_panel_aspect_ratio

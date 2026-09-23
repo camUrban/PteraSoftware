@@ -165,6 +165,70 @@ def make_multi_airplane_unsteady_problem_fixture() -> ps.problems.UnsteadyProble
     return multi_airplane_unsteady_problem_fixture
 
 
+def make_pitching_tip_unsteady_problem_fixture() -> ps.problems.UnsteadyProblem:
+    """This method makes a fixture that is an UnsteadyProblem whose Wing's standard mean
+    chord changes every time step, for testing that each wake ring vortex keeps the
+    initial core radius it was shed with.
+
+    The tip WingCrossSection pitches through a large amplitude, which changes the area
+    the Wing projects onto its own xy plane while its span stays fixed. The time step is
+    chosen so that no two steps share a pitch magnitude, and therefore no two steps
+    share a standard mean chord.
+
+    :return pitching_tip_unsteady_problem_fixture: UnsteadyProblem This is the
+        UnsteadyProblem with a pitching tip, 4 time steps, and 2 x 2 Panels.
+    """
+    wing_cross_section_movement_root = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=ps.geometry.wing_cross_section.WingCrossSection(
+                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                num_spanwise_panels=2,
+                chord=1.0,
+            ),
+        )
+    )
+    wing_cross_section_movement_tip = (
+        ps.movements.wing_cross_section_movement.WingCrossSectionMovement(
+            base_wing_cross_section=ps.geometry.wing_cross_section.WingCrossSection(
+                airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                num_spanwise_panels=None,
+                chord=1.0,
+                Lp_Wcsp_Lpp=(0.0, 5.0, 0.0),
+            ),
+            ampAngles_Wcsp_to_Wcs_ixyz=(0.0, 30.0, 0.0),
+            periodAngles_Wcsp_to_Wcs_ixyz=(0.0, 1.0, 0.0),
+        )
+    )
+    wing_movement = ps.movements.wing_movement.WingMovement(
+        base_wing=ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                wing_cross_section_movement_root.base_wing_cross_section,
+                wing_cross_section_movement_tip.base_wing_cross_section,
+            ],
+            num_chordwise_panels=2,
+            chordwise_spacing="uniform",
+        ),
+        wing_cross_section_movements=[
+            wing_cross_section_movement_root,
+            wing_cross_section_movement_tip,
+        ],
+    )
+    airplane_movement = ps.movements.airplane_movement.AirplaneMovement(
+        base_airplane=ps.geometry.airplane.Airplane(wings=[wing_movement.base_wing]),
+        wing_movements=[wing_movement],
+    )
+    operating_point_movement = ps.movements.operating_point_movement.OperatingPointMovement(
+        base_operating_point=operating_point_fixtures.make_basic_operating_point_fixture(),
+    )
+    movement = ps.movements.movement.Movement(
+        airplane_movements=[airplane_movement],
+        operating_point_movement=operating_point_movement,
+        num_steps=4,
+        delta_time=0.15,
+    )
+    return ps.problems.UnsteadyProblem(movement=movement)
+
+
 def make_with_body_rates_steady_problem_fixture() -> ps.problems.SteadyProblem:
     """This method makes a fixture that is a SteadyProblem with a non zero omegas_BP1__E
     for testing that the steady solvers reject body rotation.

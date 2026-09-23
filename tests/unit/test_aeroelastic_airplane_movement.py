@@ -264,6 +264,56 @@ class TestAeroelasticAirplaneMovementDeformation(unittest.TestCase):
                 explicit_none_wing_cross_sections[index].angles_Wcsp_to_Wcs_ixyz,
             )
 
+    def test_deformed_airplane_inherits_reference_dimensions(self) -> None:
+        """Test that a deformed Airplane carries the base Airplane's explicitly set
+        reference dimensions rather than recalculating them from its deformed Wing."""
+        # Build the base Airplane with reference dimensions that differ from what its
+        # Wing measures, so that a generated Airplane which recalculated them would fail
+        # the comparison. The movements are built from the Airplane's own Wing and
+        # WingCrossSections, as AeroelasticAirplaneMovement requires.
+        base_airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_origin_wing_fixture()],
+            s_ref=15.0,
+            c_ref=2.0,
+            b_ref=10.0,
+        )
+        base_wing = base_airplane.wings[0]
+        self.assertNotEqual(base_airplane.s_ref, base_wing.projected_area)
+        self.assertNotEqual(base_airplane.c_ref, base_wing.mean_aerodynamic_chord)
+        self.assertNotEqual(base_airplane.b_ref, base_wing.span)
+
+        wing_cross_section_movements = [
+            ps.movements.aeroelastic_wing_cross_section_movement.AeroelasticWingCrossSectionMovement(
+                base_wing_cross_section=wing_cross_section
+            )
+            for wing_cross_section in base_wing.wing_cross_sections
+        ]
+        wing_movement = ps.movements.aeroelastic_wing_movement.AeroelasticWingMovement(
+            base_wing=base_wing,
+            wing_cross_section_movements=wing_cross_section_movements,
+        )
+        aeroelastic_airplane_movement = (
+            ps.movements.aeroelastic_airplane_movement.AeroelasticAirplaneMovement(
+                base_airplane=base_airplane,
+                wing_movements=[wing_movement],
+            )
+        )
+
+        # The root (index 0) deformation must stay zero, since the clamped root
+        # WingCrossSection's angles_Wcsp_to_Wcs_ixyz must remain (0, 0, 0).
+        deformationAngles_Wcsp_to_Wcs_ixyz: list[np.ndarray | None] = [
+            np.array([[0.0, 0.0, 0.0], [3.0, -2.0, 1.0]], dtype=float)
+        ]
+        airplane = aeroelastic_airplane_movement.generate_airplane_at_time_step(
+            step=1,
+            delta_time=0.01,
+            deformationAngles_Wcsp_to_Wcs_ixyz=deformationAngles_Wcsp_to_Wcs_ixyz,
+        )
+
+        self.assertEqual(airplane.s_ref, 15.0)
+        self.assertEqual(airplane.c_ref, 2.0)
+        self.assertEqual(airplane.b_ref, 10.0)
+
     def test_deformation_adds_to_prescribed_angles(self) -> None:
         """Test that each row of a Wing's deformation is added to the corresponding
         WingCrossSection's prescribed angles_Wcsp_to_Wcs_ixyz."""

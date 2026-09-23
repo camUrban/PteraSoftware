@@ -384,7 +384,7 @@ del validation_movement
     free_wake=True,
     num_cycles_bounds=(1, 4),
     panel_aspect_ratio_bounds=(4, 1),
-    num_chordwise_panels_bounds=(3, 12),
+    num_chordwise_panels_bounds=(3, 14),
     rtol=0.010,
     atol=0.001,
     show_solver_progress=True,

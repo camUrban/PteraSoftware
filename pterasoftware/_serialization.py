@@ -88,7 +88,7 @@ _CALLABLE_FUNC_TO_NAME = {func: name for name, func in _CALLABLE_NAME_TO_FUNC.it
 # class registry changed, encoding strategy changed), and also when the meaning of a
 # serialized value changes, so that a file saved under the old meaning fails to load
 # loudly instead of being read under the new one.
-_FORMAT_VERSION = 30
+_FORMAT_VERSION = 31
 
 # This is the default maximum decompressed size in bytes when reading archives. The cap
 # is cumulative across every member read during one load(). Prevents zip bombs from
@@ -183,7 +183,7 @@ _MUJOCO_MODEL_SKIP_SLOTS: frozenset[str] = frozenset({"_model", "_data"})
 # These are the per step sequences that save() splits across the step members instead of
 # writing inline in the root member, keyed by the class that owns them. Owners are
 # matched by isinstance, so subclasses inherit their parent's entries. The unsteady
-# solver's ten lists hold one ndarray or int per time step, and an unsteady problem's
+# solver's eleven lists hold one ndarray or int per time step, and an unsteady problem's
 # _steady_problems holds one SteadyProblem per time step, which is where the per step
 # Airplanes and their Panels live. UnsteadyProblem and _CoupledUnsteadyProblem are
 # siblings that each declare their own _steady_problems slot, so both need an entry.
@@ -201,6 +201,7 @@ _CHUNKED_SLOTS: tuple[tuple[type, tuple[str, ...]], ...] = (
             "_listStackBlbrvp_GP1_CgP1",
             "list_num_wake_vortices",
             "_list_wake_vortex_strengths",
+            "_list_wake_r_c0s",
             "listStackBrwrvp_GP1_CgP1",
             "listStackFrwrvp_GP1_CgP1",
             "listStackFlwrvp_GP1_CgP1",

@@ -1674,11 +1674,17 @@ class CoreAirplaneMovement:
                 wing_movement.generate_wing_at_time_step(step, delta_time)
             )
 
+        # The reference dimensions are inherited from the base Airplane rather than
+        # recomputed from this time step's Wings, so every time step's load coefficients
+        # share one normalization.
         return geometry.airplane.Airplane(
             wings=these_wings,
             name=self._base_airplane.name,
             Cg_GP1_CgP1=thisCg_GP1_CgP1,
             weight=self._base_airplane.weight,
+            s_ref=self._base_airplane.s_ref,
+            c_ref=self._base_airplane.c_ref,
+            b_ref=self._base_airplane.b_ref,
         )
 
     def generate_airplanes(

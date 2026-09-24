@@ -9,11 +9,22 @@ from typing import Any, cast
 
 import numpy as np
 import pyvista as pv
+import scipy.interpolate as sp_interp
 import webp
 
 from .. import _parameter_validation, _transformations
 from . import wing as wing_mod
 from . import wing_cross_section as wing_cross_section_mod
+
+# The relative tolerance used by the checks on the projected planform that sets the
+# default reference dimensions. A strip is edge-on when its projected area is at most
+# this fraction of the magnitude of its vector area, and two triangles overlap when
+# their intersection area exceeds this fraction of the smaller triangle's area.
+_PLANFORM_RELATIVE_TOLERANCE = 1e-9
+
+# The number of evenly spaced points at which the planform samples an edge_defined
+# Wing's edge curves between each neighboring pair of stored points.
+_NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS = 32
 
 
 class Airplane:
@@ -1222,3 +1233,585 @@ class Airplane:
             wing.generate_mesh(symmetry_type=1)
             reflected_wing.generate_mesh(symmetry_type=3)
             return [wing, reflected_wing]
+
+
+def _get_planform_reference_dimensions(
+    first_wings: list[wing_mod.Wing],
+) -> tuple[float, float, float]:
+    """Calculates the default reference area, reference chord, and reference span from
+    the projected planform of an Airplane's first Wing.
+
+    The planform is built from the set geometry, in geometry axes, as a set of strips.
+    For a Wing built from WingCrossSections, each strip joins two neighboring
+    WingCrossSections' leading points and undeflected trailing points. An edge_defined
+    Wing's whole half is one strip, bounded by its stored, untrimmed edge curves. A type
+    4 Wing's mirrored half is found by reflecting the original half, and for type 5
+    symmetry, a bridge strip joins the two halves' root chords. The strips are then
+    projected onto the geometry axes' xy plane.
+
+    The reference span is the extent of all the strips' points along the geometry axes'
+    y axis, and the reference area is the sum of the strips' projected areas. The
+    reference chord is the integral of the square of the projected chord along the
+    geometry axes' y axis, divided by the reference area. Strips that are edge-on in the
+    projection contribute nothing to the reference area or the reference chord.
+
+    :param first_wings: The list of meshed Wings that process_wing_symmetry returns for
+        the first Wing passed to an Airplane. It holds one Wing, or two for type 5
+        symmetry.
+    :return: A tuple of three floats, which are the reference area, the reference chord,
+        and the reference span. Their units are square meters, meters, and meters.
+    :raises ValueError: If the planform is too steeply inclined relative to the geometry
+        axes' xy plane, or if its projection is ill-formed.
+    """
+    first_wing = first_wings[0]
+    first_WnZ_G = first_wing.WnZ_G
+    assert first_WnZ_G is not None
+
+    # Build each half's strips (in geometry axes, relative to the CG). Each strip is a
+    # (N, 2, 3) ndarray of N stations, ordered from root to tip, where each station
+    # holds a leading point and then a trailing point. The list is indexed first by
+    # half, and then by strip.
+    listGridStripPoints_G_Cg = [_get_wing_strip_points(wing) for wing in first_wings]
+    if first_wing.symmetry_type == 4:
+        assert first_wing.symmetryPoint_G_Cg is not None
+        assert first_wing.symmetryNormal_G is not None
+        T_act_reflect = _transformations.generate_reflect_T(
+            plane_point_A_a=first_wing.symmetryPoint_G_Cg,
+            plane_normal_A=first_wing.symmetryNormal_G,
+            passive=False,
+        )
+        listGridStripPoints_G_Cg.append(
+            [
+                _transformations.apply_T_to_vectors(
+                    T_act_reflect, gridStripPoints_G_Cg.reshape(-1, 3), is_position=True
+                ).reshape(-1, 2, 3)
+                for gridStripPoints_G_Cg in listGridStripPoints_G_Cg[0]
+            ]
+        )
+
+    # Collect every strip, with each half's strips first. For type 5 symmetry, the
+    # bridge strip comes last. It joins the halves' root chords, which are the first
+    # stations of each half's first strip.
+    listAllGridStripPoints_G_Cg = [
+        gridStripPoints_G_Cg
+        for half in listGridStripPoints_G_Cg
+        for gridStripPoints_G_Cg in half
+    ]
+    if len(first_wings) == 2:
+        listAllGridStripPoints_G_Cg.append(
+            np.array(
+                [listGridStripPoints_G_Cg[0][0][0], listGridStripPoints_G_Cg[1][0][0]],
+                dtype=float,
+            )
+        )
+    half_ends = np.cumsum([len(half) for half in listGridStripPoints_G_Cg])
+
+    # Find each strip's vector area (in geometry axes) as half the sum of the cross
+    # products of its outline's consecutive points. The outline runs from root to tip
+    # along the leading points, and then back from tip to root along the trailing
+    # points. Taking the points relative to the outline's first point limits round off.
+    # Also find each strip's range along the geometry axes' y axis.
+    listVectorAreas_G = []
+    for gridStripPoints_G_Cg in listAllGridStripPoints_G_Cg:
+        outlinePoints_G_Cg = np.concatenate(
+            (gridStripPoints_G_Cg[:, 0], gridStripPoints_G_Cg[::-1, 1])
+        )
+        outlinePoints_G_Cg = outlinePoints_G_Cg - outlinePoints_G_Cg[0]
+        listVectorAreas_G.append(
+            0.5
+            * np.sum(
+                np.cross(outlinePoints_G_Cg, np.roll(outlinePoints_G_Cg, -1, axis=0)),
+                axis=0,
+            )
+        )
+    stackVectorAreas_G = np.array(listVectorAreas_G, dtype=float)
+    stripMinimumsY_G_Cg = np.array(
+        [np.min(strip[:, :, 1]) for strip in listAllGridStripPoints_G_Cg], dtype=float
+    )
+    stripMaximumsY_G_Cg = np.array(
+        [np.max(strip[:, :, 1]) for strip in listAllGridStripPoints_G_Cg], dtype=float
+    )
+
+    # Check that the halves aren't too steeply inclined relative to the geometry axes'
+    # xy plane. The bridge strip is left out because it only fills the gap between the
+    # halves by convention.
+    stackHalfVectorAreas_G = stackVectorAreas_G[: half_ends[-1]]
+    geometry_projected_area = float(np.sum(np.abs(stackHalfVectorAreas_G[:, 2])))
+    wing_projected_area = float(np.sum(np.abs(stackHalfVectorAreas_G @ first_WnZ_G)))
+    vector_area_magnitude = float(
+        np.sum(np.linalg.norm(stackHalfVectorAreas_G, axis=1))
+    )
+    if (
+        geometry_projected_area < wing_projected_area / np.sqrt(2.0)
+        or geometry_projected_area
+        <= _PLANFORM_RELATIVE_TOLERANCE * vector_area_magnitude
+    ):
+        raise ValueError(
+            "The default reference dimensions come from the first Wing's planform "
+            "projected onto the geometry axes' xy plane, but that planform is too "
+            "steeply inclined relative to that plane to serve as a reference. Its "
+            "projected area is less than 1 / sqrt(2) times its area projected onto its "
+            "own wing axes' xy plane. Pass s_ref, c_ref, and b_ref explicitly."
+        )
+
+    # A strip is edge-on when its projected area is negligible compared to the magnitude
+    # of its vector area. Edge-on strips play no further part, except in setting the
+    # reference span.
+    signed_areas = stackVectorAreas_G[:, 2]
+    is_not_edge_on = np.abs(signed_areas) > _PLANFORM_RELATIVE_TOLERANCE * (
+        np.linalg.norm(stackVectorAreas_G, axis=1)
+    )
+
+    # Check that the projected planform is well-formed, starting with the signs of each
+    # half's strips that aren't edge-on.
+    ill_formed_message = (
+        "The default reference dimensions come from the first Wing's planform "
+        "projected onto the geometry axes' xy plane, but that projection is "
+        "ill-formed because {}. Pass s_ref, c_ref, and b_ref explicitly. This geometry "
+        "passed parameter validation, but it is likely a degenerate edge case, such as "
+        "a Wing that folds or spirals back over itself. Other parts of the simulation "
+        "may break or produce inaccurate results for it, so its definition is worth "
+        "rechecking."
+    )
+    for half_start, half_end in zip(np.concatenate(([0], half_ends[:-1])), half_ends):
+        half_signed_areas = signed_areas[half_start:half_end]
+        half_is_not_edge_on = is_not_edge_on[half_start:half_end]
+        if len(np.unique(np.sign(half_signed_areas[half_is_not_edge_on]))) > 1:
+            raise ValueError(
+                ill_formed_message.format(
+                    "part of one half folds back over the rest of it"
+                )
+            )
+
+    # For type 5 symmetry, check that the halves' ranges along the geometry axes' y axis
+    # don't overlap.
+    if len(first_wings) == 2:
+        firstHalfMinimumY_G_Cg = np.min(stripMinimumsY_G_Cg[: half_ends[0]])
+        firstHalfMaximumY_G_Cg = np.max(stripMaximumsY_G_Cg[: half_ends[0]])
+        secondHalfMinimumY_G_Cg = np.min(
+            stripMinimumsY_G_Cg[half_ends[0] : half_ends[1]]
+        )
+        secondHalfMaximumY_G_Cg = np.max(
+            stripMaximumsY_G_Cg[half_ends[0] : half_ends[1]]
+        )
+        half_overlap = min(firstHalfMaximumY_G_Cg, secondHalfMaximumY_G_Cg) - max(
+            firstHalfMinimumY_G_Cg, secondHalfMinimumY_G_Cg
+        )
+        half_extent = min(
+            firstHalfMaximumY_G_Cg - firstHalfMinimumY_G_Cg,
+            secondHalfMaximumY_G_Cg - secondHalfMinimumY_G_Cg,
+        )
+        if half_overlap > _PLANFORM_RELATIVE_TOLERANCE * half_extent:
+            raise ValueError(
+                ill_formed_message.format(
+                    "its two halves overlap along the geometry axes' y axis"
+                )
+            )
+
+    # Split each strip that isn't edge-on into triangles whose projected areas share its
+    # sign. This fails for a strip that crosses over itself.
+    listStackTrianglePointsXY_G_Cg = []
+    triangle_strip_ids: list[int] = []
+    for strip_id in np.flatnonzero(is_not_edge_on):
+        stackStripTrianglePointsXY_G_Cg = _triangulate_strip(
+            listAllGridStripPoints_G_Cg[strip_id][:, :, :2],
+            float(signed_areas[strip_id]),
+        )
+        if stackStripTrianglePointsXY_G_Cg is None:
+            raise ValueError(
+                ill_formed_message.format("part of it crosses over itself")
+            )
+        listStackTrianglePointsXY_G_Cg.append(stackStripTrianglePointsXY_G_Cg)
+        triangle_strip_ids.extend(
+            [int(strip_id)] * len(stackStripTrianglePointsXY_G_Cg)
+        )
+    stackTrianglePointsXY_G_Cg = np.concatenate(listStackTrianglePointsXY_G_Cg)
+
+    # Check that no two strips' interiors overlap.
+    if _triangles_overlap(
+        stackTrianglePointsXY_G_Cg, np.array(triangle_strip_ids, dtype=int)
+    ):
+        raise ValueError(ill_formed_message.format("two of its parts overlap"))
+
+    # Find the reference dimensions.
+    b_ref = float(np.max(stripMaximumsY_G_Cg) - np.min(stripMinimumsY_G_Cg))
+    s_ref = float(np.sum(np.abs(signed_areas[is_not_edge_on])))
+    c_ref = _get_chord_squared_integral(stackTrianglePointsXY_G_Cg) / s_ref
+
+    return s_ref, c_ref, b_ref
+
+
+def _get_wing_strip_points(wing: wing_mod.Wing) -> list[np.ndarray]:
+    """Returns the strips that make up one meshed Wing's planform (in geometry axes,
+    relative to the CG).
+
+    For a Wing built from WingCrossSections, each strip joins two neighboring
+    WingCrossSections' leading points and undeflected trailing points. A
+    WingCrossSection's undeflected trailing point is (chord, 0.0, 0.0) in its own axes,
+    relative to its leading point, so control surface deflections don't affect it.
+
+    An edge_defined Wing is planar, so its whole half is one strip, bounded by the
+    stored, untrimmed edge curves. Each curve is the monotone PCHIP interpolation of its
+    x component as a function of its y component, which is the same curve used when
+    resampling the edges for meshing. Both curves are sampled at every stored point of
+    either curve, plus a fixed number of evenly spaced points between each neighboring
+    pair.
+
+    :param wing: The meshed Wing whose strips to return.
+    :return: A list of (N, 2, 3) ndarrays of floats, one per strip, ordered from root to
+        tip. Each holds N stations, ordered from root to tip, where each station holds a
+        leading point and then a trailing point (in geometry axes, relative to the CG).
+        The units are in meters.
+    """
+    if wing.spanwise_mesh == "edge_defined":
+        leadingEdgePoints_Wn_Ler = wing.leadingEdgePoints_Wn_Ler
+        trailingEdgePoints_Wn_Ler = wing.trailingEdgePoints_Wn_Ler
+        T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
+        assert leadingEdgePoints_Wn_Ler is not None
+        assert trailingEdgePoints_Wn_Ler is not None
+        assert T_pas_Wn_Ler_to_G_Cg is not None
+
+        # Sample both curves at the same y values, so that the strip's stations each
+        # hold a leading point and a trailing point at the same y component.
+        listSampleYs_Wn_Ler = [
+            np.linspace(start_y, end_y, _NUM_EDGE_CURVE_SAMPLES_BETWEEN_POINTS + 2)
+            for edgePoints_Wn_Ler in (
+                leadingEdgePoints_Wn_Ler,
+                trailingEdgePoints_Wn_Ler,
+            )
+            for start_y, end_y in zip(
+                edgePoints_Wn_Ler[:-1, 1], edgePoints_Wn_Ler[1:, 1]
+            )
+        ]
+        sampleYs_Wn_Ler = np.unique(np.concatenate(listSampleYs_Wn_Ler))
+
+        gridStripPoints_Wn_Ler = np.zeros((len(sampleYs_Wn_Ler), 2, 3), dtype=float)
+        for edge_id, edgePoints_Wn_Ler in enumerate(
+            (leadingEdgePoints_Wn_Ler, trailingEdgePoints_Wn_Ler)
+        ):
+            gridStripPoints_Wn_Ler[:, edge_id, 0] = sp_interp.PchipInterpolator(
+                edgePoints_Wn_Ler[:, 1], edgePoints_Wn_Ler[:, 0]
+            )(sampleYs_Wn_Ler)
+            gridStripPoints_Wn_Ler[:, edge_id, 1] = sampleYs_Wn_Ler
+
+        gridStripPoints_G_Cg = _transformations.apply_T_to_vectors(
+            T_pas_Wn_Ler_to_G_Cg,
+            gridStripPoints_Wn_Ler.reshape(-1, 3),
+            is_position=True,
+        ).reshape(-1, 2, 3)
+        return [gridStripPoints_G_Cg]
+
+    gridSectionPoints_G_Cg = np.array(
+        [
+            _transformations.apply_T_to_vectors(
+                T_pas_Wcs_Lp_to_G_Cg,
+                np.array(
+                    [[0.0, 0.0, 0.0], [wing_cross_section.chord, 0.0, 0.0]],
+                    dtype=float,
+                ),
+                is_position=True,
+            )
+            for T_pas_Wcs_Lp_to_G_Cg, wing_cross_section in zip(
+                wing.children_T_pas_Wcs_Lp_to_G_Cg, wing.wing_cross_sections
+            )
+        ],
+        dtype=float,
+    )
+    return [
+        gridSectionPoints_G_Cg[section_id : section_id + 2]
+        for section_id in range(len(gridSectionPoints_G_Cg) - 1)
+    ]
+
+
+def _triangulate_strip(
+    gridStripPointsXY_G_Cg: np.ndarray, signed_area: float
+) -> np.ndarray | None:
+    """Splits a projected strip into triangles whose projected areas all share the
+    strip's sign.
+
+    Each quadrilateral between neighboring stations is split along whichever of its
+    diagonals gives two triangles that share the strip's sign. Triangles with negligible
+    area are dropped.
+
+    :param gridStripPointsXY_G_Cg: A (N, 2, 2) ndarray of floats holding the strip's N
+        stations, where each station holds a leading point and then a trailing point (in
+        geometry axes, projected onto its xy plane, relative to the CG). The units are
+        in meters.
+    :param signed_area: The strip's signed projected area. It must not be zero. The
+        units are square meters.
+    :return: A (K, 3, 2) ndarray of floats holding the K triangles' points, each in
+        counterclockwise order when viewed from above the geometry axes' xy plane (in
+        geometry axes, projected onto its xy plane, relative to the CG), or None if a
+        quadrilateral can't be split into triangles that share the strip's sign, which
+        means the strip crosses over itself. The units are in meters.
+    """
+    # Each quadrilateral's corners run in the same direction as the strip's outline,
+    # from its inner leading point to its outer leading point, then to its outer
+    # trailing point, and then to its inner trailing point.
+    gridQuadrilateralPointsXY_G_Cg = np.stack(
+        (
+            gridStripPointsXY_G_Cg[:-1, 0],
+            gridStripPointsXY_G_Cg[1:, 0],
+            gridStripPointsXY_G_Cg[1:, 1],
+            gridStripPointsXY_G_Cg[:-1, 1],
+        ),
+        axis=1,
+    )
+
+    # Each of a quadrilateral's two diagonals splits it into two triangles. The first
+    # diagonal joins its first and third corners, and the second joins its second and
+    # fourth corners. The candidate triangles are indexed by quadrilateral, then by
+    # diagonal, and then by triangle.
+    triangle_corner_ids = np.array(
+        [[[0, 1, 2], [0, 2, 3]], [[0, 1, 3], [1, 2, 3]]], dtype=int
+    )
+    gridCandidateTrianglePointsXY_G_Cg = gridQuadrilateralPointsXY_G_Cg[
+        :, triangle_corner_ids
+    ]
+    candidate_areas = _get_signed_triangle_areas(
+        gridCandidateTrianglePointsXY_G_Cg.reshape(-1, 3, 2)
+    ).reshape(-1, 2, 2)
+
+    # A diagonal is valid for a quadrilateral if neither of its triangles has a non
+    # negligible area with the opposite sign to the strip's.
+    tolerance = _PLANFORM_RELATIVE_TOLERANCE * abs(signed_area)
+    sign = np.sign(signed_area)
+    is_valid = np.all(sign * candidate_areas >= -tolerance, axis=2)
+    if not np.all(np.any(is_valid, axis=1)):
+        return None
+
+    quadrilateral_ids = np.arange(len(gridQuadrilateralPointsXY_G_Cg))
+    diagonal_ids = np.where(is_valid[:, 0], 0, 1)
+    stackTrianglePointsXY_G_Cg: np.ndarray = gridCandidateTrianglePointsXY_G_Cg[
+        quadrilateral_ids, diagonal_ids
+    ].reshape(-1, 3, 2)
+    areas = candidate_areas[quadrilateral_ids, diagonal_ids].ravel()
+    stackTrianglePointsXY_G_Cg = stackTrianglePointsXY_G_Cg[np.abs(areas) > tolerance]
+
+    # Reverse the triangles' points if needed to put them in counterclockwise order.
+    if sign < 0.0:
+        stackTrianglePointsXY_G_Cg = stackTrianglePointsXY_G_Cg[:, ::-1]
+    return stackTrianglePointsXY_G_Cg
+
+
+def _get_signed_triangle_areas(stackTrianglePointsXY_G_Cg: np.ndarray) -> np.ndarray:
+    """Returns the signed areas of projected triangles.
+
+    :param stackTrianglePointsXY_G_Cg: A (K, 3, 2) ndarray of floats holding the K
+        triangles' points (in geometry axes, projected onto its xy plane, relative to
+        the CG). The units are in meters.
+    :return: A (K,) ndarray of floats holding the triangles' signed areas, which are
+        positive for triangles whose points are in counterclockwise order when viewed
+        from above the geometry axes' xy plane. The units are square meters.
+    """
+    firstLegsXY_G = stackTrianglePointsXY_G_Cg[:, 1] - stackTrianglePointsXY_G_Cg[:, 0]
+    secondLegsXY_G = stackTrianglePointsXY_G_Cg[:, 2] - stackTrianglePointsXY_G_Cg[:, 0]
+    signed_areas: np.ndarray = 0.5 * (
+        firstLegsXY_G[:, 0] * secondLegsXY_G[:, 1]
+        - firstLegsXY_G[:, 1] * secondLegsXY_G[:, 0]
+    )
+    return signed_areas
+
+
+def _triangles_overlap(
+    stackTrianglePointsXY_G_Cg: np.ndarray, strip_ids: np.ndarray
+) -> bool:
+    """Checks whether the interiors of any two triangles from different strips overlap.
+
+    Each pair of triangles from different strips whose bounding boxes overlap is clipped
+    against each other, and the pair overlaps if the intersection's area exceeds a small
+    fraction of the smaller triangle's area. The threshold can't be zero, because
+    clipping two triangles that only touch along an edge can leave a sliver whose area
+    is on the order of round off.
+
+    :param stackTrianglePointsXY_G_Cg: A (K, 3, 2) ndarray of floats holding the K
+        triangles' points, each in counterclockwise order when viewed from above the
+        geometry axes' xy plane (in geometry axes, projected onto its xy plane, relative
+        to the CG). The units are in meters.
+    :param strip_ids: A (K,) ndarray of ints holding the ID of the strip each triangle
+        came from.
+    :return: True if the interiors of two triangles from different strips overlap, and
+        False otherwise.
+    """
+    if len(np.unique(strip_ids)) < 2:
+        return False
+
+    # Sort the triangles by the minimum y components of their bounding boxes. Each
+    # triangle then only needs to be compared with the later triangles whose bounding
+    # boxes start below the end of its own.
+    stackMinimumsXY_G_Cg = np.min(stackTrianglePointsXY_G_Cg, axis=1)
+    stackMaximumsXY_G_Cg = np.max(stackTrianglePointsXY_G_Cg, axis=1)
+    order = np.argsort(stackMinimumsXY_G_Cg[:, 1], kind="stable")
+    stackTrianglePointsXY_G_Cg = stackTrianglePointsXY_G_Cg[order]
+    stackMinimumsXY_G_Cg = stackMinimumsXY_G_Cg[order]
+    stackMaximumsXY_G_Cg = stackMaximumsXY_G_Cg[order]
+    strip_ids = strip_ids[order]
+    areas = _get_signed_triangle_areas(stackTrianglePointsXY_G_Cg)
+    end_ids = np.searchsorted(
+        stackMinimumsXY_G_Cg[:, 1], stackMaximumsXY_G_Cg[:, 1], side="left"
+    )
+
+    for triangle_id, end_id in enumerate(end_ids):
+        other_ids = np.arange(triangle_id + 1, end_id)
+        candidate_ids = other_ids[
+            (strip_ids[other_ids] != strip_ids[triangle_id])
+            & (
+                stackMinimumsXY_G_Cg[other_ids, 0]
+                < stackMaximumsXY_G_Cg[triangle_id, 0]
+            )
+            & (
+                stackMaximumsXY_G_Cg[other_ids, 0]
+                > stackMinimumsXY_G_Cg[triangle_id, 0]
+            )
+        ]
+        for other_id in candidate_ids:
+            intersection_area = _get_triangle_intersection_area(
+                stackTrianglePointsXY_G_Cg[triangle_id],
+                stackTrianglePointsXY_G_Cg[other_id],
+            )
+            if intersection_area > _PLANFORM_RELATIVE_TOLERANCE * min(
+                areas[triangle_id], areas[other_id]
+            ):
+                return True
+    return False
+
+
+def _get_triangle_intersection_area(
+    trianglePointsXY_G_Cg: np.ndarray, clipTrianglePointsXY_G_Cg: np.ndarray
+) -> float:
+    """Returns the area of the intersection of two projected triangles whose points are
+    in counterclockwise order.
+
+    The first triangle is clipped by each edge of the second triangle in turn
+    (Sutherland-Hodgman clipping), and the area of the remaining polygon is returned.
+
+    :param trianglePointsXY_G_Cg: A (3, 2) ndarray of floats holding the points of the
+        triangle to clip, in counterclockwise order (in geometry axes, projected onto
+        its xy plane, relative to the CG). The units are in meters.
+    :param clipTrianglePointsXY_G_Cg: A (3, 2) ndarray of floats holding the points of
+        the triangle to clip by, in counterclockwise order (in geometry axes, projected
+        onto its xy plane, relative to the CG). The units are in meters.
+    :return: The intersection's area. The units are square meters.
+    """
+    polygonPointsXY_G_Cg = trianglePointsXY_G_Cg
+    for edge_id in range(3):
+        edgeStartXY_G_Cg = clipTrianglePointsXY_G_Cg[edge_id]
+        edgeXY_G = clipTrianglePointsXY_G_Cg[(edge_id + 1) % 3] - edgeStartXY_G_Cg
+
+        # A point is inside the clipping edge when it's on the edge's left side, where a
+        # counterclockwise triangle's interior is.
+        distances = edgeXY_G[0] * (
+            polygonPointsXY_G_Cg[:, 1] - edgeStartXY_G_Cg[1]
+        ) - edgeXY_G[1] * (polygonPointsXY_G_Cg[:, 0] - edgeStartXY_G_Cg[0])
+        is_inside = distances >= 0.0
+
+        listClippedPointsXY_G_Cg = []
+        num_points = len(polygonPointsXY_G_Cg)
+        for point_id in range(num_points):
+            next_point_id = (point_id + 1) % num_points
+            if is_inside[point_id]:
+                listClippedPointsXY_G_Cg.append(polygonPointsXY_G_Cg[point_id])
+            if is_inside[point_id] != is_inside[next_point_id]:
+                fraction = distances[point_id] / (
+                    distances[point_id] - distances[next_point_id]
+                )
+                listClippedPointsXY_G_Cg.append(
+                    polygonPointsXY_G_Cg[point_id]
+                    + fraction
+                    * (
+                        polygonPointsXY_G_Cg[next_point_id]
+                        - polygonPointsXY_G_Cg[point_id]
+                    )
+                )
+        if len(listClippedPointsXY_G_Cg) < 3:
+            return 0.0
+        polygonPointsXY_G_Cg = np.array(listClippedPointsXY_G_Cg, dtype=float)
+
+    nextPolygonPointsXY_G_Cg = np.roll(polygonPointsXY_G_Cg, -1, axis=0)
+    return max(
+        0.5
+        * float(
+            np.sum(
+                polygonPointsXY_G_Cg[:, 0] * nextPolygonPointsXY_G_Cg[:, 1]
+                - polygonPointsXY_G_Cg[:, 1] * nextPolygonPointsXY_G_Cg[:, 0]
+            )
+        ),
+        0.0,
+    )
+
+
+def _get_chord_squared_integral(stackTrianglePointsXY_G_Cg: np.ndarray) -> float:
+    """Returns the integral of the square of the projected chord along the geometry
+    axes' y axis, for a set of non overlapping projected triangles.
+
+    The projected chord at each position along the geometry axes' y axis is the total
+    length, along the geometry axes' x axis, of the parts of that slice inside the
+    triangles. Each triangle's slice length varies linearly between the y components of
+    its points, so the chord varies linearly between neighboring y components of all the
+    triangles' points. The integral is therefore evaluated exactly, one piece at a time.
+
+    :param stackTrianglePointsXY_G_Cg: A (K, 3, 2) ndarray of floats holding the K
+        triangles' points (in geometry axes, projected onto its xy plane, relative to
+        the CG). Every triangle must have a non zero area. The units are in meters.
+    :return: The integral. The units are cubic meters.
+    """
+    # Each triangle's slice length is zero at its lowest and highest points and peaks at
+    # the y component of its middle point. A triangle's area is half its height times
+    # that peak length.
+    sortedPointsY_G_Cg = np.sort(stackTrianglePointsXY_G_Cg[:, :, 1], axis=1)
+    lowPointsY_G_Cg = sortedPointsY_G_Cg[:, 0]
+    middlePointsY_G_Cg = sortedPointsY_G_Cg[:, 1]
+    highPointsY_G_Cg = sortedPointsY_G_Cg[:, 2]
+    middle_lengths = (
+        2.0
+        * np.abs(_get_signed_triangle_areas(stackTrianglePointsXY_G_Cg))
+        / (highPointsY_G_Cg - lowPointsY_G_Cg)
+    )
+
+    # Split each triangle's slice length into two linear pieces, and keep those with a
+    # non zero extent along the geometry axes' y axis.
+    zeros = np.zeros_like(middle_lengths)
+    start_ys = np.concatenate((lowPointsY_G_Cg, middlePointsY_G_Cg))
+    end_ys = np.concatenate((middlePointsY_G_Cg, highPointsY_G_Cg))
+    start_lengths = np.concatenate((zeros, middle_lengths))
+    end_lengths = np.concatenate((middle_lengths, zeros))
+    has_extent = end_ys > start_ys
+    start_ys = start_ys[has_extent]
+    end_ys = end_ys[has_extent]
+    start_lengths = start_lengths[has_extent]
+    end_lengths = end_lengths[has_extent]
+
+    # Add each piece's contribution to the chord at both ends of every interval, between
+    # neighboring breakpoints, that it covers.
+    breakpoint_ys = np.unique(np.concatenate((start_ys, end_ys)))
+    first_interval_ids = np.searchsorted(breakpoint_ys, start_ys)
+    num_intervals = np.searchsorted(breakpoint_ys, end_ys) - first_interval_ids
+    piece_ids = np.repeat(np.arange(len(start_ys)), num_intervals)
+    interval_ids = np.repeat(first_interval_ids, num_intervals) + (
+        np.arange(len(piece_ids))
+        - np.repeat(np.cumsum(num_intervals) - num_intervals, num_intervals)
+    )
+    piece_heights = end_ys[piece_ids] - start_ys[piece_ids]
+    piece_length_changes = end_lengths[piece_ids] - start_lengths[piece_ids]
+    start_chords = np.zeros(len(breakpoint_ys) - 1, dtype=float)
+    end_chords = np.zeros(len(breakpoint_ys) - 1, dtype=float)
+    for end_offset, chords in ((0, start_chords), (1, end_chords)):
+        np.add.at(
+            chords,
+            interval_ids,
+            start_lengths[piece_ids]
+            + piece_length_changes
+            * (breakpoint_ys[interval_ids + end_offset] - start_ys[piece_ids])
+            / piece_heights,
+        )
+
+    # The chord is linear on each interval, so the integral of its square over an
+    # interval is the interval's width times the mean of the squares and the product of
+    # the chords at its ends.
+    return float(
+        np.sum(
+            np.diff(breakpoint_ys)
+            * (start_chords**2 + start_chords * end_chords + end_chords**2)
+            / 3.0
+        )
+    )

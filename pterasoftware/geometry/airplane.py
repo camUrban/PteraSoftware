@@ -1711,6 +1711,14 @@ def _get_triangle_intersection_area(
     The first triangle is clipped by each edge of the second triangle in turn
     (Sutherland-Hodgman clipping), and the area of the remaining polygon is returned.
 
+    **Citation:**
+
+    Algorithm adapted from: "Reentrant Polygon Clipping"
+
+    Authors: Ivan E. Sutherland and Gary W. Hodgman
+
+    Date of retrieval: 09/23/2026
+
     :param trianglePointsXY_G_Cg: A (3, 2) ndarray of floats holding the points of the
         triangle to clip, in counterclockwise order (in geometry axes, projected onto
         its xy plane, relative to the CG). The units are in meters.

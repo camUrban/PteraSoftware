@@ -66,10 +66,9 @@ class Airplane:
     axes' xy plane is less than 1 / sqrt(2) times its area projected onto the xy plane
     of the wing axes of the first element of wings (for type 5 symmetry, both areas
     leave out the strip joining the halves). The second is when the reference planform's
-    projection is ill-formed: within one half, the strips that are not edge-on have
-    projected areas of different signs, a strip crosses over itself, two strips overlap,
-    or, for type 5 symmetry, the two halves overlap along the geometry axes' y axis. In
-    either case, s_ref, c_ref, and b_ref must all be passed explicitly.
+    projection is ill-formed: a strip crosses over itself, two strips overlap, or, for
+    type 5 symmetry, the two halves overlap along the geometry axes' y axis. In either
+    case, s_ref, c_ref, and b_ref must all be passed explicitly.
 
     Immutable attributes (wings, name, Cg_GP1_CgP1, weight, s_ref, c_ref, and b_ref) are
     set during initialization and cannot be modified afterward. The numpy array
@@ -1387,8 +1386,10 @@ def _get_planform_reference_dimensions(
         np.linalg.norm(stackVectorAreas_G, axis=1)
     )
 
-    # Check that the projected planform is well-formed, starting with the signs of each
-    # half's strips that aren't edge-on.
+    # Check that the projected planform is well-formed. A strip whose projected area has
+    # the opposite sign to its neighbors' isn't ill-formed by itself, since a Wing can
+    # legitimately turn back toward its root (a winglet canted inward, for example), so
+    # the checks below look for actual crossings and overlaps instead of sign changes.
     ill_formed_message = (
         "The default reference dimensions come from the reference planform (defined in "
         "the Airplane class docstring) projected onto the geometry axes' xy plane, but "
@@ -1399,15 +1400,6 @@ def _get_planform_reference_dimensions(
         "may break or produce inaccurate results for it, so its definition is worth "
         "rechecking."
     )
-    for half_start, half_end in zip(np.concatenate(([0], half_ends[:-1])), half_ends):
-        half_signed_areas = signed_areas[half_start:half_end]
-        half_is_not_edge_on = is_not_edge_on[half_start:half_end]
-        if len(np.unique(np.sign(half_signed_areas[half_is_not_edge_on]))) > 1:
-            raise ValueError(
-                ill_formed_message.format(
-                    "part of one half folds back over the rest of it"
-                )
-            )
 
     # For type 5 symmetry, check that the halves' ranges along the geometry axes' y axis
     # don't overlap.

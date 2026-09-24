@@ -1596,6 +1596,29 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "too steeply inclined"):
             self._get_reference_dimensions(wing)
 
+    def test_turned_back_strip_without_overlap_is_accepted(self) -> None:
+        """Test that a Wing whose last strip turns back toward the root, but sits aft of
+        the rest of the projected planform, is accepted and counted in full."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (0.0, 1.0, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (1.5, 0.3, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.5, (0.0, 0.4, 0.0), is_tip=True),
+            ],
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        # The first strip is a 1.0 m square, the second is vertical, and the third runs
+        # from y = 1.0 m back to y = 0.6 m, 1.5 m aft of the first, with chords of 1.0 m
+        # and 0.5 m, so its area is 0.3 m^2. The projected chord is 1.0 m below y = 0.6
+        # m and rises linearly from 1.5 m to 2.0 m above it.
+        integral = 0.6 * 1.0 + 0.4 * (1.5**2 + 1.5 * 2.0 + 2.0**2) / 3
+        npt.assert_allclose(s_ref, 1.3, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, integral / 1.3, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 1.0, rtol=1e-10, atol=1e-14)
+
     def test_fold_raises_ill_formed_error(self) -> None:
         """Test that a Wing that folds back over itself raises the ill-formed error."""
         wing = ps.geometry.wing.Wing(
@@ -1607,7 +1630,7 @@ class TestGetPlanformReferenceDimensions(unittest.TestCase):
             ],
         )
 
-        with self.assertRaisesRegex(ValueError, "folds back over"):
+        with self.assertRaisesRegex(ValueError, "two of its parts overlap"):
             self._get_reference_dimensions(wing)
 
     def test_crossing_edge_curves_raise_ill_formed_error(self) -> None:

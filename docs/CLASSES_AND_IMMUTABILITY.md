@@ -612,6 +612,8 @@ These read-only properties expose the named load components and coefficients def
 
 **Note on caching**: Most derived properties iterate over panels or wing cross sections. For large meshes, caching `projected_area`, `wetted_area`, and `span` provides meaningful performance gains if they're accessed multiple times. Since their source attributes are immutable or set once, these are cached after first computation without invalidation logic.
 
+**Note**: `wetted_area` is deprecated. Its value is the total area of the `Wing`'s `Panel`s, which lie on the mean camber surface, so it is not the `Wing`'s wetted area. Reading it emits a `DeprecationWarning`, and it will be removed in v6.0.0.
+
 #### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
 
 | Attribute            | Type                 | Notes                          |

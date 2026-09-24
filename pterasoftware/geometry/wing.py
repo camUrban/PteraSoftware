@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Sequence
 
 import numpy as np
@@ -1230,14 +1231,24 @@ class Wing:
 
     @property
     def wetted_area(self) -> None | float:
-        """The Wing's wetted area.
+        """A deprecated property that returns the total area of the Wing's Panels.
 
-        If the Wing is symmetric and continuous, the area of the mirrored half is
-        included.
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0. The
+        Panels lie on the mean camber surface, so despite its name, this is not the
+        Wing's wetted area. If the Wing is symmetric and continuous, the area of the
+        mirrored half is included.
 
-        :return: The wetted area of the Wing. It has units of square meters. If the Wing
-            hasn't been meshed yet, None is returned instead.
+        :return: The total area of the Wing's Panels. It has units of square meters. If
+            the Wing hasn't been meshed yet, None is returned instead.
         """
+        warnings.warn(
+            "The wetted_area property is deprecated and will be removed in v6.0.0. Its "
+            "value is the total area of the Wing's Panels, which lie on the mean camber "
+            "surface, not the Wing's wetted area.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Return None if the Wing hasn't been meshed yet.
         if self._panels is None:
             return None

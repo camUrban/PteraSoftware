@@ -118,6 +118,7 @@ def build_steady_problem(
                                 panel_aspect_ratio,
                                 num_chordwise_panels,
                                 ref_wing.chordwise_spacing,
+                                ref_airplane,
                                 ref_wing_cross_section,
                                 ref_wing_cross_sections[ref_wing_cross_section_id + 1],
                                 start,
@@ -764,6 +765,7 @@ def _get_wing_section_movement_num_spanwise_panels(
             desired_average_panel_aspect_ratio=desired_average_panel_aspect_ratio,
             num_chordwise_panels=num_chordwise_panels,
             chordwise_spacing=chordwise_spacing,
+            ref_airplane=ref_airplane_at_time_step,
             ref_root_wing_cross_section=ref_root_wing_cross_section_at_time_step,
             ref_tip_wing_cross_section=ref_tip_wing_cross_section_at_time_step,
             start_val=start_val,
@@ -783,6 +785,7 @@ def _get_wing_section_num_spanwise_panels(
     desired_average_panel_aspect_ratio: int,
     num_chordwise_panels: int,
     chordwise_spacing: str,
+    ref_airplane: geometry.airplane.Airplane,
     ref_root_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     start_val: int,
@@ -798,6 +801,8 @@ def _get_wing_section_num_spanwise_panels(
         positive int.
     :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
         "cosine" or "uniform".
+    :param ref_airplane: The reference Airplane that holds the wing section. Each probe
+        Airplane copies its reference dimensions.
     :param ref_root_wing_cross_section: The root WingCrossSection of the wing section.
     :param ref_tip_wing_cross_section: The tip WingCrossSection of the wing section.
     :param start_val: The initial number of spanwise Panels to start the search from. It
@@ -813,6 +818,7 @@ def _get_wing_section_num_spanwise_panels(
         this_average_panel_aspect_ratio = _get_wing_section_average_panel_aspect_ratio(
             num_chordwise_panels,
             chordwise_spacing,
+            ref_airplane,
             ref_root_wing_cross_section,
             ref_tip_wing_cross_section,
             num_spanwise_panels=this_num_spanwise_panels,
@@ -842,6 +848,7 @@ def _get_wing_section_num_spanwise_panels(
 def _get_wing_section_average_panel_aspect_ratio(
     num_chordwise_panels: int,
     chordwise_spacing: str,
+    ref_airplane: geometry.airplane.Airplane,
     ref_root_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     ref_tip_wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     num_spanwise_panels: int,
@@ -853,6 +860,8 @@ def _get_wing_section_average_panel_aspect_ratio(
         positive int.
     :param chordwise_spacing: The type of spacing between the chordwise Panels. Can be
         "cosine" or "uniform".
+    :param ref_airplane: The reference Airplane that holds the wing section. The probe
+        Airplane copies its reference dimensions.
     :param ref_root_wing_cross_section: The root WingCrossSection of the wing section.
     :param ref_tip_wing_cross_section: The tip WingCrossSection of the wing section.
     :param num_spanwise_panels: The number of spanwise Panels to use. It must be a
@@ -862,10 +871,11 @@ def _get_wing_section_average_panel_aspect_ratio(
         wing cross section parent axes) divided by their average x component width (in
         wing cross section parent axes).
     """
-    # This Airplane is a measurement probe, not a derivative of the reference Airplane:
-    # it wraps a synthetic Wing made from one wing section, so the reference Airplane's
-    # reference dimensions would not describe it. Its own reference dimensions default
-    # from the probe Wing and are never read.
+    # This Airplane is a measurement probe that wraps a synthetic Wing made from one
+    # wing section, and its reference dimensions are never read. They are copied from
+    # the reference Airplane rather than left to default, because computing defaults
+    # from the probe Wing could raise for a valid wing section whose offset is steep
+    # enough to make the probe Wing's planform too steeply inclined.
     this_airplane = geometry.airplane.Airplane(
         wings=[
             geometry.wing.Wing(
@@ -892,7 +902,10 @@ def _get_wing_section_average_panel_aspect_ratio(
                 num_chordwise_panels=num_chordwise_panels,
                 chordwise_spacing=chordwise_spacing,
             )
-        ]
+        ],
+        s_ref=ref_airplane.s_ref,
+        c_ref=ref_airplane.c_ref,
+        b_ref=ref_airplane.b_ref,
     )
 
     _average_panel_aspect_ratio = this_airplane.wings[0].average_panel_aspect_ratio

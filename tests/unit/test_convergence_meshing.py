@@ -94,10 +94,12 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
     non-edge-defined Wing section's number of spanwise Panels."""
 
     def setUp(self) -> None:
-        """Set up a root and tip WingCrossSection defining one wing section.
+        """Set up a reference Airplane, and a root and tip WingCrossSection defining one
+        wing section.
 
         :return: None
         """
+        self.ref_airplane = geometry_fixtures.make_basic_airplane_fixture()
         self.root_wing_cross_section = (
             geometry_fixtures.make_root_wing_cross_section_fixture()
         )
@@ -113,6 +115,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
         return _convergence_meshing._get_wing_section_average_panel_aspect_ratio(
             self.num_chordwise_panels,
             self.chordwise_spacing,
+            self.ref_airplane,
             self.root_wing_cross_section,
             self.tip_wing_cross_section,
             num_spanwise_panels,
@@ -125,6 +128,7 @@ class TestGetWingSectionNumSpanwisePanels(unittest.TestCase):
             desired_average_panel_aspect_ratio=target,
             num_chordwise_panels=self.num_chordwise_panels,
             chordwise_spacing=self.chordwise_spacing,
+            ref_airplane=self.ref_airplane,
             ref_root_wing_cross_section=self.root_wing_cross_section,
             ref_tip_wing_cross_section=self.tip_wing_cross_section,
             start_val=1,

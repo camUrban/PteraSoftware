@@ -399,9 +399,9 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 40.66%
+INFO    |convergence                                 |            cFZ_W: 42.70%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 56.95%
+INFO    |convergence                                 |            cMY_W_Cg: 65.09%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 3/96
@@ -664,9 +664,9 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.12%
+INFO    |convergence                                 |            cFZ_W: 64.38%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.71%
+INFO    |convergence                                 |            cMY_W_Cg: 83.58%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 3
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -837,11 +837,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.64%
+INFO    |convergence                                 |            cFX_W: 62.30%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.46%
+INFO    |convergence                                 |            cFZ_W: 47.74%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 57.44%
+INFO    |convergence                                 |            cMY_W_Cg: 65.66%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -1057,18 +1057,18 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.85%
+INFO    |convergence                                 |            cFX_W: 88.43%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.86%
+INFO    |convergence                                 |            cFZ_W: 73.59%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 82.96%
+INFO    |convergence                                 |            cMY_W_Cg: 95.37%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 58.94%
+INFO    |convergence                                 |            cFZ_W: 62.07%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 81.92%
+INFO    |convergence                                 |            cMY_W_Cg: 94.16%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 6/96
@@ -1328,7 +1328,7 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 94.20%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -1337,9 +1337,9 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.80%
+INFO    |convergence                                 |            cFZ_W: 88.44%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 97.46%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 2
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -1510,11 +1510,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.84%
+INFO    |convergence                                 |            cFX_W: 53.97%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.03%
+INFO    |convergence                                 |            cFZ_W: 44.26%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.19%
+INFO    |convergence                                 |            cMY_W_Cg: 57.69%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -1730,11 +1730,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.63%
+INFO    |convergence                                 |            cFX_W: 75.45%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 59.33%
+INFO    |convergence                                 |            cFZ_W: 62.61%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 68.66%
+INFO    |convergence                                 |            cMY_W_Cg: 79.24%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2001,18 +2001,18 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.49%
+INFO    |convergence                                 |            cFX_W: 76.75%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.40%
+INFO    |convergence                                 |            cFZ_W: 63.85%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 68.83%
+INFO    |convergence                                 |            cMY_W_Cg: 79.72%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 85.98%
+INFO    |convergence                                 |            cFZ_W: 90.95%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 97.81%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 1
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -2183,11 +2183,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 48.14%
+INFO    |convergence                                 |            cFX_W: 66.37%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 50.85%
+INFO    |convergence                                 |            cFZ_W: 53.72%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.86%
+INFO    |convergence                                 |            cMY_W_Cg: 69.28%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -2403,11 +2403,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 48.28%
+INFO    |convergence                                 |            cFX_W: 66.30%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.20%
+INFO    |convergence                                 |            cFZ_W: 54.16%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.27%
+INFO    |convergence                                 |            cMY_W_Cg: 68.75%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2674,11 +2674,11 @@ INFO    |convergence                                 |          Simulation compl
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.92%
+INFO    |convergence                                 |            cFX_W: 89.29%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.24%
+INFO    |convergence                                 |            cFZ_W: 73.37%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.08%
+INFO    |convergence                                 |            cMY_W_Cg: 93.23%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2697,7 +2697,7 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.40%
+INFO    |convergence                                 |            cFX_W: 55.80%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -2713,17 +2713,17 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 63.41%
+INFO    |convergence                                 |            cFX_W: 84.30%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 94.15%
+INFO    |convergence                                 |            cFZ_W: 99.05%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 74.37%
+INFO    |convergence                                 |            cMY_W_Cg: 85.12%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 61.44%
+INFO    |convergence                                 |            cFX_W: 80.86%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.93%
+INFO    |convergence                                 |            cFZ_W: 55.55%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2735,17 +2735,17 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 93.90%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 70.54%
+INFO    |convergence                                 |            cFZ_W: 74.32%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.68%
+INFO    |convergence                                 |            cMY_W_Cg: 62.76%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 81.19%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 77.97%
+INFO    |convergence                                 |            cFZ_W: 82.02%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2758,18 +2758,18 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.75%
+INFO    |convergence                                 |            cFX_W: 57.03%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.23%
+INFO    |convergence                                 |            cFX_W: 60.83%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.21%
+INFO    |convergence                                 |            cFZ_W: 48.50%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.38%
+INFO    |convergence                                 |            cMY_W_Cg: 66.61%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -2780,23 +2780,23 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 64.87%
+INFO    |convergence                                 |            cFX_W: 87.10%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 92.08%
+INFO    |convergence                                 |            cFZ_W: 97.05%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.98%
+INFO    |convergence                                 |            cMY_W_Cg: 83.85%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.35%
+INFO    |convergence                                 |            cFX_W: 85.55%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 71.03%
+INFO    |convergence                                 |            cFZ_W: 74.72%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 84.77%
+INFO    |convergence                                 |            cMY_W_Cg: 97.02%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 99.05%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 88.69%
+INFO    |convergence                                 |            cFZ_W: 93.34%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -2808,14 +2808,14 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 96.31%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.80%
+INFO    |convergence                                 |            cFZ_W: 73.65%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.15%
+INFO    |convergence                                 |            cMY_W_Cg: 62.32%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 91.89%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -2837,18 +2837,18 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 43.69%
+INFO    |convergence                                 |            cFX_W: 59.27%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.06%
+INFO    |convergence                                 |            cFX_W: 52.11%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.61%
+INFO    |convergence                                 |            cFZ_W: 44.84%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.04%
+INFO    |convergence                                 |            cMY_W_Cg: 58.56%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -2859,18 +2859,18 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 66.70%
+INFO    |convergence                                 |            cFX_W: 90.66%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 90.19%
+INFO    |convergence                                 |            cFZ_W: 95.27%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 71.58%
+INFO    |convergence                                 |            cMY_W_Cg: 82.63%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.36%
+INFO    |convergence                                 |            cFX_W: 72.98%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.13%
+INFO    |convergence                                 |            cFZ_W: 63.37%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.94%
+INFO    |convergence                                 |            cMY_W_Cg: 80.36%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2889,16 +2889,16 @@ INFO    |convergence                                 |          Wake type conver
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 68.87%
+INFO    |convergence                                 |            cFZ_W: 72.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 53.45%
+INFO    |convergence                                 |            cMY_W_Cg: 61.82%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.22%
+INFO    |convergence                                 |            cFX_W: 74.50%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.11%
+INFO    |convergence                                 |            cFZ_W: 64.47%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 70.01%
+INFO    |convergence                                 |            cMY_W_Cg: 80.58%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2916,18 +2916,18 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 44.52%
+INFO    |convergence                                 |            cFX_W: 61.29%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.17%
+INFO    |convergence                                 |            cFX_W: 64.00%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.26%
+INFO    |convergence                                 |            cFZ_W: 54.11%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 60.49%
+INFO    |convergence                                 |            cMY_W_Cg: 69.86%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -2938,18 +2938,18 @@ INFO    |unsteady_ring_vortex_lattice_method         |            Solver complet
 INFO    |convergence                                 |          Simulation completed in <time>
 INFO    |convergence                                 |          Wake type convergence: not checked
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 68.72%
+INFO    |convergence                                 |            cFX_W: 94.78%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 88.97%
+INFO    |convergence                                 |            cFZ_W: 94.23%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 70.67%
+INFO    |convergence                                 |            cMY_W_Cg: 82.06%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.29%
+INFO    |convergence                                 |            cFX_W: 64.27%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.60%
+INFO    |convergence                                 |            cFZ_W: 54.50%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.90%
+INFO    |convergence                                 |            cMY_W_Cg: 69.15%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -2968,16 +2968,16 @@ INFO    |convergence                                 |          Wake type conver
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 68.45%
+INFO    |convergence                                 |            cFZ_W: 72.53%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 53.16%
+INFO    |convergence                                 |            cMY_W_Cg: 61.75%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 63.65%
+INFO    |convergence                                 |            cFX_W: 86.94%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.67%
+INFO    |convergence                                 |            cFZ_W: 73.67%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.75%
+INFO    |convergence                                 |            cMY_W_Cg: 93.39%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3020,9 +3020,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 61.42%
+INFO    |convergence                                 |            cFX_W: 80.82%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.83%
+INFO    |convergence                                 |            cFZ_W: 55.45%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3042,9 +3042,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 81.17%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 77.83%
+INFO    |convergence                                 |            cFZ_W: 81.87%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3064,11 +3064,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.20%
+INFO    |convergence                                 |            cFX_W: 60.79%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.11%
+INFO    |convergence                                 |            cFZ_W: 48.39%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.24%
+INFO    |convergence                                 |            cMY_W_Cg: 66.44%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3086,16 +3086,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.32%
+INFO    |convergence                                 |            cFX_W: 85.51%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 70.89%
+INFO    |convergence                                 |            cFZ_W: 74.58%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 84.60%
+INFO    |convergence                                 |            cMY_W_Cg: 96.82%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 99.05%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 88.56%
+INFO    |convergence                                 |            cFZ_W: 93.19%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3114,7 +3114,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 91.86%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3143,11 +3143,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.05%
+INFO    |convergence                                 |            cFX_W: 52.09%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.53%
+INFO    |convergence                                 |            cFZ_W: 44.75%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.94%
+INFO    |convergence                                 |            cMY_W_Cg: 58.43%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3165,11 +3165,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.34%
+INFO    |convergence                                 |            cFX_W: 72.96%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.02%
+INFO    |convergence                                 |            cFZ_W: 63.25%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.82%
+INFO    |convergence                                 |            cMY_W_Cg: 80.21%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3193,11 +3193,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.20%
+INFO    |convergence                                 |            cFX_W: 74.48%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.00%
+INFO    |convergence                                 |            cFZ_W: 64.36%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.90%
+INFO    |convergence                                 |            cMY_W_Cg: 80.44%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3222,11 +3222,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.16%
+INFO    |convergence                                 |            cFX_W: 63.98%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.17%
+INFO    |convergence                                 |            cFZ_W: 54.02%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 60.38%
+INFO    |convergence                                 |            cMY_W_Cg: 69.73%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3244,11 +3244,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.28%
+INFO    |convergence                                 |            cFX_W: 64.26%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.51%
+INFO    |convergence                                 |            cFZ_W: 54.40%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.81%
+INFO    |convergence                                 |            cMY_W_Cg: 69.03%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3272,11 +3272,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 63.64%
+INFO    |convergence                                 |            cFX_W: 86.92%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.56%
+INFO    |convergence                                 |            cFZ_W: 73.55%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.63%
+INFO    |convergence                                 |            cMY_W_Cg: 93.24%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3319,9 +3319,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 61.41%
+INFO    |convergence                                 |            cFX_W: 80.80%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.81%
+INFO    |convergence                                 |            cFZ_W: 55.42%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3341,9 +3341,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 81.16%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 77.79%
+INFO    |convergence                                 |            cFZ_W: 81.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3363,11 +3363,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.19%
+INFO    |convergence                                 |            cFX_W: 60.78%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.09%
+INFO    |convergence                                 |            cFZ_W: 48.37%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 58.20%
+INFO    |convergence                                 |            cMY_W_Cg: 66.40%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3385,16 +3385,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.31%
+INFO    |convergence                                 |            cFX_W: 85.49%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 70.86%
+INFO    |convergence                                 |            cFZ_W: 74.54%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 84.56%
+INFO    |convergence                                 |            cMY_W_Cg: 96.77%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 99.04%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 88.52%
+INFO    |convergence                                 |            cFZ_W: 93.14%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3413,7 +3413,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 91.85%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3442,11 +3442,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.04%
+INFO    |convergence                                 |            cFX_W: 52.08%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.51%
+INFO    |convergence                                 |            cFZ_W: 44.73%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.91%
+INFO    |convergence                                 |            cMY_W_Cg: 58.40%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3464,11 +3464,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.33%
+INFO    |convergence                                 |            cFX_W: 72.95%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 59.99%
+INFO    |convergence                                 |            cFZ_W: 63.22%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.79%
+INFO    |convergence                                 |            cMY_W_Cg: 80.17%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3492,11 +3492,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.19%
+INFO    |convergence                                 |            cFX_W: 74.47%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.98%
+INFO    |convergence                                 |            cFZ_W: 64.33%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 69.87%
+INFO    |convergence                                 |            cMY_W_Cg: 80.40%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3521,11 +3521,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.15%
+INFO    |convergence                                 |            cFX_W: 63.97%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.15%
+INFO    |convergence                                 |            cFZ_W: 53.99%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 60.36%
+INFO    |convergence                                 |            cMY_W_Cg: 69.70%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3543,11 +3543,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.27%
+INFO    |convergence                                 |            cFX_W: 64.25%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.49%
+INFO    |convergence                                 |            cFZ_W: 54.38%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.78%
+INFO    |convergence                                 |            cMY_W_Cg: 69.00%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3571,11 +3571,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 63.63%
+INFO    |convergence                                 |            cFX_W: 86.91%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 69.53%
+INFO    |convergence                                 |            cFZ_W: 73.52%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 80.60%
+INFO    |convergence                                 |            cMY_W_Cg: 93.20%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3621,9 +3621,9 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 39.54%
+INFO    |convergence                                 |            cFZ_W: 41.55%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.15%
+INFO    |convergence                                 |            cMY_W_Cg: 62.04%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 51/96
@@ -3643,9 +3643,9 @@ INFO    |convergence                                 |          Panel aspect rat
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.62%
+INFO    |convergence                                 |            cFZ_W: 63.91%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 72.38%
+INFO    |convergence                                 |            cMY_W_Cg: 83.43%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 3
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -3663,11 +3663,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.70%
+INFO    |convergence                                 |            cFX_W: 62.39%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 45.23%
+INFO    |convergence                                 |            cFZ_W: 47.53%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 57.78%
+INFO    |convergence                                 |            cMY_W_Cg: 66.19%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3685,18 +3685,18 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 66.13%
+INFO    |convergence                                 |            cFX_W: 88.82%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 70.96%
+INFO    |convergence                                 |            cFZ_W: 74.81%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 86.97%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 57.67%
+INFO    |convergence                                 |            cFZ_W: 60.77%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 78.90%
+INFO    |convergence                                 |            cMY_W_Cg: 90.91%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 54/96
@@ -3713,7 +3713,7 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 94.63%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3722,9 +3722,9 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 83.04%
+INFO    |convergence                                 |            cFZ_W: 87.71%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 96.92%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 2
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -3742,11 +3742,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.93%
+INFO    |convergence                                 |            cFX_W: 54.10%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 42.73%
+INFO    |convergence                                 |            cFZ_W: 45.03%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 52.87%
+INFO    |convergence                                 |            cMY_W_Cg: 60.92%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3764,16 +3764,16 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.84%
+INFO    |convergence                                 |            cFX_W: 75.75%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 60.89%
+INFO    |convergence                                 |            cFZ_W: 64.31%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 73.70%
+INFO    |convergence                                 |            cMY_W_Cg: 85.28%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 97.55%
+INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3792,18 +3792,18 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 56.76%
+INFO    |convergence                                 |            cFX_W: 77.12%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 62.35%
+INFO    |convergence                                 |            cFZ_W: 65.97%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 74.86%
+INFO    |convergence                                 |            cMY_W_Cg: 86.94%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 85.83%
+INFO    |convergence                                 |            cFZ_W: 90.86%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 98.96%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |      Panel aspect ratio: 1
 INFO    |convergence                                 |        Chordwise Panels: 3
@@ -3821,11 +3821,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 48.26%
+INFO    |convergence                                 |            cFX_W: 66.54%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.06%
+INFO    |convergence                                 |            cFZ_W: 55.04%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.01%
+INFO    |convergence                                 |            cMY_W_Cg: 74.23%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -3843,16 +3843,16 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 48.44%
+INFO    |convergence                                 |            cFX_W: 66.52%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.67%
+INFO    |convergence                                 |            cFZ_W: 55.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.06%
+INFO    |convergence                                 |            cMY_W_Cg: 74.48%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 99.76%
+INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3871,11 +3871,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence: not checked
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 65.14%
+INFO    |convergence                                 |            cFX_W: 89.58%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 71.44%
+INFO    |convergence                                 |            cFZ_W: 75.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 87.12%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -3900,7 +3900,7 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.36%
+INFO    |convergence                                 |            cFX_W: 55.75%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -3922,19 +3922,19 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 63.34%
+INFO    |convergence                                 |            cFX_W: 84.21%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 89.28%
+INFO    |convergence                                 |            cFZ_W: 93.99%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 70.04%
+INFO    |convergence                                 |            cMY_W_Cg: 80.35%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 61.74%
+INFO    |convergence                                 |            cFX_W: 81.26%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.77%
+INFO    |convergence                                 |            cFZ_W: 54.37%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 99.69%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 63/96
@@ -3950,17 +3950,17 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 93.83%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 67.45%
+INFO    |convergence                                 |            cFZ_W: 71.12%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.90%
+INFO    |convergence                                 |            cMY_W_Cg: 59.71%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 81.82%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 77.61%
+INFO    |convergence                                 |            cFZ_W: 81.71%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -3979,18 +3979,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 42.58%
+INFO    |convergence                                 |            cFX_W: 56.81%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.43%
+INFO    |convergence                                 |            cFX_W: 61.11%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.49%
+INFO    |convergence                                 |            cFZ_W: 48.82%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.87%
+INFO    |convergence                                 |            cMY_W_Cg: 68.47%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -4007,23 +4007,23 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 64.65%
+INFO    |convergence                                 |            cFX_W: 86.81%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 86.87%
+INFO    |convergence                                 |            cFZ_W: 91.62%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 68.38%
+INFO    |convergence                                 |            cMY_W_Cg: 78.73%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.76%
+INFO    |convergence                                 |            cFX_W: 86.10%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 72.54%
+INFO    |convergence                                 |            cFZ_W: 76.37%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 89.70%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 99.84%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 86.61%
+INFO    |convergence                                 |            cFZ_W: 91.21%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4041,14 +4041,14 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 96.03%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 66.76%
+INFO    |convergence                                 |            cFZ_W: 70.49%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 51.41%
+INFO    |convergence                                 |            cMY_W_Cg: 59.30%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 92.50%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
@@ -4076,18 +4076,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 43.37%
+INFO    |convergence                                 |            cFX_W: 58.85%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.26%
+INFO    |convergence                                 |            cFX_W: 52.38%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.52%
+INFO    |convergence                                 |            cFZ_W: 45.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.17%
+INFO    |convergence                                 |            cMY_W_Cg: 62.28%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -4104,18 +4104,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 66.22%
+INFO    |convergence                                 |            cFX_W: 90.00%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 85.13%
+INFO    |convergence                                 |            cFZ_W: 89.98%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 67.12%
+INFO    |convergence                                 |            cMY_W_Cg: 77.64%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.73%
+INFO    |convergence                                 |            cFX_W: 73.48%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.76%
+INFO    |convergence                                 |            cFZ_W: 65.14%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 75.22%
+INFO    |convergence                                 |            cMY_W_Cg: 86.61%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4138,18 +4138,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 99.33%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.92%
+INFO    |convergence                                 |            cFZ_W: 69.76%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.84%
+INFO    |convergence                                 |            cMY_W_Cg: 58.91%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.69%
+INFO    |convergence                                 |            cFX_W: 75.14%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.10%
+INFO    |convergence                                 |            cFZ_W: 66.62%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 76.13%
+INFO    |convergence                                 |            cMY_W_Cg: 87.81%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4173,18 +4173,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 44.00%
+INFO    |convergence                                 |            cFX_W: 60.58%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.51%
+INFO    |convergence                                 |            cFX_W: 64.46%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.48%
+INFO    |convergence                                 |            cFZ_W: 55.44%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.65%
+INFO    |convergence                                 |            cMY_W_Cg: 74.80%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -4201,18 +4201,18 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 67.84%
+INFO    |convergence                                 |            cFX_W: 93.55%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 84.09%
+INFO    |convergence                                 |            cFZ_W: 89.12%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 66.48%
+INFO    |convergence                                 |            cMY_W_Cg: 77.31%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.62%
+INFO    |convergence                                 |            cFX_W: 64.73%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 53.07%
+INFO    |convergence                                 |            cFZ_W: 56.09%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.65%
+INFO    |convergence                                 |            cMY_W_Cg: 74.78%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4237,16 +4237,16 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |          Wake length convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 65.73%
+INFO    |convergence                                 |            cFZ_W: 69.69%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 50.74%
+INFO    |convergence                                 |            cMY_W_Cg: 59.03%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 63.98%
+INFO    |convergence                                 |            cFX_W: 87.38%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 71.67%
+INFO    |convergence                                 |            cFZ_W: 75.83%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 87.43%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4301,11 +4301,11 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 61.74%
+INFO    |convergence                                 |            cFX_W: 81.26%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 51.80%
+INFO    |convergence                                 |            cFZ_W: 54.40%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 99.61%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |        Chordwise Panels: 5
 INFO    |convergence                                 |          Iteration number: 75/96
@@ -4329,9 +4329,9 @@ INFO    |convergence                                 |            cMY_W_Cg: 100.
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence: not checked
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 81.78%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 77.42%
+INFO    |convergence                                 |            cFZ_W: 81.50%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4357,11 +4357,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 46.43%
+INFO    |convergence                                 |            cFX_W: 61.11%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 46.48%
+INFO    |convergence                                 |            cFZ_W: 48.81%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 59.84%
+INFO    |convergence                                 |            cMY_W_Cg: 68.42%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
 INFO    |convergence                                 |        Chordwise Panels: 4
@@ -4385,16 +4385,16 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 64.74%
+INFO    |convergence                                 |            cFX_W: 86.07%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 72.39%
+INFO    |convergence                                 |            cFZ_W: 76.20%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 89.50%
+INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 99.80%
+INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 86.51%
+INFO    |convergence                                 |            cFZ_W: 91.09%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
@@ -4419,171 +4419,11 @@ INFO    |convergence                                 |            cMX_W_Cg: 100.
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 92.48%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
 INFO    |convergence                                 |            cFY_W: 100.0%
 INFO    |convergence                                 |            cFZ_W: 100.0%
 INFO    |convergence                                 |            cMX_W_Cg: 100.0%
 INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |      Panel aspect ratio: 2
-INFO    |convergence                                 |        Chordwise Panels: 3
-INFO    |convergence                                 |          Iteration number: 79/96
-INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
-INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Solver completed in <time>
-INFO    |convergence                                 |          Simulation completed in <time>
-INFO    |convergence                                 |          Wake type convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 39.24%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 43.44%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 54.06%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
-INFO    |convergence                                 |        Chordwise Panels: 4
-INFO    |convergence                                 |          Iteration number: 80/96
-INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
-INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Solver completed in <time>
-INFO    |convergence                                 |          Simulation completed in <time>
-INFO    |convergence                                 |          Wake type convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 54.69%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 61.66%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 75.10%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |        Chordwise Panels: 5
-INFO    |convergence                                 |          Iteration number: 81/96
-INFO    |_convergence_meshing                        |          Cached delta_time: 0.0200 s
-INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Solver completed in <time>
-INFO    |convergence                                 |          Simulation completed in <time>
-INFO    |convergence                                 |          Wake type convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 55.67%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 63.05%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 76.06%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Number of chordwise Panels convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |      Panel aspect ratio: 1
-INFO    |convergence                                 |        Chordwise Panels: 3
-INFO    |convergence                                 |          Iteration number: 82/96
-INFO    |_convergence_meshing                        |          Cached delta_time: 0.0333 s
-INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Solver completed in <time>
-INFO    |convergence                                 |          Simulation completed in <time>
-INFO    |convergence                                 |          Wake type convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.49%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 52.44%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.59%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Number of chordwise Panels convergence: not checked
-INFO    |convergence                                 |        Chordwise Panels: 4
-INFO    |convergence                                 |          Iteration number: 83/96
-INFO    |_convergence_meshing                        |          Cached delta_time: 0.0250 s
-INFO    |convergence                                 |          Starting simulation
-INFO    |unsteady_ring_vortex_lattice_method         |            Solver completed in <time>
-INFO    |convergence                                 |          Simulation completed in <time>
-INFO    |convergence                                 |          Wake type convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Wake length convergence:
-INFO    |convergence                                 |            cFX_W: 100.0%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 100.0%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 100.0%
-INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
-INFO    |convergence                                 |          Panel aspect ratio convergence:
-INFO    |convergence                                 |            cFX_W: 47.63%
-INFO    |convergence                                 |            cFY_W: 100.0%
-INFO    |convergence                                 |            cFZ_W: 53.01%
-INFO    |convergence                                 |            cMX_W_Cg: 100.0%
-INFO    |convergence                                 |            cMY_W_Cg: 64.58%
 INFO    |convergence                                 |            cMZ_W_Cg: 100.0%
 INFO    |convergence                                 |          Number of chordwise Panels convergence:
 INFO    |convergence                                 |            cFX_W: 100.0%
@@ -4595,15 +4435,15 @@ INFO    |convergence                                 |            cMZ_W_Cg: 100.
 INFO    |convergence                                 |The analysis found a converged case:
 INFO    |convergence                                 |  Wake type: prescribed
 INFO    |convergence                                 |  Cycles: 2
-INFO    |convergence                                 |  Panel aspect ratio: 1
-INFO    |convergence                                 |  Chordwise Panels: 3
+INFO    |convergence                                 |  Panel aspect ratio: 4
+INFO    |convergence                                 |  Chordwise Panels: 4
 INFO    |convergence                                 |  Simulation completed in <time>
 INFO    |convergence                                 |  Spanwise Panels:
 INFO    |convergence                                 |    Example Airplane:
 INFO    |convergence                                 |      Main Wing:
-INFO    |convergence                                 |        WingCrossSection 1: 9
+INFO    |convergence                                 |        WingCrossSection 1: 3
 INFO    |convergence                                 |        WingCrossSection 2: None
 INFO    |convergence                                 |      Reflected Main Wing:
-INFO    |convergence                                 |        WingCrossSection 1: 9
+INFO    |convergence                                 |        WingCrossSection 1: 3
 INFO    |convergence                                 |        WingCrossSection 2: None
 INFO    |convergence                                 |Convergence analysis completed in <time>

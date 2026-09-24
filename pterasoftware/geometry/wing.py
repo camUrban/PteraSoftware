@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Sequence
 
 import numpy as np
@@ -1197,6 +1198,14 @@ class Wing:
         If the Wing is symmetric and continuous, the area of the mirrored half is
         included.
 
+        This is a measurement of this Wing's mesh, not the default s_ref of its parent
+        Airplane, which comes from the projected reference planform defined in the
+        Airplane class docstring. Unlike that default, this area is projected onto the
+        wing axes' xy plane rather than the geometry axes' xy plane, and it is summed
+        over the Panels, so it depends on control surface deflections and on how an
+        edge_defined Wing is discretized. For type 5 symmetry, it covers only this Wing,
+        so it leaves out the reflected Wing and any gap between the two.
+
         :return: The projected area of the Wing. It has units of square meters. If the
             Wing hasn't been meshed yet, None is returned instead.
         """
@@ -1230,14 +1239,24 @@ class Wing:
 
     @property
     def wetted_area(self) -> None | float:
-        """The Wing's wetted area.
+        """A deprecated property that returns the total area of the Wing's Panels.
 
-        If the Wing is symmetric and continuous, the area of the mirrored half is
-        included.
+        Reading it emits a DeprecationWarning, and it will be removed in v6.0.0. The
+        Panels lie on the mean camber surface, so despite its name, this is not the
+        Wing's wetted area. If the Wing is symmetric and continuous, the area of the
+        mirrored half is included.
 
-        :return: The wetted area of the Wing. It has units of square meters. If the Wing
-            hasn't been meshed yet, None is returned instead.
+        :return: The total area of the Wing's Panels. It has units of square meters. If
+            the Wing hasn't been meshed yet, None is returned instead.
         """
+        warnings.warn(
+            "The wetted_area property is deprecated and will be removed in v6.0.0. Its "
+            "value is the total area of the Wing's Panels, which lie on the mean camber "
+            "surface, not the Wing's wetted area.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Return None if the Wing hasn't been meshed yet.
         if self._panels is None:
             return None
@@ -1307,6 +1326,13 @@ class Wing:
         If the Wing is symmetric and continuous, this method includes the span of the
         mirrored half.
 
+        This is not the default b_ref of its parent Airplane, which comes from the
+        projected reference planform defined in the Airplane class docstring. Unlike
+        that default, this span is measured along the wing axes' y axis rather than the
+        geometry axes' y axis, and it only uses the root and tip leading points rather
+        than the extent of the whole planform. For type 5 symmetry, it covers only this
+        Wing, so it leaves out the reflected Wing and any gap between the two.
+
         :return: The Wing's span. It has units of meters. None is returned if the Wing's
             symmetry type hasn't been defined yet.
         """
@@ -1348,6 +1374,7 @@ class Wing:
 
         The standard mean chord is defined as the projected area divided by the span.
         See their respective methods for the definitions of span and projected area.
+        Both are measured in wing axes, not geometry axes, so this value is too.
 
         :return: The standard mean chord of the Wing. It has units of meters. None is
             returned if the Wing's symmetry type hasn't been defined yet.
@@ -1374,6 +1401,14 @@ class Wing:
     @property
     def mean_aerodynamic_chord(self) -> None | float:
         """The Wing's mean aerodynamic chord.
+
+        This is not the default c_ref of its parent Airplane, which comes from the
+        projected reference planform defined in the Airplane class docstring. Unlike
+        that default, this value integrates the square of each WingCrossSection's chord
+        along the wing axes' y axis rather than the square of the projected chord along
+        the geometry axes' y axis, and it divides by this Wing's projected_area, so it
+        inherits that property's dependence on the mesh. For type 5 symmetry, it covers
+        only this Wing, so it leaves out the reflected Wing and any gap between the two.
 
         :return: The mean aerodynamic chord of the Wing. It has units of meters. None is
             returned if the Wing's symmetry type hasn't been defined yet.

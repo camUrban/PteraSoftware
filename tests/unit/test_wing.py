@@ -365,18 +365,13 @@ class TestWing(unittest.TestCase):
 
         # Test that geometric properties are available and positive.
         assert wing.projected_area is not None
-        assert wing.wetted_area is not None
         assert wing.span is not None
         assert wing.standard_mean_chord is not None
         assert wing.mean_aerodynamic_chord is not None
         self.assertGreater(wing.projected_area, 0.0)
-        self.assertGreater(wing.wetted_area, 0.0)
         self.assertGreater(wing.span, 0.0)
         self.assertGreater(wing.standard_mean_chord, 0.0)
         self.assertGreater(wing.mean_aerodynamic_chord, 0.0)
-
-        # Test that wetted area is greater than projected area (both sides).
-        self.assertGreaterEqual(wing.wetted_area, wing.projected_area)
 
     def test_geometric_properties_before_meshing_return_none(self) -> None:
         """Test that geometric properties return None before meshing."""
@@ -384,7 +379,6 @@ class TestWing(unittest.TestCase):
 
         properties_to_test = [
             "projected_area",
-            "wetted_area",
             "span",
             "standard_mean_chord",
             "mean_aerodynamic_chord",
@@ -755,31 +749,6 @@ class TestWing(unittest.TestCase):
         self.assertIsNotNone(actual_area)
         assert actual_area is not None
         npt.assert_allclose(actual_area, expected_area, rtol=1e-10, atol=1e-14)
-
-    def test_wetted_area_greater_than_projected_area(self) -> None:
-        """Test that wetted area is greater than or equal to projected area for all
-        Wings."""
-        wings = [
-            geometry_fixtures.make_simple_rectangular_wing_fixture(),
-            geometry_fixtures.make_simple_tapered_wing_fixture(),
-            geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture(),
-            geometry_fixtures.make_three_section_tapered_wing_fixture(),
-        ]
-
-        symmetry_types = [1, 1, 4, 1]
-
-        for wing, symmetry_type in zip(wings, symmetry_types):
-            with self.subTest(wing=wing.name):
-                wing.generate_mesh(symmetry_type)
-
-                projected_area = wing.projected_area
-                wetted_area = wing.wetted_area
-
-                self.assertIsNotNone(projected_area)
-                self.assertIsNotNone(wetted_area)
-                assert projected_area is not None
-                assert wetted_area is not None
-                self.assertGreaterEqual(wetted_area, projected_area)
 
     def test_standard_mean_chord_simple_rectangular_wing(self) -> None:
         """Test standard mean chord calculation for simple rectangular Wing."""
@@ -1468,13 +1437,10 @@ class TestWingDeepCopy(unittest.TestCase):
         assert original.span is not None
         assert copied.projected_area is not None
         assert original.projected_area is not None
-        assert copied.wetted_area is not None
-        assert original.wetted_area is not None
         self.assertAlmostEqual(copied.span, original.span, places=10)
         self.assertAlmostEqual(
             copied.projected_area, original.projected_area, places=10
         )
-        self.assertAlmostEqual(copied.wetted_area, original.wetted_area, places=10)
 
     def test_deepcopy_type_4_wing(self) -> None:
         """Test that deepcopy works correctly for type 4 symmetric Wings."""
@@ -2432,3 +2398,23 @@ class TestFromEdgePoints(unittest.TestCase):
                         airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
                         tip_trim_fraction=bad_fraction,
                     )
+
+
+class TestWingDeprecatedWettedArea(unittest.TestCase):
+    """This class contains unit tests for the deprecated wetted_area property."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated property tests."""
+        self.type_1_wing = geometry_fixtures.make_type_1_wing_fixture()
+        self.type_1_wing.generate_mesh(1)
+
+    def test_wetted_area_warns_and_matches_total_panel_area(self) -> None:
+        """Test that reading wetted_area warns and returns the total area of the Wing's
+        Panels."""
+        panels = self.type_1_wing.panels
+        assert panels is not None
+        total_panel_area = sum(panel.area for panel in panels.flatten())
+        with self.assertWarns(DeprecationWarning):
+            wetted_area = self.type_1_wing.wetted_area
+        assert wetted_area is not None
+        npt.assert_allclose(wetted_area, total_panel_area, rtol=1e-12)

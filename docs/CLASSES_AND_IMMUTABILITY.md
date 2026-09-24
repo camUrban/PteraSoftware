@@ -507,17 +507,17 @@ This is allocated in `__init__` (the validation guard as `False`) and updated by
 
 #### Immutable (set in `__init__`, never modified)
 
-| Attribute     | Type               | Notes                                                        |
-|---------------|--------------------|--------------------------------------------------------------|
-| `wings`       | `tuple[Wing, ...]` | Processed for symmetry during init (tuple prevents mutation) |
-| `name`        | `str`              | Airplane identifier                                          |
-| `Cg_GP1_CgP1` | `np.ndarray`       | CG position in formation coordinates                         |
-| `weight`      | `float`            | Aircraft weight in Newtons                                   |
-| `s_ref`       | `float`            | Reference area (defaults to first `Wing`'s projected area)   |
-| `c_ref`       | `float`            | Reference chord length                                       |
-| `b_ref`       | `float`            | Reference span                                               |
+| Attribute     | Type               | Notes                                                                                |
+|---------------|--------------------|--------------------------------------------------------------------------------------|
+| `wings`       | `tuple[Wing, ...]` | Processed for symmetry during init (tuple prevents mutation)                         |
+| `name`        | `str`              | Airplane identifier                                                                  |
+| `Cg_GP1_CgP1` | `np.ndarray`       | CG position in formation coordinates                                                 |
+| `weight`      | `float`            | Aircraft weight in Newtons                                                           |
+| `s_ref`       | `float`            | Reference area (defaults to the reference planform's area)                           |
+| `c_ref`       | `float`            | Reference chord length (defaults to the reference planform's mean aerodynamic chord) |
+| `b_ref`       | `float`            | Reference span (defaults to the reference planform's extent along the y axis)        |
 
-**Note on reference dimensions**: `s_ref`, `c_ref`, and `b_ref` are normalization conventions for the vehicle as a whole, not measurements of any one mesh or time step. When one is left as `None`, `__init__` fills it once from the first `Wing`'s `projected_area`, `mean_aerodynamic_chord`, or `span`, and from then on the number is the vehicle's reference regardless of how it was obtained. Every `Airplane` derived from an existing one (the per time step `Airplane`s that the movement classes generate, the refined `Airplane`s that the convergence tools build, and the trial `Airplane`s that the trim tools deep copy) inherits these values from its base or reference `Airplane` rather than recalculating them from its own `Wing`s, so the load coefficients of every derived `Airplane` share one normalization. This is the opposite of the `Wing` class's derived properties, which are measurements of that `Wing`'s own mesh: they are recomputed for every freshly meshed `Wing` and reset by `__deepcopy__`.
+**Note on reference dimensions**: `s_ref`, `c_ref`, and `b_ref` are normalization conventions for the vehicle as a whole, not measurements of any one mesh or time step. When one is left as `None`, `__init__` fills it once from the first `Wing`'s projected reference planform, which the `Airplane` class docstring defines. The planform is built from the set geometry (not the mesh), includes the mirrored or reflected half for type 4 or type 5 symmetry, and for type 5 symmetry also includes the strip joining the two halves' root chords. It is projected onto the geometry axes' xy plane, so its area is generally not the first `Wing`'s `projected_area`, which is measured from that `Wing`'s own mesh. From then on the number is the vehicle's reference regardless of how it was obtained. Every `Airplane` derived from an existing one (the per time step `Airplane`s that the movement classes generate, the refined `Airplane`s that the convergence tools build, and the trial `Airplane`s that the trim tools deep copy) inherits these values from its base or reference `Airplane` rather than recalculating them from its own `Wing`s, so the load coefficients of every derived `Airplane` share one normalization. This is the opposite of the `Wing` class's derived properties, which are measurements of that `Wing`'s own mesh: they are recomputed for every freshly meshed `Wing` and reset by `__deepcopy__`.
 
 #### Derived from Immutable (use manual lazy caching)
 
@@ -601,16 +601,18 @@ These read-only properties expose the named load components and coefficients def
 
 #### Derived from Set Once (use manual lazy caching)
 
-| Property                     | Depends On                           | Notes                |
-|------------------------------|--------------------------------------|----------------------|
-| `projected_area`             | `panels`                             | Projected area       |
-| `wetted_area`                | `panels`                             | Wetted area          |
-| `average_panel_aspect_ratio` | `panels`                             | Average aspect ratio |
-| `span`                       | Wing cross sections, `symmetry_type` | Wing span            |
-| `standard_mean_chord`        | `projected_area`, `span`             | Standard mean chord  |
-| `mean_aerodynamic_chord`     | `projected_area`, `symmetry_type`    | MAC                  |
+| Property                     | Depends On                           | Notes                        |
+|------------------------------|--------------------------------------|------------------------------|
+| `projected_area`             | `panels`                             | Projected area               |
+| `wetted_area`                | `panels`                             | Deprecated: total Panel area |
+| `average_panel_aspect_ratio` | `panels`                             | Average aspect ratio         |
+| `span`                       | Wing cross sections, `symmetry_type` | Wing span                    |
+| `standard_mean_chord`        | `projected_area`, `span`             | Standard mean chord          |
+| `mean_aerodynamic_chord`     | `projected_area`, `symmetry_type`    | MAC                          |
 
-**Note on caching**: Most derived properties iterate over panels or wing cross sections. For large meshes, caching `projected_area`, `wetted_area`, and `span` provides meaningful performance gains if they're accessed multiple times. Since their source attributes are immutable or set once, these are cached after first computation without invalidation logic.
+**Note on caching**: Most derived properties iterate over panels or wing cross sections. For large meshes, caching `projected_area` and `span` provides meaningful performance gains if they're accessed multiple times. Since their source attributes are immutable or set once, these are cached after first computation without invalidation logic.
+
+**Note**: `wetted_area` is deprecated. Its value is the total area of the `Wing`'s `Panel`s, which lie on the mean camber surface, so it is not the `Wing`'s wetted area. Reading it emits a `DeprecationWarning`, and it will be removed in v6.0.0.
 
 #### Mutable (modified by `process_wing_symmetry` for type 5 symmetry)
 

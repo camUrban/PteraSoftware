@@ -4,10 +4,10 @@ import copy
 import unittest
 from collections.abc import Sequence
 from typing import Any
-from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import numpy.testing as npt
+import scipy.interpolate as sp_interp
 
 import pterasoftware as ps
 from tests.unit.fixtures import geometry_fixtures
@@ -150,15 +150,17 @@ class TestAirplane(unittest.TestCase):
             ps.geometry.airplane.Airplane(wings=[test_wing], weight=bad_weight)
 
     def test_reference_dimensions_default_behavior(self) -> None:
-        """Test reference dimensions default to first Wing's properties."""
-        # Create Airplane with no explicit reference dimensions
-        airplane = ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1])
+        """Test reference dimensions default to the projected reference planform's
+        dimensions."""
+        # Create Airplane with no explicit reference dimensions. Its first Wing is a 2.0
+        # meter by 1.0 meter rectangle in the geometry axes' xy plane.
+        airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_simple_rectangular_wing_fixture()]
+        )
 
-        # Reference dimensions should be populated from the first Wing
-        first_wing = airplane.wings[0]
-        self.assertEqual(airplane.s_ref, first_wing.projected_area)
-        self.assertEqual(airplane.c_ref, first_wing.mean_aerodynamic_chord)
-        self.assertEqual(airplane.b_ref, first_wing.span)
+        npt.assert_allclose(airplane.s_ref, 2.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(airplane.c_ref, 1.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(airplane.b_ref, 2.0, rtol=1e-10, atol=1e-14)
 
     def test_reference_dimensions_explicit_values(self) -> None:
         """Test reference dimensions with explicit values."""
@@ -183,42 +185,29 @@ class TestAirplane(unittest.TestCase):
             # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[test_wing], b_ref=bad_b_ref)
 
-    def test_s_ref_none_with_none_projected_area_raises(self) -> None:
-        """Test that s_ref=None raises ValueError when wing's projected_area is None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "projected_area",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing])
+    def test_s_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that s_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], c_ref=1.0, b_ref=2.0)
 
-    def test_c_ref_none_with_none_mean_aerodynamic_chord_raises(self) -> None:
-        """Test that c_ref=None raises ValueError when wing's mean_aerodynamic_chord is
-        None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "mean_aerodynamic_chord",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0)
+    def test_c_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that c_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, b_ref=2.0)
 
-    def test_b_ref_none_with_none_span_raises(self) -> None:
-        """Test that b_ref=None raises ValueError when wing's span is None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "span",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
+    def test_b_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that b_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
 
     def test_num_panels_calculation(self) -> None:
         """Test that num_panels is calculated correctly from all Wings."""
@@ -1275,3 +1264,426 @@ class TestAirplaneDraw(unittest.TestCase):
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
             self.basic_airplane.draw(save=False, testing=bad_testing)
+
+
+class TestGetPlanformReferenceDimensions(unittest.TestCase):
+    """This class contains unit tests for the function that calculates the default
+    reference dimensions from the first Wing's projected planform."""
+
+    @staticmethod
+    def _make_wing_cross_section(
+        chord: float,
+        Lp_Wcsp_Lpp: np.ndarray | Sequence[float | int],
+        angles_Wcsp_to_Wcs_ixyz: np.ndarray | Sequence[float | int] = (0.0, 0.0, 0.0),
+        control_surface_symmetry_type: str | None = None,
+        is_tip: bool = False,
+    ) -> ps.geometry.wing_cross_section.WingCrossSection:
+        """Create a WingCrossSection with the given chord, position, and orientation."""
+        return ps.geometry.wing_cross_section.WingCrossSection(
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            num_spanwise_panels=None if is_tip else 2,
+            chord=chord,
+            Lp_Wcsp_Lpp=Lp_Wcsp_Lpp,
+            angles_Wcsp_to_Wcs_ixyz=angles_Wcsp_to_Wcs_ixyz,
+            control_surface_symmetry_type=control_surface_symmetry_type,
+            spanwise_spacing=None if is_tip else "uniform",
+        )
+
+    def _make_tapered_wing(
+        self,
+        Ler_Gs_Cgs: Sequence[float | int] = (0.0, 0.0, 0.0),
+        symmetric: bool = False,
+    ) -> ps.geometry.wing.Wing:
+        """Create a planar Wing whose half has chords of 1.0 m, 0.8 m, and 0.5 m at
+        spanwise positions of 0.0 m, 1.2 m, and 2.4 m from its root, with leading points
+        0.0 m, 0.35 m, and 0.8 m aft of the root's, mirrored across the geometry axes'
+        xz plane if symmetric."""
+        control_surface_symmetry_type = "symmetric" if symmetric else None
+        return ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(
+                    1.0,
+                    (0.0, 0.0, 0.0),
+                    control_surface_symmetry_type=control_surface_symmetry_type,
+                ),
+                self._make_wing_cross_section(
+                    0.8,
+                    (0.35, 1.2, 0.0),
+                    control_surface_symmetry_type=control_surface_symmetry_type,
+                ),
+                self._make_wing_cross_section(
+                    0.5,
+                    (0.45, 1.2, 0.0),
+                    control_surface_symmetry_type=control_surface_symmetry_type,
+                    is_tip=True,
+                ),
+            ],
+            Ler_Gs_Cgs=Ler_Gs_Cgs,
+            symmetric=symmetric,
+            symmetryNormal_G=(0.0, 1.0, 0.0) if symmetric else None,
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0) if symmetric else None,
+        )
+
+    @staticmethod
+    def _get_reference_dimensions(
+        wing: ps.geometry.wing.Wing,
+    ) -> tuple[float, float, float]:
+        """Process a Wing's symmetry and return its planform reference dimensions."""
+        first_wings = ps.geometry.airplane.Airplane.process_wing_symmetry(wing)
+        return ps.geometry.airplane._get_planform_reference_dimensions(first_wings)
+
+    def test_type_5_includes_gap_between_halves(self) -> None:
+        """Test that a type 5 Wing's reference dimensions include both halves and the
+        gap between them."""
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(
+            self._make_tapered_wing(Ler_Gs_Cgs=(0.0, 0.3, 0.0), symmetric=True)
+        )
+
+        # Each half's integral of the chord squared is 1.2 * (1.0 + 0.8 + 0.64) / 3 +
+        # 1.2 * (0.64 + 0.4 + 0.25) / 3 = 1.492, and the 0.6 m gap adds 0.6 * 1.0^2.
+        npt.assert_allclose(s_ref, 2 * 1.86 + 0.6, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, (2 * 1.492 + 0.6) / 4.32, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 5.4, rtol=1e-10, atol=1e-14)
+
+    def test_type_4_includes_mirrored_half(self) -> None:
+        """Test that a type 4 Wing's reference dimensions include its mirrored half."""
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(
+            self._make_tapered_wing(symmetric=True)
+        )
+
+        npt.assert_allclose(s_ref, 2 * 1.86, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, 2 * 1.492 / 3.72, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 4.8, rtol=1e-10, atol=1e-14)
+
+    def test_type_2_uses_reflected_half(self) -> None:
+        """Test that a type 2 Wing's reference dimensions come from its reflected
+        half."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.5, (0.2, 2.0, 0.0), is_tip=True),
+            ],
+            mirror_only=True,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        npt.assert_allclose(s_ref, 1.5, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(
+            c_ref, 2.0 * (1.0 + 0.5 + 0.25) / 3 / 1.5, rtol=1e-10, atol=1e-14
+        )
+        npt.assert_allclose(b_ref, 2.0, rtol=1e-10, atol=1e-14)
+
+    def test_control_surface_deflection_has_no_effect(self) -> None:
+        """Test that a control surface deflection doesn't change the reference
+        dimensions."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                ps.geometry.wing_cross_section.WingCrossSection(
+                    airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+                    num_spanwise_panels=2,
+                    chord=1.0,
+                    Lp_Wcsp_Lpp=(0.0, 0.0, 0.0),
+                    angles_Wcsp_to_Wcs_ixyz=(0.0, 0.0, 0.0),
+                    control_surface_deflection=5.0,
+                    spanwise_spacing="uniform",
+                ),
+                self._make_wing_cross_section(0.5, (0.2, 2.0, 0.0), is_tip=True),
+            ],
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        npt.assert_allclose(s_ref, 1.5, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(
+            c_ref, 2.0 * (1.0 + 0.5 + 0.25) / 3 / 1.5, rtol=1e-10, atol=1e-14
+        )
+        npt.assert_allclose(b_ref, 2.0, rtol=1e-10, atol=1e-14)
+
+    def test_slanted_wing_cross_sections(self) -> None:
+        """Test a Wing whose middle and tip chord lines are slanted relative to the
+        geometry axes' x axis."""
+        # Place the middle chord line from (0.3, 1.4) to (1.05, 1.1) and the tip chord
+        # line from (0.75, 2.3) to (1.2, 2.6) (in geometry axes projected onto its xy
+        # plane, relative to the CG).
+        middle_angle = -np.rad2deg(np.arctan2(0.3, 0.75))
+        tip_angle = np.rad2deg(np.arctan2(0.3, 0.45))
+        middle_angle_rad = np.deg2rad(middle_angle)
+        tipLp_Wn_Lpp = np.array([0.45, 0.9, 0.0])
+        tipLp_Wcsp_Lpp = (
+            tipLp_Wn_Lpp[0] * np.cos(middle_angle_rad)
+            + tipLp_Wn_Lpp[1] * np.sin(middle_angle_rad),
+            -tipLp_Wn_Lpp[0] * np.sin(middle_angle_rad)
+            + tipLp_Wn_Lpp[1] * np.cos(middle_angle_rad),
+            0.0,
+        )
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(
+                    float(np.hypot(0.75, 0.3)),
+                    (0.3, 1.4, 0.0),
+                    (0.0, 0.0, middle_angle),
+                ),
+                self._make_wing_cross_section(
+                    float(np.hypot(0.45, 0.3)),
+                    tipLp_Wcsp_Lpp,
+                    (0.0, 0.0, tip_angle - middle_angle),
+                    is_tip=True,
+                ),
+            ],
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        # The chord is linear between the vertices' y components (0.0, 1.1, 1.4, 2.3,
+        # and 2.6), where it is 1.0, 1.05 - 0.3 * 1.1 / 1.4, 0.78, 0.42, and 0.0.
+        breakpoint_chords = [1.0, 1.05 - 0.3 * 1.1 / 1.4, 0.78, 0.42, 0.0]
+        widths = [1.1, 0.3, 0.9, 0.3]
+        integral = sum(
+            width * (start**2 + start * end + end**2) / 3
+            for width, start, end in zip(
+                widths, breakpoint_chords[:-1], breakpoint_chords[1:]
+            )
+        )
+        npt.assert_allclose(s_ref, 1.84, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, integral / 1.84, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 2.6, rtol=1e-10, atol=1e-14)
+
+    def test_vertical_winglet_contributes_nothing(self) -> None:
+        """Test that a vertical winglet at the tip leaves the reference dimensions
+        unchanged."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.8, (0.3, 2.0, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.4, (0.3, 0.5, 0.0), is_tip=True),
+            ],
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        npt.assert_allclose(s_ref, 1.8, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(
+            c_ref, 2.0 * (1.0 + 0.8 + 0.64) / 3 / 1.8, rtol=1e-10, atol=1e-14
+        )
+        npt.assert_allclose(b_ref, 2.0, rtol=1e-10, atol=1e-14)
+
+    def test_tilted_wing_is_projected(self) -> None:
+        """Test that a Wing tilted about the geometry axes' x axis is projected onto the
+        geometry axes' xy plane."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
+            ],
+            angles_Gs_to_Wn_ixyz=(40.0, 0.0, 0.0),
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        # Tilting scales every position along the geometry axes' y axis by the cosine,
+        # so the reference chord is unchanged.
+        cos_tilt = np.cos(np.deg2rad(40.0))
+        npt.assert_allclose(s_ref, 0.8 * cos_tilt, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, (1.0 + 0.6 + 0.36) / 3 / 0.8, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, cos_tilt, rtol=1e-10, atol=1e-14)
+
+    def test_edge_defined_uses_untrimmed_curves(self) -> None:
+        """Test that an edge_defined Wing's reference dimensions come from its untrimmed
+        edge curves."""
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=[
+                [0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 2.0, 0.0],
+            ],
+            trailingEdgePoints_Wn_Ler=[[1.0, 0.0, 0.0], [1.0, 2.0, 0.0]],
+            num_wing_cross_sections=5,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            tip_trim_fraction=0.2,
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        npt.assert_allclose(s_ref, 2.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, 1.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 2.0, rtol=1e-10, atol=1e-14)
+
+    def test_edge_defined_follows_pchip_curves(self) -> None:
+        """Test that an edge_defined Wing's reference area matches the area between its
+        PCHIP edge curves."""
+        leadingEdgePoints_Wn_Ler = np.array(
+            [[0.0, 0.0, 0.0], [0.4, 1.0, 0.0], [0.5, 1.5, 0.0], [1.2, 2.0, 0.0]]
+        )
+        trailingEdgePoints_Wn_Ler = np.array(
+            [[1.0, 0.0, 0.0], [1.3, 1.2, 0.0], [1.4, 2.0, 0.0]]
+        )
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=leadingEdgePoints_Wn_Ler,
+            trailingEdgePoints_Wn_Ler=trailingEdgePoints_Wn_Ler,
+            num_wing_cross_sections=4,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+            tip_trim_fraction=0.1,
+        )
+
+        s_ref, _, b_ref = self._get_reference_dimensions(wing)
+
+        # The sampled curves approximate the PCHIP curves, so the area agrees closely
+        # but not exactly. The measured relative error is about 1.1e-5, so a relative
+        # tolerance of 1e-4 leaves a margin of about ten times.
+        pchip_area = sp_interp.PchipInterpolator(
+            trailingEdgePoints_Wn_Ler[:, 1], trailingEdgePoints_Wn_Ler[:, 0]
+        ).integrate(0.0, 2.0) - sp_interp.PchipInterpolator(
+            leadingEdgePoints_Wn_Ler[:, 1], leadingEdgePoints_Wn_Ler[:, 0]
+        ).integrate(
+            0.0, 2.0
+        )
+        npt.assert_allclose(s_ref, pchip_area, rtol=1e-4)
+        npt.assert_allclose(b_ref, 2.0, rtol=1e-10, atol=1e-14)
+
+    def test_vertical_wing_raises_steep_error(self) -> None:
+        """Test that a vertical Wing raises the steeply inclined error."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
+            ],
+            angles_Gs_to_Wn_ixyz=(90.0, 0.0, 0.0),
+        )
+
+        with self.assertRaisesRegex(ValueError, "too steeply inclined"):
+            self._get_reference_dimensions(wing)
+
+    def test_wing_tilted_past_threshold_raises_steep_error(self) -> None:
+        """Test that a Wing tilted more than 45 degrees raises the steeply inclined
+        error."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.6, (0.3, 1.0, 0.0), is_tip=True),
+            ],
+            angles_Gs_to_Wn_ixyz=(50.0, 0.0, 0.0),
+        )
+
+        with self.assertRaisesRegex(ValueError, "too steeply inclined"):
+            self._get_reference_dimensions(wing)
+
+    def test_type_5_vertical_halves_raise_steep_error(self) -> None:
+        """Test that a type 5 Wing with vertical halves raises the steeply inclined
+        error, even though the bridge strip between them is horizontal."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(
+                    1.0, (0.0, 0.0, 0.0), control_surface_symmetry_type="symmetric"
+                ),
+                self._make_wing_cross_section(
+                    1.0,
+                    (0.0, 1.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    is_tip=True,
+                ),
+            ],
+            Ler_Gs_Cgs=(0.0, 2.0, 0.0),
+            angles_Gs_to_Wn_ixyz=(90.0, 0.0, 0.0),
+            symmetric=True,
+            symmetryNormal_G=(0.0, 1.0, 0.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, 0.0),
+        )
+
+        with self.assertRaisesRegex(ValueError, "too steeply inclined"):
+            self._get_reference_dimensions(wing)
+
+    def test_turned_back_strip_without_overlap_is_accepted(self) -> None:
+        """Test that a Wing whose last strip turns back toward the root, but sits aft of
+        the rest of the projected planform, is accepted and counted in full."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (0.0, 1.0, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (1.5, 0.3, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.5, (0.0, 0.4, 0.0), is_tip=True),
+            ],
+        )
+
+        s_ref, c_ref, b_ref = self._get_reference_dimensions(wing)
+
+        # The first strip is a 1.0 m square, the second is vertical, and the third runs
+        # from y = 1.0 m back to y = 0.6 m, 1.5 m aft of the first, with chords of 1.0 m
+        # and 0.5 m, so its area is 0.3 m^2. The projected chord is 1.0 m below y = 0.6
+        # m and rises linearly from 1.5 m to 2.0 m above it.
+        integral = 0.6 * 1.0 + 0.4 * (1.5**2 + 1.5 * 2.0 + 2.0**2) / 3
+        npt.assert_allclose(s_ref, 1.3, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(c_ref, integral / 1.3, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(b_ref, 1.0, rtol=1e-10, atol=1e-14)
+
+    def test_fold_raises_ill_formed_error(self) -> None:
+        """Test that a Wing that folds back over itself raises the ill-formed error."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(1.0, (0.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (0.0, 1.0, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(1.0, (0.0, 0.3, 0.0), (90.0, 0.0, 0.0)),
+                self._make_wing_cross_section(0.5, (0.2, 0.5, 0.0), is_tip=True),
+            ],
+        )
+
+        with self.assertRaisesRegex(ValueError, "two of its parts overlap"):
+            self._get_reference_dimensions(wing)
+
+    def test_crossing_edge_curves_raise_ill_formed_error(self) -> None:
+        """Test that an edge_defined Wing whose edge curves cross raises the ill-formed
+        error."""
+        wing = ps.geometry.wing.Wing.from_edge_points(
+            leadingEdgePoints_Wn_Ler=[
+                [0.0, 0.0, 0.0],
+                [2.0, 1.0, 0.0],
+                [0.2, 2.0, 0.0],
+            ],
+            trailingEdgePoints_Wn_Ler=[[1.0, 0.0, 0.0], [1.0, 2.0, 0.0]],
+            num_wing_cross_sections=2,
+            airfoil=ps.geometry.airfoil.Airfoil(name="naca0012"),
+        )
+
+        with self.assertRaisesRegex(ValueError, "crosses over itself"):
+            self._get_reference_dimensions(wing)
+
+    def test_overlapping_strips_raise_ill_formed_error(self) -> None:
+        """Test that a Wing that spirals past a full turn, so that its last strip
+        overlaps its first, raises the ill-formed error."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[self._make_wing_cross_section(0.3, (0.0, 0.0, 0.0))]
+            + [
+                self._make_wing_cross_section(0.3, (0.0, 1.0, 0.0), (0.0, 0.0, 60.0))
+                for _ in range(6)
+            ]
+            + [self._make_wing_cross_section(0.3, (0.0, 1.0, 0.0), is_tip=True)],
+        )
+
+        with self.assertRaisesRegex(ValueError, "two of its parts overlap"):
+            self._get_reference_dimensions(wing)
+
+    def test_type_5_overlapping_halves_raise_ill_formed_error(self) -> None:
+        """Test that a type 5 Wing whose halves overlap along the geometry axes' y axis
+        raises the ill-formed error."""
+        wing = ps.geometry.wing.Wing(
+            wing_cross_sections=[
+                self._make_wing_cross_section(
+                    1.0, (0.0, 0.0, 0.0), control_surface_symmetry_type="symmetric"
+                ),
+                self._make_wing_cross_section(
+                    0.6,
+                    (0.3, 2.0, 0.0),
+                    control_surface_symmetry_type="symmetric",
+                    is_tip=True,
+                ),
+            ],
+            symmetric=True,
+            symmetryNormal_G=(0.0, 0.0, 1.0),
+            symmetryPoint_G_Cg=(0.0, 0.0, -1.0),
+        )
+
+        with self.assertRaisesRegex(ValueError, "two halves overlap"):
+            self._get_reference_dimensions(wing)

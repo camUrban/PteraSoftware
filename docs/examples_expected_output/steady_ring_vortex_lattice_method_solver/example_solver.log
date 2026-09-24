@@ -6,7 +6,7 @@ WARNING |_serialization                              |The file was saved with un
 WARNING |_serialization                              |The current working tree has uncommitted changes
 INFO    |_serialization                              |Loaded SteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
-INFO    |output                                      |  Reynolds Number: 7.76E+05
+INFO    |output                                      |  Reynolds Number: 7.74E+05
 INFO    |output                                      |  Forces (in Geometry Axes):
 INFO    |output                                      |    fX_G:           -48.0 N
 INFO    |output                                      |    fY_G:       -1.61E-10 N
@@ -17,7 +17,7 @@ INFO    |output                                      |    mY_G_Cg:    -1.00E+03 
 INFO    |output                                      |    mZ_G_Cg:     1.78E-08 Nm
 INFO    |output                                      |  Force Coefficients (in Geometry Axes):
 INFO    |output                                      |    cFX_G:        -0.0582
-INFO    |output                                      |    cFY_G:      -1.96E-13
+INFO    |output                                      |    cFY_G:      -1.95E-13
 INFO    |output                                      |    cFZ_G:           1.00
 INFO    |output                                      |  Moment Coefficients (in Geometry Axes, Relative to the CG):
 INFO    |output                                      |    cMX_G_Cg:   -1.26E-12
@@ -33,9 +33,9 @@ INFO    |output                                      |    mY_W_Cg:    -1.00E+03 
 INFO    |output                                      |    mZ_W_Cg:    -1.88E-08 Nm    Yawing Moment:                 -1.88E-08 Nm
 INFO    |output                                      |  Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:        -0.0295       Induced Drag Coefficient:         0.0295
-INFO    |output                                      |    cFY_W:      -1.96E-13       Crosswind Force Coefficient:    1.96E-13
-INFO    |output                                      |    cFZ_W:          -1.01       Lift Coefficient:                   1.01
+INFO    |output                                      |    cFY_W:      -1.95E-13       Crosswind Force Coefficient:    1.95E-13
+INFO    |output                                      |    cFZ_W:          -1.00       Lift Coefficient:                   1.00
 INFO    |output                                      |  Moment Coefficients (in Wind Axes, Relative to the CG):
 INFO    |output                                      |    cMX_W_Cg:    1.10E-12       Rolling Moment Coefficient:     1.10E-12
 INFO    |output                                      |    cMY_W_Cg:       -1.04       Pitching Moment Coefficient:       -1.04
-INFO    |output                                      |    cMZ_W_Cg:   -1.90E-12       Yawing Moment Coefficient:     -1.90E-12
+INFO    |output                                      |    cMZ_W_Cg:   -1.89E-12       Yawing Moment Coefficient:     -1.89E-12

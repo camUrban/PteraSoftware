@@ -4,7 +4,6 @@ import copy
 import unittest
 from collections.abc import Sequence
 from typing import Any
-from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import numpy.testing as npt
@@ -151,15 +150,17 @@ class TestAirplane(unittest.TestCase):
             ps.geometry.airplane.Airplane(wings=[test_wing], weight=bad_weight)
 
     def test_reference_dimensions_default_behavior(self) -> None:
-        """Test reference dimensions default to first Wing's properties."""
-        # Create Airplane with no explicit reference dimensions
-        airplane = ps.geometry.airplane.Airplane(wings=[self.test_wing_type_1])
+        """Test reference dimensions default to the projected reference planform's
+        dimensions."""
+        # Create Airplane with no explicit reference dimensions. Its first Wing is a 2.0
+        # meter by 1.0 meter rectangle in the geometry axes' xy plane.
+        airplane = ps.geometry.airplane.Airplane(
+            wings=[geometry_fixtures.make_simple_rectangular_wing_fixture()]
+        )
 
-        # Reference dimensions should be populated from the first Wing
-        first_wing = airplane.wings[0]
-        self.assertEqual(airplane.s_ref, first_wing.projected_area)
-        self.assertEqual(airplane.c_ref, first_wing.mean_aerodynamic_chord)
-        self.assertEqual(airplane.b_ref, first_wing.span)
+        npt.assert_allclose(airplane.s_ref, 2.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(airplane.c_ref, 1.0, rtol=1e-10, atol=1e-14)
+        npt.assert_allclose(airplane.b_ref, 2.0, rtol=1e-10, atol=1e-14)
 
     def test_reference_dimensions_explicit_values(self) -> None:
         """Test reference dimensions with explicit values."""
@@ -184,42 +185,29 @@ class TestAirplane(unittest.TestCase):
             # noinspection PyTypeChecker
             ps.geometry.airplane.Airplane(wings=[test_wing], b_ref=bad_b_ref)
 
-    def test_s_ref_none_with_none_projected_area_raises(self) -> None:
-        """Test that s_ref=None raises ValueError when wing's projected_area is None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "projected_area",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing])
+    def test_s_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that s_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], c_ref=1.0, b_ref=2.0)
 
-    def test_c_ref_none_with_none_mean_aerodynamic_chord_raises(self) -> None:
-        """Test that c_ref=None raises ValueError when wing's mean_aerodynamic_chord is
-        None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "mean_aerodynamic_chord",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0)
+    def test_c_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that c_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, b_ref=2.0)
 
-    def test_b_ref_none_with_none_span_raises(self) -> None:
-        """Test that b_ref=None raises ValueError when wing's span is None."""
-        with patch.object(
-            ps.geometry.wing.Wing,
-            "span",
-            new_callable=PropertyMock,
-            return_value=None,
-        ):
-            test_wing = geometry_fixtures.make_type_1_wing_fixture()
-            with self.assertRaises(ValueError):
-                ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
+    def test_b_ref_none_with_vertical_first_wing_raises(self) -> None:
+        """Test that b_ref=None raises ValueError when the first Wing is vertical."""
+        test_wing = geometry_fixtures.make_rotated_rectangular_wing_fixture(
+            (90.0, 0.0, 0.0)
+        )
+        with self.assertRaises(ValueError):
+            ps.geometry.airplane.Airplane(wings=[test_wing], s_ref=2.0, c_ref=1.0)
 
     def test_num_panels_calculation(self) -> None:
         """Test that num_panels is calculated correctly from all Wings."""

@@ -44,6 +44,33 @@ class Airplane:
     +y points to the right (starboard direction), and +z points upward (completing a
     right-handed system).
 
+    The reference planform supplies the default reference dimensions. It is the planform
+    of the first element of the wings passed to the Airplane, including its mirrored
+    half if it has type 4 symmetry, or the reflected Wing that symmetry processing
+    creates for it if it has type 5 symmetry. It is built from the set geometry, in
+    geometry axes, as a set of strips. For a Wing built from WingCrossSections, each
+    strip joins two neighboring WingCrossSections' leading points and undeflected
+    trailing points, so control surface deflections have no effect. An edge_defined
+    Wing's whole half is one strip, bounded by its stored, untrimmed leading and
+    trailing edge curves. For type 5 symmetry, one more strip joins the two halves' root
+    chords, filling any gap between them. The strips are then projected onto the
+    geometry axes' xy plane. The default s_ref is the sum of the strips' projected
+    areas, the default b_ref is the extent of all the strips' points along the geometry
+    axes' y axis, and the default c_ref is the mean aerodynamic chord: the integral of
+    the square of the projected chord along the geometry axes' y axis, divided by the
+    default s_ref. A strip that is edge-on in the projection, such as a vertical
+    winglet, contributes nothing to s_ref or c_ref.
+
+    Computing the defaults raises a ValueError in two cases. The first is when the
+    reference planform is too steeply inclined: its area projected onto the geometry
+    axes' xy plane is less than 1 / sqrt(2) times its area projected onto the xy plane
+    of the wing axes of the first element of wings (for type 5 symmetry, both areas
+    leave out the strip joining the halves). The second is when the reference planform's
+    projection is ill-formed: within one half, the strips that are not edge-on have
+    projected areas of different signs, a strip crosses over itself, two strips overlap,
+    or, for type 5 symmetry, the two halves overlap along the geometry axes' y axis. In
+    either case, s_ref, c_ref, and b_ref must all be passed explicitly.
+
     Immutable attributes (wings, name, Cg_GP1_CgP1, weight, s_ref, c_ref, and b_ref) are
     set during initialization and cannot be modified afterward. The numpy array
     Cg_GP1_CgP1 is made read only to prevent in place mutation. The wings attribute is
@@ -127,32 +154,39 @@ class Airplane:
             OperatingPoint's gravitational acceleration, satisfying weight == mass *
             np.linalg.norm(g_E) within floating point tolerance.
         :param s_ref: A number (int or float) representing the reference area. If not
-            set or set to None (the default), it populates from the first Wing's
-            projected_area. If set, it must be greater than zero, and will be converted
-            to a float internally. The units are square meters. Airplanes derived from
-            this one (those at each time step of an unsteady simulation, those refined
-            by a convergence analysis, and those tried by a trim analysis) inherit the
-            resulting value rather than recomputing it from their own Wings, so all of
-            their load coefficients share one normalization.
+            set or set to None (the default), it populates from the projected area of
+            the reference planform, as described in the class docstring. If set, it must
+            be greater than zero, and will be converted to a float internally. The units
+            are square meters. Airplanes derived from this one (those at each time step
+            of an unsteady simulation, those refined by a convergence analysis, and
+            those tried by a trim analysis) inherit the resulting value rather than
+            recomputing it from their own Wings, so all of their load coefficients share
+            one normalization.
         :param c_ref: A number (int or float) representing the reference chord length.
-            If not set or set to None (the default), it populates from first Wing. If
-            set, it must be greater than zero, and will be converted to a float
-            internally. The units are meters. Derived Airplanes inherit the resulting
-            value in the same way as s_ref.
+            If not set or set to None (the default), it populates from the mean
+            aerodynamic chord of the projected reference planform, as described in the
+            class docstring. If set, it must be greater than zero, and will be converted
+            to a float internally. The units are meters. Derived Airplanes inherit the
+            resulting value in the same way as s_ref.
         :param b_ref: A number (int or float) representing the reference span. If not
-            set or set to None (the default value), it populates from first Wing. If
-            set, it must be greater than zero, and will be converted to a float
-            internally. The units are meters. Derived Airplanes inherit the resulting
-            value in the same way as s_ref.
+            set or set to None (the default value), it populates from the span of the
+            projected reference planform, as described in the class docstring. If set,
+            it must be greater than zero, and will be converted to a float internally.
+            The units are meters. Derived Airplanes inherit the resulting value in the
+            same way as s_ref.
         """
         # Initialize the immutable attributes. Set those that are numpy arrays to be
         # read only. Store wings as a tuple to prevent external mutation.
         wings = _parameter_validation.non_empty_list_return_list(wings, "wings")
         processed_wings: list[wing_mod.Wing] = []
+        first_wings: list[wing_mod.Wing] = []
         for wing in wings:
             if not isinstance(wing, wing_mod.Wing):
                 raise TypeError("Every element in wings must be a Wing")
-            processed_wings.extend(self.process_wing_symmetry(wing))
+            wing_symmetry_wings = self.process_wing_symmetry(wing)
+            if not first_wings:
+                first_wings = wing_symmetry_wings
+            processed_wings.extend(wing_symmetry_wings)
         self._wings = tuple(processed_wings)
 
         self._name = _parameter_validation.str_return_str(name, "name")
@@ -169,43 +203,27 @@ class Airplane:
             min_inclusive=True,
         )
 
-        # If any of the passed reference dimensions are None, set them to first Wing's
-        # corresponding reference. Otherwise, set them to the passed dimension after
-        # checking that it is valid.
+        # If any of the passed reference dimensions are None, set them to the
+        # corresponding dimension of the projected reference planform. Otherwise, set
+        # them to the passed dimension after checking that it is valid.
+        if s_ref is None or c_ref is None or b_ref is None:
+            default_s_ref, default_c_ref, default_b_ref = (
+                _get_planform_reference_dimensions(first_wings)
+            )
         if s_ref is None:
-            first_wing_projected_area = self._wings[0].projected_area
-            if first_wing_projected_area is None:
-                raise ValueError(
-                    "s_ref was not provided and the first Wing's projected_area is "
-                    "None. Either provide an explicit s_ref or ensure the first Wing "
-                    "is meshed."
-                )
-            self._s_ref = first_wing_projected_area
+            self._s_ref = default_s_ref
         else:
             self._s_ref = _parameter_validation.number_in_range_return_float(
                 s_ref, "s_ref", min_val=0.0, min_inclusive=False
             )
         if c_ref is None:
-            first_wing_mean_aerodynamic_chord = self._wings[0].mean_aerodynamic_chord
-            if first_wing_mean_aerodynamic_chord is None:
-                raise ValueError(
-                    "c_ref was not provided and the first Wing's "
-                    "mean_aerodynamic_chord is None. Either provide an explicit c_ref "
-                    "or ensure the first Wing is meshed."
-                )
-            self._c_ref = first_wing_mean_aerodynamic_chord
+            self._c_ref = default_c_ref
         else:
             self._c_ref = _parameter_validation.number_in_range_return_float(
                 c_ref, "c_ref", min_val=0.0, min_inclusive=False
             )
         if b_ref is None:
-            first_wing_span = self._wings[0].span
-            if first_wing_span is None:
-                raise ValueError(
-                    "b_ref was not provided and the first Wing's span is None. Either "
-                    "provide an explicit b_ref or ensure the first Wing is meshed."
-                )
-            self._b_ref = first_wing_span
+            self._b_ref = default_b_ref
         else:
             self._b_ref = _parameter_validation.number_in_range_return_float(
                 b_ref, "b_ref", min_val=0.0, min_inclusive=False
@@ -1239,25 +1257,16 @@ def _get_planform_reference_dimensions(
     first_wings: list[wing_mod.Wing],
 ) -> tuple[float, float, float]:
     """Calculates the default reference area, reference chord, and reference span from
-    the projected planform of an Airplane's first Wing.
+    an Airplane's projected reference planform.
 
-    The planform is built from the set geometry, in geometry axes, as a set of strips.
-    For a Wing built from WingCrossSections, each strip joins two neighboring
-    WingCrossSections' leading points and undeflected trailing points. An edge_defined
-    Wing's whole half is one strip, bounded by its stored, untrimmed edge curves. A type
-    4 Wing's mirrored half is found by reflecting the original half, and for type 5
-    symmetry, a bridge strip joins the two halves' root chords. The strips are then
-    projected onto the geometry axes' xy plane.
-
-    The reference span is the extent of all the strips' points along the geometry axes'
-    y axis, and the reference area is the sum of the strips' projected areas. The
-    reference chord is the integral of the square of the projected chord along the
-    geometry axes' y axis, divided by the reference area. Strips that are edge-on in the
-    projection contribute nothing to the reference area or the reference chord.
+    The Airplane class docstring defines the reference planform, the three reference
+    dimensions, and the conditions under which this function raises. A type 4 Wing's
+    mirrored half is found by reflecting the original half, and for type 5 symmetry, the
+    strip joining the two halves is called the bridge strip.
 
     :param first_wings: The list of meshed Wings that process_wing_symmetry returns for
-        the first Wing passed to an Airplane. It holds one Wing, or two for type 5
-        symmetry.
+        the first element of the wings passed to an Airplane. It holds one Wing, or two
+        for type 5 symmetry.
     :return: A tuple of three floats, which are the reference area, the reference chord,
         and the reference span. Their units are square meters, meters, and meters.
     :raises ValueError: If the planform is too steeply inclined relative to the geometry
@@ -1347,11 +1356,13 @@ def _get_planform_reference_dimensions(
         <= _PLANFORM_RELATIVE_TOLERANCE * vector_area_magnitude
     ):
         raise ValueError(
-            "The default reference dimensions come from the first Wing's planform "
-            "projected onto the geometry axes' xy plane, but that planform is too "
+            "The default reference dimensions come from the reference planform (defined "
+            "in the Airplane class docstring) projected onto the geometry axes' xy "
+            "plane, but that planform is too "
             "steeply inclined relative to that plane to serve as a reference. Its "
-            "projected area is less than 1 / sqrt(2) times its area projected onto its "
-            "own wing axes' xy plane. Pass s_ref, c_ref, and b_ref explicitly."
+            "projected area is less than 1 / sqrt(2) times its area projected onto the "
+            "xy plane of the wing axes of the first element of wings. Pass s_ref, "
+            "c_ref, and b_ref explicitly."
         )
 
     # A strip is edge-on when its projected area is negligible compared to the magnitude
@@ -1365,8 +1376,9 @@ def _get_planform_reference_dimensions(
     # Check that the projected planform is well-formed, starting with the signs of each
     # half's strips that aren't edge-on.
     ill_formed_message = (
-        "The default reference dimensions come from the first Wing's planform "
-        "projected onto the geometry axes' xy plane, but that projection is "
+        "The default reference dimensions come from the reference planform (defined in "
+        "the Airplane class docstring) projected onto the geometry axes' xy plane, but "
+        "that projection is "
         "ill-formed because {}. Pass s_ref, c_ref, and b_ref explicitly. This geometry "
         "passed parameter validation, but it is likely a degenerate edge case, such as "
         "a Wing that folds or spirals back over itself. Other parts of the simulation "

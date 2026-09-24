@@ -10,34 +10,34 @@ WARNING |_serialization                              |The current working tree h
 INFO    |_serialization                              |Loaded UnsteadyRingVortexLatticeMethodSolver from example_solver.psz
 INFO    |output                                      |Airplane "Example Airplane":
 INFO    |output                                      |  Final Forces (in Geometry Axes):
-INFO    |output                                      |    fX_G:            3.72 N
-INFO    |output                                      |    fY_G:        1.02E-11 N
-INFO    |output                                      |    fZ_G:            376. N
+INFO    |output                                      |    fX_G:            3.73 N
+INFO    |output                                      |    fY_G:        1.01E-11 N
+INFO    |output                                      |    fZ_G:            375. N
 INFO    |output                                      |  Final Moments (in Geometry Axes, Relative to the CG):
-INFO    |output                                      |    mX_G_Cg:     9.06E-10 Nm
-INFO    |output                                      |    mY_G_Cg:         20.6 Nm
+INFO    |output                                      |    mX_G_Cg:     9.07E-10 Nm
+INFO    |output                                      |    mY_G_Cg:         20.9 Nm
 INFO    |output                                      |    mZ_G_Cg:    -5.09E-10 Nm
 INFO    |output                                      |  Final Force Coefficients (in Geometry Axes):
 INFO    |output                                      |    cFX_G:        0.00312
-INFO    |output                                      |    cFY_G:       8.57E-15
+INFO    |output                                      |    cFY_G:       8.46E-15
 INFO    |output                                      |    cFZ_G:          0.315
 INFO    |output                                      |  Final Moment Coefficients (in Geometry Axes, Relative to the CG):
-INFO    |output                                      |    cMX_G_Cg:    6.33E-14
-INFO    |output                                      |    cMY_G_Cg:      0.0106
+INFO    |output                                      |    cMX_G_Cg:    6.34E-14
+INFO    |output                                      |    cMY_G_Cg:      0.0108
 INFO    |output                                      |    cMZ_G_Cg:   -3.56E-14
 INFO    |output                                      |  Final Forces (in Wind Axes):
 INFO    |output                                      |    fX_W:           -10.3 N     Induced Drag:                       10.3 N
-INFO    |output                                      |    fY_W:        1.02E-11 N     Crosswind Force:               -1.02E-11 N
+INFO    |output                                      |    fY_W:        1.01E-11 N     Crosswind Force:               -1.01E-11 N
 INFO    |output                                      |    fZ_W:           -375. N     Lift:                               375. N
 INFO    |output                                      |  Final Moments (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    mX_W_Cg:    -8.97E-10 Nm    Rolling Moment:                -8.97E-10 Nm
-INFO    |output                                      |    mY_W_Cg:         20.6 Nm    Pitching Moment:                    20.6 Nm
-INFO    |output                                      |    mZ_W_Cg:     5.24E-10 Nm    Yawing Moment:                  5.24E-10 Nm
+INFO    |output                                      |    mX_W_Cg:    -8.98E-10 Nm    Rolling Moment:                -8.98E-10 Nm
+INFO    |output                                      |    mY_W_Cg:         20.9 Nm    Pitching Moment:                    20.9 Nm
+INFO    |output                                      |    mZ_W_Cg:     5.25E-10 Nm    Yawing Moment:                  5.25E-10 Nm
 INFO    |output                                      |  Final Force Coefficients (in Wind Axes):
 INFO    |output                                      |    cFX_W:       -0.00862       Induced Drag Coefficient:        0.00862
-INFO    |output                                      |    cFY_W:       8.57E-15       Crosswind Force Coefficient:   -8.57E-15
+INFO    |output                                      |    cFY_W:       8.46E-15       Crosswind Force Coefficient:   -8.46E-15
 INFO    |output                                      |    cFZ_W:         -0.315       Lift Coefficient:                  0.315
 INFO    |output                                      |  Final Moment Coefficients (in Wind Axes, Relative to the CG):
-INFO    |output                                      |    cMX_W_Cg:   -6.27E-14       Rolling Moment Coefficient:    -6.27E-14
-INFO    |output                                      |    cMY_W_Cg:      0.0106       Pitching Moment Coefficient:      0.0106
+INFO    |output                                      |    cMX_W_Cg:   -6.28E-14       Rolling Moment Coefficient:    -6.28E-14
+INFO    |output                                      |    cMY_W_Cg:      0.0108       Pitching Moment Coefficient:      0.0108
 INFO    |output                                      |    cMZ_W_Cg:    3.67E-14       Yawing Moment Coefficient:      3.67E-14

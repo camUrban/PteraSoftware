@@ -92,13 +92,27 @@ class Airplane:
     first Airplane, moments_W_Cg equals moments_W_CgP1, and momentCoefficients_W_Cg
     equals momentCoefficients_W_CgP1.
 
-    **Citation:**
+    **Citations:**
 
     Adapted from: geometry.Airplane in AeroSandbox
 
     Author: Peter Sharpe
 
     Date of retrieval: 04/23/2020
+
+    Reference area, span, and mean aerodynamic chord conventions adapted from: Section
+    6.1 of "Flight Vehicle Aerodynamics" (2014)
+
+    Author: Mark Drela
+
+    Date of retrieval: 09/23/2026
+
+    Reference area and span conventions adapted from: Section 2.2 of "Aircraft Control
+    and Simulation" (third edition, 2016)
+
+    Authors: Brian L. Stevens, Frank L. Lewis, and Eric N. Johnson
+
+    Date of retrieval: 09/23/2026
     """
 
     __slots__ = (

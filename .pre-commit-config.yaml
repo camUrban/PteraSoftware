@@ -88,7 +88,7 @@ repos:
       - id: zizmor
         name: checker  zizmor
   - repo: https://github.com/camUrban/octowrap
-    rev: 5df77a33ceadd9a849d7a8c0d22fa7468bba3906  # frozen: v0.7.0
+    rev: 62a46fbcec15a7ca270231deaff5e4e51494fbb0  # frozen: v0.7.1
     hooks:
       # On failure, octowrap prints the fix commands, built from the interpreter in
       # pre-commit's cached hook environment so the interactive fix runs against this

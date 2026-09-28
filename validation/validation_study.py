@@ -655,8 +655,10 @@ stackSimForces_W = np.zeros((3, len(airplanes)), dtype=float)
 for step, airplane in enumerate(airplanes):
     stackSimForces_W[:, step] = airplane.forces_W
 
-# Initialize the figure and axes of the experimental versus simulated lift plot.
-lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
+# Initialize the figure and axes of the experimental versus simulated lift plot. The
+# figure is as wide as a single column in an IEEE journal, 3.5 inches, so that its text
+# and lines print at the sizes they are set to here.
+lift_figure, lift_axes = plt.subplots(figsize=(3.5, 2.8))
 
 # Get the simulated lift values. Lift is defined as the force's wind axes' z component
 # multiplied by negative one.
@@ -671,16 +673,19 @@ EXP_LIFT_COLOR = "#003F91"
 
 # Match the line style of Ptera Software's results plots, which draw no markers and draw
 # the lines from thickest to thinnest, so that both remain visible where they overlap.
-# The legend draws every line at the width the results plots' legends use.
-SIM_LIFT_LINE_WIDTH = 3.5
-EXP_LIFT_LINE_WIDTH = 2.5
-LEGEND_LINE_WIDTH = 2.5
+# The widths are half the results plots' defaults, which suits a figure printed at a
+# single column's width, and the legend draws every line at the thinner width.
+SIM_LIFT_LINE_WIDTH = 1.75
+EXP_LIFT_LINE_WIDTH = 1.25
+LEGEND_LINE_WIDTH = 1.25
 
-# Match the text color and y axis padding of Ptera Software's results plots. The padding
-# is the fraction of the data's span added to each side of the y axis, which is three
-# times Matplotlib's default so the legend usually has empty space to land in.
-TEXT_COLOR = (129 / 255, 129 / 255, 129 / 255)
-Y_AXIS_MARGIN = 0.15
+# Draw the text in black, for the most contrast on a printed page. Pad the bottom of the
+# y axis by the same fraction of the data's span that Ptera Software's results plots
+# use, and pad the top by more, so that the upper left legend clears the lift peaks,
+# which land near the middle of the cycle.
+TEXT_COLOR = "black"
+Y_AXIS_BOTTOM_MARGIN = 0.15
+Y_AXIS_TOP_MARGIN = 0.5
 
 FIGURE_BACKGROUND_COLOR = "None"
 
@@ -718,26 +723,31 @@ lift_axes.plot(
     solid_capstyle="butt",
 )
 
-# Add a light gray box to signify which part of the graph is the downstroke. It is a
-# translucent tint of the text color, so it stays a faint shade of whatever page color
-# shows through the transparent background.
-plt.axvspan(
-    0.25, 0.75, facecolor=TEXT_COLOR, alpha=0.2, linewidth=0.0, label="Downstroke"
+# Add a light gray box to signify which part of the graph is the downstroke. It is
+# translucent black, so it stays a shade of whatever page color shows through the
+# transparent background. On a white page it is a 22% gray screen, which keeps it above
+# the 20% floor that AIAA's journal figure guidelines set for screens. It has no legend
+# entry, since a paper's caption explains it, and leaving it out keeps the legend small
+# enough to fit above the lift peaks at a single column's width.
+plt.axvspan(0.25, 0.75, facecolor="black", alpha=0.22, linewidth=0.0)
+
+# Pad the y axis, more at the top than at the bottom.
+all_lifts = np.concatenate((final_flap_sim_lifts, exp_lifts))
+min_lift = float(np.min(all_lifts))
+max_lift = float(np.max(all_lifts))
+lift_span = max_lift - min_lift
+lift_axes.set_ylim(
+    min_lift - Y_AXIS_BOTTOM_MARGIN * lift_span,
+    max_lift + Y_AXIS_TOP_MARGIN * lift_span,
 )
 
-# Pad the y axis beyond Matplotlib's default.
-lift_axes.margins(y=Y_AXIS_MARGIN)
-
-# Label the axis, add a title, and add a legend.
+# Label the axes and add a legend. The figure has no title, since a paper's caption
+# carries it.
 lift_axes.set_xlabel(
     "Normalized Flap Cycle Time",
 )
 lift_axes.set_ylabel(
     "Lift (N)",
-)
-lift_axes.set_title(
-    "Simulated and Experimental Lift Versus Time",
-    color=TEXT_COLOR,
 )
 lift_axes.legend(
     loc="upper left",

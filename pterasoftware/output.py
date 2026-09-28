@@ -15,7 +15,6 @@ import pyvista as pv
 import webp
 
 from . import (
-    _colormaps,
     _logging,
     _mujoco_model,
     _output_plotting,
@@ -47,17 +46,16 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # visualizations pin it rather than take the default.
 _MULTI_SAMPLES = 4
 
-# Define the colors of the series in the results plots.
-[
-    _ALPHA_COLOR,
-    _BETA_COLOR,
-    _LINEAR_X_COLOR,
-    _LINEAR_Y_COLOR,
-    _LINEAR_Z_COLOR,
-    _ANGULAR_X_COLOR,
-    _ANGULAR_Y_COLOR,
-    _ANGULAR_Z_COLOR,
-] = _colormaps.PRISM[1:9]
+# Define the colors of the series in the results plots, which are named colors from
+# Matplotlib's xkcd color survey table.
+_ALPHA_COLOR = "xkcd:peacock blue"
+_BETA_COLOR = "xkcd:sea"
+_LINEAR_X_COLOR = "xkcd:dark sea green"
+_LINEAR_Y_COLOR = "xkcd:nasty green"
+_LINEAR_Z_COLOR = "xkcd:squash"
+_ANGULAR_X_COLOR = "xkcd:pumpkin"
+_ANGULAR_Y_COLOR = "xkcd:dark coral"
+_ANGULAR_Z_COLOR = "xkcd:red violet"
 
 # Define the text that the results outputs share. Every figure's legend labels,
 # subtitle, and y axis label are named once here because the other two outputs restate

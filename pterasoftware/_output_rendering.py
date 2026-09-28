@@ -29,9 +29,9 @@ from . import problems, unsteady_ring_vortex_lattice_method
 _logger = _logging.get_logger("output")
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
-# maps and color palettes live in the _colormaps module. The edge line widths are in
-# pixels, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale
-# wherever they are used, as the font sizes below are.
+# maps live in the _colormaps module. The edge line widths are in pixels, so they are
+# tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale wherever they are used,
+# as the font sizes below are.
 _WAKE_VORTEX_COLOR = "white"
 _WAKE_VORTEX_EDGE_LINE_WIDTH = 1.0
 _PANEL_COLOR = "chartreuse"

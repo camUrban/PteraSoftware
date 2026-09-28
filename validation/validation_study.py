@@ -657,8 +657,10 @@ for step, airplane in enumerate(airplanes):
 
 # Initialize the figure and axes of the experimental versus simulated lift plot. The
 # figure is as wide as a single column in an IEEE journal, 3.5 inches, so that its text
-# and lines print at the sizes they are set to here.
-lift_figure, lift_axes = plt.subplots(figsize=(3.5, 2.8))
+# and lines print at the sizes they are set to here. As in Ptera Software's results
+# plots, constrained layout fits the axes and their labels inside the figure, so the
+# saved page keeps exactly this size.
+lift_figure, lift_axes = plt.subplots(figsize=(3.5, 2.8), layout="constrained")
 
 # Get the simulated lift values. Lift is defined as the force's wind axes' z component
 # multiplied by negative one.

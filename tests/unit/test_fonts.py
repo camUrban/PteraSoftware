@@ -28,3 +28,8 @@ class TestFont(unittest.TestCase):
         """The font file should hold the regular style, which all the text uses."""
         font = fontTools.ttLib.TTFont(_fonts.FONT_PATH)
         self.assertEqual(font["name"].getDebugName(2), "Regular")
+
+    def test_font_is_the_vendored_version(self) -> None:
+        """The font file should be the vendored release of Liberation Sans."""
+        font = fontTools.ttLib.TTFont(_fonts.FONT_PATH)
+        self.assertEqual(font["name"].getDebugName(5), "Version 2.1.5")

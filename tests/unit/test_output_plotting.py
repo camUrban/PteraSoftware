@@ -1,19 +1,24 @@
 """This module contains classes to test the output plotting functions."""
 
+import base64
 import csv
+import io
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
+import fontTools.ttLib
 import matplotlib.colors
 import matplotlib.image
 import matplotlib.layout_engine
 import matplotlib.pyplot as plt
+import matplotlib.text
 import numpy as np
 import numpy.testing as npt
 
 # noinspection PyProtectedMember
-from pterasoftware import _output_plotting, _output_rendering, _transformations
+from pterasoftware import _fonts, _output_plotting, _output_rendering, _transformations
 from tests.unit.fixtures import operating_point_fixtures, output_plotting_fixtures
 
 
@@ -313,6 +318,49 @@ class TestWriteTimeHistoryCsv(unittest.TestCase):
         self.assertEqual(len(rows), 3)
 
 
+class TestEmbedFontInSvg(unittest.TestCase):
+    """This class contains methods for testing _output_plotting.embed_font_in_svg."""
+
+    def test_embeds_one_font_face_rule_ahead_of_matplotlibs_style(self) -> None:
+        """Test that the font is embedded once, in a style element placed first in the
+        definitions."""
+        svg = _output_plotting.embed_font_in_svg(
+            output_plotting_fixtures.make_svg_fixture()
+        )
+        self.assertEqual(svg.count("@font-face"), 1)
+        self.assertLess(svg.index("@font-face"), svg.index("*{stroke-linejoin"))
+
+    def test_names_the_font_by_its_family(self) -> None:
+        """Test that the embedded font takes the family name the text elements use."""
+        svg = _output_plotting.embed_font_in_svg(
+            output_plotting_fixtures.make_svg_fixture()
+        )
+        self.assertIn(f'font-family: "{_fonts.FONT_FAMILY}"', svg)
+
+    def test_subsets_the_font_to_the_characters_the_text_uses(self) -> None:
+        """Test that the embedded font maps every character the text uses and drops a
+        character it does not."""
+        svg = _output_plotting.embed_font_in_svg(
+            output_plotting_fixtures.make_svg_fixture()
+        )
+        font_data = re.search(r"base64,([A-Za-z0-9+/=]+)", svg)
+        self.assertIsNotNone(font_data)
+        assert font_data is not None
+        font = fontTools.ttLib.TTFont(io.BytesIO(base64.b64decode(font_data.group(1))))
+        character_map = font.getBestCmap()
+        for character in "LiftDrag":
+            self.assertIn(ord(character), character_map)
+        self.assertNotIn(ord("Z"), character_map)
+
+    def test_raises_for_an_svg_without_definitions(self) -> None:
+        """Test that an SVG with no defs element is rejected rather than returned
+        without its font."""
+        svg = output_plotting_fixtures.make_svg_fixture()
+        svg = svg.replace(" <defs>\n", "").replace(" </defs>\n", "")
+        with self.assertRaises(ValueError):
+            _output_plotting.embed_font_in_svg(svg)
+
+
 class TestPlotTimeHistory(unittest.TestCase):
     """This class contains methods for testing _output_plotting.plot_time_history."""
 
@@ -393,6 +441,34 @@ class TestPlotTimeHistory(unittest.TestCase):
         )
         axes = plt.gcf().axes[0]
         self.assertEqual([line.get_linewidth() for line in axes.lines], [3.5, 2.5, 1.5])
+
+    def test_spreads_the_line_widths_about_the_line_width(self) -> None:
+        """Test that the lines spread evenly from 1.4 to 0.6 times the line width they
+        were given, and that the legend draws every line at that width."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            line_width=1.25,
+        )
+        axes = plt.gcf().axes[0]
+        npt.assert_allclose(
+            [line.get_linewidth() for line in axes.lines], [1.75, 1.25, 0.75]
+        )
+        legend = axes.get_legend()
+        self.assertIsNotNone(legend)
+        assert legend is not None
+        npt.assert_allclose(
+            [line.get_linewidth() for line in legend.get_lines()], [1.25, 1.25, 1.25]
+        )
 
     def test_draws_a_lone_series_at_the_thickest_line_width(self) -> None:
         """Test that a figure with one series draws it at the thickest line width."""
@@ -593,6 +669,114 @@ class TestPlotTimeHistory(unittest.TestCase):
             matplotlib.colors.to_rgba(axes.yaxis.label.get_color()), text_color
         )
 
+    def test_sets_every_text_in_the_vendored_font(self) -> None:
+        """Test that every piece of text is drawn from the vendored font file and names
+        its family."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+        )
+        texts = plt.gcf().findobj(matplotlib.text.Text)
+        self.assertGreater(len(texts), 0)
+        for text in texts:
+            font_properties = text.get_fontproperties()
+            self.assertEqual(font_properties.get_file(), str(_fonts.FONT_PATH))
+            self.assertEqual(font_properties.get_family(), [_fonts.FONT_FAMILY])
+
+    def test_omits_the_titles_when_asked_to(self) -> None:
+        """Test that neither the title nor the subtitle is drawn when show_titles is
+        False."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            show_titles=False,
+        )
+        figure = plt.gcf()
+        self.assertEqual(figure.get_suptitle(), "")
+        self.assertEqual(figure.axes[0].get_title(), "")
+
+    def test_sizes_every_text_to_the_font_size(self) -> None:
+        """Test that every piece of text, the re-centered title included, takes the font
+        size it was given."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            font_size=8.0,
+        )
+        figure = plt.gcf()
+        texts = [
+            text for text in figure.findobj(matplotlib.text.Text) if text.get_text()
+        ]
+        self.assertGreater(len(texts), 0)
+        for text in texts:
+            self.assertEqual(text.get_fontsize(), 8.0)
+
+    def test_colors_the_text_with_the_text_color(self) -> None:
+        """Test that the titles, axis labels, and legend take the text color they were
+        given."""
+        text_color = (0.0, 0.0, 0.0, 1.0)
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            text_color=text_color,
+        )
+        figure = plt.gcf()
+        axes = figure.axes[0]
+        legend = axes.get_legend()
+        self.assertIsNotNone(legend)
+        assert legend is not None
+        titles = [
+            text
+            for text in figure.findobj(matplotlib.text.Text)
+            if text.get_text() == "Example Airplane Forces"
+        ]
+        self.assertEqual(len(titles), 1)
+        colored_texts = [
+            titles[0],
+            axes.title,
+            axes.xaxis.label,
+            axes.yaxis.label,
+            *legend.get_texts(),
+        ]
+        for text in colored_texts:
+            self.assertEqual(matplotlib.colors.to_rgba(text.get_color()), text_color)
+
     def test_leaves_the_backgrounds_transparent(self) -> None:
         """Test that neither the figure nor the plot draws an opaque background.
 
@@ -680,3 +864,47 @@ class TestPlotTimeHistory(unittest.TestCase):
         image = matplotlib.image.imread(self.save_path)
         self.assertEqual(image.shape[0], 400)
         self.assertEqual(image.shape[1], 600)
+
+    def test_saves_an_svg_with_its_font_embedded(self) -> None:
+        """Test that a path ending in .svg saves an SVG whose text names the vendored
+        font and carries it."""
+        save_path = self.save_path.with_suffix(".svg")
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            True,
+            save_path,
+            100.0,
+        )
+        svg = save_path.read_text(encoding="utf-8")
+        self.assertEqual(svg.count("@font-face"), 1)
+        self.assertIn(f"font-family: '{_fonts.FONT_FAMILY}'", svg)
+        self.assertIn(">Example Airplane Forces</text>", svg)
+
+    def test_saves_a_pdf_with_its_font_embedded(self) -> None:
+        """Test that a path ending in .pdf saves a PDF that embeds the vendored font as
+        TrueType."""
+        save_path = self.save_path.with_suffix(".pdf")
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            True,
+            save_path,
+            100.0,
+        )
+        pdf = save_path.read_bytes()
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertIn(b"/FontFile2", pdf)
+        self.assertIn(b"LiberationSans", pdf)

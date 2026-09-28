@@ -1,6 +1,5 @@
 """Tests for the color maps module."""
 
-import re
 import unittest
 
 import matplotlib.colors
@@ -17,15 +16,6 @@ class TestLoadColormap(unittest.TestCase):
         """_load_colormap should raise FileNotFoundError for an unknown color map."""
         with self.assertRaises(FileNotFoundError):
             _colormaps._load_colormap("not_a_color_map")
-
-
-class TestLoadHexPalette(unittest.TestCase):
-    """Tests for the _load_hex_palette function."""
-
-    def test_raises_for_an_unknown_palette(self) -> None:
-        """_load_hex_palette should raise FileNotFoundError for an unknown palette."""
-        with self.assertRaises(FileNotFoundError):
-            _colormaps._load_hex_palette("not_a_palette")
 
 
 class TestSequentialColorMap(unittest.TestCase):
@@ -86,27 +76,3 @@ class TestDivergingColorMap(unittest.TestCase):
             _colormaps.DIVERGING_COLOR_MAP(1.0),
             (0.09053276383981979, 0.13733860758438335, 0.07325761429945674, 1.0),
         )
-
-
-class TestPrism(unittest.TestCase):
-    """Tests for the Prism qualitative color palette.
-
-    The expected values pin the vendored copy of CARTOColors' "Prism" palette.
-    """
-
-    def test_has_12_colors(self) -> None:
-        """The Prism palette should have 12 colors."""
-        self.assertEqual(len(_colormaps.PRISM), 12)
-
-    def test_colors_are_uppercase_hex_strings(self) -> None:
-        """The Prism palette's colors should all be uppercase hex strings."""
-        for color in _colormaps.PRISM:
-            self.assertRegex(color, re.compile(r"^#[0-9A-F]{6}$"))
-
-    def test_has_the_expected_first_color(self) -> None:
-        """The Prism palette's first color should be purple."""
-        self.assertEqual(_colormaps.PRISM[0], "#5F4690")
-
-    def test_has_the_expected_last_color(self) -> None:
-        """The Prism palette's last color should be gray."""
-        self.assertEqual(_colormaps.PRISM[-1], "#666666")

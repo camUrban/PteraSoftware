@@ -5,5 +5,5 @@
 docs/examples_expected_output/** linguist-generated=true
 docs/hero_graphics/*.webp linguist-generated=true
 validation/draw.webp linguist-generated=true
-validation/lift_validation.png linguist-generated=true
+validation/lift_validation.pdf linguist-generated=true
 validation/validation_convergence_cache.json linguist-generated=true

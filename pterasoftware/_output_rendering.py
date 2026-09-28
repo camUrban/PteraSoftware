@@ -16,6 +16,7 @@ import webp
 
 from . import (
     _colormaps,
+    _fonts,
     _logging,
     _mujoco_model,
     _private_access,
@@ -29,9 +30,9 @@ from . import problems, unsteady_ring_vortex_lattice_method
 _logger = _logging.get_logger("output")
 
 # Define the colors, sizes, and positions used when rendering the geometry. The color
-# maps and color palettes live in the _colormaps module. The edge line widths are in
-# pixels, so they are tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale
-# wherever they are used, as the font sizes below are.
+# maps live in the _colormaps module. The edge line widths are in pixels, so they are
+# tuned for REFERENCE_WINDOW_SIZE and scaled by get_window_scale wherever they are used,
+# as the font sizes below are.
 _WAKE_VORTEX_COLOR = "white"
 _WAKE_VORTEX_EDGE_LINE_WIDTH = 1.0
 _PANEL_COLOR = "chartreuse"
@@ -299,7 +300,7 @@ def add_playback_overlays(
     :return: None
     """
     for overlay_text, overlay_position in playback.overlay_texts:
-        plotter.add_text(
+        overlay = plotter.add_text(
             text=overlay_text,
             position=overlay_position,
             font_size=round(TEXT_FONT_SIZE * window_scale),
@@ -307,6 +308,7 @@ def add_playback_overlays(
             color=text_color,
             render=False,
         )
+        overlay.prop.set_font_file(str(_fonts.FONT_PATH))
 
 
 def get_panel_surfaces(
@@ -1188,8 +1190,9 @@ def _plot_scalars(
         TEXT_COLOR.
     :return: A list of the actors added to the plotter.
     """
+    scalar_bar_title = scalar_type.title() + " Coefficient"
     scalar_bar_args = dict(
-        title=scalar_type.title() + " Coefficient",
+        title=scalar_bar_title,
         title_font_size=round(_BAR_TITLE_FONT_SIZE * window_scale),
         label_font_size=round(_BAR_LABEL_FONT_SIZE * window_scale),
         width=_BAR_WIDTH,
@@ -1219,6 +1222,17 @@ def _plot_scalars(
         render=False,
     )
 
+    # The scalar bar's title and labels have their own text properties, which PyVista
+    # can only point at one of VTK's built-in font families, so the font file is set on
+    # them directly.
+    scalar_bar = plotter.scalar_bars[scalar_bar_title]
+    for text_property in (
+        scalar_bar.GetTitleTextProperty(),
+        scalar_bar.GetLabelTextProperty(),
+    ):
+        text_property.SetFontFamilyAsString("File")
+        text_property.SetFontFile(str(_fonts.FONT_PATH))
+
     max_label = plotter.add_text(
         text=f"Max: {max_scalar:#.3G}",
         position=_TEXT_MAX_POSITION,
@@ -1237,6 +1251,7 @@ def _plot_scalars(
     )
     for label in (max_label, min_label):
         label.prop.justification_horizontal = "right"
+        label.prop.set_font_file(str(_fonts.FONT_PATH))
 
     return [panel_actor, max_label, min_label]
 

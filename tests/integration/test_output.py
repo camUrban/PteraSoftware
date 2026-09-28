@@ -719,6 +719,64 @@ class TestOutputFileWriting(unittest.TestCase):
             [path.name for path in self.temporary_path.iterdir()], ["results"]
         )
 
+    def test_plot_results_versus_time_saves_in_the_file_format(self) -> None:
+        """Test that file_format saves the four load figures in that format, under names
+        ending in its extension.
+
+        :return: None
+        """
+        ps.output.plot_results_versus_time(
+            unsteady_solver=self.unsteady_solver,
+            show=False,
+            save=True,
+            directory=self.temporary_path,
+            file_format="svg",
+        )
+
+        self.assertEqual(
+            {path.name for path in self.temporary_path.iterdir()},
+            {
+                "symmetric_unsteady_validation_airplane_forces.svg",
+                "symmetric_unsteady_validation_airplane_force_coefficients.svg",
+                "symmetric_unsteady_validation_airplane_moments.svg",
+                "symmetric_unsteady_validation_airplane_moment_coefficients.svg",
+            },
+        )
+
+    def test_plot_results_versus_time_rejects_an_unknown_file_format(self) -> None:
+        """Test that a file format the plots cannot be saved in is rejected and nothing
+        is written.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.output.plot_results_versus_time(
+                unsteady_solver=self.unsteady_solver,
+                show=False,
+                save=True,
+                directory=self.temporary_path,
+                file_format="jpg",
+            )
+
+        self.assertEqual(list(self.temporary_path.iterdir()), [])
+
+    def test_plot_results_versus_time_rejects_an_unknown_text_color(self) -> None:
+        """Test that a text color Matplotlib does not accept is rejected and nothing is
+        written.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.output.plot_results_versus_time(
+                unsteady_solver=self.unsteady_solver,
+                show=False,
+                save=True,
+                directory=self.temporary_path,
+                text_color="not_a_color",
+            )
+
+        self.assertEqual(list(self.temporary_path.iterdir()), [])
+
     def test_plot_results_versus_time_rejects_a_missing_directory(self) -> None:
         """Test that a directory that does not exist is rejected and nothing is written.
 

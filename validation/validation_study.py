@@ -12,12 +12,16 @@ More information can be found in my accompanying report: "Validating an Open-Sou
 Solver for Analyzing Flapping Wing Flight: An Experimental Approach."
 """
 
-# Import Python's math and pathlib packages.
+# Import Python's importlib.resources, math, and pathlib packages.
+import importlib.resources
 import math
 from pathlib import Path
 
-# Import NumPy and MatPlotLib's PyPlot package.
+# Import NumPy, MatPlotLib, and MatPlotLib's legend handler, PyPlot, and text packages.
+import matplotlib
+import matplotlib.legend_handler
 import matplotlib.pyplot as plt
+import matplotlib.text
 import numpy as np
 
 # Import the source package.
@@ -651,8 +655,12 @@ stackSimForces_W = np.zeros((3, len(airplanes)), dtype=float)
 for step, airplane in enumerate(airplanes):
     stackSimForces_W[:, step] = airplane.forces_W
 
-# Initialize the figure and axes of the experimental versus simulated lift plot.
-lift_figure, lift_axes = plt.subplots(figsize=(5, 4))
+# Initialize the figure and axes of the experimental versus simulated lift plot. The
+# figure is as wide as a single column in an IEEE journal, 3.5 inches, so that its text
+# and lines print at the sizes they are set to here. As in Ptera Software's results
+# plots, constrained layout fits the axes and their labels inside the figure, so the
+# saved page keeps exactly this size.
+lift_figure, lift_axes = plt.subplots(figsize=(3.5, 2.8), layout="constrained")
 
 # Get the simulated lift values. Lift is defined as the force's wind axes' z component
 # multiplied by negative one.
@@ -665,9 +673,22 @@ final_flap_sim_lifts = np.interp(final_flap_times, times, sim_lifts[:])
 SIM_LIFT_COLOR = "#D81E5B"
 EXP_LIFT_COLOR = "#003F91"
 
-NUM_MARKERS = 6
-MARKER_SIZE = 8
+# Match the line style of Ptera Software's results plots, which draw no markers and draw
+# the lines from thickest to thinnest, so that both remain visible where they overlap.
+# The widths are half the results plots' defaults, which suits a figure printed at a
+# single column's width, and the legend draws every line at the thinner width.
+SIM_LIFT_LINE_WIDTH = 1.75
+EXP_LIFT_LINE_WIDTH = 1.25
+LEGEND_LINE_WIDTH = 1.25
+
+# Draw the text in black, for the most contrast on a printed page. Pad the bottom of the
+# y axis by the same fraction of the data's span that Ptera Software's results plots
+# use, and pad the top by more, so that the upper left legend clears the lift peaks,
+# which land near the middle of the cycle.
 TEXT_COLOR = "black"
+Y_AXIS_BOTTOM_MARGIN = 0.15
+Y_AXIS_TOP_MARGIN = 0.5
+
 FIGURE_BACKGROUND_COLOR = "None"
 
 lift_axes.spines.right.set_visible(False)
@@ -681,8 +702,6 @@ lift_axes.tick_params(axis="y", colors=TEXT_COLOR)
 lift_figure.patch.set_facecolor(FIGURE_BACKGROUND_COLOR)
 lift_axes.set_facecolor(FIGURE_BACKGROUND_COLOR)
 
-marker_spacing = 1.0 / NUM_MARKERS
-
 # Plot the simulated lift values. The x axis is set to the normalized times, which may
 # seem odd because we just interpolated to get them in terms of the normalized final
 # flap times. But, they are discretized in exactly the same way as the normalized times,
@@ -692,9 +711,8 @@ lift_axes.plot(
     final_flap_sim_lifts,
     label="Simulated",
     color=SIM_LIFT_COLOR,
-    marker=".",
-    markevery=(marker_spacing * 0 / 2, marker_spacing),
-    markersize=MARKER_SIZE,
+    linewidth=SIM_LIFT_LINE_WIDTH,
+    solid_capstyle="butt",
 )
 
 # Plot the experimental lift values.
@@ -703,37 +721,76 @@ lift_axes.plot(
     exp_lifts,
     label="Experimental",
     color=EXP_LIFT_COLOR,
-    marker=".",
-    markevery=(marker_spacing * 1 / 2, marker_spacing),
-    markersize=MARKER_SIZE,
+    linewidth=EXP_LIFT_LINE_WIDTH,
+    solid_capstyle="butt",
 )
 
-# Add a gray box to signify which part of the graph is the downstroke.
-plt.axvspan(0.25, 0.75, facecolor="darkgray", label="Downstroke")
+# Add a light gray box to signify which part of the graph is the downstroke. It is
+# translucent black, so it stays a shade of whatever page color shows through the
+# transparent background. On a white page it is a 22% gray screen, which keeps it above
+# the 20% floor that AIAA's journal figure guidelines set for screens. It has no legend
+# entry, since a paper's caption explains it, and leaving it out keeps the legend small
+# enough to fit above the lift peaks at a single column's width.
+plt.axvspan(0.25, 0.75, facecolor="black", alpha=0.22, linewidth=0.0)
 
-# Label the axis, add a title, and add a legend.
+# Pad the y axis, more at the top than at the bottom.
+all_lifts = np.concatenate((final_flap_sim_lifts, exp_lifts))
+min_lift = float(np.min(all_lifts))
+max_lift = float(np.max(all_lifts))
+lift_span = max_lift - min_lift
+lift_axes.set_ylim(
+    min_lift - Y_AXIS_BOTTOM_MARGIN * lift_span,
+    max_lift + Y_AXIS_TOP_MARGIN * lift_span,
+)
+
+# Label the axes and add a legend. The figure has no title, since a paper's caption
+# carries it.
 lift_axes.set_xlabel(
     "Normalized Flap Cycle Time",
 )
 lift_axes.set_ylabel(
     "Lift (N)",
 )
-lift_axes.set_title(
-    "Simulated and Experimental Lift Versus Time",
-)
 lift_axes.legend(
     loc="upper left",
     facecolor=FIGURE_BACKGROUND_COLOR,
     edgecolor=FIGURE_BACKGROUND_COLOR,
     labelcolor=TEXT_COLOR,
+    handler_map={
+        plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
+            update_func=lambda handle, original: (
+                handle.update_from(original),
+                handle.set_linewidth(LEGEND_LINE_WIDTH),
+            )
+        )
+    },
 )
 
-# Save the lift comparison figure.
-lift_figure.savefig(
-    fname=VALIDATION_DIRECTORY / "lift_validation.png",
-    dpi=300,
-    bbox_inches="tight",
+# Set every piece of text in the font that Ptera Software's own plots use, which is
+# Liberation Sans, vendored in the package's _font_data directory. As in the package,
+# the font is selected by its file rather than by its family name, so a different font
+# installed under the same name cannot stand in for it.
+FONT_FAMILY = "Liberation Sans"
+FONT_PATH = Path(
+    str(
+        importlib.resources.files("pterasoftware")
+        .joinpath("_font_data")
+        .joinpath("LiberationSans-Regular.ttf")
+    )
 )
+for text in lift_figure.findobj(matplotlib.text.Text):
+    font_properties = text.get_fontproperties().copy()
+    font_properties.set_family(FONT_FAMILY)
+    font_properties.set_file(FONT_PATH)
+    text.set_fontproperties(font_properties)
+
+# Save the lift comparison figure. As in the package, the PDF embeds the font as
+# TrueType rather than as Type 3.
+with matplotlib.rc_context({"pdf.fonttype": 42}):
+    lift_figure.savefig(
+        fname=VALIDATION_DIRECTORY / "lift_validation.pdf",
+        dpi=300,
+    )
 
 # Delete the extraneous pointers.
 del airplanes

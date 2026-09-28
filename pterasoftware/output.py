@@ -6,16 +6,17 @@ import os.path
 import time
 from collections.abc import Sequence
 from pathlib import Path
+from typing import cast
 
 import matplotlib.colors
 import matplotlib.legend_handler
 import matplotlib.pyplot as plt
+import matplotlib.typing
 import numpy as np
 import pyvista as pv
 import webp
 
 from . import (
-    _colormaps,
     _logging,
     _mujoco_model,
     _output_plotting,
@@ -47,17 +48,16 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # visualizations pin it rather than take the default.
 _MULTI_SAMPLES = 4
 
-# Define the colors of the series in the results plots.
-[
-    _ALPHA_COLOR,
-    _BETA_COLOR,
-    _LINEAR_X_COLOR,
-    _LINEAR_Y_COLOR,
-    _LINEAR_Z_COLOR,
-    _ANGULAR_X_COLOR,
-    _ANGULAR_Y_COLOR,
-    _ANGULAR_Z_COLOR,
-] = _colormaps.PRISM[1:9]
+# Define the colors of the series in the results plots, which are named colors from
+# Matplotlib's xkcd color survey table.
+_ALPHA_COLOR = "xkcd:peacock blue"
+_BETA_COLOR = "xkcd:sea"
+_LINEAR_X_COLOR = "xkcd:dark sea green"
+_LINEAR_Y_COLOR = "xkcd:nasty green"
+_LINEAR_Z_COLOR = "xkcd:squash"
+_ANGULAR_X_COLOR = "xkcd:pumpkin"
+_ANGULAR_Y_COLOR = "xkcd:dark coral"
+_ANGULAR_Z_COLOR = "xkcd:red violet"
 
 # Define the text that the results outputs share. Every figure's legend labels,
 # subtitle, and y axis label are named once here because the other two outputs restate
@@ -1448,6 +1448,11 @@ def plot_results_versus_time(
     directory: str | Path = ".",
     prefix: str = "",
     resolution_dpi: int | float = 300.0,
+    file_format: str = "png",
+    show_titles: bool | np.bool = True,
+    font_size: int | float | None = None,
+    text_color: str | Sequence[float] | None = None,
+    line_width: int | float | None = None,
 ) -> None:
     """Plots the loads and load coefficients of an UnsteadyRingVortexLatticeMethodSolver
     or one of its subclasses (the aeroelastic or free flight solver) as a function of
@@ -1475,8 +1480,9 @@ def plot_results_versus_time(
         this by resolution_dpi gives the resolution of each saved PNG. It must be a
         sequence of two positive numbers. The default is (6.4, 4.8), which is
         Matplotlib's own default.
-    :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
-        bool and will be converted internally to a bool. The default is False.
+    :param save: Set this to True to save the plots in the format named by file_format.
+        It can be a bool or a numpy bool and will be converted internally to a bool. The
+        default is False.
     :param save_csv: Set this to True to save the plotted data as CSVs, which is
         independent of save, so the data can be exported without rendering any images.
         One file holds the loads and load coefficients of each Airplane, and, for a
@@ -1485,7 +1491,7 @@ def plot_results_versus_time(
         begin at the solver's first results step while the state history begins at time
         step 0, so they have different numbers of rows. It can be a bool or a numpy bool
         and will be converted internally to a bool. The default is False.
-    :param directory: The directory to save the PNGs and CSVs in. It can be a str or a
+    :param directory: The directory to save the plots and CSVs in. It can be a str or a
         Path and must already exist. This has no effect unless save or save_csv is True.
         The default is ".", the current working directory.
     :param prefix: A prefix to prepend to each file's name, which distinguishes one
@@ -1498,7 +1504,35 @@ def plot_results_versus_time(
         simulation. This has no effect unless save or save_csv is True.
     :param resolution_dpi: The dots per inch at which to save each PNG. It can be an int
         or a float and will be converted internally to a float. This has no effect
-        unless save is True. The default is 300.0.
+        unless save is True and file_format is "png". The default is 300.0.
+    :param file_format: The file format to save the plots in, which is also each plot
+        file's extension. It must be "png", "svg", or "pdf". A PNG is a raster image
+        with a transparent background. An SVG and a PDF are vector images, with their
+        text kept as selectable text in an embedded font. Use a PDF for documents, such
+        as LaTeX papers, and an SVG for the web and for slides. This has no effect
+        unless save is True. The default is "png".
+    :param show_titles: Set this to False to omit each figure's title and subtitle, for
+        instance when a caption in a paper will carry them instead. It can be a bool or
+        a numpy bool and will be converted internally to a bool. The default is True.
+    :param font_size: The size, in points, of every piece of text in each figure. Text
+        is sized against figure_size_in, so for a paper, set figure_size_in to the width
+        the figure will print at and font_size to the size the publisher asks for. It
+        can be an int or a float and will be converted internally to a float. It must be
+        positive. Pass None to size each piece of text by Matplotlib's defaults, with
+        the subtitle smaller than the rest. The default is None.
+    :param text_color: The color of the text, the axis spines, and the ticks in each
+        figure. It can be any color Matplotlib accepts, such as a name like "black", a
+        hex string like "#333333", or a sequence of three or four numbers from 0.0 to
+        1.0. Pass None to use the gray the rendered visualizations' text uses. The
+        default is None.
+    :param line_width: The middle line width, in points, in each figure. A figure's
+        lines are drawn from thickest to thinnest so that all remain visible where they
+        overlap, with widths spread evenly from 1.4 times this width down to 0.6 times
+        it, and the legend draws every line at this width. Like font_size, it is
+        measured against figure_size_in, so a figure printed at a small width usually
+        calls for thinner lines. It can be an int or a float and will be converted
+        internally to a float. It must be positive. Pass None to use a width of 2.5,
+        which spreads the lines from 3.5 to 1.5. The default is None.
     :return: None
     """
     if not isinstance(
@@ -1549,6 +1583,36 @@ def plot_results_versus_time(
     resolution_dpi = _parameter_validation.number_in_range_return_float(
         resolution_dpi, "resolution_dpi", 0.0, False
     )
+
+    file_format = _parameter_validation.str_return_str(file_format, "file_format")
+    if file_format not in _output_plotting.VALID_FILE_FORMATS:
+        valid_formats = ", ".join(f'"{f}"' for f in _output_plotting.VALID_FILE_FORMATS)
+        raise ValueError(
+            f'file_format must be one of {valid_formats}, got "{file_format}".'
+        )
+
+    show_titles = _parameter_validation.boolLike_return_bool(show_titles, "show_titles")
+    validated_font_size = None
+    if font_size is not None:
+        validated_font_size = _parameter_validation.number_in_range_return_float(
+            font_size, "font_size", 0.0, False
+        )
+    validated_line_width = None
+    if line_width is not None:
+        validated_line_width = _parameter_validation.number_in_range_return_float(
+            line_width, "line_width", 0.0, False
+        )
+    text_rgba = None
+    if text_color is not None:
+        if not matplotlib.colors.is_color_like(text_color):
+            raise ValueError(
+                f'text_color must be a color Matplotlib accepts, got "{text_color}".'
+            )
+        # Matplotlib's type hints accept only tuples of exact lengths, while a color can
+        # arrive as any sequence, which is_color_like has just vetted.
+        text_rgba = matplotlib.colors.to_rgba(
+            cast(matplotlib.typing.ColorType, text_color)
+        )
 
     if not unsteady_solver.ran:
         raise RuntimeError(
@@ -1669,8 +1733,12 @@ def plot_results_versus_time(
             _FORCE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_forces.png"),
+            directory / (file_stem + "_forces." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1686,8 +1754,12 @@ def plot_results_versus_time(
             _FORCE_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_force_coefficients.png"),
+            directory / (file_stem + "_force_coefficients." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1703,8 +1775,12 @@ def plot_results_versus_time(
             _MOMENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_moments.png"),
+            directory / (file_stem + "_moments." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             times,
@@ -1720,8 +1796,12 @@ def plot_results_versus_time(
             _MOMENT_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_moment_coefficients.png"),
+            directory / (file_stem + "_moment_coefficients." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
 
         # Write this Airplane's twelve plotted load series to one CSV. A reader
@@ -1828,8 +1908,12 @@ def plot_results_versus_time(
             _POSITION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_position.png"),
+            directory / (file_stem + "_position." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1841,8 +1925,12 @@ def plot_results_versus_time(
             _VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_velocity.png"),
+            directory / (file_stem + "_velocity." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1858,8 +1946,12 @@ def plot_results_versus_time(
             _ORIENTATION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_orientation.png"),
+            directory / (file_stem + "_orientation." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1871,8 +1963,12 @@ def plot_results_versus_time(
             _ANGULAR_VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_angular_velocity.png"),
+            directory / (file_stem + "_angular_velocity." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
         _output_plotting.plot_time_history(
             state_times,
@@ -1884,8 +1980,12 @@ def plot_results_versus_time(
             _AERODYNAMIC_ANGLE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_aerodynamic_angles.png"),
+            directory / (file_stem + "_aerodynamic_angles." + file_format),
             resolution_dpi,
+            show_titles,
+            validated_font_size,
+            text_rgba,
+            validated_line_width,
         )
 
         # Write the state history to its own CSV rather than into the loads file. The

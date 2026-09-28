@@ -442,6 +442,34 @@ class TestPlotTimeHistory(unittest.TestCase):
         axes = plt.gcf().axes[0]
         self.assertEqual([line.get_linewidth() for line in axes.lines], [3.5, 2.5, 1.5])
 
+    def test_spreads_the_line_widths_about_the_line_width(self) -> None:
+        """Test that the lines spread evenly from 1.4 to 0.6 times the line width they
+        were given, and that the legend draws every line at that width."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            line_width=1.25,
+        )
+        axes = plt.gcf().axes[0]
+        npt.assert_allclose(
+            [line.get_linewidth() for line in axes.lines], [1.75, 1.25, 0.75]
+        )
+        legend = axes.get_legend()
+        self.assertIsNotNone(legend)
+        assert legend is not None
+        npt.assert_allclose(
+            [line.get_linewidth() for line in legend.get_lines()], [1.25, 1.25, 1.25]
+        )
+
     def test_draws_a_lone_series_at_the_thickest_line_width(self) -> None:
         """Test that a figure with one series draws it at the thickest line width."""
         _output_plotting.plot_time_history(
@@ -663,6 +691,91 @@ class TestPlotTimeHistory(unittest.TestCase):
             font_properties = text.get_fontproperties()
             self.assertEqual(font_properties.get_file(), str(_fonts.FONT_PATH))
             self.assertEqual(font_properties.get_family(), [_fonts.FONT_FAMILY])
+
+    def test_omits_the_titles_when_asked_to(self) -> None:
+        """Test that neither the title nor the subtitle is drawn when show_titles is
+        False."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            show_titles=False,
+        )
+        figure = plt.gcf()
+        self.assertEqual(figure.get_suptitle(), "")
+        self.assertEqual(figure.axes[0].get_title(), "")
+
+    def test_sizes_every_text_to_the_font_size(self) -> None:
+        """Test that every piece of text, the re-centered title included, takes the font
+        size it was given."""
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            font_size=8.0,
+        )
+        figure = plt.gcf()
+        texts = [
+            text for text in figure.findobj(matplotlib.text.Text) if text.get_text()
+        ]
+        self.assertGreater(len(texts), 0)
+        for text in texts:
+            self.assertEqual(text.get_fontsize(), 8.0)
+
+    def test_colors_the_text_with_the_text_color(self) -> None:
+        """Test that the titles, axis labels, and legend take the text color they were
+        given."""
+        text_color = (0.0, 0.0, 0.0, 1.0)
+        _output_plotting.plot_time_history(
+            output_plotting_fixtures.make_times_fixture(),
+            output_plotting_fixtures.make_three_series_fixture(),
+            output_plotting_fixtures.make_three_labels_fixture(),
+            output_plotting_fixtures.make_three_colors_fixture(),
+            "Example Airplane Forces",
+            "(in Wind Axes)",
+            "Force (N)",
+            output_plotting_fixtures.make_figure_size_fixture(),
+            False,
+            self.save_path,
+            300.0,
+            text_color=text_color,
+        )
+        figure = plt.gcf()
+        axes = figure.axes[0]
+        legend = axes.get_legend()
+        self.assertIsNotNone(legend)
+        assert legend is not None
+        titles = [
+            text
+            for text in figure.findobj(matplotlib.text.Text)
+            if text.get_text() == "Example Airplane Forces"
+        ]
+        self.assertEqual(len(titles), 1)
+        colored_texts = [
+            titles[0],
+            axes.title,
+            axes.xaxis.label,
+            axes.yaxis.label,
+            *legend.get_texts(),
+        ]
+        for text in colored_texts:
+            self.assertEqual(matplotlib.colors.to_rgba(text.get_color()), text_color)
 
     def test_leaves_the_backgrounds_transparent(self) -> None:
         """Test that neither the figure nor the plot draws an opaque background.

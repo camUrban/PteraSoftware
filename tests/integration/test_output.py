@@ -760,6 +760,23 @@ class TestOutputFileWriting(unittest.TestCase):
 
         self.assertEqual(list(self.temporary_path.iterdir()), [])
 
+    def test_plot_results_versus_time_rejects_an_unknown_text_color(self) -> None:
+        """Test that a text color Matplotlib does not accept is rejected and nothing is
+        written.
+
+        :return: None
+        """
+        with self.assertRaises(ValueError):
+            ps.output.plot_results_versus_time(
+                unsteady_solver=self.unsteady_solver,
+                show=False,
+                save=True,
+                directory=self.temporary_path,
+                text_color="not_a_color",
+            )
+
+        self.assertEqual(list(self.temporary_path.iterdir()), [])
+
     def test_plot_results_versus_time_rejects_a_missing_directory(self) -> None:
         """Test that a directory that does not exist is rejected and nothing is written.
 

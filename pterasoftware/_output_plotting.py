@@ -35,10 +35,10 @@ _TEXT_COLOR_NORMALIZED: tuple[float, float, float] = (
 )
 
 # Lines are drawn from thickest to thinnest so that all remain visible even when they
-# overlap.
-_MAX_LINE_WIDTH = 3.5
-_MIN_LINE_WIDTH = 1.5
-_LEGEND_LINE_WIDTH = (_MAX_LINE_WIDTH + _MIN_LINE_WIDTH) / 2
+# overlap. The widths are spread evenly about a middle width, reaching this fraction of
+# it above and below, and the legend draws every line at the middle width.
+_LINE_WIDTH = 2.5
+_LINE_WIDTH_SPREAD = 0.4
 
 # The fraction of the data's span added as padding on each side of the y axis. It is
 # three times matplotlib's default so the legend, which sits inside the axes at its
@@ -201,6 +201,12 @@ def plot_time_history(
     save: bool,
     save_path: Path,
     resolution_dpi: float,
+    show_titles: bool = True,
+    font_size: float | None = None,
+    text_color: (
+        tuple[float, float, float] | tuple[float, float, float, float] | None
+    ) = None,
+    line_width: float | None = None,
 ) -> None:
     """Plots one time-history figure, which is a set of series that share a y axis and
     are plotted against time.
@@ -226,8 +232,25 @@ def plot_time_history(
         decides how the figures are named.
     :param resolution_dpi: The dots per inch at which to save the figure if save is
         True. It only affects a PNG, since the vector formats have no resolution.
+    :param show_titles: Set this to False to omit the title and subtitle. The default is
+        True.
+    :param font_size: The size, in points, of every piece of text. Pass None to size
+        each piece of text by Matplotlib's defaults, with the subtitle smaller than the
+        rest. The default is None.
+    :param text_color: The RGB or RGBA color, with components from 0.0 to 1.0, of the
+        text, the axis spines, and the ticks. Pass None to use the color the rendered
+        visualizations' text uses. The default is None.
+    :param line_width: The middle line width, in points. The lines' widths are spread
+        evenly from _LINE_WIDTH_SPREAD times it above this width to the same amount
+        below, and the legend draws every line at this width. Pass None to use
+        _LINE_WIDTH. The default is None.
     :return: None
     """
+    if text_color is None:
+        text_color = _TEXT_COLOR_NORMALIZED
+    if line_width is None:
+        line_width = _LINE_WIDTH
+
     figure, axes = plt.subplots(figsize=figure_size_in, layout="constrained")
 
     # Remove the plot's top and right spines.
@@ -235,14 +258,14 @@ def plot_time_history(
     axes.spines.top.set_visible(False)
 
     # Format the plot's spine and label colors.
-    axes.spines.bottom.set_color(_TEXT_COLOR_NORMALIZED)
-    axes.spines.left.set_color(_TEXT_COLOR_NORMALIZED)
-    axes.xaxis.label.set_color(_TEXT_COLOR_NORMALIZED)
-    axes.yaxis.label.set_color(_TEXT_COLOR_NORMALIZED)
+    axes.spines.bottom.set_color(text_color)
+    axes.spines.left.set_color(text_color)
+    axes.xaxis.label.set_color(text_color)
+    axes.yaxis.label.set_color(text_color)
 
     # Format the plot's tick colors.
-    axes.tick_params(axis="x", colors=_TEXT_COLOR_NORMALIZED)
-    axes.tick_params(axis="y", colors=_TEXT_COLOR_NORMALIZED)
+    axes.tick_params(axis="x", colors=text_color)
+    axes.tick_params(axis="y", colors=text_color)
 
     # Format the plot's background colors.
     figure.patch.set_facecolor(_FIGURE_BACKGROUND_COLOR)
@@ -251,7 +274,9 @@ def plot_time_history(
     # Populate the plot. Lines are drawn from thickest to thinnest so that all remain
     # visible even when the curves overlap.
     num_series = len(series)
-    widths = np.linspace(_MAX_LINE_WIDTH, _MIN_LINE_WIDTH, num_series)
+    widths = line_width * np.linspace(
+        1.0 + _LINE_WIDTH_SPREAD, 1.0 - _LINE_WIDTH_SPREAD, num_series
+    )
     for series_id, (this_series, label, color) in enumerate(
         zip(series, labels, colors)
     ):
@@ -269,22 +294,23 @@ def plot_time_history(
     axes.margins(y=_Y_AXIS_MARGIN)
 
     # Name the plot's axis labels, title, and subtitle.
-    axes.set_xlabel("Time (s)", color=_TEXT_COLOR_NORMALIZED)
-    axes.set_ylabel(y_label, color=_TEXT_COLOR_NORMALIZED)
-    figure.suptitle(title, color=_TEXT_COLOR_NORMALIZED)
-    if subtitle:
-        axes.set_title(subtitle, color=_TEXT_COLOR_NORMALIZED, fontsize="small")
+    axes.set_xlabel("Time (s)", color=text_color)
+    axes.set_ylabel(y_label, color=text_color)
+    if show_titles:
+        title_text = figure.suptitle(title, color=text_color)
+        if subtitle:
+            axes.set_title(subtitle, color=text_color, fontsize="small")
 
     # Format the plot's legend.
     axes.legend(
         facecolor=_FIGURE_BACKGROUND_COLOR,
         edgecolor=_FIGURE_BACKGROUND_COLOR,
-        labelcolor=_TEXT_COLOR_NORMALIZED,
+        labelcolor=text_color,
         handler_map={
             plt.Line2D: matplotlib.legend_handler.HandlerLine2D(
                 update_func=lambda h, orig: (
                     h.update_from(orig),
-                    h.set_linewidth(_LEGEND_LINE_WIDTH),
+                    h.set_linewidth(line_width),
                 )
             )
         },
@@ -294,11 +320,13 @@ def plot_time_history(
     # rather than by its family name, so a different font installed under the same name
     # cannot stand in for it. The family name is set too, since an SVG names its font by
     # family. A tick that a later draw adds copies its text properties from the first
-    # tick, so it inherits the font as well.
+    # tick, so it inherits the font, and the size below, as well.
     for text in figure.findobj(matplotlib.text.Text):
         font_properties = text.get_fontproperties().copy()
         font_properties.set_family(_fonts.FONT_FAMILY)
         font_properties.set_file(_fonts.FONT_PATH)
+        if font_size is not None:
+            font_properties.set_size(font_size)
         text.set_fontproperties(font_properties)
 
     # The subtitle centers over the axes, but the title, being a figure-level artist,
@@ -306,13 +334,17 @@ def plot_time_history(
     # constrained layout widens the left margin to fit the y axis text. One layout pass
     # finds the axes' final position, and the title is then re-centered over it so the
     # two stay aligned. The layout engine leaves the title's x alone on later draws.
-    figure.draw_without_rendering()
-    axes_position = axes.get_position()
-    figure.suptitle(
-        title,
-        color=_TEXT_COLOR_NORMALIZED,
-        x=(axes_position.x0 + axes_position.x1) / 2,
-    )
+    # Re-titling resets the title's size to Matplotlib's default unless one is passed,
+    # so the size it already has is passed along.
+    if show_titles:
+        figure.draw_without_rendering()
+        axes_position = axes.get_position()
+        figure.suptitle(
+            title,
+            color=text_color,
+            x=(axes_position.x0 + axes_position.x1) / 2,
+            fontsize=title_text.get_fontsize(),
+        )
 
     # Save the figure if the user wants to do so, in the format its path's suffix names.
     # The two settings below only affect the vector formats. A PDF embeds the font as

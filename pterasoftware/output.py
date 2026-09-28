@@ -1446,6 +1446,7 @@ def plot_results_versus_time(
     directory: str | Path = ".",
     prefix: str = "",
     resolution_dpi: int | float = 300.0,
+    file_format: str = "png",
 ) -> None:
     """Plots the loads and load coefficients of an UnsteadyRingVortexLatticeMethodSolver
     or one of its subclasses (the aeroelastic or free flight solver) as a function of
@@ -1473,8 +1474,9 @@ def plot_results_versus_time(
         this by resolution_dpi gives the resolution of each saved PNG. It must be a
         sequence of two positive numbers. The default is (6.4, 4.8), which is
         Matplotlib's own default.
-    :param save: Set this to True to save the plots as PNGs. It can be a bool or a numpy
-        bool and will be converted internally to a bool. The default is False.
+    :param save: Set this to True to save the plots in the format named by file_format.
+        It can be a bool or a numpy bool and will be converted internally to a bool. The
+        default is False.
     :param save_csv: Set this to True to save the plotted data as CSVs, which is
         independent of save, so the data can be exported without rendering any images.
         One file holds the loads and load coefficients of each Airplane, and, for a
@@ -1483,7 +1485,7 @@ def plot_results_versus_time(
         begin at the solver's first results step while the state history begins at time
         step 0, so they have different numbers of rows. It can be a bool or a numpy bool
         and will be converted internally to a bool. The default is False.
-    :param directory: The directory to save the PNGs and CSVs in. It can be a str or a
+    :param directory: The directory to save the plots and CSVs in. It can be a str or a
         Path and must already exist. This has no effect unless save or save_csv is True.
         The default is ".", the current working directory.
     :param prefix: A prefix to prepend to each file's name, which distinguishes one
@@ -1496,7 +1498,13 @@ def plot_results_versus_time(
         simulation. This has no effect unless save or save_csv is True.
     :param resolution_dpi: The dots per inch at which to save each PNG. It can be an int
         or a float and will be converted internally to a float. This has no effect
-        unless save is True. The default is 300.0.
+        unless save is True and file_format is "png". The default is 300.0.
+    :param file_format: The file format to save the plots in, which is also each plot
+        file's extension. It must be "png", "svg", or "pdf". A PNG is a raster image
+        with a transparent background. An SVG and a PDF are vector images, with their
+        text kept as selectable text in an embedded font. Use a PDF for documents, such
+        as LaTeX papers, and an SVG for the web and for slides. This has no effect
+        unless save is True. The default is "png".
     :return: None
     """
     if not isinstance(
@@ -1547,6 +1555,13 @@ def plot_results_versus_time(
     resolution_dpi = _parameter_validation.number_in_range_return_float(
         resolution_dpi, "resolution_dpi", 0.0, False
     )
+
+    file_format = _parameter_validation.str_return_str(file_format, "file_format")
+    if file_format not in _output_plotting.VALID_FILE_FORMATS:
+        valid_formats = ", ".join(f'"{f}"' for f in _output_plotting.VALID_FILE_FORMATS)
+        raise ValueError(
+            f'file_format must be one of {valid_formats}, got "{file_format}".'
+        )
 
     if not unsteady_solver.ran:
         raise RuntimeError(
@@ -1667,7 +1682,7 @@ def plot_results_versus_time(
             _FORCE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_forces.png"),
+            directory / (file_stem + "_forces." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1684,7 +1699,7 @@ def plot_results_versus_time(
             _FORCE_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_force_coefficients.png"),
+            directory / (file_stem + "_force_coefficients." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1701,7 +1716,7 @@ def plot_results_versus_time(
             _MOMENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_moments.png"),
+            directory / (file_stem + "_moments." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1718,7 +1733,7 @@ def plot_results_versus_time(
             _MOMENT_COEFFICIENT_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_moment_coefficients.png"),
+            directory / (file_stem + "_moment_coefficients." + file_format),
             resolution_dpi,
         )
 
@@ -1826,7 +1841,7 @@ def plot_results_versus_time(
             _POSITION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_position.png"),
+            directory / (file_stem + "_position." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1839,7 +1854,7 @@ def plot_results_versus_time(
             _VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_velocity.png"),
+            directory / (file_stem + "_velocity." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1856,7 +1871,7 @@ def plot_results_versus_time(
             _ORIENTATION_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_orientation.png"),
+            directory / (file_stem + "_orientation." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1869,7 +1884,7 @@ def plot_results_versus_time(
             _ANGULAR_VELOCITY_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_angular_velocity.png"),
+            directory / (file_stem + "_angular_velocity." + file_format),
             resolution_dpi,
         )
         _output_plotting.plot_time_history(
@@ -1882,7 +1897,7 @@ def plot_results_versus_time(
             _AERODYNAMIC_ANGLE_Y_LABEL,
             (figure_width_in, figure_height_in),
             save,
-            directory / (file_stem + "_aerodynamic_angles.png"),
+            directory / (file_stem + "_aerodynamic_angles." + file_format),
             resolution_dpi,
         )
 

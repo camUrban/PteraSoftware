@@ -788,7 +788,6 @@ with matplotlib.rc_context({"pdf.fonttype": 42}):
     lift_figure.savefig(
         fname=VALIDATION_DIRECTORY / "lift_validation.pdf",
         dpi=300,
-        bbox_inches="tight",
     )
 
 # Delete the extraneous pointers.

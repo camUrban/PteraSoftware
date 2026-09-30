@@ -144,13 +144,16 @@ _DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
 _DIAGRAM_PANEL_COLOR = "black"
 _DIAGRAM_LINE_WIDTH = 1.0
 
-# Define the style of the vortices drawn by add_vortices: their color, both when drawn
-# exactly and when simplified, their line width in pixels, how far their trailing legs
-# extend downstream past the vortices' bounding box, how much of that overhang at the
-# end of each trailing leg is dashed, and the length of each dash and each gap. The last
-# four are fractions of the largest chord.
+# Define the style of the vortices drawn by add_vortices: the colors of the bound
+# vortices and the wake vortices, both when drawn exactly and when simplified, their
+# line width in pixels, how far their trailing legs extend downstream past the vortices'
+# bounding box, how much of that overhang at the end of each trailing leg is dashed, and
+# the length of each dash and each gap. The last four are fractions of the largest
+# chord.
 _VORTEX_COLOR = "darkorange"
 _VORTEX_SIMPLIFIED_COLOR = "teal"
+_VORTEX_WAKE_COLOR = "royalblue"
+_VORTEX_WAKE_SIMPLIFIED_COLOR = "mediumpurple"
 _VORTEX_LINE_WIDTH = 1.0
 _VORTEX_TRAILING_LEG_OVERHANG = 1.0
 _VORTEX_TRAILING_LEG_DASHED_LENGTH = 0.5
@@ -1547,22 +1550,30 @@ def add_vortices(
     stackBlrvp_D_Do: np.ndarray,
     stackBrrvp_D_Do: np.ndarray,
     stackRingUnitNormals_D: np.ndarray,
+    stackFrwrvp_D_Do: np.ndarray,
+    stackFlwrvp_D_Do: np.ndarray,
+    stackBlwrvp_D_Do: np.ndarray,
+    stackBrwrvp_D_Do: np.ndarray,
+    stackWakeRingUnitNormals_D: np.ndarray,
     stackFrhvp_D_Do: np.ndarray,
     stackFlhvp_D_Do: np.ndarray,
     stackBlhvp_D_Do: np.ndarray,
     stackBrhvp_D_Do: np.ndarray,
     stackHorseshoeUnitNormals_D: np.ndarray,
+    horseshoe_vortices_are_wake: bool,
     largest_chord: float,
     simplify: bool,
 ) -> None:
-    """Adds a solver's ring and horseshoe vortices to a Plotter.
+    """Adds a solver's ring, wake ring, and horseshoe vortices to a Plotter.
 
     The vortices are drawn from the corner point stacks the solver filled during its
     run, so the drawing always matches the placement the solver used. For example, a
     steady horseshoe vortex lattice method solver passes its bound horseshoe vortices
-    and no ring vortices, and a steady ring vortex lattice method solver passes its
-    bound ring vortices along with the wake horseshoe vortices shed from its trailing
-    edge Panels.
+    and no ring vortices, a steady ring vortex lattice method solver passes its bound
+    ring vortices along with the wake horseshoe vortices shed from its trailing edge
+    Panels, and an unsteady ring vortex lattice method solver passes one time step's
+    bound ring vortices and wake ring vortices. The wake vortices are drawn in a
+    different color than the bound vortices.
 
     Each horseshoe vortex's finite leg runs from its front right to its front left
     point, and its two trailing legs run from those points toward its back right and
@@ -1599,6 +1610,21 @@ def add_vortices(
         meters.
     :param stackRingUnitNormals_D: A (N,3) ndarray of floats holding the unit normal (in
         diagram axes) of the Panel that carries each ring vortex.
+    :param stackFrwrvp_D_Do: A (K,3) ndarray of floats, where K is the number of wake
+        ring vortices, holding each wake ring vortex's front right point (in diagram
+        axes, relative to the diagram origin). K may be zero. The units are in meters.
+    :param stackFlwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        front left point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackBlwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        back left point (in diagram axes, relative to the diagram origin). The units are
+        in meters.
+    :param stackBrwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        back right point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackWakeRingUnitNormals_D: A (K,3) ndarray of floats holding a unit normal
+        (in diagram axes) for each wake ring vortex, which plays the role a Panel's unit
+        normal plays for a ring vortex.
     :param stackFrhvp_D_Do: A (M,3) ndarray of floats, where M is the number of
         horseshoe vortices, holding each horseshoe vortex's front right point (in
         diagram axes, relative to the diagram origin). M may be zero. The units are in
@@ -1615,6 +1641,9 @@ def add_vortices(
     :param stackHorseshoeUnitNormals_D: A (M,3) ndarray of floats holding the unit
         normal (in diagram axes) of the Panel that carries or sheds each horseshoe
         vortex.
+    :param horseshoe_vortices_are_wake: Determines whether the horseshoe vortices are
+        wake vortices shed from the Panels, rather than bound vortices carried by them,
+        which draws them in the wake vortices' color.
     :param largest_chord: The largest chord of any WingCrossSection whose Panels carry
         the vortices, which scales the trailing legs' overhang past the vortices and
         their dashes. The units are in meters.
@@ -1622,17 +1651,35 @@ def add_vortices(
         draw them in the simplified color, and add their vorticity arrows.
     :return: None
     """
-    # Gather each ring vortex's four corners, in front right, front left, back left, and
-    # back right order, and each horseshoe vortex's finite leg's front right and front
-    # left ends. The horseshoe vortices' trailing legs are added later, from their
+    # Draw the simplified vortices in their own colors, to set them apart from the exact
+    # vortices, and the wake vortices in colors apart from the bound vortices'.
+    vortex_color = _VORTEX_SIMPLIFIED_COLOR if simplify else _VORTEX_COLOR
+    wake_vortex_color = (
+        _VORTEX_WAKE_SIMPLIFIED_COLOR if simplify else _VORTEX_WAKE_COLOR
+    )
+    horseshoe_color = wake_vortex_color if horseshoe_vortices_are_wake else vortex_color
+
+    # Gather each ring vortex's and then each wake ring vortex's four corners, in front
+    # right, front left, back left, and back right order, along with the unit normal and
+    # color each is drawn with, and each horseshoe vortex's finite leg's front right and
+    # front left ends. The horseshoe vortices' trailing legs are added later, from their
     # finite legs' ends, along the unit vectors from their front points toward their
     # back points.
     listRingCorners_D_Do = [
         np.array([Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do])
         for Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do in zip(
-            stackFrrvp_D_Do, stackFlrvp_D_Do, stackBlrvp_D_Do, stackBrrvp_D_Do
+            np.vstack([stackFrrvp_D_Do, stackFrwrvp_D_Do]),
+            np.vstack([stackFlrvp_D_Do, stackFlwrvp_D_Do]),
+            np.vstack([stackBlrvp_D_Do, stackBlwrvp_D_Do]),
+            np.vstack([stackBrrvp_D_Do, stackBrwrvp_D_Do]),
         )
     ]
+    stackAllRingUnitNormals_D = np.vstack(
+        [stackRingUnitNormals_D, stackWakeRingUnitNormals_D]
+    )
+    ring_colors = [vortex_color] * stackFrrvp_D_Do.shape[0] + [
+        wake_vortex_color
+    ] * stackFrwrvp_D_Do.shape[0]
     listFiniteLegEnds_D_Do = [
         np.array([Frhvp_D_Do, Flhvp_D_Do])
         for Frhvp_D_Do, Flhvp_D_Do in zip(stackFrhvp_D_Do, stackFlhvp_D_Do)
@@ -1690,15 +1737,17 @@ def add_vortices(
     # solvers' induced velocity functions. A ring vortex's inside point is its center,
     # and a horseshoe vortex's lies downstream of its finite leg's midpoint, between its
     # trailing legs. Each vortex's arrows share a radius, a fixed fraction of its
-    # shortest bound leg.
+    # shortest bound leg. Each polyline and line vortex also keeps its vortex's color.
     listSolidPolylines_D_Do: list[np.ndarray] = []
+    solid_polyline_colors: list[str] = []
     trailing_legs: list[tuple[np.ndarray, np.ndarray, float, float]] = []
     line_vortices: list[
-        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, str]
     ] = []
-    for ringCorners_D_Do, ringUnitNormal_D in zip(
-        listRingCorners_D_Do, stackRingUnitNormals_D
+    for ringCorners_D_Do, ringUnitNormal_D, ring_color in zip(
+        listRingCorners_D_Do, stackAllRingUnitNormals_D, ring_colors
     ):
+        solid_polyline_colors.append(ring_color)
         if simplify:
             listSolidPolylines_D_Do.append(
                 _round_polyline_corners(ringCorners_D_Do, closed=True)
@@ -1718,6 +1767,7 @@ def add_vortices(
                     ringUnitNormal_D,
                     ringCorners_D_Do.mean(axis=0),
                     arrow_radius,
+                    ring_color,
                 )
                 for legStart_D_Do, legEnd_D_Do in ring_legs
             )
@@ -1786,10 +1836,12 @@ def add_vortices(
                     horseshoeUnitNormal_D,
                     insidePoint_D_Do,
                     arrow_radius,
+                    horseshoe_color,
                 )
                 for legStart_D_Do, legEnd_D_Do in horseshoe_legs
             )
         listSolidPolylines_D_Do.append(horseshoePolyline_D_Do)
+        solid_polyline_colors.append(horseshoe_color)
 
     # Build each trailing leg's dashed part. Each dash starts at a whole multiple of the
     # dash pattern's period in distance along the trailing leg's direction, which lines
@@ -1824,16 +1876,18 @@ def add_vortices(
                 + (dash_end_distance - start_distance) * trailingDirection_D
             )
 
-    # Draw the simplified vortices in their own color, to set them apart from the exact
-    # vortices.
-    vortex_color = _VORTEX_SIMPLIFIED_COLOR if simplify else _VORTEX_COLOR
-
-    # Draw the solid polylines.
-    if listSolidPolylines_D_Do:
-        polylineVertices_D_Do = np.vstack(listSolidPolylines_D_Do)
+    # Draw the solid polylines, with one mesh for each color.
+    for polyline_color in dict.fromkeys(solid_polyline_colors):
+        listColorPolylines_D_Do = [
+            solidPolyline_D_Do
+            for solidPolyline_D_Do, solid_polyline_color in zip(
+                listSolidPolylines_D_Do, solid_polyline_colors
+            )
+            if solid_polyline_color == polyline_color
+        ]
         polyline_lines = []
         first_vertex_id = 0
-        for solidPolyline_D_Do in listSolidPolylines_D_Do:
+        for solidPolyline_D_Do in listColorPolylines_D_Do:
             num_vertices = solidPolyline_D_Do.shape[0]
             polyline_lines.append(num_vertices)
             polyline_lines.extend(
@@ -1841,12 +1895,14 @@ def add_vortices(
             )
             first_vertex_id += num_vertices
         plotter.add_mesh(
-            pv.PolyData(polylineVertices_D_Do, lines=np.array(polyline_lines)),
-            color=vortex_color,
+            pv.PolyData(
+                np.vstack(listColorPolylines_D_Do), lines=np.array(polyline_lines)
+            ),
+            color=polyline_color,
             line_width=_VORTEX_LINE_WIDTH,
         )
 
-    # Draw the trailing legs' dashed parts.
+    # Draw the trailing legs' dashed parts, which only horseshoe vortices have.
     if listDashVertices_D_Do:
         num_dashes = len(listDashVertices_D_Do) // 2
         dash_lines = np.column_stack(
@@ -1858,7 +1914,7 @@ def add_vortices(
         ).ravel()
         plotter.add_mesh(
             pv.PolyData(np.array(listDashVertices_D_Do, dtype=float), lines=dash_lines),
-            color=vortex_color,
+            color=horseshoe_color,
             line_width=_VORTEX_LINE_WIDTH,
         )
 
@@ -1871,15 +1927,17 @@ def add_vortices(
     # keeps it from overlapping the arrows of neighboring vortices' nearby legs. Like
     # the axes arrows, its shaft is a single line and its tip is an outlined cone, whose
     # proportions match the axes arrows' as fractions of the half circle's length. The
-    # shaft stops where the tip's base begins.
+    # shaft stops where the tip's base begins. Each arrow takes its vortex's color.
     arc_parameters = np.linspace(0.0, 1.0, _VORTEX_VORTICITY_ARROW_NUM_POINTS)
     listArcPolylines_D_Do: list[np.ndarray] = []
+    arc_colors: list[str] = []
     for (
         legStart_D_Do,
         legEnd_D_Do,
         unitNormal_D,
         insidePoint_D_Do,
         arrow_radius,
+        line_vortex_color,
     ) in line_vortices:
         legMidpoint_D_Do = 0.5 * (legStart_D_Do + legEnd_D_Do)
         legDirection_D = (legEnd_D_Do - legStart_D_Do) / np.linalg.norm(
@@ -1916,6 +1974,7 @@ def add_vortices(
             + arrow_radius
             * (np.cos(angles) * firstDirection_D + np.sin(angles) * secondDirection_D)
         )
+        arc_colors.append(line_vortex_color)
         _add_arrow_tip(
             plotter,
             tipBase_D_Do=listArcPolylines_D_Do[-1][-1],
@@ -1923,21 +1982,28 @@ def add_vortices(
             + math.cos(shaft_end_angle) * secondDirection_D,
             length=tip_length,
             radius=_AXES_TIP_RADIUS * arc_length,
-            color=vortex_color,
+            color=line_vortex_color,
         )
-    if listArcPolylines_D_Do:
-        num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
+    num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
+    for arc_color in dict.fromkeys(arc_colors):
+        listColorArcPolylines_D_Do = [
+            arcPolyline_D_Do
+            for arcPolyline_D_Do, this_arc_color in zip(
+                listArcPolylines_D_Do, arc_colors
+            )
+            if this_arc_color == arc_color
+        ]
         arc_lines = np.column_stack(
             [
-                np.full(len(listArcPolylines_D_Do), num_arc_points),
-                np.arange(num_arc_points * len(listArcPolylines_D_Do)).reshape(
+                np.full(len(listColorArcPolylines_D_Do), num_arc_points),
+                np.arange(num_arc_points * len(listColorArcPolylines_D_Do)).reshape(
                     -1, num_arc_points
                 ),
             ]
         ).ravel()
         plotter.add_mesh(
-            pv.PolyData(np.vstack(listArcPolylines_D_Do), lines=arc_lines),
-            color=vortex_color,
+            pv.PolyData(np.vstack(listColorArcPolylines_D_Do), lines=arc_lines),
+            color=arc_color,
             line_width=_AXES_LINE_WIDTH,
         )
 

@@ -288,10 +288,11 @@ class SteadyRingVortexLatticeMethodSolver:
         The diagram is drawn in the first Airplane's geometry axes, relative to the
         first Airplane's CG. It shows the Earth axes at the Earth origin, every Wing's
         Panels, every Panel's bound ring vortex, and the horseshoe vortex shed from
-        every trailing edge Panel. The vortices are drawn from the placement this solver
-        used during its run, so the solver must have run. The horseshoe vortices'
-        trailing legs are drawn shorter than the solver's, and their ends are dashed to
-        show that they continue. The units are in meters.
+        every trailing edge Panel, which is drawn in a different color than the bound
+        ring vortices. The vortices are drawn from the placement this solver used during
+        its run, so the solver must have run. The horseshoe vortices' trailing legs are
+        drawn shorter than the solver's, and their ends are dashed to show that they
+        continue. The units are in meters.
 
         :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
             geometry axes at its CG. Can be a bool or a numpy bool and will be converted
@@ -393,9 +394,10 @@ class SteadyRingVortexLatticeMethodSolver:
         )
 
         # The vortex stacks are already in the diagram axes, relative to the diagram
-        # origin. The horseshoe vortex stacks are in trailing edge order, so each
-        # horseshoe vortex takes the unit normal of the trailing edge Panel that sheds
-        # it.
+        # origin. This solver places no wake ring vortices. The horseshoe vortex stacks
+        # are in trailing edge order, so each horseshoe vortex takes the unit normal of
+        # the trailing edge Panel that sheds it.
+        noVortexPoints_D_Do = np.empty((0, 3), dtype=float)
         _output_rendering.add_vortices(
             plotter,
             stackFrrvp_D_Do=self.stackFrbrvp_GP1_CgP1,
@@ -403,6 +405,11 @@ class SteadyRingVortexLatticeMethodSolver:
             stackBlrvp_D_Do=self.stackBlbrvp_GP1_CgP1,
             stackBrrvp_D_Do=self.stackBrbrvp_GP1_CgP1,
             stackRingUnitNormals_D=self.stackUnitNormals_GP1,
+            stackFrwrvp_D_Do=noVortexPoints_D_Do,
+            stackFlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBrwrvp_D_Do=noVortexPoints_D_Do,
+            stackWakeRingUnitNormals_D=noVortexPoints_D_Do,
             stackFrhvp_D_Do=self._stackFrhvp_GP1_CgP1,
             stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
             stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
@@ -410,6 +417,7 @@ class SteadyRingVortexLatticeMethodSolver:
             stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1[
                 self.panel_is_trailing_edge
             ],
+            horseshoe_vortices_are_wake=True,
             largest_chord=max(
                 wing_cross_section.chord
                 for airplane in self.airplanes

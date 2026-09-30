@@ -334,7 +334,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         )
 
         # The vortex stacks are already in the diagram axes, relative to the diagram
-        # origin. This solver places no ring vortices.
+        # origin. This solver places no ring vortices or wake ring vortices.
         noVortexPoints_D_Do = np.empty((0, 3), dtype=float)
         _output_rendering.add_vortices(
             plotter,
@@ -343,11 +343,17 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             stackBlrvp_D_Do=noVortexPoints_D_Do,
             stackBrrvp_D_Do=noVortexPoints_D_Do,
             stackRingUnitNormals_D=noVortexPoints_D_Do,
+            stackFrwrvp_D_Do=noVortexPoints_D_Do,
+            stackFlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBrwrvp_D_Do=noVortexPoints_D_Do,
+            stackWakeRingUnitNormals_D=noVortexPoints_D_Do,
             stackFrhvp_D_Do=self._stackFrhvp_GP1_CgP1,
             stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
             stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
             stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
             stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1,
+            horseshoe_vortices_are_wake=False,
             largest_chord=max(
                 wing_cross_section.chord
                 for airplane in self.airplanes

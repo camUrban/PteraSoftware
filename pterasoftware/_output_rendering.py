@@ -402,21 +402,22 @@ def add_axes_and_points(
     listExtraPointBasisDirections_D: Sequence[np.ndarray] = (),
     listExtraPointCrossDirections_D: Sequence[np.ndarray] = (),
     label_extra_points: bool = True,
+    two_dimensional: bool = False,
 ) -> None:
     """Adds labeled axes and their labeled origin points to a Plotter, along with any
     extra labeled points that have no axes of their own, merging those that coincide.
 
-    Each axes set is drawn as three basis direction arrows starting at its point, which
-    is marked with a dot. The arrow tips are labeled with the axes' ID and the basis
-    direction's letter (such as "WnX"), and the points are labeled with their IDs (such
-    as "Ler"). Each extra point is marked with a small cross, without arrows, whose two
-    arms lie along its given cross directions. Points at the same position share one
-    label that joins their IDs with slashes (such as "Cg/Ler"), and are marked with a
-    dot if any of them has axes. Likewise, arrows with the same start and direction are
-    drawn once, with one label that joins their labels with slashes (such as "GX/WnX").
-    The arrows are compared one basis direction at a time, so two axes sets that share a
-    point and differ by a rotation about one of their basis directions still merge that
-    direction's arrows.
+    Each axes set is drawn as three (or, if two dimensional, two) basis direction arrows
+    starting at its point, which is marked with a dot. The arrow tips are labeled with
+    the axes' ID and the basis direction's letter (such as "WnX"), and the points are
+    labeled with their IDs (such as "Ler"). Each extra point is marked with a small
+    cross, without arrows, whose two arms lie along its given cross directions. Points
+    at the same position share one label that joins their IDs with slashes (such as
+    "Cg/Ler"), and are marked with a dot if any of them has axes. Likewise, arrows with
+    the same start and direction are drawn once, with one label that joins their labels
+    with slashes (such as "GX/WnX"). The arrows are compared one basis direction at a
+    time, so two axes sets that share a point and differ by a rotation about one of
+    their basis directions still merge that direction's arrows.
 
     Each label is placed automatically so that its text extends away from what it
     labels, and the placement is updated before every render. In an interactive window,
@@ -451,6 +452,9 @@ def add_axes_and_points(
     :param label_extra_points: Determines whether the extra points are labeled. If
         False, each extra point is still marked with its cross, but its ID is left out
         of every label. The default is True.
+    :param two_dimensional: Determines whether every axes set is two dimensional. If
+        True, only each axes set's x and y basis directions are drawn. The default is
+        False.
     :return: None
     """
     # Each axes set's point has its label offset along the negative sum of that axes
@@ -539,10 +543,11 @@ def add_axes_and_points(
     listArrowDirections_D: list[np.ndarray] = []
     arrow_colors: list[str] = []
     arrow_labels: list[list[str]] = []
+    component_letters = ("X", "Y") if two_dimensional else ("X", "Y", "Z")
     for axes_id, transformation in zip(axes_ids, transformations):
         thisArrowStart_D_Do = transformation[:3, 3]
         for component_id, (component_letter, color) in enumerate(
-            zip(("X", "Y", "Z"), _AXES_COLORS)
+            zip(component_letters, _AXES_COLORS)
         ):
             thisArrowDirection_D = transformation[:3, component_id]
             label = f"{axes_id}{component_letter}"
@@ -990,9 +995,6 @@ def add_airfoil(
 ) -> None:
     """Adds a WingCrossSection's Airfoil's outline and mean camber line to a Plotter.
 
-    The outline is drawn as a closed loop and the mean camber line as an open line, both
-    unfilled, so they never hide the rest of the diagram.
-
     :param plotter: The Plotter to add the Airfoil's outline and mean camber line to.
     :param wing_cross_section: The WingCrossSection whose Airfoil is added.
     :param T_pas_Wcs_Lp_to_D_Do: A (4,4) ndarray of floats representing the passive
@@ -1004,13 +1006,37 @@ def add_airfoil(
     airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp = get_wing_cross_section_airfoil_lines(
         wing_cross_section
     )
-    airfoilOutline_D_Do = _transformations.apply_T_to_vectors(
-        T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
-    )
-    airfoilMcl_D_Do = _transformations.apply_T_to_vectors(
-        T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
+    add_airfoil_lines(
+        plotter,
+        _transformations.apply_T_to_vectors(
+            T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
+        ),
+        _transformations.apply_T_to_vectors(
+            T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
+        ),
     )
 
+
+def add_airfoil_lines(
+    plotter: pv.Plotter,
+    airfoilOutline_D_Do: np.ndarray,
+    airfoilMcl_D_Do: np.ndarray | None,
+) -> None:
+    """Adds an Airfoil's outline and, optionally, its mean camber line to a Plotter.
+
+    The outline is drawn as a closed loop and the mean camber line as an open line, both
+    unfilled, so they never hide the rest of the diagram.
+
+    :param plotter: The Plotter to add the outline and mean camber line to.
+    :param airfoilOutline_D_Do: A (N,3) ndarray of floats holding the points on the
+        Airfoil's outline (in diagram axes, relative to the diagram origin), where N is
+        the number of points in the outline.
+    :param airfoilMcl_D_Do: A (M,3) ndarray of floats holding the points on the
+        Airfoil's mean camber line (in diagram axes, relative to the diagram origin),
+        where M is the number of points in the mean camber line, or None to leave the
+        mean camber line out.
+    :return: None
+    """
     num_outline_points = airfoilOutline_D_Do.shape[0]
     plotter.add_mesh(
         pv.PolyData(
@@ -1020,6 +1046,8 @@ def add_airfoil(
         color=_DIAGRAM_AIRFOIL_OUTLINE_COLOR,
         line_width=_DIAGRAM_LINE_WIDTH,
     )
+    if airfoilMcl_D_Do is None:
+        return
     plotter.add_mesh(
         pv.lines_from_points(airfoilMcl_D_Do),
         color=_DIAGRAM_AIRFOIL_MCL_COLOR,

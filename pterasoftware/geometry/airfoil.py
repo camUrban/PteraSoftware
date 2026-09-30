@@ -9,8 +9,14 @@ from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pyvista as pv
 
-from .. import _functions, _parameter_validation, _transformations
+from .. import (
+    _functions,
+    _output_rendering,
+    _parameter_validation,
+    _transformations,
+)
 
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
 # annotated as Any so the deprecated parameter can carry it as a default while keeping
@@ -397,6 +403,61 @@ class Airfoil:
         if flapped_airfoil._mcl_A_Lp is not None:
             flapped_airfoil._mcl_A_Lp.flags.writeable = False
         return flapped_airfoil
+
+    def diagram(
+        self, *, show_axes: bool | np.bool = True, show_mcl: bool | np.bool = True
+    ) -> None:
+        """Displays a diagram of this Airfoil's outline and mean camber line (MCL).
+
+        The diagram is drawn in airfoil axes, relative to the leading point, and viewed
+        along the negative z direction with parallel projection, so the Airfoil appears
+        with its leading point on the left and its upper line on top. The points are
+        normalized by the chord and are unitless.
+
+        :param show_axes: Determines whether to draw the airfoil axes at the leading
+            point. Can be a bool or a numpy bool and will be converted internally to a
+            bool. The default is True.
+        :param show_mcl: Determines whether to draw the MCL. Can be a bool or a numpy
+            bool and will be converted internally to a bool. The default is True.
+        :return: None
+        """
+        show_axes = _parameter_validation.boolLike_return_bool(show_axes, "show_axes")
+        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+
+        plotter = pv.Plotter()
+
+        # Draw the diagram in airfoil axes, relative to the leading point, placing each
+        # point in the diagram's xy plane.
+        airfoilOutline_D_Do = np.column_stack(
+            [
+                self._outline_A_Lp,
+                np.zeros(self._outline_A_Lp.shape[0], dtype=float),
+            ]
+        )
+        airfoilMcl_D_Do = None
+        if show_mcl:
+            assert self._mcl_A_Lp is not None
+            airfoilMcl_D_Do = np.column_stack(
+                [self._mcl_A_Lp, np.zeros(self._mcl_A_Lp.shape[0], dtype=float)]
+            )
+        _output_rendering.add_airfoil_lines(
+            plotter, airfoilOutline_D_Do, airfoilMcl_D_Do
+        )
+
+        # Size the axes as a fraction of the chord, which is one because the points are
+        # normalized by it.
+        if show_axes:
+            _output_rendering.add_axes_and_points(
+                plotter,
+                axes_ids=["A"],
+                point_ids=["Lp"],
+                transformations=[np.eye(4, dtype=float)],
+                axes_scale=0.5,
+                two_dimensional=True,
+            )
+
+        plotter.camera.parallel_projection = True
+        plotter.show(cpos="xy", full_screen=False, auto_close=False)
 
     def draw(self) -> None:
         """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.

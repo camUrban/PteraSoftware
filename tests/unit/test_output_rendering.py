@@ -513,6 +513,87 @@ class TestGetWingCrossSectionAirfoilLines(unittest.TestCase):
         )
 
 
+class TestGetPanelCollocationPoints(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.get_panel_collocation_points."""
+
+    def test_returns_every_panel_without_a_selection(self) -> None:
+        """Test that every Panel's collocation point is returned, row by row, when no
+        Panels are selected."""
+        wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
+        assert wing.panels is not None
+        num_rows, num_columns = wing.panels.shape
+        ids, _, _, _ = _output_rendering.get_panel_collocation_points(
+            wing, None, "", np.eye(4, dtype=float)
+        )
+        self.assertEqual(
+            ids,
+            [
+                f"Cppr{row_num}c{column_num}"
+                for row_num in range(1, num_rows + 1)
+                for column_num in range(1, num_columns + 1)
+            ],
+        )
+
+    def test_numbers_selected_panels_from_one_with_the_suffix(self) -> None:
+        """Test that each ID numbers its Panel's row and column from one and ends with
+        the suffix."""
+        wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
+        ids, _, _, _ = _output_rendering.get_panel_collocation_points(
+            wing, [(0, 1), (1, 0)], "Wn1", np.eye(4, dtype=float)
+        )
+        self.assertEqual(ids, ["Cppr1c2Wn1", "Cppr2c1Wn1"])
+
+    def test_maps_each_collocation_point_into_diagram_axes(self) -> None:
+        """Test that each position is its Panel's collocation point, mapped through the
+        transformation."""
+        wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
+        assert wing.panels is not None
+        T_pas_G_Cg_to_D_Do = _transformations.generate_trans_T(
+            np.array([1.0, -2.0, 0.5]), passive=True
+        )
+        _, listCollocationPoints_D_Do, _, _ = (
+            _output_rendering.get_panel_collocation_points(
+                wing, [(1, 2)], "", T_pas_G_Cg_to_D_Do
+            )
+        )
+        npt.assert_allclose(
+            listCollocationPoints_D_Do[0],
+            _transformations.apply_T_to_vectors(
+                T_pas_G_Cg_to_D_Do, wing.panels[1, 2].Cpp_G_Cg, is_position=True
+            ),
+        )
+
+    def test_lays_each_cross_along_its_panels_diagonals(self) -> None:
+        """Test that each cross's arms are unit vectors along its Panel's diagonals."""
+        wing = output_rendering_fixtures.make_placed_airplanes_fixture()[0].wings[0]
+        assert wing.panels is not None
+        panel = wing.panels[0, 0]
+        _, _, _, listCrossDirections_D = _output_rendering.get_panel_collocation_points(
+            wing, [(0, 0)], "", np.eye(4, dtype=float)
+        )
+        firstDiagonal_G = panel.Brpp_G_Cg - panel.Flpp_G_Cg
+        secondDiagonal_G = panel.Blpp_G_Cg - panel.Frpp_G_Cg
+        npt.assert_allclose(
+            listCrossDirections_D[0],
+            [
+                firstDiagonal_G / np.linalg.norm(firstDiagonal_G),
+                secondDiagonal_G / np.linalg.norm(secondDiagonal_G),
+            ],
+        )
+
+    def test_returns_nothing_for_an_unmeshed_wing(self) -> None:
+        """Test that a Wing without Panels gives empty lists."""
+        wing = geometry_fixtures.make_simple_rectangular_wing_fixture()
+        self.assertIsNone(wing.panels)
+        self.assertEqual(
+            _output_rendering.get_panel_collocation_points(
+                wing, None, "", np.eye(4, dtype=float)
+            ),
+            ([], [], [], []),
+        )
+
+
 class TestGetPanelSurfaces(unittest.TestCase):
     """This class contains methods for testing _output_rendering.get_panel_surfaces."""
 

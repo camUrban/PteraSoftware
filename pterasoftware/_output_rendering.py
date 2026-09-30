@@ -143,6 +143,33 @@ _DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
 _DIAGRAM_PANEL_COLOR = "black"
 _DIAGRAM_LINE_WIDTH = 1.0
 
+# Define the style of the vortices drawn by add_vortices: their color, both when drawn
+# exactly and when simplified, their line width in pixels, how far their trailing legs
+# extend downstream past the vortices' bounding box, how much of that overhang at the
+# end of each trailing leg is dashed, and the length of each dash and each gap. The last
+# four are fractions of the largest chord.
+_VORTEX_COLOR = "darkorange"
+_VORTEX_SIMPLIFIED_COLOR = "teal"
+_VORTEX_LINE_WIDTH = 1.0
+_VORTEX_TRAILING_LEG_OVERHANG = 1.0
+_VORTEX_TRAILING_LEG_DASHED_LENGTH = 0.5
+_VORTEX_DASH_LENGTH = 0.05
+_VORTEX_GAP_LENGTH = 0.05
+
+# Define how add_vortices simplifies the vortices when asked to: the fraction of the way
+# each ring vortex's corners move toward its center, and each horseshoe vortex's finite
+# leg's ends move toward that leg's midpoint, the radius of each rounded corner, as a
+# fraction of the shorter of the corner's two legs, and the number of points along each
+# rounded corner.
+_VORTEX_SIMPLIFIED_SHRINK = 0.1
+_VORTEX_SIMPLIFIED_CORNER_RADIUS = 0.2
+_VORTEX_SIMPLIFIED_CORNER_NUM_POINTS = 8
+
+# Define the radius of each simplified vortex's vorticity arrows, as a fraction of that
+# vortex's shortest bound leg, and the number of points along each arrow's half circle.
+_VORTEX_VORTICITY_ARROW_RADIUS = 0.15
+_VORTEX_VORTICITY_ARROW_NUM_POINTS = 24
+
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
 REFERENCE_WINDOW_SIZE = (1024, 768)
@@ -1068,6 +1095,547 @@ def add_panels(
         color=_DIAGRAM_PANEL_COLOR,
         line_width=_DIAGRAM_LINE_WIDTH,
     )
+
+
+def get_panel_collocation_points(
+    wing: geometry.wing.Wing,
+    row_and_column_ids: Sequence[tuple[int, int]] | None,
+    id_suffix: str,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+) -> tuple[list[str], list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
+    """Returns the IDs, positions, label offset basis directions, and cross directions
+    of a Wing's selected Panels' collocation points, which can be passed to
+    add_axes_and_points as extra points.
+
+    Each ID numbers its Panel by its chordwise row and spanwise column, starting at one,
+    and ends with the given suffix (such as "Cppr3c2Wn1"). Panel points have no axes of
+    their own, so each label offset is defined in the Wing's wing axes. Each cross's
+    arms lie along its Panel's two diagonals.
+
+    :param wing: The Wing whose Panels' collocation points are returned. If it hasn't
+        been meshed, all the returned lists are empty.
+    :param row_and_column_ids: The Panels whose collocation points are returned, given
+        as a sequence of (row index, column index) pairs of ints, each starting at zero.
+        Every pair must index one of the Wing's Panels. If None, every Panel's
+        collocation point is returned.
+    :param id_suffix: The text appended to each ID.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :return: A tuple of four lists, each with one element per returned collocation
+        point. The first holds the IDs. The second holds (3,) ndarrays of floats with
+        the positions (in diagram axes, relative to the diagram origin). The units are
+        in meters. The third holds (3,3) ndarrays of floats whose columns are the Wing's
+        wing axes' basis directions (in diagram axes). The fourth holds (2,3) ndarrays
+        of floats whose rows are the unit vectors (in diagram axes) along the Panels'
+        diagonals.
+    """
+    ids: list[str] = []
+    listCollocationPoints_D_Do: list[np.ndarray] = []
+    listWingBasisDirections_D: list[np.ndarray] = []
+    listCrossDirections_D: list[np.ndarray] = []
+
+    panels = wing.panels
+    if panels is None:
+        return (
+            ids,
+            listCollocationPoints_D_Do,
+            listWingBasisDirections_D,
+            listCrossDirections_D,
+        )
+    num_rows, num_columns = panels.shape
+
+    if row_and_column_ids is None:
+        row_and_column_ids = [
+            (row_id, column_id)
+            for row_id in range(num_rows)
+            for column_id in range(num_columns)
+        ]
+
+    _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
+    assert _T_pas_Wn_Ler_to_G_Cg is not None
+    wingBasisDirections_D = _transformations.compose_T_pas(
+        _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_D_Do
+    )[:3, :3]
+
+    for row_id, column_id in row_and_column_ids:
+        panel = panels[row_id, column_id]
+        ids.append(f"Cppr{row_id + 1}c{column_id + 1}{id_suffix}")
+        listCollocationPoints_D_Do.append(
+            _transformations.apply_T_to_vectors(
+                T_pas_G_Cg_to_D_Do, panel.Cpp_G_Cg, is_position=True
+            )
+        )
+        listWingBasisDirections_D.append(wingBasisDirections_D)
+        diagonals_D = _transformations.apply_T_to_vectors(
+            T_pas_G_Cg_to_D_Do,
+            np.array(
+                [
+                    panel.Brpp_G_Cg - panel.Flpp_G_Cg,
+                    panel.Blpp_G_Cg - panel.Frpp_G_Cg,
+                ]
+            ),
+            is_position=False,
+        )
+        listCrossDirections_D.append(
+            diagonals_D / np.linalg.norm(diagonals_D, axis=1, keepdims=True)
+        )
+
+    return (
+        ids,
+        listCollocationPoints_D_Do,
+        listWingBasisDirections_D,
+        listCrossDirections_D,
+    )
+
+
+def add_vortices(
+    plotter: pv.Plotter,
+    stackFrrvp_D_Do: np.ndarray,
+    stackFlrvp_D_Do: np.ndarray,
+    stackBlrvp_D_Do: np.ndarray,
+    stackBrrvp_D_Do: np.ndarray,
+    stackRingUnitNormals_D: np.ndarray,
+    stackFrhvp_D_Do: np.ndarray,
+    stackFlhvp_D_Do: np.ndarray,
+    stackBlhvp_D_Do: np.ndarray,
+    stackBrhvp_D_Do: np.ndarray,
+    stackHorseshoeUnitNormals_D: np.ndarray,
+    largest_chord: float,
+    simplify: bool,
+) -> None:
+    """Adds a solver's ring and horseshoe vortices to a Plotter.
+
+    The vortices are drawn from the corner point stacks the solver filled during its
+    run, so the drawing always matches the placement the solver used. For example, a
+    steady horseshoe vortex lattice method solver passes its bound horseshoe vortices
+    and no ring vortices, and a steady ring vortex lattice method solver passes its
+    bound ring vortices along with the wake horseshoe vortices shed from its trailing
+    edge Panels.
+
+    Each horseshoe vortex's finite leg runs from its front right to its front left
+    point, and its two trailing legs run from those points toward its back right and
+    back left points. The solvers extend the trailing legs twenty spans downstream.
+    Here, every trailing leg instead ends at the same distance along its direction, a
+    fixed overhang past the vortices' bounding box. The end of each trailing leg is
+    dashed, to show that it continues. The dashes are spaced by distance along the
+    trailing legs, so trailing legs that lie on top of each other have matching dashes.
+
+    Unless simplified, vortices that share legs are drawn on top of each other. When
+    simplified, each ring vortex is shrunk toward its center, and each horseshoe
+    vortex's finite leg is shrunk toward its midpoint, with its trailing legs moving
+    along with the finite leg's ends. This separates the legs that neighboring vortices
+    share. The corners are also rounded, and the vortices are drawn in a different
+    color, to show that the drawing represents the vortices rather than placing them
+    exactly. Each line vortex also gets a half circular arrow around its midpoint,
+    sweeping across its vortex's inward side, that shows its vorticity's direction for
+    the negative vortex strengths that come with positive lift. The arrows' tips are
+    drawn like the axes arrows' tips, so they rely on the polygon offset that
+    add_axes_and_points turns on for the Plotter's renders.
+
+    :param plotter: The Plotter to add the vortices to.
+    :param stackFrrvp_D_Do: A (N,3) ndarray of floats, where N is the number of ring
+        vortices, holding each ring vortex's front right point (in diagram axes,
+        relative to the diagram origin). N may be zero. The units are in meters.
+    :param stackFlrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's front
+        left point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackBlrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's back
+        left point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackBrrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's back
+        right point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackRingUnitNormals_D: A (N,3) ndarray of floats holding the unit normal (in
+        diagram axes) of the Panel that carries each ring vortex.
+    :param stackFrhvp_D_Do: A (M,3) ndarray of floats, where M is the number of
+        horseshoe vortices, holding each horseshoe vortex's front right point (in
+        diagram axes, relative to the diagram origin). M may be zero. The units are in
+        meters.
+    :param stackFlhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        front left point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackBlhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        back left point (in diagram axes, relative to the diagram origin). The units are
+        in meters.
+    :param stackBrhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        back right point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackHorseshoeUnitNormals_D: A (M,3) ndarray of floats holding the unit
+        normal (in diagram axes) of the Panel that carries or sheds each horseshoe
+        vortex.
+    :param largest_chord: The largest chord of any WingCrossSection whose Panels carry
+        the vortices, which scales the trailing legs' overhang past the vortices and
+        their dashes. The units are in meters.
+    :param simplify: Determines whether to shrink the vortices, round their corners,
+        draw them in the simplified color, and add their vorticity arrows.
+    :return: None
+    """
+    # Gather each ring vortex's four corners, in front right, front left, back left, and
+    # back right order, and each horseshoe vortex's finite leg's front right and front
+    # left ends. The horseshoe vortices' trailing legs are added later, from their
+    # finite legs' ends, along the unit vectors from their front points toward their
+    # back points.
+    listRingCorners_D_Do = [
+        np.array([Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do])
+        for Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do in zip(
+            stackFrrvp_D_Do, stackFlrvp_D_Do, stackBlrvp_D_Do, stackBrrvp_D_Do
+        )
+    ]
+    listFiniteLegEnds_D_Do = [
+        np.array([Frhvp_D_Do, Flhvp_D_Do])
+        for Frhvp_D_Do, Flhvp_D_Do in zip(stackFrhvp_D_Do, stackFlhvp_D_Do)
+    ]
+    stackTrailingLegOffsets_D_Do = stackBrhvp_D_Do - stackFrhvp_D_Do
+    stackTrailingDirections_D = stackTrailingLegOffsets_D_Do / np.linalg.norm(
+        stackTrailingLegOffsets_D_Do, axis=1, keepdims=True
+    )
+    if not listRingCorners_D_Do and not listFiniteLegEnds_D_Do:
+        return
+
+    # Find the corners of the bounding box of the vortices' finite points. A point
+    # farther along a trailing leg's direction than every corner of a box lies outside
+    # it.
+    stackFinitePoints_D_Do = np.vstack([*listRingCorners_D_Do, *listFiniteLegEnds_D_Do])
+    boundingBoxMin_D_Do = stackFinitePoints_D_Do.min(axis=0)
+    boundingBoxMax_D_Do = stackFinitePoints_D_Do.max(axis=0)
+    stackBoundingBoxCorners_D_Do = np.array(
+        [
+            [x, y, z]
+            for x in (boundingBoxMin_D_Do[0], boundingBoxMax_D_Do[0])
+            for y in (boundingBoxMin_D_Do[1], boundingBoxMax_D_Do[1])
+            for z in (boundingBoxMin_D_Do[2], boundingBoxMax_D_Do[2])
+        ]
+    )
+
+    # If simplifying, shrink each ring vortex toward its center and each finite leg
+    # toward its midpoint.
+    if simplify:
+        listRingCorners_D_Do = [
+            ringCorners_D_Do.mean(axis=0)
+            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            * (ringCorners_D_Do - ringCorners_D_Do.mean(axis=0))
+            for ringCorners_D_Do in listRingCorners_D_Do
+        ]
+        listFiniteLegEnds_D_Do = [
+            finiteLegEnds_D_Do.mean(axis=0)
+            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            * (finiteLegEnds_D_Do - finiteLegEnds_D_Do.mean(axis=0))
+            for finiteLegEnds_D_Do in listFiniteLegEnds_D_Do
+        ]
+
+    # Build each vortex's solid polyline. A ring vortex's polyline is closed. A
+    # horseshoe vortex's runs from the end of its right trailing leg's solid part, along
+    # its finite leg, to the end of its left trailing leg's solid part. Each trailing
+    # leg ends a fixed overhang past the bounding box along its direction, its solid
+    # part ends where the dashed length at its end begins, and its dashed part is stored
+    # separately.
+    #
+    # If simplifying, also store each line vortex's start, end, the unit normal of the
+    # Panel its vortex belongs to, a point inside its vortex, and the radius of its
+    # vorticity arrow. A ring vortex's legs run from front right to front left, back
+    # left, back right, and front right again. A horseshoe vortex's legs run from
+    # downstream to front right, front left, and downstream again. Both match the
+    # solvers' induced velocity functions. A ring vortex's inside point is its center,
+    # and a horseshoe vortex's lies downstream of its finite leg's midpoint, between its
+    # trailing legs. Each vortex's arrows share a radius, a fixed fraction of its
+    # shortest bound leg.
+    listSolidPolylines_D_Do: list[np.ndarray] = []
+    trailing_legs: list[tuple[np.ndarray, np.ndarray, float, float]] = []
+    line_vortices: list[
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]
+    ] = []
+    for ringCorners_D_Do, ringUnitNormal_D in zip(
+        listRingCorners_D_Do, stackRingUnitNormals_D
+    ):
+        if simplify:
+            listSolidPolylines_D_Do.append(
+                _round_polyline_corners(ringCorners_D_Do, closed=True)
+            )
+            ring_legs = [
+                (ringCorners_D_Do[leg_id], ringCorners_D_Do[(leg_id + 1) % 4])
+                for leg_id in range(4)
+            ]
+            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * min(
+                float(np.linalg.norm(legEnd_D_Do - legStart_D_Do))
+                for legStart_D_Do, legEnd_D_Do in ring_legs
+            )
+            line_vortices.extend(
+                (
+                    legStart_D_Do,
+                    legEnd_D_Do,
+                    ringUnitNormal_D,
+                    ringCorners_D_Do.mean(axis=0),
+                    arrow_radius,
+                )
+                for legStart_D_Do, legEnd_D_Do in ring_legs
+            )
+        else:
+            listSolidPolylines_D_Do.append(
+                np.vstack([ringCorners_D_Do, ringCorners_D_Do[:1]])
+            )
+    for finiteLegEnds_D_Do, trailingDirection_D, horseshoeUnitNormal_D in zip(
+        listFiniteLegEnds_D_Do, stackTrailingDirections_D, stackHorseshoeUnitNormals_D
+    ):
+        end_distance = (
+            float(np.max(stackBoundingBoxCorners_D_Do @ trailingDirection_D))
+            + _VORTEX_TRAILING_LEG_OVERHANG * largest_chord
+        )
+        dashed_start_distance = (
+            end_distance - _VORTEX_TRAILING_LEG_DASHED_LENGTH * largest_chord
+        )
+        listSolidEnds_D_Do = []
+        for finiteLegEnd_D_Do in finiteLegEnds_D_Do:
+            trailing_legs.append(
+                (
+                    finiteLegEnd_D_Do,
+                    trailingDirection_D,
+                    end_distance,
+                    dashed_start_distance,
+                )
+            )
+            start_distance = float(np.dot(finiteLegEnd_D_Do, trailingDirection_D))
+            listSolidEnds_D_Do.append(
+                [
+                    finiteLegEnd_D_Do
+                    + (dashed_start_distance - start_distance) * trailingDirection_D
+                ]
+                if dashed_start_distance > start_distance
+                else []
+            )
+        horseshoePolyline_D_Do = np.array(
+            [
+                *listSolidEnds_D_Do[0],
+                finiteLegEnds_D_Do[0],
+                finiteLegEnds_D_Do[1],
+                *listSolidEnds_D_Do[1],
+            ]
+        )
+        if simplify:
+            horseshoePolyline_D_Do = _round_polyline_corners(
+                horseshoePolyline_D_Do, closed=False
+            )
+            finite_leg_length = float(
+                np.linalg.norm(finiteLegEnds_D_Do[1] - finiteLegEnds_D_Do[0])
+            )
+            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * finite_leg_length
+            insidePoint_D_Do = (
+                finiteLegEnds_D_Do.mean(axis=0)
+                + finite_leg_length * trailingDirection_D
+            )
+            horseshoe_legs = [(finiteLegEnds_D_Do[0], finiteLegEnds_D_Do[1])]
+            if listSolidEnds_D_Do[0]:
+                horseshoe_legs.append((listSolidEnds_D_Do[0][0], finiteLegEnds_D_Do[0]))
+            if listSolidEnds_D_Do[1]:
+                horseshoe_legs.append((finiteLegEnds_D_Do[1], listSolidEnds_D_Do[1][0]))
+            line_vortices.extend(
+                (
+                    legStart_D_Do,
+                    legEnd_D_Do,
+                    horseshoeUnitNormal_D,
+                    insidePoint_D_Do,
+                    arrow_radius,
+                )
+                for legStart_D_Do, legEnd_D_Do in horseshoe_legs
+            )
+        listSolidPolylines_D_Do.append(horseshoePolyline_D_Do)
+
+    # Build each trailing leg's dashed part. Each dash starts at a whole multiple of the
+    # dash pattern's period in distance along the trailing leg's direction, which lines
+    # up the dashes of trailing legs that lie on top of each other.
+    dash_length = _VORTEX_DASH_LENGTH * largest_chord
+    dash_period = dash_length + _VORTEX_GAP_LENGTH * largest_chord
+    listDashVertices_D_Do: list[np.ndarray] = []
+    for (
+        trailingLegStart_D_Do,
+        trailingDirection_D,
+        end_distance,
+        dashed_start_distance,
+    ) in trailing_legs:
+        start_distance = float(np.dot(trailingLegStart_D_Do, trailingDirection_D))
+        leg_dashed_start_distance = max(dashed_start_distance, start_distance)
+        for period_id in range(
+            math.floor(leg_dashed_start_distance / dash_period),
+            math.ceil(end_distance / dash_period),
+        ):
+            dash_start_distance = max(
+                period_id * dash_period, leg_dashed_start_distance
+            )
+            dash_end_distance = min(period_id * dash_period + dash_length, end_distance)
+            if dash_end_distance <= dash_start_distance:
+                continue
+            listDashVertices_D_Do.append(
+                trailingLegStart_D_Do
+                + (dash_start_distance - start_distance) * trailingDirection_D
+            )
+            listDashVertices_D_Do.append(
+                trailingLegStart_D_Do
+                + (dash_end_distance - start_distance) * trailingDirection_D
+            )
+
+    # Draw the simplified vortices in their own color, to set them apart from the exact
+    # vortices.
+    vortex_color = _VORTEX_SIMPLIFIED_COLOR if simplify else _VORTEX_COLOR
+
+    # Draw the solid polylines.
+    if listSolidPolylines_D_Do:
+        polylineVertices_D_Do = np.vstack(listSolidPolylines_D_Do)
+        polyline_lines = []
+        first_vertex_id = 0
+        for solidPolyline_D_Do in listSolidPolylines_D_Do:
+            num_vertices = solidPolyline_D_Do.shape[0]
+            polyline_lines.append(num_vertices)
+            polyline_lines.extend(
+                range(first_vertex_id, first_vertex_id + num_vertices)
+            )
+            first_vertex_id += num_vertices
+        plotter.add_mesh(
+            pv.PolyData(polylineVertices_D_Do, lines=np.array(polyline_lines)),
+            color=vortex_color,
+            line_width=_VORTEX_LINE_WIDTH,
+        )
+
+    # Draw the trailing legs' dashed parts.
+    if listDashVertices_D_Do:
+        num_dashes = len(listDashVertices_D_Do) // 2
+        dash_lines = np.column_stack(
+            [
+                np.full(num_dashes, 2),
+                np.arange(0, len(listDashVertices_D_Do), 2),
+                np.arange(1, len(listDashVertices_D_Do), 2),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(np.array(listDashVertices_D_Do, dtype=float), lines=dash_lines),
+            color=vortex_color,
+            line_width=_VORTEX_LINE_WIDTH,
+        )
+
+    # Draw each line vortex's vorticity arrow, a half circle centered on the line
+    # vortex's midpoint, in the plane perpendicular to it. The arrow shows the direction
+    # of the vorticity for the negative vortex strengths that come with positive lift,
+    # so it turns about the line vortex's reversed direction by the right hand rule. It
+    # sweeps across the inward side of the line vortex, facing the inside of its vortex,
+    # between the side its Panel's unit normal points to and the opposite side. This
+    # keeps it from overlapping the arrows of neighboring vortices' nearby legs. Like
+    # the axes arrows, its shaft is a single line and its tip is an outlined cone, whose
+    # proportions match the axes arrows' as fractions of the half circle's length. The
+    # shaft stops where the tip's base begins.
+    arc_parameters = np.linspace(0.0, 1.0, _VORTEX_VORTICITY_ARROW_NUM_POINTS)
+    listArcPolylines_D_Do: list[np.ndarray] = []
+    for (
+        legStart_D_Do,
+        legEnd_D_Do,
+        unitNormal_D,
+        insidePoint_D_Do,
+        arrow_radius,
+    ) in line_vortices:
+        legMidpoint_D_Do = 0.5 * (legStart_D_Do + legEnd_D_Do)
+        legDirection_D = (legEnd_D_Do - legStart_D_Do) / np.linalg.norm(
+            legEnd_D_Do - legStart_D_Do
+        )
+        vorticityDirection_D = -legDirection_D
+
+        # Find the unit vectors perpendicular to the line vortex that point to its
+        # Panel's upper side and to the inside of its vortex.
+        upwardDirection_D = (
+            unitNormal_D - np.dot(unitNormal_D, legDirection_D) * legDirection_D
+        )
+        upwardDirection_D /= np.linalg.norm(upwardDirection_D)
+        inwardDirection_D = np.cross(legDirection_D, upwardDirection_D)
+        if np.dot(inwardDirection_D, insidePoint_D_Do - legMidpoint_D_Do) < 0.0:
+            inwardDirection_D = -inwardDirection_D
+
+        # Start the half circle on whichever of the upper and lower sides turning about
+        # the vorticity direction carries toward the inward side.
+        firstDirection_D = upwardDirection_D
+        if (
+            np.dot(np.cross(vorticityDirection_D, upwardDirection_D), inwardDirection_D)
+            < 0
+        ):
+            firstDirection_D = -upwardDirection_D
+        secondDirection_D = np.cross(vorticityDirection_D, firstDirection_D)
+
+        arc_length = math.pi * arrow_radius
+        tip_length = _AXES_TIP_LENGTH * arc_length
+        shaft_end_angle = math.pi - tip_length / arrow_radius
+        angles = (shaft_end_angle * arc_parameters).reshape(-1, 1)
+        listArcPolylines_D_Do.append(
+            legMidpoint_D_Do
+            + arrow_radius
+            * (np.cos(angles) * firstDirection_D + np.sin(angles) * secondDirection_D)
+        )
+        _add_arrow_tip(
+            plotter,
+            tipBase_D_Do=listArcPolylines_D_Do[-1][-1],
+            tipDirection_D=-math.sin(shaft_end_angle) * firstDirection_D
+            + math.cos(shaft_end_angle) * secondDirection_D,
+            length=tip_length,
+            radius=_AXES_TIP_RADIUS * arc_length,
+            color=vortex_color,
+        )
+    if listArcPolylines_D_Do:
+        num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
+        arc_lines = np.column_stack(
+            [
+                np.full(len(listArcPolylines_D_Do), num_arc_points),
+                np.arange(num_arc_points * len(listArcPolylines_D_Do)).reshape(
+                    -1, num_arc_points
+                ),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(np.vstack(listArcPolylines_D_Do), lines=arc_lines),
+            color=vortex_color,
+            line_width=_AXES_LINE_WIDTH,
+        )
+
+
+def _round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
+    """Returns a polyline with its corners rounded.
+
+    Each corner is replaced by a quadratic Bezier curve that leaves the corner's
+    incoming leg and joins its outgoing leg a short distance from the corner, with the
+    corner as its control point. That distance is a fixed fraction of the shorter of the
+    corner's two legs. The rounding doesn't depend on the axes or the reference point,
+    so the returned points are in the same axes, relative to the same point, as the
+    given points.
+
+    :param points: A (N,3) ndarray of floats representing the polyline's points in
+        order. For a closed polyline, the last point must not repeat the first.
+    :param closed: Determines whether the polyline is closed. If True, every point is a
+        corner, and the returned polyline repeats its first point at its end. If False,
+        the first and last points are ends, not corners, and are kept as they are.
+    :return: A (M,3) ndarray of floats representing the rounded polyline's points in
+        order.
+    """
+    num_points = points.shape[0]
+    corner_ids = range(num_points) if closed else range(1, num_points - 1)
+    arc_parameters = np.linspace(
+        0.0, 1.0, _VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+    ).reshape(-1, 1)
+
+    rounded_points = [] if closed else [points[:1]]
+    for corner_id in corner_ids:
+        corner = points[corner_id]
+        incoming_leg = points[corner_id - 1] - corner
+        outgoing_leg = points[(corner_id + 1) % num_points] - corner
+        radius = _VORTEX_SIMPLIFIED_CORNER_RADIUS * min(
+            float(np.linalg.norm(incoming_leg)), float(np.linalg.norm(outgoing_leg))
+        )
+        arc_start = corner + radius * incoming_leg / np.linalg.norm(incoming_leg)
+        arc_end = corner + radius * outgoing_leg / np.linalg.norm(outgoing_leg)
+        rounded_points.append(
+            (1.0 - arc_parameters) ** 2 * arc_start
+            + 2.0 * (1.0 - arc_parameters) * arc_parameters * corner
+            + arc_parameters**2 * arc_end
+        )
+    if closed:
+        rounded_points.append(rounded_points[0][:1])
+    else:
+        rounded_points.append(points[-1:])
+    return np.vstack(rounded_points)
 
 
 def get_panel_surfaces(

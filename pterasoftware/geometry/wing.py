@@ -1551,7 +1551,7 @@ class Wing:
         show_wing_cross_section_axes_and_points: bool | np.bool = True,
         show_airfoil_axes_and_points: bool | np.bool = False,
         show_airfoils: bool | np.bool = True,
-        show_mcl: bool | np.bool = True,
+        show_mcls: bool | np.bool = True,
         show_collocation_points: bool | np.bool = False,
         collocation_point_rows_and_columns: Sequence[Sequence[int]] | None = None,
         label_collocation_points: bool | np.bool = True,
@@ -1571,7 +1571,7 @@ class Wing:
         :param show_airfoils: Determines whether to draw each WingCrossSection's
             Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
             will be converted internally to a bool. The default is True.
-        :param show_mcl: Determines whether to draw each Airfoil's mean camber line. It
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
             has no effect if show_airfoils is False. Can be a bool or a numpy bool and
             will be converted internally to a bool. The default is True.
         :param show_collocation_points: Determines whether to draw this Wing's Panels'
@@ -1601,7 +1601,7 @@ class Wing:
         show_airfoils = _parameter_validation.boolLike_return_bool(
             show_airfoils, "show_airfoils"
         )
-        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
         show_collocation_points = _parameter_validation.boolLike_return_bool(
             show_collocation_points, "show_collocation_points"
         )
@@ -1653,7 +1653,7 @@ class Wing:
 
         if show_airfoils:
             _output_rendering.add_airfoils(
-                plotter, self, T_pas_G_Cg_to_D_Do, show_mcl=show_mcl
+                plotter, self, T_pas_G_Cg_to_D_Do, show_mcls=show_mcls
             )
         _output_rendering.add_panels(plotter, self, T_pas_G_Cg_to_D_Do)
 

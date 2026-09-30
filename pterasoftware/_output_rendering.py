@@ -1097,7 +1097,7 @@ def add_airfoils(
     plotter: pv.Plotter,
     wing: geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
-    show_mcl: bool = True,
+    show_mcls: bool = True,
 ) -> None:
     """Adds the outlines and, optionally, the mean camber lines of a Wing's
     WingCrossSections' Airfoils to a Plotter.
@@ -1108,7 +1108,7 @@ def add_airfoils(
         transformation matrix which maps in homogeneous coordinates from the Wing's
         Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
         diagram origin.
-    :param show_mcl: Determines whether to add the mean camber lines. The default is
+    :param show_mcls: Determines whether to add the mean camber lines. The default is
         True.
     :return: None
     """
@@ -1119,7 +1119,7 @@ def add_airfoils(
             plotter,
             wing_cross_section,
             _transformations.compose_T_pas(T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_D_Do),
-            show_mcl=show_mcl,
+            show_mcl=show_mcls,
         )
 
 

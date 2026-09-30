@@ -640,13 +640,13 @@ class Airplane:
         self,
         *,
         show_wing_axes_and_points: bool | np.bool = True,
-        show_wing_cross_section_axes_and_points: bool | np.bool = True,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
         show_airfoil_axes_and_points: bool | np.bool = False,
-        show_airfoils: bool | np.bool = True,
-        show_mcls: bool | np.bool = True,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
         show_collocation_points: bool | np.bool = False,
         collocation_point_wings_rows_and_columns: Sequence[Sequence[int]] | None = None,
-        label_collocation_points: bool | np.bool = True,
+        label_collocation_points: bool | np.bool = False,
     ) -> None:
         """Displays a diagram of this Airplane's Wings' Panels, along with its axes and
         points.
@@ -659,16 +659,16 @@ class Airplane:
             converted internally to a bool. The default is True.
         :param show_wing_cross_section_axes_and_points: Determines whether to draw each
             WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
-            and will be converted internally to a bool. The default is True.
+            and will be converted internally to a bool. The default is False.
         :param show_airfoil_axes_and_points: Determines whether to draw each
             WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
             numpy bool and will be converted internally to a bool. The default is False.
         :param show_airfoils: Determines whether to draw each WingCrossSection's
             Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
-            will be converted internally to a bool. The default is True.
+            will be converted internally to a bool. The default is False.
         :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
             has no effect if show_airfoils is False. Can be a bool or a numpy bool and
-            will be converted internally to a bool. The default is True.
+            will be converted internally to a bool. The default is False.
         :param show_collocation_points: Determines whether to draw the Wings' Panels'
             collocation points. The labels number each Panel by its chordwise row and
             spanwise column, starting at one, followed by its Wing's number (such as
@@ -682,7 +682,7 @@ class Airplane:
         :param label_collocation_points: Determines whether to label the collocation
             points that are drawn. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is True.
+            converted internally to a bool. The default is False.
         :return: None
         """
         show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(

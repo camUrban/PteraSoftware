@@ -459,8 +459,9 @@ class WingCrossSection:
     def diagram(
         self,
         *,
+        show_airfoil_axes_and_points: bool | np.bool = True,
+        show_airfoil: bool | np.bool = True,
         show_mcl: bool | np.bool = True,
-        show_airfoil_axes_and_points: bool | np.bool = False,
     ) -> None:
         """Displays a diagram of this WingCrossSection's Airfoil, placed and scaled by
         this WingCrossSection, along with its axes and its parent axes.
@@ -472,19 +473,25 @@ class WingCrossSection:
         section axes' xz plane, so the WingCrossSection appears as it does on its
         reflected Wing. The units are in meters.
 
-        :param show_mcl: Determines whether to draw the Airfoil's mean camber line. Can
-            be a bool or a numpy bool and will be converted internally to a bool. The
-            default is True.
         :param show_airfoil_axes_and_points: Determines whether to draw the Airfoil's
             axes at its leading point, which coincides with this WingCrossSection's
             leading point. Can be a bool or a numpy bool and will be converted
-            internally to a bool. The default is False.
+            internally to a bool. The default is True.
+        :param show_airfoil: Determines whether to draw the Airfoil's outline and mean
+            camber line. Can be a bool or a numpy bool and will be converted internally
+            to a bool. The default is True.
+        :param show_mcl: Determines whether to draw the Airfoil's mean camber line. It
+            has no effect if show_airfoil is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is True.
         :return: None
         """
-        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
         show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
             show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
         )
+        show_airfoil = _parameter_validation.boolLike_return_bool(
+            show_airfoil, "show_airfoil"
+        )
+        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
 
         if self.symmetry_type is None or not self.validated:
             raise ValueError(
@@ -510,9 +517,10 @@ class WingCrossSection:
 
         plotter = pv.Plotter()
 
-        _output_rendering.add_airfoil(
-            plotter, self, T_pas_Wcs_Lp_to_D_Do, show_mcl=show_mcl
-        )
+        if show_airfoil:
+            _output_rendering.add_airfoil(
+                plotter, self, T_pas_Wcs_Lp_to_D_Do, show_mcl=show_mcl
+            )
 
         # Draw all the axes with one call, so that the airfoil axes' arrows merge with
         # the wing cross section axes' arrows they coincide with. Size the axes relative

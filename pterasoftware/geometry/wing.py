@@ -1550,11 +1550,11 @@ class Wing:
         *,
         show_wing_cross_section_axes_and_points: bool | np.bool = True,
         show_airfoil_axes_and_points: bool | np.bool = False,
-        show_airfoils: bool | np.bool = True,
-        show_mcls: bool | np.bool = True,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
         show_collocation_points: bool | np.bool = False,
         collocation_point_rows_and_columns: Sequence[Sequence[int]] | None = None,
-        label_collocation_points: bool | np.bool = True,
+        label_collocation_points: bool | np.bool = False,
     ) -> None:
         """Displays a diagram of this Wing's Panels, along with its axes and points.
 
@@ -1570,10 +1570,10 @@ class Wing:
             numpy bool and will be converted internally to a bool. The default is False.
         :param show_airfoils: Determines whether to draw each WingCrossSection's
             Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
-            will be converted internally to a bool. The default is True.
+            will be converted internally to a bool. The default is False.
         :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
             has no effect if show_airfoils is False. Can be a bool or a numpy bool and
-            will be converted internally to a bool. The default is True.
+            will be converted internally to a bool. The default is False.
         :param show_collocation_points: Determines whether to draw this Wing's Panels'
             collocation points. The labels number each Panel by its chordwise row and
             spanwise column, starting at one (such as "Cppr3c2"). Can be a bool or a
@@ -1586,7 +1586,7 @@ class Wing:
         :param label_collocation_points: Determines whether to label the collocation
             points that are drawn. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is True.
+            converted internally to a bool. The default is False.
         :return: None
         """
         show_wing_cross_section_axes_and_points = (

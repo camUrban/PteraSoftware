@@ -404,24 +404,20 @@ class Airfoil:
             flapped_airfoil._mcl_A_Lp.flags.writeable = False
         return flapped_airfoil
 
-    def diagram(
-        self, *, show_axes: bool | np.bool = True, show_mcl: bool | np.bool = True
-    ) -> None:
-        """Displays a diagram of this Airfoil's outline and mean camber line (MCL).
+    def diagram(self, *, show_mcl: bool | np.bool = True) -> None:
+        """Displays a diagram of this Airfoil's outline and mean camber line (MCL),
+        along with its axes.
 
         The diagram is drawn in airfoil axes, relative to the leading point, and viewed
         along the negative z direction with parallel projection, so the Airfoil appears
-        with its leading point on the left and its upper line on top. The points are
-        normalized by the chord and are unitless.
+        with its leading point on the left and its upper line on top. It shows the
+        airfoil axes at the leading point. The points are normalized by the chord and
+        are unitless.
 
-        :param show_axes: Determines whether to draw the airfoil axes at the leading
-            point. Can be a bool or a numpy bool and will be converted internally to a
-            bool. The default is True.
         :param show_mcl: Determines whether to draw the MCL. Can be a bool or a numpy
             bool and will be converted internally to a bool. The default is True.
         :return: None
         """
-        show_axes = _parameter_validation.boolLike_return_bool(show_axes, "show_axes")
         show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
 
         plotter = pv.Plotter()
@@ -446,15 +442,14 @@ class Airfoil:
 
         # Size the axes as a fraction of the chord, which is one because the points are
         # normalized by it.
-        if show_axes:
-            _output_rendering.add_axes_and_points(
-                plotter,
-                axes_ids=["A"],
-                point_ids=["Lp"],
-                transformations=[np.eye(4, dtype=float)],
-                axes_scale=0.5,
-                two_dimensional_axes_ids=["A"],
-            )
+        _output_rendering.add_axes_and_points(
+            plotter,
+            axes_ids=["A"],
+            point_ids=["Lp"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=0.5,
+            two_dimensional_axes_ids=["A"],
+        )
 
         plotter.camera.parallel_projection = True
         plotter.show(cpos="xy", full_screen=False, auto_close=False)

@@ -21,6 +21,7 @@ import pterasoftware as ps
 # noinspection PyProtectedMember
 from pterasoftware import _colormaps, _output_rendering, _transformations
 from tests.unit.fixtures import (
+    geometry_fixtures,
     operating_point_fixtures,
     output_rendering_fixtures,
     solver_fixtures,
@@ -470,6 +471,46 @@ class TestGetMuJoCoRenderGeometry(unittest.TestCase):
         lists."""
         solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
         self.assertEqual(_output_rendering.get_mujoco_render_geometry(solver), ([], []))
+
+
+class TestGetWingCrossSectionAirfoilLines(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.get_wing_cross_section_airfoil_lines."""
+
+    def test_lays_the_outline_in_the_xz_plane_scaled_by_chord(self) -> None:
+        """Test that the outline's airfoil axes x and y components become its wing cross
+        section axes x and z components, scaled by the chord."""
+        wing_cross_section = geometry_fixtures.make_basic_wing_cross_section_fixture()
+        airfoilOutline_A_Lp = wing_cross_section.airfoil.outline_A_Lp
+        airfoilOutline_Wcs_Lp, _ = (
+            _output_rendering.get_wing_cross_section_airfoil_lines(wing_cross_section)
+        )
+        npt.assert_allclose(
+            airfoilOutline_Wcs_Lp[:, 0],
+            wing_cross_section.chord * airfoilOutline_A_Lp[:, 0],
+        )
+        npt.assert_array_equal(airfoilOutline_Wcs_Lp[:, 1], 0.0)
+        npt.assert_allclose(
+            airfoilOutline_Wcs_Lp[:, 2],
+            wing_cross_section.chord * airfoilOutline_A_Lp[:, 1],
+        )
+
+    def test_lays_the_mcl_in_the_xz_plane_scaled_by_chord(self) -> None:
+        """Test that the mean camber line's airfoil axes x and y components become its
+        wing cross section axes x and z components, scaled by the chord."""
+        wing_cross_section = geometry_fixtures.make_basic_wing_cross_section_fixture()
+        airfoilMcl_A_Lp = wing_cross_section.airfoil.mcl_A_Lp
+        assert airfoilMcl_A_Lp is not None
+        _, airfoilMcl_Wcs_Lp = _output_rendering.get_wing_cross_section_airfoil_lines(
+            wing_cross_section
+        )
+        npt.assert_allclose(
+            airfoilMcl_Wcs_Lp[:, 0], wing_cross_section.chord * airfoilMcl_A_Lp[:, 0]
+        )
+        npt.assert_array_equal(airfoilMcl_Wcs_Lp[:, 1], 0.0)
+        npt.assert_allclose(
+            airfoilMcl_Wcs_Lp[:, 2], wing_cross_section.chord * airfoilMcl_A_Lp[:, 1]
+        )
 
 
 class TestGetPanelSurfaces(unittest.TestCase):

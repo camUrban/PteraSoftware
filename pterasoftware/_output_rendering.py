@@ -136,6 +136,13 @@ _AXES_CROSS_LABEL_OFFSET = 0.15
 # screen directions into eight equal sectors.
 _AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
 
+# Define the colors of the Airfoil outlines, mean camber lines, and Panel edges drawn by
+# add_airfoil and add_panels, and the width of their lines, which is in pixels.
+_DIAGRAM_AIRFOIL_OUTLINE_COLOR = "black"
+_DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
+_DIAGRAM_PANEL_COLOR = "black"
+_DIAGRAM_LINE_WIDTH = 1.0
+
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
 REFERENCE_WINDOW_SIZE = (1024, 768)
@@ -907,6 +914,159 @@ def _add_arrow_tip(
     )
     tip_fill_actor.mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(
         _AXES_TIP_FILL_OFFSET_FACTOR, _AXES_TIP_FILL_OFFSET_UNITS
+    )
+
+
+def get_wing_cross_section_airfoil_lines(
+    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Returns the points on a WingCrossSection's Airfoil's outline and mean camber line
+    (in wing cross section axes, relative to the leading point).
+
+    The Airfoil's x and y axes map onto the wing cross section axes' x and z axes, so
+    the points lie in the WingCrossSection's xz plane, and they are scaled by the
+    WingCrossSection's chord.
+
+    :param wing_cross_section: The WingCrossSection whose Airfoil's points are returned.
+    :return: A tuple of two ndarrays of floats. The first is a (N,3) ndarray holding the
+        points on the Airfoil's outline and the second is a (M,3) ndarray holding the
+        points on its mean camber line, where N and M are the numbers of points in the
+        Airfoil's outline and mean camber line. The points are in wing cross section
+        axes, relative to the leading point. The units are in meters.
+    """
+    airfoil = wing_cross_section.airfoil
+    airfoilOutline_A_Lp = airfoil.outline_A_Lp
+    airfoilMcl_A_Lp = airfoil.mcl_A_Lp
+    assert airfoilMcl_A_Lp is not None
+
+    airfoilOutline_Wcs_Lp = wing_cross_section.chord * np.column_stack(
+        [
+            airfoilOutline_A_Lp[:, 0],
+            np.zeros(airfoilOutline_A_Lp.shape[0], dtype=float),
+            airfoilOutline_A_Lp[:, 1],
+        ]
+    )
+    airfoilMcl_Wcs_Lp = wing_cross_section.chord * np.column_stack(
+        [
+            airfoilMcl_A_Lp[:, 0],
+            np.zeros(airfoilMcl_A_Lp.shape[0], dtype=float),
+            airfoilMcl_A_Lp[:, 1],
+        ]
+    )
+    return airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp
+
+
+def add_airfoil(
+    plotter: pv.Plotter,
+    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    T_pas_Wcs_Lp_to_D_Do: np.ndarray,
+) -> None:
+    """Adds a WingCrossSection's Airfoil's outline and mean camber line to a Plotter.
+
+    The outline is drawn as a closed loop and the mean camber line as an open line, both
+    unfilled, so they never hide the rest of the diagram.
+
+    :param plotter: The Plotter to add the Airfoil's outline and mean camber line to.
+    :param wing_cross_section: The WingCrossSection whose Airfoil is added.
+    :param T_pas_Wcs_Lp_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the
+        WingCrossSection's axes, relative to its leading point, to diagram axes,
+        relative to the diagram origin.
+    :return: None
+    """
+    airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp = get_wing_cross_section_airfoil_lines(
+        wing_cross_section
+    )
+    airfoilOutline_D_Do = _transformations.apply_T_to_vectors(
+        T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
+    )
+    airfoilMcl_D_Do = _transformations.apply_T_to_vectors(
+        T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
+    )
+
+    num_outline_points = airfoilOutline_D_Do.shape[0]
+    plotter.add_mesh(
+        pv.PolyData(
+            airfoilOutline_D_Do,
+            lines=np.hstack([num_outline_points + 1, np.arange(num_outline_points), 0]),
+        ),
+        color=_DIAGRAM_AIRFOIL_OUTLINE_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
+    )
+    plotter.add_mesh(
+        pv.lines_from_points(airfoilMcl_D_Do),
+        color=_DIAGRAM_AIRFOIL_MCL_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
+    )
+
+
+def add_airfoils(
+    plotter: pv.Plotter,
+    wing: geometry.wing.Wing,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+) -> None:
+    """Adds the outlines and mean camber lines of a Wing's WingCrossSections' Airfoils
+    to a Plotter.
+
+    :param plotter: The Plotter to add the Airfoils' outlines and mean camber lines to.
+    :param wing: The Wing whose WingCrossSections' Airfoils are added.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :return: None
+    """
+    for wing_cross_section, T_pas_Wcs_Lp_to_G_Cg in zip(
+        wing.wing_cross_sections, wing.children_T_pas_Wcs_Lp_to_G_Cg
+    ):
+        add_airfoil(
+            plotter,
+            wing_cross_section,
+            _transformations.compose_T_pas(T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_D_Do),
+        )
+
+
+def add_panels(
+    plotter: pv.Plotter,
+    wing: geometry.wing.Wing,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+) -> None:
+    """Adds a Wing's Panels to a Plotter as a wireframe.
+
+    Only the Panels' edges are drawn, so their faces never hide the rest of the diagram.
+    If the Wing hasn't been meshed, nothing is added.
+
+    :param plotter: The Plotter to add the Panels to.
+    :param wing: The Wing whose Panels are added.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :return: None
+    """
+    _panels = wing.panels
+    if _panels is None:
+        return
+    panels = np.ravel(_panels)
+
+    # Stack each Panel's four vertices, wound front left, front right, back right, and
+    # back left so the cell traces the Panel's outline.
+    panelVertices_G_Cg = np.empty((panels.size * 4, 3), dtype=float)
+    for panel_id, panel in enumerate(panels):
+        base_vertex = panel_id * 4
+        panelVertices_G_Cg[base_vertex] = panel.Flpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 1] = panel.Frpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 2] = panel.Brpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 3] = panel.Blpp_G_Cg
+    panelVertices_D_Do = _transformations.apply_T_to_vectors(
+        T_pas_G_Cg_to_D_Do, panelVertices_G_Cg, is_position=True
+    )
+
+    plotter.add_mesh(
+        pv.PolyData(panelVertices_D_Do, _get_quadrilateral_faces(panels.size)),
+        style="wireframe",
+        color=_DIAGRAM_PANEL_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
     )
 
 

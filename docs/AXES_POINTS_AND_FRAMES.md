@@ -77,6 +77,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * A...: airfoil
     * ...i: inner
     * ...o: outer
+* D: diagram
 * Eo: Earth origin
 * Cg: center of gravity (CG)
 * Cgs: CG (after accounting for symmetry)
@@ -84,6 +85,7 @@ The standard abbreviations and names are given below for reference. See the sect
 * Lp: leading point
 * Lpp: leading point parent
 * Slep: strip leading edge point
+* Do: diagram origin
 * ...pp...: panel point
     * Fr...: front right
     * Fo...: forward outer
@@ -289,6 +291,16 @@ The standard abbreviations and names are given below for reference. See the sect
 * Non-local reference examples
     * Text: ...in the first Airplane's second Wing's first WingCrossSection's Airfoil's axes...
     * Variables: `..._AWcs1Wn2P1...`
+
+### 10. Diagram axes
+
+* Only relevant in the rendering code that draws diagrams
+* Basis directions: Identical to the axes a diagram is drawn in. For example, a `Wing`'s diagram is drawn in geometry axes, and a `SteadyProblem`'s diagram is drawn in the first `Airplane`'s geometry axes.
+* Right-handed or left-handed, matching the axes the diagram is drawn in
+* Ownership: None
+* References
+    * Text: ...in diagram axes...
+    * Variables: `..._D...`
 
 ## Reference Points
 
@@ -498,6 +510,15 @@ The standard abbreviations and names are given below for reference. See the sect
 * Non-local reference examples
     * Text: ...relative to the first Airplane's second Wing's third strip's leading edge point...
     * Variables: `..._Slep3Wn2P1`
+
+### 14. Diagram origin
+
+* Only relevant in the rendering code that draws diagrams
+* The point a diagram is drawn relative to. For example, a `Wing`'s diagram is drawn relative to the CG, and a `SteadyProblem`'s diagram is drawn relative to the first `Airplane`'s CG.
+* Ownership: None
+* References
+    * Text: ...relative to the diagram origin...
+    * Variables: `..._Do`
 
 ## Reference Frames
 

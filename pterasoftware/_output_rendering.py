@@ -402,15 +402,15 @@ def add_axes_and_points(
     listExtraPointBasisDirections_D: Sequence[np.ndarray] = (),
     listExtraPointCrossDirections_D: Sequence[np.ndarray] = (),
     label_extra_points: bool = True,
-    two_dimensional: bool = False,
+    two_dimensional_axes_ids: Sequence[str] = (),
 ) -> None:
     """Adds labeled axes and their labeled origin points to a Plotter, along with any
     extra labeled points that have no axes of their own, merging those that coincide.
 
-    Each axes set is drawn as three (or, if two dimensional, two) basis direction arrows
-    starting at its point, which is marked with a dot. The arrow tips are labeled with
-    the axes' ID and the basis direction's letter (such as "WnX"), and the points are
-    labeled with their IDs (such as "Ler"). Each extra point is marked with a small
+    Each axes set is drawn as three (or, if it's two dimensional, two) basis direction
+    arrows starting at its point, which is marked with a dot. The arrow tips are labeled
+    with the axes' ID and the basis direction's letter (such as "WnX"), and the points
+    are labeled with their IDs (such as "Ler"). Each extra point is marked with a small
     cross, without arrows, whose two arms lie along its given cross directions. Points
     at the same position share one label that joins their IDs with slashes (such as
     "Cg/Ler"), and are marked with a dot if any of them has axes. Likewise, arrows with
@@ -452,9 +452,9 @@ def add_axes_and_points(
     :param label_extra_points: Determines whether the extra points are labeled. If
         False, each extra point is still marked with its cross, but its ID is left out
         of every label. The default is True.
-    :param two_dimensional: Determines whether every axes set is two dimensional. If
-        True, only each axes set's x and y basis directions are drawn. The default is
-        False.
+    :param two_dimensional_axes_ids: The IDs of the axes sets that are two dimensional,
+        each of which must also be in axes_ids. Only the x and y basis directions of
+        these axes sets are drawn. The default is an empty sequence.
     :return: None
     """
     # Each axes set's point has its label offset along the negative sum of that axes
@@ -543,9 +543,11 @@ def add_axes_and_points(
     listArrowDirections_D: list[np.ndarray] = []
     arrow_colors: list[str] = []
     arrow_labels: list[list[str]] = []
-    component_letters = ("X", "Y") if two_dimensional else ("X", "Y", "Z")
     for axes_id, transformation in zip(axes_ids, transformations):
         thisArrowStart_D_Do = transformation[:3, 3]
+        component_letters = (
+            ("X", "Y") if axes_id in two_dimensional_axes_ids else ("X", "Y", "Z")
+        )
         for component_id, (component_letter, color) in enumerate(
             zip(component_letters, _AXES_COLORS)
         ):
@@ -988,12 +990,43 @@ def get_wing_cross_section_airfoil_lines(
     return airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp
 
 
+def get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do: np.ndarray) -> np.ndarray:
+    """Returns the transformation matrix that places a WingCrossSection's Airfoil's
+    axes, at its leading point, in a diagram, for drawing with add_axes_and_points.
+
+    The Airfoil's x and y axes map onto the wing cross section axes' x and z axes, as in
+    get_wing_cross_section_airfoil_lines. Airfoil axes are two dimensional, so the
+    returned matrix's third column holds the direction that completes them into a right
+    handed set, which is the wing cross section axes' negative y direction. The
+    Airfoil's points are normalized by the chord, but this matrix leaves out that
+    scaling, so that its first three columns stay unit vectors. It orients the airfoil
+    axes, and isn't for mapping the Airfoil's points.
+
+    :param T_pas_Wcs_Lp_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the
+        WingCrossSection's axes, relative to its leading point, to diagram axes,
+        relative to the diagram origin.
+    :return: A (4,4) ndarray of floats whose first three columns hold the airfoil axes'
+        basis directions, followed by the completing direction (in diagram axes), and
+        whose last column holds the leading point's position (in diagram axes, relative
+        to the diagram origin).
+    """
+    # Relative to the airfoil axes, completed into a right handed set, the wing cross
+    # section axes are rotated by -90 degrees about the x axis the two share.
+    T_rot_pas_A_to_Wcs = _transformations.generate_rot_T(
+        np.array([-90.0, 0.0, 0.0]), passive=True, intrinsic=True, order="xyz"
+    )
+    return _transformations.compose_T_pas(T_rot_pas_A_to_Wcs, T_pas_Wcs_Lp_to_D_Do)
+
+
 def add_airfoil(
     plotter: pv.Plotter,
     wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     T_pas_Wcs_Lp_to_D_Do: np.ndarray,
+    show_mcl: bool = True,
 ) -> None:
-    """Adds a WingCrossSection's Airfoil's outline and mean camber line to a Plotter.
+    """Adds a WingCrossSection's Airfoil's outline and, optionally, its mean camber line
+    to a Plotter.
 
     :param plotter: The Plotter to add the Airfoil's outline and mean camber line to.
     :param wing_cross_section: The WingCrossSection whose Airfoil is added.
@@ -1001,19 +1034,24 @@ def add_airfoil(
         transformation matrix which maps in homogeneous coordinates from the
         WingCrossSection's axes, relative to its leading point, to diagram axes,
         relative to the diagram origin.
+    :param show_mcl: Determines whether to add the mean camber line. The default is
+        True.
     :return: None
     """
     airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp = get_wing_cross_section_airfoil_lines(
         wing_cross_section
     )
+    airfoilMcl_D_Do = None
+    if show_mcl:
+        airfoilMcl_D_Do = _transformations.apply_T_to_vectors(
+            T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
+        )
     add_airfoil_lines(
         plotter,
         _transformations.apply_T_to_vectors(
             T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
         ),
-        _transformations.apply_T_to_vectors(
-            T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
-        ),
+        airfoilMcl_D_Do,
     )
 
 
@@ -1183,7 +1221,7 @@ def get_panel_collocation_points(
 
     _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
     assert _T_pas_Wn_Ler_to_G_Cg is not None
-    wingBasisDirections_D = _transformations.compose_T_pas(
+    R_pas_Wn_to_D = _transformations.compose_T_pas(
         _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_D_Do
     )[:3, :3]
 
@@ -1195,7 +1233,7 @@ def get_panel_collocation_points(
                 T_pas_G_Cg_to_D_Do, panel.Cpp_G_Cg, is_position=True
             )
         )
-        listWingBasisDirections_D.append(wingBasisDirections_D)
+        listWingBasisDirections_D.append(R_pas_Wn_to_D)
         diagonals_D = _transformations.apply_T_to_vectors(
             T_pas_G_Cg_to_D_Do,
             np.array(

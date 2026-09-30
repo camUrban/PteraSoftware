@@ -453,7 +453,7 @@ class Airfoil:
                 point_ids=["Lp"],
                 transformations=[np.eye(4, dtype=float)],
                 axes_scale=0.5,
-                two_dimensional=True,
+                two_dimensional_axes_ids=["A"],
             )
 
         plotter.camera.parallel_projection = True

@@ -8,7 +8,7 @@ from collections.abc import Sequence
 import numpy as np
 import pyvista as pv
 
-from .. import _parameter_validation, _transformations
+from .. import _output_rendering, _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
 
 
@@ -456,6 +456,99 @@ class WingCrossSection:
         self._symmetry_type = value
 
     # --- Other methods ---
+    def diagram(
+        self,
+        *,
+        show_axes: bool | np.bool = True,
+        show_mcl: bool | np.bool = True,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+    ) -> None:
+        """Displays a diagram of this WingCrossSection's Airfoil, placed and scaled by
+        this WingCrossSection, along with its axes and its parent axes.
+
+        The diagram is drawn in parent wing cross section axes, relative to the parent
+        leading point. For a WingCrossSection whose symmetry type is 2 or 3, the diagram
+        is reflected across the parent wing cross section axes' xz plane, so the
+        WingCrossSection appears as it does on its reflected Wing. The units are in
+        meters.
+
+        :param show_axes: Determines whether to draw this WingCrossSection's axes at its
+            leading point and its parent axes at its parent leading point. Can be a bool
+            or a numpy bool and will be converted internally to a bool. The default is
+            True.
+        :param show_mcl: Determines whether to draw the Airfoil's mean camber line. Can
+            be a bool or a numpy bool and will be converted internally to a bool. The
+            default is True.
+        :param show_airfoil_axes_and_points: Determines whether to draw the Airfoil's
+            axes at its leading point, which coincides with this WingCrossSection's
+            leading point. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
+        :return: None
+        """
+        show_axes = _parameter_validation.boolLike_return_bool(show_axes, "show_axes")
+        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+
+        if self.symmetry_type is None or not self.validated:
+            raise ValueError(
+                "A WingCrossSection can only be diagrammed after its parent Wing has "
+                "validated it and set its symmetry type."
+            )
+
+        _T_pas_Wcs_Lp_to_Wcsp_Lpp = self.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        assert _T_pas_Wcs_Lp_to_Wcsp_Lpp is not None
+
+        # Map from parent wing cross section axes to diagram axes, which are reflected
+        # across the parent axes' xz plane for symmetry types 2 and 3. Both are relative
+        # to the parent leading point.
+        if self.symmetry_type in (2, 3):
+            T_pas_Wcsp_Lpp_to_D_Do = _transformations.generate_reflect_T(
+                np.array([0.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), passive=True
+            )
+        else:
+            T_pas_Wcsp_Lpp_to_D_Do = np.eye(4, dtype=float)
+        T_pas_Wcs_Lp_to_D_Do = _transformations.compose_T_pas(
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, T_pas_Wcsp_Lpp_to_D_Do
+        )
+
+        plotter = pv.Plotter()
+
+        _output_rendering.add_airfoil(
+            plotter, self, T_pas_Wcs_Lp_to_D_Do, show_mcl=show_mcl
+        )
+
+        # Draw all the axes with one call, so that the airfoil axes' arrows merge with
+        # the wing cross section axes' arrows they coincide with. Size the axes relative
+        # to this WingCrossSection's chord, so they stay legible regardless of the
+        # geometry's absolute size.
+        axes_ids: list[str] = []
+        point_ids: list[str] = []
+        transformations: list[np.ndarray] = []
+        if show_axes:
+            axes_ids += ["Wcs", "Wcsp"]
+            point_ids += ["Lp", "Lpp"]
+            transformations += [T_pas_Wcs_Lp_to_D_Do, T_pas_Wcsp_Lpp_to_D_Do]
+        if show_airfoil_axes_and_points:
+            axes_ids.append("A")
+            point_ids.append("Lp")
+            transformations.append(
+                _output_rendering.get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do)
+            )
+        if axes_ids:
+            _output_rendering.add_axes_and_points(
+                plotter,
+                axes_ids=axes_ids,
+                point_ids=point_ids,
+                transformations=transformations,
+                axes_scale=0.5 * self.chord,
+                two_dimensional_axes_ids=["A"],
+            )
+
+        plotter.camera.parallel_projection = True
+        plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+
     def get_plottable_data(
         self,
         show: bool | np.bool = False,

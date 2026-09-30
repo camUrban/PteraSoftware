@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -647,6 +648,9 @@ class Airplane:
         show_collocation_points: bool | np.bool = False,
         collocation_point_wings_rows_and_columns: Sequence[Sequence[int]] | None = None,
         label_collocation_points: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
     ) -> None:
         """Displays a diagram of this Airplane's Wings' Panels, along with its axes and
         points.
@@ -683,6 +687,17 @@ class Airplane:
             points that are drawn. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
         :return: None
         """
         show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
@@ -706,6 +721,11 @@ class Airplane:
         )
         label_collocation_points = _parameter_validation.boolLike_return_bool(
             label_collocation_points, "label_collocation_points"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
         )
 
         wings_row_and_column_ids = (
@@ -806,8 +826,9 @@ class Airplane:
             two_dimensional_axes_ids=airfoil_axes_ids,
         )
 
-        plotter.camera.parallel_projection = True
-        plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
     def draw(
         self, save: bool | np.bool = False, testing: bool | np.bool = False

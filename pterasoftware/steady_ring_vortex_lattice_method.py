@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import cast
 
 import numpy as np
@@ -281,6 +282,9 @@ class SteadyRingVortexLatticeMethodSolver:
         ) = None,
         label_collocation_points: bool | np.bool = False,
         simplify_vortices: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
     ) -> None:
         """Displays a diagram of this solver's SteadyProblem's Airplanes' Wings' Panels,
         along with their axes and points and the vortices this solver placed on them.
@@ -333,6 +337,17 @@ class SteadyRingVortexLatticeMethodSolver:
             in a different color, and each of their legs gets an arrow showing its
             vorticity's direction for positive lift. Can be a bool or a numpy bool and
             will be converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
         :return: None
         """
         show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
@@ -362,6 +377,11 @@ class SteadyRingVortexLatticeMethodSolver:
         )
         simplify_vortices = _parameter_validation.boolLike_return_bool(
             simplify_vortices, "simplify_vortices"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
         )
 
         if not self._ran:
@@ -427,8 +447,9 @@ class SteadyRingVortexLatticeMethodSolver:
             simplify=simplify_vortices,
         )
 
-        plotter.camera.parallel_projection = True
-        plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
     def _collapse_geometry(self) -> None:
         """Computes the bound ring vortex and trailing edge horseshoe vortex geometries

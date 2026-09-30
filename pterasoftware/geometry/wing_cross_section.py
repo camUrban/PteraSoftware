@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 import pyvista as pv
@@ -462,6 +463,9 @@ class WingCrossSection:
         show_airfoil_axes_and_points: bool | np.bool = True,
         show_airfoil: bool | np.bool = True,
         show_mcl: bool | np.bool = True,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
     ) -> None:
         """Displays a diagram of this WingCrossSection's Airfoil, placed and scaled by
         this WingCrossSection, along with its axes and its parent axes.
@@ -483,6 +487,17 @@ class WingCrossSection:
         :param show_mcl: Determines whether to draw the Airfoil's mean camber line. It
             has no effect if show_airfoil is False. Can be a bool or a numpy bool and
             will be converted internally to a bool. The default is True.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
         :return: None
         """
         show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
@@ -492,6 +507,11 @@ class WingCrossSection:
             show_airfoil, "show_airfoil"
         )
         show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
 
         if self.symmetry_type is None or not self.validated:
             raise ValueError(
@@ -544,8 +564,9 @@ class WingCrossSection:
             two_dimensional_axes_ids=["A"],
         )
 
-        plotter.camera.parallel_projection = True
-        plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
     def get_plottable_data(
         self,

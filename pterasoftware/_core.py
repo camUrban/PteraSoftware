@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import math
 from collections.abc import Callable, Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -2796,6 +2797,9 @@ class CoreUnsteadyProblem:
             Sequence[Sequence[int]] | None
         ) = None,
         label_collocation_points: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
     ) -> None:
         """Displays a diagram of one time step's SteadyProblem's Airplanes' Wings'
         Panels, along with their axes and points.
@@ -2849,6 +2853,17 @@ class CoreUnsteadyProblem:
             points that are drawn. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
         :return: None
         """
         steady_problems = self.steady_problems
@@ -2884,4 +2899,7 @@ class CoreUnsteadyProblem:
                 collocation_point_airplanes_wings_rows_and_columns
             ),
             label_collocation_points=label_collocation_points,
+            save=save,
+            path=path,
+            quality=quality,
         )

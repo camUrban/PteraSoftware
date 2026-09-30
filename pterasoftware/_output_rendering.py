@@ -8,7 +8,7 @@ import queue
 import threading
 from collections.abc import Sequence
 from pathlib import Path
-from typing import NamedTuple, cast
+from typing import Literal, NamedTuple, cast
 
 import matplotlib.colors
 import numpy as np
@@ -137,8 +137,10 @@ _AXES_CROSS_LABEL_OFFSET = 0.15
 # screen directions into eight equal sectors.
 _AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
 
-# Define the colors of the Airfoil outlines, mean camber lines, and Panel edges drawn by
-# add_airfoil and add_panels, and the width of their lines, which is in pixels.
+# Define the background color of the diagrams, the colors of the Airfoil outlines, mean
+# camber lines, and Panel edges drawn by add_airfoil and add_panels, and the width of
+# their lines, which is in pixels.
+_DIAGRAM_BACKGROUND_COLOR = "white"
 _DIAGRAM_AIRFOIL_OUTLINE_COLOR = "black"
 _DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
 _DIAGRAM_PANEL_COLOR = "black"
@@ -1541,6 +1543,61 @@ def add_steady_problem(
         label_extra_points=label_collocation_points,
         two_dimensional_axes_ids=airfoil_axes_ids,
     )
+
+
+def show_diagram(
+    plotter: pv.Plotter,
+    cpos: Literal["xy"] | Sequence[float],
+    save: bool,
+    path: Path,
+    quality: float,
+) -> None:
+    """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
+    WebP, and then closes all Plotters.
+
+    The window stays open until it is closed, so the view can be oriented and the labels
+    dragged first. The diagram is saved after the window is closed, which keeps the
+    orientation and the dragged labels' positions, since closing the window does not
+    move the camera. The diagram's background is white, both on screen and in the saved
+    WebP.
+
+    :param plotter: The Plotter holding the diagram.
+    :param cpos: The camera position to show the diagram from, either "xy", to view it
+        along the negative z direction, or a direction to view it from, such as (-1, -1,
+        1).
+    :param save: Determines whether to save the diagram as a WebP.
+    :param path: The file path to save the diagram to. It must end with ".webp", and its
+        directory must already exist. It has no effect if save is False.
+    :param quality: The quality of the saved WebP, from 0.0 to 100.0. It has no effect
+        if save is False.
+    :return: None
+    """
+    # Set the background explicitly, since the diagram's black lines and labels rely on
+    # it being white, and a PyVista theme could change the default.
+    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+    plotter.camera.parallel_projection = True
+    plotter.show(cpos=cpos, full_screen=False, auto_close=False)
+
+    # If saving, take an opaque screenshot and save it as a WebP. webp annotates
+    # file_path as a str, so the Path is converted at the boundary.
+    if save:
+        webp.save_image(
+            img=webp.Image.fromarray(
+                np.array(
+                    plotter.screenshot(
+                        filename=None,
+                        transparent_background=False,
+                        return_img=True,
+                    )
+                )
+            ),
+            file_path=str(path),
+            lossless=False,
+            quality=quality,
+            method=WEBP_METHOD,
+        )
+
+    pv.close_all()
 
 
 def add_vortices(

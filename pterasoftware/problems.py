@@ -9,6 +9,7 @@ from pathlib import PureWindowsPath
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
+import pyvista as pv
 from scipy.integrate import solve_ivp
 
 from . import (
@@ -16,6 +17,7 @@ from . import (
     _fixed_point_relaxation,
     _logging,
     _mujoco_model,
+    _output_rendering,
     _parameter_validation,
     _private_access,
     _transformations,
@@ -181,6 +183,228 @@ class SteadyProblem:
             # Store as tuple to prevent external mutation.
             self._reynolds_numbers = tuple(reynolds_list)
         return self._reynolds_numbers
+
+    # --- Other methods ---
+    def diagram(
+        self,
+        *,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = True,
+        show_wing_cross_section_axes_and_points: bool | np.bool = True,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = True,
+        show_mcls: bool | np.bool = True,
+        show_collocation_points: bool | np.bool = False,
+        collocation_point_airplanes_wings_rows_and_columns: (
+            Sequence[Sequence[int]] | None
+        ) = None,
+        label_collocation_points: bool | np.bool = True,
+    ) -> None:
+        """Displays a diagram of this SteadyProblem's Airplanes' Wings' Panels, along
+        with their axes and points.
+
+        The diagram is drawn in the first Airplane's geometry axes, relative to the
+        first Airplane's CG. It shows the Earth axes at the Earth origin and every
+        Wing's Panels. The units are in meters.
+
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is True.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is True.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is True.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is True.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param collocation_point_airplanes_wings_rows_and_columns: The Panels whose
+            collocation points are drawn, given as a sequence of (airplane, wing, row,
+            column) quadruples of ints. Like the labels, the Airplanes, Wings, rows, and
+            columns start at one. If None, every Panel's collocation point is drawn. It
+            has no effect if show_collocation_points is False. The default is None.
+        :param label_collocation_points: Determines whether to label the collocation
+            points that are drawn. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is True.
+        :return: None
+        """
+        show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airplane_axes_and_points, "show_airplane_axes_and_points"
+        )
+        show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_wing_axes_and_points, "show_wing_axes_and_points"
+        )
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+
+        airplanes_wings_row_and_column_ids = (
+            _output_rendering.get_collocation_point_row_and_column_ids(
+                collocation_point_airplanes_wings_rows_and_columns,
+                "collocation_point_airplanes_wings_rows_and_columns",
+                [airplane.wings for airplane in self._airplanes],
+                num_leading_ids=2,
+            )
+        )
+
+        plotter = pv.Plotter()
+
+        # Draw the diagram in the first Airplane's geometry axes, relative to the first
+        # Airplane's CG. The first Airplane's CG is at CgP1_E_Eo (in Earth axes,
+        # relative to the Earth origin), so this translation maps positions relative to
+        # the Earth origin to positions relative to the first Airplane's CG.
+        T_pas_E_Eo_to_E_CgP1 = _transformations.generate_trans_T(
+            self._operating_point.CgP1_E_Eo, passive=True
+        )
+        axes_ids = ["E"]
+        point_ids = ["Eo"]
+        transformations = [
+            _transformations.compose_T_pas(
+                T_pas_E_Eo_to_E_CgP1, self._operating_point.T_pas_E_CgP1_to_GP1_CgP1
+            )
+        ]
+
+        # Draw all the axes and points with one call, so that the ones that coincide
+        # merge. The IDs of each Airplane's axes and points, and of its Wings',
+        # WingCrossSections', and Airfoils' axes and points, are numbered from one.
+        airfoil_axes_ids: list[str] = []
+        collocation_point_ids: list[str] = []
+        listCollocationPoints_D_Do: list[np.ndarray] = []
+        listWingBasisDirections_D: list[np.ndarray] = []
+        listCrossDirections_D: list[np.ndarray] = []
+        for airplane_id, airplane in enumerate(self._airplanes):
+            airplane_num = airplane_id + 1
+            T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
+
+            if show_airplane_axes_and_points:
+                axes_ids.append(f"GP{airplane_num}")
+                point_ids.append(f"CgP{airplane_num}")
+                transformations.append(T_pas_G_Cg_to_GP1_CgP1)
+
+            for wing_id, wing in enumerate(airplane.wings):
+                wing_num = wing_id + 1
+                wing_cross_section_nums = range(1, len(wing.wing_cross_sections) + 1)
+                children_T_pas_Wcs_Lp_to_GP1_CgP1 = [
+                    _transformations.compose_T_pas(
+                        T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_GP1_CgP1
+                    )
+                    for T_pas_Wcs_Lp_to_G_Cg in wing.children_T_pas_Wcs_Lp_to_G_Cg
+                ]
+
+                if show_airfoils:
+                    _output_rendering.add_airfoils(
+                        plotter, wing, T_pas_G_Cg_to_GP1_CgP1, show_mcls=show_mcls
+                    )
+                _output_rendering.add_panels(plotter, wing, T_pas_G_Cg_to_GP1_CgP1)
+
+                if show_wing_axes_and_points:
+                    _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
+                    assert _T_pas_Wn_Ler_to_G_Cg is not None
+                    axes_ids.append(f"Wn{wing_num}P{airplane_num}")
+                    point_ids.append(f"Ler{wing_num}P{airplane_num}")
+                    transformations.append(
+                        _transformations.compose_T_pas(
+                            _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_GP1_CgP1
+                        )
+                    )
+                if show_wing_cross_section_axes_and_points:
+                    axes_ids += [
+                        f"Wcs{num}Wn{wing_num}P{airplane_num}"
+                        for num in wing_cross_section_nums
+                    ]
+                    point_ids += [
+                        f"Lp{num}Wn{wing_num}P{airplane_num}"
+                        for num in wing_cross_section_nums
+                    ]
+                    transformations += children_T_pas_Wcs_Lp_to_GP1_CgP1
+                these_airfoil_axes_ids = [
+                    f"AWcs{num}Wn{wing_num}P{airplane_num}"
+                    for num in wing_cross_section_nums
+                ]
+                airfoil_axes_ids += these_airfoil_axes_ids
+                if show_airfoil_axes_and_points:
+                    axes_ids += these_airfoil_axes_ids
+                    point_ids += [
+                        f"Lp{num}Wn{wing_num}P{airplane_num}"
+                        for num in wing_cross_section_nums
+                    ]
+                    transformations += [
+                        _output_rendering.get_airfoil_axes_transformation(
+                            T_pas_Wcs_Lp_to_GP1_CgP1
+                        )
+                        for T_pas_Wcs_Lp_to_GP1_CgP1 in children_T_pas_Wcs_Lp_to_GP1_CgP1
+                    ]
+
+                if show_collocation_points:
+                    (
+                        this_wing_collocation_point_ids,
+                        listThisWingCollocationPoints_D_Do,
+                        listThisWingBasisDirections_D,
+                        listThisWingCrossDirections_D,
+                    ) = _output_rendering.get_collocation_points(
+                        wing,
+                        airplanes_wings_row_and_column_ids[airplane_id][wing_id],
+                        f"Wn{wing_num}P{airplane_num}",
+                        T_pas_G_Cg_to_GP1_CgP1,
+                    )
+                    collocation_point_ids += this_wing_collocation_point_ids
+                    listCollocationPoints_D_Do += listThisWingCollocationPoints_D_Do
+                    listWingBasisDirections_D += listThisWingBasisDirections_D
+                    listCrossDirections_D += listThisWingCrossDirections_D
+
+        # Size the axes relative to the largest chord on any Airplane, so they stay
+        # legible regardless of the geometry's absolute size.
+        _output_rendering.add_axes_and_points(
+            plotter,
+            axes_ids=axes_ids,
+            point_ids=point_ids,
+            transformations=transformations,
+            axes_scale=0.5
+            * max(
+                wing_cross_section.chord
+                for airplane in self._airplanes
+                for wing in airplane.wings
+                for wing_cross_section in wing.wing_cross_sections
+            ),
+            extra_point_ids=collocation_point_ids,
+            listExtraPoints_D_Do=listCollocationPoints_D_Do,
+            listExtraPointBasisDirections_D=listWingBasisDirections_D,
+            listExtraPointCrossDirections_D=listCrossDirections_D,
+            label_extra_points=label_collocation_points,
+            two_dimensional_axes_ids=airfoil_axes_ids,
+        )
+
+        plotter.camera.parallel_projection = True
+        plotter.show(cpos=(-1, -1, 1), full_screen=False, auto_close=False)
 
 
 class UnsteadyProblem(_core.CoreUnsteadyProblem):

@@ -1614,35 +1614,13 @@ class Wing:
                 "A Wing can only be diagrammed after its parent Airplane has set its "
                 "symmetry type and meshed it."
             )
-        num_rows, num_columns = self.panels.shape
 
-        # Convert the selected Panels' one based rows and columns to zero based indices.
-        row_and_column_ids: list[tuple[int, int]] | None = None
-        if collocation_point_rows_and_columns is not None:
-            row_and_column_ids = []
-            for row_and_column in collocation_point_rows_and_columns:
-                if len(row_and_column) != 2:
-                    raise ValueError(
-                        "Each element of collocation_point_rows_and_columns must "
-                        "be a (row, column) pair."
-                    )
-                row = _parameter_validation.int_in_range_return_int(
-                    row_and_column[0],
-                    "Each row in collocation_point_rows_and_columns",
-                    min_val=1,
-                    min_inclusive=True,
-                    max_val=num_rows,
-                    max_inclusive=True,
-                )
-                column = _parameter_validation.int_in_range_return_int(
-                    row_and_column[1],
-                    "Each column in collocation_point_rows_and_columns",
-                    min_val=1,
-                    min_inclusive=True,
-                    max_val=num_columns,
-                    max_inclusive=True,
-                )
-                row_and_column_ids.append((row - 1, column - 1))
+        row_and_column_ids = _output_rendering.get_collocation_point_row_and_column_ids(
+            collocation_point_rows_and_columns,
+            "collocation_point_rows_and_columns",
+            [[self]],
+            num_leading_ids=0,
+        )[0][0]
 
         # Draw the diagram in geometry axes, relative to the CG.
         T_pas_G_Cg_to_D_Do = np.eye(4, dtype=float)

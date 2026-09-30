@@ -20,6 +20,7 @@ from . import (
     _fonts,
     _logging,
     _mujoco_model,
+    _parameter_validation,
     _private_access,
     _transformations,
     free_flight_unsteady_ring_vortex_lattice_method,
@@ -1258,6 +1259,116 @@ def get_collocation_points(
         listWingBasisDirections_D,
         listCrossDirections_D,
     )
+
+
+def get_collocation_point_row_and_column_ids(
+    selection: Sequence[Sequence[int]] | None,
+    selection_name: str,
+    airplanes_wings: Sequence[Sequence[geometry.wing.Wing]],
+    num_leading_ids: int,
+) -> list[list[list[tuple[int, int]] | None]]:
+    """Validates a diagram's selection of Panels whose collocation points are drawn, and
+    returns it as zero based (row index, column index) pairs for each Wing, which can be
+    passed to get_collocation_points.
+
+    Each element of the selection gives one Panel as a tuple of ints, each starting at
+    one. Its last two ints are the Panel's chordwise row and spanwise column. Before
+    them come num_leading_ids ints that pick the Panel's Wing: none for a Wing's
+    diagram, whose selection holds (row, column) pairs, the Wing for an Airplane's
+    diagram, whose selection holds (wing, row, column) triples, and the Airplane and
+    then the Wing for a SteadyProblem's diagram, whose selection holds (airplane, wing,
+    row, column) quadruples.
+
+    :param selection: The selection to validate, or None to select every Panel.
+    :param selection_name: The name of the parameter that selection came from, which is
+        used in error messages.
+    :param airplanes_wings: A sequence with one sequence of Wings for each Airplane the
+        selection can pick from. For a Wing's or an Airplane's diagram, it holds a
+        single sequence, which for a Wing's diagram holds only that Wing. Every Wing
+        must have been meshed.
+    :param num_leading_ids: The number of ints before each element's row and column,
+        which must be 0, 1, or 2.
+    :return: A list with one list for each Airplane, each holding one element for each
+        of that Airplane's Wings. If selection is None, every element is None, which
+        get_collocation_points reads as selecting every Panel. Otherwise, each element
+        is a list of the zero based (row index, column index) pairs selected on that
+        Wing, in the order they were given.
+    """
+    if selection is None:
+        return [[None for _ in wings] for wings in airplanes_wings]
+
+    id_names = [*("airplane", "wing")[2 - num_leading_ids :], "row", "column"]
+    element_description = {
+        2: "a (row, column) pair",
+        3: "a (wing, row, column) triple",
+        4: "an (airplane, wing, row, column) quadruple",
+    }[len(id_names)]
+
+    # Check each int against an exclusive minimum of zero, which accepts the same values
+    # as an inclusive minimum of one, but stays below the maximum even when there is
+    # only one Airplane, Wing, row, or column to pick from.
+    airplanes_wings_row_and_column_ids: list[list[list[tuple[int, int]] | None]] = [
+        [[] for _ in wings] for wings in airplanes_wings
+    ]
+    for element in selection:
+        if len(element) != len(id_names):
+            raise ValueError(
+                f"Each element of {selection_name} must be {element_description}."
+            )
+
+        airplane_id = 0
+        if num_leading_ids == 2:
+            airplane_id = (
+                _parameter_validation.int_in_range_return_int(
+                    element[0],
+                    f"Each airplane in {selection_name}",
+                    min_val=0,
+                    min_inclusive=False,
+                    max_val=len(airplanes_wings),
+                    max_inclusive=True,
+                )
+                - 1
+            )
+        wings = airplanes_wings[airplane_id]
+        wing_id = 0
+        if num_leading_ids >= 1:
+            wing_id = (
+                _parameter_validation.int_in_range_return_int(
+                    element[num_leading_ids - 1],
+                    f"Each wing in {selection_name}",
+                    min_val=0,
+                    min_inclusive=False,
+                    max_val=len(wings),
+                    max_inclusive=True,
+                )
+                - 1
+            )
+
+        panels = wings[wing_id].panels
+        assert panels is not None
+        num_rows, num_columns = panels.shape
+        row = _parameter_validation.int_in_range_return_int(
+            element[num_leading_ids],
+            f"Each row in {selection_name}",
+            min_val=0,
+            min_inclusive=False,
+            max_val=num_rows,
+            max_inclusive=True,
+        )
+        column = _parameter_validation.int_in_range_return_int(
+            element[num_leading_ids + 1],
+            f"Each column in {selection_name}",
+            min_val=0,
+            min_inclusive=False,
+            max_val=num_columns,
+            max_inclusive=True,
+        )
+
+        row_and_column_ids = airplanes_wings_row_and_column_ids[airplane_id][wing_id]
+        assert row_and_column_ids is not None
+        row_and_column_ids.append((row - 1, column - 1))
+
+    return airplanes_wings_row_and_column_ids
 
 
 def add_vortices(

@@ -708,49 +708,14 @@ class Airplane:
             label_collocation_points, "label_collocation_points"
         )
 
-        # Split the selected Panels' one based (wing, row, column) triples into zero
-        # based (row, column) index pairs for each Wing.
-        wings_row_and_column_ids: list[list[tuple[int, int]] | None] = [None] * len(
-            self._wings
+        wings_row_and_column_ids = (
+            _output_rendering.get_collocation_point_row_and_column_ids(
+                collocation_point_wings_rows_and_columns,
+                "collocation_point_wings_rows_and_columns",
+                [self._wings],
+                num_leading_ids=1,
+            )[0]
         )
-        if collocation_point_wings_rows_and_columns is not None:
-            wings_row_and_column_ids = [[] for _ in self._wings]
-            for wing_row_and_column in collocation_point_wings_rows_and_columns:
-                if len(wing_row_and_column) != 3:
-                    raise ValueError(
-                        "Each element of collocation_point_wings_rows_and_columns must "
-                        "be a (wing, row, column) triple."
-                    )
-                wing_num = _parameter_validation.int_in_range_return_int(
-                    wing_row_and_column[0],
-                    "Each wing in collocation_point_wings_rows_and_columns",
-                    min_val=1,
-                    min_inclusive=True,
-                    max_val=len(self._wings),
-                    max_inclusive=True,
-                )
-                _panels = self._wings[wing_num - 1].panels
-                assert _panels is not None
-                num_rows, num_columns = _panels.shape
-                row = _parameter_validation.int_in_range_return_int(
-                    wing_row_and_column[1],
-                    "Each row in collocation_point_wings_rows_and_columns",
-                    min_val=1,
-                    min_inclusive=True,
-                    max_val=num_rows,
-                    max_inclusive=True,
-                )
-                column = _parameter_validation.int_in_range_return_int(
-                    wing_row_and_column[2],
-                    "Each column in collocation_point_wings_rows_and_columns",
-                    min_val=1,
-                    min_inclusive=True,
-                    max_val=num_columns,
-                    max_inclusive=True,
-                )
-                this_wing_row_and_column_ids = wings_row_and_column_ids[wing_num - 1]
-                assert this_wing_row_and_column_ids is not None
-                this_wing_row_and_column_ids.append((row - 1, column - 1))
 
         # Draw the diagram in geometry axes, relative to the CG.
         T_pas_G_Cg_to_D_Do = np.eye(4, dtype=float)

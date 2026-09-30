@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import queue
 import threading
+from collections.abc import Sequence
 from pathlib import Path
 from typing import NamedTuple, cast
 
@@ -89,6 +90,51 @@ TEXT_FONT_SIZE = 10
 # much room as _BAR_POSITION_X allows.
 _TEXT_SPEED_POSITION = (0.01, 0.080)
 _TEXT_DROPPED_FRAMES_POSITION = (0.01, 0.045)
+
+# Define the colors of the x, y, and z basis direction arrows drawn by
+# add_axes_and_points, the arrows' proportions as fractions of their length, the number
+# of sides on their tips, the width of their lines, the size of the dots marking their
+# origins, and the length of each line in the crosses marking points without axes, as a
+# fraction of the arrows' length. The line width, font size, and dot size are in pixels.
+_AXES_COLORS = ("red", "green", "blue")
+_AXES_TIP_LENGTH = 0.2
+_AXES_TIP_RADIUS = 0.1
+_AXES_TIP_RESOLUTION = 20
+_AXES_LINE_WIDTH = 2.0
+_AXES_LABEL_FONT_SIZE = 15
+_AXES_POINT_SIZE = 10.0
+_AXES_CROSS_SIZE = 0.1
+
+# Define the angle, in degrees, between neighboring faces of an arrow's tip above which
+# their shared edge is always outlined, not just where it is on the tip's silhouette.
+# The rim between the tip's base and its sides is well above this angle, so it stays
+# outlined even when the base faces the camera, while the edges between the tip's side
+# faces are well below it.
+_AXES_TIP_FEATURE_ANGLE = 60.0
+
+# Define the polygon offset factor and units that push each arrow tip's filled faces
+# slightly away from the camera in the depth buffer, so they don't cover half of the
+# width of the outline drawn along their edges. The factor scales with the faces' depth
+# slope and the units are in the depth buffer's smallest resolvable steps.
+_AXES_TIP_FILL_OFFSET_FACTOR = 2.0
+_AXES_TIP_FILL_OFFSET_UNITS = 8.0
+
+# Define how far each arrow's label is anchored beyond its tip, along the arrow's
+# direction, as a fraction of the arrows' length.
+_AXES_ARROW_LABEL_OFFSET = 0.15
+
+# Define how far each point's label is anchored from its point, as a fraction of the
+# arrows' length, for points with axes and for points marked with crosses. For a point
+# with axes, the anchor lies along the negative sum of its axes' basis directions, in
+# the octant that none of that axes set's arrows enter.
+_AXES_POINT_LABEL_OFFSET = 0.3
+_AXES_CROSS_LABEL_OFFSET = 0.15
+
+# Define the fraction of an arrow's on screen length that its horizontal or vertical
+# extent must exceed for its label to be justified away from it along that direction,
+# rather than centered on its tip. This value, the sine of 22.5 degrees, splits the
+# screen directions into eight equal sectors.
+_AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
 
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
@@ -309,6 +355,559 @@ def add_playback_overlays(
             render=False,
         )
         overlay.prop.set_font_file(str(_fonts.FONT_PATH))
+
+
+def add_axes_and_points(
+    plotter: pv.Plotter,
+    axes_ids: Sequence[str],
+    point_ids: Sequence[str],
+    transformations: Sequence[np.ndarray],
+    axes_scale: float,
+    extra_point_ids: Sequence[str] = (),
+    listExtraPoints_D_Do: Sequence[np.ndarray] = (),
+    listExtraPointBasisDirections_D: Sequence[np.ndarray] = (),
+    listExtraPointCrossDirections_D: Sequence[np.ndarray] = (),
+    label_extra_points: bool = True,
+) -> None:
+    """Adds labeled axes and their labeled origin points to a Plotter, along with any
+    extra labeled points that have no axes of their own, merging those that coincide.
+
+    Each axes set is drawn as three basis direction arrows starting at its point, which
+    is marked with a dot. The arrow tips are labeled with the axes' ID and the basis
+    direction's letter (such as "WnX"), and the points are labeled with their IDs (such
+    as "Ler"). Each extra point is marked with a small cross, without arrows, whose two
+    arms lie along its given cross directions. Points at the same position share one
+    label that joins their IDs with slashes (such as "Cg/Ler"), and are marked with a
+    dot if any of them has axes. Likewise, arrows with the same start and direction are
+    drawn once, with one label that joins their labels with slashes (such as "GX/WnX").
+    The arrows are compared one basis direction at a time, so two axes sets that share a
+    point and differ by a rotation about one of their basis directions still merge that
+    direction's arrows.
+
+    Each label is placed automatically so that its text extends away from what it
+    labels, and the placement is updated before every render. In an interactive window,
+    a label can also be dragged with the left mouse button to fix any remaining overlaps
+    by hand. A dragged label keeps its position until the camera next moves, when every
+    dragged label returns to its automatic placement. Because closing the window does
+    not move the camera, a screenshot taken after the window closes keeps the dragged
+    positions.
+
+    :param plotter: The Plotter to add the axes and points to.
+    :param axes_ids: The IDs of the axes sets to draw, one per axes set.
+    :param point_ids: The IDs of the points each axes set is drawn at, one per axes set.
+    :param transformations: A sequence of (4,4) ndarrays of floats, one per axes set.
+        Each is a passive transformation matrix which maps in homogeneous coordinates
+        from that axes set, relative to its point, to diagram axes, relative to the
+        diagram origin. Their first three columns hold the axes' basis directions (in
+        diagram axes) and their last column holds the point's position (in diagram axes,
+        relative to the diagram origin).
+    :param axes_scale: The length of each arrow. The units are in meters.
+    :param extra_point_ids: The IDs of the extra points to draw without arrows, one per
+        extra point. The default is an empty sequence.
+    :param listExtraPoints_D_Do: A sequence of (3,) ndarrays of floats, one per extra
+        point, holding each extra point's position (in diagram axes, relative to the
+        diagram origin). The units are in meters. The default is an empty sequence.
+    :param listExtraPointBasisDirections_D: A sequence of (3,3) ndarrays of floats, one
+        per extra point, whose columns hold the basis directions (in diagram axes) of
+        the axes that extra point's label offset is defined in. The default is an empty
+        sequence.
+    :param listExtraPointCrossDirections_D: A sequence of (2,3) ndarrays of floats, one
+        per extra point, whose rows hold the unit vectors (in diagram axes) along which
+        that extra point's cross's two arms lie. The default is an empty sequence.
+    :param label_extra_points: Determines whether the extra points are labeled. If
+        False, each extra point is still marked with its cross, but its ID is left out
+        of every label. The default is True.
+    :return: None
+    """
+    # Each axes set's point has its label offset along the negative sum of that axes
+    # set's basis directions, which is the unit vector (-1, -1, -1) / sqrt(3) in that
+    # axes set, so the label sits in the octant that none of its arrows enter. Each
+    # extra point has no arrows there, so its label is instead offset a shorter distance
+    # along the unit vector (-1, 1, 1) / sqrt(3) in its axes. That direction differs
+    # from the default camera's view direction, so the offset stays visible on screen.
+    # Each offset is stored as a fraction of the arrows' length.
+    all_point_ids = [*point_ids, *extra_point_ids]
+    listAllPoints_D_Do = [
+        *(transformation[:3, 3] for transformation in transformations),
+        *listExtraPoints_D_Do,
+    ]
+    listAllLabelOffsets_D = [
+        *(
+            _AXES_POINT_LABEL_OFFSET
+            * transformation[:3, :3]
+            @ np.array([-1.0, -1.0, -1.0])
+            / math.sqrt(3.0)
+            for transformation in transformations
+        ),
+        *(
+            _AXES_CROSS_LABEL_OFFSET
+            * extraPointBasisDirections_D
+            @ np.array([-1.0, 1.0, 1.0])
+            / math.sqrt(3.0)
+            for extraPointBasisDirections_D in listExtraPointBasisDirections_D
+        ),
+    ]
+    all_has_axes = [True] * len(point_ids) + [False] * len(extra_point_ids)
+    all_is_labeled = [True] * len(point_ids) + [label_extra_points] * len(
+        extra_point_ids
+    )
+    listAllCrossDirections_D: list[np.ndarray | None] = [
+        *([None] * len(point_ids)),
+        *listExtraPointCrossDirections_D,
+    ]
+
+    # Merge the points that share a position, so each position gets one label, offset
+    # like the first point merged into it. Each merged point also keeps whether any
+    # point merged into it has axes, which decides its marker, and the cross directions
+    # of the first extra point merged into it, which orient its cross. A merged point
+    # whose points are all unlabeled keeps an empty list of labels, and gets no label.
+    listPoints_D_Do: list[np.ndarray] = []
+    listPointLabelOffsets_D: list[np.ndarray] = []
+    point_labels: list[list[str]] = []
+    point_has_axes: list[bool] = []
+    listPointCrossDirections_D: list[np.ndarray | None] = []
+    for (
+        point_id,
+        thisPoint_D_Do,
+        labelOffset_D,
+        has_axes,
+        is_labeled,
+        crossDirections_D,
+    ) in zip(
+        all_point_ids,
+        listAllPoints_D_Do,
+        listAllLabelOffsets_D,
+        all_has_axes,
+        all_is_labeled,
+        listAllCrossDirections_D,
+    ):
+        matches = [
+            match_id
+            for match_id, mergedPoint_D_Do in enumerate(listPoints_D_Do)
+            if np.allclose(mergedPoint_D_Do, thisPoint_D_Do)
+        ]
+        if not matches:
+            listPoints_D_Do.append(thisPoint_D_Do)
+            listPointLabelOffsets_D.append(labelOffset_D)
+            point_labels.append([point_id] if is_labeled else [])
+            point_has_axes.append(has_axes)
+            listPointCrossDirections_D.append(crossDirections_D)
+            continue
+        point_has_axes[matches[0]] = point_has_axes[matches[0]] or has_axes
+        if listPointCrossDirections_D[matches[0]] is None:
+            listPointCrossDirections_D[matches[0]] = crossDirections_D
+        if is_labeled and point_id not in point_labels[matches[0]]:
+            point_labels[matches[0]].append(point_id)
+
+    # Merge the arrows that share a start and a direction, so each arrow is drawn and
+    # labeled once. Each merged arrow takes the color of the first arrow merged into it.
+    listArrowStarts_D_Do: list[np.ndarray] = []
+    listArrowDirections_D: list[np.ndarray] = []
+    arrow_colors: list[str] = []
+    arrow_labels: list[list[str]] = []
+    for axes_id, transformation in zip(axes_ids, transformations):
+        thisArrowStart_D_Do = transformation[:3, 3]
+        for component_id, (component_letter, color) in enumerate(
+            zip(("X", "Y", "Z"), _AXES_COLORS)
+        ):
+            thisArrowDirection_D = transformation[:3, component_id]
+            label = f"{axes_id}{component_letter}"
+            matches = [
+                match_id
+                for match_id, (mergedArrowStart_D_Do, mergedArrowDirection_D) in (
+                    enumerate(zip(listArrowStarts_D_Do, listArrowDirections_D))
+                )
+                if np.allclose(mergedArrowStart_D_Do, thisArrowStart_D_Do)
+                and np.allclose(mergedArrowDirection_D, thisArrowDirection_D)
+            ]
+            if not matches:
+                listArrowStarts_D_Do.append(thisArrowStart_D_Do)
+                listArrowDirections_D.append(thisArrowDirection_D)
+                arrow_colors.append(color)
+                arrow_labels.append([label])
+            elif label not in arrow_labels[matches[0]]:
+                arrow_labels[matches[0]].append(label)
+
+    # Draw each arrow's shaft as a single line and its tip as an outlined cone.
+    for arrowStart_D_Do, arrowDirection_D, arrow_color in zip(
+        listArrowStarts_D_Do, listArrowDirections_D, arrow_colors
+    ):
+        shaftEnd_D_Do = (
+            arrowStart_D_Do + (1.0 - _AXES_TIP_LENGTH) * axes_scale * arrowDirection_D
+        )
+        plotter.add_mesh(
+            pv.Line(arrowStart_D_Do, shaftEnd_D_Do),
+            color=arrow_color,
+            line_width=_AXES_LINE_WIDTH,
+        )
+        _add_arrow_tip(
+            plotter,
+            tipBase_D_Do=shaftEnd_D_Do,
+            tipDirection_D=arrowDirection_D,
+            length=_AXES_TIP_LENGTH * axes_scale,
+            radius=_AXES_TIP_RADIUS * axes_scale,
+            color=arrow_color,
+        )
+
+    # VTK only applies the tip fills' polygon offsets while its coincident topology
+    # resolution mode, which is shared by every mapper in the process, is set to polygon
+    # offset. Turn that mode on only while this Plotter's renderer draws, and restore
+    # the previous mode afterward, so no other visualization is affected. While it is
+    # on, VTK also pulls the other lines in this scene slightly toward the camera, which
+    # only keeps them in front of the tip fills. A mapper's resolve property reads and
+    # sets that shared mode, so any mapper can be used to reach it.
+    resolve_mapper = pv.DataSetMapper()
+    previous_resolve_modes: list[str] = []
+
+    def turn_on_polygon_offset(caller: object, event: str) -> None:
+        """Turns on VTK's polygon offset coincident topology resolution, storing the
+        previous mode.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        previous_resolve_modes.append(resolve_mapper.resolve)
+        resolve_mapper.resolve = "polygon_offset"
+
+    def restore_resolve_mode(caller: object, event: str) -> None:
+        """Restores VTK's coincident topology resolution mode stored when this render
+        started.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        if previous_resolve_modes:
+            resolve_mapper.resolve = previous_resolve_modes.pop()
+
+    plotter.renderer.AddObserver("StartEvent", turn_on_polygon_offset)
+    plotter.renderer.AddObserver("EndEvent", restore_resolve_mode)
+
+    # Mark the points with axes with dots, and the rest with crosses, each made of two
+    # line segments centered on its point and lying along its cross directions.
+    listDotPoints_D_Do = [
+        point_D_Do
+        for point_D_Do, has_axes in zip(listPoints_D_Do, point_has_axes)
+        if has_axes
+    ]
+    if listDotPoints_D_Do:
+        plotter.add_points(
+            np.array(listDotPoints_D_Do, dtype=float),
+            color="black",
+            point_size=_AXES_POINT_SIZE,
+            render_points_as_spheres=True,
+        )
+    cross_half_length = 0.5 * _AXES_CROSS_SIZE * axes_scale
+    listCrossVertices_D_Do = [
+        point_D_Do + sign * cross_half_length * crossDirection_D
+        for point_D_Do, has_axes, crossDirections_D in zip(
+            listPoints_D_Do, point_has_axes, listPointCrossDirections_D
+        )
+        if not has_axes and crossDirections_D is not None
+        for crossDirection_D in crossDirections_D
+        for sign in (-1.0, 1.0)
+    ]
+    if listCrossVertices_D_Do:
+        num_cross_segments = len(listCrossVertices_D_Do) // 2
+        cross_lines = np.column_stack(
+            [
+                np.full(num_cross_segments, 2),
+                np.arange(0, len(listCrossVertices_D_Do), 2),
+                np.arange(1, len(listCrossVertices_D_Do), 2),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(
+                np.array(listCrossVertices_D_Do, dtype=float), lines=cross_lines
+            ),
+            color="black",
+            line_width=_AXES_LINE_WIDTH,
+        )
+
+    # Label the arrow tips and the points, with one Label per text. Unlike
+    # add_point_labels, whose label placement either drops labels that would overlap or,
+    # when told to place them all, draws some of them more than once, a Label is always
+    # drawn exactly once. Labels are also drawn over the scene, so the Wing's Panels
+    # never hide them. Each label entry holds the Label, the point its text should
+    # extend away from, and the Label's anchor. An arrow's label is anchored a short
+    # distance beyond its tip, along the arrow, and extends away from its start. A
+    # point's label is anchored at its offset position and extends away from the point,
+    # so the point marker doesn't cover it.
+    label_entries: list[tuple[pv.Label, np.ndarray, np.ndarray]] = []
+    for arrowStart_D_Do, arrowDirection_D, labels in zip(
+        listArrowStarts_D_Do, listArrowDirections_D, arrow_labels
+    ):
+        arrowLabelAnchor_D_Do = (
+            arrowStart_D_Do
+            + (1.0 + _AXES_ARROW_LABEL_OFFSET) * axes_scale * arrowDirection_D
+        )
+        arrow_label_text = "/".join(labels)
+        arrow_label = pv.Label(
+            text=arrow_label_text,
+            position=arrowLabelAnchor_D_Do,
+            size=_AXES_LABEL_FONT_SIZE,
+            name=f"arrow label {arrow_label_text}",
+        )
+        arrow_label.prop.color = "black"
+        arrow_label.prop.background_color = plotter.background_color
+        arrow_label.prop.background_opacity = 1.0
+        arrow_label.prop.set_font_file(str(_fonts.FONT_PATH))
+        plotter.add_actor(arrow_label)
+        label_entries.append((arrow_label, arrowStart_D_Do, arrowLabelAnchor_D_Do))
+    for point_D_Do, pointLabelOffset_D, labels in zip(
+        listPoints_D_Do, listPointLabelOffsets_D, point_labels
+    ):
+        if not labels:
+            continue
+        pointLabelAnchor_D_Do = point_D_Do + axes_scale * pointLabelOffset_D
+        point_label_text = "/".join(labels)
+        point_label = pv.Label(
+            text=point_label_text,
+            position=pointLabelAnchor_D_Do,
+            size=_AXES_LABEL_FONT_SIZE,
+            name=f"point label {point_label_text}",
+        )
+        point_label.prop.color = "black"
+        point_label.prop.background_color = plotter.background_color
+        point_label.prop.background_opacity = 1.0
+        point_label.prop.set_font_file(str(_fonts.FONT_PATH))
+        plotter.add_actor(point_label)
+        label_entries.append((point_label, point_D_Do, pointLabelAnchor_D_Do))
+
+    # Track the labels the user has dragged by hand, along with the camera state at
+    # their last drag. The camera state holds the camera's position, focal point, view
+    # up direction, parallel scale, and view angle, which together cover every way the
+    # user can rotate, pan, or zoom the view. A camera's modified time can't stand in
+    # for this, because the renderer resets the camera's clipping range, and so marks it
+    # as modified, on every render.
+    renderer = plotter.renderer
+    assert plotter.iren is not None
+    interactor = plotter.iren.interactor
+    interactor_style = interactor.GetInteractorStyle()
+    dragged_label_ids: set[int] = set()
+    dragged_camera_state: tuple[float, ...] = ()
+    dragging_label_id: int | None = None
+    drag_offset_display = np.zeros(2, dtype=float)
+    drag_depth_display = 0.0
+
+    def get_camera_state() -> tuple[float, ...]:
+        """Returns the state of the renderer's active camera.
+
+        :return: A tuple of floats holding the camera's position, focal point, view up
+            direction, parallel scale, and view angle.
+        """
+        camera = renderer.GetActiveCamera()
+        return (
+            *camera.GetPosition(),
+            *camera.GetFocalPoint(),
+            *camera.GetViewUp(),
+            camera.GetParallelScale(),
+            camera.GetViewAngle(),
+        )
+
+    def get_display_point(point_D_Do: np.ndarray) -> np.ndarray:
+        """Returns the display coordinates of a point.
+
+        :param point_D_Do: A (3,) ndarray of floats representing the point's position
+            (in diagram axes, relative to the diagram origin).
+        :return: A (3,) ndarray of floats holding the point's x and y display
+            coordinates, in pixels, and its depth, which ranges from 0.0 at the near
+            clipping plane to 1.0 at the far clipping plane.
+        """
+        renderer.SetWorldPoint(*point_D_Do, 1.0)
+        renderer.WorldToDisplay()
+        return np.array(renderer.GetDisplayPoint(), dtype=float)
+
+    # Before every render, justify each label so that its text extends away from the
+    # point it labels on screen. A label anchored at its default bottom left corner
+    # always extends right and up, so the label of an arrow pointing left or down runs
+    # back over its own arrow and into its neighbors' labels. Rechecking before every
+    # render keeps the justification right as the camera moves or the window resizes.
+    # Dragged labels are left where the user put them until the camera moves, and then
+    # they return to their automatic placement.
+
+    def justify_labels(caller: object, event: str) -> None:
+        """Justifies each label away from the point it labels, on screen.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        # Compare the camera states within a tolerance, because the screenshot that
+        # PyVista takes as the window closes renders with a view angle that differs from
+        # the stored one by roundoff, which would otherwise count as a camera move and
+        # return the dragged labels just before the final image is captured.
+        if dragged_label_ids and not np.allclose(
+            get_camera_state(), dragged_camera_state
+        ):
+            for dragged_label_id in dragged_label_ids:
+                label, _, anchor_D_Do = label_entries[dragged_label_id]
+                label.position = anchor_D_Do
+            dragged_label_ids.clear()
+
+        for label_id, (label, awayFrom_D_Do, anchor_D_Do) in enumerate(label_entries):
+            if label_id in dragged_label_ids:
+                continue
+            away_from_display = get_display_point(awayFrom_D_Do)[:2]
+            anchor_display = get_display_point(anchor_D_Do)[:2]
+
+            # Normalize the label's on screen direction. A label whose anchor lies
+            # almost straight in front of or behind the point it labels, as seen by the
+            # camera, has no meaningful on screen direction, so it is centered on its
+            # anchor.
+            direction_display = anchor_display - away_from_display
+            length_display = float(np.linalg.norm(direction_display))
+            if length_display > 0.0:
+                direction_display /= length_display
+
+            if direction_display[0] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_horizontal = "left"
+            elif direction_display[0] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_horizontal = "right"
+            else:
+                label.prop.justification_horizontal = "center"
+
+            if direction_display[1] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_vertical = "bottom"
+            elif direction_display[1] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_vertical = "top"
+            else:
+                label.prop.justification_vertical = "center"
+
+    renderer.AddObserver("StartEvent", justify_labels)
+
+    # Let the user drag labels with the left mouse button. PyVista's interactor style
+    # already observes left button presses and releases, where it starts and stops
+    # rotating the camera, so pressing on a label still arms a rotation. The rotation
+    # itself happens as the mouse moves, and observing mouse moves here stops the style
+    # from handling them itself. So each mouse move is passed on to the style unless a
+    # label is being dragged, which keeps the camera still during a drag.
+    def start_label_drag(caller: object, event: str) -> None:
+        """Starts dragging the label under the mouse, if there is one.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragging_label_id, drag_offset_display, drag_depth_display
+        mouse_display = np.array(interactor.GetEventPosition(), dtype=float)
+
+        # Check the labels from last added to first, so a label drawn on top of another
+        # is the one picked. Each label's bounding box is relative to its anchor and
+        # already accounts for its justification.
+        for label_id in reversed(range(len(label_entries))):
+            label = label_entries[label_id][0]
+            anchor_display = get_display_point(np.array(label.position, dtype=float))
+            bounding_box = [0.0, 0.0, 0.0, 0.0]
+            label.GetBoundingBox(renderer, bounding_box)
+            if (
+                anchor_display[0] + bounding_box[0]
+                <= mouse_display[0]
+                <= anchor_display[0] + bounding_box[1]
+                and anchor_display[1] + bounding_box[2]
+                <= mouse_display[1]
+                <= anchor_display[1] + bounding_box[3]
+            ):
+                dragging_label_id = label_id
+                drag_offset_display = anchor_display[:2] - mouse_display
+                drag_depth_display = float(anchor_display[2])
+                return
+
+    def drag_label(caller: object, event: str) -> None:
+        """Moves the dragged label with the mouse, or passes the mouse move on to the
+        interactor style when no label is being dragged.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragged_camera_state
+        if dragging_label_id is None:
+            interactor_style.OnMouseMove()
+            return
+
+        # Move the label's anchor to follow the mouse, keeping the anchor's depth so the
+        # label stays attached to the scene if the window is resized.
+        mouse_display = np.array(interactor.GetEventPosition(), dtype=float)
+        target_display = mouse_display + drag_offset_display
+        renderer.SetDisplayPoint(*target_display, drag_depth_display)
+        renderer.DisplayToWorld()
+        homogeneousAnchor_D_Do = renderer.GetWorldPoint()
+        label = label_entries[dragging_label_id][0]
+        label.position = (
+            np.array(homogeneousAnchor_D_Do[:3], dtype=float)
+            / homogeneousAnchor_D_Do[3]
+        )
+        dragged_label_ids.add(dragging_label_id)
+        dragged_camera_state = get_camera_state()
+        interactor.Render()
+
+    def stop_label_drag(caller: object, event: str) -> None:
+        """Stops dragging the dragged label, if there is one.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragging_label_id
+        dragging_label_id = None
+
+    interactor_style.AddObserver("LeftButtonPressEvent", start_label_drag)
+    interactor_style.AddObserver("MouseMoveEvent", drag_label)
+    interactor_style.AddObserver("LeftButtonReleaseEvent", stop_label_drag)
+
+
+def _add_arrow_tip(
+    plotter: pv.Plotter,
+    tipBase_D_Do: np.ndarray,
+    tipDirection_D: np.ndarray,
+    length: float,
+    radius: float,
+    color: str,
+) -> None:
+    """Adds an arrow's tip to a Plotter as an outlined cone.
+
+    The cone's faces are unlit and match the background, so the tip reads as an outline
+    while still hiding what is behind it. The faces are pushed slightly away from the
+    camera in the depth buffer, so they don't cover half of the width of the outline.
+    That push only takes effect while VTK's coincident topology resolution mode is set
+    to polygon offset, which add_axes_and_points turns on for its Plotter's renders.
+
+    :param plotter: The Plotter to add the tip to.
+    :param tipBase_D_Do: A (3,) ndarray of floats representing the position of the
+        center of the tip's base (in diagram axes, relative to the diagram origin). The
+        units are in meters.
+    :param tipDirection_D: A (3,) ndarray of floats representing the unit vector (in
+        diagram axes) along which the tip points.
+    :param length: The tip's length, from its base to its point. The units are in
+        meters.
+    :param radius: The radius of the tip's base. The units are in meters.
+    :param color: The color of the tip's outline.
+    :return: None
+    """
+    tip = pv.Cone(
+        center=tipBase_D_Do + 0.5 * length * tipDirection_D,
+        direction=tipDirection_D,
+        height=length,
+        radius=radius,
+        resolution=_AXES_TIP_RESOLUTION,
+    )
+    plotter.add_silhouette(
+        tip,
+        color=color,
+        line_width=_AXES_LINE_WIDTH,
+        feature_angle=_AXES_TIP_FEATURE_ANGLE,
+    )
+
+    tip_fill_actor = plotter.add_mesh(
+        tip,
+        color=plotter.background_color,
+        lighting=False,
+    )
+    tip_fill_actor.mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(
+        _AXES_TIP_FILL_OFFSET_FACTOR, _AXES_TIP_FILL_OFFSET_UNITS
+    )
 
 
 def get_panel_surfaces(

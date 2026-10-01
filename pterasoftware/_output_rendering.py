@@ -1649,7 +1649,7 @@ def show_diagram(
     quality: float,
 ) -> None:
     """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
-    WebP, and then closes all Plotters.
+    WebP, and then closes it.
 
     The window stays open until it is closed, so the view can be oriented and the labels
     dragged first. The diagram is saved after the window is closed, which keeps the
@@ -1693,7 +1693,7 @@ def show_diagram(
             method=WEBP_METHOD,
         )
 
-    pv.close_all()
+    plotter.close()
 
 
 def add_vortices(

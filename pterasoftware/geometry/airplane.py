@@ -961,8 +961,8 @@ class Airplane:
                 method=0,
             )
 
-        # Close all the plotters.
-        pv.close_all()
+        # Close the Plotter.
+        plotter.close()
 
     # Coverage ignores this method because it is deprecated in favor of diagram.
     def get_plottable_data(  # pragma: no cover

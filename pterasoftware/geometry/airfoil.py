@@ -5,12 +5,19 @@ from __future__ import annotations
 import importlib.resources
 import warnings
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pyvista as pv
 
-from .. import _functions, _parameter_validation, _transformations
+from .. import (
+    _functions,
+    _output_rendering,
+    _parameter_validation,
+    _transformations,
+)
 
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
 # annotated as Any so the deprecated parameter can carry it as a default while keeping
@@ -90,7 +97,8 @@ class Airfoil:
             parameter is unset.
         :return: None
         """
-        if outline_A_lp is not _UNSET:
+        # Coverage ignores this branch because the outline_A_lp parameter is deprecated.
+        if outline_A_lp is not _UNSET:  # pragma: no cover
             warnings.warn(
                 "The outline_A_lp parameter is deprecated and will be removed in "
                 "v6.0.0. Use outline_A_Lp instead.",
@@ -196,8 +204,9 @@ class Airfoil:
         return self._mcl_A_Lp
 
     # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated in favor of outline_A_Lp.
     @property
-    def outline_A_lp(self) -> np.ndarray:
+    def outline_A_lp(self) -> np.ndarray:  # pragma: no cover
         """A deprecated alias for outline_A_Lp.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
@@ -214,8 +223,9 @@ class Airfoil:
         )
         return self._outline_A_Lp
 
+    # Coverage ignores this property because it is deprecated in favor of mcl_A_Lp.
     @property
-    def mcl_A_lp(self) -> np.ndarray | None:
+    def mcl_A_lp(self) -> np.ndarray | None:  # pragma: no cover
         """A deprecated alias for mcl_A_Lp.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
@@ -398,11 +408,109 @@ class Airfoil:
             flapped_airfoil._mcl_A_Lp.flags.writeable = False
         return flapped_airfoil
 
-    def draw(self) -> None:
-        """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
+    def diagram(
+        self,
+        *,
+        show_mcl: bool | np.bool = True,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this Airfoil's outline and mean camber line (MCL),
+        along with its axes.
+
+        The diagram is drawn in airfoil axes, relative to the leading point, and viewed
+        along the negative z direction with parallel projection, so the Airfoil appears
+        with its leading point on the left and its upper line on top. It shows the
+        airfoil axes at the leading point. The points are normalized by the chord and
+        are unitless.
+
+        :param show_mcl: Determines whether to draw the MCL. Can be a bool or a numpy
+            bool and will be converted internally to a bool. The default is True.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        plotter = pv.Plotter()
+
+        # Draw the diagram in airfoil axes, relative to the leading point, placing each
+        # point in the diagram's xy plane.
+        airfoilOutline_D_Do = np.column_stack(
+            [
+                self._outline_A_Lp,
+                np.zeros(self._outline_A_Lp.shape[0], dtype=float),
+            ]
+        )
+        airfoilMcl_D_Do = None
+        if show_mcl:
+            assert self._mcl_A_Lp is not None
+            airfoilMcl_D_Do = np.column_stack(
+                [self._mcl_A_Lp, np.zeros(self._mcl_A_Lp.shape[0], dtype=float)]
+            )
+        _output_rendering.add_airfoil_lines(
+            plotter, airfoilOutline_D_Do, airfoilMcl_D_Do
+        )
+
+        # Size the axes as a fraction of the chord, which is one because the points are
+        # normalized by it.
+        _output_rendering.add_axes_and_points(
+            plotter,
+            axes_ids=["A"],
+            point_ids=["Lp"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=0.5,
+            two_dimensional_axes_ids=["A"],
+            math_labels=math_labels,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos="xy", save=save, path=path, quality=quality
+        )
+
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def draw(self) -> None:  # pragma: no cover
+        """A deprecated method that plots this Airfoil's outlines and mean camber line
+        (MCL) using PyPlot.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :return: None
         """
+        warnings.warn(
+            "The draw method is deprecated and will be removed in v6.0.0. Use diagram "
+            "instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         outlineX_A_Lp = self._outline_A_Lp[:, 0]
         outlineY_A_Lp = self._outline_A_Lp[:, 1]
 
@@ -435,10 +543,15 @@ class Airfoil:
 
         plt.show()
 
-    def get_plottable_data(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self, show: bool | np.bool = False
     ) -> list[np.ndarray] | None:
-        """Returns plottable data for this Airfoil's outline and mean camber line.
+        """A deprecated method that returns plottable data for this Airfoil's outline
+        and mean camber line.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. Can be a bool or a numpy
             bool, and will be converted internally to a bool. If True, the method
@@ -447,6 +560,13 @@ class Airfoil:
         :return: A list of two ndarrays containing the outline and MCL data, or None if
             show is True.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

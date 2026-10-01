@@ -5,12 +5,13 @@ from __future__ import annotations
 import copy
 import warnings
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 import pyvista as pv
 import scipy.interpolate as sp_interp
 
-from .. import _panel, _parameter_validation, _transformations
+from .. import _output_rendering, _panel, _parameter_validation, _transformations
 from . import _meshing
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
@@ -1237,8 +1238,9 @@ class Wing:
         self._projected_area = projected_area
         return projected_area
 
+    # Coverage ignores this property because it is deprecated.
     @property
-    def wetted_area(self) -> None | float:
+    def wetted_area(self) -> None | float:  # pragma: no cover
         """A deprecated property that returns the total area of the Wing's Panels.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0. The
@@ -1545,11 +1547,179 @@ class Wing:
         # Generate the Wing's mesh, which populates the Panels attribute.
         _meshing.mesh_wing(self)
 
-    def get_plottable_data(
+    def diagram(
+        self,
+        *,
+        show_wing_cross_section_axes_and_points: bool | np.bool = True,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this Wing's Panels, along with its axes and points.
+
+        The diagram is drawn in geometry axes, relative to the CG. It shows the geometry
+        axes at the CG, the wing axes at the leading edge root point, and this Wing's
+        Panels. The units are in meters.
+
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is True.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw this Wing's Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one (such as "Cppr3c2"). Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        if self.symmetry_type is None or self.panels is None:
+            raise ValueError(
+                "A Wing can only be diagrammed after its parent Airplane has set its "
+                "symmetry type and meshed it."
+            )
+
+        # Draw the diagram in geometry axes, relative to the CG.
+        T_pas_G_Cg_to_D_Do = np.eye(4, dtype=float)
+        _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
+        assert _T_pas_Wn_Ler_to_G_Cg is not None
+
+        plotter = pv.Plotter()
+
+        if show_airfoils:
+            _output_rendering.add_airfoils(
+                plotter, self, T_pas_G_Cg_to_D_Do, show_mcls=show_mcls
+            )
+        _output_rendering.add_panels(plotter, self, T_pas_G_Cg_to_D_Do)
+
+        # Draw all the axes and points with one call, so that the ones that coincide
+        # merge. The IDs of each WingCrossSection's axes, points, and Airfoil's axes are
+        # numbered from one.
+        axes_ids = ["G", "Wn"]
+        point_ids = ["Cg", "Ler"]
+        transformations = [T_pas_G_Cg_to_D_Do, _T_pas_Wn_Ler_to_G_Cg]
+        wing_cross_section_nums = range(1, len(self.wing_cross_sections) + 1)
+        if show_wing_cross_section_axes_and_points:
+            axes_ids += [f"Wcs{num}" for num in wing_cross_section_nums]
+            point_ids += [f"Lp{num}" for num in wing_cross_section_nums]
+            transformations += self.children_T_pas_Wcs_Lp_to_G_Cg
+        airfoil_axes_ids = [f"AWcs{num}" for num in wing_cross_section_nums]
+        if show_airfoil_axes_and_points:
+            axes_ids += airfoil_axes_ids
+            point_ids += [f"Lp{num}" for num in wing_cross_section_nums]
+            transformations += [
+                _output_rendering.get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_G_Cg)
+                for T_pas_Wcs_Lp_to_G_Cg in self.children_T_pas_Wcs_Lp_to_G_Cg
+            ]
+
+        collocation_point_ids: list[str] = []
+        listCollocationPoints_D_Do: list[np.ndarray] = []
+        listWingBasisDirections_D: list[np.ndarray] = []
+        listCrossDirections_D: list[np.ndarray] = []
+        if show_collocation_points:
+            (
+                collocation_point_ids,
+                listCollocationPoints_D_Do,
+                listWingBasisDirections_D,
+                listCrossDirections_D,
+            ) = _output_rendering.get_collocation_points(self, "", T_pas_G_Cg_to_D_Do)
+
+        # Size the axes relative to this Wing's largest chord, so they stay legible
+        # regardless of the geometry's absolute size.
+        _output_rendering.add_axes_and_points(
+            plotter,
+            axes_ids=axes_ids,
+            point_ids=point_ids,
+            transformations=transformations,
+            axes_scale=0.5
+            * max(
+                wing_cross_section.chord
+                for wing_cross_section in self.wing_cross_sections
+            ),
+            extra_point_ids=collocation_point_ids,
+            listExtraPoints_D_Do=listCollocationPoints_D_Do,
+            listExtraPointBasisDirections_D=listWingBasisDirections_D,
+            listExtraPointCrossDirections_D=listCrossDirections_D,
+            label_extra_points=label_collocation_points,
+            two_dimensional_axes_ids=airfoil_axes_ids,
+            math_labels=math_labels,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
+
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self, show: bool | np.bool = False
     ) -> list[list[np.ndarray]] | None:
-        """Returns plottable data for this Wing's Airfoils' outlines and mean camber
-        lines.
+        """A deprecated method that returns plottable data for this Wing's Airfoils'
+        outlines and mean camber lines.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
@@ -1562,6 +1732,13 @@ class Wing:
             in wing axes, relative to the leading edge root point. The units are in
             meters.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

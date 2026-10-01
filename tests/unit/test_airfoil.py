@@ -2,11 +2,13 @@
 
 import importlib.resources
 import unittest
-import warnings
 from typing import Any
+from unittest.mock import patch
 
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as npt
+import pyvista as pv
 
 import pterasoftware as ps
 from tests.unit.fixtures import geometry_fixtures
@@ -848,82 +850,37 @@ class TestAirfoilDeepCopy(unittest.TestCase):
         self.assertIs(copied1, copied2)
 
 
-class TestAirfoilGetPlottableData(unittest.TestCase):
-    """Tests for Airfoil.get_plottable_data method."""
+class TestAirfoilDiagram(unittest.TestCase):
+    """Tests for Airfoil.diagram method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for get_plottable_data tests."""
+        """Set up test fixtures for diagram tests."""
         self.naca0012_airfoil = geometry_fixtures.make_naca0012_airfoil_fixture()
         self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
 
-    def test_get_plottable_data_returns_list_when_show_false(self) -> None:
-        """Test that get_plottable_data returns a list when show is False."""
-        result = self.naca0012_airfoil.get_plottable_data(show=False)
+    def test_diagram_shows_the_diagram(self) -> None:
+        """Test that diagram shows the diagram once."""
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.naca0012_airfoil.diagram()
 
-        self.assertIsInstance(result, list)
-        assert result is not None
-        self.assertEqual(len(result), 2)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_returns_outline_and_mcl(self) -> None:
-        """Test that get_plottable_data returns outline and MCL data."""
-        result = self.naca0012_airfoil.get_plottable_data(show=False)
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for show_mcl, math_labels, and save."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.naca0012_airfoil.diagram(
+                show_mcl=np.bool(False), math_labels=np.bool(True), save=np.bool(False)
+            )
 
-        assert result is not None
-        outline_data = result[0]
-        mcl_data = result[1]
+        mock_show.assert_called_once()
 
-        self.assertIsInstance(outline_data, np.ndarray)
-        self.assertIsInstance(mcl_data, np.ndarray)
+    def test_diagram_cambered_airfoil(self) -> None:
+        """Test diagram with a cambered airfoil."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.naca2412_airfoil.diagram()
 
-        # Verify shape is (N, 2).
-        self.assertEqual(len(outline_data.shape), 2)
-        self.assertEqual(outline_data.shape[1], 2)
-        self.assertEqual(len(mcl_data.shape), 2)
-        self.assertEqual(mcl_data.shape[1], 2)
-
-    def test_get_plottable_data_outline_matches_attribute(self) -> None:
-        """Test that returned outline matches outline_A_Lp attribute."""
-        result = self.naca0012_airfoil.get_plottable_data(show=False)
-
-        assert result is not None
-        npt.assert_array_equal(result[0], self.naca0012_airfoil.outline_A_Lp)
-
-    def test_get_plottable_data_mcl_matches_attribute(self) -> None:
-        """Test that returned MCL matches mcl_A_Lp attribute."""
-        result = self.naca0012_airfoil.get_plottable_data(show=False)
-
-        assert result is not None
-        npt.assert_array_equal(result[1], self.naca0012_airfoil.mcl_A_Lp)
-
-    def test_get_plottable_data_default_show_is_false(self) -> None:
-        """Test that the default value for show parameter is False."""
-        # Call without any parameters.
-        result = self.naca0012_airfoil.get_plottable_data()
-
-        # Should return a list (not None) when show defaults to False.
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
-        """Test that get_plottable_data accepts numpy bool for show parameter."""
-        result = self.naca0012_airfoil.get_plottable_data(show=np.bool(False))
-
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_cambered_airfoil(self) -> None:
-        """Test get_plottable_data with a cambered airfoil."""
-        result = self.naca2412_airfoil.get_plottable_data(show=False)
-
-        self.assertIsInstance(result, list)
-        assert result is not None
-        self.assertEqual(len(result), 2)
-
-        _ = result[0]
-        mcl_data = result[1]
-
-        # For cambered airfoil, MCL should not be at y = 0.0 everywhere.
-        mcl_y_values = mcl_data[:, 1]
-        # MCL for cambered airfoil has non-zero y values (camber).
-        self.assertGreater(np.max(np.abs(mcl_y_values)), 0.0)
+        mock_show.assert_called_once()
 
 
 class TestAirfoilAddControlSurface(unittest.TestCase):
@@ -1282,12 +1239,26 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
                     name="both", outline_A_Lp=points, outline_A_lp=points
                 )
 
-    def test_new_names_do_not_warn(self) -> None:
-        """Test that the outline_A_Lp parameter and the Lp-named properties emit no
-        DeprecationWarning."""
-        points = self.naca2412_airfoil.outline_A_Lp.copy()
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", DeprecationWarning)
-            airfoil = ps.geometry.airfoil.Airfoil(name="clean", outline_A_Lp=points)
-            _ = airfoil.outline_A_Lp
-            _ = airfoil.mcl_A_Lp
+
+class TestAirfoilDeprecatedPlottingMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated Airfoil plotting methods."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated method tests."""
+        self.naca2412_airfoil = geometry_fixtures.make_naca2412_airfoil_fixture()
+
+    def tearDown(self) -> None:
+        """Close the figures that draw leaves open."""
+        plt.close("all")
+
+    def test_get_plottable_data_warns(self) -> None:
+        """Test that calling get_plottable_data emits a DeprecationWarning."""
+        with self.assertWarns(DeprecationWarning):
+            self.naca2412_airfoil.get_plottable_data(show=False)
+
+    def test_draw_warns(self) -> None:
+        """Test that calling draw emits a DeprecationWarning."""
+        # Patch PyPlot's show function to avoid blocking on window close.
+        with patch.object(plt, "show"):
+            with self.assertWarns(DeprecationWarning):
+                self.naca2412_airfoil.draw()

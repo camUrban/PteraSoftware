@@ -333,7 +333,7 @@ def draw(
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
-            pv.close_all()
+            plotter.close()
             largest_width, largest_height = _output_rendering.get_largest_window_size()
             raise ValueError(
                 f"window_size {window_width} by {window_height} cannot be rendered "
@@ -660,8 +660,8 @@ def draw(
             method=_output_rendering.WEBP_METHOD,
         )
 
-    # Close all Plotters.
-    pv.close_all()
+    # Close the Plotter.
+    plotter.close()
 
 
 def animate(
@@ -876,7 +876,7 @@ def animate(
         render_window.Render()
         granted_width, granted_height = render_window.GetSize()
         if granted_width < window_width or granted_height < window_height:
-            pv.close_all()
+            plotter.close()
             largest_width, largest_height = _output_rendering.get_largest_window_size()
             raise ValueError(
                 f"window_size {window_width} by {window_height} cannot be rendered "
@@ -1435,8 +1435,8 @@ def animate(
     if animation_writer is not None:
         animation_writer.close()
 
-    # Close all the Plotters.
-    pv.close_all()
+    # Close the Plotter.
+    plotter.close()
 
 
 def plot_results_versus_time(

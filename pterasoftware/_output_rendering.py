@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import math
 import queue
+import re
 import threading
+from collections.abc import Sequence
 from pathlib import Path
-from typing import NamedTuple, cast
+from typing import TYPE_CHECKING, Literal, NamedTuple, cast
 
 import matplotlib.colors
 import numpy as np
@@ -19,13 +21,19 @@ from . import (
     _fonts,
     _logging,
     _mujoco_model,
+    _parameter_validation,
     _private_access,
     _transformations,
-    free_flight_unsteady_ring_vortex_lattice_method,
     geometry,
 )
 from . import operating_point as operating_point_mod
-from . import problems, unsteady_ring_vortex_lattice_method
+from . import problems
+
+if TYPE_CHECKING:
+    from . import (
+        free_flight_unsteady_ring_vortex_lattice_method,
+        unsteady_ring_vortex_lattice_method,
+    )
 
 _logger = _logging.get_logger("output")
 
@@ -89,6 +97,112 @@ TEXT_FONT_SIZE = 10
 # much room as _BAR_POSITION_X allows.
 _TEXT_SPEED_POSITION = (0.01, 0.080)
 _TEXT_DROPPED_FRAMES_POSITION = (0.01, 0.045)
+
+# Define the colors of the x, y, and z basis direction arrows drawn by
+# add_axes_and_points, the arrows' proportions as fractions of their length, the number
+# of sides on their tips, the width of their lines, the size of the dots marking their
+# origins, and the length of each line in the crosses marking points without axes, as a
+# fraction of the arrows' length. The line width, font size, and dot size are in pixels.
+_AXES_COLORS = ("red", "green", "blue")
+_AXES_TIP_LENGTH = 0.2
+_AXES_TIP_RADIUS = 0.1
+_AXES_TIP_RESOLUTION = 20
+_AXES_LINE_WIDTH = 2.0
+_AXES_LABEL_FONT_SIZE = 15
+_AXES_POINT_SIZE = 10.0
+_AXES_CROSS_SIZE = 0.1
+
+# Define the font size, in pixels, of the axes and point labels when they are written as
+# math. It is larger than _AXES_LABEL_FONT_SIZE because the math font's glyphs render
+# smaller than the monospaced font's at the same size, and its subscripts and
+# superscripts are smaller still.
+_AXES_MATH_LABEL_FONT_SIZE = 20
+
+# Define how the axes and point IDs are written as math. Each ID is a run of
+# abbreviations, each followed by an optional number or, for a Panel point, by its row
+# and column (such as "r3c2"). A point ID's first abbreviation names the point, which is
+# written in math with the name it maps to here. Every other abbreviation in a point ID,
+# and every abbreviation in an axes ID, must be one of the axes and owner abbreviations.
+_MATH_POINT_NAMES = {
+    "Cg": "CG",
+    "Cpp": "CPP",
+    "Eo": "EO",
+    "Ler": "LER",
+    "Lp": "LP",
+    "Lpp": "LPP",
+}
+_MATH_AXES_AND_OWNER_ABBREVIATIONS = ("A", "E", "G", "P", "Wcs", "Wcsp", "Wn")
+_ID_TOKEN_PATTERN = re.compile(r"([A-Z][a-z]*?)(r\d+c\d+|\d*)(?=[A-Z]|$)")
+
+# Define the angle, in degrees, between neighboring faces of an arrow's tip above which
+# their shared edge is always outlined, not just where it is on the tip's silhouette.
+# The rim between the tip's base and its sides is well above this angle, so it stays
+# outlined even when the base faces the camera, while the edges between the tip's side
+# faces are well below it.
+_AXES_TIP_FEATURE_ANGLE = 60.0
+
+# Define the polygon offset factor and units that push each arrow tip's filled faces
+# slightly away from the camera in the depth buffer, so they don't cover half of the
+# width of the outline drawn along their edges. The factor scales with the faces' depth
+# slope and the units are in the depth buffer's smallest resolvable steps.
+_AXES_TIP_FILL_OFFSET_FACTOR = 2.0
+_AXES_TIP_FILL_OFFSET_UNITS = 8.0
+
+# Define how far each arrow's label is anchored beyond its tip, along the arrow's
+# direction, as a fraction of the arrows' length.
+_AXES_ARROW_LABEL_OFFSET = 0.15
+
+# Define how far each point's label is anchored from its point, as a fraction of the
+# arrows' length, for points with axes and for points marked with crosses. For a point
+# with axes, the anchor lies along the negative sum of its axes' basis directions, in
+# the octant that none of that axes set's arrows enter.
+_AXES_POINT_LABEL_OFFSET = 0.3
+_AXES_CROSS_LABEL_OFFSET = 0.15
+
+# Define the fraction of an arrow's on screen length that its horizontal or vertical
+# extent must exceed for its label to be justified away from it along that direction,
+# rather than centered on its tip. This value, the sine of 22.5 degrees, splits the
+# screen directions into eight equal sectors.
+_AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
+
+# Define the background color of the diagrams, the colors of the Airfoil outlines, mean
+# camber lines, and Panel edges drawn by add_airfoil and add_panels, and the width of
+# their lines, which is in pixels.
+_DIAGRAM_BACKGROUND_COLOR = "white"
+_DIAGRAM_AIRFOIL_OUTLINE_COLOR = "black"
+_DIAGRAM_AIRFOIL_MCL_COLOR = "magenta"
+_DIAGRAM_PANEL_COLOR = "black"
+_DIAGRAM_LINE_WIDTH = 1.0
+
+# Define the style of the vortices drawn by add_vortices: the colors of the bound
+# vortices and the wake vortices, both when drawn exactly and when simplified, their
+# line width in pixels, how far their trailing legs extend downstream past the vortices'
+# bounding box, how much of that overhang at the end of each trailing leg is dashed, and
+# the length of each dash and each gap. The last four are fractions of the largest
+# chord.
+_VORTEX_COLOR = "darkorange"
+_VORTEX_SIMPLIFIED_COLOR = "teal"
+_VORTEX_WAKE_COLOR = "royalblue"
+_VORTEX_WAKE_SIMPLIFIED_COLOR = "mediumpurple"
+_VORTEX_LINE_WIDTH = 1.0
+_VORTEX_TRAILING_LEG_OVERHANG = 1.0
+_VORTEX_TRAILING_LEG_DASHED_LENGTH = 0.5
+_VORTEX_DASH_LENGTH = 0.05
+_VORTEX_GAP_LENGTH = 0.05
+
+# Define how add_vortices simplifies the vortices when asked to: the fraction of the way
+# each ring vortex's corners move toward its center, and each horseshoe vortex's finite
+# leg's ends move toward that leg's midpoint, the radius of each rounded corner, as a
+# fraction of the shorter of the corner's two legs, and the number of points along each
+# rounded corner.
+_VORTEX_SIMPLIFIED_SHRINK = 0.1
+_VORTEX_SIMPLIFIED_CORNER_RADIUS = 0.2
+_VORTEX_SIMPLIFIED_CORNER_NUM_POINTS = 8
+
+# Define the radius of each simplified vortex's vorticity arrows, as a fraction of that
+# vortex's shortest bound leg, and the number of points along each arrow's half circle.
+_VORTEX_VORTICITY_ARROW_RADIUS = 0.15
+_VORTEX_VORTICITY_ARROW_NUM_POINTS = 24
 
 # Define the render window size that every font size and line width in the
 # visualizations is tuned against.
@@ -309,6 +423,1809 @@ def add_playback_overlays(
             render=False,
         )
         overlay.prop.set_font_file(str(_fonts.FONT_PATH))
+
+
+def _split_id(diagram_id: str) -> list[tuple[str, str]]:
+    """Splits an axes or point ID into its abbreviations and their suffixes.
+
+    :param diagram_id: The axes or point ID to split (such as "Cppr3c2Wn1P2").
+    :return: A list of tuples of two strs, one per abbreviation in order, each holding
+        the abbreviation and its suffix, which is either a number, a row and column
+        (such as "r3c2"), or an empty str (such as [("Cpp", "r3c2"), ("Wn", "1"), ("P",
+        "2")]).
+    """
+    # The pattern skips any characters it can't match, so check that the tokens it found
+    # rebuild the whole ID.
+    tokens: list[tuple[str, str]] = _ID_TOKEN_PATTERN.findall(diagram_id)
+    rebuilt_id = "".join(abbreviation + suffix for abbreviation, suffix in tokens)
+    if not tokens or rebuilt_id != diagram_id:
+        raise ValueError(f'"{diagram_id}" is not a valid axes or point ID.')
+    return tokens
+
+
+def get_math_axes_label(axes_id: str, component_letter: str) -> str:
+    """Returns the math label of one of an axes set's basis direction arrows.
+
+    The basis direction is written as a unit vector, in bold italic since it is a
+    vector, whose superscript lists the axes ID's abbreviations along with their numbers
+    (such as "\\hat{\\mathbfit{x}}^{\\mathrm{Wcs}1, \\mathrm{Wn}2}" for "Wcs1Wn2X").
+
+    :param axes_id: The axes set's ID (such as "Wcs1Wn2").
+    :param component_letter: The basis direction's letter, which is "X", "Y", or "Z".
+    :return: The label as math, without the dollar signs that delimit it.
+    """
+    tokens = _split_id(axes_id)
+    for abbreviation, suffix in tokens:
+        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+            suffix == "" or suffix.isdigit()
+        ):
+            raise ValueError(f'"{axes_id}" is not a valid axes ID.')
+    superscript = ", ".join(
+        rf"\mathrm{{{abbreviation}}}{suffix}" for abbreviation, suffix in tokens
+    )
+    return rf"\hat{{\mathbfit{{{component_letter.lower()}}}}}^{{{superscript}}}"
+
+
+def get_math_point_label(point_id: str) -> str:
+    """Returns the math label of a point.
+
+    The point is written with its name in capitals, followed by its own number, if it
+    has one. A subscript lists the point ID's remaining abbreviations along with their
+    numbers, which name what the point belongs to, and a Panel point's row and column
+    follow in parentheses (such as "\\mathrm{CPP}_{\\mathrm{Wn}1, \\mathrm{P}2}(3, 2)"
+    for "Cppr3c2Wn1P2").
+
+    :param point_id: The point's ID (such as "Cppr3c2Wn1P2").
+    :return: The label as math, without the dollar signs that delimit it.
+    """
+    tokens = _split_id(point_id)
+    name_abbreviation, name_suffix = tokens[0]
+    if name_abbreviation not in _MATH_POINT_NAMES:
+        raise ValueError(f'"{point_id}" is not a valid point ID.')
+    for abbreviation, suffix in tokens[1:]:
+        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+            suffix == "" or suffix.isdigit()
+        ):
+            raise ValueError(f'"{point_id}" is not a valid point ID.')
+
+    label = rf"\mathrm{{{_MATH_POINT_NAMES[name_abbreviation]}}}"
+    row_and_column = ""
+    if name_suffix.startswith("r"):
+        row, column = name_suffix[1:].split("c")
+        row_and_column = f"({row}, {column})"
+    else:
+        label += name_suffix
+    if len(tokens) > 1:
+        subscript = ", ".join(
+            rf"\mathrm{{{abbreviation}}}{suffix}" for abbreviation, suffix in tokens[1:]
+        )
+        label += f"_{{{subscript}}}"
+    return label + row_and_column
+
+
+def add_axes_and_points(
+    plotter: pv.Plotter,
+    axes_ids: Sequence[str],
+    point_ids: Sequence[str],
+    transformations: Sequence[np.ndarray],
+    axes_scale: float,
+    extra_point_ids: Sequence[str] = (),
+    listExtraPoints_D_Do: Sequence[np.ndarray] = (),
+    listExtraPointBasisDirections_D: Sequence[np.ndarray] = (),
+    listExtraPointCrossDirections_D: Sequence[np.ndarray] = (),
+    label_extra_points: bool = True,
+    two_dimensional_axes_ids: Sequence[str] = (),
+    math_labels: bool = False,
+) -> None:
+    """Adds labeled axes and their labeled origin points to a Plotter, along with any
+    extra labeled points that have no axes of their own, merging those that coincide.
+
+    Each axes set is drawn as three (or, if it's two dimensional, two) basis direction
+    arrows starting at its point, which is marked with a dot. The arrow tips are labeled
+    with the axes' ID and the basis direction's letter (such as "WnX"), and the points
+    are labeled with their IDs (such as "Ler"). Each extra point is marked with a small
+    cross, without arrows, whose two arms lie along its given cross directions. Points
+    at the same position share one label that joins their IDs with slashes (such as
+    "Cg/Ler"), and are marked with a dot if any of them has axes. Likewise, arrows with
+    the same start and direction are drawn once, with one label that joins their labels
+    with slashes (such as "GX/WnX"). The arrows are compared one basis direction at a
+    time, so two axes sets that share a point and differ by a rotation about one of
+    their basis directions still merge that direction's arrows.
+
+    Each label is placed automatically so that its text extends away from what it
+    labels, and the placement is updated before every render. In an interactive window,
+    a label can also be dragged with the left mouse button to fix any remaining overlaps
+    by hand. A dragged label keeps its position until the camera next moves, when every
+    dragged label returns to its automatic placement. Because closing the window does
+    not move the camera, a screenshot taken after the window closes keeps the dragged
+    positions.
+
+    :param plotter: The Plotter to add the axes and points to.
+    :param axes_ids: The IDs of the axes sets to draw, one per axes set.
+    :param point_ids: The IDs of the points each axes set is drawn at, one per axes set.
+    :param transformations: A sequence of (4,4) ndarrays of floats, one per axes set.
+        Each is a passive transformation matrix which maps in homogeneous coordinates
+        from that axes set, relative to its point, to diagram axes, relative to the
+        diagram origin. Their first three columns hold the axes' basis directions (in
+        diagram axes) and their last column holds the point's position (in diagram axes,
+        relative to the diagram origin).
+    :param axes_scale: The length of each arrow. The units are in meters.
+    :param extra_point_ids: The IDs of the extra points to draw without arrows, one per
+        extra point. The default is an empty sequence.
+    :param listExtraPoints_D_Do: A sequence of (3,) ndarrays of floats, one per extra
+        point, holding each extra point's position (in diagram axes, relative to the
+        diagram origin). The units are in meters. The default is an empty sequence.
+    :param listExtraPointBasisDirections_D: A sequence of (3,3) ndarrays of floats, one
+        per extra point, whose columns hold the basis directions (in diagram axes) of
+        the axes that extra point's label offset is defined in. The default is an empty
+        sequence.
+    :param listExtraPointCrossDirections_D: A sequence of (2,3) ndarrays of floats, one
+        per extra point, whose rows hold the unit vectors (in diagram axes) along which
+        that extra point's cross's two arms lie. The default is an empty sequence.
+    :param label_extra_points: Determines whether the extra points are labeled. If
+        False, each extra point is still marked with its cross, but its ID is left out
+        of every label. The default is True.
+    :param two_dimensional_axes_ids: The IDs of the axes sets that are two dimensional,
+        each of which must also be in axes_ids. Only the x and y basis directions of
+        these axes sets are drawn. The default is an empty sequence.
+    :param math_labels: Determines whether to write the labels as math, set in the STIX
+        font, as get_math_axes_label and get_math_point_label describe. If False, the
+        labels are the plain IDs, set in Liberation Mono. The default is False.
+    :return: None
+    """
+    # Set the background before labels and arrow-tip fills copy its color.
+    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+
+    # Each axes set's point has its label offset along the negative sum of that axes
+    # set's basis directions, which is the unit vector (-1, -1, -1) / sqrt(3) in that
+    # axes set, so the label sits in the octant that none of its arrows enter. Each
+    # extra point has no arrows there, so its label is instead offset a shorter distance
+    # along the unit vector (-1, 1, 1) / sqrt(3) in its axes. That direction differs
+    # from the default camera's view direction, so the offset stays visible on screen.
+    # Each offset is stored as a fraction of the arrows' length.
+    all_point_ids = [*point_ids, *extra_point_ids]
+    listAllPoints_D_Do = [
+        *(transformation[:3, 3] for transformation in transformations),
+        *listExtraPoints_D_Do,
+    ]
+    listAllLabelOffsets_D = [
+        *(
+            _AXES_POINT_LABEL_OFFSET
+            * transformation[:3, :3]
+            @ np.array([-1.0, -1.0, -1.0])
+            / math.sqrt(3.0)
+            for transformation in transformations
+        ),
+        *(
+            _AXES_CROSS_LABEL_OFFSET
+            * extraPointBasisDirections_D
+            @ np.array([-1.0, 1.0, 1.0])
+            / math.sqrt(3.0)
+            for extraPointBasisDirections_D in listExtraPointBasisDirections_D
+        ),
+    ]
+    all_has_axes = [True] * len(point_ids) + [False] * len(extra_point_ids)
+    all_is_labeled = [True] * len(point_ids) + [label_extra_points] * len(
+        extra_point_ids
+    )
+    listAllCrossDirections_D: list[np.ndarray | None] = [
+        *([None] * len(point_ids)),
+        *listExtraPointCrossDirections_D,
+    ]
+
+    # Merge the points that share a position, so each position gets one label, offset
+    # like the first point merged into it. Each merged point also keeps whether any
+    # point merged into it has axes, which decides its marker, and the cross directions
+    # of the first extra point merged into it, which orient its cross. A merged point
+    # whose points are all unlabeled keeps an empty list of labels, and gets no label.
+    listPoints_D_Do: list[np.ndarray] = []
+    listPointLabelOffsets_D: list[np.ndarray] = []
+    point_labels: list[list[str]] = []
+    point_has_axes: list[bool] = []
+    listPointCrossDirections_D: list[np.ndarray | None] = []
+    for (
+        point_id,
+        thisPoint_D_Do,
+        labelOffset_D,
+        has_axes,
+        is_labeled,
+        crossDirections_D,
+    ) in zip(
+        all_point_ids,
+        listAllPoints_D_Do,
+        listAllLabelOffsets_D,
+        all_has_axes,
+        all_is_labeled,
+        listAllCrossDirections_D,
+    ):
+        matches = [
+            match_id
+            for match_id, mergedPoint_D_Do in enumerate(listPoints_D_Do)
+            if np.allclose(mergedPoint_D_Do, thisPoint_D_Do)
+        ]
+        if not matches:
+            listPoints_D_Do.append(thisPoint_D_Do)
+            listPointLabelOffsets_D.append(labelOffset_D)
+            point_labels.append([point_id] if is_labeled else [])
+            point_has_axes.append(has_axes)
+            listPointCrossDirections_D.append(crossDirections_D)
+            continue
+        point_has_axes[matches[0]] = point_has_axes[matches[0]] or has_axes
+        if listPointCrossDirections_D[matches[0]] is None:
+            listPointCrossDirections_D[matches[0]] = crossDirections_D
+        if is_labeled and point_id not in point_labels[matches[0]]:
+            point_labels[matches[0]].append(point_id)
+
+    # Merge the arrows that share a start and a direction, so each arrow is drawn and
+    # labeled once. Each merged arrow takes the color of the first arrow merged into it.
+    listArrowStarts_D_Do: list[np.ndarray] = []
+    listArrowDirections_D: list[np.ndarray] = []
+    arrow_colors: list[str] = []
+    arrow_labels: list[list[str]] = []
+    for axes_id, transformation in zip(axes_ids, transformations):
+        thisArrowStart_D_Do = transformation[:3, 3]
+        component_letters = (
+            ("X", "Y") if axes_id in two_dimensional_axes_ids else ("X", "Y", "Z")
+        )
+        for component_id, (component_letter, color) in enumerate(
+            zip(component_letters, _AXES_COLORS)
+        ):
+            thisArrowDirection_D = transformation[:3, component_id]
+            label = f"{axes_id}{component_letter}"
+            matches = [
+                match_id
+                for match_id, (mergedArrowStart_D_Do, mergedArrowDirection_D) in (
+                    enumerate(zip(listArrowStarts_D_Do, listArrowDirections_D))
+                )
+                if np.allclose(mergedArrowStart_D_Do, thisArrowStart_D_Do)
+                and np.allclose(mergedArrowDirection_D, thisArrowDirection_D)
+            ]
+            if not matches:
+                listArrowStarts_D_Do.append(thisArrowStart_D_Do)
+                listArrowDirections_D.append(thisArrowDirection_D)
+                arrow_colors.append(color)
+                arrow_labels.append([label])
+            elif label not in arrow_labels[matches[0]]:
+                arrow_labels[matches[0]].append(label)
+
+    # Draw each arrow's shaft as a single line and its tip as an outlined cone. The tips
+    # are added together, one set for each color.
+    listShaftEnds_D_Do: list[np.ndarray] = []
+    for arrowStart_D_Do, arrowDirection_D, arrow_color in zip(
+        listArrowStarts_D_Do, listArrowDirections_D, arrow_colors
+    ):
+        shaftEnd_D_Do = (
+            arrowStart_D_Do + (1.0 - _AXES_TIP_LENGTH) * axes_scale * arrowDirection_D
+        )
+        listShaftEnds_D_Do.append(shaftEnd_D_Do)
+        plotter.add_mesh(
+            pv.Line(arrowStart_D_Do, shaftEnd_D_Do),
+            color=arrow_color,
+            line_width=_AXES_LINE_WIDTH,
+        )
+    for tip_color in dict.fromkeys(arrow_colors):
+        color_tip_ids = [
+            arrow_id
+            for arrow_id, arrow_color in enumerate(arrow_colors)
+            if arrow_color == tip_color
+        ]
+        _add_arrow_tips(
+            plotter,
+            stackTipBases_D_Do=np.array(
+                [listShaftEnds_D_Do[arrow_id] for arrow_id in color_tip_ids],
+                dtype=float,
+            ),
+            stackTipDirections_D=np.array(
+                [listArrowDirections_D[arrow_id] for arrow_id in color_tip_ids],
+                dtype=float,
+            ),
+            lengths=np.full(len(color_tip_ids), _AXES_TIP_LENGTH * axes_scale),
+            radii=np.full(len(color_tip_ids), _AXES_TIP_RADIUS * axes_scale),
+            color=tip_color,
+        )
+
+    # VTK only applies the tip fills' polygon offsets while its coincident topology
+    # resolution mode, which is shared by every mapper in the process, is set to polygon
+    # offset. Turn that mode on only while this Plotter's renderer draws, and restore
+    # the previous mode afterward, so no other visualization is affected. While it is
+    # on, VTK also pulls the other lines in this scene slightly toward the camera, which
+    # only keeps them in front of the tip fills. A mapper's resolve property reads and
+    # sets that shared mode, so any mapper can be used to reach it.
+    resolve_mapper = pv.DataSetMapper()
+    previous_resolve_modes: list[str] = []
+
+    def turn_on_polygon_offset(caller: object, event: str) -> None:
+        """Turns on VTK's polygon offset coincident topology resolution, storing the
+        previous mode.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        previous_resolve_modes.append(resolve_mapper.resolve)
+        resolve_mapper.resolve = "polygon_offset"
+
+    def restore_resolve_mode(caller: object, event: str) -> None:
+        """Restores VTK's coincident topology resolution mode stored when this render
+        started.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        if previous_resolve_modes:
+            resolve_mapper.resolve = previous_resolve_modes.pop()
+
+    plotter.renderer.AddObserver("StartEvent", turn_on_polygon_offset)
+    plotter.renderer.AddObserver("EndEvent", restore_resolve_mode)
+
+    # Mark the points with axes with dots, and the rest with crosses, each made of two
+    # line segments centered on its point and lying along its cross directions.
+    listDotPoints_D_Do = [
+        point_D_Do
+        for point_D_Do, has_axes in zip(listPoints_D_Do, point_has_axes)
+        if has_axes
+    ]
+    if listDotPoints_D_Do:
+        plotter.add_points(
+            np.array(listDotPoints_D_Do, dtype=float),
+            color="black",
+            point_size=_AXES_POINT_SIZE,
+            render_points_as_spheres=True,
+        )
+    cross_half_length = 0.5 * _AXES_CROSS_SIZE * axes_scale
+    listCrossVertices_D_Do = [
+        point_D_Do + sign * cross_half_length * crossDirection_D
+        for point_D_Do, has_axes, crossDirections_D in zip(
+            listPoints_D_Do, point_has_axes, listPointCrossDirections_D
+        )
+        if not has_axes and crossDirections_D is not None
+        for crossDirection_D in crossDirections_D
+        for sign in (-1.0, 1.0)
+    ]
+    if listCrossVertices_D_Do:
+        num_cross_segments = len(listCrossVertices_D_Do) // 2
+        cross_lines = np.column_stack(
+            [
+                np.full(num_cross_segments, 2),
+                np.arange(0, len(listCrossVertices_D_Do), 2),
+                np.arange(1, len(listCrossVertices_D_Do), 2),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(
+                np.array(listCrossVertices_D_Do, dtype=float), lines=cross_lines
+            ),
+            color="black",
+            line_width=_AXES_LINE_WIDTH,
+        )
+
+    # Label the arrow tips and the points, with one Label per text. Unlike
+    # add_point_labels, whose label placement either drops labels that would overlap or,
+    # when told to place them all, draws some of them more than once, a Label is always
+    # drawn exactly once. Labels are also drawn over the scene, so the Wing's Panels
+    # never hide them. Each label entry holds the Label, the point its text should
+    # extend away from, and the Label's anchor. An arrow's label is anchored a short
+    # distance beyond its tip, along the arrow, and extends away from its start. A
+    # point's label is anchored at its offset position and extends away from the point,
+    # so the point marker doesn't cover it.
+    #
+    # Math labels are rendered by VTK through Matplotlib's mathtext, which takes its
+    # font from the Label's font family rather than from a font file, and which uses the
+    # STIX fonts for the Times family. Merged math labels are joined inside one pair of
+    # dollar signs. Each arrow's plain label is its axes ID followed by its one letter
+    # basis direction, which is split back off to write it as math.
+    label_font_size = (
+        _AXES_MATH_LABEL_FONT_SIZE if math_labels else _AXES_LABEL_FONT_SIZE
+    )
+    label_entries: list[tuple[pv.Label, np.ndarray, np.ndarray]] = []
+    for arrowStart_D_Do, arrowDirection_D, labels in zip(
+        listArrowStarts_D_Do, listArrowDirections_D, arrow_labels
+    ):
+        arrowLabelAnchor_D_Do = (
+            arrowStart_D_Do
+            + (1.0 + _AXES_ARROW_LABEL_OFFSET) * axes_scale * arrowDirection_D
+        )
+        arrow_label_text = "/".join(labels)
+        if math_labels:
+            math_arrow_labels = [
+                get_math_axes_label(label[:-1], label[-1]) for label in labels
+            ]
+            displayed_arrow_label_text = "$" + r" \,/\, ".join(math_arrow_labels) + "$"
+        else:
+            displayed_arrow_label_text = arrow_label_text
+        arrow_label = pv.Label(
+            text=displayed_arrow_label_text,
+            position=arrowLabelAnchor_D_Do,
+            size=label_font_size,
+            name=f"arrow label {arrow_label_text}",
+        )
+        arrow_label.prop.color = "black"
+        arrow_label.prop.background_color = plotter.background_color
+        arrow_label.prop.background_opacity = 1.0
+        if math_labels:
+            arrow_label.prop.font_family = "times"
+        else:
+            arrow_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+        plotter.add_actor(arrow_label)
+        label_entries.append((arrow_label, arrowStart_D_Do, arrowLabelAnchor_D_Do))
+    for point_D_Do, pointLabelOffset_D, labels in zip(
+        listPoints_D_Do, listPointLabelOffsets_D, point_labels
+    ):
+        if not labels:
+            continue
+        pointLabelAnchor_D_Do = point_D_Do + axes_scale * pointLabelOffset_D
+        point_label_text = "/".join(labels)
+        if math_labels:
+            math_point_labels = [get_math_point_label(label) for label in labels]
+            displayed_point_label_text = "$" + r" \,/\, ".join(math_point_labels) + "$"
+        else:
+            displayed_point_label_text = point_label_text
+        point_label = pv.Label(
+            text=displayed_point_label_text,
+            position=pointLabelAnchor_D_Do,
+            size=label_font_size,
+            name=f"point label {point_label_text}",
+        )
+        point_label.prop.color = "black"
+        point_label.prop.background_color = plotter.background_color
+        point_label.prop.background_opacity = 1.0
+        if math_labels:
+            point_label.prop.font_family = "times"
+        else:
+            point_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+        plotter.add_actor(point_label)
+        label_entries.append((point_label, point_D_Do, pointLabelAnchor_D_Do))
+
+    # Track the labels the user has dragged by hand, along with the camera state at
+    # their last drag. The camera state holds the camera's position, focal point, view
+    # up direction, parallel scale, and view angle, which together cover every way the
+    # user can rotate, pan, or zoom the view. A camera's modified time can't stand in
+    # for this, because the renderer resets the camera's clipping range, and so marks it
+    # as modified, on every render.
+    renderer = plotter.renderer
+    assert plotter.iren is not None
+    interactor = plotter.iren.interactor
+    interactor_style = interactor.GetInteractorStyle()
+    dragged_label_ids: set[int] = set()
+    dragged_camera_state: tuple[float, ...] = ()
+    dragging_label_id: int | None = None
+    drag_offset_display = np.zeros(2, dtype=float)
+    drag_depth_display = 0.0
+
+    def get_camera_state() -> tuple[float, ...]:
+        """Returns the state of the renderer's active camera.
+
+        :return: A tuple of floats holding the camera's position, focal point, view up
+            direction, parallel scale, and view angle.
+        """
+        camera = renderer.GetActiveCamera()
+        return (
+            *camera.GetPosition(),
+            *camera.GetFocalPoint(),
+            *camera.GetViewUp(),
+            camera.GetParallelScale(),
+            camera.GetViewAngle(),
+        )
+
+    def get_display_point(point_D_Do: np.ndarray) -> np.ndarray:
+        """Returns the display coordinates of a point.
+
+        :param point_D_Do: A (3,) ndarray of floats representing the point's position
+            (in diagram axes, relative to the diagram origin).
+        :return: A (3,) ndarray of floats holding the point's x and y display
+            coordinates, in pixels, and its depth, which ranges from 0.0 at the near
+            clipping plane to 1.0 at the far clipping plane.
+        """
+        renderer.SetWorldPoint(*point_D_Do, 1.0)
+        renderer.WorldToDisplay()
+        return np.array(renderer.GetDisplayPoint(), dtype=float)
+
+    # Before every render, justify each label so that its text extends away from the
+    # point it labels on screen. A label anchored at its default bottom left corner
+    # always extends right and up, so the label of an arrow pointing left or down runs
+    # back over its own arrow and into its neighbors' labels. Rechecking before every
+    # render keeps the justification right as the camera moves or the window resizes.
+    # Dragged labels are left where the user put them until the camera moves, and then
+    # they return to their automatic placement.
+
+    def justify_labels(caller: object, event: str) -> None:
+        """Justifies each label away from the point it labels, on screen.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        # Compare the camera states within a tolerance, because the screenshot that
+        # PyVista takes as the window closes renders with a view angle that differs from
+        # the stored one by roundoff, which would otherwise count as a camera move and
+        # return the dragged labels just before the final image is captured.
+        if dragged_label_ids and not np.allclose(
+            get_camera_state(), dragged_camera_state
+        ):
+            for dragged_label_id in dragged_label_ids:
+                label, _, anchor_D_Do = label_entries[dragged_label_id]
+                label.position = anchor_D_Do
+            dragged_label_ids.clear()
+
+        for label_id, (label, awayFrom_D_Do, anchor_D_Do) in enumerate(label_entries):
+            if label_id in dragged_label_ids:
+                continue
+            away_from_display = get_display_point(awayFrom_D_Do)[:2]
+            anchor_display = get_display_point(anchor_D_Do)[:2]
+
+            # Normalize the label's on screen direction. A label whose anchor lies
+            # almost straight in front of or behind the point it labels, as seen by the
+            # camera, has no meaningful on screen direction, so it is centered on its
+            # anchor.
+            direction_display = anchor_display - away_from_display
+            length_display = float(np.linalg.norm(direction_display))
+            if length_display > 0.0:
+                direction_display /= length_display
+
+            if direction_display[0] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_horizontal = "left"
+            elif direction_display[0] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_horizontal = "right"
+            else:
+                label.prop.justification_horizontal = "center"
+
+            if direction_display[1] > _AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_vertical = "bottom"
+            elif direction_display[1] < -_AXES_LABEL_JUSTIFICATION_THRESHOLD:
+                label.prop.justification_vertical = "top"
+            else:
+                label.prop.justification_vertical = "center"
+
+    renderer.AddObserver("StartEvent", justify_labels)
+
+    # Let the user drag labels with the left mouse button. PyVista's interactor style
+    # already observes left button presses and releases, where it starts and stops
+    # rotating the camera, so pressing on a label still arms a rotation. The rotation
+    # itself happens as the mouse moves, and observing mouse moves here stops the style
+    # from handling them itself. So each mouse move is passed on to the style unless a
+    # label is being dragged, which keeps the camera still during a drag.
+    def start_label_drag(caller: object, event: str) -> None:
+        """Starts dragging the label under the mouse, if there is one.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragging_label_id, drag_offset_display, drag_depth_display
+        mouse_display = np.array(interactor.GetEventPosition(), dtype=float)
+
+        # Check the labels from last added to first, so a label drawn on top of another
+        # is the one picked. Each label's bounding box is relative to its anchor and
+        # already accounts for its justification.
+        for label_id in reversed(range(len(label_entries))):
+            label = label_entries[label_id][0]
+            anchor_display = get_display_point(np.array(label.position, dtype=float))
+            bounding_box = [0.0, 0.0, 0.0, 0.0]
+            label.GetBoundingBox(renderer, bounding_box)
+            if (
+                anchor_display[0] + bounding_box[0]
+                <= mouse_display[0]
+                <= anchor_display[0] + bounding_box[1]
+                and anchor_display[1] + bounding_box[2]
+                <= mouse_display[1]
+                <= anchor_display[1] + bounding_box[3]
+            ):
+                dragging_label_id = label_id
+                drag_offset_display = anchor_display[:2] - mouse_display
+                drag_depth_display = float(anchor_display[2])
+                return
+
+    def drag_label(caller: object, event: str) -> None:
+        """Moves the dragged label with the mouse, or passes the mouse move on to the
+        interactor style when no label is being dragged.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragged_camera_state
+        if dragging_label_id is None:
+            interactor_style.OnMouseMove()
+            return
+
+        # Move the label's anchor to follow the mouse, keeping the anchor's depth so the
+        # label stays attached to the scene if the window is resized.
+        mouse_display = np.array(interactor.GetEventPosition(), dtype=float)
+        target_display = mouse_display + drag_offset_display
+        renderer.SetDisplayPoint(*target_display, drag_depth_display)
+        renderer.DisplayToWorld()
+        homogeneousAnchor_D_Do = renderer.GetWorldPoint()
+        label = label_entries[dragging_label_id][0]
+        label.position = (
+            np.array(homogeneousAnchor_D_Do[:3], dtype=float)
+            / homogeneousAnchor_D_Do[3]
+        )
+        dragged_label_ids.add(dragging_label_id)
+        dragged_camera_state = get_camera_state()
+        interactor.Render()
+
+    def stop_label_drag(caller: object, event: str) -> None:
+        """Stops dragging the dragged label, if there is one.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal dragging_label_id
+        dragging_label_id = None
+
+    interactor_style.AddObserver("LeftButtonPressEvent", start_label_drag)
+    interactor_style.AddObserver("MouseMoveEvent", drag_label)
+    interactor_style.AddObserver("LeftButtonReleaseEvent", stop_label_drag)
+
+
+def _add_arrow_tips(
+    plotter: pv.Plotter,
+    stackTipBases_D_Do: np.ndarray,
+    stackTipDirections_D: np.ndarray,
+    lengths: np.ndarray,
+    radii: np.ndarray,
+    color: str,
+) -> None:
+    """Adds arrows' tips to a Plotter as outlined cones.
+
+    The cones' faces are unlit and match the background, so each tip reads as an outline
+    while still hiding what is behind it. The faces are pushed slightly away from the
+    camera in the depth buffer, so they don't cover half of the width of the outline.
+    That push only takes effect while VTK's coincident topology resolution mode is set
+    to polygon offset, which add_axes_and_points turns on for its Plotter's renders.
+
+    All the tips share one mesh, drawn by one outline Actor and one fill Actor, since
+    adding two Actors for each tip costs far more than drawing them once there are
+    thousands of tips. Each tip is placed by scaling, turning, and moving one cone, the
+    way PyVista builds a cone along a given direction, so each tip has the same points,
+    in the same order, as a cone built for it alone.
+
+    :param plotter: The Plotter to add the tips to.
+    :param stackTipBases_D_Do: A (N,3) ndarray of floats, where N is the number of tips,
+        holding the position of the center of each tip's base (in diagram axes, relative
+        to the diagram origin). The units are in meters.
+    :param stackTipDirections_D: A (N,3) ndarray of floats holding the unit vector (in
+        diagram axes) along which each tip points.
+    :param lengths: A (N,) ndarray of floats holding each tip's length, from its base to
+        its point. The units are in meters.
+    :param radii: A (N,) ndarray of floats holding the radius of each tip's base. The
+        units are in meters.
+    :param color: The color of the tips' outlines.
+    :return: None
+    """
+    num_tips = stackTipBases_D_Do.shape[0]
+
+    # Build one cone of unit length and radius, centered on the diagram origin and
+    # pointing along the x axis (in diagram axes), which every tip is placed from by
+    # active rotations and translations within diagram axes.
+    template_tip = pv.Cone(
+        center=(0.0, 0.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        height=1.0,
+        radius=1.0,
+        resolution=_AXES_TIP_RESOLUTION,
+    )
+    stackTemplatePoints_D_Do = np.array(template_tip.points, dtype=float)
+    template_faces = np.array(template_tip.faces, dtype=int)
+    num_template_points = stackTemplatePoints_D_Do.shape[0]
+
+    # Find the matrices that turn the template to point along each tip's direction.
+    # PyVista's cones are built by VTK, which turns a cone along the x axis 180 degrees
+    # about the unit vector halfway between the x axis and the cone's direction. For a
+    # direction with a negative x component, VTK first turns the cone 180 degrees about
+    # the y axis, and then turns it 180 degrees about the unit vector halfway between
+    # the negative x axis and the direction. A 180 degree turn about a unit vector a is
+    # the matrix 2 * a * a^T - I.
+    points_backward = stackTipDirections_D[:, 0] < 0.0
+    stackHalfwayDirections_D = stackTipDirections_D.copy()
+    stackHalfwayDirections_D[:, 0] += np.where(points_backward, -1.0, 1.0)
+    stackHalfwayDirections_D /= np.linalg.norm(
+        stackHalfwayDirections_D, axis=1, keepdims=True
+    )
+    turn_tips_R_act = 2.0 * np.einsum(
+        "ni,nj->nij", stackHalfwayDirections_D, stackHalfwayDirections_D
+    ) - np.eye(3, dtype=float)
+    turn_about_y_R_act = np.diag(np.array([-1.0, 1.0, -1.0], dtype=float))
+    turn_tips_R_act[points_backward] = (
+        turn_tips_R_act[points_backward] @ turn_about_y_R_act
+    )
+
+    # Scale the template by each tip's length along its axis and radius across it, turn
+    # it, and move its center to halfway along the tip.
+    gridScaledTemplatePoints_D_Do = (
+        stackTemplatePoints_D_Do[np.newaxis, :, :]
+        * np.column_stack([lengths, radii, radii])[:, np.newaxis, :]
+    )
+    stackTipCenters_D_Do = (
+        stackTipBases_D_Do + 0.5 * lengths[:, np.newaxis] * stackTipDirections_D
+    )
+    gridTipPoints_D_Do = (
+        np.einsum("nij,npj->npi", turn_tips_R_act, gridScaledTemplatePoints_D_Do)
+        + stackTipCenters_D_Do[:, np.newaxis, :]
+    )
+
+    # Repeat the template's faces for each tip, shifting each copy's point indices to
+    # that tip's points. The faces are in PolyData's padded form, where each face is its
+    # vertex count followed by its vertex indices, so the counts are left unshifted.
+    face_entry_is_index = np.ones(template_faces.shape[0], dtype=bool)
+    count_id = 0
+    while count_id < template_faces.shape[0]:
+        face_entry_is_index[count_id] = False
+        count_id += template_faces[count_id] + 1
+    tip_faces = np.tile(template_faces, num_tips) + np.repeat(
+        num_template_points * np.arange(num_tips, dtype=int), template_faces.shape[0]
+    ) * np.tile(face_entry_is_index, num_tips)
+
+    tips = pv.PolyData(gridTipPoints_D_Do.reshape(-1, 3), tip_faces)
+    plotter.add_silhouette(
+        tips,
+        color=color,
+        line_width=_AXES_LINE_WIDTH,
+        feature_angle=_AXES_TIP_FEATURE_ANGLE,
+    )
+
+    tip_fill_actor = plotter.add_mesh(
+        tips,
+        color=plotter.background_color,
+        lighting=False,
+    )
+    tip_fill_actor.mapper.SetRelativeCoincidentTopologyPolygonOffsetParameters(
+        _AXES_TIP_FILL_OFFSET_FACTOR, _AXES_TIP_FILL_OFFSET_UNITS
+    )
+
+
+def get_wing_cross_section_airfoil_lines(
+    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Returns the points on a WingCrossSection's Airfoil's outline and mean camber line
+    (in wing cross section axes, relative to the leading point).
+
+    The Airfoil's x and y axes map onto the wing cross section axes' x and z axes, so
+    the points lie in the WingCrossSection's xz plane, and they are scaled by the
+    WingCrossSection's chord.
+
+    :param wing_cross_section: The WingCrossSection whose Airfoil's points are returned.
+    :return: A tuple of two ndarrays of floats. The first is a (N,3) ndarray holding the
+        points on the Airfoil's outline and the second is a (M,3) ndarray holding the
+        points on its mean camber line, where N and M are the numbers of points in the
+        Airfoil's outline and mean camber line. The points are in wing cross section
+        axes, relative to the leading point. The units are in meters.
+    """
+    airfoil = wing_cross_section.airfoil
+    airfoilOutline_A_Lp = airfoil.outline_A_Lp
+    airfoilMcl_A_Lp = airfoil.mcl_A_Lp
+    assert airfoilMcl_A_Lp is not None
+
+    airfoilOutline_Wcs_Lp = wing_cross_section.chord * np.column_stack(
+        [
+            airfoilOutline_A_Lp[:, 0],
+            np.zeros(airfoilOutline_A_Lp.shape[0], dtype=float),
+            airfoilOutline_A_Lp[:, 1],
+        ]
+    )
+    airfoilMcl_Wcs_Lp = wing_cross_section.chord * np.column_stack(
+        [
+            airfoilMcl_A_Lp[:, 0],
+            np.zeros(airfoilMcl_A_Lp.shape[0], dtype=float),
+            airfoilMcl_A_Lp[:, 1],
+        ]
+    )
+    return airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp
+
+
+def get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do: np.ndarray) -> np.ndarray:
+    """Returns the transformation matrix that places a WingCrossSection's Airfoil's
+    axes, at its leading point, in a diagram, for drawing with add_axes_and_points.
+
+    The Airfoil's x and y axes map onto the wing cross section axes' x and z axes, as in
+    get_wing_cross_section_airfoil_lines. Airfoil axes are two dimensional, so the
+    returned matrix's third column holds the direction that completes them into a right
+    handed set, which is the wing cross section axes' negative y direction. The
+    Airfoil's points are normalized by the chord, but this matrix leaves out that
+    scaling, so that its first three columns stay unit vectors. It orients the airfoil
+    axes, and isn't for mapping the Airfoil's points.
+
+    :param T_pas_Wcs_Lp_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the
+        WingCrossSection's axes, relative to its leading point, to diagram axes,
+        relative to the diagram origin.
+    :return: A (4,4) ndarray of floats whose first three columns hold the airfoil axes'
+        basis directions, followed by the completing direction (in diagram axes), and
+        whose last column holds the leading point's position (in diagram axes, relative
+        to the diagram origin).
+    """
+    # Relative to the airfoil axes, completed into a right handed set, the wing cross
+    # section axes are rotated by -90 degrees about the x axis the two share.
+    T_rot_pas_A_to_Wcs = _transformations.generate_rot_T(
+        np.array([-90.0, 0.0, 0.0]), passive=True, intrinsic=True, order="xyz"
+    )
+    return _transformations.compose_T_pas(T_rot_pas_A_to_Wcs, T_pas_Wcs_Lp_to_D_Do)
+
+
+def add_airfoil(
+    plotter: pv.Plotter,
+    wing_cross_section: geometry.wing_cross_section.WingCrossSection,
+    T_pas_Wcs_Lp_to_D_Do: np.ndarray,
+    show_mcl: bool = True,
+) -> None:
+    """Adds a WingCrossSection's Airfoil's outline and, optionally, its mean camber line
+    to a Plotter.
+
+    :param plotter: The Plotter to add the Airfoil's outline and mean camber line to.
+    :param wing_cross_section: The WingCrossSection whose Airfoil is added.
+    :param T_pas_Wcs_Lp_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the
+        WingCrossSection's axes, relative to its leading point, to diagram axes,
+        relative to the diagram origin.
+    :param show_mcl: Determines whether to add the mean camber line. The default is
+        True.
+    :return: None
+    """
+    airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp = get_wing_cross_section_airfoil_lines(
+        wing_cross_section
+    )
+    airfoilMcl_D_Do = None
+    if show_mcl:
+        airfoilMcl_D_Do = _transformations.apply_T_to_vectors(
+            T_pas_Wcs_Lp_to_D_Do, airfoilMcl_Wcs_Lp, is_position=True
+        )
+    add_airfoil_lines(
+        plotter,
+        _transformations.apply_T_to_vectors(
+            T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
+        ),
+        airfoilMcl_D_Do,
+    )
+
+
+def add_airfoil_lines(
+    plotter: pv.Plotter,
+    airfoilOutline_D_Do: np.ndarray,
+    airfoilMcl_D_Do: np.ndarray | None,
+) -> None:
+    """Adds an Airfoil's outline and, optionally, its mean camber line to a Plotter.
+
+    The outline is drawn as a closed loop and the mean camber line as an open line, both
+    unfilled, so they never hide the rest of the diagram.
+
+    :param plotter: The Plotter to add the outline and mean camber line to.
+    :param airfoilOutline_D_Do: A (N,3) ndarray of floats holding the points on the
+        Airfoil's outline (in diagram axes, relative to the diagram origin), where N is
+        the number of points in the outline.
+    :param airfoilMcl_D_Do: A (M,3) ndarray of floats holding the points on the
+        Airfoil's mean camber line (in diagram axes, relative to the diagram origin),
+        where M is the number of points in the mean camber line, or None to leave the
+        mean camber line out.
+    :return: None
+    """
+    num_outline_points = airfoilOutline_D_Do.shape[0]
+    plotter.add_mesh(
+        pv.PolyData(
+            airfoilOutline_D_Do,
+            lines=np.hstack([num_outline_points + 1, np.arange(num_outline_points), 0]),
+        ),
+        color=_DIAGRAM_AIRFOIL_OUTLINE_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
+    )
+    if airfoilMcl_D_Do is None:
+        return
+    plotter.add_mesh(
+        pv.lines_from_points(airfoilMcl_D_Do),
+        color=_DIAGRAM_AIRFOIL_MCL_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
+    )
+
+
+def add_airfoils(
+    plotter: pv.Plotter,
+    wing: geometry.wing.Wing,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+    show_mcls: bool = True,
+) -> None:
+    """Adds the outlines and, optionally, the mean camber lines of a Wing's
+    WingCrossSections' Airfoils to a Plotter.
+
+    :param plotter: The Plotter to add the Airfoils' outlines and mean camber lines to.
+    :param wing: The Wing whose WingCrossSections' Airfoils are added.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :param show_mcls: Determines whether to add the mean camber lines. The default is
+        True.
+    :return: None
+    """
+    for wing_cross_section, T_pas_Wcs_Lp_to_G_Cg in zip(
+        wing.wing_cross_sections, wing.children_T_pas_Wcs_Lp_to_G_Cg
+    ):
+        add_airfoil(
+            plotter,
+            wing_cross_section,
+            _transformations.compose_T_pas(T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_D_Do),
+            show_mcl=show_mcls,
+        )
+
+
+def add_panels(
+    plotter: pv.Plotter,
+    wing: geometry.wing.Wing,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+) -> None:
+    """Adds a Wing's Panels to a Plotter as a wireframe.
+
+    Only the Panels' edges are drawn, so their faces never hide the rest of the diagram.
+    If the Wing hasn't been meshed, nothing is added.
+
+    :param plotter: The Plotter to add the Panels to.
+    :param wing: The Wing whose Panels are added.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :return: None
+    """
+    _panels = wing.panels
+    if _panels is None:
+        return
+    panels = np.ravel(_panels)
+
+    # Stack each Panel's four vertices, wound front left, front right, back right, and
+    # back left so the cell traces the Panel's outline.
+    panelVertices_G_Cg = np.empty((panels.size * 4, 3), dtype=float)
+    for panel_id, panel in enumerate(panels):
+        base_vertex = panel_id * 4
+        panelVertices_G_Cg[base_vertex] = panel.Flpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 1] = panel.Frpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 2] = panel.Brpp_G_Cg
+        panelVertices_G_Cg[base_vertex + 3] = panel.Blpp_G_Cg
+    panelVertices_D_Do = _transformations.apply_T_to_vectors(
+        T_pas_G_Cg_to_D_Do, panelVertices_G_Cg, is_position=True
+    )
+
+    plotter.add_mesh(
+        pv.PolyData(panelVertices_D_Do, _get_quadrilateral_faces(panels.size)),
+        style="wireframe",
+        color=_DIAGRAM_PANEL_COLOR,
+        line_width=_DIAGRAM_LINE_WIDTH,
+    )
+
+
+def get_collocation_points(
+    wing: geometry.wing.Wing,
+    id_suffix: str,
+    T_pas_G_Cg_to_D_Do: np.ndarray,
+) -> tuple[list[str], list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
+    """Returns the IDs, positions, label offset basis directions, and cross directions
+    of a Wing's Panels' collocation points, which can be passed to add_axes_and_points
+    as extra points.
+
+    The collocation points are returned row by row. Each ID numbers its Panel by its
+    chordwise row and spanwise column, starting at one, and ends with the given suffix
+    (such as "Cppr3c2Wn1"). Panel points have no axes of their own, so each label offset
+    is defined in the Wing's wing axes. Each cross's arms lie along its Panel's two
+    diagonals.
+
+    :param wing: The Wing whose Panels' collocation points are returned. If it hasn't
+        been meshed, all the returned lists are empty.
+    :param id_suffix: The text appended to each ID.
+    :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
+        transformation matrix which maps in homogeneous coordinates from the Wing's
+        Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
+        diagram origin.
+    :return: A tuple of four lists, each with one element per returned collocation
+        point. The first holds the IDs. The second holds (3,) ndarrays of floats with
+        the positions (in diagram axes, relative to the diagram origin). The units are
+        in meters. The third holds (3,3) ndarrays of floats whose columns are the Wing's
+        wing axes' basis directions (in diagram axes). The fourth holds (2,3) ndarrays
+        of floats whose rows are the unit vectors (in diagram axes) along the Panels'
+        diagonals.
+    """
+    ids: list[str] = []
+    listCollocationPoints_D_Do: list[np.ndarray] = []
+    listWingBasisDirections_D: list[np.ndarray] = []
+    listCrossDirections_D: list[np.ndarray] = []
+
+    panels = wing.panels
+    if panels is None:
+        return (
+            ids,
+            listCollocationPoints_D_Do,
+            listWingBasisDirections_D,
+            listCrossDirections_D,
+        )
+    num_rows, num_columns = panels.shape
+
+    _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
+    assert _T_pas_Wn_Ler_to_G_Cg is not None
+    R_pas_Wn_to_D = _transformations.compose_T_pas(
+        _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_D_Do
+    )[:3, :3]
+
+    for row_id in range(num_rows):
+        for column_id in range(num_columns):
+            panel = panels[row_id, column_id]
+            ids.append(f"Cppr{row_id + 1}c{column_id + 1}{id_suffix}")
+            listCollocationPoints_D_Do.append(
+                _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_D_Do, panel.Cpp_G_Cg, is_position=True
+                )
+            )
+            listWingBasisDirections_D.append(R_pas_Wn_to_D)
+            diagonals_D = _transformations.apply_T_to_vectors(
+                T_pas_G_Cg_to_D_Do,
+                np.array(
+                    [
+                        panel.Brpp_G_Cg - panel.Flpp_G_Cg,
+                        panel.Blpp_G_Cg - panel.Frpp_G_Cg,
+                    ]
+                ),
+                is_position=False,
+            )
+            listCrossDirections_D.append(
+                diagonals_D / np.linalg.norm(diagonals_D, axis=1, keepdims=True)
+            )
+
+    return (
+        ids,
+        listCollocationPoints_D_Do,
+        listWingBasisDirections_D,
+        listCrossDirections_D,
+    )
+
+
+def add_steady_problem(
+    plotter: pv.Plotter,
+    steady_problem: problems.SteadyProblem,
+    show_airplane_axes_and_points: bool,
+    show_wing_axes_and_points: bool,
+    show_wing_cross_section_axes_and_points: bool,
+    show_airfoil_axes_and_points: bool,
+    show_airfoils: bool,
+    show_mcls: bool,
+    show_collocation_points: bool,
+    label_collocation_points: bool,
+    math_labels: bool = False,
+) -> None:
+    """Adds a SteadyProblem's Airplanes' Wings' Panels, along with their axes and
+    points, to a Plotter.
+
+    The diagram axes are the first Airplane's geometry axes, and the diagram origin is
+    the first Airplane's CG. The Earth axes at the Earth origin and every Wing's Panels
+    are always added.
+
+    :param plotter: The Plotter to add the SteadyProblem's diagram to.
+    :param steady_problem: The SteadyProblem to add.
+    :param show_airplane_axes_and_points: Determines whether to add each Airplane's
+        geometry axes at its CG.
+    :param show_wing_axes_and_points: Determines whether to add each Wing's axes at its
+        leading edge root point.
+    :param show_wing_cross_section_axes_and_points: Determines whether to add each
+        WingCrossSection's axes at its leading point.
+    :param show_airfoil_axes_and_points: Determines whether to add each
+        WingCrossSection's Airfoil's axes at its leading point.
+    :param show_airfoils: Determines whether to add each WingCrossSection's Airfoil's
+        outline and mean camber line.
+    :param show_mcls: Determines whether to add each Airfoil's mean camber line. It has
+        no effect if show_airfoils is False.
+    :param show_collocation_points: Determines whether to add the Wings' Panels'
+        collocation points.
+    :param label_collocation_points: Determines whether to label the collocation points
+        that are added. It has no effect if show_collocation_points is False.
+    :param math_labels: Determines whether to write the axes and point labels as math,
+        as add_axes_and_points describes. The default is False.
+    :return: None
+    """
+    operating_point = steady_problem.operating_point
+    airplanes = steady_problem.airplanes
+
+    # The first Airplane's CG is at CgP1_E_Eo (in Earth axes, relative to the Earth
+    # origin), so this translation maps positions relative to the Earth origin to
+    # positions relative to the first Airplane's CG.
+    T_pas_E_Eo_to_E_CgP1 = _transformations.generate_trans_T(
+        operating_point.CgP1_E_Eo, passive=True
+    )
+    axes_ids = ["E"]
+    point_ids = ["Eo"]
+    transformations = [
+        _transformations.compose_T_pas(
+            T_pas_E_Eo_to_E_CgP1, operating_point.T_pas_E_CgP1_to_GP1_CgP1
+        )
+    ]
+
+    # Add all the axes and points with one call, so that the ones that coincide merge.
+    # The IDs of each Airplane's axes and points, and of its Wings', WingCrossSections',
+    # and Airfoils' axes and points, are numbered from one.
+    airfoil_axes_ids: list[str] = []
+    collocation_point_ids: list[str] = []
+    listCollocationPoints_D_Do: list[np.ndarray] = []
+    listWingBasisDirections_D: list[np.ndarray] = []
+    listCrossDirections_D: list[np.ndarray] = []
+    for airplane_id, airplane in enumerate(airplanes):
+        airplane_num = airplane_id + 1
+        T_pas_G_Cg_to_GP1_CgP1 = airplane.T_pas_G_Cg_to_GP1_CgP1
+
+        if show_airplane_axes_and_points:
+            axes_ids.append(f"GP{airplane_num}")
+            point_ids.append(f"CgP{airplane_num}")
+            transformations.append(T_pas_G_Cg_to_GP1_CgP1)
+
+        for wing_id, wing in enumerate(airplane.wings):
+            wing_num = wing_id + 1
+            wing_cross_section_nums = range(1, len(wing.wing_cross_sections) + 1)
+            children_T_pas_Wcs_Lp_to_GP1_CgP1 = [
+                _transformations.compose_T_pas(
+                    T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_GP1_CgP1
+                )
+                for T_pas_Wcs_Lp_to_G_Cg in wing.children_T_pas_Wcs_Lp_to_G_Cg
+            ]
+
+            if show_airfoils:
+                add_airfoils(plotter, wing, T_pas_G_Cg_to_GP1_CgP1, show_mcls=show_mcls)
+            add_panels(plotter, wing, T_pas_G_Cg_to_GP1_CgP1)
+
+            if show_wing_axes_and_points:
+                _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
+                assert _T_pas_Wn_Ler_to_G_Cg is not None
+                axes_ids.append(f"Wn{wing_num}P{airplane_num}")
+                point_ids.append(f"Ler{wing_num}P{airplane_num}")
+                transformations.append(
+                    _transformations.compose_T_pas(
+                        _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_GP1_CgP1
+                    )
+                )
+            if show_wing_cross_section_axes_and_points:
+                axes_ids += [
+                    f"Wcs{num}Wn{wing_num}P{airplane_num}"
+                    for num in wing_cross_section_nums
+                ]
+                point_ids += [
+                    f"Lp{num}Wn{wing_num}P{airplane_num}"
+                    for num in wing_cross_section_nums
+                ]
+                transformations += children_T_pas_Wcs_Lp_to_GP1_CgP1
+            these_airfoil_axes_ids = [
+                f"AWcs{num}Wn{wing_num}P{airplane_num}"
+                for num in wing_cross_section_nums
+            ]
+            airfoil_axes_ids += these_airfoil_axes_ids
+            if show_airfoil_axes_and_points:
+                axes_ids += these_airfoil_axes_ids
+                point_ids += [
+                    f"Lp{num}Wn{wing_num}P{airplane_num}"
+                    for num in wing_cross_section_nums
+                ]
+                transformations += [
+                    get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_GP1_CgP1)
+                    for T_pas_Wcs_Lp_to_GP1_CgP1 in children_T_pas_Wcs_Lp_to_GP1_CgP1
+                ]
+
+            if show_collocation_points:
+                (
+                    this_wing_collocation_point_ids,
+                    listThisWingCollocationPoints_D_Do,
+                    listThisWingBasisDirections_D,
+                    listThisWingCrossDirections_D,
+                ) = get_collocation_points(
+                    wing,
+                    f"Wn{wing_num}P{airplane_num}",
+                    T_pas_G_Cg_to_GP1_CgP1,
+                )
+                collocation_point_ids += this_wing_collocation_point_ids
+                listCollocationPoints_D_Do += listThisWingCollocationPoints_D_Do
+                listWingBasisDirections_D += listThisWingBasisDirections_D
+                listCrossDirections_D += listThisWingCrossDirections_D
+
+    # Size the axes relative to the largest chord on any Airplane, so they stay legible
+    # regardless of the geometry's absolute size.
+    add_axes_and_points(
+        plotter,
+        axes_ids=axes_ids,
+        point_ids=point_ids,
+        transformations=transformations,
+        axes_scale=0.5
+        * max(
+            wing_cross_section.chord
+            for airplane in airplanes
+            for wing in airplane.wings
+            for wing_cross_section in wing.wing_cross_sections
+        ),
+        extra_point_ids=collocation_point_ids,
+        listExtraPoints_D_Do=listCollocationPoints_D_Do,
+        listExtraPointBasisDirections_D=listWingBasisDirections_D,
+        listExtraPointCrossDirections_D=listCrossDirections_D,
+        label_extra_points=label_collocation_points,
+        two_dimensional_axes_ids=airfoil_axes_ids,
+        math_labels=math_labels,
+    )
+
+
+def show_diagram(
+    plotter: pv.Plotter,
+    cpos: Literal["xy"] | Sequence[float],
+    save: bool,
+    path: Path,
+    quality: float,
+) -> None:
+    """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
+    WebP, and then closes it.
+
+    The window stays open until it is closed, so the view can be oriented and the labels
+    dragged first. The diagram is saved after the window is closed, which keeps the
+    orientation and the dragged labels' positions, since closing the window does not
+    move the camera. The diagram's background is white, both on screen and in the saved
+    WebP.
+
+    :param plotter: The Plotter holding the diagram.
+    :param cpos: The camera position to show the diagram from, either "xy", to view it
+        along the negative z direction, or a direction to view it from, such as (-1, -1,
+        1).
+    :param save: Determines whether to save the diagram as a WebP.
+    :param path: The file path to save the diagram to. It must end with ".webp", and its
+        directory must already exist. It has no effect if save is False.
+    :param quality: The quality of the saved WebP, from 0.0 to 100.0. It has no effect
+        if save is False.
+    :return: None
+    """
+    # Set the background explicitly, since the diagram's black lines and labels rely on
+    # it being white, and a PyVista theme could change the default.
+    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+    plotter.camera.parallel_projection = True
+    plotter.show(cpos=cpos, full_screen=False, auto_close=False)
+
+    # If saving, take an opaque screenshot and save it as a WebP. webp annotates
+    # file_path as a str, so the Path is converted at the boundary.
+    if save:
+        webp.save_image(
+            img=webp.Image.fromarray(
+                np.array(
+                    plotter.screenshot(
+                        filename=None,
+                        transparent_background=False,
+                        return_img=True,
+                    )
+                )
+            ),
+            file_path=str(path),
+            lossless=False,
+            quality=quality,
+            method=WEBP_METHOD,
+        )
+
+    plotter.close()
+
+
+def add_vortices(
+    plotter: pv.Plotter,
+    stackFrrvp_D_Do: np.ndarray,
+    stackFlrvp_D_Do: np.ndarray,
+    stackBlrvp_D_Do: np.ndarray,
+    stackBrrvp_D_Do: np.ndarray,
+    stackRingUnitNormals_D: np.ndarray,
+    stackFrwrvp_D_Do: np.ndarray,
+    stackFlwrvp_D_Do: np.ndarray,
+    stackBlwrvp_D_Do: np.ndarray,
+    stackBrwrvp_D_Do: np.ndarray,
+    stackWakeRingUnitNormals_D: np.ndarray,
+    stackFrhvp_D_Do: np.ndarray,
+    stackFlhvp_D_Do: np.ndarray,
+    stackBlhvp_D_Do: np.ndarray,
+    stackBrhvp_D_Do: np.ndarray,
+    stackHorseshoeUnitNormals_D: np.ndarray,
+    horseshoe_vortices_are_wake: bool,
+    largest_chord: float,
+    simplify: bool,
+) -> None:
+    """Adds a solver's ring, wake ring, and horseshoe vortices to a Plotter.
+
+    The vortices are drawn from the corner point stacks the solver filled during its
+    run, so the drawing always matches the placement the solver used. For example, a
+    steady horseshoe vortex lattice method solver passes its bound horseshoe vortices
+    and no ring vortices, a steady ring vortex lattice method solver passes its bound
+    ring vortices along with the wake horseshoe vortices shed from its trailing edge
+    Panels, and an unsteady ring vortex lattice method solver passes one time step's
+    bound ring vortices and wake ring vortices. The wake vortices are drawn in a
+    different color than the bound vortices.
+
+    Each horseshoe vortex's finite leg runs from its front right to its front left
+    point, and its two trailing legs run from those points toward its back right and
+    back left points. The solvers extend the trailing legs twenty spans downstream.
+    Here, every trailing leg instead ends at the same distance along its direction, a
+    fixed overhang past the vortices' bounding box. The end of each trailing leg is
+    dashed, to show that it continues. The dashes are spaced by distance along the
+    trailing legs, so trailing legs that lie on top of each other have matching dashes.
+
+    Unless simplified, vortices that share legs are drawn on top of each other. When
+    simplified, each ring vortex is shrunk toward its center, and each horseshoe
+    vortex's finite leg is shrunk toward its midpoint, with its trailing legs moving
+    along with the finite leg's ends. This separates the legs that neighboring vortices
+    share. The corners are also rounded, and the vortices are drawn in a different
+    color, to show that the drawing represents the vortices rather than placing them
+    exactly. Each line vortex also gets a half circular arrow around its midpoint,
+    sweeping across its vortex's inward side, that shows its vorticity's direction for
+    the negative vortex strengths that come with positive lift. The arrows' tips are
+    drawn like the axes arrows' tips, so they rely on the polygon offset that
+    add_axes_and_points turns on for the Plotter's renders.
+
+    :param plotter: The Plotter to add the vortices to.
+    :param stackFrrvp_D_Do: A (N,3) ndarray of floats, where N is the number of ring
+        vortices, holding each ring vortex's front right point (in diagram axes,
+        relative to the diagram origin). N may be zero. The units are in meters.
+    :param stackFlrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's front
+        left point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackBlrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's back
+        left point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackBrrvp_D_Do: A (N,3) ndarray of floats holding each ring vortex's back
+        right point (in diagram axes, relative to the diagram origin). The units are in
+        meters.
+    :param stackRingUnitNormals_D: A (N,3) ndarray of floats holding the unit normal (in
+        diagram axes) of the Panel that carries each ring vortex.
+    :param stackFrwrvp_D_Do: A (K,3) ndarray of floats, where K is the number of wake
+        ring vortices, holding each wake ring vortex's front right point (in diagram
+        axes, relative to the diagram origin). K may be zero. The units are in meters.
+    :param stackFlwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        front left point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackBlwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        back left point (in diagram axes, relative to the diagram origin). The units are
+        in meters.
+    :param stackBrwrvp_D_Do: A (K,3) ndarray of floats holding each wake ring vortex's
+        back right point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackWakeRingUnitNormals_D: A (K,3) ndarray of floats holding a unit normal
+        (in diagram axes) for each wake ring vortex, which plays the role a Panel's unit
+        normal plays for a ring vortex.
+    :param stackFrhvp_D_Do: A (M,3) ndarray of floats, where M is the number of
+        horseshoe vortices, holding each horseshoe vortex's front right point (in
+        diagram axes, relative to the diagram origin). M may be zero. The units are in
+        meters.
+    :param stackFlhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        front left point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackBlhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        back left point (in diagram axes, relative to the diagram origin). The units are
+        in meters.
+    :param stackBrhvp_D_Do: A (M,3) ndarray of floats holding each horseshoe vortex's
+        back right point (in diagram axes, relative to the diagram origin). The units
+        are in meters.
+    :param stackHorseshoeUnitNormals_D: A (M,3) ndarray of floats holding the unit
+        normal (in diagram axes) of the Panel that carries or sheds each horseshoe
+        vortex.
+    :param horseshoe_vortices_are_wake: Determines whether the horseshoe vortices are
+        wake vortices shed from the Panels, rather than bound vortices carried by them,
+        which draws them in the wake vortices' color.
+    :param largest_chord: The largest chord of any WingCrossSection whose Panels carry
+        the vortices, which scales the trailing legs' overhang past the vortices and
+        their dashes. The units are in meters.
+    :param simplify: Determines whether to shrink the vortices, round their corners,
+        draw them in the simplified color, and add their vorticity arrows.
+    :return: None
+    """
+    # Draw the simplified vortices in their own colors, to set them apart from the exact
+    # vortices, and the wake vortices in colors apart from the bound vortices'.
+    vortex_color = _VORTEX_SIMPLIFIED_COLOR if simplify else _VORTEX_COLOR
+    wake_vortex_color = (
+        _VORTEX_WAKE_SIMPLIFIED_COLOR if simplify else _VORTEX_WAKE_COLOR
+    )
+    horseshoe_color = wake_vortex_color if horseshoe_vortices_are_wake else vortex_color
+
+    # Gather each ring vortex's and then each wake ring vortex's four corners, in front
+    # right, front left, back left, and back right order, along with the unit normal and
+    # color each is drawn with, and each horseshoe vortex's finite leg's front right and
+    # front left ends. The horseshoe vortices' trailing legs are added later, from their
+    # finite legs' ends, along the unit vectors from their front points toward their
+    # back points.
+    listRingCorners_D_Do = [
+        np.array([Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do])
+        for Frrvp_D_Do, Flrvp_D_Do, Blrvp_D_Do, Brrvp_D_Do in zip(
+            np.vstack([stackFrrvp_D_Do, stackFrwrvp_D_Do]),
+            np.vstack([stackFlrvp_D_Do, stackFlwrvp_D_Do]),
+            np.vstack([stackBlrvp_D_Do, stackBlwrvp_D_Do]),
+            np.vstack([stackBrrvp_D_Do, stackBrwrvp_D_Do]),
+        )
+    ]
+    stackAllRingUnitNormals_D = np.vstack(
+        [stackRingUnitNormals_D, stackWakeRingUnitNormals_D]
+    )
+    ring_colors = [vortex_color] * stackFrrvp_D_Do.shape[0] + [
+        wake_vortex_color
+    ] * stackFrwrvp_D_Do.shape[0]
+    listFiniteLegEnds_D_Do = [
+        np.array([Frhvp_D_Do, Flhvp_D_Do])
+        for Frhvp_D_Do, Flhvp_D_Do in zip(stackFrhvp_D_Do, stackFlhvp_D_Do)
+    ]
+    stackTrailingLegOffsets_D_Do = stackBrhvp_D_Do - stackFrhvp_D_Do
+    stackTrailingDirections_D = stackTrailingLegOffsets_D_Do / np.linalg.norm(
+        stackTrailingLegOffsets_D_Do, axis=1, keepdims=True
+    )
+    if not listRingCorners_D_Do and not listFiniteLegEnds_D_Do:
+        return
+
+    # Find the corners of the bounding box of the vortices' finite points. A point
+    # farther along a trailing leg's direction than every corner of a box lies outside
+    # it.
+    stackFinitePoints_D_Do = np.vstack([*listRingCorners_D_Do, *listFiniteLegEnds_D_Do])
+    boundingBoxMin_D_Do = stackFinitePoints_D_Do.min(axis=0)
+    boundingBoxMax_D_Do = stackFinitePoints_D_Do.max(axis=0)
+    stackBoundingBoxCorners_D_Do = np.array(
+        [
+            [x, y, z]
+            for x in (boundingBoxMin_D_Do[0], boundingBoxMax_D_Do[0])
+            for y in (boundingBoxMin_D_Do[1], boundingBoxMax_D_Do[1])
+            for z in (boundingBoxMin_D_Do[2], boundingBoxMax_D_Do[2])
+        ]
+    )
+
+    # If simplifying, shrink each ring vortex toward its center and each finite leg
+    # toward its midpoint.
+    if simplify:
+        listRingCorners_D_Do = [
+            ringCorners_D_Do.mean(axis=0)
+            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            * (ringCorners_D_Do - ringCorners_D_Do.mean(axis=0))
+            for ringCorners_D_Do in listRingCorners_D_Do
+        ]
+        listFiniteLegEnds_D_Do = [
+            finiteLegEnds_D_Do.mean(axis=0)
+            + (1.0 - _VORTEX_SIMPLIFIED_SHRINK)
+            * (finiteLegEnds_D_Do - finiteLegEnds_D_Do.mean(axis=0))
+            for finiteLegEnds_D_Do in listFiniteLegEnds_D_Do
+        ]
+
+    # Build each vortex's solid polyline. A ring vortex's polyline is closed. A
+    # horseshoe vortex's runs from the end of its right trailing leg's solid part, along
+    # its finite leg, to the end of its left trailing leg's solid part. Each trailing
+    # leg ends a fixed overhang past the bounding box along its direction, its solid
+    # part ends where the dashed length at its end begins, and its dashed part is stored
+    # separately.
+    #
+    # If simplifying, also store each line vortex's start, end, the unit normal of the
+    # Panel its vortex belongs to, a point inside its vortex, and the radius of its
+    # vorticity arrow. A ring vortex's legs run from front right to front left, back
+    # left, back right, and front right again. A horseshoe vortex's legs run from
+    # downstream to front right, front left, and downstream again. Both match the
+    # solvers' induced velocity functions. A ring vortex's inside point is its center,
+    # and a horseshoe vortex's lies downstream of its finite leg's midpoint, between its
+    # trailing legs. Each vortex's arrows share a radius, a fixed fraction of its
+    # shortest bound leg. Each polyline and line vortex also keeps its vortex's color.
+    listSolidPolylines_D_Do: list[np.ndarray] = []
+    solid_polyline_colors: list[str] = []
+    trailing_legs: list[tuple[np.ndarray, np.ndarray, float, float]] = []
+    line_vortices: list[
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, str]
+    ] = []
+    for ringCorners_D_Do, ringUnitNormal_D, ring_color in zip(
+        listRingCorners_D_Do, stackAllRingUnitNormals_D, ring_colors
+    ):
+        solid_polyline_colors.append(ring_color)
+        if simplify:
+            listSolidPolylines_D_Do.append(
+                _round_polyline_corners(ringCorners_D_Do, closed=True)
+            )
+            ring_legs = [
+                (ringCorners_D_Do[leg_id], ringCorners_D_Do[(leg_id + 1) % 4])
+                for leg_id in range(4)
+            ]
+            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * min(
+                float(np.linalg.norm(legEnd_D_Do - legStart_D_Do))
+                for legStart_D_Do, legEnd_D_Do in ring_legs
+            )
+            line_vortices.extend(
+                (
+                    legStart_D_Do,
+                    legEnd_D_Do,
+                    ringUnitNormal_D,
+                    ringCorners_D_Do.mean(axis=0),
+                    arrow_radius,
+                    ring_color,
+                )
+                for legStart_D_Do, legEnd_D_Do in ring_legs
+            )
+        else:
+            listSolidPolylines_D_Do.append(
+                np.vstack([ringCorners_D_Do, ringCorners_D_Do[:1]])
+            )
+    for finiteLegEnds_D_Do, trailingDirection_D, horseshoeUnitNormal_D in zip(
+        listFiniteLegEnds_D_Do, stackTrailingDirections_D, stackHorseshoeUnitNormals_D
+    ):
+        end_distance = (
+            float(np.max(stackBoundingBoxCorners_D_Do @ trailingDirection_D))
+            + _VORTEX_TRAILING_LEG_OVERHANG * largest_chord
+        )
+        dashed_start_distance = (
+            end_distance - _VORTEX_TRAILING_LEG_DASHED_LENGTH * largest_chord
+        )
+        listSolidEnds_D_Do = []
+        for finiteLegEnd_D_Do in finiteLegEnds_D_Do:
+            trailing_legs.append(
+                (
+                    finiteLegEnd_D_Do,
+                    trailingDirection_D,
+                    end_distance,
+                    dashed_start_distance,
+                )
+            )
+            start_distance = float(np.dot(finiteLegEnd_D_Do, trailingDirection_D))
+            listSolidEnds_D_Do.append(
+                [
+                    finiteLegEnd_D_Do
+                    + (dashed_start_distance - start_distance) * trailingDirection_D
+                ]
+                if dashed_start_distance > start_distance
+                else []
+            )
+        horseshoePolyline_D_Do = np.array(
+            [
+                *listSolidEnds_D_Do[0],
+                finiteLegEnds_D_Do[0],
+                finiteLegEnds_D_Do[1],
+                *listSolidEnds_D_Do[1],
+            ]
+        )
+        if simplify:
+            horseshoePolyline_D_Do = _round_polyline_corners(
+                horseshoePolyline_D_Do, closed=False
+            )
+            finite_leg_length = float(
+                np.linalg.norm(finiteLegEnds_D_Do[1] - finiteLegEnds_D_Do[0])
+            )
+            arrow_radius = _VORTEX_VORTICITY_ARROW_RADIUS * finite_leg_length
+            insidePoint_D_Do = (
+                finiteLegEnds_D_Do.mean(axis=0)
+                + finite_leg_length * trailingDirection_D
+            )
+            horseshoe_legs = [(finiteLegEnds_D_Do[0], finiteLegEnds_D_Do[1])]
+            if listSolidEnds_D_Do[0]:
+                horseshoe_legs.append((listSolidEnds_D_Do[0][0], finiteLegEnds_D_Do[0]))
+            if listSolidEnds_D_Do[1]:
+                horseshoe_legs.append((finiteLegEnds_D_Do[1], listSolidEnds_D_Do[1][0]))
+            line_vortices.extend(
+                (
+                    legStart_D_Do,
+                    legEnd_D_Do,
+                    horseshoeUnitNormal_D,
+                    insidePoint_D_Do,
+                    arrow_radius,
+                    horseshoe_color,
+                )
+                for legStart_D_Do, legEnd_D_Do in horseshoe_legs
+            )
+        listSolidPolylines_D_Do.append(horseshoePolyline_D_Do)
+        solid_polyline_colors.append(horseshoe_color)
+
+    # Build each trailing leg's dashed part. Each dash starts at a whole multiple of the
+    # dash pattern's period in distance along the trailing leg's direction, which lines
+    # up the dashes of trailing legs that lie on top of each other.
+    dash_length = _VORTEX_DASH_LENGTH * largest_chord
+    dash_period = dash_length + _VORTEX_GAP_LENGTH * largest_chord
+    listDashVertices_D_Do: list[np.ndarray] = []
+    for (
+        trailingLegStart_D_Do,
+        trailingDirection_D,
+        end_distance,
+        dashed_start_distance,
+    ) in trailing_legs:
+        start_distance = float(np.dot(trailingLegStart_D_Do, trailingDirection_D))
+        leg_dashed_start_distance = max(dashed_start_distance, start_distance)
+        for period_id in range(
+            math.floor(leg_dashed_start_distance / dash_period),
+            math.ceil(end_distance / dash_period),
+        ):
+            dash_start_distance = max(
+                period_id * dash_period, leg_dashed_start_distance
+            )
+            dash_end_distance = min(period_id * dash_period + dash_length, end_distance)
+            if dash_end_distance <= dash_start_distance:
+                continue
+            listDashVertices_D_Do.append(
+                trailingLegStart_D_Do
+                + (dash_start_distance - start_distance) * trailingDirection_D
+            )
+            listDashVertices_D_Do.append(
+                trailingLegStart_D_Do
+                + (dash_end_distance - start_distance) * trailingDirection_D
+            )
+
+    # Draw the solid polylines, with one mesh for each color.
+    for polyline_color in dict.fromkeys(solid_polyline_colors):
+        listColorPolylines_D_Do = [
+            solidPolyline_D_Do
+            for solidPolyline_D_Do, solid_polyline_color in zip(
+                listSolidPolylines_D_Do, solid_polyline_colors
+            )
+            if solid_polyline_color == polyline_color
+        ]
+        polyline_lines = []
+        first_vertex_id = 0
+        for solidPolyline_D_Do in listColorPolylines_D_Do:
+            num_vertices = solidPolyline_D_Do.shape[0]
+            polyline_lines.append(num_vertices)
+            polyline_lines.extend(
+                range(first_vertex_id, first_vertex_id + num_vertices)
+            )
+            first_vertex_id += num_vertices
+        plotter.add_mesh(
+            pv.PolyData(
+                np.vstack(listColorPolylines_D_Do), lines=np.array(polyline_lines)
+            ),
+            color=polyline_color,
+            line_width=_VORTEX_LINE_WIDTH,
+        )
+
+    # Draw the trailing legs' dashed parts, which only horseshoe vortices have.
+    if listDashVertices_D_Do:
+        num_dashes = len(listDashVertices_D_Do) // 2
+        dash_lines = np.column_stack(
+            [
+                np.full(num_dashes, 2),
+                np.arange(0, len(listDashVertices_D_Do), 2),
+                np.arange(1, len(listDashVertices_D_Do), 2),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(np.array(listDashVertices_D_Do, dtype=float), lines=dash_lines),
+            color=horseshoe_color,
+            line_width=_VORTEX_LINE_WIDTH,
+        )
+
+    # Draw each line vortex's vorticity arrow, a half circle centered on the line
+    # vortex's midpoint, in the plane perpendicular to it. The arrow shows the direction
+    # of the vorticity for the negative vortex strengths that come with positive lift,
+    # so it turns about the line vortex's reversed direction by the right hand rule. It
+    # sweeps across the inward side of the line vortex, facing the inside of its vortex,
+    # between the side its Panel's unit normal points to and the opposite side. This
+    # keeps it from overlapping the arrows of neighboring vortices' nearby legs. Like
+    # the axes arrows, its shaft is a single line and its tip is an outlined cone, whose
+    # proportions match the axes arrows' as fractions of the half circle's length. The
+    # shaft stops where the tip's base begins. Each arrow takes its vortex's color. The
+    # shafts and the tips are each added together, one set for each color.
+    arc_parameters = np.linspace(0.0, 1.0, _VORTEX_VORTICITY_ARROW_NUM_POINTS)
+    listArcPolylines_D_Do: list[np.ndarray] = []
+    arc_colors: list[str] = []
+    listTipDirections_D: list[np.ndarray] = []
+    tip_lengths: list[float] = []
+    tip_radii: list[float] = []
+    for (
+        legStart_D_Do,
+        legEnd_D_Do,
+        unitNormal_D,
+        insidePoint_D_Do,
+        arrow_radius,
+        line_vortex_color,
+    ) in line_vortices:
+        legMidpoint_D_Do = 0.5 * (legStart_D_Do + legEnd_D_Do)
+        legDirection_D = (legEnd_D_Do - legStart_D_Do) / np.linalg.norm(
+            legEnd_D_Do - legStart_D_Do
+        )
+        vorticityDirection_D = -legDirection_D
+
+        # Find the unit vectors perpendicular to the line vortex that point to its
+        # Panel's upper side and to the inside of its vortex.
+        upwardDirection_D = (
+            unitNormal_D - np.dot(unitNormal_D, legDirection_D) * legDirection_D
+        )
+        upwardDirection_D /= np.linalg.norm(upwardDirection_D)
+        inwardDirection_D = np.cross(legDirection_D, upwardDirection_D)
+        if np.dot(inwardDirection_D, insidePoint_D_Do - legMidpoint_D_Do) < 0.0:
+            inwardDirection_D = -inwardDirection_D
+
+        # Start the half circle on whichever of the upper and lower sides turning about
+        # the vorticity direction carries toward the inward side.
+        firstDirection_D = upwardDirection_D
+        if (
+            np.dot(np.cross(vorticityDirection_D, upwardDirection_D), inwardDirection_D)
+            < 0
+        ):
+            firstDirection_D = -upwardDirection_D
+        secondDirection_D = np.cross(vorticityDirection_D, firstDirection_D)
+
+        arc_length = math.pi * arrow_radius
+        tip_length = _AXES_TIP_LENGTH * arc_length
+        shaft_end_angle = math.pi - tip_length / arrow_radius
+        angles = (shaft_end_angle * arc_parameters).reshape(-1, 1)
+        listArcPolylines_D_Do.append(
+            legMidpoint_D_Do
+            + arrow_radius
+            * (np.cos(angles) * firstDirection_D + np.sin(angles) * secondDirection_D)
+        )
+        arc_colors.append(line_vortex_color)
+        listTipDirections_D.append(
+            -math.sin(shaft_end_angle) * firstDirection_D
+            + math.cos(shaft_end_angle) * secondDirection_D
+        )
+        tip_lengths.append(tip_length)
+        tip_radii.append(_AXES_TIP_RADIUS * arc_length)
+    num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
+    for arc_color in dict.fromkeys(arc_colors):
+        color_arc_ids = [
+            arc_id
+            for arc_id, this_arc_color in enumerate(arc_colors)
+            if this_arc_color == arc_color
+        ]
+        listColorArcPolylines_D_Do = [
+            listArcPolylines_D_Do[arc_id] for arc_id in color_arc_ids
+        ]
+        arc_lines = np.column_stack(
+            [
+                np.full(len(listColorArcPolylines_D_Do), num_arc_points),
+                np.arange(num_arc_points * len(listColorArcPolylines_D_Do)).reshape(
+                    -1, num_arc_points
+                ),
+            ]
+        ).ravel()
+        plotter.add_mesh(
+            pv.PolyData(np.vstack(listColorArcPolylines_D_Do), lines=arc_lines),
+            color=arc_color,
+            line_width=_AXES_LINE_WIDTH,
+        )
+
+        # Each tip's base is where its arrow's shaft ends.
+        _add_arrow_tips(
+            plotter,
+            stackTipBases_D_Do=np.array(
+                [listArcPolylines_D_Do[arc_id][-1] for arc_id in color_arc_ids],
+                dtype=float,
+            ),
+            stackTipDirections_D=np.array(
+                [listTipDirections_D[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            lengths=np.array(
+                [tip_lengths[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            radii=np.array(
+                [tip_radii[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            color=arc_color,
+        )
+
+
+def _round_polyline_corners(points: np.ndarray, closed: bool) -> np.ndarray:
+    """Returns a polyline with its corners rounded.
+
+    Each corner is replaced by a quadratic Bezier curve that leaves the corner's
+    incoming leg and joins its outgoing leg a short distance from the corner, with the
+    corner as its control point. That distance is a fixed fraction of the shorter of the
+    corner's two legs. The rounding doesn't depend on the axes or the reference point,
+    so the returned points are in the same axes, relative to the same point, as the
+    given points.
+
+    :param points: A (N,3) ndarray of floats representing the polyline's points in
+        order. For a closed polyline, the last point must not repeat the first.
+    :param closed: Determines whether the polyline is closed. If True, every point is a
+        corner, and the returned polyline repeats its first point at its end. If False,
+        the first and last points are ends, not corners, and are kept as they are.
+    :return: A (M,3) ndarray of floats representing the rounded polyline's points in
+        order.
+    """
+    num_points = points.shape[0]
+    corner_ids = range(num_points) if closed else range(1, num_points - 1)
+    arc_parameters = np.linspace(
+        0.0, 1.0, _VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+    ).reshape(-1, 1)
+
+    rounded_points = [] if closed else [points[:1]]
+    for corner_id in corner_ids:
+        corner = points[corner_id]
+        incoming_leg = points[corner_id - 1] - corner
+        outgoing_leg = points[(corner_id + 1) % num_points] - corner
+        radius = _VORTEX_SIMPLIFIED_CORNER_RADIUS * min(
+            float(np.linalg.norm(incoming_leg)), float(np.linalg.norm(outgoing_leg))
+        )
+        arc_start = corner + radius * incoming_leg / np.linalg.norm(incoming_leg)
+        arc_end = corner + radius * outgoing_leg / np.linalg.norm(outgoing_leg)
+        rounded_points.append(
+            (1.0 - arc_parameters) ** 2 * arc_start
+            + 2.0 * (1.0 - arc_parameters) * arc_parameters * corner
+            + arc_parameters**2 * arc_end
+        )
+    if closed:
+        rounded_points.append(rounded_points[0][:1])
+    else:
+        rounded_points.append(points[-1:])
+    return np.vstack(rounded_points)
 
 
 def get_panel_surfaces(

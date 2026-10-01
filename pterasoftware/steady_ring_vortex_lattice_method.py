@@ -5,14 +5,17 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import cast
 
 import numpy as np
+import pyvista as pv
 
 from . import (
     _aerodynamics_functions,
     _functions,
     _logging,
+    _output_rendering,
     _panel,
     _parameter_validation,
     _transformations,
@@ -263,6 +266,184 @@ class SteadyRingVortexLatticeMethodSolver:
 
         # Mark that the solver has run.
         self._ran = True
+
+    def diagram(
+        self,
+        *,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = False,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        simplify_vortices: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this solver's SteadyProblem's Airplanes' Wings' Panels,
+        along with their axes and points and the vortices this solver placed on them.
+
+        The diagram is drawn in the first Airplane's geometry axes, relative to the
+        first Airplane's CG. It shows the Earth axes at the Earth origin, every Wing's
+        Panels, every Panel's bound ring vortex, and the horseshoe vortex shed from
+        every trailing edge Panel, which is drawn in a different color than the bound
+        ring vortices. The vortices are drawn from the placement this solver used during
+        its run, so the solver must have run. The horseshoe vortices' trailing legs are
+        drawn shorter than the solver's, and their ends are dashed to show that they
+        continue. The units are in meters.
+
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param simplify_vortices: Determines whether to simplify the vortices' drawing.
+            If True, each ring vortex is shrunk toward its center and each horseshoe
+            vortex's finite leg toward its midpoint, which separates the legs that
+            neighboring vortices share. Their corners are also rounded, they are drawn
+            in a different color, and each of their legs gets an arrow showing its
+            vorticity's direction for positive lift. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airplane_axes_and_points, "show_airplane_axes_and_points"
+        )
+        show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_wing_axes_and_points, "show_wing_axes_and_points"
+        )
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+        simplify_vortices = _parameter_validation.boolLike_return_bool(
+            simplify_vortices, "simplify_vortices"
+        )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        if not self._ran:
+            raise RuntimeError("The solver must have run before drawing its diagram.")
+
+        plotter = pv.Plotter()
+        _output_rendering.add_steady_problem(
+            plotter,
+            self._steady_problem,
+            show_airplane_axes_and_points=show_airplane_axes_and_points,
+            show_wing_axes_and_points=show_wing_axes_and_points,
+            show_wing_cross_section_axes_and_points=(
+                show_wing_cross_section_axes_and_points
+            ),
+            show_airfoil_axes_and_points=show_airfoil_axes_and_points,
+            show_airfoils=show_airfoils,
+            show_mcls=show_mcls,
+            show_collocation_points=show_collocation_points,
+            label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
+        )
+
+        # The vortex stacks are already in the diagram axes, relative to the diagram
+        # origin. This solver places no wake ring vortices. The horseshoe vortex stacks
+        # are in trailing edge order, so each horseshoe vortex takes the unit normal of
+        # the trailing edge Panel that sheds it.
+        noVortexPoints_D_Do = np.empty((0, 3), dtype=float)
+        _output_rendering.add_vortices(
+            plotter,
+            stackFrrvp_D_Do=self.stackFrbrvp_GP1_CgP1,
+            stackFlrvp_D_Do=self.stackFlbrvp_GP1_CgP1,
+            stackBlrvp_D_Do=self.stackBlbrvp_GP1_CgP1,
+            stackBrrvp_D_Do=self.stackBrbrvp_GP1_CgP1,
+            stackRingUnitNormals_D=self.stackUnitNormals_GP1,
+            stackFrwrvp_D_Do=noVortexPoints_D_Do,
+            stackFlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBlwrvp_D_Do=noVortexPoints_D_Do,
+            stackBrwrvp_D_Do=noVortexPoints_D_Do,
+            stackWakeRingUnitNormals_D=noVortexPoints_D_Do,
+            stackFrhvp_D_Do=self._stackFrhvp_GP1_CgP1,
+            stackFlhvp_D_Do=self._stackFlhvp_GP1_CgP1,
+            stackBlhvp_D_Do=self._stackBlhvp_GP1_CgP1,
+            stackBrhvp_D_Do=self._stackBrhvp_GP1_CgP1,
+            stackHorseshoeUnitNormals_D=self.stackUnitNormals_GP1[
+                self.panel_is_trailing_edge
+            ],
+            horseshoe_vortices_are_wake=True,
+            largest_chord=max(
+                wing_cross_section.chord
+                for airplane in self.airplanes
+                for wing in airplane.wings
+                for wing_cross_section in wing.wing_cross_sections
+            ),
+            simplify=simplify_vortices,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
     def _collapse_geometry(self) -> None:
         """Computes the bound ring vortex and trailing edge horseshoe vortex geometries

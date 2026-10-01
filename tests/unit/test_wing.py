@@ -4,9 +4,11 @@ import copy
 import unittest
 from collections.abc import Sequence
 from typing import Any
+from unittest.mock import patch
 
 import numpy as np
 import numpy.testing as npt
+import pyvista as pv
 
 import pterasoftware as ps
 from tests.unit.fixtures import geometry_fixtures
@@ -1514,137 +1516,110 @@ class TestWingDeepCopy(unittest.TestCase):
             )
 
 
-class TestWingGetPlottableData(unittest.TestCase):
-    """Tests for Wing.get_plottable_data method."""
+class TestWingDiagram(unittest.TestCase):
+    """Tests for Wing.diagram method."""
 
-    def setUp(self) -> None:
-        """Set up test fixtures for get_plottable_data tests."""
-
-    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self) -> None:
-        """Test that get_plottable_data returns None when symmetry_type not set."""
+    def test_diagram_raises_when_symmetry_type_not_set(self) -> None:
+        """Test that diagram raises a ValueError when symmetry_type not set."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
 
         # Symmetry type not set (Wing not meshed).
         self.assertIsNone(wing.symmetry_type)
 
-        result = wing.get_plottable_data(show=False)
+        with self.assertRaises(ValueError):
+            wing.diagram()
 
-        self.assertIsNone(result)
-
-    def test_get_plottable_data_returns_list_when_meshed(self) -> None:
-        """Test that get_plottable_data returns a list when meshed."""
+    def test_diagram_shows_the_diagram_when_meshed(self) -> None:
+        """Test that diagram shows the diagram once when meshed."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        result = wing.get_plottable_data(show=False)
-        assert result is not None
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
 
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 2)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_returns_list_of_lists(self) -> None:
-        """Test that get_plottable_data returns two lists of ndarrays."""
-        wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
-
-        result = wing.get_plottable_data(show=False)
-        assert result is not None
-
-        # First element is list of Airfoil outlines.
-        self.assertIsInstance(result[0], list)
-        # Second element is list of Airfoil mean camber lines.
-        self.assertIsInstance(result[1], list)
-
-    def test_get_plottable_data_returns_ndarrays_for_each_cross_section(self) -> None:
-        """Test that get_plottable_data returns one ndarray per WingCrossSection."""
-        wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
-
-        result = wing.get_plottable_data(show=False)
-        assert result is not None
-
-        num_wing_cross_sections = len(wing.wing_cross_sections)
-
-        # It should have one outline array per WingCrossSection.
-        self.assertEqual(len(result[0]), num_wing_cross_sections)
-        # It should have one MCL array per WingCrossSection.
-        self.assertEqual(len(result[1]), num_wing_cross_sections)
-
-        for outline in result[0]:
-            self.assertIsInstance(outline, np.ndarray)
-            self.assertEqual(outline.shape[1], 3)  # These are 3D points.
-
-        for mcl in result[1]:
-            self.assertIsInstance(mcl, np.ndarray)
-            self.assertEqual(mcl.shape[1], 3)  # These are 3D points.
-
-    def test_get_plottable_data_three_section_wing(self) -> None:
-        """Test get_plottable_data for Wing with 3 WingCrossSections."""
+    def test_diagram_three_section_wing(self) -> None:
+        """Test diagram for Wing with 3 WingCrossSections."""
         wing = geometry_fixtures.make_three_section_wing_fixture()
         wing.generate_mesh(1)
 
-        result = wing.get_plottable_data(show=False)
-        assert result is not None
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram(show_airfoils=True, show_mcls=True)
 
-        # It should have 3 outlines and 3 MCLs.
-        self.assertEqual(len(result[0]), 3)
-        self.assertEqual(len(result[1]), 3)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_type_4_symmetric_wing(self) -> None:
-        """Test get_plottable_data for type 4 symmetric Wing."""
+    def test_diagram_type_4_symmetric_wing(self) -> None:
+        """Test diagram for type 4 symmetric Wing."""
         wing = geometry_fixtures.make_symmetric_continuous_rectangular_wing_fixture()
         wing.generate_mesh(4)
 
-        result = wing.get_plottable_data(show=False)
-        assert result is not None
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
 
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 2)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_default_show_is_false(self) -> None:
-        """Test that get_plottable_data default for show is False."""
+    def test_diagram_type_2_wing(self) -> None:
+        """Test diagram for type 2 Wing."""
+        wing = geometry_fixtures.make_type_2_wing_fixture()
+        wing.generate_mesh(2)
+
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_type_3_wing(self) -> None:
+        """Test diagram for type 3 Wing."""
+        wing = geometry_fixtures.make_type_3_wing_fixture()
+        wing.generate_mesh(3)
+
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for its flags."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Call without a show parameter. It should return data (not None).
-        result = wing.get_plottable_data()
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram(
+                show_wing_cross_section_axes_and_points=np.bool(False),
+                show_airfoil_axes_and_points=np.bool(True),
+                show_airfoils=np.bool(True),
+                show_mcls=np.bool(True),
+                show_collocation_points=np.bool(True),
+                label_collocation_points=np.bool(True),
+                math_labels=np.bool(True),
+                save=np.bool(False),
+            )
 
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
-        """Test that get_plottable_data accepts numpy bool for show parameter."""
+    def test_diagram_invalid_save_type_raises(self) -> None:
+        """Test that diagram raises error for invalid save type."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        result = wing.get_plottable_data(show=np.bool(False))
-
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_invalid_show_type_raises(self) -> None:
-        """Test that get_plottable_data raises error for invalid show type."""
-        wing = geometry_fixtures.make_type_1_wing_fixture()
-        wing.generate_mesh(1)
-
-        bad_show: Any = "invalid"
+        bad_save: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            wing.get_plottable_data(show=bad_show)
+            wing.diagram(save=bad_save)
 
-    def test_get_plottable_data_with_panels_meshed(self) -> None:
-        """Test get_plottable_data with meshed Panels."""
+
+class TestWingDeprecatedPlottingMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated Wing plotting methods."""
+
+    def test_get_plottable_data_warns(self) -> None:
+        """Test that calling get_plottable_data emits a DeprecationWarning."""
         wing = geometry_fixtures.make_type_1_wing_fixture()
         wing.generate_mesh(1)
 
-        # Verify Panels are meshed.
-        self.assertIsNotNone(wing.panels)
-
-        result = wing.get_plottable_data(show=False)
-
-        self.assertIsNotNone(result)
+        with self.assertWarns(DeprecationWarning):
+            wing.get_plottable_data(show=False)
 
 
 class TestWingTransformationMatrixCaching(unittest.TestCase):

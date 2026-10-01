@@ -5,6 +5,10 @@ Based on an identical XFLR5 VLM2 testing case, the expected output for this case
 """
 
 import unittest
+from unittest.mock import patch
+
+import numpy as np
+import pyvista as pv
 
 import pterasoftware as ps
 from tests.integration.fixtures import solver_fixtures
@@ -21,11 +25,14 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
     def setUpClass(cls) -> None:
         """This method sets up the test.
 
+        The solver is run once here and shared by every test, none of which change it.
+
         :return: None
         """
         cls.steady_ring_vortex_lattice_method_validation_solver = (
             solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
         )
+        cls.steady_ring_vortex_lattice_method_validation_solver.run()
 
     def test_method(self) -> None:
         """This method tests the SteadyRingVortexLatticeMethodSolver's output.
@@ -35,8 +42,6 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
 
         :return: None
         """
-        self.steady_ring_vortex_lattice_method_validation_solver.run()
-
         this_airplane = (
             self.steady_ring_vortex_lattice_method_validation_solver.airplanes[0]
         )
@@ -71,3 +76,63 @@ class TestSteadyRingVortexLatticeMethod(unittest.TestCase):
         self.assertTrue(c_di_error < allowable_error)
         self.assertTrue(c_l_error < allowable_error)
         self.assertTrue(c_m_error < allowable_error)
+
+    def test_diagram_shows_the_diagram(self) -> None:
+        """Test that diagram shows the diagram once.
+
+        :return: None
+        """
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.steady_ring_vortex_lattice_method_validation_solver.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_shows_the_simplified_vortices(self) -> None:
+        """Test that diagram shows the diagram once with the vortices simplified.
+
+        :return: None
+        """
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.steady_ring_vortex_lattice_method_validation_solver.diagram(
+                simplify_vortices=True
+            )
+
+        mock_show.assert_called_once()
+
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for its flags.
+
+        :return: None
+        """
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.steady_ring_vortex_lattice_method_validation_solver.diagram(
+                show_airplane_axes_and_points=np.bool(True),
+                show_wing_axes_and_points=np.bool(True),
+                show_wing_cross_section_axes_and_points=np.bool(True),
+                show_airfoil_axes_and_points=np.bool(True),
+                show_airfoils=np.bool(True),
+                show_mcls=np.bool(True),
+                show_collocation_points=np.bool(True),
+                label_collocation_points=np.bool(True),
+                simplify_vortices=np.bool(False),
+                math_labels=np.bool(True),
+                save=np.bool(False),
+            )
+
+        mock_show.assert_called_once()
+
+    def test_diagram_raises_before_the_solver_runs(self) -> None:
+        """Test that diagram raises a RuntimeError for a solver that hasn't run, since
+        the vortices it draws are placed during the run.
+
+        :return: None
+        """
+        unrun_solver = (
+            solver_fixtures.make_steady_ring_vortex_lattice_method_validation_solver()
+        )
+        with patch.object(pv.Plotter, "show") as mock_show:
+            with self.assertRaises(RuntimeError):
+                unrun_solver.diagram()
+
+        mock_show.assert_not_called()

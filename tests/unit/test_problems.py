@@ -1,9 +1,13 @@
 """This module contains classes to test SteadyProblems and UnsteadyProblems."""
 
+import tempfile
 import unittest
+from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import numpy as np
+import pyvista as pv
 
 import pterasoftware as ps
 from tests.unit.fixtures import (
@@ -269,6 +273,72 @@ class TestSteadyProblemPanelCoordinates(unittest.TestCase):
                     self.assertIsNotNone(panel.Brpp_GP1_CgP1)
 
 
+class TestSteadyProblemDiagram(unittest.TestCase):
+    """Tests for SteadyProblem.diagram method."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for diagram tests."""
+        self.basic_steady_problem = problem_fixtures.make_basic_steady_problem_fixture()
+        self.multi_airplane_steady_problem = (
+            problem_fixtures.make_multi_airplane_steady_problem_fixture()
+        )
+
+    def test_diagram_shows_the_diagram(self) -> None:
+        """Test that diagram shows the diagram once."""
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.basic_steady_problem.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for its flags."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.basic_steady_problem.diagram(
+                show_airplane_axes_and_points=np.bool(True),
+                show_wing_axes_and_points=np.bool(True),
+                show_wing_cross_section_axes_and_points=np.bool(True),
+                show_airfoil_axes_and_points=np.bool(True),
+                show_airfoils=np.bool(True),
+                show_mcls=np.bool(True),
+                show_collocation_points=np.bool(True),
+                label_collocation_points=np.bool(True),
+                math_labels=np.bool(True),
+                save=np.bool(False),
+            )
+
+        mock_show.assert_called_once()
+
+    def test_diagram_multi_airplane_steady_problem(self) -> None:
+        """Test diagram with a SteadyProblem with multiple Airplanes."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.multi_airplane_steady_problem.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_saves_the_diagram(self) -> None:
+        """Test that diagram saves a WebP to the given path.
+
+        Saving takes a screenshot of the shown Plotter, so show can't be patched out
+        here. Rendering off screen instead keeps show from opening a window and blocking
+        until it is closed.
+        """
+        with tempfile.TemporaryDirectory() as temporary_directory_name:
+            saved_path = Path(temporary_directory_name) / "steady_problem.webp"
+            with patch.object(pv, "OFF_SCREEN", True):
+                self.basic_steady_problem.diagram(save=True, path=saved_path)
+
+            self.assertTrue(saved_path.is_file())
+            self.assertGreater(saved_path.stat().st_size, 0)
+
+    def test_diagram_invalid_save_type_raises(self) -> None:
+        """Test that diagram raises error for invalid save type."""
+        bad_save: Any = "invalid"
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            self.basic_steady_problem.diagram(save=bad_save)
+
+
 class TestUnsteadyProblem(unittest.TestCase):
     """This is a class with functions to test UnsteadyProblems."""
 
@@ -412,6 +482,97 @@ class TestUnsteadyProblem(unittest.TestCase):
         # Verify that each SteadyProblem has multiple Airplanes.
         for steady_problem in self.multi_airplane_unsteady_problem.steady_problems:
             self.assertEqual(len(steady_problem.airplanes), 2)
+
+
+class TestUnsteadyProblemDiagram(unittest.TestCase):
+    """Tests for the UnsteadyProblem diagram method."""
+
+    basic_unsteady_problem: ps.problems.UnsteadyProblem
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Set up test fixtures once for all diagram tests."""
+        cls.basic_unsteady_problem = (
+            problem_fixtures.make_basic_unsteady_problem_fixture()
+        )
+
+    def test_diagram_shows_the_diagram(self) -> None:
+        """Test that diagram shows the diagram once."""
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.basic_unsteady_problem.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_draws_the_last_time_step_by_default(self) -> None:
+        """Test that diagram draws the last time step's SteadyProblem by default."""
+        with patch.object(
+            ps.problems.SteadyProblem, "diagram", autospec=True
+        ) as mock_diagram:
+            self.basic_unsteady_problem.diagram()
+
+        mock_diagram.assert_called_once()
+        self.assertIs(
+            mock_diagram.call_args.args[0],
+            self.basic_unsteady_problem.steady_problems[-1],
+        )
+
+    def test_diagram_draws_the_given_time_step(self) -> None:
+        """Test that diagram draws the SteadyProblem of the time step it is given."""
+        with patch.object(
+            ps.problems.SteadyProblem, "diagram", autospec=True
+        ) as mock_diagram:
+            self.basic_unsteady_problem.diagram(step=1)
+
+        mock_diagram.assert_called_once()
+        self.assertIs(
+            mock_diagram.call_args.args[0],
+            self.basic_unsteady_problem.steady_problems[1],
+        )
+
+    def test_diagram_rejects_an_out_of_range_step(self) -> None:
+        """Test that diagram rejects a step past either end of the time steps."""
+        num_steps = self.basic_unsteady_problem.num_steps
+        for step in [num_steps, -num_steps - 1]:
+            with self.subTest(step=step):
+                with self.assertRaises(ValueError):
+                    self.basic_unsteady_problem.diagram(step=step)
+
+    def test_diagram_warns_for_a_negative_step_before_solving(self) -> None:
+        """Test that diagram warns when a negative step counts back from the last time
+        step created so far rather than from the last time step.
+
+        An AeroelasticUnsteadyProblem creates each time step's SteadyProblem while it is
+        solved, so before then only the first time step's exists.
+        """
+        aeroelastic_unsteady_problem = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+        with patch.object(pv.Plotter, "show"):
+            with self.assertLogs("pterasoftware.core", level="WARNING") as context:
+                aeroelastic_unsteady_problem.diagram()
+        self.assertIn("hasn't been solved", context.output[0])
+
+    def test_diagram_does_not_warn_for_a_nonnegative_step_before_solving(
+        self,
+    ) -> None:
+        """Test that diagram doesn't warn when a nonnegative step names a time step
+        whose SteadyProblem has been created."""
+        aeroelastic_unsteady_problem = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+        with patch.object(pv.Plotter, "show"):
+            with self.assertNoLogs("pterasoftware.core", level="WARNING"):
+                aeroelastic_unsteady_problem.diagram(step=0)
+
+    def test_diagram_rejects_a_step_not_yet_created(self) -> None:
+        """Test that diagram rejects a step whose SteadyProblem hasn't been created
+        yet."""
+        aeroelastic_unsteady_problem = (
+            problem_fixtures.make_basic_aeroelastic_unsteady_problem_fixture()
+        )
+        with self.assertRaises(ValueError):
+            aeroelastic_unsteady_problem.diagram(step=1)
 
 
 class TestUnsteadyProblemImmutability(unittest.TestCase):

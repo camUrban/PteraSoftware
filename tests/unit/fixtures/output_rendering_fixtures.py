@@ -6,6 +6,9 @@ import webp
 
 import pterasoftware as ps
 
+# noinspection PyProtectedMember
+from pterasoftware import _transformations
+
 from . import (
     airplane_movement_fixtures,
     geometry_fixtures,
@@ -307,3 +310,260 @@ def make_animation_frames_fixture(
         )
         for _ in range(num_frames)
     ]
+
+
+def make_no_vortex_points_fixture() -> np.ndarray:
+    """Makes a fixture that is an empty stack of vortex points.
+
+    It stands in for every corner point stack and unit normal stack of a kind of vortex
+    that a solver doesn't place, as the solvers themselves pass when drawing their
+    diagrams.
+
+    :return: A (0,3) ndarray of floats.
+    """
+    return np.empty((0, 3), dtype=float)
+
+
+def make_square_ring_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single ring vortex with sides of 1.0 meter.
+
+    The ring vortex lies in the xy plane, with its front leg along the y axis and its
+    back leg 1.0 meter downstream of it, and its Panel's unit normal points along the
+    positive z direction. Its center is (0.5, 0.5, 0.0), so the simplified ring vortex's
+    corners sit 0.45 meters from its center along the x and y axes.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the ring
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[1.0, 0.0, 0.0]], dtype=float),
+        np.array([[1.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_neighboring_ring_vortices_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is two ring vortices with sides of 1.0 meter that share a
+    leg.
+
+    Both ring vortices lie in the xy plane, side by side along the y axis, so the first
+    one's right leg is the second one's left leg. Their Panels' unit normals point along
+    the positive z direction.
+
+    :return: A tuple of five (2,3) ndarrays of floats. In order, they hold each ring
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and each one's Panel's unit normal (in
+        diagram axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0], [0.0, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]], dtype=float),
+        np.array([[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]], dtype=float),
+        np.array([[1.0, 1.0, 0.0], [1.0, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_straight_horseshoe_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single horseshoe vortex whose trailing legs run along
+    the positive x direction.
+
+    The finite leg runs along the y axis from (0.0, 1.0, 0.0) to the origin, so the
+    vortices' bounding box is flat in x and every trailing leg ends exactly the overhang
+    downstream of the finite leg. The back points sit 20.0 meters downstream, as they
+    would for a solver's wing of span 1.0 meter, and the Panel's unit normal points
+    along the positive z direction.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the horseshoe
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_staggered_horseshoe_vortices_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is two horseshoe vortices whose neighboring trailing legs
+    lie on top of each other but start at different points.
+
+    The first horseshoe vortex's finite leg runs along the y axis from (0.0, 1.0, 0.0)
+    to the origin. The second one's runs from (0.3, 2.0, 0.0) to (0.3, 1.0, 0.0), so its
+    left trailing leg starts 0.3 meters downstream along the first one's right trailing
+    leg. Every trailing leg runs along the positive x direction, and both Panels' unit
+    normals point along the positive z direction.
+
+    :return: A tuple of five (2,3) ndarrays of floats. In order, they hold each
+        horseshoe vortex's front right, front left, back left, and back right points (in
+        diagram axes, relative to the diagram origin), and each one's Panel's unit
+        normal (in diagram axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0], [0.3, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0], [0.3, 1.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 0.0], [20.3, 1.0, 0.0]], dtype=float),
+        np.array([[20.0, 1.0, 0.0], [20.3, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_slanted_horseshoe_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single horseshoe vortex whose trailing legs run
+    diagonally in the xz plane.
+
+    The finite leg runs along the y axis from (0.0, 1.0, 0.0) to the origin, like the
+    straight horseshoe vortex's, but the back points sit 20.0 meters along both the x
+    and z axes, so the trailing legs run along the unit vector (1.0, 0.0, 1.0) /
+    sqrt(2.0). The vortices' bounding box is flat along that direction, so every
+    trailing leg still ends exactly the overhang past the finite leg. The Panel's unit
+    normal points along the positive z direction.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the horseshoe
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 20.0]], dtype=float),
+        np.array([[20.0, 1.0, 20.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_offset_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 90 degrees about
+    the z axis and placed away from the diagram origin.
+
+    The axes set's x basis direction points along the positive y direction, its y basis
+    direction points along the negative x direction, and its z basis direction points
+    along the positive z direction (all in diagram axes). Its point sits at (1.0, 2.0,
+    3.0) (in diagram axes, relative to the diagram origin).
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [0.0, -1.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 2.0],
+            [0.0, 0.0, 1.0, 3.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_x_turned_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 90 degrees about
+    the x axis, at the diagram origin.
+
+    The axes set's x basis direction points along the positive x direction, its y basis
+    direction points along the positive z direction, and its z basis direction points
+    along the negative y direction (all in diagram axes). Drawn alongside an axes set
+    aligned with diagram axes at the same point, its x arrow coincides with that axes
+    set's x arrow and its y arrow coincides with that axes set's z arrow, while its z
+    arrow coincides with none of them.
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_reversed_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 180 degrees
+    about the z axis, at the diagram origin.
+
+    The axes set's x and y basis directions point along the negative x and negative y
+    directions, and its z basis direction points along the positive z direction (all in
+    diagram axes), so its x and y arrows point left and down on screen when viewed down
+    the negative z direction.
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [-1.0, 0.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_oblique_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned obliquely and
+    placed away from the diagram origin.
+
+    The axes set is turned by intrinsic xyz angles of (30.0, -50.0, 120.0) degrees, so
+    none of its basis directions lie along a diagram axis, and each of them has a
+    negative x component (in diagram axes). Its point sits at (0.5, -1.0, 2.0) (in
+    diagram axes, relative to the diagram origin).
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    # Turning first and then translating within diagram axes leaves the turned basis
+    # directions in the first three columns and the translation in the last column.
+    rot_T_act = _transformations.generate_rot_T(
+        np.array([30.0, -50.0, 120.0], dtype=float),
+        passive=False,
+        intrinsic=True,
+        order="xyz",
+    )
+    trans_T_act = _transformations.generate_trans_T(
+        np.array([0.5, -1.0, 2.0], dtype=float), passive=False
+    )
+    return _transformations.compose_T_act(rot_T_act, trans_T_act)
+
+
+def make_cross_directions_fixture() -> np.ndarray:
+    """Makes a fixture that is the directions of an extra point's cross's two arms.
+
+    The arms lie along the diagonals of the xy plane, so neither one lies along an axis,
+    and a test can tell a cross oriented by these directions from one oriented by any
+    axis.
+
+    :return: A (2,3) ndarray of floats whose rows hold the unit vectors (in diagram
+        axes) along which the cross's two arms lie.
+    """
+    crossDirections_D: np.ndarray = np.array(
+        [[1.0, 1.0, 0.0], [1.0, -1.0, 0.0]],
+        dtype=float,
+    ) / np.sqrt(2.0)
+    return crossDirections_D

@@ -5,15 +5,18 @@ from __future__ import annotations
 import copy
 import math
 from collections.abc import Callable, Sequence
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 
-from . import _oscillation, _parameter_validation, _transformations, geometry
+from . import _logging, _oscillation, _parameter_validation, _transformations, geometry
 from . import operating_point as operating_point_mod
 
 if TYPE_CHECKING:
     from . import problems
+
+_logger = _logging.get_logger("core")
 
 
 def lcm(a: float, b: float) -> float:
@@ -2777,3 +2780,124 @@ class CoreUnsteadyProblem:
             Airplane. Empty if finalMeanMomentCoefficients_W_Cg has not been populated.
         """
         return [float(entry[2]) for entry in self.finalMeanMomentCoefficients_W_Cg]
+
+    # --- Other methods ---
+    def diagram(
+        self,
+        *,
+        step: int = -1,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = False,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of one time step's SteadyProblem's Airplanes' Wings'
+        Panels, along with their axes and points.
+
+        The diagram is the time step's SteadyProblem's diagram, so it is drawn in the
+        first Airplane's geometry axes, relative to the first Airplane's CG, at that
+        time step. It shows the Earth axes at the Earth origin and every Wing's Panels.
+        The units are in meters.
+
+        Some problems, such as AeroelasticUnsteadyProblems and
+        FreeFlightUnsteadyProblems, create each time step's SteadyProblem while they are
+        solved, so before then only the first time step can be drawn. If step is
+        negative and some time steps' SteadyProblems haven't been created yet, a warning
+        is logged, because step then counts back from the last time step created so far
+        rather than from the last time step.
+
+        :param step: The time step to draw, as an index into this problem's
+            SteadyProblems. Negative values count back from the last one, so the default
+            of -1 draws the last time step whose SteadyProblem has been created. It must
+            be an int in the range from negative the number of SteadyProblems created so
+            far, inclusive, to that number, exclusive.
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        steady_problems = self.steady_problems
+        num_created_steps = len(steady_problems)
+        step = _parameter_validation.int_in_range_return_int(
+            step,
+            "step",
+            min_val=-num_created_steps,
+            min_inclusive=True,
+            max_val=num_created_steps,
+            max_inclusive=False,
+        )
+
+        if step < 0 and num_created_steps < self._num_steps:
+            _logger.warning(
+                _logging.indent()
+                + "step=%d is time step %d, since the problem hasn't been solved",
+                step,
+                num_created_steps + step,
+            )
+
+        steady_problems[step].diagram(
+            show_airplane_axes_and_points=show_airplane_axes_and_points,
+            show_wing_axes_and_points=show_wing_axes_and_points,
+            show_wing_cross_section_axes_and_points=(
+                show_wing_cross_section_axes_and_points
+            ),
+            show_airfoil_axes_and_points=show_airfoil_axes_and_points,
+            show_airfoils=show_airfoils,
+            show_mcls=show_mcls,
+            show_collocation_points=show_collocation_points,
+            label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
+            save=save,
+            path=path,
+            quality=quality,
+        )

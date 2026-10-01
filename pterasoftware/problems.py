@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable, Sequence
-from pathlib import PureWindowsPath
+from pathlib import Path, PureWindowsPath
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
+import pyvista as pv
 from scipy.integrate import solve_ivp
 
 from . import (
@@ -16,6 +17,7 @@ from . import (
     _fixed_point_relaxation,
     _logging,
     _mujoco_model,
+    _output_rendering,
     _parameter_validation,
     _private_access,
     _transformations,
@@ -181,6 +183,131 @@ class SteadyProblem:
             # Store as tuple to prevent external mutation.
             self._reynolds_numbers = tuple(reynolds_list)
         return self._reynolds_numbers
+
+    # --- Other methods ---
+    def diagram(
+        self,
+        *,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = False,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this SteadyProblem's Airplanes' Wings' Panels, along
+        with their axes and points.
+
+        The diagram is drawn in the first Airplane's geometry axes, relative to the
+        first Airplane's CG. It shows the Earth axes at the Earth origin and every
+        Wing's Panels. The units are in meters.
+
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airplane_axes_and_points, "show_airplane_axes_and_points"
+        )
+        show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_wing_axes_and_points, "show_wing_axes_and_points"
+        )
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        plotter = pv.Plotter()
+        _output_rendering.add_steady_problem(
+            plotter,
+            self,
+            show_airplane_axes_and_points=show_airplane_axes_and_points,
+            show_wing_axes_and_points=show_wing_axes_and_points,
+            show_wing_cross_section_axes_and_points=(
+                show_wing_cross_section_axes_and_points
+            ),
+            show_airfoil_axes_and_points=show_airfoil_axes_and_points,
+            show_airfoils=show_airfoils,
+            show_mcls=show_mcls,
+            show_collocation_points=show_collocation_points,
+            label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
+        )
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
 
 class UnsteadyProblem(_core.CoreUnsteadyProblem):

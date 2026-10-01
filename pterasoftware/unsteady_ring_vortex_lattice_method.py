@@ -5,9 +5,11 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import cast
 
 import numpy as np
+import pyvista as pv
 from tqdm import tqdm
 
 from . import (
@@ -15,6 +17,7 @@ from . import (
     _core,
     _functions,
     _logging,
+    _output_rendering,
     _panel,
     _parameter_validation,
     _transformations,
@@ -584,6 +587,219 @@ class UnsteadyRingVortexLatticeMethodSolver:
 
         # Mark that the solver has run.
         self._ran = True
+
+    def diagram(
+        self,
+        *,
+        step: int = -1,
+        show_airplane_axes_and_points: bool | np.bool = True,
+        show_wing_axes_and_points: bool | np.bool = False,
+        show_wing_cross_section_axes_and_points: bool | np.bool = False,
+        show_airfoil_axes_and_points: bool | np.bool = False,
+        show_airfoils: bool | np.bool = False,
+        show_mcls: bool | np.bool = False,
+        show_collocation_points: bool | np.bool = False,
+        label_collocation_points: bool | np.bool = False,
+        simplify_vortices: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of one time step's SteadyProblem's Airplanes' Wings'
+        Panels, along with their axes and points and the vortices this solver placed on
+        them and in their wake at that time step.
+
+        The diagram is drawn in the first Airplane's geometry axes, relative to the
+        first Airplane's CG, at the time step. It shows the Earth axes at the Earth
+        origin, every Wing's Panels, every Panel's bound ring vortex, and the wake ring
+        vortices, which are drawn in a different color than the bound ring vortices. The
+        vortices are drawn from the placement this solver used during its run, so the
+        solver must have run. The units are in meters.
+
+        :param step: The time step to draw. Negative values count back from the last
+            time step, so the default of -1 draws the last time step. It must be an int
+            in the range from negative the number of time steps, inclusive, to the
+            number of time steps, exclusive.
+        :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
+            geometry axes at its CG. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_wing_axes_and_points: Determines whether to draw each Wing's axes at
+            its leading edge root point. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param show_wing_cross_section_axes_and_points: Determines whether to draw each
+            WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
+            and will be converted internally to a bool. The default is False.
+        :param show_airfoil_axes_and_points: Determines whether to draw each
+            WingCrossSection's Airfoil's axes at its leading point. Can be a bool or a
+            numpy bool and will be converted internally to a bool. The default is False.
+        :param show_airfoils: Determines whether to draw each WingCrossSection's
+            Airfoil's outline and mean camber line. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_mcls: Determines whether to draw each Airfoil's mean camber line. It
+            has no effect if show_airfoils is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is False.
+        :param show_collocation_points: Determines whether to draw the Wings' Panels'
+            collocation points. The labels number each Panel by its chordwise row and
+            spanwise column, starting at one, followed by its Wing's and its Airplane's
+            numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param label_collocation_points: Determines whether to label the collocation
+            points. If False, they are still marked. It has no effect if
+            show_collocation_points is False. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param simplify_vortices: Determines whether to simplify the vortices' drawing.
+            If True, each ring vortex and wake ring vortex is shrunk toward its center,
+            which separates the legs that neighboring vortices share. Their corners are
+            also rounded, they are drawn in different colors, and each of their legs
+            gets an arrow showing its vorticity's direction for positive lift. Can be a
+            bool or a numpy bool and will be converted internally to a bool. The default
+            is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        step = _parameter_validation.int_in_range_return_int(
+            step,
+            "step",
+            min_val=-self.num_steps,
+            min_inclusive=True,
+            max_val=self.num_steps,
+            max_inclusive=False,
+        )
+        show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airplane_axes_and_points, "show_airplane_axes_and_points"
+        )
+        show_wing_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_wing_axes_and_points, "show_wing_axes_and_points"
+        )
+        show_wing_cross_section_axes_and_points = (
+            _parameter_validation.boolLike_return_bool(
+                show_wing_cross_section_axes_and_points,
+                "show_wing_cross_section_axes_and_points",
+            )
+        )
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoils = _parameter_validation.boolLike_return_bool(
+            show_airfoils, "show_airfoils"
+        )
+        show_mcls = _parameter_validation.boolLike_return_bool(show_mcls, "show_mcls")
+        show_collocation_points = _parameter_validation.boolLike_return_bool(
+            show_collocation_points, "show_collocation_points"
+        )
+        label_collocation_points = _parameter_validation.boolLike_return_bool(
+            label_collocation_points, "label_collocation_points"
+        )
+        simplify_vortices = _parameter_validation.boolLike_return_bool(
+            simplify_vortices, "simplify_vortices"
+        )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        if not self._ran:
+            raise RuntimeError("The solver must have run before drawing its diagram.")
+
+        steady_problem = self.steady_problems[step]
+
+        plotter = pv.Plotter()
+        _output_rendering.add_steady_problem(
+            plotter,
+            steady_problem,
+            show_airplane_axes_and_points=show_airplane_axes_and_points,
+            show_wing_axes_and_points=show_wing_axes_and_points,
+            show_wing_cross_section_axes_and_points=(
+                show_wing_cross_section_axes_and_points
+            ),
+            show_airfoil_axes_and_points=show_airfoil_axes_and_points,
+            show_airfoils=show_airfoils,
+            show_mcls=show_mcls,
+            show_collocation_points=show_collocation_points,
+            label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
+        )
+
+        # Each bound ring vortex takes the unit normal (in the first Airplane's geometry
+        # axes) of the Panel that carries it at this time step. The bound ring vortex
+        # stacks list the Panels of each Airplane's Wings in turn, row by row.
+        listRingUnitNormals_GP1 = []
+        for airplane in steady_problem.airplanes:
+            for wing in airplane.wings:
+                _panels = wing.panels
+                assert _panels is not None
+                listRingUnitNormals_GP1 += [
+                    panel.unitNormal_GP1 for panel in np.ravel(_panels)
+                ]
+
+        # A wake ring vortex has no Panel, so it takes the unit normal (in the first
+        # Airplane's geometry axes) found from its own diagonals, the same way a Panel's
+        # is found from its diagonals.
+        stackFrwrvp_GP1_CgP1 = self.listStackFrwrvp_GP1_CgP1[step]
+        stackFlwrvp_GP1_CgP1 = self.listStackFlwrvp_GP1_CgP1[step]
+        stackBlwrvp_GP1_CgP1 = self.listStackBlwrvp_GP1_CgP1[step]
+        stackBrwrvp_GP1_CgP1 = self.listStackBrwrvp_GP1_CgP1[step]
+        stackWakeRingNormals_GP1 = np.cross(
+            stackFrwrvp_GP1_CgP1 - stackBlwrvp_GP1_CgP1,
+            stackFlwrvp_GP1_CgP1 - stackBrwrvp_GP1_CgP1,
+        )
+
+        # The vortex stacks are already in the diagram axes, relative to the diagram
+        # origin. This solver places no horseshoe vortices.
+        noVortexPoints_D_Do = np.empty((0, 3), dtype=float)
+        _output_rendering.add_vortices(
+            plotter,
+            stackFrrvp_D_Do=self._listStackFrbrvp_GP1_CgP1[step],
+            stackFlrvp_D_Do=self._listStackFlbrvp_GP1_CgP1[step],
+            stackBlrvp_D_Do=self._listStackBlbrvp_GP1_CgP1[step],
+            stackBrrvp_D_Do=self._listStackBrbrvp_GP1_CgP1[step],
+            stackRingUnitNormals_D=np.array(listRingUnitNormals_GP1, dtype=float),
+            stackFrwrvp_D_Do=stackFrwrvp_GP1_CgP1,
+            stackFlwrvp_D_Do=stackFlwrvp_GP1_CgP1,
+            stackBlwrvp_D_Do=stackBlwrvp_GP1_CgP1,
+            stackBrwrvp_D_Do=stackBrwrvp_GP1_CgP1,
+            stackWakeRingUnitNormals_D=stackWakeRingNormals_GP1
+            / np.linalg.norm(stackWakeRingNormals_GP1, axis=1, keepdims=True),
+            stackFrhvp_D_Do=noVortexPoints_D_Do,
+            stackFlhvp_D_Do=noVortexPoints_D_Do,
+            stackBlhvp_D_Do=noVortexPoints_D_Do,
+            stackBrhvp_D_Do=noVortexPoints_D_Do,
+            stackHorseshoeUnitNormals_D=noVortexPoints_D_Do,
+            horseshoe_vortices_are_wake=False,
+            largest_chord=max(
+                wing_cross_section.chord
+                for airplane in steady_problem.airplanes
+                for wing in airplane.wings
+                for wing_cross_section in wing.wing_cross_sections
+            ),
+            simplify=simplify_vortices,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
 
     def _evaluate_step_aerodynamics(self) -> None:
         """Evaluates the aerodynamics for the current time step.

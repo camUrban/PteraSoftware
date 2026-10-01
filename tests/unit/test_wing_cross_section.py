@@ -3,8 +3,10 @@
 import unittest
 from collections.abc import Sequence
 from typing import Any
+from unittest.mock import patch
 
 import numpy as np
+import pyvista as pv
 
 import pterasoftware as ps
 from tests.unit.fixtures import geometry_fixtures
@@ -835,215 +837,100 @@ class TestWingCrossSectionDeepCopy(unittest.TestCase):
         )
 
 
-class TestWingCrossSectionGetPlottableData(unittest.TestCase):
-    """Tests for WingCrossSection.get_plottable_data method."""
+class TestWingCrossSectionDiagram(unittest.TestCase):
+    """Tests for WingCrossSection.diagram method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for get_plottable_data tests."""
+        """Set up test fixtures for diagram tests."""
         self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
         self.basic_wing_cross_section = (
             geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
         )
-        self.root_wing_cross_section = (
-            geometry_fixtures.make_root_wing_cross_section_fixture()
-        )
 
-    def test_get_plottable_data_returns_none_when_not_validated(self) -> None:
-        """Test that get_plottable_data returns None when not validated."""
+        # A WingCrossSection can only be diagrammed once its parent Wing has validated
+        # it, set its symmetry type, and set its transformation to its parent axes, so
+        # take the meshed WingCrossSections from a meshed Wing.
+        meshed_wing = geometry_fixtures.make_type_1_wing_fixture()
+        meshed_wing.generate_mesh(1)
+        self.meshed_root_wing_cross_section = meshed_wing.wing_cross_sections[0]
+        self.meshed_tip_wing_cross_section = meshed_wing.wing_cross_sections[1]
+
+    def test_diagram_raises_when_not_validated(self) -> None:
+        """Test that diagram raises a ValueError when not validated."""
         # Set symmetry_type but not validated.
         self.basic_wing_cross_section.symmetry_type = 1
         self.assertFalse(self.basic_wing_cross_section.validated)
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        with self.assertRaises(ValueError):
+            self.basic_wing_cross_section.diagram()
 
-        self.assertIsNone(result)
-
-    def test_get_plottable_data_returns_none_when_symmetry_type_not_set(self) -> None:
-        """Test that get_plottable_data returns None when symmetry_type not set."""
+    def test_diagram_raises_when_symmetry_type_not_set(self) -> None:
+        """Test that diagram raises a ValueError when symmetry_type not set."""
         # Set validated but not symmetry_type.
         self.basic_wing_cross_section.validated = True
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        with self.assertRaises(ValueError):
+            self.basic_wing_cross_section.diagram()
 
-        self.assertIsNone(result)
-
-    def test_get_plottable_data_returns_none_when_neither_set(self) -> None:
-        """Test that get_plottable_data returns None when neither validated nor
+    def test_diagram_raises_when_neither_set(self) -> None:
+        """Test that diagram raises a ValueError when neither validated nor
         symmetry_type is set."""
         self.assertFalse(self.basic_wing_cross_section.validated)
         self.assertIsNone(self.basic_wing_cross_section.symmetry_type)
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        with self.assertRaises(ValueError):
+            self.basic_wing_cross_section.diagram()
 
-        self.assertIsNone(result)
+    def test_diagram_shows_the_diagram_when_valid(self) -> None:
+        """Test that diagram shows the diagram once when validated and symmetry_type is
+        set."""
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.meshed_tip_wing_cross_section.diagram()
 
-    def test_get_plottable_data_returns_list_when_valid(self) -> None:
-        """Test that get_plottable_data returns a list when validated and symmetry_type
-        is set."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
+        mock_show.assert_called_once()
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for its flags."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.meshed_tip_wing_cross_section.diagram(
+                show_airfoil_axes_and_points=np.bool(False),
+                show_airfoil=np.bool(True),
+                show_mcl=np.bool(False),
+                math_labels=np.bool(True),
+                save=np.bool(False),
+            )
 
-        self.assertIsInstance(result, list)
-        assert result is not None
-        self.assertEqual(len(result), 2)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_returns_ndarrays(self) -> None:
-        """Test that get_plottable_data returns ndarrays for outline and MCL."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
+    def test_diagram_with_root_cross_section(self) -> None:
+        """Test diagram with a root WingCrossSection (identity transform)."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.meshed_root_wing_cross_section.diagram()
 
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
+        mock_show.assert_called_once()
 
-        assert result is not None
-        self.assertIsInstance(result[0], np.ndarray)
-        self.assertIsInstance(result[1], np.ndarray)
-
-    def test_get_plottable_data_returns_3d_points(self) -> None:
-        """Test that get_plottable_data returns arrays with 3 columns (x, y, z)."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
-
-        # Both outline and MCL should have 3 columns (x, y, z).
-        assert result is not None
-        self.assertEqual(result[0].shape[1], 3)
-        self.assertEqual(result[1].shape[1], 3)
-
-    def test_get_plottable_data_y_components_are_zero(self) -> None:
-        """Test that get_plottable_data returns points with zero y components.
-
-        The points are in wing cross section axes relative to the leading point, so the
-        y components should all be zero (the cross section is in the xz plane).
-        """
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
-
-        # All y components should be zero.
-        assert result is not None
-        np.testing.assert_array_equal(result[0][:, 1], 0.0)
-        np.testing.assert_array_equal(result[1][:, 1], 0.0)
-
-    def test_get_plottable_data_scaled_by_chord(self) -> None:
-        """Test that get_plottable_data returns points scaled by chord."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-        chord = self.basic_wing_cross_section.chord
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
-        assert result is not None
-        outline = result[0]
-
-        # The x range should be approximately [0.0, chord].
-        x_min = np.min(outline[:, 0])
-        x_max = np.max(outline[:, 0])
-
-        self.assertAlmostEqual(x_min, 0.0, places=5)
-        self.assertAlmostEqual(x_max, chord, places=5)
-
-    def test_get_plottable_data_default_show_is_false(self) -> None:
-        """Test that get_plottable_data default for show is False."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        # Calling without the show parameter should return data (not None).
-        result = self.basic_wing_cross_section.get_plottable_data()
-
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
-        """Test that get_plottable_data accepts numpy bool for show parameter."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=np.bool(False))
-
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_with_symmetry_type_1(self) -> None:
-        """Test get_plottable_data with symmetry type 1 (no symmetry)."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
-
-        self.assertIsNotNone(result)
-        assert result is not None
-        self.assertEqual(len(result), 2)
-
-    def test_get_plottable_data_with_root_cross_section(self) -> None:
-        """Test get_plottable_data with a root WingCrossSection (identity transform)."""
-        self.root_wing_cross_section.validated = True
-        self.root_wing_cross_section.symmetry_type = 1
-
-        result = self.root_wing_cross_section.get_plottable_data(show=False)
-
-        self.assertIsNotNone(result)
-        assert result is not None
-        self.assertEqual(len(result), 2)
-
-        # For root WingCrossSection, chord is 2.0.
-        chord = self.root_wing_cross_section.chord
-        outline = result[0]
-        x_max = np.max(outline[:, 0])
-        self.assertAlmostEqual(x_max, chord, places=5)
-
-    def test_get_plottable_data_with_unit_chord(self) -> None:
-        """Test get_plottable_data with a WingCrossSection with chord=1.0."""
-        # Create a WingCrossSection with chord=1.0.
-        wing_cross_section = ps.geometry.wing_cross_section.WingCrossSection(
-            airfoil=self.test_airfoil,
-            num_spanwise_panels=8,
-            chord=1.0,
-        )
-        wing_cross_section.validated = True
-        wing_cross_section.symmetry_type = 1
-
-        result = wing_cross_section.get_plottable_data(show=False)
-
-        self.assertIsNotNone(result)
-        assert result is not None
-        outline = result[0]
-
-        # With chord=1.0, the x range should be [0.0, 1.0].
-        x_min = np.min(outline[:, 0])
-        x_max = np.max(outline[:, 0])
-
-        self.assertAlmostEqual(x_min, 0.0, places=5)
-        self.assertAlmostEqual(x_max, 1.0, places=5)
-
-    def test_get_plottable_data_mcl_within_outline_bounds(self) -> None:
-        """Test that MCL points are within the outline x bounds."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        result = self.basic_wing_cross_section.get_plottable_data(show=False)
-        assert result is not None
-        outline = result[0]
-        mcl = result[1]
-
-        outline_x_min = np.min(outline[:, 0])
-        outline_x_max = np.max(outline[:, 0])
-        mcl_x_min = np.min(mcl[:, 0])
-        mcl_x_max = np.max(mcl[:, 0])
-
-        # MCL should be within outline x bounds.
-        self.assertGreaterEqual(mcl_x_min, outline_x_min - 1e-10)
-        self.assertLessEqual(mcl_x_max, outline_x_max + 1e-10)
-
-    def test_get_plottable_data_invalid_show_type_raises(self) -> None:
-        """Test that get_plottable_data raises error for invalid show type."""
-        self.basic_wing_cross_section.validated = True
-        self.basic_wing_cross_section.symmetry_type = 1
-
-        bad_show: Any = "invalid"
+    def test_diagram_invalid_save_type_raises(self) -> None:
+        """Test that diagram raises error for invalid save type."""
+        bad_save: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            self.basic_wing_cross_section.get_plottable_data(show=bad_show)
+            self.meshed_tip_wing_cross_section.diagram(save=bad_save)
+
+
+class TestWingCrossSectionDeprecatedPlottingMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated WingCrossSection plotting
+    methods."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated method tests."""
+        self.test_airfoil = geometry_fixtures.make_test_airfoil_fixture()
+        self.basic_wing_cross_section = (
+            geometry_fixtures.make_basic_wing_cross_section_fixture(self.test_airfoil)
+        )
+
+    def test_get_plottable_data_warns(self) -> None:
+        """Test that calling get_plottable_data emits a DeprecationWarning."""
+        with self.assertWarns(DeprecationWarning):
+            self.basic_wing_cross_section.get_plottable_data(show=False)

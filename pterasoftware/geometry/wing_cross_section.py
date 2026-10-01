@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Sequence
+from pathlib import Path
 
 import numpy as np
 import pyvista as pv
 
-from .. import _parameter_validation, _transformations
+from .. import _output_rendering, _parameter_validation, _transformations
 from . import airfoil as airfoil_mod
 
 
@@ -456,12 +458,139 @@ class WingCrossSection:
         self._symmetry_type = value
 
     # --- Other methods ---
-    def get_plottable_data(
+    def diagram(
+        self,
+        *,
+        show_airfoil_axes_and_points: bool | np.bool = True,
+        show_airfoil: bool | np.bool = True,
+        show_mcl: bool | np.bool = True,
+        math_labels: bool | np.bool = False,
+        save: bool | np.bool = False,
+        path: str | Path = "diagram.webp",
+        quality: int | float = 75.0,
+    ) -> None:
+        """Displays a diagram of this WingCrossSection's Airfoil, placed and scaled by
+        this WingCrossSection, along with its axes and its parent axes.
+
+        The diagram is drawn in parent wing cross section axes, relative to the parent
+        leading point. It shows this WingCrossSection's axes at its leading point and
+        its parent axes at its parent leading point. For a WingCrossSection whose
+        symmetry type is 2 or 3, the diagram is reflected across the parent wing cross
+        section axes' xz plane, so the WingCrossSection appears as it does on its
+        reflected Wing. The units are in meters.
+
+        :param show_airfoil_axes_and_points: Determines whether to draw the Airfoil's
+            axes at its leading point, which coincides with this WingCrossSection's
+            leading point. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is True.
+        :param show_airfoil: Determines whether to draw the Airfoil's outline and mean
+            camber line. Can be a bool or a numpy bool and will be converted internally
+            to a bool. The default is True.
+        :param show_mcl: Determines whether to draw the Airfoil's mean camber line. It
+            has no effect if show_airfoil is False. Can be a bool or a numpy bool and
+            will be converted internally to a bool. The default is True.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
+        :param save: Determines whether to save the diagram as a WebP with a white
+            background once its window is closed, which keeps the view's orientation and
+            any labels dragged by hand. Can be a bool or a numpy bool and will be
+            converted internally to a bool. The default is False.
+        :param path: The file path to save the diagram to. It can be a str or a Path,
+            must end with ".webp", and its directory must already exist. It has no
+            effect if save is False. The default is "diagram.webp".
+        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
+            with the most compression artifacts and 100.0 is the largest file with the
+            fewest. It can be an int or a float and will be converted internally to a
+            float. It has no effect if save is False. The default is 75.0.
+        :return: None
+        """
+        show_airfoil_axes_and_points = _parameter_validation.boolLike_return_bool(
+            show_airfoil_axes_and_points, "show_airfoil_axes_and_points"
+        )
+        show_airfoil = _parameter_validation.boolLike_return_bool(
+            show_airfoil, "show_airfoil"
+        )
+        show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
+        save = _parameter_validation.boolLike_return_bool(save, "save")
+        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        quality = _parameter_validation.number_in_range_return_float(
+            quality, "quality", 0.0, True, 100.0, True
+        )
+
+        if self.symmetry_type is None or not self.validated:
+            raise ValueError(
+                "A WingCrossSection can only be diagrammed after its parent Wing has "
+                "validated it and set its symmetry type."
+            )
+
+        _T_pas_Wcs_Lp_to_Wcsp_Lpp = self.T_pas_Wcs_Lp_to_Wcsp_Lpp
+        assert _T_pas_Wcs_Lp_to_Wcsp_Lpp is not None
+
+        # Map from parent wing cross section axes to diagram axes, which are reflected
+        # across the parent axes' xz plane for symmetry types 2 and 3. Both are relative
+        # to the parent leading point.
+        if self.symmetry_type in (2, 3):
+            T_pas_Wcsp_Lpp_to_D_Do = _transformations.generate_reflect_T(
+                np.array([0.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), passive=True
+            )
+        else:
+            T_pas_Wcsp_Lpp_to_D_Do = np.eye(4, dtype=float)
+        T_pas_Wcs_Lp_to_D_Do = _transformations.compose_T_pas(
+            _T_pas_Wcs_Lp_to_Wcsp_Lpp, T_pas_Wcsp_Lpp_to_D_Do
+        )
+
+        plotter = pv.Plotter()
+
+        if show_airfoil:
+            _output_rendering.add_airfoil(
+                plotter, self, T_pas_Wcs_Lp_to_D_Do, show_mcl=show_mcl
+            )
+
+        # Draw all the axes with one call, so that the airfoil axes' arrows merge with
+        # the wing cross section axes' arrows they coincide with. Size the axes relative
+        # to this WingCrossSection's chord, so they stay legible regardless of the
+        # geometry's absolute size.
+        axes_ids = ["Wcs", "Wcsp"]
+        point_ids = ["Lp", "Lpp"]
+        transformations = [T_pas_Wcs_Lp_to_D_Do, T_pas_Wcsp_Lpp_to_D_Do]
+        if show_airfoil_axes_and_points:
+            axes_ids.append("A")
+            point_ids.append("Lp")
+            transformations.append(
+                _output_rendering.get_airfoil_axes_transformation(T_pas_Wcs_Lp_to_D_Do)
+            )
+        _output_rendering.add_axes_and_points(
+            plotter,
+            axes_ids=axes_ids,
+            point_ids=point_ids,
+            transformations=transformations,
+            axes_scale=0.5 * self.chord,
+            two_dimensional_axes_ids=["A"],
+            math_labels=math_labels,
+        )
+
+        _output_rendering.show_diagram(
+            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+        )
+
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self,
         show: bool | np.bool = False,
     ) -> list[np.ndarray] | None:
-        """Returns plottable data for this WingCrossSection's Airfoil's outline and mean
-        camber line.
+        """A deprecated method that returns plottable data for this WingCrossSection's
+        Airfoil's outline and mean camber line.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
@@ -474,6 +603,13 @@ class WingCrossSection:
             wing cross section axes, relative to the leading point. The units are in
             meters.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

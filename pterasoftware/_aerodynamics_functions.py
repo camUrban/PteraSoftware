@@ -890,7 +890,7 @@ def _collapsed_velocities_from_line_vortices(
     # Numba does not annotate prange.__new__, so mypy cannot tell that calling prange
     # returns an iterable. Once this is fixed upstream, warn_unused_ignores will flag
     # the ignore below as unused.
-    for point_id in prange(num_points):  # type: ignore[attr-defined]
+    for point_id in prange(num_points):
         P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
 
         for vortex_id in range(num_vortices):
@@ -1092,7 +1092,7 @@ def _expanded_velocities_from_line_vortices(
     # Numba does not annotate prange.__new__, so mypy cannot tell that calling prange
     # returns an iterable. Once this is fixed upstream, warn_unused_ignores will flag
     # the ignore below as unused.
-    for point_id in prange(num_points):  # type: ignore[attr-defined]
+    for point_id in prange(num_points):
         P_GP1_CgP1 = stackP_GP1_CgP1[point_id]
 
         for vortex_id in range(num_vortices):

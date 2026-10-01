@@ -1560,6 +1560,26 @@ class TestWingDiagram(unittest.TestCase):
 
         mock_show.assert_called_once()
 
+    def test_diagram_type_2_wing(self) -> None:
+        """Test diagram for type 2 Wing."""
+        wing = geometry_fixtures.make_type_2_wing_fixture()
+        wing.generate_mesh(2)
+
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
+
+        mock_show.assert_called_once()
+
+    def test_diagram_type_3_wing(self) -> None:
+        """Test diagram for type 3 Wing."""
+        wing = geometry_fixtures.make_type_3_wing_fixture()
+        wing.generate_mesh(3)
+
+        with patch.object(pv.Plotter, "show") as mock_show:
+            wing.diagram()
+
+        mock_show.assert_called_once()
+
     def test_diagram_accepts_numpy_bools(self) -> None:
         """Test that diagram accepts numpy bools for its flags."""
         wing = geometry_fixtures.make_type_1_wing_fixture()

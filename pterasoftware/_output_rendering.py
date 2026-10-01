@@ -568,6 +568,9 @@ def add_axes_and_points(
         labels are the plain IDs, set in Liberation Mono. The default is False.
     :return: None
     """
+    # Set the background before labels and arrow-tip fills copy its color.
+    plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
+
     # Each axes set's point has its label offset along the negative sum of that axes
     # set's basis directions, which is the unit vector (-1, -1, -1) / sqrt(3) in that
     # axes set, so the label sits in the octant that none of its arrows enter. Each

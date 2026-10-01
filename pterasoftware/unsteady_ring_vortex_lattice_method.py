@@ -604,6 +604,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         ) = None,
         label_collocation_points: bool | np.bool = False,
         simplify_vortices: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
         save: bool | np.bool = False,
         path: str | Path = "diagram.webp",
         quality: int | float = 75.0,
@@ -662,6 +663,13 @@ class UnsteadyRingVortexLatticeMethodSolver:
             gets an arrow showing its vorticity's direction for positive lift. Can be a
             bool or a numpy bool and will be converted internally to a bool. The default
             is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
         :param save: Determines whether to save the diagram as a WebP with a white
             background once its window is closed, which keeps the view's orientation and
             any labels dragged by hand. Can be a bool or a numpy bool and will be
@@ -711,6 +719,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
         simplify_vortices = _parameter_validation.boolLike_return_bool(
             simplify_vortices, "simplify_vortices"
         )
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
         save = _parameter_validation.boolLike_return_bool(save, "save")
         path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
         quality = _parameter_validation.number_in_range_return_float(
@@ -746,6 +757,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             show_collocation_points=show_collocation_points,
             airplanes_wings_row_and_column_ids=airplanes_wings_row_and_column_ids,
             label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
         )
 
         # Each bound ring vortex takes the unit normal (in the first Airplane's geometry

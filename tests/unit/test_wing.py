@@ -1573,6 +1573,7 @@ class TestWingDiagram(unittest.TestCase):
                 show_mcls=np.bool(True),
                 show_collocation_points=np.bool(True),
                 label_collocation_points=np.bool(True),
+                math_labels=np.bool(True),
                 save=np.bool(False),
             )
 

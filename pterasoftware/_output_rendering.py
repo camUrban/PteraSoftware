@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 import queue
+import re
 import threading
 from collections.abc import Sequence
 from pathlib import Path
@@ -105,6 +106,28 @@ _AXES_LINE_WIDTH = 2.0
 _AXES_LABEL_FONT_SIZE = 15
 _AXES_POINT_SIZE = 10.0
 _AXES_CROSS_SIZE = 0.1
+
+# Define the font size, in pixels, of the axes and point labels when they are written as
+# math. It is larger than _AXES_LABEL_FONT_SIZE because the math font's glyphs render
+# smaller than the monospaced font's at the same size, and its subscripts and
+# superscripts are smaller still.
+_AXES_MATH_LABEL_FONT_SIZE = 20
+
+# Define how the axes and point IDs are written as math. Each ID is a run of
+# abbreviations, each followed by an optional number or, for a Panel point, by its row
+# and column (such as "r3c2"). A point ID's first abbreviation names the point, which is
+# written in math with the name it maps to here. Every other abbreviation in a point ID,
+# and every abbreviation in an axes ID, must be one of the axes and owner abbreviations.
+_MATH_POINT_NAMES = {
+    "Cg": "CG",
+    "Cpp": "CPP",
+    "Eo": "EO",
+    "Ler": "LER",
+    "Lp": "LP",
+    "Lpp": "LPP",
+}
+_MATH_AXES_AND_OWNER_ABBREVIATIONS = ("A", "E", "G", "P", "Wcs", "Wcsp", "Wn")
+_ID_TOKEN_PATTERN = re.compile(r"([A-Z][a-z]*?)(r\d+c\d+|\d*)(?=[A-Z]|$)")
 
 # Define the angle, in degrees, between neighboring faces of an arrow's tip above which
 # their shared edge is always outlined, not just where it is on the tip's silhouette.
@@ -397,6 +420,84 @@ def add_playback_overlays(
         overlay.prop.set_font_file(str(_fonts.FONT_PATH))
 
 
+def _split_id(diagram_id: str) -> list[tuple[str, str]]:
+    """Splits an axes or point ID into its abbreviations and their suffixes.
+
+    :param diagram_id: The axes or point ID to split (such as "Cppr3c2Wn1P2").
+    :return: A list of tuples of two strs, one per abbreviation in order, each holding
+        the abbreviation and its suffix, which is either a number, a row and column
+        (such as "r3c2"), or an empty str (such as [("Cpp", "r3c2"), ("Wn", "1"), ("P",
+        "2")]).
+    """
+    # The pattern skips any characters it can't match, so check that the tokens it found
+    # rebuild the whole ID.
+    tokens: list[tuple[str, str]] = _ID_TOKEN_PATTERN.findall(diagram_id)
+    rebuilt_id = "".join(abbreviation + suffix for abbreviation, suffix in tokens)
+    if not tokens or rebuilt_id != diagram_id:
+        raise ValueError(f'"{diagram_id}" is not a valid axes or point ID.')
+    return tokens
+
+
+def get_math_axes_label(axes_id: str, component_letter: str) -> str:
+    """Returns the math label of one of an axes set's basis direction arrows.
+
+    The basis direction is written as a unit vector, in bold italic since it is a
+    vector, whose superscript lists the axes ID's abbreviations along with their numbers
+    (such as "\\hat{\\mathbfit{x}}^{\\mathrm{Wcs}1, \\mathrm{Wn}2}" for "Wcs1Wn2X").
+
+    :param axes_id: The axes set's ID (such as "Wcs1Wn2").
+    :param component_letter: The basis direction's letter, which is "X", "Y", or "Z".
+    :return: The label as math, without the dollar signs that delimit it.
+    """
+    tokens = _split_id(axes_id)
+    for abbreviation, suffix in tokens:
+        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+            suffix == "" or suffix.isdigit()
+        ):
+            raise ValueError(f'"{axes_id}" is not a valid axes ID.')
+    superscript = ", ".join(
+        rf"\mathrm{{{abbreviation}}}{suffix}" for abbreviation, suffix in tokens
+    )
+    return rf"\hat{{\mathbfit{{{component_letter.lower()}}}}}^{{{superscript}}}"
+
+
+def get_math_point_label(point_id: str) -> str:
+    """Returns the math label of a point.
+
+    The point is written with its name in capitals, followed by its own number, if it
+    has one. A subscript lists the point ID's remaining abbreviations along with their
+    numbers, which name what the point belongs to, and a Panel point's row and column
+    follow in parentheses (such as "\\mathrm{CPP}_{\\mathrm{Wn}1, \\mathrm{P}2}(3, 2)"
+    for "Cppr3c2Wn1P2").
+
+    :param point_id: The point's ID (such as "Cppr3c2Wn1P2").
+    :return: The label as math, without the dollar signs that delimit it.
+    """
+    tokens = _split_id(point_id)
+    name_abbreviation, name_suffix = tokens[0]
+    if name_abbreviation not in _MATH_POINT_NAMES:
+        raise ValueError(f'"{point_id}" is not a valid point ID.')
+    for abbreviation, suffix in tokens[1:]:
+        if abbreviation not in _MATH_AXES_AND_OWNER_ABBREVIATIONS or not (
+            suffix == "" or suffix.isdigit()
+        ):
+            raise ValueError(f'"{point_id}" is not a valid point ID.')
+
+    label = rf"\mathrm{{{_MATH_POINT_NAMES[name_abbreviation]}}}"
+    row_and_column = ""
+    if name_suffix.startswith("r"):
+        row, column = name_suffix[1:].split("c")
+        row_and_column = f"({row}, {column})"
+    else:
+        label += name_suffix
+    if len(tokens) > 1:
+        subscript = ", ".join(
+            rf"\mathrm{{{abbreviation}}}{suffix}" for abbreviation, suffix in tokens[1:]
+        )
+        label += f"_{{{subscript}}}"
+    return label + row_and_column
+
+
 def add_axes_and_points(
     plotter: pv.Plotter,
     axes_ids: Sequence[str],
@@ -409,6 +510,7 @@ def add_axes_and_points(
     listExtraPointCrossDirections_D: Sequence[np.ndarray] = (),
     label_extra_points: bool = True,
     two_dimensional_axes_ids: Sequence[str] = (),
+    math_labels: bool = False,
 ) -> None:
     """Adds labeled axes and their labeled origin points to a Plotter, along with any
     extra labeled points that have no axes of their own, merging those that coincide.
@@ -461,6 +563,9 @@ def add_axes_and_points(
     :param two_dimensional_axes_ids: The IDs of the axes sets that are two dimensional,
         each of which must also be in axes_ids. Only the x and y basis directions of
         these axes sets are drawn. The default is an empty sequence.
+    :param math_labels: Determines whether to write the labels as math, set in the STIX
+        font, as get_math_axes_label and get_math_point_label describe. If False, the
+        labels are the plain IDs, set in Liberation Mono. The default is False.
     :return: None
     """
     # Each axes set's point has its label offset along the negative sum of that axes
@@ -681,6 +786,15 @@ def add_axes_and_points(
     # distance beyond its tip, along the arrow, and extends away from its start. A
     # point's label is anchored at its offset position and extends away from the point,
     # so the point marker doesn't cover it.
+    #
+    # Math labels are rendered by VTK through Matplotlib's mathtext, which takes its
+    # font from the Label's font family rather than from a font file, and which uses the
+    # STIX fonts for the Times family. Merged math labels are joined inside one pair of
+    # dollar signs. Each arrow's plain label is its axes ID followed by its one letter
+    # basis direction, which is split back off to write it as math.
+    label_font_size = (
+        _AXES_MATH_LABEL_FONT_SIZE if math_labels else _AXES_LABEL_FONT_SIZE
+    )
     label_entries: list[tuple[pv.Label, np.ndarray, np.ndarray]] = []
     for arrowStart_D_Do, arrowDirection_D, labels in zip(
         listArrowStarts_D_Do, listArrowDirections_D, arrow_labels
@@ -690,16 +804,26 @@ def add_axes_and_points(
             + (1.0 + _AXES_ARROW_LABEL_OFFSET) * axes_scale * arrowDirection_D
         )
         arrow_label_text = "/".join(labels)
+        if math_labels:
+            math_arrow_labels = [
+                get_math_axes_label(label[:-1], label[-1]) for label in labels
+            ]
+            displayed_arrow_label_text = "$" + r" \,/\, ".join(math_arrow_labels) + "$"
+        else:
+            displayed_arrow_label_text = arrow_label_text
         arrow_label = pv.Label(
-            text=arrow_label_text,
+            text=displayed_arrow_label_text,
             position=arrowLabelAnchor_D_Do,
-            size=_AXES_LABEL_FONT_SIZE,
+            size=label_font_size,
             name=f"arrow label {arrow_label_text}",
         )
         arrow_label.prop.color = "black"
         arrow_label.prop.background_color = plotter.background_color
         arrow_label.prop.background_opacity = 1.0
-        arrow_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+        if math_labels:
+            arrow_label.prop.font_family = "times"
+        else:
+            arrow_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
         plotter.add_actor(arrow_label)
         label_entries.append((arrow_label, arrowStart_D_Do, arrowLabelAnchor_D_Do))
     for point_D_Do, pointLabelOffset_D, labels in zip(
@@ -709,16 +833,24 @@ def add_axes_and_points(
             continue
         pointLabelAnchor_D_Do = point_D_Do + axes_scale * pointLabelOffset_D
         point_label_text = "/".join(labels)
+        if math_labels:
+            math_point_labels = [get_math_point_label(label) for label in labels]
+            displayed_point_label_text = "$" + r" \,/\, ".join(math_point_labels) + "$"
+        else:
+            displayed_point_label_text = point_label_text
         point_label = pv.Label(
-            text=point_label_text,
+            text=displayed_point_label_text,
             position=pointLabelAnchor_D_Do,
-            size=_AXES_LABEL_FONT_SIZE,
+            size=label_font_size,
             name=f"point label {point_label_text}",
         )
         point_label.prop.color = "black"
         point_label.prop.background_color = plotter.background_color
         point_label.prop.background_opacity = 1.0
-        point_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+        if math_labels:
+            point_label.prop.font_family = "times"
+        else:
+            point_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
         plotter.add_actor(point_label)
         label_entries.append((point_label, point_D_Do, pointLabelAnchor_D_Do))
 
@@ -1390,6 +1522,7 @@ def add_steady_problem(
         Sequence[Sequence[tuple[int, int]] | None]
     ],
     label_collocation_points: bool,
+    math_labels: bool = False,
 ) -> None:
     """Adds a SteadyProblem's Airplanes' Wings' Panels, along with their axes and
     points, to a Plotter.
@@ -1419,6 +1552,8 @@ def add_steady_problem(
         if show_collocation_points is False.
     :param label_collocation_points: Determines whether to label the collocation points
         that are added. It has no effect if show_collocation_points is False.
+    :param math_labels: Determines whether to write the axes and point labels as math,
+        as add_axes_and_points describes. The default is False.
     :return: None
     """
     operating_point = steady_problem.operating_point
@@ -1542,6 +1677,7 @@ def add_steady_problem(
         listExtraPointCrossDirections_D=listCrossDirections_D,
         label_extra_points=label_collocation_points,
         two_dimensional_axes_ids=airfoil_axes_ids,
+        math_labels=math_labels,
     )
 
 

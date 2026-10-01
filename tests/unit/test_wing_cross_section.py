@@ -898,6 +898,7 @@ class TestWingCrossSectionDiagram(unittest.TestCase):
                 show_airfoil_axes_and_points=np.bool(False),
                 show_airfoil=np.bool(True),
                 show_mcl=np.bool(False),
+                math_labels=np.bool(True),
                 save=np.bool(False),
             )
 

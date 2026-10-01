@@ -10,11 +10,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import matplotlib
 import matplotlib.colors
 import numpy as np
 import numpy.testing as npt
 import pyvista as pv
+
+# Load PyVista's plotting package, which registers VTK's Matplotlib backend for math
+# text, as it is when a diagram creates its Plotter.
+import pyvista.plotting  # noqa: F401
 import webp
+from vtkmodules.vtkRenderingFreeType import vtkMathTextUtilities
 
 import pterasoftware as ps
 
@@ -471,6 +477,122 @@ class TestGetMuJoCoRenderGeometry(unittest.TestCase):
         lists."""
         solver = solver_fixtures.make_free_flight_unsteady_ring_solver_fixture()
         self.assertEqual(_output_rendering.get_mujoco_render_geometry(solver), ([], []))
+
+
+class TestMathTextAvailability(unittest.TestCase):
+    """This class contains methods for testing that VTK can render the diagrams' math
+    labels."""
+
+    def test_vtk_can_render_math_text(self) -> None:
+        """Test that VTK's Matplotlib backend for math text is available.
+
+        PyVista's plotting package registers the backend when it loads, which happens
+        before any diagram creates its Plotter. The backend is only present in VTK
+        builds that include VTK's Matplotlib module, and without it the math labels
+        would not render as math.
+        """
+        math_text_utilities = vtkMathTextUtilities.GetInstance()
+        self.assertIsNotNone(math_text_utilities)
+        assert math_text_utilities is not None
+        self.assertTrue(math_text_utilities.IsAvailable())
+
+    def test_vtk_renders_times_math_text_in_stix(self) -> None:
+        """Test that VTK renders math text in the Times font family with Matplotlib's
+        STIX font set.
+
+        VTK sets Matplotlib's mathtext font set from a Label's font family each time it
+        renders math text, and the math labels rely on it choosing STIX for the Times
+        family. The font set is first set to something else, so the test only passes if
+        rendering changes it. The rc_context restores Matplotlib's settings afterward.
+        """
+        with matplotlib.rc_context({"mathtext.fontset": "cm"}):
+            plotter = pv.Plotter(off_screen=True)
+            label = pv.Label(
+                text=r"$\hat{\mathbfit{x}}^{\mathrm{G}}$", position=(0.0, 0.0, 0.0)
+            )
+            label.prop.font_family = "times"
+            plotter.add_actor(label)
+            plotter.screenshot(return_img=True)
+            plotter.close()
+            self.assertEqual(matplotlib.rcParams["mathtext.fontset"], "stix")
+
+
+class TestGetMathAxesLabel(unittest.TestCase):
+    """This class contains methods for testing _output_rendering.get_math_axes_label."""
+
+    def test_writes_a_unit_vector_whose_superscript_lists_the_axes_id(self) -> None:
+        """Test that each axes ID the diagrams use becomes a bold italic unit vector for
+        its basis direction, with the ID's abbreviations and numbers in its
+        superscript."""
+        cases = [
+            ("E", "X", r"\hat{\mathbfit{x}}^{\mathrm{E}}"),
+            ("G", "Y", r"\hat{\mathbfit{y}}^{\mathrm{G}}"),
+            ("GP1", "Z", r"\hat{\mathbfit{z}}^{\mathrm{G}, \mathrm{P}1}"),
+            ("Wn", "X", r"\hat{\mathbfit{x}}^{\mathrm{Wn}}"),
+            ("Wn1P2", "X", r"\hat{\mathbfit{x}}^{\mathrm{Wn}1, \mathrm{P}2}"),
+            ("Wcsp", "Y", r"\hat{\mathbfit{y}}^{\mathrm{Wcsp}}"),
+            ("Wcs1Wn2", "Z", r"\hat{\mathbfit{z}}^{\mathrm{Wcs}1, \mathrm{Wn}2}"),
+            ("A", "X", r"\hat{\mathbfit{x}}^{\mathrm{A}}"),
+            (
+                "AWcs1Wn2P3",
+                "Y",
+                r"\hat{\mathbfit{y}}^{\mathrm{A}, \mathrm{Wcs}1, \mathrm{Wn}2, "
+                r"\mathrm{P}3}",
+            ),
+        ]
+        for axes_id, component_letter, expected_label in cases:
+            with self.subTest(axes_id=axes_id, component_letter=component_letter):
+                self.assertEqual(
+                    _output_rendering.get_math_axes_label(axes_id, component_letter),
+                    expected_label,
+                )
+
+    def test_rejects_an_invalid_axes_id(self) -> None:
+        """Test that an axes ID with an unknown abbreviation, a row and column, or
+        characters that aren't abbreviations or numbers raises a ValueError."""
+        for axes_id in ["Q", "GQ1", "Wnr1c2", "G-1", "", "g"]:
+            with self.subTest(axes_id=axes_id):
+                with self.assertRaises(ValueError):
+                    _output_rendering.get_math_axes_label(axes_id, "X")
+
+
+class TestGetMathPointLabel(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.get_math_point_label."""
+
+    def test_writes_the_name_with_a_subscript_listing_its_owners(self) -> None:
+        """Test that each point ID the diagrams use becomes the point's name, followed
+        by its own number, a subscript listing its owners, and a Panel point's row and
+        column."""
+        cases = [
+            ("Eo", r"\mathrm{EO}"),
+            ("Cg", r"\mathrm{CG}"),
+            ("CgP1", r"\mathrm{CG}_{\mathrm{P}1}"),
+            ("Ler", r"\mathrm{LER}"),
+            ("Ler1", r"\mathrm{LER}1"),
+            ("Ler1P2", r"\mathrm{LER}1_{\mathrm{P}2}"),
+            ("Lp", r"\mathrm{LP}"),
+            ("Lpp", r"\mathrm{LPP}"),
+            ("Lp1Wn2", r"\mathrm{LP}1_{\mathrm{Wn}2}"),
+            ("Lp1Wn2P3", r"\mathrm{LP}1_{\mathrm{Wn}2, \mathrm{P}3}"),
+            ("Cppr3c2", r"\mathrm{CPP}(3, 2)"),
+            ("Cppr3c2Wn1", r"\mathrm{CPP}_{\mathrm{Wn}1}(3, 2)"),
+            ("Cppr13c21Wn1P2", r"\mathrm{CPP}_{\mathrm{Wn}1, \mathrm{P}2}(13, 21)"),
+        ]
+        for point_id, expected_label in cases:
+            with self.subTest(point_id=point_id):
+                self.assertEqual(
+                    _output_rendering.get_math_point_label(point_id), expected_label
+                )
+
+    def test_rejects_an_invalid_point_id(self) -> None:
+        """Test that a point ID with an unknown name, an unknown owner, an owner with a
+        row and column, or characters that aren't abbreviations or numbers raises a
+        ValueError."""
+        for point_id in ["Q1", "CgQ1", "Cppr1c2Wnr1c2", "Cg-1", "", "cg"]:
+            with self.subTest(point_id=point_id):
+                with self.assertRaises(ValueError):
+                    _output_rendering.get_math_point_label(point_id)
 
 
 class TestGetWingCrossSectionAirfoilLines(unittest.TestCase):

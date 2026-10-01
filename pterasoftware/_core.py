@@ -2797,6 +2797,7 @@ class CoreUnsteadyProblem:
             Sequence[Sequence[int]] | None
         ) = None,
         label_collocation_points: bool | np.bool = False,
+        math_labels: bool | np.bool = False,
         save: bool | np.bool = False,
         path: str | Path = "diagram.webp",
         quality: int | float = 75.0,
@@ -2853,6 +2854,13 @@ class CoreUnsteadyProblem:
             points that are drawn. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
         :param save: Determines whether to save the diagram as a WebP with a white
             background once its window is closed, which keeps the view's orientation and
             any labels dragged by hand. Can be a bool or a numpy bool and will be
@@ -2899,6 +2907,7 @@ class CoreUnsteadyProblem:
                 collocation_point_airplanes_wings_rows_and_columns
             ),
             label_collocation_points=label_collocation_points,
+            math_labels=math_labels,
             save=save,
             path=path,
             quality=quality,

@@ -868,9 +868,11 @@ class TestAirfoilDiagram(unittest.TestCase):
         mock_show.assert_called_once()
 
     def test_diagram_accepts_numpy_bools(self) -> None:
-        """Test that diagram accepts numpy bools for show_mcl and save."""
+        """Test that diagram accepts numpy bools for show_mcl, math_labels, and save."""
         with patch.object(pv.Plotter, "show") as mock_show:
-            self.naca0012_airfoil.diagram(show_mcl=np.bool(False), save=np.bool(False))
+            self.naca0012_airfoil.diagram(
+                show_mcl=np.bool(False), math_labels=np.bool(True), save=np.bool(False)
+            )
 
         mock_show.assert_called_once()
 

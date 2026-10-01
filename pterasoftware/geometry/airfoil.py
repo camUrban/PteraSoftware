@@ -409,6 +409,7 @@ class Airfoil:
         self,
         *,
         show_mcl: bool | np.bool = True,
+        math_labels: bool | np.bool = False,
         save: bool | np.bool = False,
         path: str | Path = "diagram.webp",
         quality: int | float = 75.0,
@@ -424,6 +425,13 @@ class Airfoil:
 
         :param show_mcl: Determines whether to draw the MCL. Can be a bool or a numpy
             bool and will be converted internally to a bool. The default is True.
+        :param math_labels: Determines whether to write the axes and point labels as
+            math, set in the STIX font. Each basis direction arrow is then labeled with
+            a unit vector whose superscript lists its axes' abbreviations, and each
+            point with its name in capitals, whose subscript lists what it belongs to,
+            if anything. If False, each label is the plain ID, set in a monospaced font.
+            Can be a bool or a numpy bool and will be converted internally to a bool.
+            The default is False.
         :param save: Determines whether to save the diagram as a WebP with a white
             background once its window is closed, which keeps the view's orientation and
             any labels dragged by hand. Can be a bool or a numpy bool and will be
@@ -438,6 +446,9 @@ class Airfoil:
         :return: None
         """
         show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
+        math_labels = _parameter_validation.boolLike_return_bool(
+            math_labels, "math_labels"
+        )
         save = _parameter_validation.boolLike_return_bool(save, "save")
         path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
         quality = _parameter_validation.number_in_range_return_float(
@@ -473,6 +484,7 @@ class Airfoil:
             transformations=[np.eye(4, dtype=float)],
             axes_scale=0.5,
             two_dimensional_axes_ids=["A"],
+            math_labels=math_labels,
         )
 
         _output_rendering.show_diagram(

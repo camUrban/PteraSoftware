@@ -307,3 +307,142 @@ def make_animation_frames_fixture(
         )
         for _ in range(num_frames)
     ]
+
+
+def make_no_vortex_points_fixture() -> np.ndarray:
+    """Makes a fixture that is an empty stack of vortex points.
+
+    It stands in for every corner point stack and unit normal stack of a kind of vortex
+    that a solver doesn't place, as the solvers themselves pass when drawing their
+    diagrams.
+
+    :return: A (0,3) ndarray of floats.
+    """
+    return np.empty((0, 3), dtype=float)
+
+
+def make_square_ring_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single ring vortex with sides of 1.0 meter.
+
+    The ring vortex lies in the xy plane, with its front leg along the y axis and its
+    back leg 1.0 meter downstream of it, and its Panel's unit normal points along the
+    positive z direction. Its center is (0.5, 0.5, 0.0), so the simplified ring vortex's
+    corners sit 0.45 meters from its center along the x and y axes.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the ring
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[1.0, 0.0, 0.0]], dtype=float),
+        np.array([[1.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_neighboring_ring_vortices_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is two ring vortices with sides of 1.0 meter that share a
+    leg.
+
+    Both ring vortices lie in the xy plane, side by side along the y axis, so the first
+    one's right leg is the second one's left leg. Their Panels' unit normals point along
+    the positive z direction.
+
+    :return: A tuple of five (2,3) ndarrays of floats. In order, they hold each ring
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and each one's Panel's unit normal (in
+        diagram axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0], [0.0, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0]], dtype=float),
+        np.array([[1.0, 0.0, 0.0], [1.0, 1.0, 0.0]], dtype=float),
+        np.array([[1.0, 1.0, 0.0], [1.0, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_straight_horseshoe_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single horseshoe vortex whose trailing legs run along
+    the positive x direction.
+
+    The finite leg runs along the y axis from (0.0, 1.0, 0.0) to the origin, so the
+    vortices' bounding box is flat in x and every trailing leg ends exactly the overhang
+    downstream of the finite leg. The back points sit 20.0 meters downstream, as they
+    would for a solver's wing of span 1.0 meter, and the Panel's unit normal points
+    along the positive z direction.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the horseshoe
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_staggered_horseshoe_vortices_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is two horseshoe vortices whose neighboring trailing legs
+    lie on top of each other but start at different points.
+
+    The first horseshoe vortex's finite leg runs along the y axis from (0.0, 1.0, 0.0)
+    to the origin. The second one's runs from (0.3, 2.0, 0.0) to (0.3, 1.0, 0.0), so its
+    left trailing leg starts 0.3 meters downstream along the first one's right trailing
+    leg. Every trailing leg runs along the positive x direction, and both Panels' unit
+    normals point along the positive z direction.
+
+    :return: A tuple of five (2,3) ndarrays of floats. In order, they hold each
+        horseshoe vortex's front right, front left, back left, and back right points (in
+        diagram axes, relative to the diagram origin), and each one's Panel's unit
+        normal (in diagram axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0], [0.3, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0], [0.3, 1.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 0.0], [20.3, 1.0, 0.0]], dtype=float),
+        np.array([[20.0, 1.0, 0.0], [20.3, 2.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0]], dtype=float),
+    )
+
+
+def make_slanted_horseshoe_vortex_fixture() -> (
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+):
+    """Makes a fixture that is a single horseshoe vortex whose trailing legs run
+    diagonally in the xz plane.
+
+    The finite leg runs along the y axis from (0.0, 1.0, 0.0) to the origin, like the
+    straight horseshoe vortex's, but the back points sit 20.0 meters along both the x
+    and z axes, so the trailing legs run along the unit vector (1.0, 0.0, 1.0) /
+    sqrt(2.0). The vortices' bounding box is flat along that direction, so every
+    trailing leg still ends exactly the overhang past the finite leg. The Panel's unit
+    normal points along the positive z direction.
+
+    :return: A tuple of five (1,3) ndarrays of floats. In order, they hold the horseshoe
+        vortex's front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and its Panel's unit normal (in diagram
+        axes). The units of the points are in meters.
+    """
+    return (
+        np.array([[0.0, 1.0, 0.0]], dtype=float),
+        np.array([[0.0, 0.0, 0.0]], dtype=float),
+        np.array([[20.0, 0.0, 20.0]], dtype=float),
+        np.array([[20.0, 1.0, 20.0]], dtype=float),
+        np.array([[0.0, 0.0, 1.0]], dtype=float),
+    )

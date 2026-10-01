@@ -1,14 +1,18 @@
 """This module contains classes to test the output rendering functions.
 
-The functions that drive a Plotter or a render window are covered by the integration
-tests instead, as are the wake ring vortex surfaces, which are built from a history that
-only a solved simulation carries. The classes here cover the computation and the
-geometry building that feed them, which are settled before any rendering begins.
+The functions that show a Plotter or drive a render window are covered by the
+integration tests instead, as are the wake ring vortex surfaces, which are built from a
+history that only a solved simulation carries. The classes here cover the computation
+and the geometry building that feed them, which are settled before any rendering begins.
+They also cover add_vortices, which only adds meshes to a Plotter, so its meshes can be
+checked on an off screen Plotter that never renders.
 """
 
+import math
 import tempfile
 import unittest
 from pathlib import Path
+from typing import cast
 
 import matplotlib
 import matplotlib.colors
@@ -1305,3 +1309,539 @@ class TestGetAnimationImageSurface(unittest.TestCase):
             np.array(body_fixed_mesh.center) - np.array([1.0, 2.0, 3.0]),
             atol=1e-5,
         )
+
+
+def _add_vortices(
+    plotter: pv.Plotter,
+    ring_vortices: tuple[np.ndarray, ...] | None = None,
+    wake_ring_vortices: tuple[np.ndarray, ...] | None = None,
+    horseshoe_vortices: tuple[np.ndarray, ...] | None = None,
+    horseshoe_vortices_are_wake: bool = False,
+    largest_chord: float = 1.0,
+    simplify: bool = False,
+) -> None:
+    """Adds vortices to a Plotter with _output_rendering.add_vortices, filling in empty
+    stacks for every kind of vortex that isn't given.
+
+    :param plotter: The Plotter to add the vortices to.
+    :param ring_vortices: A tuple of five (N,3) ndarrays of floats holding the ring
+        vortices' front right, front left, back left, and back right points (in diagram
+        axes, relative to the diagram origin), and their Panels' unit normals (in
+        diagram axes), or None to pass no ring vortices. The default is None.
+    :param wake_ring_vortices: A tuple of five (K,3) ndarrays of floats holding the wake
+        ring vortices' points and unit normals in the same order, or None to pass no
+        wake ring vortices. The default is None.
+    :param horseshoe_vortices: A tuple of five (M,3) ndarrays of floats holding the
+        horseshoe vortices' points and unit normals in the same order, or None to pass
+        no horseshoe vortices. The default is None.
+    :param horseshoe_vortices_are_wake: Determines whether the horseshoe vortices are
+        drawn as wake vortices. The default is False.
+    :param largest_chord: The largest chord, which scales the trailing legs' overhang
+        and their dashes. The units are in meters. The default is 1.0.
+    :param simplify: Determines whether to simplify the vortices. The default is False.
+    :return: None
+    """
+    noVortexPoints_D_Do = output_rendering_fixtures.make_no_vortex_points_fixture()
+    no_vortices = (noVortexPoints_D_Do,) * 5
+    (
+        stackFrrvp_D_Do,
+        stackFlrvp_D_Do,
+        stackBlrvp_D_Do,
+        stackBrrvp_D_Do,
+        stackRingUnitNormals_D,
+    ) = (
+        ring_vortices or no_vortices
+    )
+    (
+        stackFrwrvp_D_Do,
+        stackFlwrvp_D_Do,
+        stackBlwrvp_D_Do,
+        stackBrwrvp_D_Do,
+        stackWakeRingUnitNormals_D,
+    ) = (
+        wake_ring_vortices or no_vortices
+    )
+    (
+        stackFrhvp_D_Do,
+        stackFlhvp_D_Do,
+        stackBlhvp_D_Do,
+        stackBrhvp_D_Do,
+        stackHorseshoeUnitNormals_D,
+    ) = (
+        horseshoe_vortices or no_vortices
+    )
+    _output_rendering.add_vortices(
+        plotter,
+        stackFrrvp_D_Do=stackFrrvp_D_Do,
+        stackFlrvp_D_Do=stackFlrvp_D_Do,
+        stackBlrvp_D_Do=stackBlrvp_D_Do,
+        stackBrrvp_D_Do=stackBrrvp_D_Do,
+        stackRingUnitNormals_D=stackRingUnitNormals_D,
+        stackFrwrvp_D_Do=stackFrwrvp_D_Do,
+        stackFlwrvp_D_Do=stackFlwrvp_D_Do,
+        stackBlwrvp_D_Do=stackBlwrvp_D_Do,
+        stackBrwrvp_D_Do=stackBrwrvp_D_Do,
+        stackWakeRingUnitNormals_D=stackWakeRingUnitNormals_D,
+        stackFrhvp_D_Do=stackFrhvp_D_Do,
+        stackFlhvp_D_Do=stackFlhvp_D_Do,
+        stackBlhvp_D_Do=stackBlhvp_D_Do,
+        stackBrhvp_D_Do=stackBrhvp_D_Do,
+        stackHorseshoeUnitNormals_D=stackHorseshoeUnitNormals_D,
+        horseshoe_vortices_are_wake=horseshoe_vortices_are_wake,
+        largest_chord=largest_chord,
+        simplify=simplify,
+    )
+
+
+def _get_line_actors(plotter: pv.Plotter) -> list[tuple[pv.PolyData, pv.Actor]]:
+    """Returns the meshes made of lines in a Plotter, along with their Actors, in the
+    order they were added.
+
+    An arrow tip's filled faces and its outline are left out. The faces' mesh has no
+    lines, and the outline's Actor draws a filter's output, so its mapper's mesh is
+    empty before the Plotter renders.
+
+    :param plotter: The Plotter whose meshes to return.
+    :return: A list of tuples, each holding a mesh made of lines and the Actor that
+        draws it.
+    """
+    line_actors: list[tuple[pv.PolyData, pv.Actor]] = []
+    for prop in plotter.actors.values():
+        actor = cast(pv.Actor, prop)
+        mesh = cast(pv.DataSetMapper, actor.mapper).dataset
+        if isinstance(mesh, pv.PolyData) and mesh.n_lines > 0:
+            line_actors.append((mesh, actor))
+    return line_actors
+
+
+class TestAddVortices(unittest.TestCase):
+    """This class contains methods for testing _output_rendering.add_vortices."""
+
+    def setUp(self) -> None:
+        """Create an off screen Plotter to add this test's vortices to."""
+        self.plotter = pv.Plotter(off_screen=True)
+
+    def tearDown(self) -> None:
+        """Close the Plotter."""
+        self.plotter.close()
+
+    def test_adds_nothing_without_vortices(self) -> None:
+        """Test that a solver that places no vortices adds nothing to the Plotter."""
+        _add_vortices(self.plotter)
+        self.assertEqual(len(self.plotter.actors), 0)
+
+    def test_closes_each_exact_ring_vortex(self) -> None:
+        """Test that an exact ring vortex is one closed polyline through its corners.
+
+        The polyline runs front right, front left, back left, back right, and front
+        right again, so it repeats its first corner to close itself.
+        """
+        ring_vortices = output_rendering_fixtures.make_square_ring_vortex_fixture()
+        stackFrrvp_D_Do, stackFlrvp_D_Do, stackBlrvp_D_Do, stackBrrvp_D_Do, _ = (
+            ring_vortices
+        )
+        _add_vortices(self.plotter, ring_vortices=ring_vortices)
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 1)
+        mesh, _ = line_actors[0]
+        npt.assert_array_equal(
+            mesh.points,
+            np.vstack(
+                [
+                    stackFrrvp_D_Do,
+                    stackFlrvp_D_Do,
+                    stackBlrvp_D_Do,
+                    stackBrrvp_D_Do,
+                    stackFrrvp_D_Do,
+                ]
+            ),
+        )
+        npt.assert_array_equal(mesh.lines, [5, 0, 1, 2, 3, 4])
+
+    def test_exact_vortices_get_no_vorticity_arrows(self) -> None:
+        """Test that an exact ring vortex adds its polyline and nothing else."""
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+        )
+        self.assertEqual(len(self.plotter.actors), 1)
+
+    def test_draws_one_mesh_per_color(self) -> None:
+        """Test that the ring vortices sharing a color share one mesh.
+
+        The bound ring vortices come first, in one mesh of one polyline each drawn in
+        the vortex color at the vortex line width, and the wake ring vortices follow in
+        a mesh of their own drawn in the wake vortex color.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=(
+                output_rendering_fixtures.make_neighboring_ring_vortices_fixture()
+            ),
+            wake_ring_vortices=(
+                output_rendering_fixtures.make_square_ring_vortex_fixture()
+            ),
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 2)
+        bound_mesh, bound_actor = line_actors[0]
+        wake_mesh, wake_actor = line_actors[1]
+        self.assertEqual(bound_mesh.n_cells, 2)
+        self.assertEqual(bound_actor.prop.color, _output_rendering._VORTEX_COLOR)
+        self.assertEqual(
+            bound_actor.prop.line_width, _output_rendering._VORTEX_LINE_WIDTH
+        )
+        self.assertEqual(wake_mesh.n_cells, 1)
+        self.assertEqual(wake_actor.prop.color, _output_rendering._VORTEX_WAKE_COLOR)
+
+    def test_ends_trailing_legs_a_fixed_overhang_past_the_bounding_box(self) -> None:
+        """Test that an exact horseshoe vortex's solid polyline runs from its right
+        trailing leg's solid end, along its finite leg, to its left trailing leg's solid
+        end.
+
+        The vortices' bounding box is flat in x, so each trailing leg ends 1.0 meter
+        downstream of the finite leg, and its solid part ends 0.5 meters downstream,
+        where its dashed length begins. The trailing legs' far away back points don't
+        affect where they end.
+        """
+        horseshoe_vortices = (
+            output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+        )
+        _add_vortices(self.plotter, horseshoe_vortices=horseshoe_vortices)
+        solid_mesh, _ = _get_line_actors(self.plotter)[0]
+        npt.assert_allclose(
+            solid_mesh.points,
+            [
+                [0.5, 1.0, 0.0],
+                [0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [0.5, 0.0, 0.0],
+            ],
+            atol=1e-12,
+        )
+        npt.assert_array_equal(solid_mesh.lines, [4, 0, 1, 2, 3])
+
+    def test_dashes_the_end_of_each_trailing_leg(self) -> None:
+        """Test that each trailing leg's dashed length is drawn as evenly spaced dashes.
+
+        The dashed length runs from 0.5 to 1.0 meters downstream, and each dash and gap
+        is 0.05 meters long, so each trailing leg gets five dashes, starting every 0.1
+        meters from 0.5 meters. The right trailing leg's dashes come first.
+        """
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 2)
+        dash_mesh, _ = line_actors[1]
+        dash_starts = 0.5 + 0.1 * np.arange(5, dtype=float)
+        dash_distances = np.ravel(np.column_stack([dash_starts, dash_starts + 0.05]))
+        expectedRightDashVertices_D_Do = np.column_stack(
+            [dash_distances, np.ones(10, dtype=float), np.zeros(10, dtype=float)]
+        )
+        expectedLeftDashVertices_D_Do = np.column_stack(
+            [dash_distances, np.zeros(10, dtype=float), np.zeros(10, dtype=float)]
+        )
+        self.assertEqual(dash_mesh.n_cells, 10)
+        npt.assert_allclose(
+            dash_mesh.points,
+            np.vstack([expectedRightDashVertices_D_Do, expectedLeftDashVertices_D_Do]),
+            atol=1e-12,
+        )
+
+    def test_lines_up_dashes_of_overlapping_trailing_legs(self) -> None:
+        """Test that two trailing legs that lie on top of each other get matching
+        dashes, even though they start at different points.
+
+        The dashes are spaced by distance along the trailing legs' shared direction,
+        rather than from each trailing leg's start, so the first horseshoe vortex's
+        right trailing leg and the second one's left trailing leg draw the same dashes.
+        Each of the four trailing legs gets five dashes, ordered by horseshoe vortex and
+        then right before left.
+        """
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_staggered_horseshoe_vortices_fixture()
+            ),
+        )
+        dash_mesh, _ = _get_line_actors(self.plotter)[1]
+        self.assertEqual(dash_mesh.n_cells, 20)
+        npt.assert_allclose(dash_mesh.points[0:10], dash_mesh.points[30:40], atol=1e-12)
+
+    def test_scales_the_overhang_with_the_largest_chord(self) -> None:
+        """Test that doubling the largest chord doubles the trailing legs' overhang and
+        their dashed length.
+
+        With a largest chord of 2.0 meters, each trailing leg ends 2.0 meters downstream
+        of the finite leg, and its solid part ends 1.0 meter downstream.
+        """
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+            largest_chord=2.0,
+        )
+        solid_mesh, _ = _get_line_actors(self.plotter)[0]
+        npt.assert_allclose(solid_mesh.points[0], [1.0, 1.0, 0.0], atol=1e-12)
+        npt.assert_allclose(solid_mesh.points[-1], [1.0, 0.0, 0.0], atol=1e-12)
+
+    def test_runs_trailing_legs_toward_their_back_points(self) -> None:
+        """Test that each trailing leg runs along the unit vector from its front point
+        toward its back point, whatever direction that is."""
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_slanted_horseshoe_vortex_fixture()
+            ),
+        )
+        solid_mesh, _ = _get_line_actors(self.plotter)[0]
+        trailingDirection_D = np.array([1.0, 0.0, 1.0], dtype=float) / math.sqrt(2.0)
+        npt.assert_allclose(
+            solid_mesh.points[0],
+            np.array([0.0, 1.0, 0.0], dtype=float) + 0.5 * trailingDirection_D,
+            atol=1e-12,
+        )
+        npt.assert_allclose(
+            solid_mesh.points[-1], 0.5 * trailingDirection_D, atol=1e-12
+        )
+
+    def test_draws_bound_horseshoe_vortices_in_the_vortex_color(self) -> None:
+        """Test that bound horseshoe vortices' solid polylines and dashes are drawn in
+        the vortex color."""
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+            horseshoe_vortices_are_wake=False,
+        )
+        for _, actor in _get_line_actors(self.plotter):
+            self.assertEqual(actor.prop.color, _output_rendering._VORTEX_COLOR)
+
+    def test_draws_wake_horseshoe_vortices_in_the_wake_vortex_color(self) -> None:
+        """Test that wake horseshoe vortices' solid polylines and dashes are drawn in
+        the wake vortex color, while the bound ring vortices drawn with them keep the
+        vortex color.
+
+        This is the combination a steady ring vortex lattice method solver draws, with
+        its bound ring vortices first and its wake horseshoe vortices' solid polylines
+        and dashes after them.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+            horseshoe_vortices_are_wake=True,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 3)
+        self.assertEqual(line_actors[0][1].prop.color, _output_rendering._VORTEX_COLOR)
+        self.assertEqual(
+            line_actors[1][1].prop.color, _output_rendering._VORTEX_WAKE_COLOR
+        )
+        self.assertEqual(
+            line_actors[2][1].prop.color, _output_rendering._VORTEX_WAKE_COLOR
+        )
+
+    def test_simplified_vortices_use_the_simplified_colors(self) -> None:
+        """Test that simplified bound and wake ring vortices are drawn in their
+        simplified colors."""
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            wake_ring_vortices=(
+                output_rendering_fixtures.make_square_ring_vortex_fixture()
+            ),
+            simplify=True,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(
+            line_actors[0][1].prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
+        )
+        self.assertEqual(
+            line_actors[1][1].prop.color,
+            _output_rendering._VORTEX_WAKE_SIMPLIFIED_COLOR,
+        )
+
+    def test_shrinks_and_rounds_a_simplified_ring_vortex(self) -> None:
+        """Test that a simplified ring vortex is shrunk toward its center and has its
+        corners rounded.
+
+        The shrunk ring vortex's corners sit 0.45 meters from its center along the x and
+        y axes, so its legs span 0.05 to 0.95 meters. Each of its four corners is
+        replaced by a curve of eight points, and the closed polyline repeats its first
+        point at its end. The rounded polyline never reaches the shrunk corners.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            simplify=True,
+        )
+        solid_mesh, _ = _get_line_actors(self.plotter)[0]
+        num_corner_points = _output_rendering._VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+        self.assertEqual(solid_mesh.n_points, 4 * num_corner_points + 1)
+        npt.assert_allclose(solid_mesh.points[0], solid_mesh.points[-1], atol=1e-12)
+        npt.assert_allclose(
+            solid_mesh.bounds, (0.05, 0.95, 0.05, 0.95, 0.0, 0.0), atol=1e-6
+        )
+        for shrunkCorner_D_Do in [
+            [0.05, 0.95, 0.0],
+            [0.05, 0.05, 0.0],
+            [0.95, 0.05, 0.0],
+            [0.95, 0.95, 0.0],
+        ]:
+            self.assertGreater(
+                float(
+                    np.min(
+                        np.linalg.norm(solid_mesh.points - shrunkCorner_D_Do, axis=1)
+                    )
+                ),
+                1e-3,
+            )
+
+    def test_gives_each_leg_of_a_simplified_ring_vortex_an_arrow(self) -> None:
+        """Test that a simplified ring vortex gets one vorticity arrow per leg.
+
+        The arrows' shafts share one mesh of four half circular polylines, drawn at the
+        axes arrows' line width, and each arrow also adds its tip's outline and filled
+        faces.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            simplify=True,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 2)
+        arc_mesh, arc_actor = line_actors[1]
+        self.assertEqual(arc_mesh.n_cells, 4)
+        self.assertEqual(
+            arc_mesh.n_points, 4 * _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        )
+        self.assertEqual(arc_actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH)
+        self.assertEqual(
+            arc_actor.prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
+        )
+        self.assertEqual(len(self.plotter.actors), 2 + 2 * 4)
+
+    def test_centers_each_vorticity_arrow_on_its_legs_midpoint(self) -> None:
+        """Test that a vorticity arrow is a half circle around its leg's midpoint, in
+        the plane perpendicular to the leg.
+
+        The first leg runs from the shrunk front right corner to the shrunk front left
+        corner, so its midpoint is (0.05, 0.5, 0.0). Every leg is 0.9 meters long, so
+        each arrow's radius is 0.15 times that.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            simplify=True,
+        )
+        arc_mesh, _ = _get_line_actors(self.plotter)[1]
+        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        firstArcPoints_D_Do = arc_mesh.points[:num_arc_points]
+        legMidpoint_D_Do = np.array([0.05, 0.5, 0.0], dtype=float)
+        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        npt.assert_allclose(
+            np.linalg.norm(firstArcPoints_D_Do - legMidpoint_D_Do, axis=1),
+            arrow_radius,
+            atol=1e-6,
+        )
+        npt.assert_allclose(firstArcPoints_D_Do[:, 1], 0.5, atol=1e-6)
+
+    def test_sweeps_each_vorticity_arrow_across_its_legs_inward_side(self) -> None:
+        """Test that a vorticity arrow starts on its Panel's upper side, sweeps across
+        the inside of its vortex, and stops where its tip begins.
+
+        The first leg runs along the negative y direction, so the vorticity for a
+        negative vortex strength points along the positive y direction. Turning about
+        that direction carries the upper side, along the positive z direction, toward
+        the inside of the ring vortex, along the positive x direction. The tip takes up
+        a fifth of the half circle's length, so the shaft stops at 0.8 * pi radians.
+        """
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            simplify=True,
+        )
+        arc_mesh, _ = _get_line_actors(self.plotter)[1]
+        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        firstArcPoints_D_Do = arc_mesh.points[:num_arc_points]
+        legMidpoint_D_Do = np.array([0.05, 0.5, 0.0], dtype=float)
+        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        shaft_end_angle = math.pi - _output_rendering._AXES_TIP_LENGTH * math.pi
+        npt.assert_allclose(
+            firstArcPoints_D_Do[0],
+            legMidpoint_D_Do + arrow_radius * np.array([0.0, 0.0, 1.0]),
+            atol=1e-6,
+        )
+        npt.assert_allclose(
+            firstArcPoints_D_Do[-1],
+            legMidpoint_D_Do
+            + arrow_radius
+            * np.array(
+                [math.sin(shaft_end_angle), 0.0, math.cos(shaft_end_angle)],
+                dtype=float,
+            ),
+            atol=1e-6,
+        )
+        self.assertTrue(np.all(firstArcPoints_D_Do[:, 0] >= 0.05 - 1e-6))
+
+    def test_shrinks_the_finite_leg_of_a_simplified_horseshoe_vortex(self) -> None:
+        """Test that a simplified horseshoe vortex's finite leg is shrunk toward its
+        midpoint, with its trailing legs moving along with the finite leg's ends.
+
+        The finite leg's ends move to 0.05 and 0.95 meters along the y axis. The
+        trailing legs still end where the unshrunk vortices' bounding box puts them, so
+        their solid parts end 0.5 meters downstream. The open polyline keeps its two end
+        points, and each of its two corners is replaced by a curve of eight points.
+        """
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+            simplify=True,
+        )
+        solid_mesh, _ = _get_line_actors(self.plotter)[0]
+        num_corner_points = _output_rendering._VORTEX_SIMPLIFIED_CORNER_NUM_POINTS
+        self.assertEqual(solid_mesh.n_points, 2 * num_corner_points + 2)
+        npt.assert_allclose(solid_mesh.points[0], [0.5, 0.95, 0.0], atol=1e-6)
+        npt.assert_allclose(solid_mesh.points[-1], [0.5, 0.05, 0.0], atol=1e-6)
+
+    def test_gives_each_solid_leg_of_a_simplified_horseshoe_vortex_an_arrow(
+        self,
+    ) -> None:
+        """Test that a simplified horseshoe vortex gets vorticity arrows on its finite
+        leg and its two trailing legs' solid parts.
+
+        The finite leg's arrow comes first. The inside of a horseshoe vortex lies
+        downstream of its finite leg, so that arrow starts on the Panel's upper side and
+        sweeps downstream, along the positive x direction. Its radius is 0.15 times the
+        shrunk finite leg's length of 0.9 meters.
+        """
+        _add_vortices(
+            self.plotter,
+            horseshoe_vortices=(
+                output_rendering_fixtures.make_straight_horseshoe_vortex_fixture()
+            ),
+            simplify=True,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 3)
+        arc_mesh, _ = line_actors[2]
+        self.assertEqual(arc_mesh.n_cells, 3)
+        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        finiteLegArcPoints_D_Do = arc_mesh.points[:num_arc_points]
+        arrow_radius = _output_rendering._VORTEX_VORTICITY_ARROW_RADIUS * 0.9
+        npt.assert_allclose(
+            finiteLegArcPoints_D_Do[0], [0.0, 0.5, arrow_radius], atol=1e-6
+        )
+        self.assertTrue(np.all(finiteLegArcPoints_D_Do[:, 0] >= -1e-6))

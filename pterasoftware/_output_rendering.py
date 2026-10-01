@@ -9,7 +9,7 @@ import re
 import threading
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Literal, NamedTuple, cast
+from typing import TYPE_CHECKING, Literal, NamedTuple, cast
 
 import matplotlib.colors
 import numpy as np
@@ -24,11 +24,16 @@ from . import (
     _parameter_validation,
     _private_access,
     _transformations,
-    free_flight_unsteady_ring_vortex_lattice_method,
     geometry,
 )
 from . import operating_point as operating_point_mod
-from . import problems, unsteady_ring_vortex_lattice_method
+from . import problems
+
+if TYPE_CHECKING:
+    from . import (
+        free_flight_unsteady_ring_vortex_lattice_method,
+        unsteady_ring_vortex_lattice_method,
+    )
 
 _logger = _logging.get_logger("output")
 

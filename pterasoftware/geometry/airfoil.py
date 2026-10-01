@@ -97,7 +97,8 @@ class Airfoil:
             parameter is unset.
         :return: None
         """
-        if outline_A_lp is not _UNSET:
+        # Coverage ignores this branch because the outline_A_lp parameter is deprecated.
+        if outline_A_lp is not _UNSET:  # pragma: no cover
             warnings.warn(
                 "The outline_A_lp parameter is deprecated and will be removed in "
                 "v6.0.0. Use outline_A_Lp instead.",
@@ -203,8 +204,9 @@ class Airfoil:
         return self._mcl_A_Lp
 
     # --- Deprecated aliases: remove in v6.0.0 ---
+    # Coverage ignores this property because it is deprecated in favor of outline_A_Lp.
     @property
-    def outline_A_lp(self) -> np.ndarray:
+    def outline_A_lp(self) -> np.ndarray:  # pragma: no cover
         """A deprecated alias for outline_A_Lp.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
@@ -221,8 +223,9 @@ class Airfoil:
         )
         return self._outline_A_Lp
 
+    # Coverage ignores this property because it is deprecated in favor of mcl_A_Lp.
     @property
-    def mcl_A_lp(self) -> np.ndarray | None:
+    def mcl_A_lp(self) -> np.ndarray | None:  # pragma: no cover
         """A deprecated alias for mcl_A_Lp.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0.
@@ -491,7 +494,8 @@ class Airfoil:
             plotter, cpos="xy", save=save, path=path, quality=quality
         )
 
-    def draw(self) -> None:
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def draw(self) -> None:  # pragma: no cover
         """A deprecated method that plots this Airfoil's outlines and mean camber line
         (MCL) using PyPlot.
 
@@ -539,7 +543,8 @@ class Airfoil:
 
         plt.show()
 
-    def get_plottable_data(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self, show: bool | np.bool = False
     ) -> list[np.ndarray] | None:
         """A deprecated method that returns plottable data for this Airfoil's outline

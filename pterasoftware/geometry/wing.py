@@ -1238,8 +1238,9 @@ class Wing:
         self._projected_area = projected_area
         return projected_area
 
+    # Coverage ignores this property because it is deprecated.
     @property
-    def wetted_area(self) -> None | float:
+    def wetted_area(self) -> None | float:  # pragma: no cover
         """A deprecated property that returns the total area of the Wing's Panels.
 
         Reading it emits a DeprecationWarning, and it will be removed in v6.0.0. The
@@ -1710,7 +1711,8 @@ class Wing:
             plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
         )
 
-    def get_plottable_data(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self, show: bool | np.bool = False
     ) -> list[list[np.ndarray]] | None:
         """A deprecated method that returns plottable data for this Wing's Airfoils'

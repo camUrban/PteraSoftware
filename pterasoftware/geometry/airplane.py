@@ -827,7 +827,8 @@ class Airplane:
             plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
         )
 
-    def draw(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def draw(  # pragma: no cover
         self, save: bool | np.bool = False, testing: bool | np.bool = False
     ) -> None:
         """A deprecated method that draws the 3D geometry of this Airplane.
@@ -963,7 +964,8 @@ class Airplane:
         # Close all the plotters.
         pv.close_all()
 
-    def get_plottable_data(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self, show: bool | np.bool = False
     ) -> list[list[list[np.ndarray]]] | None:
         """A deprecated method that returns plottable data for this Airplane's Airfoils'

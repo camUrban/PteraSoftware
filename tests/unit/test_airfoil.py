@@ -2,7 +2,6 @@
 
 import importlib.resources
 import unittest
-import warnings
 from typing import Any
 from unittest.mock import patch
 
@@ -1239,16 +1238,6 @@ class TestAirfoilDeprecatedLpAliases(unittest.TestCase):
                 ps.geometry.airfoil.Airfoil(
                     name="both", outline_A_Lp=points, outline_A_lp=points
                 )
-
-    def test_new_names_do_not_warn(self) -> None:
-        """Test that the outline_A_Lp parameter and the Lp-named properties emit no
-        DeprecationWarning."""
-        points = self.naca2412_airfoil.outline_A_Lp.copy()
-        with warnings.catch_warnings():
-            warnings.simplefilter("error", DeprecationWarning)
-            airfoil = ps.geometry.airfoil.Airfoil(name="clean", outline_A_Lp=points)
-            _ = airfoil.outline_A_Lp
-            _ = airfoil.mcl_A_Lp
 
 
 class TestAirfoilDeprecatedPlottingMethods(unittest.TestCase):

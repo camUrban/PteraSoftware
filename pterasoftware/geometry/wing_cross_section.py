@@ -581,7 +581,8 @@ class WingCrossSection:
             plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
         )
 
-    def get_plottable_data(
+    # Coverage ignores this method because it is deprecated in favor of diagram.
+    def get_plottable_data(  # pragma: no cover
         self,
         show: bool | np.bool = False,
     ) -> list[np.ndarray] | None:

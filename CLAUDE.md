@@ -78,7 +78,7 @@ Requires Python 3.11, but active development is done in 3.14
         - `wing_cross_section_movement.py`: `WingCrossSectionMovement` class
         - `wing_movement.py`: `WingMovement` class
     - `_colormap_data/`: Directory containing data files with the vendored color map colors, along with their license
-    - `_font_data/`: Directory containing the vendored Liberation Sans font file used by all the visualizations, along with its license
+    - `_font_data/`: Directory containing the vendored Liberation Sans font file used by all the visualizations and the vendored Liberation Mono font file used by the diagrams' axes and point labels, along with their license
     - `_aerodynamics_functions.py`: Induced velocity functions
     - `_colormaps.py`: Color maps used by the visualization functions
     - `_convergence_cache.py`: JSON solve and memo cache for convergence analysis
@@ -86,7 +86,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
-    - `_fonts.py`: The font used by the visualization functions
+    - `_fonts.py`: The fonts used by the visualization functions
     - `_functions.py`: Shared utility functions
     - `_logging.py`: Contains the function for setting up logging
     - `_mujoco_model.py`: Contains the `MuJoCoModel` class

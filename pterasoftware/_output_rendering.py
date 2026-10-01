@@ -699,7 +699,7 @@ def add_axes_and_points(
         arrow_label.prop.color = "black"
         arrow_label.prop.background_color = plotter.background_color
         arrow_label.prop.background_opacity = 1.0
-        arrow_label.prop.set_font_file(str(_fonts.FONT_PATH))
+        arrow_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
         plotter.add_actor(arrow_label)
         label_entries.append((arrow_label, arrowStart_D_Do, arrowLabelAnchor_D_Do))
     for point_D_Do, pointLabelOffset_D, labels in zip(
@@ -718,7 +718,7 @@ def add_axes_and_points(
         point_label.prop.color = "black"
         point_label.prop.background_color = plotter.background_color
         point_label.prop.background_opacity = 1.0
-        point_label.prop.set_font_file(str(_fonts.FONT_PATH))
+        point_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
         plotter.add_actor(point_label)
         label_entries.append((point_label, point_D_Do, pointLabelAnchor_D_Do))
 

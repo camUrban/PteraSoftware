@@ -4,9 +4,11 @@ import copy
 import unittest
 from collections.abc import Sequence
 from typing import Any
+from unittest.mock import patch
 
 import numpy as np
 import numpy.testing as npt
+import pyvista as pv
 import scipy.interpolate as sp_interp
 
 import pterasoftware as ps
@@ -1125,145 +1127,70 @@ class TestAirplaneTPasGCgToGP1CgP1(unittest.TestCase):
         npt.assert_array_almost_equal(global_point_homogeneous[:3], position)
 
 
-class TestAirplaneGetPlottableData(unittest.TestCase):
-    """Tests for Airplane.get_plottable_data method."""
+class TestAirplaneDiagram(unittest.TestCase):
+    """Tests for Airplane.diagram method."""
 
     def setUp(self) -> None:
-        """Set up test fixtures for get_plottable_data tests."""
+        """Set up test fixtures for diagram tests."""
         self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
         self.multi_wing_airplane = geometry_fixtures.make_multi_wing_airplane_fixture()
 
-    def test_get_plottable_data_returns_list_when_show_is_false(self) -> None:
-        """Test that get_plottable_data returns a list when show is False."""
-        result = self.basic_airplane.get_plottable_data(show=False)
+    def test_diagram_shows_the_diagram(self) -> None:
+        """Test that diagram shows the diagram once."""
+        # Patch the Plotter's show method to avoid blocking on window close.
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.basic_airplane.diagram()
 
-        self.assertIsInstance(result, list)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_returns_two_sub_lists(self) -> None:
-        """Test that get_plottable_data returns two sub lists (outlines and MCLs)."""
-        result = self.basic_airplane.get_plottable_data(show=False)
+    def test_diagram_accepts_numpy_bools(self) -> None:
+        """Test that diagram accepts numpy bools for its flags."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.basic_airplane.diagram(
+                show_wing_axes_and_points=np.bool(False),
+                show_wing_cross_section_axes_and_points=np.bool(True),
+                show_airfoil_axes_and_points=np.bool(True),
+                show_airfoils=np.bool(True),
+                show_mcls=np.bool(True),
+                show_collocation_points=np.bool(True),
+                label_collocation_points=np.bool(True),
+                save=np.bool(False),
+            )
 
-        assert result is not None
-        self.assertEqual(len(result), 2)
+        mock_show.assert_called_once()
 
-    def test_get_plottable_data_structure_matches_wings_and_cross_sections(
-        self,
-    ) -> None:
-        """Test that the returned data structure matches the number of Wings and
-        WingCrossSections."""
-        result = self.basic_airplane.get_plottable_data(show=False)
-        assert result is not None
-        outlines = result[0]
-        mcls = result[1]
+    def test_diagram_multi_wing_airplane(self) -> None:
+        """Test diagram with a multi wing Airplane."""
+        with patch.object(pv.Plotter, "show") as mock_show:
+            self.multi_wing_airplane.diagram()
 
-        # The number of sub lists should match the number of Wings.
-        self.assertEqual(len(outlines), len(self.basic_airplane.wings))
-        self.assertEqual(len(mcls), len(self.basic_airplane.wings))
+        mock_show.assert_called_once()
 
-        # Each Wing's sub list should have the same number of cross sections.
-        for wing_id, wing in enumerate(self.basic_airplane.wings):
-            expected_num = len(wing.wing_cross_sections)
-            self.assertEqual(len(outlines[wing_id]), expected_num)
-            self.assertEqual(len(mcls[wing_id]), expected_num)
-
-    def test_get_plottable_data_returns_ndarrays(self) -> None:
-        """Test that get_plottable_data returns ndarrays for each cross section."""
-        result = self.basic_airplane.get_plottable_data(show=False)
-        assert result is not None
-        outlines = result[0]
-        mcls = result[1]
-
-        for wing_outlines in outlines:
-            for outline in wing_outlines:
-                self.assertIsInstance(outline, np.ndarray)
-
-        for wing_mcls in mcls:
-            for mcl in wing_mcls:
-                self.assertIsInstance(mcl, np.ndarray)
-
-    def test_get_plottable_data_returns_3d_points(self) -> None:
-        """Test that get_plottable_data returns arrays with 3 columns (x, y, z)."""
-        result = self.basic_airplane.get_plottable_data(show=False)
-        assert result is not None
-        outlines = result[0]
-        mcls = result[1]
-
-        for wing_outlines in outlines:
-            for outline in wing_outlines:
-                self.assertEqual(outline.shape[1], 3)
-
-        for wing_mcls in mcls:
-            for mcl in wing_mcls:
-                self.assertEqual(mcl.shape[1], 3)
-
-    def test_get_plottable_data_default_show_is_false(self) -> None:
-        """Test that get_plottable_data default for show is False."""
-        result = self.basic_airplane.get_plottable_data()
-
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_accepts_numpy_bool(self) -> None:
-        """Test that get_plottable_data accepts numpy bool for show parameter."""
-        result = self.basic_airplane.get_plottable_data(show=np.bool(False))
-
-        self.assertIsNotNone(result)
-        self.assertIsInstance(result, list)
-
-    def test_get_plottable_data_multi_wing_airplane(self) -> None:
-        """Test get_plottable_data with a multi wing Airplane."""
-        result = self.multi_wing_airplane.get_plottable_data(show=False)
-        assert result is not None
-        outlines = result[0]
-        mcls = result[1]
-
-        # Should have data for each Wing.
-        self.assertEqual(len(outlines), len(self.multi_wing_airplane.wings))
-        self.assertEqual(len(mcls), len(self.multi_wing_airplane.wings))
-
-    def test_get_plottable_data_invalid_show_type_raises(self) -> None:
-        """Test that get_plottable_data raises error for invalid show type."""
-        bad_show: Any = "invalid"
-        with self.assertRaises(TypeError):
-            # noinspection PyTypeChecker
-            self.basic_airplane.get_plottable_data(show=bad_show)
-
-
-class TestAirplaneDraw(unittest.TestCase):
-    """Tests for Airplane.draw method."""
-
-    def setUp(self) -> None:
-        """Set up test fixtures for draw tests."""
-        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
-
-    def test_draw_runs_without_error_in_testing_mode(self) -> None:
-        """Test that draw runs without error in testing mode."""
-        # Use testing=True to avoid blocking on window close.
-        try:
-            self.basic_airplane.draw(save=False, testing=True)
-        except Exception as e:
-            self.fail(f"draw() raised {type(e).__name__}: {e}")
-
-    def test_draw_accepts_numpy_bool_for_save(self) -> None:
-        """Test that draw accepts numpy bool for save parameter."""
-        try:
-            self.basic_airplane.draw(save=np.bool(False), testing=np.bool(True))
-        except Exception as e:
-            self.fail(f"draw() raised {type(e).__name__}: {e}")
-
-    def test_draw_invalid_save_type_raises(self) -> None:
-        """Test that draw raises error for invalid save type."""
+    def test_diagram_invalid_save_type_raises(self) -> None:
+        """Test that diagram raises error for invalid save type."""
         bad_save: Any = "invalid"
         with self.assertRaises(TypeError):
             # noinspection PyTypeChecker
-            self.basic_airplane.draw(save=bad_save, testing=True)
+            self.basic_airplane.diagram(save=bad_save)
 
-    def test_draw_invalid_testing_type_raises(self) -> None:
-        """Test that draw raises error for invalid testing type."""
-        bad_testing: Any = "invalid"
-        with self.assertRaises(TypeError):
-            # noinspection PyTypeChecker
-            self.basic_airplane.draw(save=False, testing=bad_testing)
+
+class TestAirplaneDeprecatedPlottingMethods(unittest.TestCase):
+    """This class contains unit tests for the deprecated Airplane plotting methods."""
+
+    def setUp(self) -> None:
+        """Set up test fixtures for the deprecated method tests."""
+        self.basic_airplane = geometry_fixtures.make_basic_airplane_fixture()
+
+    def test_get_plottable_data_warns(self) -> None:
+        """Test that calling get_plottable_data emits a DeprecationWarning."""
+        with self.assertWarns(DeprecationWarning):
+            self.basic_airplane.get_plottable_data(show=False)
+
+    def test_draw_warns(self) -> None:
+        """Test that calling draw emits a DeprecationWarning."""
+        # Use testing=True to avoid blocking on window close.
+        with self.assertWarns(DeprecationWarning):
+            self.basic_airplane.draw(save=False, testing=True)
 
 
 class TestGetPlanformReferenceDimensions(unittest.TestCase):

@@ -480,10 +480,21 @@ class Airfoil:
         )
 
     def draw(self) -> None:
-        """Plots this Airfoil's outlines and mean camber line (MCL) using PyPlot.
+        """A deprecated method that plots this Airfoil's outlines and mean camber line
+        (MCL) using PyPlot.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :return: None
         """
+        warnings.warn(
+            "The draw method is deprecated and will be removed in v6.0.0. Use diagram "
+            "instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         outlineX_A_Lp = self._outline_A_Lp[:, 0]
         outlineY_A_Lp = self._outline_A_Lp[:, 1]
 
@@ -519,7 +530,11 @@ class Airfoil:
     def get_plottable_data(
         self, show: bool | np.bool = False
     ) -> list[np.ndarray] | None:
-        """Returns plottable data for this Airfoil's outline and mean camber line.
+        """A deprecated method that returns plottable data for this Airfoil's outline
+        and mean camber line.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. Can be a bool or a numpy
             bool, and will be converted internally to a bool. If True, the method
@@ -528,6 +543,13 @@ class Airfoil:
         :return: A list of two ndarrays containing the outline and MCL data, or None if
             show is True.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

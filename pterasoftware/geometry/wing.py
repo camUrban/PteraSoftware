@@ -1716,8 +1716,11 @@ class Wing:
     def get_plottable_data(
         self, show: bool | np.bool = False
     ) -> list[list[np.ndarray]] | None:
-        """Returns plottable data for this Wing's Airfoils' outlines and mean camber
-        lines.
+        """A deprecated method that returns plottable data for this Wing's Airfoils'
+        outlines and mean camber lines.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
@@ -1730,6 +1733,13 @@ class Wing:
             in wing axes, relative to the leading edge root point. The units are in
             meters.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

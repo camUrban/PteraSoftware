@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import time
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -833,11 +834,12 @@ class Airplane:
     def draw(
         self, save: bool | np.bool = False, testing: bool | np.bool = False
     ) -> None:
-        """Draws the 3D geometry of this Airplane.
+        """A deprecated method that draws the 3D geometry of this Airplane.
 
-        This method provides a convenient way to visualize the Airplane's Panels without
-        needing to create a solver object first. It shows the Panel's surfaces in 3D
-        using PyVista.
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead. This method provides a convenient way to visualize the
+        Airplane's Panels without needing to create a solver object first. It shows the
+        Panel's surfaces in 3D using PyVista.
 
         :param save: Set to True to save the image as a WebP. Can be a bool or a numpy
             bool and will be converted internally to bool. The default value is False.
@@ -846,6 +848,13 @@ class Airplane:
             internally to bool. The default value is False.
         :return: None
         """
+        warnings.warn(
+            "The draw method is deprecated and will be removed in v6.0.0. Use diagram "
+            "instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         save = _parameter_validation.boolLike_return_bool(save, "save")
         testing = _parameter_validation.boolLike_return_bool(testing, "testing")
 
@@ -961,8 +970,11 @@ class Airplane:
     def get_plottable_data(
         self, show: bool | np.bool = False
     ) -> list[list[list[np.ndarray]]] | None:
-        """Returns plottable data for this Airplane's Airfoils' outlines and mean camber
-        lines.
+        """A deprecated method that returns plottable data for this Airplane's Airfoils'
+        outlines and mean camber lines.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
@@ -976,6 +988,13 @@ class Airplane:
             its mean camber line. The points are in geometry axes, relative to the CG.
             The units are in meters.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

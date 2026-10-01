@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -572,8 +573,11 @@ class WingCrossSection:
         self,
         show: bool | np.bool = False,
     ) -> list[np.ndarray] | None:
-        """Returns plottable data for this WingCrossSection's Airfoil's outline and mean
-        camber line.
+        """A deprecated method that returns plottable data for this WingCrossSection's
+        Airfoil's outline and mean camber line.
+
+        Calling it emits a DeprecationWarning, and it will be removed in v6.0.0. Use
+        diagram instead.
 
         :param show: Determines whether to display the plot. If True, the method
             displays the plot and returns None. If False, the method returns the data
@@ -586,6 +590,13 @@ class WingCrossSection:
             wing cross section axes, relative to the leading point. The units are in
             meters.
         """
+        warnings.warn(
+            "The get_plottable_data method is deprecated and will be removed in "
+            "v6.0.0. Use diagram instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
         # Validate the input flag.
         show = _parameter_validation.boolLike_return_bool(show, "show")
 

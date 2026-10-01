@@ -1310,25 +1310,21 @@ def add_panels(
 
 def get_collocation_points(
     wing: geometry.wing.Wing,
-    row_and_column_ids: Sequence[tuple[int, int]] | None,
     id_suffix: str,
     T_pas_G_Cg_to_D_Do: np.ndarray,
 ) -> tuple[list[str], list[np.ndarray], list[np.ndarray], list[np.ndarray]]:
     """Returns the IDs, positions, label offset basis directions, and cross directions
-    of a Wing's selected Panels' collocation points, which can be passed to
-    add_axes_and_points as extra points.
+    of a Wing's Panels' collocation points, which can be passed to add_axes_and_points
+    as extra points.
 
-    Each ID numbers its Panel by its chordwise row and spanwise column, starting at one,
-    and ends with the given suffix (such as "Cppr3c2Wn1"). Panel points have no axes of
-    their own, so each label offset is defined in the Wing's wing axes. Each cross's
-    arms lie along its Panel's two diagonals.
+    The collocation points are returned row by row. Each ID numbers its Panel by its
+    chordwise row and spanwise column, starting at one, and ends with the given suffix
+    (such as "Cppr3c2Wn1"). Panel points have no axes of their own, so each label offset
+    is defined in the Wing's wing axes. Each cross's arms lie along its Panel's two
+    diagonals.
 
     :param wing: The Wing whose Panels' collocation points are returned. If it hasn't
         been meshed, all the returned lists are empty.
-    :param row_and_column_ids: The Panels whose collocation points are returned, given
-        as a sequence of (row index, column index) pairs of ints, each starting at zero.
-        Every pair must index one of the Wing's Panels. If None, every Panel's
-        collocation point is returned.
     :param id_suffix: The text appended to each ID.
     :param T_pas_G_Cg_to_D_Do: A (4,4) ndarray of floats representing the passive
         transformation matrix which maps in homogeneous coordinates from the Wing's
@@ -1357,41 +1353,35 @@ def get_collocation_points(
         )
     num_rows, num_columns = panels.shape
 
-    if row_and_column_ids is None:
-        row_and_column_ids = [
-            (row_id, column_id)
-            for row_id in range(num_rows)
-            for column_id in range(num_columns)
-        ]
-
     _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
     assert _T_pas_Wn_Ler_to_G_Cg is not None
     R_pas_Wn_to_D = _transformations.compose_T_pas(
         _T_pas_Wn_Ler_to_G_Cg, T_pas_G_Cg_to_D_Do
     )[:3, :3]
 
-    for row_id, column_id in row_and_column_ids:
-        panel = panels[row_id, column_id]
-        ids.append(f"Cppr{row_id + 1}c{column_id + 1}{id_suffix}")
-        listCollocationPoints_D_Do.append(
-            _transformations.apply_T_to_vectors(
-                T_pas_G_Cg_to_D_Do, panel.Cpp_G_Cg, is_position=True
+    for row_id in range(num_rows):
+        for column_id in range(num_columns):
+            panel = panels[row_id, column_id]
+            ids.append(f"Cppr{row_id + 1}c{column_id + 1}{id_suffix}")
+            listCollocationPoints_D_Do.append(
+                _transformations.apply_T_to_vectors(
+                    T_pas_G_Cg_to_D_Do, panel.Cpp_G_Cg, is_position=True
+                )
             )
-        )
-        listWingBasisDirections_D.append(R_pas_Wn_to_D)
-        diagonals_D = _transformations.apply_T_to_vectors(
-            T_pas_G_Cg_to_D_Do,
-            np.array(
-                [
-                    panel.Brpp_G_Cg - panel.Flpp_G_Cg,
-                    panel.Blpp_G_Cg - panel.Frpp_G_Cg,
-                ]
-            ),
-            is_position=False,
-        )
-        listCrossDirections_D.append(
-            diagonals_D / np.linalg.norm(diagonals_D, axis=1, keepdims=True)
-        )
+            listWingBasisDirections_D.append(R_pas_Wn_to_D)
+            diagonals_D = _transformations.apply_T_to_vectors(
+                T_pas_G_Cg_to_D_Do,
+                np.array(
+                    [
+                        panel.Brpp_G_Cg - panel.Flpp_G_Cg,
+                        panel.Blpp_G_Cg - panel.Frpp_G_Cg,
+                    ]
+                ),
+                is_position=False,
+            )
+            listCrossDirections_D.append(
+                diagonals_D / np.linalg.norm(diagonals_D, axis=1, keepdims=True)
+            )
 
     return (
         ids,
@@ -1399,116 +1389,6 @@ def get_collocation_points(
         listWingBasisDirections_D,
         listCrossDirections_D,
     )
-
-
-def get_collocation_point_row_and_column_ids(
-    selection: Sequence[Sequence[int]] | None,
-    selection_name: str,
-    airplanes_wings: Sequence[Sequence[geometry.wing.Wing]],
-    num_leading_ids: int,
-) -> list[list[list[tuple[int, int]] | None]]:
-    """Validates a diagram's selection of Panels whose collocation points are drawn, and
-    returns it as zero based (row index, column index) pairs for each Wing, which can be
-    passed to get_collocation_points.
-
-    Each element of the selection gives one Panel as a tuple of ints, each starting at
-    one. Its last two ints are the Panel's chordwise row and spanwise column. Before
-    them come num_leading_ids ints that pick the Panel's Wing: none for a Wing's
-    diagram, whose selection holds (row, column) pairs, the Wing for an Airplane's
-    diagram, whose selection holds (wing, row, column) triples, and the Airplane and
-    then the Wing for a SteadyProblem's diagram, whose selection holds (airplane, wing,
-    row, column) quadruples.
-
-    :param selection: The selection to validate, or None to select every Panel.
-    :param selection_name: The name of the parameter that selection came from, which is
-        used in error messages.
-    :param airplanes_wings: A sequence with one sequence of Wings for each Airplane the
-        selection can pick from. For a Wing's or an Airplane's diagram, it holds a
-        single sequence, which for a Wing's diagram holds only that Wing. Every Wing
-        must have been meshed.
-    :param num_leading_ids: The number of ints before each element's row and column,
-        which must be 0, 1, or 2.
-    :return: A list with one list for each Airplane, each holding one element for each
-        of that Airplane's Wings. If selection is None, every element is None, which
-        get_collocation_points reads as selecting every Panel. Otherwise, each element
-        is a list of the zero based (row index, column index) pairs selected on that
-        Wing, in the order they were given.
-    """
-    if selection is None:
-        return [[None for _ in wings] for wings in airplanes_wings]
-
-    id_names = [*("airplane", "wing")[2 - num_leading_ids :], "row", "column"]
-    element_description = {
-        2: "a (row, column) pair",
-        3: "a (wing, row, column) triple",
-        4: "an (airplane, wing, row, column) quadruple",
-    }[len(id_names)]
-
-    # Check each int against an exclusive minimum of zero, which accepts the same values
-    # as an inclusive minimum of one, but stays below the maximum even when there is
-    # only one Airplane, Wing, row, or column to pick from.
-    airplanes_wings_row_and_column_ids: list[list[list[tuple[int, int]] | None]] = [
-        [[] for _ in wings] for wings in airplanes_wings
-    ]
-    for element in selection:
-        if len(element) != len(id_names):
-            raise ValueError(
-                f"Each element of {selection_name} must be {element_description}."
-            )
-
-        airplane_id = 0
-        if num_leading_ids == 2:
-            airplane_id = (
-                _parameter_validation.int_in_range_return_int(
-                    element[0],
-                    f"Each airplane in {selection_name}",
-                    min_val=0,
-                    min_inclusive=False,
-                    max_val=len(airplanes_wings),
-                    max_inclusive=True,
-                )
-                - 1
-            )
-        wings = airplanes_wings[airplane_id]
-        wing_id = 0
-        if num_leading_ids >= 1:
-            wing_id = (
-                _parameter_validation.int_in_range_return_int(
-                    element[num_leading_ids - 1],
-                    f"Each wing in {selection_name}",
-                    min_val=0,
-                    min_inclusive=False,
-                    max_val=len(wings),
-                    max_inclusive=True,
-                )
-                - 1
-            )
-
-        panels = wings[wing_id].panels
-        assert panels is not None
-        num_rows, num_columns = panels.shape
-        row = _parameter_validation.int_in_range_return_int(
-            element[num_leading_ids],
-            f"Each row in {selection_name}",
-            min_val=0,
-            min_inclusive=False,
-            max_val=num_rows,
-            max_inclusive=True,
-        )
-        column = _parameter_validation.int_in_range_return_int(
-            element[num_leading_ids + 1],
-            f"Each column in {selection_name}",
-            min_val=0,
-            min_inclusive=False,
-            max_val=num_columns,
-            max_inclusive=True,
-        )
-
-        row_and_column_ids = airplanes_wings_row_and_column_ids[airplane_id][wing_id]
-        assert row_and_column_ids is not None
-        row_and_column_ids.append((row - 1, column - 1))
-
-    return airplanes_wings_row_and_column_ids
 
 
 def add_steady_problem(
@@ -1521,9 +1401,6 @@ def add_steady_problem(
     show_airfoils: bool,
     show_mcls: bool,
     show_collocation_points: bool,
-    airplanes_wings_row_and_column_ids: Sequence[
-        Sequence[Sequence[tuple[int, int]] | None]
-    ],
     label_collocation_points: bool,
     math_labels: bool = False,
 ) -> None:
@@ -1550,9 +1427,6 @@ def add_steady_problem(
         no effect if show_airfoils is False.
     :param show_collocation_points: Determines whether to add the Wings' Panels'
         collocation points.
-    :param airplanes_wings_row_and_column_ids: The Panels whose collocation points are
-        added, as returned by get_collocation_point_row_and_column_ids. It has no effect
-        if show_collocation_points is False.
     :param label_collocation_points: Determines whether to label the collocation points
         that are added. It has no effect if show_collocation_points is False.
     :param math_labels: Determines whether to write the axes and point labels as math,
@@ -1651,7 +1525,6 @@ def add_steady_problem(
                     listThisWingCrossDirections_D,
                 ) = get_collocation_points(
                     wing,
-                    airplanes_wings_row_and_column_ids[airplane_id][wing_id],
                     f"Wn{wing_num}P{airplane_num}",
                     T_pas_G_Cg_to_GP1_CgP1,
                 )

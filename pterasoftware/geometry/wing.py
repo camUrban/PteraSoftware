@@ -1554,7 +1554,6 @@ class Wing:
         show_airfoils: bool | np.bool = False,
         show_mcls: bool | np.bool = False,
         show_collocation_points: bool | np.bool = False,
-        collocation_point_rows_and_columns: Sequence[Sequence[int]] | None = None,
         label_collocation_points: bool | np.bool = False,
         math_labels: bool | np.bool = False,
         save: bool | np.bool = False,
@@ -1583,13 +1582,8 @@ class Wing:
             collocation points. The labels number each Panel by its chordwise row and
             spanwise column, starting at one (such as "Cppr3c2"). Can be a bool or a
             numpy bool and will be converted internally to a bool. The default is False.
-        :param collocation_point_rows_and_columns: The Panels whose collocation points
-            are drawn, given as a sequence of (row, column) pairs of ints. Like the
-            labels, the rows and columns start at one. If None, every Panel's
-            collocation point is drawn. It has no effect if show_collocation_points is
-            False. The default is None.
         :param label_collocation_points: Determines whether to label the collocation
-            points that are drawn. If False, they are still marked. It has no effect if
+            points. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
         :param math_labels: Determines whether to write the axes and point labels as
@@ -1646,13 +1640,6 @@ class Wing:
                 "symmetry type and meshed it."
             )
 
-        row_and_column_ids = _output_rendering.get_collocation_point_row_and_column_ids(
-            collocation_point_rows_and_columns,
-            "collocation_point_rows_and_columns",
-            [[self]],
-            num_leading_ids=0,
-        )[0][0]
-
         # Draw the diagram in geometry axes, relative to the CG.
         T_pas_G_Cg_to_D_Do = np.eye(4, dtype=float)
         _T_pas_Wn_Ler_to_G_Cg = self.T_pas_Wn_Ler_to_G_Cg
@@ -1696,9 +1683,7 @@ class Wing:
                 listCollocationPoints_D_Do,
                 listWingBasisDirections_D,
                 listCrossDirections_D,
-            ) = _output_rendering.get_collocation_points(
-                self, row_and_column_ids, "", T_pas_G_Cg_to_D_Do
-            )
+            ) = _output_rendering.get_collocation_points(self, "", T_pas_G_Cg_to_D_Do)
 
         # Size the axes relative to this Wing's largest chord, so they stay legible
         # regardless of the geometry's absolute size.

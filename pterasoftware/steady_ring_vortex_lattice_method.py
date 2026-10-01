@@ -277,9 +277,6 @@ class SteadyRingVortexLatticeMethodSolver:
         show_airfoils: bool | np.bool = False,
         show_mcls: bool | np.bool = False,
         show_collocation_points: bool | np.bool = False,
-        collocation_point_airplanes_wings_rows_and_columns: (
-            Sequence[Sequence[int]] | None
-        ) = None,
         label_collocation_points: bool | np.bool = False,
         simplify_vortices: bool | np.bool = False,
         math_labels: bool | np.bool = False,
@@ -322,13 +319,8 @@ class SteadyRingVortexLatticeMethodSolver:
             spanwise column, starting at one, followed by its Wing's and its Airplane's
             numbers (such as "Cppr3c2Wn1P2"). Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
-        :param collocation_point_airplanes_wings_rows_and_columns: The Panels whose
-            collocation points are drawn, given as a sequence of (airplane, wing, row,
-            column) quadruples of ints. Like the labels, the Airplanes, Wings, rows, and
-            columns start at one. If None, every Panel's collocation point is drawn. It
-            has no effect if show_collocation_points is False. The default is None.
         :param label_collocation_points: Determines whether to label the collocation
-            points that are drawn. If False, they are still marked. It has no effect if
+            points. If False, they are still marked. It has no effect if
             show_collocation_points is False. Can be a bool or a numpy bool and will be
             converted internally to a bool. The default is False.
         :param simplify_vortices: Determines whether to simplify the vortices' drawing.
@@ -398,15 +390,6 @@ class SteadyRingVortexLatticeMethodSolver:
         if not self._ran:
             raise RuntimeError("The solver must have run before drawing its diagram.")
 
-        airplanes_wings_row_and_column_ids = (
-            _output_rendering.get_collocation_point_row_and_column_ids(
-                collocation_point_airplanes_wings_rows_and_columns,
-                "collocation_point_airplanes_wings_rows_and_columns",
-                [airplane.wings for airplane in self.airplanes],
-                num_leading_ids=2,
-            )
-        )
-
         plotter = pv.Plotter()
         _output_rendering.add_steady_problem(
             plotter,
@@ -420,7 +403,6 @@ class SteadyRingVortexLatticeMethodSolver:
             show_airfoils=show_airfoils,
             show_mcls=show_mcls,
             show_collocation_points=show_collocation_points,
-            airplanes_wings_row_and_column_ids=airplanes_wings_row_and_column_ids,
             label_collocation_points=label_collocation_points,
             math_labels=math_labels,
         )

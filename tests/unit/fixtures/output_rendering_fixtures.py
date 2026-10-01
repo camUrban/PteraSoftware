@@ -6,6 +6,9 @@ import webp
 
 import pterasoftware as ps
 
+# noinspection PyProtectedMember
+from pterasoftware import _transformations
+
 from . import (
     airplane_movement_fixtures,
     geometry_fixtures,
@@ -446,3 +449,121 @@ def make_slanted_horseshoe_vortex_fixture() -> (
         np.array([[20.0, 1.0, 20.0]], dtype=float),
         np.array([[0.0, 0.0, 1.0]], dtype=float),
     )
+
+
+def make_offset_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 90 degrees about
+    the z axis and placed away from the diagram origin.
+
+    The axes set's x basis direction points along the positive y direction, its y basis
+    direction points along the negative x direction, and its z basis direction points
+    along the positive z direction (all in diagram axes). Its point sits at (1.0, 2.0,
+    3.0) (in diagram axes, relative to the diagram origin).
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [0.0, -1.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0, 2.0],
+            [0.0, 0.0, 1.0, 3.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_x_turned_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 90 degrees about
+    the x axis, at the diagram origin.
+
+    The axes set's x basis direction points along the positive x direction, its y basis
+    direction points along the positive z direction, and its z basis direction points
+    along the negative y direction (all in diagram axes). Drawn alongside an axes set
+    aligned with diagram axes at the same point, its x arrow coincides with that axes
+    set's x arrow and its y arrow coincides with that axes set's z arrow, while its z
+    arrow coincides with none of them.
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_reversed_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned 180 degrees
+    about the z axis, at the diagram origin.
+
+    The axes set's x and y basis directions point along the negative x and negative y
+    directions, and its z basis direction points along the positive z direction (all in
+    diagram axes), so its x and y arrows point left and down on screen when viewed down
+    the negative z direction.
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    return np.array(
+        [
+            [-1.0, 0.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ],
+        dtype=float,
+    )
+
+
+def make_oblique_axes_transformation_fixture() -> np.ndarray:
+    """Makes a fixture that is the transformation of an axes set turned obliquely and
+    placed away from the diagram origin.
+
+    The axes set is turned by intrinsic xyz angles of (30.0, -50.0, 120.0) degrees, so
+    none of its basis directions lie along a diagram axis, and each of them has a
+    negative x component (in diagram axes). Its point sits at (0.5, -1.0, 2.0) (in
+    diagram axes, relative to the diagram origin).
+
+    :return: A (4,4) ndarray of floats representing the passive transformation matrix
+        which maps in homogeneous coordinates from the axes set, relative to its point,
+        to diagram axes, relative to the diagram origin.
+    """
+    # Turning first and then translating within diagram axes leaves the turned basis
+    # directions in the first three columns and the translation in the last column.
+    rot_T_act = _transformations.generate_rot_T(
+        np.array([30.0, -50.0, 120.0], dtype=float),
+        passive=False,
+        intrinsic=True,
+        order="xyz",
+    )
+    trans_T_act = _transformations.generate_trans_T(
+        np.array([0.5, -1.0, 2.0], dtype=float), passive=False
+    )
+    return _transformations.compose_T_act(rot_T_act, trans_T_act)
+
+
+def make_cross_directions_fixture() -> np.ndarray:
+    """Makes a fixture that is the directions of an extra point's cross's two arms.
+
+    The arms lie along the diagonals of the xy plane, so neither one lies along an axis,
+    and a test can tell a cross oriented by these directions from one oriented by any
+    axis.
+
+    :return: A (2,3) ndarray of floats whose rows hold the unit vectors (in diagram
+        axes) along which the cross's two arms lie.
+    """
+    crossDirections_D: np.ndarray = np.array(
+        [[1.0, 1.0, 0.0], [1.0, -1.0, 0.0]],
+        dtype=float,
+    ) / np.sqrt(2.0)
+    return crossDirections_D

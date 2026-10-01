@@ -5,7 +5,10 @@ integration tests instead, as are the wake ring vortex surfaces, which are built
 history that only a solved simulation carries. The classes here cover the computation
 and the geometry building that feed them, which are settled before any rendering begins.
 They also cover add_vortices, which only adds meshes to a Plotter, so its meshes can be
-checked on an off screen Plotter that never renders.
+checked on an off screen Plotter that never renders. Likewise, they cover
+add_axes_and_points, whose meshes and labels are checked the same way, and whose label
+placement and dragging are checked by rendering that off screen Plotter and sending its
+interactor style mouse events.
 """
 
 import math
@@ -24,12 +27,13 @@ import pyvista as pv
 # text, as it is when a diagram creates its Plotter.
 import pyvista.plotting  # noqa: F401
 import webp
+from vtkmodules.vtkCommonCore import reference as vtk_reference
 from vtkmodules.vtkRenderingFreeType import vtkMathTextUtilities
 
 import pterasoftware as ps
 
 # noinspection PyProtectedMember
-from pterasoftware import _colormaps, _output_rendering, _transformations
+from pterasoftware import _colormaps, _fonts, _output_rendering, _transformations
 from tests.unit.fixtures import (
     geometry_fixtures,
     operating_point_fixtures,
@@ -1399,15 +1403,17 @@ def _get_line_actors(plotter: pv.Plotter) -> list[tuple[pv.PolyData, pv.Actor]]:
 
     An arrow tip's filled faces and its outline are left out. The faces' mesh has no
     lines, and the outline's Actor draws a filter's output, so its mapper's mesh is
-    empty before the Plotter renders.
+    empty before the Plotter renders. Labels are left out too, since they aren't Actors
+    and draw no mesh.
 
     :param plotter: The Plotter whose meshes to return.
     :return: A list of tuples, each holding a mesh made of lines and the Actor that
         draws it.
     """
     line_actors: list[tuple[pv.PolyData, pv.Actor]] = []
-    for prop in plotter.actors.values():
-        actor = cast(pv.Actor, prop)
+    for actor in plotter.actors.values():
+        if not isinstance(actor, pv.Actor):
+            continue
         mesh = cast(pv.DataSetMapper, actor.mapper).dataset
         if isinstance(mesh, pv.PolyData) and mesh.n_lines > 0:
             line_actors.append((mesh, actor))
@@ -1845,3 +1851,856 @@ class TestAddVortices(unittest.TestCase):
             finiteLegArcPoints_D_Do[0], [0.0, 0.5, arrow_radius], atol=1e-6
         )
         self.assertTrue(np.all(finiteLegArcPoints_D_Do[:, 0] >= -1e-6))
+
+
+def _get_tip_fill_actors(plotter: pv.Plotter) -> list[tuple[pv.PolyData, pv.Actor]]:
+    """Returns the meshes of the arrow tips' filled faces in a Plotter, along with their
+    Actors, in the order they were added.
+
+    These are the only meshes made of faces alone. The tips' outlines are left out,
+    since their Actors draw a filter's output, so their mappers' meshes are empty before
+    the Plotter renders.
+
+    :param plotter: The Plotter whose meshes to return.
+    :return: A list of tuples, each holding a mesh of arrow tips' filled faces and the
+        Actor that draws it.
+    """
+    tip_fill_actors: list[tuple[pv.PolyData, pv.Actor]] = []
+    for actor in plotter.actors.values():
+        if not isinstance(actor, pv.Actor):
+            continue
+        mesh = cast(pv.DataSetMapper, actor.mapper).dataset
+        if (
+            isinstance(mesh, pv.PolyData)
+            and mesh.n_cells > 0
+            and mesh.n_lines == 0
+            and mesh.n_verts == 0
+        ):
+            tip_fill_actors.append((mesh, actor))
+    return tip_fill_actors
+
+
+def _get_dot_actors(plotter: pv.Plotter) -> list[tuple[pv.PolyData, pv.Actor]]:
+    """Returns the meshes of points drawn as dots in a Plotter, along with their Actors,
+    in the order they were added.
+
+    :param plotter: The Plotter whose meshes to return.
+    :return: A list of tuples, each holding a mesh made of vertices and the Actor that
+        draws it.
+    """
+    dot_actors: list[tuple[pv.PolyData, pv.Actor]] = []
+    for actor in plotter.actors.values():
+        if not isinstance(actor, pv.Actor):
+            continue
+        mesh = cast(pv.DataSetMapper, actor.mapper).dataset
+        if isinstance(mesh, pv.PolyData) and mesh.n_verts > 0:
+            dot_actors.append((mesh, actor))
+    return dot_actors
+
+
+def _get_labels(plotter: pv.Plotter) -> dict[str, pv.Label]:
+    """Returns the Labels in a Plotter, keyed by their names.
+
+    add_axes_and_points names each arrow's Label "arrow label " followed by its plain
+    text, and each point's Label "point label " followed by its plain text, even when
+    the Label displays math.
+
+    :param plotter: The Plotter whose Labels to return.
+    :return: A dict mapping each Label's name to the Label.
+    """
+    return {
+        name: actor
+        for name, actor in plotter.actors.items()
+        if isinstance(actor, pv.Label)
+    }
+
+
+def _get_display_point(plotter: pv.Plotter, point_D_Do: np.ndarray) -> np.ndarray:
+    """Returns the display coordinates of a point in a Plotter's renderer.
+
+    :param plotter: The Plotter whose renderer maps the point.
+    :param point_D_Do: A (3,) ndarray of floats representing the point's position (in
+        diagram axes, relative to the diagram origin). The units are in meters.
+    :return: A (3,) ndarray of floats holding the point's x and y display coordinates,
+        in pixels, and its depth.
+    """
+    renderer = plotter.renderer
+    renderer.SetWorldPoint(*point_D_Do, 1.0)
+    renderer.WorldToDisplay()
+    return np.array(renderer.GetDisplayPoint(), dtype=float)
+
+
+def _drag_mouse(
+    plotter: pv.Plotter, start_display: tuple[int, int], end_display: tuple[int, int]
+) -> None:
+    """Drags the mouse with its left button held down across a Plotter's render window.
+
+    The events are sent to the interactor style, which is what add_axes_and_points
+    observes, so the drag reaches its observers the way a real one does.
+
+    :param plotter: The Plotter whose render window the mouse is dragged across.
+    :param start_display: The x and y display coordinates, in pixels, at which the left
+        button is pressed.
+    :param end_display: The x and y display coordinates, in pixels, to which the mouse
+        is moved before the left button is released.
+    :return: None
+    """
+    assert plotter.iren is not None
+    interactor = plotter.iren.interactor
+    interactor_style = interactor.GetInteractorStyle()
+    interactor.SetEventPosition(*start_display)
+    interactor_style.InvokeEvent("LeftButtonPressEvent")
+    interactor.SetEventPosition(*end_display)
+    interactor_style.InvokeEvent("MouseMoveEvent")
+    interactor_style.InvokeEvent("LeftButtonReleaseEvent")
+
+
+class TestAddAxesAndPoints(unittest.TestCase):
+    """This class contains methods for testing _output_rendering.add_axes_and_points."""
+
+    def setUp(self) -> None:
+        """Create an off screen Plotter to add this test's axes and points to."""
+        self.plotter = pv.Plotter(off_screen=True)
+
+    def tearDown(self) -> None:
+        """Close the Plotter."""
+        self.plotter.close()
+
+    def test_sets_the_diagram_background_color(self) -> None:
+        """Test that the Plotter's background is set to the diagram background color."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.assertEqual(
+            self.plotter.background_color,
+            pv.Color(_output_rendering._DIAGRAM_BACKGROUND_COLOR),
+        )
+
+    def test_draws_one_colored_shaft_per_basis_direction(self) -> None:
+        """Test that an axes set's x, y, and z shafts are each drawn as one line, in
+        red, green, and blue, from its point to where its tip begins.
+
+        Each shaft starts at the axes set's point and runs along its basis direction, as
+        the transformation gives them. The tip takes up a fifth of each arrow's length,
+        so each shaft is 0.8 times the arrows' length.
+        """
+        T_pas_G_Cg_to_D_Do = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()
+        )
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[T_pas_G_Cg_to_D_Do],
+            axes_scale=axes_scale,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 3)
+        Cg_D_Do = T_pas_G_Cg_to_D_Do[:3, 3]
+        shaft_length = (1.0 - _output_rendering._AXES_TIP_LENGTH) * axes_scale
+        for component_id, (mesh, actor) in enumerate(line_actors):
+            with self.subTest(component_id=component_id):
+                npt.assert_allclose(
+                    mesh.points,
+                    [
+                        Cg_D_Do,
+                        Cg_D_Do + shaft_length * T_pas_G_Cg_to_D_Do[:3, component_id],
+                    ],
+                    atol=1e-6,
+                )
+                self.assertEqual(
+                    actor.prop.color,
+                    pv.Color(_output_rendering._AXES_COLORS[component_id]),
+                )
+                self.assertEqual(
+                    actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH
+                )
+
+    def test_draws_only_the_x_and_y_arrows_of_two_dimensional_axes(self) -> None:
+        """Test that a two dimensional axes set gets only its x and y shafts, tips, and
+        labels."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["A"],
+            point_ids=["Lp"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+            two_dimensional_axes_ids=["A"],
+        )
+        self.assertEqual(len(_get_line_actors(self.plotter)), 2)
+        self.assertEqual(len(_get_tip_fill_actors(self.plotter)), 2)
+        self.assertEqual(
+            set(_get_labels(self.plotter)),
+            {"arrow label AX", "arrow label AY", "point label Lp"},
+        )
+
+    def test_merges_arrows_one_basis_direction_at_a_time(self) -> None:
+        """Test that two axes sets sharing a point and turned 90 degrees about their
+        shared x basis direction merge only the arrows that coincide.
+
+        The second axes set's x arrow coincides with the first one's x arrow, and its y
+        arrow coincides with the first one's z arrow, so only its z arrow is drawn on
+        its own. A merged arrow keeps the color of the first arrow merged into it, so
+        the shared z and y arrow is blue.
+        """
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G", "Wn"],
+            point_ids=["Cg", "Ler"],
+            transformations=[
+                np.eye(4, dtype=float),
+                output_rendering_fixtures.make_x_turned_axes_transformation_fixture(),
+            ],
+            axes_scale=1.0,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 4)
+        self.assertEqual(
+            [actor.prop.color for _, actor in line_actors],
+            [pv.Color("red"), pv.Color("green"), pv.Color("blue"), pv.Color("blue")],
+        )
+        self.assertEqual(
+            set(_get_labels(self.plotter)),
+            {
+                "arrow label GX/WnX",
+                "arrow label GY",
+                "arrow label GZ/WnY",
+                "arrow label WnZ",
+                "point label Cg/Ler",
+            },
+        )
+
+    def test_does_not_repeat_the_ids_of_a_repeated_axes_set(self) -> None:
+        """Test that an axes set passed twice is labeled with its IDs only once."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G", "G"],
+            point_ids=["Cg", "Cg"],
+            transformations=[np.eye(4, dtype=float), np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.assertEqual(
+            set(_get_labels(self.plotter)),
+            {"arrow label GX", "arrow label GY", "arrow label GZ", "point label Cg"},
+        )
+
+    def test_anchors_each_arrow_label_beyond_its_tip(self) -> None:
+        """Test that each arrow's label is anchored along its arrow, 0.15 times the
+        arrows' length beyond its tip."""
+        T_pas_G_Cg_to_D_Do = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()
+        )
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[T_pas_G_Cg_to_D_Do],
+            axes_scale=axes_scale,
+        )
+        labels = _get_labels(self.plotter)
+        label_distance = (1.0 + _output_rendering._AXES_ARROW_LABEL_OFFSET) * axes_scale
+        for component_id, component_letter in enumerate(["X", "Y", "Z"]):
+            with self.subTest(component_letter=component_letter):
+                npt.assert_allclose(
+                    labels[f"arrow label G{component_letter}"].position,
+                    T_pas_G_Cg_to_D_Do[:3, 3]
+                    + label_distance * T_pas_G_Cg_to_D_Do[:3, component_id],
+                    atol=1e-12,
+                )
+
+    def test_offsets_each_point_label_away_from_its_arrows(self) -> None:
+        """Test that a point's label is anchored along the negative sum of its axes
+        set's basis directions, 0.3 times the arrows' length from the point, in the
+        octant none of the arrows enter."""
+        T_pas_G_Cg_to_D_Do = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()
+        )
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[T_pas_G_Cg_to_D_Do],
+            axes_scale=axes_scale,
+        )
+        labelDirection_D = (
+            T_pas_G_Cg_to_D_Do[:3, :3]
+            @ np.array([-1.0, -1.0, -1.0], dtype=float)
+            / math.sqrt(3.0)
+        )
+        npt.assert_allclose(
+            _get_labels(self.plotter)["point label Cg"].position,
+            T_pas_G_Cg_to_D_Do[:3, 3]
+            + _output_rendering._AXES_POINT_LABEL_OFFSET
+            * axes_scale
+            * labelDirection_D,
+            atol=1e-12,
+        )
+
+    def test_marks_the_points_with_axes_with_dots(self) -> None:
+        """Test that every point with axes is marked with a black dot, all of them in
+        one mesh, drawn as spheres."""
+        T_pas_Wn_Ler_to_D_Do = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()
+        )
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G", "Wn"],
+            point_ids=["Cg", "Ler"],
+            transformations=[np.eye(4, dtype=float), T_pas_Wn_Ler_to_D_Do],
+            axes_scale=1.0,
+        )
+        dot_actors = _get_dot_actors(self.plotter)
+        self.assertEqual(len(dot_actors), 1)
+        dot_mesh, dot_actor = dot_actors[0]
+        npt.assert_allclose(
+            dot_mesh.points,
+            [np.zeros(3, dtype=float), T_pas_Wn_Ler_to_D_Do[:3, 3]],
+            atol=1e-6,
+        )
+        self.assertEqual(dot_actor.prop.color, pv.Color("black"))
+        self.assertEqual(dot_actor.prop.point_size, _output_rendering._AXES_POINT_SIZE)
+        self.assertTrue(dot_actor.prop.render_points_as_spheres)
+
+    def test_marks_each_extra_point_with_a_cross(self) -> None:
+        """Test that an extra point is marked with a black cross, without arrows or a
+        dot, whose two arms are centered on it and lie along its cross directions.
+
+        Each arm is 0.1 times the arrows' length, so with arrows 2.0 meters long its
+        ends sit 0.1 meters to either side of the point. The first arm's two ends come
+        first, each starting from its negative side.
+        """
+        Lp_D_Do = np.array([1.0, 2.0, 3.0], dtype=float)
+        crossDirections_D = output_rendering_fixtures.make_cross_directions_fixture()
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=[],
+            point_ids=[],
+            transformations=[],
+            axes_scale=axes_scale,
+            extra_point_ids=["Lp"],
+            listExtraPoints_D_Do=[Lp_D_Do],
+            listExtraPointBasisDirections_D=[np.eye(3, dtype=float)],
+            listExtraPointCrossDirections_D=[crossDirections_D],
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 1)
+        cross_mesh, cross_actor = line_actors[0]
+        cross_half_length = 0.5 * _output_rendering._AXES_CROSS_SIZE * axes_scale
+        npt.assert_allclose(
+            cross_mesh.points,
+            [
+                Lp_D_Do - cross_half_length * crossDirections_D[0],
+                Lp_D_Do + cross_half_length * crossDirections_D[0],
+                Lp_D_Do - cross_half_length * crossDirections_D[1],
+                Lp_D_Do + cross_half_length * crossDirections_D[1],
+            ],
+            atol=1e-6,
+        )
+        npt.assert_array_equal(cross_mesh.lines, [2, 0, 1, 2, 2, 3])
+        self.assertEqual(cross_actor.prop.color, pv.Color("black"))
+        self.assertEqual(
+            cross_actor.prop.line_width, _output_rendering._AXES_LINE_WIDTH
+        )
+        self.assertEqual(len(_get_dot_actors(self.plotter)), 0)
+        self.assertEqual(len(_get_tip_fill_actors(self.plotter)), 0)
+
+    def test_offsets_each_extra_point_label_in_its_own_axes(self) -> None:
+        """Test that an extra point's label is anchored along the unit vector (-1.0,
+        1.0, 1.0) / sqrt(3.0) in the axes its basis directions give, 0.15 times the
+        arrows' length from the point."""
+        Lp_D_Do = np.array([1.0, 2.0, 3.0], dtype=float)
+        extraPointBasisDirections_D = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()[:3, :3]
+        )
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=[],
+            point_ids=[],
+            transformations=[],
+            axes_scale=axes_scale,
+            extra_point_ids=["Lp"],
+            listExtraPoints_D_Do=[Lp_D_Do],
+            listExtraPointBasisDirections_D=[extraPointBasisDirections_D],
+            listExtraPointCrossDirections_D=[
+                output_rendering_fixtures.make_cross_directions_fixture()
+            ],
+        )
+        labelDirection_D = (
+            extraPointBasisDirections_D
+            @ np.array([-1.0, 1.0, 1.0], dtype=float)
+            / math.sqrt(3.0)
+        )
+        npt.assert_allclose(
+            _get_labels(self.plotter)["point label Lp"].position,
+            Lp_D_Do
+            + _output_rendering._AXES_CROSS_LABEL_OFFSET
+            * axes_scale
+            * labelDirection_D,
+            atol=1e-12,
+        )
+
+    def test_merges_an_extra_point_into_a_point_with_axes(self) -> None:
+        """Test that an extra point at an axes set's point is marked with that point's
+        dot instead of a cross, and shares a label with it, anchored where that point's
+        label is."""
+        T_pas_G_Cg_to_D_Do = (
+            output_rendering_fixtures.make_offset_axes_transformation_fixture()
+        )
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[T_pas_G_Cg_to_D_Do],
+            axes_scale=1.0,
+            extra_point_ids=["Lp"],
+            listExtraPoints_D_Do=[T_pas_G_Cg_to_D_Do[:3, 3]],
+            listExtraPointBasisDirections_D=[np.eye(3, dtype=float)],
+            listExtraPointCrossDirections_D=[
+                output_rendering_fixtures.make_cross_directions_fixture()
+            ],
+        )
+        self.assertEqual(len(_get_line_actors(self.plotter)), 3)
+        self.assertEqual(len(_get_dot_actors(self.plotter)), 1)
+        labels = _get_labels(self.plotter)
+        self.assertNotIn("point label Cg", labels)
+        self.assertNotIn("point label Lp", labels)
+        labelDirection_D = (
+            T_pas_G_Cg_to_D_Do[:3, :3]
+            @ np.array([-1.0, -1.0, -1.0], dtype=float)
+            / math.sqrt(3.0)
+        )
+        npt.assert_allclose(
+            labels["point label Cg/Lp"].position,
+            T_pas_G_Cg_to_D_Do[:3, 3]
+            + _output_rendering._AXES_POINT_LABEL_OFFSET * labelDirection_D,
+            atol=1e-12,
+        )
+
+    def test_orients_a_shared_cross_by_the_first_extra_point(self) -> None:
+        """Test that two extra points at the same position share one cross, along the
+        first one's cross directions, and one label."""
+        Lp_D_Do = np.array([1.0, 2.0, 3.0], dtype=float)
+        crossDirections_D = output_rendering_fixtures.make_cross_directions_fixture()
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=[],
+            point_ids=[],
+            transformations=[],
+            axes_scale=axes_scale,
+            extra_point_ids=["Lp1", "Lp2"],
+            listExtraPoints_D_Do=[Lp_D_Do, Lp_D_Do.copy()],
+            listExtraPointBasisDirections_D=[
+                np.eye(3, dtype=float),
+                np.eye(3, dtype=float),
+            ],
+            listExtraPointCrossDirections_D=[
+                crossDirections_D,
+                np.eye(3, dtype=float)[:2],
+            ],
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 1)
+        cross_mesh, _ = line_actors[0]
+        cross_half_length = 0.5 * _output_rendering._AXES_CROSS_SIZE * axes_scale
+        npt.assert_allclose(
+            cross_mesh.points,
+            [
+                Lp_D_Do - cross_half_length * crossDirections_D[0],
+                Lp_D_Do + cross_half_length * crossDirections_D[0],
+                Lp_D_Do - cross_half_length * crossDirections_D[1],
+                Lp_D_Do + cross_half_length * crossDirections_D[1],
+            ],
+            atol=1e-6,
+        )
+        self.assertEqual(set(_get_labels(self.plotter)), {"point label Lp1/Lp2"})
+
+    def test_leaves_the_extra_points_unlabeled_when_asked(self) -> None:
+        """Test that with label_extra_points set to False, an extra point on its own
+        gets a cross but no label, and an extra point at an axes set's point leaves that
+        point's label alone."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+            extra_point_ids=["Lp1", "Lp2"],
+            listExtraPoints_D_Do=[
+                np.zeros(3, dtype=float),
+                np.array([1.0, 2.0, 3.0], dtype=float),
+            ],
+            listExtraPointBasisDirections_D=[
+                np.eye(3, dtype=float),
+                np.eye(3, dtype=float),
+            ],
+            listExtraPointCrossDirections_D=[
+                output_rendering_fixtures.make_cross_directions_fixture(),
+                output_rendering_fixtures.make_cross_directions_fixture(),
+            ],
+            label_extra_points=False,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        self.assertEqual(len(line_actors), 4)
+        cross_mesh, _ = line_actors[3]
+        self.assertEqual(cross_mesh.n_points, 4)
+        self.assertEqual(
+            set(_get_labels(self.plotter)),
+            {"arrow label GX", "arrow label GY", "arrow label GZ", "point label Cg"},
+        )
+
+    def test_styles_the_plain_labels(self) -> None:
+        """Test that plain labels are black, on an opaque background matching the
+        Plotter's, and set in the monospaced font at the plain label font size."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        labels = _get_labels(self.plotter)
+        self.assertEqual(len(labels), 4)
+        for name, label in labels.items():
+            with self.subTest(name=name):
+                self.assertEqual(label.input, name.split(" ")[-1])
+                self.assertEqual(label.size, _output_rendering._AXES_LABEL_FONT_SIZE)
+                self.assertEqual(label.prop.color, pv.Color("black"))
+                self.assertEqual(
+                    label.prop.background_color, self.plotter.background_color
+                )
+                self.assertEqual(label.prop.background_opacity, 1.0)
+                self.assertEqual(label.prop.GetFontFile(), str(_fonts.MONO_FONT_PATH))
+
+    def test_writes_the_math_labels_as_math(self) -> None:
+        """Test that math labels join their merged labels' math inside one pair of
+        dollar signs, and are set in the Times font family at the math label font
+        size."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G", "Wn"],
+            point_ids=["Cg", "Ler"],
+            transformations=[np.eye(4, dtype=float), np.eye(4, dtype=float)],
+            axes_scale=1.0,
+            math_labels=True,
+        )
+        labels = _get_labels(self.plotter)
+        self.assertEqual(
+            labels["arrow label GX/WnX"].input,
+            "$"
+            + _output_rendering.get_math_axes_label("G", "X")
+            + r" \,/\, "
+            + _output_rendering.get_math_axes_label("Wn", "X")
+            + "$",
+        )
+        self.assertEqual(
+            labels["point label Cg/Ler"].input,
+            r"$\mathrm{CG} \,/\, \mathrm{LER}$",
+        )
+        for name, label in labels.items():
+            with self.subTest(name=name):
+                self.assertEqual(
+                    label.size, _output_rendering._AXES_MATH_LABEL_FONT_SIZE
+                )
+                self.assertEqual(label.prop.font_family, "times")
+
+    def test_rejects_an_id_that_cannot_be_written_as_math(self) -> None:
+        """Test that math labels raise a ValueError for an axes ID or a point ID that
+        isn't valid."""
+        cases = [(["Q"], ["Cg"]), (["G"], ["Q1"])]
+        for axes_ids, point_ids in cases:
+            with self.subTest(axes_ids=axes_ids, point_ids=point_ids):
+                plotter = pv.Plotter(off_screen=True)
+                self.addCleanup(plotter.close)
+                with self.assertRaises(ValueError):
+                    _output_rendering.add_axes_and_points(
+                        plotter,
+                        axes_ids=axes_ids,
+                        point_ids=point_ids,
+                        transformations=[np.eye(4, dtype=float)],
+                        axes_scale=1.0,
+                        math_labels=True,
+                    )
+
+    def test_builds_each_tip_as_pyvista_builds_its_cone(self) -> None:
+        """Test that each tip has the same points, in the same order, as a cone PyVista
+        builds for it alone, and as many faces covering the same area.
+
+        Each tip is 0.2 times the arrows' length long, with a base radius of 0.1 times
+        their length, and sits at the end of its arrow. VTK turns a cone toward a
+        direction with a negative x component differently than toward one with a
+        positive x component. The oblique axes set's basis directions all have negative
+        x components and the aligned axes set's don't, so each mesh mixes the two ways.
+        The areas only match if each tip's faces use its own points.
+        """
+        transformations = [
+            np.eye(4, dtype=float),
+            output_rendering_fixtures.make_oblique_axes_transformation_fixture(),
+        ]
+        axes_scale = 2.0
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G", "Wn"],
+            point_ids=["Cg", "Ler"],
+            transformations=transformations,
+            axes_scale=axes_scale,
+        )
+        tip_fill_actors = _get_tip_fill_actors(self.plotter)
+        self.assertEqual(len(tip_fill_actors), 3)
+        tip_length = _output_rendering._AXES_TIP_LENGTH * axes_scale
+        for component_id, (tip_mesh, _) in enumerate(tip_fill_actors):
+            with self.subTest(component_id=component_id):
+                cones = [
+                    pv.Cone(
+                        center=transformation[:3, 3]
+                        + (axes_scale - 0.5 * tip_length)
+                        * transformation[:3, component_id],
+                        direction=transformation[:3, component_id],
+                        height=tip_length,
+                        radius=_output_rendering._AXES_TIP_RADIUS * axes_scale,
+                        resolution=_output_rendering._AXES_TIP_RESOLUTION,
+                    )
+                    for transformation in transformations
+                ]
+                npt.assert_allclose(
+                    tip_mesh.points,
+                    np.vstack([cone.points for cone in cones]),
+                    atol=1e-6,
+                )
+                self.assertEqual(tip_mesh.n_cells, sum(cone.n_cells for cone in cones))
+                self.assertAlmostEqual(
+                    tip_mesh.area, sum(cone.area for cone in cones), places=5
+                )
+
+    def test_fills_the_tips_with_the_background_pushed_back(self) -> None:
+        """Test that the tips' filled faces are unlit, match the background, and are
+        pushed away from the camera by the tip fill polygon offset."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        for tip_mesh, tip_fill_actor in _get_tip_fill_actors(self.plotter):
+            with self.subTest(n_points=tip_mesh.n_points):
+                self.assertEqual(
+                    tip_fill_actor.prop.color, self.plotter.background_color
+                )
+                self.assertFalse(tip_fill_actor.prop.lighting)
+                tip_fill_mapper = tip_fill_actor.mapper
+                offset_factor = vtk_reference(0.0)
+                offset_units = vtk_reference(0.0)
+                tip_fill_mapper.GetRelativeCoincidentTopologyPolygonOffsetParameters(
+                    offset_factor, offset_units
+                )
+                self.assertEqual(
+                    offset_factor, _output_rendering._AXES_TIP_FILL_OFFSET_FACTOR
+                )
+                self.assertEqual(
+                    offset_units, _output_rendering._AXES_TIP_FILL_OFFSET_UNITS
+                )
+
+    def test_turns_on_polygon_offset_only_while_rendering(self) -> None:
+        """Test that VTK's coincident topology resolution mode is polygon offset while
+        the Plotter renders, and is restored to its previous mode afterward.
+
+        The mode is shared by every mapper in the process, so it is first set to a mode
+        other than its default, which shows that the previous mode is restored rather
+        than the default, and it is reset when the test ends. The recording observer is
+        added with a lower priority than the default, so it runs after the observer that
+        turns polygon offset on.
+        """
+        resolve_mapper = pv.DataSetMapper()
+        self.addCleanup(setattr, resolve_mapper, "resolve", resolve_mapper.resolve)
+        resolve_mapper.resolve = "shift_zbuffer"
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        resolve_modes_while_rendering: list[str] = []
+
+        def record_resolve_mode(caller: object, event: str) -> None:
+            """Records VTK's coincident topology resolution mode.
+
+            :param caller: The object that invoked the event, which is unused.
+            :param event: The name of the event, which is unused.
+            :return: None
+            """
+            resolve_modes_while_rendering.append(pv.DataSetMapper().resolve)
+
+        self.plotter.renderer.AddObserver("StartEvent", record_resolve_mode, -1.0)
+        self.plotter.screenshot(return_img=True)
+        self.assertEqual(set(resolve_modes_while_rendering), {"polygon_offset"})
+        self.assertEqual(resolve_mapper.resolve, "shift_zbuffer")
+
+    def test_justifies_the_labels_away_from_what_they_label(self) -> None:
+        """Test that rendering justifies each label so its text extends away from what
+        it labels on screen.
+
+        The camera looks down the negative z direction with parallel projection, so the
+        x arrow's label extends right, the y arrow's label extends up, and the z arrow's
+        label, whose anchor lies straight in front of the point, is centered. The
+        point's label lies along (-1.0, -1.0, -1.0), so it extends left and down.
+        """
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera.parallel_projection = True
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        labels = _get_labels(self.plotter)
+        expected_justifications = {
+            "arrow label GX": ("left", "center"),
+            "arrow label GY": ("center", "bottom"),
+            "arrow label GZ": ("center", "center"),
+            "point label Cg": ("right", "top"),
+        }
+        for name, expected_justification in expected_justifications.items():
+            with self.subTest(name=name):
+                self.assertEqual(
+                    (
+                        labels[name].prop.justification_horizontal,
+                        labels[name].prop.justification_vertical,
+                    ),
+                    expected_justification,
+                )
+
+    def test_justifies_the_labels_of_reversed_arrows(self) -> None:
+        """Test that the labels of arrows pointing left and down on screen extend left
+        and down, rather than back over their arrows.
+
+        The axes set is turned 180 degrees about the z axis, so its point's label lies
+        along (1.0, 1.0, -1.0) and extends right and up.
+        """
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[
+                output_rendering_fixtures.make_reversed_axes_transformation_fixture()
+            ],
+            axes_scale=1.0,
+        )
+        self.plotter.camera.parallel_projection = True
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        labels = _get_labels(self.plotter)
+        expected_justifications = {
+            "arrow label GX": ("right", "center"),
+            "arrow label GY": ("center", "top"),
+            "point label Cg": ("left", "bottom"),
+        }
+        for name, expected_justification in expected_justifications.items():
+            with self.subTest(name=name):
+                self.assertEqual(
+                    (
+                        labels[name].prop.justification_horizontal,
+                        labels[name].prop.justification_vertical,
+                    ),
+                    expected_justification,
+                )
+
+    def test_dragging_a_label_moves_it_with_the_mouse(self) -> None:
+        """Test that a label dragged with the left mouse button follows the mouse on
+        screen, keeping its depth, while the camera stays still."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        label = _get_labels(self.plotter)["arrow label GX"]
+        camera_position = self.plotter.camera.position
+        anchor_display = _get_display_point(
+            self.plotter, np.array(label.position, dtype=float)
+        )
+
+        # Press just inside the label, which extends right from its anchor, and drag it
+        # 50 pixels to the right.
+        start_display = (round(anchor_display[0]) + 2, round(anchor_display[1]) + 2)
+        _drag_mouse(
+            self.plotter, start_display, (start_display[0] + 50, start_display[1])
+        )
+        npt.assert_allclose(
+            _get_display_point(self.plotter, np.array(label.position, dtype=float)),
+            anchor_display + np.array([50.0, 0.0, 0.0], dtype=float),
+            atol=1e-6,
+        )
+        self.assertEqual(self.plotter.camera.position, camera_position)
+
+    def test_a_dragged_label_returns_when_the_camera_moves(self) -> None:
+        """Test that a dragged label keeps its position through renders until the camera
+        moves, and then returns to its anchor."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        label = _get_labels(self.plotter)["arrow label GX"]
+        anchor_display = _get_display_point(
+            self.plotter, np.array(label.position, dtype=float)
+        )
+        start_display = (round(anchor_display[0]) + 2, round(anchor_display[1]) + 2)
+        _drag_mouse(
+            self.plotter, start_display, (start_display[0] + 50, start_display[1])
+        )
+        draggedLabel_D_Do = np.array(label.position, dtype=float)
+
+        self.plotter.screenshot(return_img=True)
+        npt.assert_array_equal(label.position, draggedLabel_D_Do)
+
+        self.plotter.camera_position = "xz"
+        self.plotter.screenshot(return_img=True)
+        npt.assert_allclose(
+            label.position,
+            [1.0 + _output_rendering._AXES_ARROW_LABEL_OFFSET, 0.0, 0.0],
+            atol=1e-12,
+        )
+
+    def test_dragging_away_from_the_labels_rotates_the_camera(self) -> None:
+        """Test that a left button drag that doesn't start on a label rotates the
+        camera, as it would without the labels, and moves none of them."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        labels = _get_labels(self.plotter)
+        listAnchors_D_Do = [
+            np.array(label.position, dtype=float) for label in labels.values()
+        ]
+        camera_position = self.plotter.camera.position
+
+        # The window's bottom left corner is far from every label.
+        _drag_mouse(self.plotter, (1, 1), (40, 40))
+        self.assertFalse(np.allclose(self.plotter.camera.position, camera_position))
+        for label, anchor_D_Do in zip(labels.values(), listAnchors_D_Do):
+            npt.assert_array_equal(label.position, anchor_D_Do)

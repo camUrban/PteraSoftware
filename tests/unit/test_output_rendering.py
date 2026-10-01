@@ -1710,7 +1710,7 @@ class TestAddVortices(unittest.TestCase):
         """Test that a simplified ring vortex gets one vorticity arrow per leg.
 
         The arrows' shafts share one mesh of four half circular polylines, drawn at the
-        axes arrows' line width, and each arrow also adds its tip's outline and filled
+        axes arrows' line width, and their tips share one outline and one set of filled
         faces.
         """
         _add_vortices(
@@ -1729,7 +1729,7 @@ class TestAddVortices(unittest.TestCase):
         self.assertEqual(
             arc_actor.prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
         )
-        self.assertEqual(len(self.plotter.actors), 2 + 2 * 4)
+        self.assertEqual(len(self.plotter.actors), 2 + 2)
 
     def test_centers_each_vorticity_arrow_on_its_legs_midpoint(self) -> None:
         """Test that a vorticity arrow is a half circle around its leg's midpoint, in

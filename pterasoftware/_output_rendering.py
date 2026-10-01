@@ -688,25 +688,40 @@ def add_axes_and_points(
             elif label not in arrow_labels[matches[0]]:
                 arrow_labels[matches[0]].append(label)
 
-    # Draw each arrow's shaft as a single line and its tip as an outlined cone.
+    # Draw each arrow's shaft as a single line and its tip as an outlined cone. The tips
+    # are added together, one set for each color.
+    listShaftEnds_D_Do: list[np.ndarray] = []
     for arrowStart_D_Do, arrowDirection_D, arrow_color in zip(
         listArrowStarts_D_Do, listArrowDirections_D, arrow_colors
     ):
         shaftEnd_D_Do = (
             arrowStart_D_Do + (1.0 - _AXES_TIP_LENGTH) * axes_scale * arrowDirection_D
         )
+        listShaftEnds_D_Do.append(shaftEnd_D_Do)
         plotter.add_mesh(
             pv.Line(arrowStart_D_Do, shaftEnd_D_Do),
             color=arrow_color,
             line_width=_AXES_LINE_WIDTH,
         )
-        _add_arrow_tip(
+    for tip_color in dict.fromkeys(arrow_colors):
+        color_tip_ids = [
+            arrow_id
+            for arrow_id, arrow_color in enumerate(arrow_colors)
+            if arrow_color == tip_color
+        ]
+        _add_arrow_tips(
             plotter,
-            tipBase_D_Do=shaftEnd_D_Do,
-            tipDirection_D=arrowDirection_D,
-            length=_AXES_TIP_LENGTH * axes_scale,
-            radius=_AXES_TIP_RADIUS * axes_scale,
-            color=arrow_color,
+            stackTipBases_D_Do=np.array(
+                [listShaftEnds_D_Do[arrow_id] for arrow_id in color_tip_ids],
+                dtype=float,
+            ),
+            stackTipDirections_D=np.array(
+                [listArrowDirections_D[arrow_id] for arrow_id in color_tip_ids],
+                dtype=float,
+            ),
+            lengths=np.full(len(color_tip_ids), _AXES_TIP_LENGTH * axes_scale),
+            radii=np.full(len(color_tip_ids), _AXES_TIP_RADIUS * axes_scale),
+            color=tip_color,
         )
 
     # VTK only applies the tip fills' polygon offsets while its coincident topology
@@ -1045,50 +1060,114 @@ def add_axes_and_points(
     interactor_style.AddObserver("LeftButtonReleaseEvent", stop_label_drag)
 
 
-def _add_arrow_tip(
+def _add_arrow_tips(
     plotter: pv.Plotter,
-    tipBase_D_Do: np.ndarray,
-    tipDirection_D: np.ndarray,
-    length: float,
-    radius: float,
+    stackTipBases_D_Do: np.ndarray,
+    stackTipDirections_D: np.ndarray,
+    lengths: np.ndarray,
+    radii: np.ndarray,
     color: str,
 ) -> None:
-    """Adds an arrow's tip to a Plotter as an outlined cone.
+    """Adds arrows' tips to a Plotter as outlined cones.
 
-    The cone's faces are unlit and match the background, so the tip reads as an outline
+    The cones' faces are unlit and match the background, so each tip reads as an outline
     while still hiding what is behind it. The faces are pushed slightly away from the
     camera in the depth buffer, so they don't cover half of the width of the outline.
     That push only takes effect while VTK's coincident topology resolution mode is set
     to polygon offset, which add_axes_and_points turns on for its Plotter's renders.
 
-    :param plotter: The Plotter to add the tip to.
-    :param tipBase_D_Do: A (3,) ndarray of floats representing the position of the
-        center of the tip's base (in diagram axes, relative to the diagram origin). The
+    All the tips share one mesh, drawn by one outline Actor and one fill Actor, since
+    adding two Actors for each tip costs far more than drawing them once there are
+    thousands of tips. Each tip is placed by scaling, turning, and moving one cone, the
+    way PyVista builds a cone along a given direction, so each tip has the same points,
+    in the same order, as a cone built for it alone.
+
+    :param plotter: The Plotter to add the tips to.
+    :param stackTipBases_D_Do: A (N,3) ndarray of floats, where N is the number of tips,
+        holding the position of the center of each tip's base (in diagram axes, relative
+        to the diagram origin). The units are in meters.
+    :param stackTipDirections_D: A (N,3) ndarray of floats holding the unit vector (in
+        diagram axes) along which each tip points.
+    :param lengths: A (N,) ndarray of floats holding each tip's length, from its base to
+        its point. The units are in meters.
+    :param radii: A (N,) ndarray of floats holding the radius of each tip's base. The
         units are in meters.
-    :param tipDirection_D: A (3,) ndarray of floats representing the unit vector (in
-        diagram axes) along which the tip points.
-    :param length: The tip's length, from its base to its point. The units are in
-        meters.
-    :param radius: The radius of the tip's base. The units are in meters.
-    :param color: The color of the tip's outline.
+    :param color: The color of the tips' outlines.
     :return: None
     """
-    tip = pv.Cone(
-        center=tipBase_D_Do + 0.5 * length * tipDirection_D,
-        direction=tipDirection_D,
-        height=length,
-        radius=radius,
+    num_tips = stackTipBases_D_Do.shape[0]
+
+    # Build one cone of unit length and radius, centered on the diagram origin and
+    # pointing along the x axis (in diagram axes), which every tip is placed from by
+    # active rotations and translations within diagram axes.
+    template_tip = pv.Cone(
+        center=(0.0, 0.0, 0.0),
+        direction=(1.0, 0.0, 0.0),
+        height=1.0,
+        radius=1.0,
         resolution=_AXES_TIP_RESOLUTION,
     )
+    stackTemplatePoints_D_Do = np.array(template_tip.points, dtype=float)
+    template_faces = np.array(template_tip.faces, dtype=int)
+    num_template_points = stackTemplatePoints_D_Do.shape[0]
+
+    # Find the matrices that turn the template to point along each tip's direction.
+    # PyVista's cones are built by VTK, which turns a cone along the x axis 180 degrees
+    # about the unit vector halfway between the x axis and the cone's direction. For a
+    # direction with a negative x component, VTK first turns the cone 180 degrees about
+    # the y axis, and then turns it 180 degrees about the unit vector halfway between
+    # the negative x axis and the direction. A 180 degree turn about a unit vector a is
+    # the matrix 2 * a * a^T - I.
+    points_backward = stackTipDirections_D[:, 0] < 0.0
+    stackHalfwayDirections_D = stackTipDirections_D.copy()
+    stackHalfwayDirections_D[:, 0] += np.where(points_backward, -1.0, 1.0)
+    stackHalfwayDirections_D /= np.linalg.norm(
+        stackHalfwayDirections_D, axis=1, keepdims=True
+    )
+    turn_tips_R_act = 2.0 * np.einsum(
+        "ni,nj->nij", stackHalfwayDirections_D, stackHalfwayDirections_D
+    ) - np.eye(3, dtype=float)
+    turn_about_y_R_act = np.diag(np.array([-1.0, 1.0, -1.0], dtype=float))
+    turn_tips_R_act[points_backward] = (
+        turn_tips_R_act[points_backward] @ turn_about_y_R_act
+    )
+
+    # Scale the template by each tip's length along its axis and radius across it, turn
+    # it, and move its center to halfway along the tip.
+    gridScaledTemplatePoints_D_Do = (
+        stackTemplatePoints_D_Do[np.newaxis, :, :]
+        * np.column_stack([lengths, radii, radii])[:, np.newaxis, :]
+    )
+    stackTipCenters_D_Do = (
+        stackTipBases_D_Do + 0.5 * lengths[:, np.newaxis] * stackTipDirections_D
+    )
+    gridTipPoints_D_Do = (
+        np.einsum("nij,npj->npi", turn_tips_R_act, gridScaledTemplatePoints_D_Do)
+        + stackTipCenters_D_Do[:, np.newaxis, :]
+    )
+
+    # Repeat the template's faces for each tip, shifting each copy's point indices to
+    # that tip's points. The faces are in PolyData's padded form, where each face is its
+    # vertex count followed by its vertex indices, so the counts are left unshifted.
+    face_entry_is_index = np.ones(template_faces.shape[0], dtype=bool)
+    count_id = 0
+    while count_id < template_faces.shape[0]:
+        face_entry_is_index[count_id] = False
+        count_id += template_faces[count_id] + 1
+    tip_faces = np.tile(template_faces, num_tips) + np.repeat(
+        num_template_points * np.arange(num_tips, dtype=int), template_faces.shape[0]
+    ) * np.tile(face_entry_is_index, num_tips)
+
+    tips = pv.PolyData(gridTipPoints_D_Do.reshape(-1, 3), tip_faces)
     plotter.add_silhouette(
-        tip,
+        tips,
         color=color,
         line_width=_AXES_LINE_WIDTH,
         feature_angle=_AXES_TIP_FEATURE_ANGLE,
     )
 
     tip_fill_actor = plotter.add_mesh(
-        tip,
+        tips,
         color=plotter.background_color,
         lighting=False,
     )
@@ -2001,10 +2080,14 @@ def add_vortices(
     # keeps it from overlapping the arrows of neighboring vortices' nearby legs. Like
     # the axes arrows, its shaft is a single line and its tip is an outlined cone, whose
     # proportions match the axes arrows' as fractions of the half circle's length. The
-    # shaft stops where the tip's base begins. Each arrow takes its vortex's color.
+    # shaft stops where the tip's base begins. Each arrow takes its vortex's color. The
+    # shafts and the tips are each added together, one set for each color.
     arc_parameters = np.linspace(0.0, 1.0, _VORTEX_VORTICITY_ARROW_NUM_POINTS)
     listArcPolylines_D_Do: list[np.ndarray] = []
     arc_colors: list[str] = []
+    listTipDirections_D: list[np.ndarray] = []
+    tip_lengths: list[float] = []
+    tip_radii: list[float] = []
     for (
         legStart_D_Do,
         legEnd_D_Do,
@@ -2049,23 +2132,21 @@ def add_vortices(
             * (np.cos(angles) * firstDirection_D + np.sin(angles) * secondDirection_D)
         )
         arc_colors.append(line_vortex_color)
-        _add_arrow_tip(
-            plotter,
-            tipBase_D_Do=listArcPolylines_D_Do[-1][-1],
-            tipDirection_D=-math.sin(shaft_end_angle) * firstDirection_D
-            + math.cos(shaft_end_angle) * secondDirection_D,
-            length=tip_length,
-            radius=_AXES_TIP_RADIUS * arc_length,
-            color=line_vortex_color,
+        listTipDirections_D.append(
+            -math.sin(shaft_end_angle) * firstDirection_D
+            + math.cos(shaft_end_angle) * secondDirection_D
         )
+        tip_lengths.append(tip_length)
+        tip_radii.append(_AXES_TIP_RADIUS * arc_length)
     num_arc_points = _VORTEX_VORTICITY_ARROW_NUM_POINTS
     for arc_color in dict.fromkeys(arc_colors):
-        listColorArcPolylines_D_Do = [
-            arcPolyline_D_Do
-            for arcPolyline_D_Do, this_arc_color in zip(
-                listArcPolylines_D_Do, arc_colors
-            )
+        color_arc_ids = [
+            arc_id
+            for arc_id, this_arc_color in enumerate(arc_colors)
             if this_arc_color == arc_color
+        ]
+        listColorArcPolylines_D_Do = [
+            listArcPolylines_D_Do[arc_id] for arc_id in color_arc_ids
         ]
         arc_lines = np.column_stack(
             [
@@ -2079,6 +2160,25 @@ def add_vortices(
             pv.PolyData(np.vstack(listColorArcPolylines_D_Do), lines=arc_lines),
             color=arc_color,
             line_width=_AXES_LINE_WIDTH,
+        )
+
+        # Each tip's base is where its arrow's shaft ends.
+        _add_arrow_tips(
+            plotter,
+            stackTipBases_D_Do=np.array(
+                [listArcPolylines_D_Do[arc_id][-1] for arc_id in color_arc_ids],
+                dtype=float,
+            ),
+            stackTipDirections_D=np.array(
+                [listTipDirections_D[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            lengths=np.array(
+                [tip_lengths[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            radii=np.array(
+                [tip_radii[arc_id] for arc_id in color_arc_ids], dtype=float
+            ),
+            color=arc_color,
         )
 
 

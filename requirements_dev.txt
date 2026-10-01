@@ -7,7 +7,7 @@ docformatter
 ipykernel
 ipywidgets
 isort
-mypy == 2.3.0
+mypy == 2.3.1
 nbclient
 pre-commit
 pyvista == 0.48.4

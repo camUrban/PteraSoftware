@@ -11,5 +11,5 @@ mypy == 2.3.1
 nbclient
 pre-commit
 pyvista == 0.49.0
-scipy-stubs == 1.18.0.1
+scipy-stubs == 1.18.1.1
 twine

@@ -16,6 +16,7 @@ import matplotlib.colors
 import matplotlib.font_manager
 import matplotlib.ft2font
 import matplotlib.mathtext
+import matplotlib.typing
 import numpy as np
 import pyvista as pv
 import webp
@@ -2106,8 +2107,78 @@ def add_steady_problem(
     )
 
 
+def validate_diagram_figure_parameters(
+    figure_size_in: Sequence[int | float] | None,
+    font_size: int | float | None,
+    text_color: str | Sequence[float] | None,
+    line_width: int | float | None,
+) -> tuple[
+    tuple[float, float] | None,
+    float | None,
+    tuple[float, float, float, float] | None,
+    float | None,
+]:
+    """Validates the parameters that set the page size, the label size and color, and
+    the line width of a diagram's svg or pdf export.
+
+    :param figure_size_in: The page's width and height, in inches, which must be a
+        sequence of two positive numbers, or None.
+    :param font_size: The labels' size, in points, which must be a positive number, or
+        None.
+    :param text_color: The labels' color, which must be any color Matplotlib accepts, or
+        None.
+    :param line_width: The width, in points, of the lines that draw the geometry, which
+        must be a positive number, or None.
+    :return: A tuple of the validated parameters, in the same order, each None if it was
+        passed as None. The page size is a tuple of two floats, the font size and line
+        width are floats, and the color is a tuple of its four RGBA channels.
+    """
+    validated_figure_size_in = None
+    if figure_size_in is not None:
+        if not isinstance(figure_size_in, Sequence) or len(figure_size_in) != 2:
+            raise ValueError("figure_size_in must be a sequence of two numbers.")
+        validated_figure_size_in = (
+            _parameter_validation.number_in_range_return_float(
+                figure_size_in[0], "figure_size_in[0]", 0.0, False
+            ),
+            _parameter_validation.number_in_range_return_float(
+                figure_size_in[1], "figure_size_in[1]", 0.0, False
+            ),
+        )
+    validated_font_size = None
+    if font_size is not None:
+        validated_font_size = _parameter_validation.number_in_range_return_float(
+            font_size, "font_size", 0.0, False
+        )
+    text_rgba = None
+    if text_color is not None:
+        if not matplotlib.colors.is_color_like(text_color):
+            raise ValueError(
+                f'text_color must be a color Matplotlib accepts, got "{text_color}".'
+            )
+        # Matplotlib's type hints accept only tuples of exact lengths, while a color can
+        # arrive as any sequence, which is_color_like has just vetted.
+        text_rgba = matplotlib.colors.to_rgba(
+            cast(matplotlib.typing.ColorType, text_color)
+        )
+    validated_line_width = None
+    if line_width is not None:
+        validated_line_width = _parameter_validation.number_in_range_return_float(
+            line_width, "line_width", 0.0, False
+        )
+    return (
+        validated_figure_size_in,
+        validated_font_size,
+        text_rgba,
+        validated_line_width,
+    )
+
+
 def _get_diagram_export_state(
     plotter: pv.Plotter,
+    figure_size_in: tuple[float, float] | None = None,
+    font_size: float | None = None,
+    text_color: tuple[float, float, float, float] | None = None,
 ) -> tuple[_vector_export.VectorCamera, list[_vector_export.VectorText]]:
     """Reads the state a diagram's svg or pdf export needs from its Plotter, which is
     its camera, its window's size, and its visible labels.
@@ -2119,16 +2190,27 @@ def _get_diagram_export_state(
     Liberation Mono and its math set in the STIX font, as show_diagram sets them up for
     VTK.
 
+    If the page is sized, the window's view is fit to it, as VectorCamera's fit_to_page
+    describes, and each label's anchor moves with the view. If the labels are resized,
+    each label's box is scaled about its anchor by the ratio of its new size to its size
+    in the window, which approximates how VTK would size the box for the new size.
+
     :param plotter: The Plotter holding the diagram, which must have rendered.
-    :return: A tuple of the VectorCamera the diagram is seen through and a list of the
-        VectorTexts of its visible labels, in the order they are drawn.
+    :param figure_size_in: The page's width and height, in inches, or None to make the
+        page the window. The default is None.
+    :param font_size: The size of every label, in points, or None to keep each label's
+        size from the window. The default is None.
+    :param text_color: The color of every label, as a tuple of its four RGBA channels,
+        or None to keep each label's color from the window. The default is None.
+    :return: A tuple of the VectorCamera the diagram is exported through and a list of
+        the VectorTexts of its visible labels, in the order they are drawn.
     """
     renderer = plotter.renderer
     camera = plotter.camera
     render_window = plotter.render_window
     assert render_window is not None
     window_width, window_height = render_window.GetSize()
-    vector_camera = _vector_export.VectorCamera(
+    window_camera = _vector_export.VectorCamera(
         position_D_Do=np.array(camera.position, dtype=float),
         focalPoint_D_Do=np.array(camera.focal_point, dtype=float),
         viewUp_D=np.array(camera.up, dtype=float),
@@ -2136,11 +2218,26 @@ def _get_diagram_export_state(
         window_width=int(window_width),
         window_height=int(window_height),
     )
+    vector_camera = window_camera
+    if figure_size_in is not None:
+        vector_camera = window_camera.fit_to_page(*figure_size_in)
+
+    # Each label's anchor moves to the page by scaling its offset from the window's
+    # center by the ratio of the page's pixels per meter to the window's, since both
+    # centers show the focal point.
+    position_scale = (vector_camera.window_height / vector_camera.parallel_scale) / (
+        window_camera.window_height / window_camera.parallel_scale
+    )
 
     texts: list[_vector_export.VectorText] = []
     for actor in renderer.actors.values():
         if not isinstance(actor, pv.Label) or not actor.GetVisibility():
             continue
+
+        label_font_size = float(actor.prop.font_size)
+        if font_size is not None:
+            label_font_size = font_size / _vector_export.POINTS_PER_PIXEL
+        box_scale = label_font_size / float(actor.prop.font_size)
 
         # VTK reports the box's edges as the inclusive indices of the pixels it fills,
         # so its right and top edges are one pixel past the last indices.
@@ -2148,11 +2245,17 @@ def _get_diagram_export_state(
         actor.GetBoundingBox(renderer, bounding_box)
         renderer.SetWorldPoint(*actor.position, 1.0)
         renderer.WorldToDisplay()
-        anchor_x, anchor_y, _ = renderer.GetDisplayPoint()
-        left = anchor_x + bounding_box[0]
-        right = anchor_x + bounding_box[1] + 1.0
-        bottom = anchor_y + bounding_box[2]
-        top = anchor_y + bounding_box[3] + 1.0
+        window_anchor_x, window_anchor_y, _ = renderer.GetDisplayPoint()
+        anchor_x = 0.5 * vector_camera.window_width + position_scale * (
+            window_anchor_x - 0.5 * window_camera.window_width
+        )
+        anchor_y = 0.5 * vector_camera.window_height + position_scale * (
+            window_anchor_y - 0.5 * window_camera.window_height
+        )
+        left = anchor_x + box_scale * bounding_box[0]
+        right = anchor_x + box_scale * (bounding_box[1] + 1.0)
+        bottom = anchor_y + box_scale * bounding_box[2]
+        top = anchor_y + box_scale * (bounding_box[3] + 1.0)
 
         text = str(actor.input)
         has_math = _UNESCAPED_DOLLAR_SIGN_PATTERN.search(text) is not None
@@ -2164,8 +2267,10 @@ def _get_diagram_export_state(
                 font_properties=matplotlib.font_manager.FontProperties(
                     family=_fonts.MONO_FONT_FAMILY, fname=_fonts.MONO_FONT_PATH
                 ),
-                font_size=float(actor.prop.font_size),
-                color=actor.prop.color.float_rgba,
+                font_size=label_font_size,
+                color=(
+                    actor.prop.color.float_rgba if text_color is None else text_color
+                ),
                 horizontal_alignment="center",
                 vertical_alignment="center",
                 math_font_family="stix" if has_math else None,
@@ -2187,6 +2292,10 @@ def show_diagram(
     path: Path,
     quality: float,
     scene: _vector_export.VectorScene,
+    figure_size_in: tuple[float, float] | None,
+    font_size: float | None,
+    text_color: tuple[float, float, float, float] | None,
+    line_width: float | None,
 ) -> None:
     """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
     WebP, svg, or pdf file, and then closes it.
@@ -2201,6 +2310,11 @@ def show_diagram(
     through the camera as it was last drawn, with the labels as they were last drawn.
     That state is read after every render while the window is shown, since closing the
     window can destroy it.
+
+    An svg or pdf file can also be given its own page size, label size, label color, and
+    line width, which leave the window and a WebP file alone. If its page is sized, the
+    window is shrunk, if needed, to the page's aspect ratio before it is shown, so the
+    view framed in the window is the view saved.
 
     VTK draws a label with math with Matplotlib, asking for its serif font family, since
     that is the only family for which VTK sets the math in the STIX font. While the
@@ -2222,6 +2336,15 @@ def show_diagram(
     :param scene: The VectorScene the diagram was recorded in, whose first layer holds
         everything but the labels. It is only used if the diagram is saved as an svg or
         pdf file.
+    :param figure_size_in: The width and height, in inches, of a saved svg or pdf file's
+        page, or None to make the page the window, at 100 pixels per inch.
+    :param font_size: The size, in points, of every label in a saved svg or pdf file, or
+        None to keep each label's size from the window.
+    :param text_color: The color of every label in a saved svg or pdf file, as a tuple
+        of its four RGBA channels, or None to keep each label's color from the window.
+    :param line_width: The width, in points, of the lines in a saved svg or pdf file
+        that the window draws _DIAGRAM_LINE_WIDTH pixels wide, or None to keep the
+        widths from the window. Every other line's width is scaled with them.
     :return: None
     """
     # Set the background explicitly, since the diagram's black lines and labels rely on
@@ -2253,10 +2376,23 @@ def show_diagram(
         :param event: The name of the event, which is unused.
         :return: None
         """
-        export_states[:] = [_get_diagram_export_state(plotter)]
+        export_states[:] = [
+            _get_diagram_export_state(plotter, figure_size_in, font_size, text_color)
+        ]
 
     if is_vector:
         plotter.renderer.AddObserver("EndEvent", capture_export_state)
+
+        # Shrink the window along one direction to the page's aspect ratio.
+        if figure_size_in is not None:
+            window_width, window_height = plotter.window_size
+            window_scale = min(
+                window_width / figure_size_in[0], window_height / figure_size_in[1]
+            )
+            plotter.window_size = [
+                round(window_scale * figure_size_in[0]),
+                round(window_scale * figure_size_in[1]),
+            ]
 
     with matplotlib.rc_context({"font.serif": [_fonts.MONO_FONT_FAMILY]}):
         plotter.show(cpos=cpos, full_screen=False, auto_close=False)
@@ -2276,7 +2412,12 @@ def show_diagram(
             vector_camera, texts = export_states[0]
             for text in texts:
                 scene.add_text(text)
-            scene.save(path, vector_camera, _DIAGRAM_BACKGROUND_COLOR)
+            line_width_scale = 1.0
+            if line_width is not None:
+                line_width_scale = line_width / (
+                    _vector_export.POINTS_PER_PIXEL * _DIAGRAM_LINE_WIDTH
+                )
+            scene.save(path, vector_camera, _DIAGRAM_BACKGROUND_COLOR, line_width_scale)
         elif save:
             # Take an opaque screenshot and save it as a WebP. webp annotates file_path
             # as a str, so the Path is converted at the boundary.

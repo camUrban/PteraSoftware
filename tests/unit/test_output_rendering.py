@@ -3233,3 +3233,103 @@ class TestGetDiagramExportState(unittest.TestCase):
         _get_labels(self.plotter)["arrow label GY"].SetVisibility(False)
         _, texts = _output_rendering._get_diagram_export_state(self.plotter)
         self.assertEqual([text.text for text in texts], ["GX", "GZ", "Cg"])
+
+    def test_fits_the_view_and_the_labels_to_the_page(self) -> None:
+        """Test that a page twice the window's size shows the window's view at twice the
+        pixels per meter, with each label's anchor moved with the view and its box kept
+        at its size.
+
+        The 400 by 300 pixel window's center and the 800 by 600 pixel page's center both
+        show the focal point, so each anchor's position on the page is twice its
+        position in the window.
+        """
+        self.add_axes_and_render()
+        vector_camera, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, figure_size_in=(8.0, 6.0)
+        )
+        self.assertEqual(
+            (vector_camera.window_width, vector_camera.window_height), (800.0, 600.0)
+        )
+        self.assertAlmostEqual(
+            vector_camera.parallel_scale, self.plotter.camera.parallel_scale
+        )
+        labels = _get_labels(self.plotter)
+        for text in texts:
+            with self.subTest(text=text.text):
+                label = next(
+                    label for label in labels.values() if label.input == text.text
+                )
+                bounding_box = [0.0, 0.0, 0.0, 0.0]
+                label.GetBoundingBox(self.plotter.renderer, bounding_box)
+                anchor_display = 2.0 * _get_display_point(
+                    self.plotter, np.array(label.position, dtype=float)
+                )
+                assert text.background_box is not None
+                npt.assert_allclose(
+                    text.background_box,
+                    (
+                        anchor_display[0] + bounding_box[0],
+                        anchor_display[0] + bounding_box[1] + 1.0,
+                        anchor_display[1] + bounding_box[2],
+                        anchor_display[1] + bounding_box[3] + 1.0,
+                    ),
+                )
+
+    def test_sizes_every_label_to_the_font_size(self) -> None:
+        """Test that a font size sets every label's size, including the math labels',
+        and scales each label's box about its anchor by the ratio of its new size to its
+        size in the window.
+
+        A 9.0 point font is 12.5 pixels at 100 pixels per inch, and the math labels are
+        20 pixels in the window.
+        """
+        self.add_axes_and_render(math_labels=True)
+        _, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, font_size=9.0
+        )
+        box_scale = 12.5 / 20.0
+        labels = _get_labels(self.plotter)
+        for text in texts:
+            with self.subTest(text=text.text):
+                self.assertAlmostEqual(text.font_size, 12.5)
+                label = next(
+                    label for label in labels.values() if label.input == text.text
+                )
+                bounding_box = [0.0, 0.0, 0.0, 0.0]
+                label.GetBoundingBox(self.plotter.renderer, bounding_box)
+                anchor_display = _get_display_point(
+                    self.plotter, np.array(label.position, dtype=float)
+                )
+                assert text.background_box is not None
+                npt.assert_allclose(
+                    text.background_box,
+                    (
+                        anchor_display[0] + box_scale * bounding_box[0],
+                        anchor_display[0] + box_scale * (bounding_box[1] + 1.0),
+                        anchor_display[1] + box_scale * bounding_box[2],
+                        anchor_display[1] + box_scale * (bounding_box[3] + 1.0),
+                    ),
+                )
+
+    def test_colors_every_label_with_the_text_color(self) -> None:
+        """Test that a text color sets every label's color."""
+        self.add_axes_and_render()
+        text_color = (0.2, 0.4, 0.6, 1.0)
+        _, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, text_color=text_color
+        )
+        for text in texts:
+            with self.subTest(text=text.text):
+                self.assertEqual(text.color, text_color)
+
+
+class TestValidateDiagramFigureParameters(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.validate_diagram_figure_parameters."""
+
+    def test_rejects_an_unknown_text_color(self) -> None:
+        """Test that a text color Matplotlib does not accept is rejected."""
+        with self.assertRaises(ValueError):
+            _output_rendering.validate_diagram_figure_parameters(
+                None, None, "not_a_color", None
+            )

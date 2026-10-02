@@ -100,6 +100,48 @@ class TestVectorCameraToDisplay(unittest.TestCase):
         )
 
 
+class TestVectorCameraFitToPage(unittest.TestCase):
+    """This class contains methods for testing
+    _vector_export.VectorCamera.fit_to_page."""
+
+    def setUp(self) -> None:
+        """Set up the camera.
+
+        :return: None
+        """
+        self.camera = vector_export_fixtures.make_top_down_camera_fixture()
+
+    def test_scales_the_view_to_a_page_of_the_same_aspect_ratio(self) -> None:
+        """Test that a page twice the window's size, at 100 pixels per inch, shows the
+        same view at twice the pixels per meter, centered on the focal point."""
+        page_camera = self.camera.fit_to_page(4.0, 2.0)
+        self.assertEqual(
+            (page_camera.window_width, page_camera.window_height), (400.0, 200.0)
+        )
+        npt.assert_allclose(
+            page_camera.to_display(
+                np.array([[0.0, 0.0, 0.0], [1.0, 2.0, 0.0]], dtype=float)
+            ),
+            [[200.0, 100.0, 0.0], [220.0, 140.0, 0.0]],
+        )
+
+    def test_fits_a_wider_view_to_a_taller_page(self) -> None:
+        """Test that a view wider than its page is scaled so that its width spans the
+        page, and is centered on the page vertically.
+
+        The window spans 20.0 m by 10.0 m, and the page is 200 by 200 pixels, so the
+        view keeps its 10.0 pixels per meter, and its right edge, 10.0 m from the focal
+        point, lands on the page's right edge.
+        """
+        page_camera = self.camera.fit_to_page(2.0, 2.0)
+        npt.assert_allclose(
+            page_camera.to_display(
+                np.array([[10.0, 0.0, 0.0], [0.0, 5.0, 0.0]], dtype=float)
+            ),
+            [[200.0, 100.0, 0.0], [100.0, 150.0, 0.0]],
+        )
+
+
 class TestGetPaintOrder(unittest.TestCase):
     """This class contains methods for testing _vector_export.get_paint_order."""
 
@@ -368,6 +410,51 @@ class TestVectorLayer(unittest.TestCase):
         self.assertEqual(len(segments), 2)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
         npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
+
+    def test_scales_the_line_widths_where_drawn_and_where_they_hide(self) -> None:
+        """Test that a line width scale widens the strokes and the convex occluders'
+        outlines both as drawn and where they hide the strokes behind them.
+
+        With a scale of 2.0, the cube's outline and the polyline are each 2.0 pixels
+        wide, so the outline hides the polyline for 2.0 pixels beyond the cube's
+        silhouette at x = 90.0 and x = 110.0 pixels, which is half the outline's width
+        plus half the polyline's.
+        """
+        self.layer.add_convex_occluder(
+            vector_export_fixtures.make_cube_points_fixture(),
+            vector_export_fixtures.make_cube_faces_fixture(),
+            "white",
+            "black",
+            1.0,
+        )
+        self.layer.add_polylines(
+            [np.array([[-3.0, 0.0, -5.0], [3.0, 0.0, -5.0]], dtype=float)],
+            "black",
+            1.0,
+        )
+        self.layer.draw(self.axes, self.camera, 1.0, line_width_scale=2.0)
+        line_collection = next(
+            collection
+            for collection in self.axes.collections
+            if type(collection) is matplotlib.collections.LineCollection
+        )
+        polygon_collection = next(
+            collection
+            for collection in self.axes.collections
+            if type(collection) is matplotlib.collections.PolyCollection
+        )
+        segments = line_collection.get_segments()
+        self.assertEqual(len(segments), 2)
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [88.0, 50.0]])
+        npt.assert_allclose(segments[1], [[112.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(
+            np.array(line_collection.get_linewidth(), dtype=float),
+            np.full(2, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
+        )
+        npt.assert_allclose(
+            np.array(polygon_collection.get_linewidth(), dtype=float),
+            np.full(1, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
+        )
 
     def test_a_convex_occluder_leaves_a_polyline_in_front_of_it(self) -> None:
         """Test that a polyline passing in front of a convex occluder is drawn whole."""

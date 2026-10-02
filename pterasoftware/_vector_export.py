@@ -69,7 +69,7 @@ _MIN_VISIBLE_FRACTION = 1.0e-9
 # Define the resolution the figures are laid out at. Each pixel of the window becomes
 # one unit of the figure's axes, and is this many points wide.
 _FIGURE_DPI = 100.0
-_POINTS_PER_PIXEL = 72.0 / _FIGURE_DPI
+POINTS_PER_PIXEL = 72.0 / _FIGURE_DPI
 
 # Define the width, in pixels, of the stroke each fill is outlined with in its own
 # color. Abutting fills are anti-aliased separately by the program that displays the
@@ -90,16 +90,40 @@ class VectorCamera(NamedTuple):
         diagram axes). It needn't be perpendicular to the view direction or of unit
         length, since only its part perpendicular to the view direction is used.
     :param parallel_scale: Half of the window's height, in meters. It must be positive.
-    :param window_width: The window's width, in pixels.
-    :param window_height: The window's height, in pixels.
+    :param window_width: The window's width, in pixels. It must be positive.
+    :param window_height: The window's height, in pixels. It must be positive.
     """
 
     position_D_Do: np.ndarray
     focalPoint_D_Do: np.ndarray
     viewUp_D: np.ndarray
     parallel_scale: float
-    window_width: int
-    window_height: int
+    window_width: float
+    window_height: float
+
+    def fit_to_page(self, page_width_in: float, page_height_in: float) -> VectorCamera:
+        """Returns a camera that shows this camera's view scaled to fit a page.
+
+        The returned camera's window is the page, in pixels at the resolution the
+        figures are laid out at. The view is scaled by the largest factor that keeps all
+        of it on the page, and stays centered on the focal point, so on a page whose
+        aspect ratio differs from the window's, more of the scene shows along one
+        direction.
+
+        :param page_width_in: The page's width, in inches. It must be positive.
+        :param page_height_in: The page's height, in inches. It must be positive.
+        :return: The VectorCamera whose window is the page.
+        """
+        page_width = page_width_in * _FIGURE_DPI
+        page_height = page_height_in * _FIGURE_DPI
+        scale = min(page_width / self.window_width, page_height / self.window_height)
+        return self._replace(
+            parallel_scale=self.parallel_scale
+            * page_height
+            / (scale * self.window_height),
+            window_width=page_width,
+            window_height=page_height,
+        )
 
     def to_display(self, stackPoints_D_Do: np.ndarray) -> np.ndarray:
         """Projects points to display coordinates.
@@ -979,6 +1003,7 @@ class VectorLayer:
         axes: matplotlib.axes.Axes,
         camera: VectorCamera,
         zorder: float,
+        line_width_scale: float = 1.0,
     ) -> float:
         """Draws the layer onto a figure's axes, which are laid out one unit per pixel
         of the window.
@@ -987,6 +1012,10 @@ class VectorLayer:
         :param camera: The VectorCamera to project the layer through.
         :param zorder: The zorder of the layer's first pass. Each pass takes the next
             whole zorder.
+        :param line_width_scale: The factor that the widths of the strokes and of the
+            convex occluders' outlines are scaled by, both where they are drawn and
+            where they hide the strokes behind them. It must be positive. The default is
+            1.0.
         :return: The zorder for whatever is drawn after the layer.
         """
         fill_triangles_display = np.zeros((0, 3, 3), dtype=float)
@@ -1008,7 +1037,7 @@ class VectorLayer:
                     [piece_display[:, :2] for piece_display, _ in order],
                     facecolors=colors,
                     edgecolors=colors,
-                    linewidths=_FILL_SEAM_LINE_WIDTH * _POINTS_PER_PIXEL,
+                    linewidths=_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL,
                     zorder=zorder,
                 )
             )
@@ -1018,14 +1047,16 @@ class VectorLayer:
             occluder_triangles_display,
             outlineSegments_display,
             outline_widths,
-        ) = self._draw_occluders(axes, camera, zorder)
+        ) = self._draw_occluders(axes, camera, zorder, line_width_scale)
         zorder += 1.0
 
         if self._listStrokes_D_Do:
             strokes_display = camera.to_display(
                 np.concatenate(self._listStrokes_D_Do)
             ).reshape(-1, 2, 3)
-            stroke_widths = np.array(self._stroke_widths, dtype=float)
+            stroke_widths = line_width_scale * np.array(
+                self._stroke_widths, dtype=float
+            )
             num_strokes = strokes_display.shape[0]
 
             # Every stroke, and every piece of an occluder's outline, hides the strokes
@@ -1114,7 +1145,7 @@ class VectorLayer:
                     )
                     segment_colors.append(self._stroke_colors[stroke_id])
                     segment_widths.append(
-                        self._stroke_widths[stroke_id] * _POINTS_PER_PIXEL
+                        float(stroke_widths[stroke_id]) * POINTS_PER_PIXEL
                     )
             axes.add_collection(
                 matplotlib.collections.LineCollection(
@@ -1168,6 +1199,7 @@ class VectorLayer:
         axes: matplotlib.axes.Axes,
         camera: VectorCamera,
         zorder: float,
+        line_width_scale: float,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Draws the layer's convex occluders from back to front, and returns their
         triangles and outlines for clipping the strokes.
@@ -1180,6 +1212,8 @@ class VectorLayer:
         :param axes: The Axes to draw the occluders onto.
         :param camera: The VectorCamera to project the occluders through.
         :param zorder: The zorder of the occluders' collection.
+        :param line_width_scale: The factor that the widths of the occluders' outlines
+            are scaled by.
         :return: A tuple of three ndarrays of floats. The first is a (T,3,3) ndarray
             holding every occluder's faces, split into triangles (in display
             coordinates). The second is a (R,2,3) ndarray holding the start and end of
@@ -1200,6 +1234,7 @@ class VectorLayer:
             outline_width,
             outlined_face_ids,
         ) in self._occluders:
+            outline_width = line_width_scale * outline_width
             points_display = camera.to_display(stackPoints_D_Do)
             for face in faces:
                 triangles += [
@@ -1259,7 +1294,7 @@ class VectorLayer:
                     len(paths) - 1
                 )
                 edge_colors += [outline_rgba] * len(paths)
-                line_widths += [outline_width * _POINTS_PER_PIXEL] * len(paths)
+                line_widths += [outline_width * POINTS_PER_PIXEL] * len(paths)
             axes.add_collection(
                 matplotlib.collections.PolyCollection(
                     all_paths,
@@ -1338,6 +1373,7 @@ class VectorScene:
         path: Path,
         camera: VectorCamera,
         background_color: matplotlib.typing.ColorType | None,
+        line_width_scale: float = 1.0,
     ) -> None:
         """Saves the scene as an svg or pdf file, as seen through a camera.
 
@@ -1351,6 +1387,9 @@ class VectorScene:
             the size of the page.
         :param background_color: The color of the page, as any color Matplotlib accepts,
             or None to leave it transparent.
+        :param line_width_scale: The factor that the widths of every layer's strokes and
+            convex occluders' outlines are scaled by. It must be positive. The default
+            is 1.0.
         :return: None
         """
         with matplotlib.rc_context({"pdf.fonttype": 42, "svg.fonttype": "none"}):
@@ -1368,7 +1407,7 @@ class VectorScene:
 
             zorder = 1.0
             for layer in self._layers:
-                zorder = layer.draw(axes, camera, zorder)
+                zorder = layer.draw(axes, camera, zorder, line_width_scale)
 
             if self._listScreenPolygons:
                 axes.add_collection(
@@ -1376,7 +1415,7 @@ class VectorScene:
                         self._listScreenPolygons,
                         facecolors=self._screen_polygon_colors,
                         edgecolors=self._screen_polygon_colors,
-                        linewidths=_FILL_SEAM_LINE_WIDTH * _POINTS_PER_PIXEL,
+                        linewidths=_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL,
                         zorder=zorder,
                     )
                 )
@@ -1399,7 +1438,7 @@ class VectorScene:
                         )
                     )
                 font_properties = text.font_properties.copy()
-                font_properties.set_size(text.font_size * _POINTS_PER_PIXEL)
+                font_properties.set_size(text.font_size * POINTS_PER_PIXEL)
                 matplotlib_text = axes.text(
                     text.x,
                     text.y,

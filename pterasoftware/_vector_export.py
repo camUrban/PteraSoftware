@@ -34,7 +34,7 @@ import matplotlib.typing
 import numpy as np
 import scipy.spatial
 
-from . import _output_plotting
+from . import _fonts
 
 # Define the tolerance, in pixels, within which a vertex counts as lying on a splitting
 # plane, and by which a stroke wins a depth tie against a triangle, so that an edge
@@ -1233,9 +1233,7 @@ class VectorScene:
             if path.suffix == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", facecolor=facecolor)
-                svg = _output_plotting.embed_font_in_svg(
-                    svg_buffer.getvalue().decode("utf-8")
-                )
+                svg = _fonts.embed_font_in_svg(svg_buffer.getvalue().decode("utf-8"))
                 path.write_bytes(svg.encode("utf-8"))
             else:
                 figure.savefig(path, facecolor=facecolor)

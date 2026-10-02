@@ -1,14 +1,10 @@
 """This module contains classes to test the output plotting functions."""
 
-import base64
 import csv
-import io
-import re
 import tempfile
 import unittest
 from pathlib import Path
 
-import fontTools.ttLib
 import matplotlib.colors
 import matplotlib.image
 import matplotlib.layout_engine
@@ -316,49 +312,6 @@ class TestWriteTimeHistoryCsv(unittest.TestCase):
         rows = self._read_rows()
         self.assertEqual(rows[0], ["Time (s)", headers[0]])
         self.assertEqual(len(rows), 3)
-
-
-class TestEmbedFontInSvg(unittest.TestCase):
-    """This class contains methods for testing _output_plotting.embed_font_in_svg."""
-
-    def test_embeds_one_font_face_rule_ahead_of_matplotlibs_style(self) -> None:
-        """Test that the font is embedded once, in a style element placed first in the
-        definitions."""
-        svg = _output_plotting.embed_font_in_svg(
-            output_plotting_fixtures.make_svg_fixture()
-        )
-        self.assertEqual(svg.count("@font-face"), 1)
-        self.assertLess(svg.index("@font-face"), svg.index("*{stroke-linejoin"))
-
-    def test_names_the_font_by_its_family(self) -> None:
-        """Test that the embedded font takes the family name the text elements use."""
-        svg = _output_plotting.embed_font_in_svg(
-            output_plotting_fixtures.make_svg_fixture()
-        )
-        self.assertIn(f'font-family: "{_fonts.FONT_FAMILY}"', svg)
-
-    def test_subsets_the_font_to_the_characters_the_text_uses(self) -> None:
-        """Test that the embedded font maps every character the text uses and drops a
-        character it does not."""
-        svg = _output_plotting.embed_font_in_svg(
-            output_plotting_fixtures.make_svg_fixture()
-        )
-        font_data = re.search(r"base64,([A-Za-z0-9+/=]+)", svg)
-        self.assertIsNotNone(font_data)
-        assert font_data is not None
-        font = fontTools.ttLib.TTFont(io.BytesIO(base64.b64decode(font_data.group(1))))
-        character_map = font.getBestCmap()
-        for character in "LiftDrag":
-            self.assertIn(ord(character), character_map)
-        self.assertNotIn(ord("Z"), character_map)
-
-    def test_raises_for_an_svg_without_definitions(self) -> None:
-        """Test that an SVG with no defs element is rejected rather than returned
-        without its font."""
-        svg = output_plotting_fixtures.make_svg_fixture()
-        svg = svg.replace(" <defs>\n", "").replace(" </defs>\n", "")
-        with self.assertRaises(ValueError):
-            _output_plotting.embed_font_in_svg(svg)
 
 
 class TestPlotTimeHistory(unittest.TestCase):

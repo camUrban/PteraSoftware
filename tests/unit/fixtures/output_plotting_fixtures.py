@@ -66,27 +66,6 @@ def make_three_headers_fixture() -> list[str]:
     ]
 
 
-def make_svg_fixture() -> str:
-    """Makes a fixture that is a minimal SVG, shaped as Matplotlib writes one with
-    svg.fonttype set to "none".
-
-    Its two text elements hold "Lift" and "Drag", so a test can tell which characters
-    the SVG's text uses.
-
-    :return: The SVG's text.
-    """
-    return (
-        '<?xml version="1.0" encoding="utf-8" standalone="no"?>\n'
-        '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">\n'
-        " <defs>\n"
-        '  <style type="text/css">*{stroke-linejoin: round}</style>\n'
-        " </defs>\n"
-        " <text style=\"font-family: 'Liberation Sans'\">Lift</text>\n"
-        " <text style=\"font-family: 'Liberation Sans'\">Drag</text>\n"
-        "</svg>\n"
-    )
-
-
 def make_figure_size_fixture() -> tuple[float, float]:
     """Makes a fixture that is a figure's width and height.
 

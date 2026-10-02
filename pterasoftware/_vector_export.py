@@ -1457,7 +1457,7 @@ class VectorScene:
             # An svg is written to a buffer first, so the fonts can be embedded in it
             # before it reaches the file.
             facecolor = "none" if background_color is None else background_color
-            if path.suffix == ".svg":
+            if path.suffix.lower() == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", facecolor=facecolor)
                 svg = _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))

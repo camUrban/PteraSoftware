@@ -98,6 +98,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_private_access.py`: Registration pattern that grants cross-module access to private attributes, currently a `FreeFlightUnsteadyProblem`'s `MuJoCoModel` for the rendering layer
     - `_serialization.py`: Serialization and deserialization (save/load) to and from `.psz` files, which are zip archives of JSON members chunked by time step
     - `_transformations.py`: Coordinate transformations and rotations
+    - `_vector_export.py`: svg and pdf export of the visualizations' scenes, with exact visibility from a BSP painter for the fills and hidden-line removal for the strokes
     - `aeroelastic_unsteady_ring_vortex_lattice_method.py`: Aeroelastic UVLM solver subclass with first-order structural deformation
     - `convergence.py`: Convergence analysis tools
     - `free_flight_unsteady_ring_vortex_lattice_method.py`: Free flight UVLM solver subclass with six-DOF MuJoCo coupling

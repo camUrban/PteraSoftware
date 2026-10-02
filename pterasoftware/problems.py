@@ -21,6 +21,7 @@ from . import (
     _parameter_validation,
     _private_access,
     _transformations,
+    _vector_export,
     geometry,
     movements,
 )
@@ -249,17 +250,20 @@ class SteadyProblem:
             if anything. If False, each label is the plain ID, set in a monospaced font.
             Can be a bool or a numpy bool and will be converted internally to a bool.
             The default is False.
-        :param save: Determines whether to save the diagram as a WebP with a white
-            background once its window is closed, which keeps the view's orientation and
-            any labels dragged by hand. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram with a white background once
+            its window is closed, which keeps the view's orientation and any labels
+            dragged by hand. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
         :param path: The file path to save the diagram to. It can be a str or a Path,
-            must end with ".webp", and its directory must already exist. It has no
-            effect if save is False. The default is "diagram.webp".
-        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
-            with the most compression artifacts and 100.0 is the largest file with the
+            and its directory must already exist. Its extension sets the format: ".webp"
+            saves an image, while ".svg" and ".pdf" save vector graphics whose text
+            stays selectable. It has no effect if save is False. The default is
+            "diagram.webp".
+        :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
+            the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
-            float. It has no effect if save is False. The default is 75.0.
+            float. It has no effect unless save is True and path ends with ".webp". The
+            default is 75.0.
         :return: None
         """
         show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
@@ -291,12 +295,15 @@ class SteadyProblem:
             math_labels, "math_labels"
         )
         save = _parameter_validation.boolLike_return_bool(save, "save")
-        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        path = _parameter_validation.pathLike_return_path(
+            path, "path", (".webp", ".svg", ".pdf")
+        )
         quality = _parameter_validation.number_in_range_return_float(
             quality, "quality", 0.0, True, 100.0, True
         )
 
         plotter = pv.Plotter()
+        scene = _vector_export.VectorScene()
         _output_rendering.add_steady_problem(
             plotter,
             self,
@@ -311,9 +318,15 @@ class SteadyProblem:
             show_collocation_points=show_collocation_points,
             label_collocation_points=label_collocation_points,
             math_labels=math_labels,
+            layer=scene.add_layer(),
         )
         _output_rendering.show_diagram(
-            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+            plotter,
+            cpos=(-1, -1, 1),
+            save=save,
+            path=path,
+            quality=quality,
+            scene=scene,
         )
 
 

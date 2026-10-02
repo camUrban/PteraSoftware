@@ -86,7 +86,7 @@ Requires Python 3.11, but active development is done in 3.14
     - `_core.py`: Core classes for the movement and problem hierarchies
     - `_coupled_unsteady_ring_vortex_lattice_method.py`: Coupled unsteady UVLM solver subclass with step-by-step geometry
     - `_fixed_point_relaxation.py`: Pure fixed-point relaxation helpers (weighted norm, convergence test, Aitken relaxation factor) for the strong-coupling sub-iteration
-    - `_fonts.py`: The fonts used by the visualization functions, and the function that embeds one in an SVG
+    - `_fonts.py`: The fonts used by the visualization functions, and the function that embeds them in an SVG
     - `_functions.py`: Shared utility functions
     - `_logging.py`: Contains the function for setting up logging
     - `_mujoco_model.py`: Contains the `MuJoCoModel` class

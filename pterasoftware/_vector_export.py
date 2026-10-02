@@ -142,6 +142,15 @@ class VectorText(NamedTuple):
         It must be "left", "center", or "right".
     :param vertical_alignment: Which part of the text sits at the anchor vertically. It
         must be "bottom", "baseline", "center", "center_baseline", or "top".
+    :param math_font_family: The font set that the text's math is written in, as any
+        font set Matplotlib's mathtext accepts, such as "stix". None leaves it at
+        Matplotlib's default. The default is None.
+    :param background_box: The box filled behind the text, as a tuple of its left,
+        right, bottom, and top edges, in pixels from the window's bottom left corner, or
+        None to fill nothing behind the text. The default is None.
+    :param background_color: The color of the box filled behind the text, as any color
+        Matplotlib accepts. It has no effect if background_box is None. The default is
+        "white".
     """
 
     x: float
@@ -152,6 +161,9 @@ class VectorText(NamedTuple):
     color: matplotlib.typing.ColorType
     horizontal_alignment: str
     vertical_alignment: str
+    math_font_family: str | None = None
+    background_box: tuple[float, float, float, float] | None = None
+    background_color: matplotlib.typing.ColorType = "white"
 
 
 class _BspNode:
@@ -700,6 +712,11 @@ class VectorLayer:
     polygons. The fills and the occluders hide the strokes behind them, but not each
     other, so a layer should hold one or the other. The dots and the translucent
     polygons hide nothing and are hidden by nothing.
+
+    The strokes are painted in the reverse of the order they were added, so where two
+    strokes lie on top of each other, the one added first shows. VTK's depth test keeps
+    the first of two equally deep fragments, so this is what a scene rendered by VTK
+    shows where the lines its actors draw coincide.
     """
 
     def __init__(self) -> None:
@@ -942,7 +959,8 @@ class VectorLayer:
             segments: list[np.ndarray] = []
             segment_colors: list[np.ndarray] = []
             segment_widths: list[float] = []
-            for stroke_id, intervals in enumerate(visible_intervals):
+            for stroke_id in reversed(range(len(visible_intervals))):
+                intervals = visible_intervals[stroke_id]
                 start_display = strokes_display[stroke_id, 0]
                 direction_display = (
                     strokes_display[stroke_id, 1] - strokes_display[stroke_id, 0]
@@ -1173,7 +1191,7 @@ class VectorScene:
 
         The format follows the path's suffix. Either way, the text stays selectable and
         searchable. A pdf embeds its fonts as TrueType, and an svg writes its text as
-        text with the vendored font embedded in it, as the results plots do.
+        text with the fonts it uses embedded in it, as the results plots do.
 
         :param path: The path of the file to write. It must end with ".svg" or ".pdf",
             and its directory must already exist.
@@ -1212,10 +1230,25 @@ class VectorScene:
                 )
             zorder += 1.0
 
+            # Each text takes its own zorder, after its background box's, so a later
+            # text's box covers an earlier text it overlaps, as it does on screen.
             for text in self._texts:
+                if text.background_box is not None:
+                    left, right, bottom, top = text.background_box
+                    axes.add_patch(
+                        matplotlib.patches.Rectangle(
+                            (left, bottom),
+                            right - left,
+                            top - bottom,
+                            facecolor=text.background_color,
+                            edgecolor="none",
+                            linewidth=0.0,
+                            zorder=zorder,
+                        )
+                    )
                 font_properties = text.font_properties.copy()
                 font_properties.set_size(text.font_size * _POINTS_PER_PIXEL)
-                axes.text(
+                matplotlib_text = axes.text(
                     text.x,
                     text.y,
                     text.text,
@@ -1224,16 +1257,19 @@ class VectorScene:
                     horizontalalignment=text.horizontal_alignment,
                     verticalalignment=text.vertical_alignment,
                     clip_on=False,
-                    zorder=zorder,
+                    zorder=zorder + 0.5,
                 )
+                if text.math_font_family is not None:
+                    matplotlib_text.set_math_fontfamily(text.math_font_family)
+                zorder += 1.0
 
-            # An svg is written to a buffer first, so the font can be embedded in it
+            # An svg is written to a buffer first, so the fonts can be embedded in it
             # before it reaches the file.
             facecolor = "none" if background_color is None else background_color
             if path.suffix == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", facecolor=facecolor)
-                svg = _fonts.embed_font_in_svg(svg_buffer.getvalue().decode("utf-8"))
+                svg = _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))
                 path.write_bytes(svg.encode("utf-8"))
             else:
                 figure.savefig(path, facecolor=facecolor)

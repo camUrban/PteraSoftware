@@ -17,6 +17,7 @@ from .. import (
     _output_rendering,
     _parameter_validation,
     _transformations,
+    _vector_export,
 )
 
 # Create a sentinel for detecting use of the deprecated outline_A_lp parameter. It is
@@ -442,17 +443,20 @@ class Airfoil:
             if anything. If False, each label is the plain ID, set in a monospaced font.
             Can be a bool or a numpy bool and will be converted internally to a bool.
             The default is False.
-        :param save: Determines whether to save the diagram as a WebP with a white
-            background once its window is closed, which keeps the view's orientation and
-            any labels dragged by hand. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram with a white background once
+            its window is closed, which keeps the view's orientation and any labels
+            dragged by hand. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
         :param path: The file path to save the diagram to. It can be a str or a Path,
-            must end with ".webp", and its directory must already exist. It has no
-            effect if save is False. The default is "diagram.webp".
-        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
-            with the most compression artifacts and 100.0 is the largest file with the
+            and its directory must already exist. Its extension sets the format: ".webp"
+            saves an image, while ".svg" and ".pdf" save vector graphics whose text
+            stays selectable. It has no effect if save is False. The default is
+            "diagram.webp".
+        :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
+            the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
-            float. It has no effect if save is False. The default is 75.0.
+            float. It has no effect unless save is True and path ends with ".webp". The
+            default is 75.0.
         :return: None
         """
         show_mcl = _parameter_validation.boolLike_return_bool(show_mcl, "show_mcl")
@@ -460,12 +464,16 @@ class Airfoil:
             math_labels, "math_labels"
         )
         save = _parameter_validation.boolLike_return_bool(save, "save")
-        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        path = _parameter_validation.pathLike_return_path(
+            path, "path", (".webp", ".svg", ".pdf")
+        )
         quality = _parameter_validation.number_in_range_return_float(
             quality, "quality", 0.0, True, 100.0, True
         )
 
         plotter = pv.Plotter()
+        scene = _vector_export.VectorScene()
+        layer = scene.add_layer()
 
         # Draw the diagram in airfoil axes, relative to the leading point, placing each
         # point in the diagram's xy plane.
@@ -482,7 +490,7 @@ class Airfoil:
                 [self._mcl_A_Lp, np.zeros(self._mcl_A_Lp.shape[0], dtype=float)]
             )
         _output_rendering.add_airfoil_lines(
-            plotter, airfoilOutline_D_Do, airfoilMcl_D_Do
+            plotter, airfoilOutline_D_Do, airfoilMcl_D_Do, layer=layer
         )
 
         # Size the axes as a fraction of the chord, which is one because the points are
@@ -495,10 +503,11 @@ class Airfoil:
             axes_scale=0.5,
             two_dimensional_axes_ids=["A"],
             math_labels=math_labels,
+            layer=layer,
         )
 
         _output_rendering.show_diagram(
-            plotter, cpos="xy", save=save, path=path, quality=quality
+            plotter, cpos="xy", save=save, path=path, quality=quality, scene=scene
         )
 
     # Coverage ignores this method because it is deprecated in favor of diagram.

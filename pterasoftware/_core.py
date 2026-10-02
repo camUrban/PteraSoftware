@@ -2860,17 +2860,20 @@ class CoreUnsteadyProblem:
             if anything. If False, each label is the plain ID, set in a monospaced font.
             Can be a bool or a numpy bool and will be converted internally to a bool.
             The default is False.
-        :param save: Determines whether to save the diagram as a WebP with a white
-            background once its window is closed, which keeps the view's orientation and
-            any labels dragged by hand. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram with a white background once
+            its window is closed, which keeps the view's orientation and any labels
+            dragged by hand. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
         :param path: The file path to save the diagram to. It can be a str or a Path,
-            must end with ".webp", and its directory must already exist. It has no
-            effect if save is False. The default is "diagram.webp".
-        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
-            with the most compression artifacts and 100.0 is the largest file with the
+            and its directory must already exist. Its extension sets the format: ".webp"
+            saves an image, while ".svg" and ".pdf" save vector graphics whose text
+            stays selectable. It has no effect if save is False. The default is
+            "diagram.webp".
+        :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
+            the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
-            float. It has no effect if save is False. The default is 75.0.
+            float. It has no effect unless save is True and path ends with ".webp". The
+            default is 75.0.
         :return: None
         """
         steady_problems = self.steady_problems

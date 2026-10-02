@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import cast
 
 import matplotlib.collections
+import matplotlib.colors
 import matplotlib.figure
 import matplotlib.font_manager
 import numpy as np
@@ -407,6 +408,18 @@ class TestVectorLayer(unittest.TestCase):
         """Test that drawing a layer returns the zorder after its five passes."""
         self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 8.0)
 
+    def test_paints_the_first_of_two_coincident_strokes_on_top(self) -> None:
+        """Test that where two strokes lie on top of each other, the one added first is
+        painted last, so it shows, as it does in VTK."""
+        stroke_D_Do = np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)
+        self.layer.add_polylines([stroke_D_Do], "red", 1.0)
+        self.layer.add_polylines([stroke_D_Do], "blue", 1.0)
+        colors = cast(
+            matplotlib.collections.LineCollection,
+            self.get_drawn_collection(matplotlib.collections.LineCollection),
+        ).get_colors()
+        npt.assert_array_equal(colors[-1], matplotlib.colors.to_rgba("red"))
+
 
 class TestVectorSceneSave(unittest.TestCase):
     """This class contains methods for testing _vector_export.VectorScene.save."""
@@ -487,6 +500,52 @@ class TestVectorSceneSave(unittest.TestCase):
         self.assertTrue(contents.startswith(b"%PDF"))
         self.assertIn(b"/FontFile2", contents)
         self.assertNotIn(b"/Type3", contents)
+
+    def test_fills_a_texts_background_box_behind_it(self) -> None:
+        """Test that a text's background box is filled in its color, before the text is
+        drawn over it."""
+        self.scene.add_text(
+            _vector_export.VectorText(
+                x=50.0,
+                y=50.0,
+                text="Boxed",
+                font_properties=matplotlib.font_manager.FontProperties(
+                    family=_fonts.FONT_FAMILY, fname=_fonts.FONT_PATH
+                ),
+                font_size=15.0,
+                color="black",
+                horizontal_alignment="center",
+                vertical_alignment="center",
+                background_box=(30.0, 70.0, 40.0, 60.0),
+                background_color="red",
+            )
+        )
+        path = self.temporary_path / "scene.svg"
+        self.scene.save(path, self.camera, None)
+        contents = path.read_text(encoding="utf-8")
+        self.assertIn("fill: #ff0000", contents)
+        self.assertLess(contents.index("fill: #ff0000"), contents.index(">Boxed<"))
+
+    def test_writes_math_in_the_texts_math_font_family(self) -> None:
+        """Test that a text's math is written in its math font family's fonts."""
+        self.scene.add_text(
+            _vector_export.VectorText(
+                x=50.0,
+                y=50.0,
+                text=r"$\hat{x}$",
+                font_properties=matplotlib.font_manager.FontProperties(
+                    family=_fonts.MONO_FONT_FAMILY, fname=_fonts.MONO_FONT_PATH
+                ),
+                font_size=15.0,
+                color="black",
+                horizontal_alignment="center",
+                vertical_alignment="center",
+                math_font_family="stix",
+            )
+        )
+        path = self.temporary_path / "scene.svg"
+        self.scene.save(path, self.camera, None)
+        self.assertIn("font-family: 'STIXGeneral'", path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

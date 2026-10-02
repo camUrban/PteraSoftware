@@ -305,7 +305,7 @@ def plot_time_history(
             if save_path.suffix == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", dpi=resolution_dpi)
-                svg = _fonts.embed_font_in_svg(svg_buffer.getvalue().decode("utf-8"))
+                svg = _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))
                 save_path.write_bytes(svg.encode("utf-8"))
             else:
                 figure.savefig(save_path, dpi=resolution_dpi)

@@ -11,7 +11,13 @@ import numpy as np
 import pyvista as pv
 import scipy.interpolate as sp_interp
 
-from .. import _output_rendering, _panel, _parameter_validation, _transformations
+from .. import (
+    _output_rendering,
+    _panel,
+    _parameter_validation,
+    _transformations,
+    _vector_export,
+)
 from . import _meshing
 from . import airfoil as airfoil_mod
 from . import wing_cross_section as wing_cross_section_mod
@@ -1601,17 +1607,20 @@ class Wing:
             if anything. If False, each label is the plain ID, set in a monospaced font.
             Can be a bool or a numpy bool and will be converted internally to a bool.
             The default is False.
-        :param save: Determines whether to save the diagram as a WebP with a white
-            background once its window is closed, which keeps the view's orientation and
-            any labels dragged by hand. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram with a white background once
+            its window is closed, which keeps the view's orientation and any labels
+            dragged by hand. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
         :param path: The file path to save the diagram to. It can be a str or a Path,
-            must end with ".webp", and its directory must already exist. It has no
-            effect if save is False. The default is "diagram.webp".
-        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
-            with the most compression artifacts and 100.0 is the largest file with the
+            and its directory must already exist. Its extension sets the format: ".webp"
+            saves an image, while ".svg" and ".pdf" save vector graphics whose text
+            stays selectable. It has no effect if save is False. The default is
+            "diagram.webp".
+        :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
+            the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
-            float. It has no effect if save is False. The default is 75.0.
+            float. It has no effect unless save is True and path ends with ".webp". The
+            default is 75.0.
         :return: None
         """
         show_wing_cross_section_axes_and_points = (
@@ -1637,7 +1646,9 @@ class Wing:
             math_labels, "math_labels"
         )
         save = _parameter_validation.boolLike_return_bool(save, "save")
-        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        path = _parameter_validation.pathLike_return_path(
+            path, "path", (".webp", ".svg", ".pdf")
+        )
         quality = _parameter_validation.number_in_range_return_float(
             quality, "quality", 0.0, True, 100.0, True
         )
@@ -1654,12 +1665,14 @@ class Wing:
         assert _T_pas_Wn_Ler_to_G_Cg is not None
 
         plotter = pv.Plotter()
+        scene = _vector_export.VectorScene()
+        layer = scene.add_layer()
 
         if show_airfoils:
             _output_rendering.add_airfoils(
-                plotter, self, T_pas_G_Cg_to_D_Do, show_mcls=show_mcls
+                plotter, self, T_pas_G_Cg_to_D_Do, show_mcls=show_mcls, layer=layer
             )
-        _output_rendering.add_panels(plotter, self, T_pas_G_Cg_to_D_Do)
+        _output_rendering.add_panels(plotter, self, T_pas_G_Cg_to_D_Do, layer=layer)
 
         # Draw all the axes and points with one call, so that the ones that coincide
         # merge. The IDs of each WingCrossSection's axes, points, and Airfoil's axes are
@@ -1712,10 +1725,16 @@ class Wing:
             label_extra_points=label_collocation_points,
             two_dimensional_axes_ids=airfoil_axes_ids,
             math_labels=math_labels,
+            layer=layer,
         )
 
         _output_rendering.show_diagram(
-            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+            plotter,
+            cpos=(-1, -1, 1),
+            save=save,
+            path=path,
+            quality=quality,
+            scene=scene,
         )
 
     # Coverage ignores this method because it is deprecated in favor of diagram.

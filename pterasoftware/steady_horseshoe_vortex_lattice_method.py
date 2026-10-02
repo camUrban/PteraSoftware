@@ -19,6 +19,7 @@ from . import (
     _panel,
     _parameter_validation,
     _transformations,
+    _vector_export,
     geometry,
     operating_point,
     problems,
@@ -225,6 +226,10 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
         save: bool | np.bool = False,
         path: str | Path = "diagram.webp",
         quality: int | float = 75.0,
+        figure_size_in: Sequence[int | float] | None = None,
+        font_size: int | float | None = None,
+        text_color: str | Sequence[float] | None = None,
+        line_width: int | float | None = None,
     ) -> None:
         """Displays a diagram of this solver's SteadyProblem's Airplanes' Wings' Panels,
         along with their axes and points and the vortices this solver placed on them.
@@ -284,17 +289,48 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             if anything. If False, each label is the plain ID, set in a monospaced font.
             Can be a bool or a numpy bool and will be converted internally to a bool.
             The default is False.
-        :param save: Determines whether to save the diagram as a WebP with a white
-            background once its window is closed, which keeps the view's orientation and
-            any labels dragged by hand. Can be a bool or a numpy bool and will be
-            converted internally to a bool. The default is False.
+        :param save: Determines whether to save the diagram with a white background once
+            its window is closed, which keeps the view's orientation and any labels
+            dragged by hand. Can be a bool or a numpy bool and will be converted
+            internally to a bool. The default is False.
         :param path: The file path to save the diagram to. It can be a str or a Path,
-            must end with ".webp", and its directory must already exist. It has no
-            effect if save is False. The default is "diagram.webp".
-        :param quality: The quality of the saved WebP, where 0.0 is the smallest file
-            with the most compression artifacts and 100.0 is the largest file with the
+            and its directory must already exist. Its extension sets the format: ".webp"
+            saves an image, while ".svg" and ".pdf" save vector graphics whose text
+            stays selectable. It has no effect if save is False. The default is
+            "diagram.webp".
+        :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
+            the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
-            float. It has no effect if save is False. The default is 75.0.
+            float. It has no effect unless save is True and path ends with ".webp". The
+            default is 75.0.
+        :param figure_size_in: The width and height, in inches, of a saved svg or pdf
+            file. The diagram's window opens at the same aspect ratio, so the view
+            framed in the window is the view saved, and that view is scaled to fill the
+            page while the text and lines keep their sizes in points. For a paper, set
+            this to the size the diagram will print at, and set font_size and line_width
+            to the sizes the publisher asks for. It must be a sequence of two positive
+            numbers. Pass None to size the page to the window, at 100 pixels per inch.
+            It has no effect unless save is True and path ends with ".svg" or ".pdf".
+            The default is None.
+        :param font_size: The size, in points, of every label in a saved svg or pdf
+            file, whether or not it is written as math. It can be an int or a float and
+            will be converted internally to a float. It must be positive. Pass None to
+            keep each label's size from the window, at 100 pixels per inch. It has no
+            effect unless save is True and path ends with ".svg" or ".pdf". The default
+            is None.
+        :param text_color: The color of every label in a saved svg or pdf file. It can
+            be any color Matplotlib accepts, such as a name like "black", a hex string
+            like "#333333", or a sequence of three or four numbers from 0.0 to 1.0. Pass
+            None to keep each label's color from the window. It has no effect unless
+            save is True and path ends with ".svg" or ".pdf". The default is None.
+        :param line_width: The width, in points, of the Panels' edges, the Airfoils'
+            outlines and mean camber lines, and the vortices in a saved svg or pdf file.
+            The diagram's other lines, such as the axes' arrows, are scaled with it, so
+            they keep their widths relative to these. It can be an int or a float and
+            will be converted internally to a float. It must be positive. Pass None to
+            keep the widths from the window, at 100 pixels per inch, which draws these
+            lines 0.72 points wide. It has no effect unless save is True and path ends
+            with ".svg" or ".pdf". The default is None.
         :return: None
         """
         show_airplane_axes_and_points = _parameter_validation.boolLike_return_bool(
@@ -329,15 +365,24 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             math_labels, "math_labels"
         )
         save = _parameter_validation.boolLike_return_bool(save, "save")
-        path = _parameter_validation.pathLike_return_path(path, "path", (".webp",))
+        path = _parameter_validation.pathLike_return_path(
+            path, "path", (".webp", ".svg", ".pdf")
+        )
         quality = _parameter_validation.number_in_range_return_float(
             quality, "quality", 0.0, True, 100.0, True
+        )
+        figure_size_in, font_size, text_color, line_width = (
+            _output_rendering.validate_diagram_figure_parameters(
+                figure_size_in, font_size, text_color, line_width
+            )
         )
 
         if not self._ran:
             raise RuntimeError("The solver must have run before drawing its diagram.")
 
         plotter = pv.Plotter()
+        scene = _vector_export.VectorScene()
+        layer = scene.add_layer()
         _output_rendering.add_steady_problem(
             plotter,
             self._steady_problem,
@@ -352,6 +397,7 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
             show_collocation_points=show_collocation_points,
             label_collocation_points=label_collocation_points,
             math_labels=math_labels,
+            layer=layer,
         )
 
         # The vortex stacks are already in the diagram axes, relative to the diagram
@@ -382,10 +428,20 @@ class SteadyHorseshoeVortexLatticeMethodSolver:
                 for wing_cross_section in wing.wing_cross_sections
             ),
             simplify=simplify_vortices,
+            layer=layer,
         )
 
         _output_rendering.show_diagram(
-            plotter, cpos=(-1, -1, 1), save=save, path=path, quality=quality
+            plotter,
+            cpos=(-1, -1, 1),
+            save=save,
+            path=path,
+            quality=quality,
+            scene=scene,
+            figure_size_in=figure_size_in,
+            font_size=font_size,
+            text_color=text_color,
+            line_width=line_width,
         )
 
     def _collapse_geometry(self) -> None:

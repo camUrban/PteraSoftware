@@ -16,6 +16,7 @@ import matplotlib.colors
 import matplotlib.font_manager
 import matplotlib.ft2font
 import matplotlib.mathtext
+import matplotlib.typing
 import numpy as np
 import pyvista as pv
 import webp
@@ -28,6 +29,7 @@ from . import (
     _parameter_validation,
     _private_access,
     _transformations,
+    _vector_export,
     geometry,
 )
 from . import operating_point as operating_point_mod
@@ -548,6 +550,7 @@ def add_axes_and_points(
     label_extra_points: bool = True,
     two_dimensional_axes_ids: Sequence[str] = (),
     math_labels: bool = False,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds labeled axes and their labeled origin points to a Plotter, along with any
     extra labeled points that have no axes of their own, merging those that coincide.
@@ -624,6 +627,10 @@ def add_axes_and_points(
     :param math_labels: Determines whether to write the labels as math, set in the STIX
         font, as get_math_axes_label and get_math_point_label describe. If False, the
         labels are the plain IDs, set in Liberation Mono. The default is False.
+    :param layer: The VectorLayer to also record the arrows and point markers in, for
+        exporting the diagram as an svg or pdf file, or None to record nothing. The
+        labels aren't recorded, since they can be dragged and edited, so show_diagram
+        reads them from the Plotter instead. The default is None.
     :return: None
     """
     # Set the background before labels and arrow-tip fills copy its color.
@@ -756,6 +763,12 @@ def add_axes_and_points(
             color=arrow_color,
             line_width=_AXES_LINE_WIDTH,
         )
+        if layer is not None:
+            layer.add_polylines(
+                [np.array([arrowStart_D_Do, shaftEnd_D_Do], dtype=float)],
+                arrow_color,
+                _AXES_LINE_WIDTH,
+            )
     for tip_color in dict.fromkeys(arrow_colors):
         color_tip_ids = [
             arrow_id
@@ -775,6 +788,7 @@ def add_axes_and_points(
             lengths=np.full(len(color_tip_ids), _AXES_TIP_LENGTH * axes_scale),
             radii=np.full(len(color_tip_ids), _AXES_TIP_RADIUS * axes_scale),
             color=tip_color,
+            layer=layer,
         )
 
     # VTK only applies the tip fills' polygon offsets while its coincident topology
@@ -826,6 +840,10 @@ def add_axes_and_points(
             point_size=_AXES_POINT_SIZE,
             render_points_as_spheres=True,
         )
+        if layer is not None:
+            layer.add_dots(
+                np.array(listDotPoints_D_Do, dtype=float), "black", _AXES_POINT_SIZE
+            )
     cross_half_length = 0.5 * _AXES_CROSS_SIZE * axes_scale
     listCrossVertices_D_Do = [
         point_D_Do + sign * cross_half_length * crossDirection_D
@@ -852,6 +870,26 @@ def add_axes_and_points(
             color="black",
             line_width=_AXES_LINE_WIDTH,
         )
+        # Each cross is recorded as four half arms, each running from its point to one
+        # of its arms' ends, rather than as two arms crossing at their midpoints. A
+        # stroke never hides another stroke that shares an end with it, so the half
+        # arms, which all share the point, can't hide one another where the arms cross.
+        if layer is not None:
+            gridCrossVertices_D_Do = np.array(
+                listCrossVertices_D_Do, dtype=float
+            ).reshape(-1, 4, 3)
+            stackCrossCenters_D_Do = gridCrossVertices_D_Do.mean(axis=1)
+            layer.add_polylines(
+                [
+                    np.array([crossCenter_D_Do, crossVertex_D_Do], dtype=float)
+                    for crossCenter_D_Do, crossVertices_D_Do in zip(
+                        stackCrossCenters_D_Do, gridCrossVertices_D_Do
+                    )
+                    for crossVertex_D_Do in crossVertices_D_Do
+                ],
+                "black",
+                _AXES_LINE_WIDTH,
+            )
 
     # Label the arrow tips and the points, with one Label per text. Unlike
     # add_point_labels, whose label placement either drops labels that would overlap or,
@@ -1421,6 +1459,7 @@ def _add_arrow_tips(
     lengths: np.ndarray,
     radii: np.ndarray,
     color: str,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds arrows' tips to a Plotter as outlined cones.
 
@@ -1447,6 +1486,9 @@ def _add_arrow_tips(
     :param radii: A (N,) ndarray of floats holding the radius of each tip's base. The
         units are in meters.
     :param color: The color of the tips' outlines.
+    :param layer: The VectorLayer to also record the tips in, as convex occluders filled
+        with the background and outlined along their silhouettes and their bases' rims,
+        or None to record nothing. The default is None.
     :return: None
     """
     num_tips = stackTipBases_D_Do.shape[0]
@@ -1529,6 +1571,34 @@ def _add_arrow_tips(
         _AXES_TIP_FILL_OFFSET_FACTOR, _AXES_TIP_FILL_OFFSET_UNITS
     )
 
+    if layer is None:
+        return
+
+    # Split the template's padded faces into one array of point indices per face. The
+    # silhouette's feature edges outline the rim of each tip's base, whose face is the
+    # only one with more than three points, wherever that rim is visible, which is all
+    # of it while the base faces the camera.
+    template_face_list: list[np.ndarray] = []
+    count_id = 0
+    while count_id < template_faces.shape[0]:
+        num_face_points = int(template_faces[count_id])
+        template_face_list.append(
+            template_faces[count_id + 1 : count_id + 1 + num_face_points]
+        )
+        count_id += num_face_points + 1
+    base_face_ids = [
+        face_id for face_id, face in enumerate(template_face_list) if face.shape[0] > 3
+    ]
+    for tipPoints_D_Do in gridTipPoints_D_Do:
+        layer.add_convex_occluder(
+            tipPoints_D_Do,
+            template_face_list,
+            plotter.background_color.float_rgba,
+            color,
+            _AXES_LINE_WIDTH,
+            outlined_face_ids=base_face_ids,
+        )
+
 
 def get_wing_cross_section_airfoil_lines(
     wing_cross_section: geometry.wing_cross_section.WingCrossSection,
@@ -1603,6 +1673,7 @@ def add_airfoil(
     wing_cross_section: geometry.wing_cross_section.WingCrossSection,
     T_pas_Wcs_Lp_to_D_Do: np.ndarray,
     show_mcl: bool = True,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds a WingCrossSection's Airfoil's outline and, optionally, its mean camber line
     to a Plotter.
@@ -1615,6 +1686,8 @@ def add_airfoil(
         relative to the diagram origin.
     :param show_mcl: Determines whether to add the mean camber line. The default is
         True.
+    :param layer: The VectorLayer to also record the lines in, or None to record
+        nothing. The default is None.
     :return: None
     """
     airfoilOutline_Wcs_Lp, airfoilMcl_Wcs_Lp = get_wing_cross_section_airfoil_lines(
@@ -1631,6 +1704,7 @@ def add_airfoil(
             T_pas_Wcs_Lp_to_D_Do, airfoilOutline_Wcs_Lp, is_position=True
         ),
         airfoilMcl_D_Do,
+        layer=layer,
     )
 
 
@@ -1638,6 +1712,7 @@ def add_airfoil_lines(
     plotter: pv.Plotter,
     airfoilOutline_D_Do: np.ndarray,
     airfoilMcl_D_Do: np.ndarray | None,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds an Airfoil's outline and, optionally, its mean camber line to a Plotter.
 
@@ -1652,6 +1727,8 @@ def add_airfoil_lines(
         Airfoil's mean camber line (in diagram axes, relative to the diagram origin),
         where M is the number of points in the mean camber line, or None to leave the
         mean camber line out.
+    :param layer: The VectorLayer to also record the lines in, or None to record
+        nothing. The default is None.
     :return: None
     """
     num_outline_points = airfoilOutline_D_Do.shape[0]
@@ -1663,6 +1740,13 @@ def add_airfoil_lines(
         color=_DIAGRAM_AIRFOIL_OUTLINE_COLOR,
         line_width=_DIAGRAM_LINE_WIDTH,
     )
+    if layer is not None:
+        layer.add_polylines(
+            [airfoilOutline_D_Do],
+            _DIAGRAM_AIRFOIL_OUTLINE_COLOR,
+            _DIAGRAM_LINE_WIDTH,
+            closed=True,
+        )
     if airfoilMcl_D_Do is None:
         return
     plotter.add_mesh(
@@ -1670,6 +1754,10 @@ def add_airfoil_lines(
         color=_DIAGRAM_AIRFOIL_MCL_COLOR,
         line_width=_DIAGRAM_LINE_WIDTH,
     )
+    if layer is not None:
+        layer.add_polylines(
+            [airfoilMcl_D_Do], _DIAGRAM_AIRFOIL_MCL_COLOR, _DIAGRAM_LINE_WIDTH
+        )
 
 
 def add_airfoils(
@@ -1677,6 +1765,7 @@ def add_airfoils(
     wing: geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
     show_mcls: bool = True,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds the outlines and, optionally, the mean camber lines of a Wing's
     WingCrossSections' Airfoils to a Plotter.
@@ -1689,6 +1778,8 @@ def add_airfoils(
         diagram origin.
     :param show_mcls: Determines whether to add the mean camber lines. The default is
         True.
+    :param layer: The VectorLayer to also record the lines in, or None to record
+        nothing. The default is None.
     :return: None
     """
     for wing_cross_section, T_pas_Wcs_Lp_to_G_Cg in zip(
@@ -1699,6 +1790,7 @@ def add_airfoils(
             wing_cross_section,
             _transformations.compose_T_pas(T_pas_Wcs_Lp_to_G_Cg, T_pas_G_Cg_to_D_Do),
             show_mcl=show_mcls,
+            layer=layer,
         )
 
 
@@ -1706,6 +1798,7 @@ def add_panels(
     plotter: pv.Plotter,
     wing: geometry.wing.Wing,
     T_pas_G_Cg_to_D_Do: np.ndarray,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds a Wing's Panels to a Plotter as a wireframe.
 
@@ -1718,6 +1811,8 @@ def add_panels(
         transformation matrix which maps in homogeneous coordinates from the Wing's
         Airplane's geometry axes, relative to its CG, to diagram axes, relative to the
         diagram origin.
+    :param layer: The VectorLayer to also record the Panels' outlines in, or None to
+        record nothing. The default is None.
     :return: None
     """
     _panels = wing.panels
@@ -1744,6 +1839,13 @@ def add_panels(
         color=_DIAGRAM_PANEL_COLOR,
         line_width=_DIAGRAM_LINE_WIDTH,
     )
+    if layer is not None:
+        layer.add_polylines(
+            list(panelVertices_D_Do.reshape(-1, 4, 3)),
+            _DIAGRAM_PANEL_COLOR,
+            _DIAGRAM_LINE_WIDTH,
+            closed=True,
+        )
 
 
 def get_collocation_points(
@@ -1841,6 +1943,7 @@ def add_steady_problem(
     show_collocation_points: bool,
     label_collocation_points: bool,
     math_labels: bool = False,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds a SteadyProblem's Airplanes' Wings' Panels, along with their axes and
     points, to a Plotter.
@@ -1869,6 +1972,8 @@ def add_steady_problem(
         that are added. It has no effect if show_collocation_points is False.
     :param math_labels: Determines whether to write the axes and point labels as math,
         as add_axes_and_points describes. The default is False.
+    :param layer: The VectorLayer to also record the diagram in, as add_axes_and_points
+        describes, or None to record nothing. The default is None.
     :return: None
     """
     operating_point = steady_problem.operating_point
@@ -1916,8 +2021,14 @@ def add_steady_problem(
             ]
 
             if show_airfoils:
-                add_airfoils(plotter, wing, T_pas_G_Cg_to_GP1_CgP1, show_mcls=show_mcls)
-            add_panels(plotter, wing, T_pas_G_Cg_to_GP1_CgP1)
+                add_airfoils(
+                    plotter,
+                    wing,
+                    T_pas_G_Cg_to_GP1_CgP1,
+                    show_mcls=show_mcls,
+                    layer=layer,
+                )
+            add_panels(plotter, wing, T_pas_G_Cg_to_GP1_CgP1, layer=layer)
 
             if show_wing_axes_and_points:
                 _T_pas_Wn_Ler_to_G_Cg = wing.T_pas_Wn_Ler_to_G_Cg
@@ -1992,7 +2103,186 @@ def add_steady_problem(
         label_extra_points=label_collocation_points,
         two_dimensional_axes_ids=airfoil_axes_ids,
         math_labels=math_labels,
+        layer=layer,
     )
+
+
+def validate_diagram_figure_parameters(
+    figure_size_in: Sequence[int | float] | None,
+    font_size: int | float | None,
+    text_color: str | Sequence[float] | None,
+    line_width: int | float | None,
+) -> tuple[
+    tuple[float, float] | None,
+    float | None,
+    tuple[float, float, float, float] | None,
+    float | None,
+]:
+    """Validates the parameters that set the page size, the label size and color, and
+    the line width of a diagram's svg or pdf export.
+
+    :param figure_size_in: The page's width and height, in inches, which must be a
+        sequence of two positive numbers, or None.
+    :param font_size: The labels' size, in points, which must be a positive number, or
+        None.
+    :param text_color: The labels' color, which must be any color Matplotlib accepts, or
+        None.
+    :param line_width: The width, in points, of the lines that draw the geometry, which
+        must be a positive number, or None.
+    :return: A tuple of the validated parameters, in the same order, each None if it was
+        passed as None. The page size is a tuple of two floats, the font size and line
+        width are floats, and the color is a tuple of its four RGBA channels.
+    """
+    validated_figure_size_in = None
+    if figure_size_in is not None:
+        if not isinstance(figure_size_in, Sequence) or len(figure_size_in) != 2:
+            raise ValueError("figure_size_in must be a sequence of two numbers.")
+        validated_figure_size_in = (
+            _parameter_validation.number_in_range_return_float(
+                figure_size_in[0], "figure_size_in[0]", 0.0, False
+            ),
+            _parameter_validation.number_in_range_return_float(
+                figure_size_in[1], "figure_size_in[1]", 0.0, False
+            ),
+        )
+    validated_font_size = None
+    if font_size is not None:
+        validated_font_size = _parameter_validation.number_in_range_return_float(
+            font_size, "font_size", 0.0, False
+        )
+    text_rgba = None
+    if text_color is not None:
+        if not matplotlib.colors.is_color_like(text_color):
+            raise ValueError(
+                f'text_color must be a color Matplotlib accepts, got "{text_color}".'
+            )
+        # Matplotlib's type hints accept only tuples of exact lengths, while a color can
+        # arrive as any sequence, which is_color_like has just vetted.
+        text_rgba = matplotlib.colors.to_rgba(
+            cast(matplotlib.typing.ColorType, text_color)
+        )
+    validated_line_width = None
+    if line_width is not None:
+        validated_line_width = _parameter_validation.number_in_range_return_float(
+            line_width, "line_width", 0.0, False
+        )
+    return (
+        validated_figure_size_in,
+        validated_font_size,
+        text_rgba,
+        validated_line_width,
+    )
+
+
+def _get_diagram_export_state(
+    plotter: pv.Plotter,
+    figure_size_in: tuple[float, float] | None = None,
+    font_size: float | None = None,
+    text_color: tuple[float, float, float, float] | None = None,
+) -> tuple[_vector_export.VectorCamera, list[_vector_export.VectorText]]:
+    """Reads the state a diagram's svg or pdf export needs from its Plotter, which is
+    its camera, its window's size, and its visible labels.
+
+    Each label is read as it was last drawn: its text, its color, its size, and its
+    background box, which VTK reports in pixels relative to the label's anchor. The text
+    is centered in its box, which places it as VTK does, since VTK pads a label's text
+    equally on every side. A label with math has its text outside the math set in
+    Liberation Mono and its math set in the STIX font, as show_diagram sets them up for
+    VTK.
+
+    If the page is sized, the window's view is fit to it, as VectorCamera's fit_to_page
+    describes, and each label's anchor moves with the view. If the labels are resized,
+    each label's box is scaled about its anchor by the ratio of its new size to its size
+    in the window, which approximates how VTK would size the box for the new size.
+
+    :param plotter: The Plotter holding the diagram, which must have rendered.
+    :param figure_size_in: The page's width and height, in inches, or None to make the
+        page the window. The default is None.
+    :param font_size: The size of every label, in points, or None to keep each label's
+        size from the window. The default is None.
+    :param text_color: The color of every label, as a tuple of its four RGBA channels,
+        or None to keep each label's color from the window. The default is None.
+    :return: A tuple of the VectorCamera the diagram is exported through and a list of
+        the VectorTexts of its visible labels, in the order they are drawn.
+    """
+    renderer = plotter.renderer
+    camera = plotter.camera
+    render_window = plotter.render_window
+    assert render_window is not None
+    window_width, window_height = render_window.GetSize()
+    window_camera = _vector_export.VectorCamera(
+        position_D_Do=np.array(camera.position, dtype=float),
+        focalPoint_D_Do=np.array(camera.focal_point, dtype=float),
+        viewUp_D=np.array(camera.up, dtype=float),
+        parallel_scale=float(camera.parallel_scale),
+        window_width=int(window_width),
+        window_height=int(window_height),
+    )
+    vector_camera = window_camera
+    if figure_size_in is not None:
+        vector_camera = window_camera.fit_to_page(*figure_size_in)
+
+    # Each label's anchor moves to the page by scaling its offset from the window's
+    # center by the ratio of the page's pixels per meter to the window's, since both
+    # centers show the focal point.
+    position_scale = (vector_camera.window_height / vector_camera.parallel_scale) / (
+        window_camera.window_height / window_camera.parallel_scale
+    )
+
+    texts: list[_vector_export.VectorText] = []
+    for actor in renderer.actors.values():
+        if not isinstance(actor, pv.Label) or not actor.GetVisibility():
+            continue
+
+        label_font_size = float(actor.prop.font_size)
+        if font_size is not None:
+            label_font_size = font_size / _vector_export.POINTS_PER_PIXEL
+        box_scale = label_font_size / float(actor.prop.font_size)
+
+        # VTK reports the box's edges as the inclusive indices of the pixels it fills,
+        # so its right and top edges are one pixel past the last indices.
+        bounding_box = [0.0, 0.0, 0.0, 0.0]
+        actor.GetBoundingBox(renderer, bounding_box)
+        renderer.SetWorldPoint(*actor.position, 1.0)
+        renderer.WorldToDisplay()
+        window_anchor_x, window_anchor_y, _ = renderer.GetDisplayPoint()
+        anchor_x = 0.5 * vector_camera.window_width + position_scale * (
+            window_anchor_x - 0.5 * window_camera.window_width
+        )
+        anchor_y = 0.5 * vector_camera.window_height + position_scale * (
+            window_anchor_y - 0.5 * window_camera.window_height
+        )
+        left = anchor_x + box_scale * bounding_box[0]
+        right = anchor_x + box_scale * (bounding_box[1] + 1.0)
+        bottom = anchor_y + box_scale * bounding_box[2]
+        top = anchor_y + box_scale * (bounding_box[3] + 1.0)
+
+        text = str(actor.input)
+        has_math = _UNESCAPED_DOLLAR_SIGN_PATTERN.search(text) is not None
+        texts.append(
+            _vector_export.VectorText(
+                x=0.5 * (left + right),
+                y=0.5 * (bottom + top),
+                text=text,
+                font_properties=matplotlib.font_manager.FontProperties(
+                    family=_fonts.MONO_FONT_FAMILY, fname=_fonts.MONO_FONT_PATH
+                ),
+                font_size=label_font_size,
+                color=(
+                    actor.prop.color.float_rgba if text_color is None else text_color
+                ),
+                horizontal_alignment="center",
+                vertical_alignment="center",
+                math_font_family="stix" if has_math else None,
+                background_box=(
+                    (left, right, bottom, top)
+                    if actor.prop.background_opacity > 0.0
+                    else None
+                ),
+                background_color=actor.prop.background_color.float_rgba,
+            )
+        )
+    return vector_camera, texts
 
 
 def show_diagram(
@@ -2001,19 +2291,34 @@ def show_diagram(
     save: bool,
     path: Path,
     quality: float,
+    scene: _vector_export.VectorScene,
+    figure_size_in: tuple[float, float] | None,
+    font_size: float | None,
+    text_color: tuple[float, float, float, float] | None,
+    line_width: float | None,
 ) -> None:
     """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
-    WebP, and then closes it.
+    WebP, svg, or pdf file, and then closes it.
 
     The window stays open until it is closed, so the view can be oriented and the labels
     dragged and edited first. The diagram is saved after the window is closed, which
     keeps the orientation, the dragged labels' positions, and the edited labels' text,
     since closing the window does not move the camera. The diagram's background is
-    white, both on screen and in the saved WebP.
+    white, both on screen and in the saved file.
+
+    An svg or pdf file is exported from the scene the diagram's helpers recorded, seen
+    through the camera as it was last drawn, with the labels as they were last drawn.
+    That state is read after every render while the window is shown, since closing the
+    window can destroy it.
+
+    An svg or pdf file can also be given its own page size, label size, label color, and
+    line width, which leave the window and a WebP file alone. If its page is sized, the
+    window is shrunk, if needed, to the page's aspect ratio before it is shown, so the
+    view framed in the window is the view saved.
 
     VTK draws a label with math with Matplotlib, asking for its serif font family, since
     that is the only family for which VTK sets the math in the STIX font. While the
-    window is shown, and while the saved WebP is captured, Matplotlib's serif family is
+    window is shown, and while the saved file is written, Matplotlib's serif family is
     filled with Liberation Mono, which isn't a serif font, so the text outside the math
     is drawn in Liberation Mono anyway. The setting is restored afterward, so no other
     Matplotlib figure is affected.
@@ -2022,11 +2327,24 @@ def show_diagram(
     :param cpos: The camera position to show the diagram from, either "xy", to view it
         along the negative z direction, or a direction to view it from, such as (-1, -1,
         1).
-    :param save: Determines whether to save the diagram as a WebP.
-    :param path: The file path to save the diagram to. It must end with ".webp", and its
-        directory must already exist. It has no effect if save is False.
-    :param quality: The quality of the saved WebP, from 0.0 to 100.0. It has no effect
-        if save is False.
+    :param save: Determines whether to save the diagram.
+    :param path: The file path to save the diagram to. It must end with ".webp", ".svg",
+        or ".pdf", which sets the format, and its directory must already exist. It has
+        no effect if save is False.
+    :param quality: The quality of a saved WebP, from 0.0 to 100.0. It has no effect if
+        save is False or the format isn't WebP.
+    :param scene: The VectorScene the diagram was recorded in, whose first layer holds
+        everything but the labels. It is only used if the diagram is saved as an svg or
+        pdf file.
+    :param figure_size_in: The width and height, in inches, of a saved svg or pdf file's
+        page, or None to make the page the window, at 100 pixels per inch.
+    :param font_size: The size, in points, of every label in a saved svg or pdf file, or
+        None to keep each label's size from the window.
+    :param text_color: The color of every label in a saved svg or pdf file, as a tuple
+        of its four RGBA channels, or None to keep each label's color from the window.
+    :param line_width: The width, in points, of the lines in a saved svg or pdf file
+        that the window draws _DIAGRAM_LINE_WIDTH pixels wide, or None to keep the
+        widths from the window. Every other line's width is scaled with them.
     :return: None
     """
     # Set the background explicitly, since the diagram's black lines and labels rely on
@@ -2043,17 +2361,66 @@ def show_diagram(
         font_entry.fname for font_entry in font_manager.ttflist
     }:
         font_manager.addfont(str(_fonts.MONO_FONT_PATH))
+
+    # If saving an svg or pdf file, read the state its export needs at the end of every
+    # render, keeping only the latest.
+    is_vector = save and path.suffix.lower() in (".svg", ".pdf")
+    export_states: list[
+        tuple[_vector_export.VectorCamera, list[_vector_export.VectorText]]
+    ] = []
+
+    def capture_export_state(caller: object, event: str) -> None:
+        """Reads the state the diagram's export needs, replacing any read before.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        export_states[:] = [
+            _get_diagram_export_state(plotter, figure_size_in, font_size, text_color)
+        ]
+
+    if is_vector:
+        plotter.renderer.AddObserver("EndEvent", capture_export_state)
+
+        # Shrink the window along one direction to the page's aspect ratio.
+        if figure_size_in is not None:
+            window_width, window_height = plotter.window_size
+            window_scale = min(
+                window_width / figure_size_in[0], window_height / figure_size_in[1]
+            )
+            plotter.window_size = [
+                round(window_scale * figure_size_in[0]),
+                round(window_scale * figure_size_in[1]),
+            ]
+
     with matplotlib.rc_context({"font.serif": [_fonts.MONO_FONT_FAMILY]}):
         plotter.show(cpos=cpos, full_screen=False, auto_close=False)
 
-        # If saving, take an opaque screenshot and save it as a WebP. webp annotates
-        # file_path as a str, so the Path is converted at the boundary. PyVista's
-        # screenshot reads the last frame drawn rather than drawing a new one, so draw
-        # one first. The interactor is done by then, so this render also restores any
-        # label still being edited when the window closed. PyVista skips the render if
-        # closing the window destroyed the render window.
+        # If saving, draw one more frame. PyVista's screenshot reads the last frame
+        # drawn rather than drawing a new one, and the interactor is done by then, so
+        # this render also restores any label still being edited when the window closed.
+        # PyVista skips the render if closing the window destroyed the render window, in
+        # which case the export uses the state read at the last render before.
         if save:
             plotter.render()
+        if is_vector:
+            if not export_states:
+                raise RuntimeError(
+                    "The diagram was never rendered, so it can't be exported."
+                )
+            vector_camera, texts = export_states[0]
+            for text in texts:
+                scene.add_text(text)
+            line_width_scale = 1.0
+            if line_width is not None:
+                line_width_scale = line_width / (
+                    _vector_export.POINTS_PER_PIXEL * _DIAGRAM_LINE_WIDTH
+                )
+            scene.save(path, vector_camera, _DIAGRAM_BACKGROUND_COLOR, line_width_scale)
+        elif save:
+            # Take an opaque screenshot and save it as a WebP. webp annotates file_path
+            # as a str, so the Path is converted at the boundary.
             webp.save_image(
                 img=webp.Image.fromarray(
                     np.array(
@@ -2093,6 +2460,7 @@ def add_vortices(
     horseshoe_vortices_are_wake: bool,
     largest_chord: float,
     simplify: bool,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds a solver's ring, wake ring, and horseshoe vortices to a Plotter.
 
@@ -2179,6 +2547,8 @@ def add_vortices(
         their dashes. The units are in meters.
     :param simplify: Determines whether to shrink the vortices, round their corners,
         draw them in the simplified color, and add their vorticity arrows.
+    :param layer: The VectorLayer to also record the vortices in, or None to record
+        nothing. The default is None.
     :return: None
     """
     # Draw the simplified vortices in their own colors, to set them apart from the exact
@@ -2431,6 +2801,10 @@ def add_vortices(
             color=polyline_color,
             line_width=_VORTEX_LINE_WIDTH,
         )
+        if layer is not None:
+            layer.add_polylines(
+                listColorPolylines_D_Do, polyline_color, _VORTEX_LINE_WIDTH
+            )
 
     # Draw the trailing legs' dashed parts, which only horseshoe vortices have.
     if listDashVertices_D_Do:
@@ -2447,6 +2821,12 @@ def add_vortices(
             color=horseshoe_color,
             line_width=_VORTEX_LINE_WIDTH,
         )
+        if layer is not None:
+            layer.add_polylines(
+                list(np.array(listDashVertices_D_Do, dtype=float).reshape(-1, 2, 3)),
+                horseshoe_color,
+                _VORTEX_LINE_WIDTH,
+            )
 
     # Draw each line vortex's vorticity arrow, a half circle centered on the line
     # vortex's midpoint, in the plane perpendicular to it. The arrow shows the direction
@@ -2538,6 +2918,8 @@ def add_vortices(
             color=arc_color,
             line_width=_AXES_LINE_WIDTH,
         )
+        if layer is not None:
+            layer.add_polylines(listColorArcPolylines_D_Do, arc_color, _AXES_LINE_WIDTH)
 
         # Each tip's base is where its arrow's shaft ends.
         _add_arrow_tips(
@@ -2556,6 +2938,7 @@ def add_vortices(
                 [tip_radii[arc_id] for arc_id in color_arc_ids], dtype=float
             ),
             color=arc_color,
+            layer=layer,
         )
 
 

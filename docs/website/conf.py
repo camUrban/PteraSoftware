@@ -46,6 +46,7 @@ _ANNOTATION_OVERRIDES = {
 # This is safe because the documented functions only use stdlib types in their
 # signatures.
 autodoc_mock_imports = [
+    "fontTools",
     "matplotlib",
     "mujoco",
     "numba",

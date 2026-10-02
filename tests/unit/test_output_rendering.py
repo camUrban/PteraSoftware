@@ -35,7 +35,13 @@ from vtkmodules.vtkRenderingFreeType import vtkMathTextUtilities
 import pterasoftware as ps
 
 # noinspection PyProtectedMember
-from pterasoftware import _colormaps, _fonts, _output_rendering, _transformations
+from pterasoftware import (
+    _colormaps,
+    _fonts,
+    _output_rendering,
+    _transformations,
+    _vector_export,
+)
 from tests.unit.fixtures import (
     geometry_fixtures,
     operating_point_fixtures,
@@ -1325,6 +1331,7 @@ def _add_vortices(
     horseshoe_vortices_are_wake: bool = False,
     largest_chord: float = 1.0,
     simplify: bool = False,
+    layer: _vector_export.VectorLayer | None = None,
 ) -> None:
     """Adds vortices to a Plotter with _output_rendering.add_vortices, filling in empty
     stacks for every kind of vortex that isn't given.
@@ -1345,6 +1352,8 @@ def _add_vortices(
     :param largest_chord: The largest chord, which scales the trailing legs' overhang
         and their dashes. The units are in meters. The default is 1.0.
     :param simplify: Determines whether to simplify the vortices. The default is False.
+    :param layer: The VectorLayer to also record the vortices in, or None to record
+        nothing. The default is None.
     :return: None
     """
     noVortexPoints_D_Do = output_rendering_fixtures.make_no_vortex_points_fixture()
@@ -1396,6 +1405,7 @@ def _add_vortices(
         horseshoe_vortices_are_wake=horseshoe_vortices_are_wake,
         largest_chord=largest_chord,
         simplify=simplify,
+        layer=layer,
     )
 
 
@@ -1738,6 +1748,30 @@ class TestAddVortices(unittest.TestCase):
             arc_actor.prop.color, _output_rendering._VORTEX_SIMPLIFIED_COLOR
         )
         self.assertEqual(len(self.plotter.actors), 2 + 2)
+
+    def test_records_what_it_draws_in_a_layer(self) -> None:
+        """Test that a simplified ring vortex records its polyline, its vorticity
+        arrows' shafts, and their tips in a VectorLayer.
+
+        The ring vortex's closed, rounded polyline and the four half circular shafts are
+        recorded as one stroke per segment, and each of the four tips is recorded as one
+        convex occluder.
+        """
+        layer = _vector_export.VectorLayer()
+        _add_vortices(
+            self.plotter,
+            ring_vortices=output_rendering_fixtures.make_square_ring_vortex_fixture(),
+            simplify=True,
+            layer=layer,
+        )
+        line_actors = _get_line_actors(self.plotter)
+        ring_mesh, _ = line_actors[0]
+        num_arc_points = _output_rendering._VORTEX_VORTICITY_ARROW_NUM_POINTS
+        self.assertEqual(
+            len(layer._listStrokes_D_Do),
+            (ring_mesh.n_points - 1) + 4 * (num_arc_points - 1),
+        )
+        self.assertEqual(len(layer._occluders), 4)
 
     def test_centers_each_vorticity_arrow_on_its_legs_midpoint(self) -> None:
         """Test that a vorticity arrow is a half circle around its leg's midpoint, in
@@ -2312,6 +2346,39 @@ class TestAddAxesAndPoints(unittest.TestCase):
         )
         self.assertEqual(len(_get_dot_actors(self.plotter)), 0)
         self.assertEqual(len(_get_tip_fill_actors(self.plotter)), 0)
+
+    def test_records_what_it_draws_in_a_layer(self) -> None:
+        """Test that the shafts, tips, dots, and crosses are recorded in a VectorLayer,
+        and the labels aren't.
+
+        An axes set records its three shafts as strokes, its three tips as convex
+        occluders, each outlining its base, and its point as a dot. An extra point
+        records its cross as four strokes, each running from the point to one of its
+        arms' ends, so they all share the point as an end and never hide one another.
+        """
+        layer = _vector_export.VectorLayer()
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=2.0,
+            extra_point_ids=["Lp"],
+            listExtraPoints_D_Do=[np.array([1.0, 2.0, 3.0], dtype=float)],
+            listExtraPointBasisDirections_D=[np.eye(3, dtype=float)],
+            listExtraPointCrossDirections_D=[
+                output_rendering_fixtures.make_cross_directions_fixture()
+            ],
+            layer=layer,
+        )
+        self.assertEqual(len(layer._listStrokes_D_Do), 3 + 4)
+        for stroke_D_Do in layer._listStrokes_D_Do[3:]:
+            npt.assert_allclose(stroke_D_Do[0], [1.0, 2.0, 3.0])
+        self.assertEqual(len(layer._occluders), 3)
+        for _, _, _, _, _, outlined_face_ids in layer._occluders:
+            self.assertEqual(len(outlined_face_ids), 1)
+        self.assertEqual(len(layer._listDots_D_Do), 1)
+        self.assertEqual(layer._dot_diameters, [_output_rendering._AXES_POINT_SIZE])
 
     def test_offsets_each_extra_point_label_in_its_own_axes(self) -> None:
         """Test that an extra point's label is anchored along the unit vector (-1.0,
@@ -3067,3 +3134,202 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.plotter.render()
         self.assertEqual(label.input, "GX")
         self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())
+
+
+class TestGetDiagramExportState(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering._get_diagram_export_state."""
+
+    def setUp(self) -> None:
+        """Create an off screen Plotter with a set of labeled axes, viewed down the
+        negative z direction with parallel projection."""
+        self.plotter = pv.Plotter(off_screen=True, window_size=[400, 300])
+
+    def tearDown(self) -> None:
+        """Close the Plotter."""
+        self.plotter.close()
+
+    def add_axes_and_render(self, math_labels: bool = False) -> None:
+        """Adds a geometry axes set at the CG to the Plotter, and renders it.
+
+        :param math_labels: Determines whether to write the labels as math. The default
+            is False.
+        :return: None
+        """
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+            math_labels=math_labels,
+        )
+        self.plotter.camera.parallel_projection = True
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+
+    def test_reads_the_camera_and_the_window_size(self) -> None:
+        """Test that the VectorCamera matches the Plotter's camera and window."""
+        self.add_axes_and_render()
+        vector_camera, _ = _output_rendering._get_diagram_export_state(self.plotter)
+        camera = self.plotter.camera
+        npt.assert_allclose(vector_camera.position_D_Do, camera.position)
+        npt.assert_allclose(vector_camera.focalPoint_D_Do, camera.focal_point)
+        npt.assert_allclose(vector_camera.viewUp_D, camera.up)
+        self.assertEqual(vector_camera.parallel_scale, camera.parallel_scale)
+        self.assertEqual(
+            (vector_camera.window_width, vector_camera.window_height), (400, 300)
+        )
+
+    def test_centers_each_labels_text_in_its_background_box(self) -> None:
+        """Test that each visible label is read as its text, centered in the box VTK
+        fills behind it.
+
+        VTK reports the box's edges as the inclusive indices of the pixels it fills, so
+        the box's right and top edges are one pixel past them.
+        """
+        self.add_axes_and_render()
+        _, texts = _output_rendering._get_diagram_export_state(self.plotter)
+        labels = _get_labels(self.plotter)
+        self.assertEqual([text.text for text in texts], ["GX", "GY", "GZ", "Cg"])
+        for text in texts:
+            with self.subTest(text=text.text):
+                label = next(
+                    label for label in labels.values() if label.input == text.text
+                )
+                bounding_box = [0.0, 0.0, 0.0, 0.0]
+                label.GetBoundingBox(self.plotter.renderer, bounding_box)
+                anchor_display = _get_display_point(
+                    self.plotter, np.array(label.position, dtype=float)
+                )
+                expected_box = (
+                    anchor_display[0] + bounding_box[0],
+                    anchor_display[0] + bounding_box[1] + 1.0,
+                    anchor_display[1] + bounding_box[2],
+                    anchor_display[1] + bounding_box[3] + 1.0,
+                )
+                assert text.background_box is not None
+                npt.assert_allclose(text.background_box, expected_box)
+                self.assertAlmostEqual(
+                    text.x, 0.5 * (expected_box[0] + expected_box[1])
+                )
+                self.assertAlmostEqual(
+                    text.y, 0.5 * (expected_box[2] + expected_box[3])
+                )
+                self.assertIsNone(text.math_font_family)
+
+    def test_sets_math_labels_math_in_stix(self) -> None:
+        """Test that a label with math has its math set in the STIX font."""
+        self.add_axes_and_render(math_labels=True)
+        _, texts = _output_rendering._get_diagram_export_state(self.plotter)
+        for text in texts:
+            with self.subTest(text=text.text):
+                self.assertEqual(text.math_font_family, "stix")
+
+    def test_skips_a_hidden_label(self) -> None:
+        """Test that a hidden label, such as one deleted by entering empty text, is left
+        out."""
+        self.add_axes_and_render()
+        _get_labels(self.plotter)["arrow label GY"].SetVisibility(False)
+        _, texts = _output_rendering._get_diagram_export_state(self.plotter)
+        self.assertEqual([text.text for text in texts], ["GX", "GZ", "Cg"])
+
+    def test_fits_the_view_and_the_labels_to_the_page(self) -> None:
+        """Test that a page twice the window's size shows the window's view at twice the
+        pixels per meter, with each label's anchor moved with the view and its box kept
+        at its size.
+
+        The 400 by 300 pixel window's center and the 800 by 600 pixel page's center both
+        show the focal point, so each anchor's position on the page is twice its
+        position in the window.
+        """
+        self.add_axes_and_render()
+        vector_camera, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, figure_size_in=(8.0, 6.0)
+        )
+        self.assertEqual(
+            (vector_camera.window_width, vector_camera.window_height), (800.0, 600.0)
+        )
+        self.assertAlmostEqual(
+            vector_camera.parallel_scale, self.plotter.camera.parallel_scale
+        )
+        labels = _get_labels(self.plotter)
+        for text in texts:
+            with self.subTest(text=text.text):
+                label = next(
+                    label for label in labels.values() if label.input == text.text
+                )
+                bounding_box = [0.0, 0.0, 0.0, 0.0]
+                label.GetBoundingBox(self.plotter.renderer, bounding_box)
+                anchor_display = 2.0 * _get_display_point(
+                    self.plotter, np.array(label.position, dtype=float)
+                )
+                assert text.background_box is not None
+                npt.assert_allclose(
+                    text.background_box,
+                    (
+                        anchor_display[0] + bounding_box[0],
+                        anchor_display[0] + bounding_box[1] + 1.0,
+                        anchor_display[1] + bounding_box[2],
+                        anchor_display[1] + bounding_box[3] + 1.0,
+                    ),
+                )
+
+    def test_sizes_every_label_to_the_font_size(self) -> None:
+        """Test that a font size sets every label's size, including the math labels',
+        and scales each label's box about its anchor by the ratio of its new size to its
+        size in the window.
+
+        A 9.0 point font is 12.5 pixels at 100 pixels per inch, and the math labels are
+        20 pixels in the window.
+        """
+        self.add_axes_and_render(math_labels=True)
+        _, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, font_size=9.0
+        )
+        box_scale = 12.5 / 20.0
+        labels = _get_labels(self.plotter)
+        for text in texts:
+            with self.subTest(text=text.text):
+                self.assertAlmostEqual(text.font_size, 12.5)
+                label = next(
+                    label for label in labels.values() if label.input == text.text
+                )
+                bounding_box = [0.0, 0.0, 0.0, 0.0]
+                label.GetBoundingBox(self.plotter.renderer, bounding_box)
+                anchor_display = _get_display_point(
+                    self.plotter, np.array(label.position, dtype=float)
+                )
+                assert text.background_box is not None
+                npt.assert_allclose(
+                    text.background_box,
+                    (
+                        anchor_display[0] + box_scale * bounding_box[0],
+                        anchor_display[0] + box_scale * (bounding_box[1] + 1.0),
+                        anchor_display[1] + box_scale * bounding_box[2],
+                        anchor_display[1] + box_scale * (bounding_box[3] + 1.0),
+                    ),
+                )
+
+    def test_colors_every_label_with_the_text_color(self) -> None:
+        """Test that a text color sets every label's color."""
+        self.add_axes_and_render()
+        text_color = (0.2, 0.4, 0.6, 1.0)
+        _, texts = _output_rendering._get_diagram_export_state(
+            self.plotter, text_color=text_color
+        )
+        for text in texts:
+            with self.subTest(text=text.text):
+                self.assertEqual(text.color, text_color)
+
+
+class TestValidateDiagramFigureParameters(unittest.TestCase):
+    """This class contains methods for testing
+    _output_rendering.validate_diagram_figure_parameters."""
+
+    def test_rejects_an_unknown_text_color(self) -> None:
+        """Test that a text color Matplotlib does not accept is rejected."""
+        with self.assertRaises(ValueError):
+            _output_rendering.validate_diagram_figure_parameters(
+                None, None, "not_a_color", None
+            )

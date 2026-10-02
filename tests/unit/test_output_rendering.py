@@ -2353,7 +2353,8 @@ class TestAddAxesAndPoints(unittest.TestCase):
 
         An axes set records its three shafts as strokes, its three tips as convex
         occluders, each outlining its base, and its point as a dot. An extra point
-        records its cross's two arms as strokes.
+        records its cross as four strokes, each running from the point to one of its
+        arms' ends, so they all share the point as an end and never hide one another.
         """
         layer = _vector_export.VectorLayer()
         _output_rendering.add_axes_and_points(
@@ -2370,7 +2371,9 @@ class TestAddAxesAndPoints(unittest.TestCase):
             ],
             layer=layer,
         )
-        self.assertEqual(len(layer._listStrokes_D_Do), 3 + 2)
+        self.assertEqual(len(layer._listStrokes_D_Do), 3 + 4)
+        for stroke_D_Do in layer._listStrokes_D_Do[3:]:
+            npt.assert_allclose(stroke_D_Do[0], [1.0, 2.0, 3.0])
         self.assertEqual(len(layer._occluders), 3)
         for _, _, _, _, _, outlined_face_ids in layer._occluders:
             self.assertEqual(len(outlined_face_ids), 1)

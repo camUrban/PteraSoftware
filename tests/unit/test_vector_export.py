@@ -342,7 +342,13 @@ class TestVectorLayer(unittest.TestCase):
 
     def test_a_convex_occluder_hides_a_polyline_behind_it(self) -> None:
         """Test that a polyline passing behind a convex occluder is drawn as the two
-        parts on either side of it."""
+        parts on either side of it.
+
+        The cube's silhouette is at x = 90.0 and x = 110.0 pixels, and its 1.0 pixel
+        wide outline hides the polyline for another pixel beyond it on each side, which
+        is half the outline's width plus half the polyline's, so the polyline's round
+        ends stop short of the outline rather than covering it.
+        """
         self.layer.add_convex_occluder(
             vector_export_fixtures.make_cube_points_fixture(),
             vector_export_fixtures.make_cube_faces_fixture(),
@@ -360,8 +366,8 @@ class TestVectorLayer(unittest.TestCase):
             self.get_drawn_collection(matplotlib.collections.LineCollection),
         ).get_segments()
         self.assertEqual(len(segments), 2)
-        npt.assert_allclose(segments[0], [[70.0, 50.0], [90.0, 50.0]])
-        npt.assert_allclose(segments[1], [[110.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
+        npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
 
     def test_a_convex_occluder_leaves_a_polyline_in_front_of_it(self) -> None:
         """Test that a polyline passing in front of a convex occluder is drawn whole."""
@@ -408,17 +414,82 @@ class TestVectorLayer(unittest.TestCase):
         """Test that drawing a layer returns the zorder after its five passes."""
         self.assertEqual(self.layer.draw(self.axes, self.camera, 3.0), 8.0)
 
-    def test_paints_the_first_of_two_coincident_strokes_on_top(self) -> None:
-        """Test that where two strokes lie on top of each other, the one added first is
-        painted last, so it shows, as it does in VTK."""
+    def test_paints_the_later_of_two_coincident_strokes_on_top(self) -> None:
+        """Test that where two strokes lie on top of each other, neither hides the
+        other, and the one added later is painted last, so it shows, as it does in
+        VTK."""
         stroke_D_Do = np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)
         self.layer.add_polylines([stroke_D_Do], "red", 1.0)
         self.layer.add_polylines([stroke_D_Do], "blue", 1.0)
-        colors = cast(
+        line_collection = cast(
             matplotlib.collections.LineCollection,
             self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_colors()
-        npt.assert_array_equal(colors[-1], matplotlib.colors.to_rgba("red"))
+        )
+        self.assertEqual(len(line_collection.get_segments()), 2)
+        npt.assert_array_equal(
+            line_collection.get_colors()[-1], matplotlib.colors.to_rgba("blue")
+        )
+
+    def test_a_nearer_stroke_hides_a_crossing_stroke_behind_it(self) -> None:
+        """Test that where two strokes cross on screen, the nearer one hides the farther
+        one across its width.
+
+        The farther stroke runs along the x axis and the nearer one along the y axis,
+        1.0 meter closer to the camera, crossing it at x = 100.0 pixels. Both are 1.0
+        pixel wide, so the farther stroke is hidden for 1.0 pixel to either side, which
+        is half the nearer stroke's width plus half its own.
+        """
+        self.layer.add_polylines(
+            [np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)], "red", 1.0
+        )
+        self.layer.add_polylines(
+            [np.array([[0.0, -2.0, 1.0], [0.0, 2.0, 1.0]], dtype=float)], "blue", 1.0
+        )
+        segments = cast(
+            matplotlib.collections.LineCollection,
+            self.get_drawn_collection(matplotlib.collections.LineCollection),
+        ).get_segments()
+        self.assertEqual(len(segments), 3)
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [99.0, 50.0]])
+        npt.assert_allclose(segments[1], [[101.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[2], [[100.0, 30.0], [100.0, 70.0]])
+
+    def test_equally_deep_crossing_strokes_hide_nothing(self) -> None:
+        """Test that two strokes crossing on screen at the same depth are both drawn
+        whole."""
+        self.layer.add_polylines(
+            [np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)], "red", 1.0
+        )
+        self.layer.add_polylines(
+            [np.array([[0.0, -2.0, 0.0], [0.0, 2.0, 0.0]], dtype=float)], "blue", 1.0
+        )
+        segments = cast(
+            matplotlib.collections.LineCollection,
+            self.get_drawn_collection(matplotlib.collections.LineCollection),
+        ).get_segments()
+        self.assertEqual(len(segments), 2)
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[1], [[100.0, 30.0], [100.0, 70.0]])
+
+    def test_strokes_that_share_an_end_never_hide_each_other(self) -> None:
+        """Test that a polyline's segments don't hide each other where they meet.
+
+        The polyline turns sharply back on itself at its middle point, so its second
+        segment starts within the first segment's width on screen and runs away from the
+        camera, behind it. Since the two share an end, neither hides the other, and both
+        are drawn whole.
+        """
+        polyline_D_Do = np.array(
+            [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 0.05, -1.0]], dtype=float
+        )
+        self.layer.add_polylines([polyline_D_Do], "black", 1.0)
+        segments = cast(
+            matplotlib.collections.LineCollection,
+            self.get_drawn_collection(matplotlib.collections.LineCollection),
+        ).get_segments()
+        self.assertEqual(len(segments), 2)
+        npt.assert_allclose(segments[0], [[100.0, 50.0], [110.0, 50.0]])
+        npt.assert_allclose(segments[1], [[110.0, 50.0], [105.0, 50.5]])
 
 
 class TestVectorSceneSave(unittest.TestCase):

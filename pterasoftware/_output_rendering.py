@@ -869,9 +869,23 @@ def add_axes_and_points(
             color="black",
             line_width=_AXES_LINE_WIDTH,
         )
+        # Each cross is recorded as four half arms, each running from its point to one
+        # of its arms' ends, rather than as two arms crossing at their midpoints. A
+        # stroke never hides another stroke that shares an end with it, so the half
+        # arms, which all share the point, can't hide one another where the arms cross.
         if layer is not None:
+            gridCrossVertices_D_Do = np.array(
+                listCrossVertices_D_Do, dtype=float
+            ).reshape(-1, 4, 3)
+            stackCrossCenters_D_Do = gridCrossVertices_D_Do.mean(axis=1)
             layer.add_polylines(
-                list(np.array(listCrossVertices_D_Do, dtype=float).reshape(-1, 2, 3)),
+                [
+                    np.array([crossCenter_D_Do, crossVertex_D_Do], dtype=float)
+                    for crossCenter_D_Do, crossVertices_D_Do in zip(
+                        stackCrossCenters_D_Do, gridCrossVertices_D_Do
+                    )
+                    for crossVertex_D_Do in crossVertices_D_Do
+                ],
                 "black",
                 _AXES_LINE_WIDTH,
             )

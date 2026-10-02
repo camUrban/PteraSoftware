@@ -57,6 +57,11 @@ _DEGENERATE_TOLERANCE = 1.0e-12
 _SPLITTER_CANDIDATES = 8
 _SPLITTER_SEED = 7
 
+# Define the side, in pixels, of the cells of the grid on screen that the triangles are
+# registered in when clipping strokes, so that each stroke is only tested against the
+# triangles near it.
+_GRID_CELL_SIZE = 32.0
+
 # Define the shortest fraction of a stroke that is still drawn once its hidden stretches
 # are removed.
 _MIN_VISIBLE_FRACTION = 1.0e-9
@@ -658,6 +663,20 @@ def get_visible_intervals(
         fractions along it where they start and end.
     """
     occluders = _prepare_occluders(triangles_display)
+
+    # Register each triangle that can hide anything in the cells of a square grid on
+    # screen that its bounding box overlaps, so each stroke only needs to consider the
+    # triangles registered in the cells its own bounding box overlaps.
+    grid: dict[tuple[int, int], list[int]] = {}
+    cell_mins = np.floor(occluders.mins_display[:, :2] / _GRID_CELL_SIZE).astype(int)
+    cell_maxs = np.floor(occluders.maxs_display[:, :2] / _GRID_CELL_SIZE).astype(int)
+    for triangle_id in np.flatnonzero(occluders.usable):
+        for cell_x in range(cell_mins[triangle_id, 0], cell_maxs[triangle_id, 0] + 1):
+            for cell_y in range(
+                cell_mins[triangle_id, 1], cell_maxs[triangle_id, 1] + 1
+            ):
+                grid.setdefault((cell_x, cell_y), []).append(int(triangle_id))
+
     visible_intervals: list[list[tuple[float, float]]] = []
     for stroke_display, owners in zip(strokes_display, stroke_owners):
         start_display = stroke_display[0]
@@ -665,16 +684,26 @@ def get_visible_intervals(
         stroke_mins_display = stroke_display.min(axis=0)
         stroke_maxs_display = stroke_display.max(axis=0)
 
+        registered_ids: set[int] = set()
+        stroke_cell_mins = np.floor(stroke_mins_display[:2] / _GRID_CELL_SIZE)
+        stroke_cell_maxs = np.floor(stroke_maxs_display[:2] / _GRID_CELL_SIZE)
+        for cell_x in range(int(stroke_cell_mins[0]), int(stroke_cell_maxs[0]) + 1):
+            for cell_y in range(int(stroke_cell_mins[1]), int(stroke_cell_maxs[1]) + 1):
+                registered_ids.update(grid.get((cell_x, cell_y), ()))
+        registered = np.array(sorted(registered_ids), dtype=int)
+
         # Only a triangle whose bounding box overlaps the stroke's on screen, and whose
         # nearest vertex is nearer than the stroke's farthest point, can hide any of it.
-        candidate_ids = np.flatnonzero(
-            occluders.usable
-            & (occluders.mins_display[:, 0] <= stroke_maxs_display[0])
-            & (occluders.maxs_display[:, 0] >= stroke_mins_display[0])
-            & (occluders.mins_display[:, 1] <= stroke_maxs_display[1])
-            & (occluders.maxs_display[:, 1] >= stroke_mins_display[1])
-            & (occluders.mins_display[:, 2] < stroke_maxs_display[2] - _PLANE_TOLERANCE)
-        )
+        candidate_ids = registered[
+            (occluders.mins_display[registered, 0] <= stroke_maxs_display[0])
+            & (occluders.maxs_display[registered, 0] >= stroke_mins_display[0])
+            & (occluders.mins_display[registered, 1] <= stroke_maxs_display[1])
+            & (occluders.maxs_display[registered, 1] >= stroke_mins_display[1])
+            & (
+                occluders.mins_display[registered, 2]
+                < stroke_maxs_display[2] - _PLANE_TOLERANCE
+            )
+        ]
 
         intervals = [(0.0, 1.0)]
         for triangle_id in candidate_ids:
@@ -700,6 +729,48 @@ def get_visible_intervals(
     return visible_intervals
 
 
+def _get_ribbon_triangles(
+    segments_display: np.ndarray, half_widths: np.ndarray
+) -> np.ndarray:
+    """Returns the ribbons that straight segments of lines cover on screen, each split
+    into two triangles.
+
+    Each ribbon runs along its segment and extends half its width to either side of it,
+    perpendicular to it on screen, at the depths of the segment beneath it, so it lies
+    in the plane through the segment that faces the camera. A segment that is a point on
+    screen gives a ribbon with no area, which hides nothing.
+
+    :param segments_display: A (S,2,3) ndarray of floats holding each segment's start
+        and end (in display coordinates).
+    :param half_widths: A (S,) ndarray of floats holding half of each ribbon's width, in
+        pixels.
+    :return: A (2S,3,3) ndarray of floats holding the triangles' vertices (in display
+        coordinates). Segment i's ribbon is split into triangles 2i and 2i + 1.
+    """
+    alongs = segments_display[:, 1, :2] - segments_display[:, 0, :2]
+    lengths = np.linalg.norm(alongs, axis=1)
+    scales = np.divide(
+        half_widths,
+        lengths,
+        out=np.zeros(lengths.shape[0], dtype=float),
+        where=lengths > 0.0,
+    )
+    acrosses_display = np.zeros((segments_display.shape[0], 3), dtype=float)
+    acrosses_display[:, 0] = -alongs[:, 1] * scales
+    acrosses_display[:, 1] = alongs[:, 0] * scales
+    first_left = segments_display[:, 0] + acrosses_display
+    second_left = segments_display[:, 1] + acrosses_display
+    second_right = segments_display[:, 1] - acrosses_display
+    first_right = segments_display[:, 0] - acrosses_display
+    return np.stack(
+        [
+            np.stack([first_left, second_left, second_right], axis=1),
+            np.stack([first_left, second_right, first_right], axis=1),
+        ],
+        axis=1,
+    ).reshape(-1, 3, 3)
+
+
 class VectorLayer:
     """A layer of a scene, holding its opaque fills, the strokes that outline and run
     among them, the convex occluders that hide strokes behind them, its dots, and its
@@ -710,13 +781,12 @@ class VectorLayer:
     fills from back to front, then its convex occluders from back to front, then its
     strokes with their hidden parts removed, then its dots, and then its translucent
     polygons. The fills and the occluders hide the strokes behind them, but not each
-    other, so a layer should hold one or the other. The dots and the translucent
-    polygons hide nothing and are hidden by nothing.
-
-    The strokes are painted in the reverse of the order they were added, so where two
-    strokes lie on top of each other, the one added first shows. VTK's depth test keeps
-    the first of two equally deep fragments, so this is what a scene rendered by VTK
-    shows where the lines its actors draw coincide.
+    other, so a layer should hold one or the other. The strokes and the occluders'
+    outlines also hide the strokes behind them, across their own widths, so where
+    strokes cross, the nearer one shows. Where two strokes are equally deep, neither
+    hides the other, and the one added later is painted over the other, which matches
+    VTK, whose depth test lets a later fragment replace an equally deep one. The dots
+    and the translucent polygons hide nothing and are hidden by nothing.
     """
 
     def __init__(self) -> None:
@@ -944,23 +1014,88 @@ class VectorLayer:
             )
         zorder += 1.0
 
-        occluder_triangles_display = self._draw_occluders(axes, camera, zorder)
+        (
+            occluder_triangles_display,
+            outlineSegments_display,
+            outline_widths,
+        ) = self._draw_occluders(axes, camera, zorder)
         zorder += 1.0
 
         if self._listStrokes_D_Do:
             strokes_display = camera.to_display(
                 np.concatenate(self._listStrokes_D_Do)
             ).reshape(-1, 2, 3)
-            visible_intervals = get_visible_intervals(
-                strokes_display,
-                self._stroke_owners,
-                np.concatenate([fill_triangles_display, occluder_triangles_display]),
+            stroke_widths = np.array(self._stroke_widths, dtype=float)
+            num_strokes = strokes_display.shape[0]
+
+            # Every stroke, and every piece of an occluder's outline, hides the strokes
+            # behind it with a ribbon of its own width, in the plane through it that
+            # faces the camera. The ribbons follow the fills' and occluders' triangles,
+            # two per stroke or piece. A stroke is never hidden by its own ribbon, or by
+            # the ribbon of a stroke that shares an end with it, such as its neighbor
+            # along a polyline, which would otherwise clip it where they meet.
+            first_stroke_ribbon_id = (
+                fill_triangles_display.shape[0]
+                + occluder_triangles_display.shape[0]
+                + 2 * outlineSegments_display.shape[0]
             )
+            stroke_ids_by_end: dict[tuple[float, ...], list[int]] = {}
+            for stroke_id, stroke_display in enumerate(strokes_display):
+                for end_display in stroke_display:
+                    stroke_ids_by_end.setdefault(
+                        tuple(np.round(end_display, 6)), []
+                    ).append(stroke_id)
+            stroke_owners: list[set[int]] = []
+            for stroke_id, stroke_display in enumerate(strokes_display):
+                connected_ids = {stroke_id}
+                for end_display in stroke_display:
+                    connected_ids.update(
+                        stroke_ids_by_end[tuple(np.round(end_display, 6))]
+                    )
+                stroke_owners.append(
+                    self._stroke_owners[stroke_id]
+                    | {
+                        first_stroke_ribbon_id + 2 * connected_id + half
+                        for connected_id in connected_ids
+                        for half in (0, 1)
+                    }
+                )
+
+            # A clipped stroke's round end reaches half its width past where it is cut,
+            # so the ribbons that clip it are widened by half its width, which keeps
+            # that end from showing over the stroke in front. The strokes are clipped
+            # one width at a time, against ribbons widened for that width.
+            visible_intervals: list[list[tuple[float, float]]] = [[]] * num_strokes
+            for width in np.unique(stroke_widths):
+                width_stroke_ids = np.flatnonzero(stroke_widths == width)
+                width_intervals = get_visible_intervals(
+                    strokes_display[width_stroke_ids],
+                    [stroke_owners[stroke_id] for stroke_id in width_stroke_ids],
+                    np.concatenate(
+                        [
+                            fill_triangles_display,
+                            occluder_triangles_display,
+                            _get_ribbon_triangles(
+                                outlineSegments_display,
+                                0.5 * (outline_widths + width),
+                            ),
+                            _get_ribbon_triangles(
+                                strokes_display, 0.5 * (stroke_widths + width)
+                            ),
+                        ]
+                    ),
+                )
+                for width_stroke_id, intervals in zip(
+                    width_stroke_ids, width_intervals
+                ):
+                    visible_intervals[int(width_stroke_id)] = intervals
+
+            # Where two strokes are equally deep, neither hides the other, and the one
+            # added later is painted over the other, as VTK draws them.
             segments: list[np.ndarray] = []
             segment_colors: list[np.ndarray] = []
             segment_widths: list[float] = []
-            for stroke_id in reversed(range(len(visible_intervals))):
-                intervals = visible_intervals[stroke_id]
+            for stroke_id, intervals in enumerate(visible_intervals):
                 start_display = strokes_display[stroke_id, 0]
                 direction_display = (
                     strokes_display[stroke_id, 1] - strokes_display[stroke_id, 0]
@@ -1033,9 +1168,9 @@ class VectorLayer:
         axes: matplotlib.axes.Axes,
         camera: VectorCamera,
         zorder: float,
-    ) -> np.ndarray:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Draws the layer's convex occluders from back to front, and returns their
-        triangles for clipping the strokes.
+        triangles and outlines for clipping the strokes.
 
         Each occluder is painted whole, filled within its silhouette and outlined along
         it, followed by the outlines of its outlined faces that face the camera, before
@@ -1045,10 +1180,15 @@ class VectorLayer:
         :param axes: The Axes to draw the occluders onto.
         :param camera: The VectorCamera to project the occluders through.
         :param zorder: The zorder of the occluders' collection.
-        :return: A (T,3,3) ndarray of floats holding every occluder's faces, split into
-            triangles (in display coordinates).
+        :return: A tuple of three ndarrays of floats. The first is a (T,3,3) ndarray
+            holding every occluder's faces, split into triangles (in display
+            coordinates). The second is a (R,2,3) ndarray holding the start and end of
+            each straight piece of every outline drawn (in display coordinates), and the
+            third is a (R,) ndarray holding each piece's width, in pixels.
         """
         triangles: list[np.ndarray] = []
+        outline_segments: list[np.ndarray] = []
+        outline_widths: list[float] = []
         entries: list[tuple[float, list[np.ndarray], np.ndarray, np.ndarray, float]] = (
             []
         )
@@ -1072,7 +1212,7 @@ class VectorLayer:
             except scipy.spatial.QhullError:
                 # A polyhedron whose footprint on screen has no area shows nothing.
                 continue
-            paths = [points_display[hull.vertices, :2]]
+            outlines_display = [points_display[hull.vertices]]
 
             # A face of a convex polyhedron faces the camera where its outward normal
             # points back toward negative depth. Each face's normal is turned outward,
@@ -1084,7 +1224,17 @@ class VectorLayer:
                 if normal_display @ (face_display.mean(axis=0) - center_display) < 0.0:
                     normal_display = -normal_display
                 if normal_display[2] < 0.0:
-                    paths.append(face_display[:, :2])
+                    outlines_display.append(face_display)
+            paths = [outline_display[:, :2] for outline_display in outlines_display]
+
+            # Each closed outline is drawn as straight pieces between its consecutive
+            # points, at their depths, which strokes behind it are clipped against.
+            for outline_display in outlines_display:
+                outline_segments += [
+                    outline_display[[point_id, (point_id + 1) % len(outline_display)]]
+                    for point_id in range(len(outline_display))
+                ]
+                outline_widths += [outline_width] * len(outline_display)
             entries.append(
                 (
                     float(points_display[:, 2].mean()),
@@ -1121,9 +1271,11 @@ class VectorLayer:
                 )
             )
 
-        if not triangles:
-            return np.zeros((0, 3, 3), dtype=float)
-        return np.array(triangles, dtype=float)
+        return (
+            np.array(triangles, dtype=float).reshape(-1, 3, 3),
+            np.array(outline_segments, dtype=float).reshape(-1, 2, 3),
+            np.array(outline_widths, dtype=float),
+        )
 
 
 class VectorScene:

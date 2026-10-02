@@ -1164,8 +1164,8 @@ def add_axes_and_points(
         :param event: The name of the event, which is unused.
         :return: None
         """
-        # Once the window closes, the interactor is done, and PyVista's screenshot of
-        # the closed window is rendered. Restore any label still being edited first, so
+        # Once the window closes, the interactor is done, and show_diagram renders once
+        # more before saving the diagram. Restore any label still being edited first, so
         # its half typed text isn't saved.
         if editing_label_id is not None and interactor.GetDone():
             finish_editing(original_text)
@@ -2047,8 +2047,13 @@ def show_diagram(
         plotter.show(cpos=cpos, full_screen=False, auto_close=False)
 
         # If saving, take an opaque screenshot and save it as a WebP. webp annotates
-        # file_path as a str, so the Path is converted at the boundary.
+        # file_path as a str, so the Path is converted at the boundary. PyVista's
+        # screenshot reads the last frame drawn rather than drawing a new one, so draw
+        # one first. The interactor is done by then, so this render also restores any
+        # label still being edited when the window closed. PyVista skips the render if
+        # closing the window destroyed the render window.
         if save:
+            plotter.render()
             webp.save_image(
                 img=webp.Image.fromarray(
                     np.array(

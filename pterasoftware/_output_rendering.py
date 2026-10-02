@@ -7,11 +7,15 @@ import math
 import queue
 import re
 import threading
+import time
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, NamedTuple, cast
 
 import matplotlib.colors
+import matplotlib.font_manager
+import matplotlib.ft2font
+import matplotlib.mathtext
 import numpy as np
 import pyvista as pv
 import webp
@@ -164,6 +168,34 @@ _AXES_CROSS_LABEL_OFFSET = 0.15
 # rather than centered on its tip. This value, the sine of 22.5 degrees, splits the
 # screen directions into eight equal sectors.
 _AXES_LABEL_JUSTIFICATION_THRESHOLD = math.sin(math.pi / 8.0)
+
+# Define the longest time, in seconds, between two presses on the same label for them to
+# count as a double-click, which starts editing that label.
+_AXES_LABEL_DOUBLE_CLICK_TIME = 0.5
+
+# Define the text of the caret drawn over a label while it is edited, which is
+# Liberation Mono's box drawing light vertical character (U+2502). It spans the font's
+# full line height. It is built from its code point so that this file stays ASCII, and
+# since it isn't the ASCII vertical bar, VTK doesn't split the caret's Label into table
+# cells at it.
+_AXES_LABEL_CARET_TEXT = chr(0x2502)
+
+# Define the patterns that find, in a label's text, a vertical bar that doesn't follow a
+# backslash, which VTK treats as a table cell separator, and a dollar sign that doesn't
+# follow a backslash, which opens or closes math.
+_BARE_VERTICAL_BAR_PATTERN = re.compile(r"(?<!\\)\|")
+_UNESCAPED_DOLLAR_SIGN_PATTERN = re.compile(r"(?<!\\)\$")
+
+# Define the text inserted when a vertical bar is typed inside math while editing a
+# label, which is the math command for a single vertical bar. A letter typed right after
+# it merges into the command and makes the text invalid, which the label shows by
+# turning red until a space or another separator is typed between them.
+_MATH_VERTICAL_BAR_TEXT = "\\vert"
+
+# Define the parser that checks whether an edited label's text is valid math. VTK draws
+# a label's math with Matplotlib's mathtext, so text this parser accepts is text VTK can
+# draw.
+_MATH_TEXT_PARSER = matplotlib.mathtext.MathTextParser("path")
 
 # Define the background color of the diagrams, the colors of the Airfoil outlines, mean
 # camber lines, and Panel edges drawn by add_airfoil and add_panels, and the width of
@@ -540,6 +572,27 @@ def add_axes_and_points(
     not move the camera, a screenshot taken after the window closes keeps the dragged
     positions.
 
+    In an interactive window, a label can also be edited by double-clicking it. While it
+    is edited, its raw text is shown in Liberation Mono, with a caret drawn over it as a
+    separate Label so that the characters never shift, and every key types rather than
+    triggering one of PyVista's or VTK's shortcuts. Printable ASCII characters are
+    inserted at the caret, Backspace deletes the character before the caret, and the
+    left and right arrow keys move it. Enter keeps the new text, Escape restores the
+    text from before the edit, and closing the window during an edit also restores it.
+    Text between pairs of dollar signs is math. Once Enter is pressed, a label with math
+    is drawn by Matplotlib, which VTK asks for its serif font family, since that is the
+    only family for which VTK sets the math in the STIX font. show_diagram fills that
+    serif family with Liberation Mono, which isn't a serif font, so the text outside the
+    math is drawn in Liberation Mono anyway. A label without math is drawn in Liberation
+    Mono directly. While the text isn't valid math, it is shown in red and Enter is
+    ignored. Entering empty text deletes the label, which hides it for good. VTK splits
+    a label into table cells at every vertical bar that doesn't follow a backslash, so
+    the text never holds one. Inside math, typing a vertical bar inserts the math
+    command for a single bar, unless it follows a backslash, where it completes the
+    command for a double bar. Outside math, VTK can't draw a single bar, so the key is
+    ignored. Backspacing the backslash before a vertical bar deletes that bar too, and
+    any other edit that would leave a bare vertical bar is ignored.
+
     :param plotter: The Plotter to add the axes and points to.
     :param axes_ids: The IDs of the axes sets to draw, one per axes set.
     :param point_ids: The IDs of the points each axes set is drawn at, one per axes set.
@@ -884,14 +937,29 @@ def add_axes_and_points(
     # for this, because the renderer resets the camera's clipping range, and so marks it
     # as modified, on every render.
     renderer = plotter.renderer
-    assert plotter.iren is not None
-    interactor = plotter.iren.interactor
+    render_window_interactor = plotter.iren
+    assert render_window_interactor is not None
+    interactor = render_window_interactor.interactor
     interactor_style = interactor.GetInteractorStyle()
     dragged_label_ids: set[int] = set()
     dragged_camera_state: tuple[float, ...] = ()
     dragging_label_id: int | None = None
     drag_offset_display = np.zeros(2, dtype=float)
     drag_depth_display = 0.0
+
+    # Track the label the user is editing, if any, along with its text, the caret's
+    # index within that text, and the text from before the edit. Also track the label
+    # last pressed and when, to detect double-clicks. The caret's Label is only created
+    # when the first edit starts, so it is added after every other Label and drawn over
+    # them.
+    editing_label_id: int | None = None
+    editing_text = ""
+    caret_index = 0
+    original_text = ""
+    last_pressed_label_id: int | None = None
+    last_press_time = 0.0
+    caret_label: pv.Label | None = None
+    mono_font = matplotlib.ft2font.FT2Font(str(_fonts.MONO_FONT_PATH))
 
     def get_camera_state() -> tuple[float, ...]:
         """Returns the state of the renderer's active camera.
@@ -921,21 +989,187 @@ def add_axes_and_points(
         renderer.WorldToDisplay()
         return np.array(renderer.GetDisplayPoint(), dtype=float)
 
+    def is_valid_label_text(text: str) -> bool:
+        """Returns whether a label's text is valid, which means VTK can draw its math.
+
+        Text without dollar signs always parses as mathtext, so for text without math
+        this only rejects an unmatched dollar sign. Empty text is valid, since entering
+        it deletes the label.
+
+        :param text: The label's text.
+        :return: True if Matplotlib's mathtext parser accepts the text, and False
+            otherwise.
+        """
+        try:
+            _MATH_TEXT_PARSER.parse(text)
+        except ValueError:
+            return False
+        return True
+
+    def show_editing_text() -> None:
+        """Shows the edited label's raw text, colored by whether it is valid, with the
+        caret over it, and renders the window.
+
+        :return: None
+        """
+        assert editing_label_id is not None
+        assert caret_label is not None
+        label = label_entries[editing_label_id][0]
+
+        # Escaped dollar signs are drawn literally, without their backslashes, so the
+        # raw text isn't drawn as math. A label with no text has a box of no size, so an
+        # empty text is shown as a space, which keeps the label's box, and so the caret,
+        # in view.
+        label.input = editing_text.replace("$", r"\$") or " "
+        color = "black" if is_valid_label_text(editing_text) else "red"
+        label.prop.color = color
+        caret_label.size = label.size
+        caret_label.prop.color = color
+        caret_label.SetVisibility(True)
+        interactor.Render()
+
+    def start_editing(label_id: int) -> None:
+        """Starts editing a label, first restoring any other label being edited.
+
+        :param label_id: The index of the label to edit in label_entries.
+        :return: None
+        """
+        nonlocal editing_label_id, editing_text, caret_index, original_text
+        nonlocal caret_label
+        if label_id == editing_label_id:
+            return
+        if editing_label_id is not None:
+            finish_editing(original_text)
+
+        # Create the caret's Label the first time an edit starts. It is centered on its
+        # anchor, so its bar lands there, and its background is transparent, so it never
+        # hides the characters it sits between.
+        if caret_label is None:
+            caret_label = pv.Label(text=_AXES_LABEL_CARET_TEXT, name="label caret")
+            caret_label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+            caret_label.prop.background_opacity = 0.0
+            caret_label.prop.justification_horizontal = "center"
+            caret_label.prop.justification_vertical = "center"
+            plotter.add_actor(caret_label)
+
+        # The raw text shown while editing has its dollar signs escaped, so it has no
+        # math, and is drawn entirely in Liberation Mono. Clear PyVista's key events, so
+        # that its shortcuts don't fire as keys are typed. VTK's own shortcuts are held
+        # back by handle_editing_key and type_into_label.
+        label = label_entries[label_id][0]
+        editing_label_id = label_id
+        original_text = str(label.input)
+        editing_text = original_text
+        caret_index = len(editing_text)
+        label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+        render_window_interactor.clear_key_event_callbacks()
+        show_editing_text()
+
+    def finish_editing(new_text: str) -> None:
+        """Stops editing the edited label, giving it new text, or deleting it if the new
+        text is empty.
+
+        It doesn't render the window, since it can be called during a render.
+
+        :param new_text: The edited label's new text.
+        :return: None
+        """
+        nonlocal editing_label_id
+        assert editing_label_id is not None
+        assert caret_label is not None
+        label = label_entries[editing_label_id][0]
+        label.input = new_text
+        label.prop.color = "black"
+
+        # VTK draws text without math with FreeType, which takes the font file directly.
+        # It hands text with math to Matplotlib whole, asking for the generic font
+        # family that matches the label's VTK font family, and it only sets the math in
+        # the STIX fonts for the Times family, which it maps to Matplotlib's serif
+        # family. show_diagram fills that serif family with Liberation Mono, which isn't
+        # a serif font, so the text outside the math is drawn in Liberation Mono anyway.
+        if _UNESCAPED_DOLLAR_SIGN_PATTERN.search(new_text):
+            label.prop.font_family = "times"
+        else:
+            label.prop.set_font_file(str(_fonts.MONO_FONT_PATH))
+
+        # A deleted label is hidden, and its empty text gives it a box of no size, so
+        # neither a double-click nor a drag can find it again.
+        if not new_text:
+            label.SetVisibility(False)
+        editing_label_id = None
+        caret_label.SetVisibility(False)
+
+        # Restore PyVista's default key events. The diagrams add no key events of their
+        # own, so the defaults are every key event the Plotter had before the edit.
+        plotter.reset_key_events()
+
+    def place_caret() -> None:
+        """Places the caret between the edited label's characters on either side of it,
+        centered vertically on that label.
+
+        :return: None
+        """
+        if editing_label_id is None:
+            return
+        assert caret_label is not None
+        label = label_entries[editing_label_id][0]
+        anchor_display = get_display_point(np.array(label.position, dtype=float))
+        bounding_box = [0.0, 0.0, 0.0, 0.0]
+        label.GetBoundingBox(renderer, bounding_box)
+
+        # While editing, the text is all Liberation Mono, which is monospaced, so every
+        # character is as wide as the font's advance, which FreeType stores in
+        # 1/65536ths of a pixel. Each character of the text is drawn as one character,
+        # since an escaped dollar sign is drawn without its backslash, and an empty text
+        # is drawn as one space. Any padding around the text is assumed to be the same
+        # on both of its sides.
+        mono_font.set_size(
+            float(label.prop.font_size), renderer.GetRenderWindow().GetDPI()
+        )
+        character_width = mono_font.load_char(ord("X")).linearHoriAdvance / 65536.0
+        text_width = max(len(editing_text), 1) * character_width
+        label_width = bounding_box[1] - bounding_box[0]
+        text_left_display = (
+            anchor_display[0] + bounding_box[0] + 0.5 * (label_width - text_width)
+        )
+
+        # Move the caret's anchor to the caret's position on screen, keeping the edited
+        # label's depth.
+        renderer.SetDisplayPoint(
+            text_left_display + caret_index * character_width,
+            anchor_display[1] + 0.5 * (bounding_box[2] + bounding_box[3]),
+            anchor_display[2],
+        )
+        renderer.DisplayToWorld()
+        homogeneousCaretAnchor_D_Do = renderer.GetWorldPoint()
+        caret_label.position = (
+            np.array(homogeneousCaretAnchor_D_Do[:3], dtype=float)
+            / homogeneousCaretAnchor_D_Do[3]
+        )
+
     # Before every render, justify each label so that its text extends away from the
     # point it labels on screen. A label anchored at its default bottom left corner
     # always extends right and up, so the label of an arrow pointing left or down runs
     # back over its own arrow and into its neighbors' labels. Rechecking before every
     # render keeps the justification right as the camera moves or the window resizes.
     # Dragged labels are left where the user put them until the camera moves, and then
-    # they return to their automatic placement.
+    # they return to their automatic placement. The caret is placed after the labels are
+    # justified, since its position depends on the edited label's justification.
 
     def justify_labels(caller: object, event: str) -> None:
-        """Justifies each label away from the point it labels, on screen.
+        """Justifies each label away from the point it labels, on screen, and places the
+        caret over the edited label, if there is one.
 
         :param caller: The object that invoked the event, which is unused.
         :param event: The name of the event, which is unused.
         :return: None
         """
+        # Once the window closes, the interactor is done, and PyVista's screenshot of
+        # the closed window is rendered. Restore any label still being edited first, so
+        # its half typed text isn't saved.
+        if editing_label_id is not None and interactor.GetDone():
+            finish_editing(original_text)
+
         # Compare the camera states within a tolerance, because the screenshot that
         # PyVista takes as the window closes renders with a view angle that differs from
         # the stored one by roundoff, which would otherwise count as a camera move and
@@ -977,6 +1211,8 @@ def add_axes_and_points(
             else:
                 label.prop.justification_vertical = "center"
 
+        place_caret()
+
     renderer.AddObserver("StartEvent", justify_labels)
 
     # Let the user drag labels with the left mouse button. PyVista's interactor style
@@ -984,22 +1220,30 @@ def add_axes_and_points(
     # rotating the camera, so pressing on a label still arms a rotation. The rotation
     # itself happens as the mouse moves, and observing mouse moves here stops the style
     # from handling them itself. So each mouse move is passed on to the style unless a
-    # label is being dragged, which keeps the camera still during a drag.
+    # label is being dragged, which keeps the camera still during a drag. A second press
+    # on the same label soon after the first is a double-click, which also starts
+    # editing that label.
     def start_label_drag(caller: object, event: str) -> None:
-        """Starts dragging the label under the mouse, if there is one.
+        """Starts dragging the label under the mouse, if there is one, and starts
+        editing it if this press completes a double-click on it.
 
         :param caller: The object that invoked the event, which is unused.
         :param event: The name of the event, which is unused.
         :return: None
         """
         nonlocal dragging_label_id, drag_offset_display, drag_depth_display
+        nonlocal last_pressed_label_id, last_press_time
         mouse_display = np.array(interactor.GetEventPosition(), dtype=float)
 
         # Check the labels from last added to first, so a label drawn on top of another
         # is the one picked. Each label's bounding box is relative to its anchor and
-        # already accounts for its justification.
+        # already accounts for its justification. Deleted labels are hidden, and are
+        # skipped.
+        pressed_label_id: int | None = None
         for label_id in reversed(range(len(label_entries))):
             label = label_entries[label_id][0]
+            if not label.GetVisibility():
+                continue
             anchor_display = get_display_point(np.array(label.position, dtype=float))
             bounding_box = [0.0, 0.0, 0.0, 0.0]
             label.GetBoundingBox(renderer, bounding_box)
@@ -1011,10 +1255,25 @@ def add_axes_and_points(
                 <= mouse_display[1]
                 <= anchor_display[1] + bounding_box[3]
             ):
+                pressed_label_id = label_id
                 dragging_label_id = label_id
                 drag_offset_display = anchor_display[:2] - mouse_display
                 drag_depth_display = float(anchor_display[2])
-                return
+                break
+
+        # The press time is reset after a double-click, so a third press doesn't count
+        # as a second double-click.
+        press_time = time.monotonic()
+        is_double_click = (
+            pressed_label_id is not None
+            and pressed_label_id == last_pressed_label_id
+            and press_time - last_press_time < _AXES_LABEL_DOUBLE_CLICK_TIME
+        )
+        last_pressed_label_id = pressed_label_id
+        last_press_time = 0.0 if is_double_click else press_time
+        if is_double_click:
+            assert pressed_label_id is not None
+            start_editing(pressed_label_id)
 
     def drag_label(caller: object, event: str) -> None:
         """Moves the dragged label with the mouse, or passes the mouse move on to the
@@ -1058,6 +1317,101 @@ def add_axes_and_points(
     interactor_style.AddObserver("LeftButtonPressEvent", start_label_drag)
     interactor_style.AddObserver("MouseMoveEvent", drag_label)
     interactor_style.AddObserver("LeftButtonReleaseEvent", stop_label_drag)
+
+    # Let the user type into the edited label. Observing key presses and characters on
+    # the interactor style stops the style from handling them itself, which holds back
+    # VTK's own shortcuts, so each one is passed on to the style unless a label is being
+    # edited. Enter, Escape, Backspace, and the arrow keys are read from key presses,
+    # since not every platform sends characters for the arrow keys, while the typed
+    # characters are read from characters, which already account for the Shift key.
+    def handle_editing_key(caller: object, event: str) -> None:
+        """Handles Enter, Escape, Backspace, and the left and right arrow keys while a
+        label is being edited, or passes the key press on to the interactor style.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal editing_text, caret_index
+        if editing_label_id is None:
+            interactor_style.OnKeyPress()
+            return
+
+        key_sym = interactor.GetKeySym()
+        if key_sym in ("Return", "KP_Enter"):
+            if is_valid_label_text(editing_text):
+                finish_editing(editing_text)
+                interactor.Render()
+            return
+        if key_sym == "Escape":
+            finish_editing(original_text)
+            interactor.Render()
+            return
+        if key_sym == "BackSpace":
+            if caret_index == 0:
+                return
+            caret_index -= 1
+            new_text = editing_text[:caret_index] + editing_text[caret_index + 1 :]
+
+            # The text never holds a bare vertical bar, so the only one this can leave
+            # is a bar whose escaping backslash was just deleted, which goes with it.
+            if _BARE_VERTICAL_BAR_PATTERN.search(new_text):
+                new_text = new_text[:caret_index] + new_text[caret_index + 1 :]
+            editing_text = new_text
+        elif key_sym == "Left":
+            caret_index = max(caret_index - 1, 0)
+        elif key_sym == "Right":
+            caret_index = min(caret_index + 1, len(editing_text))
+        else:
+            return
+        show_editing_text()
+
+    def type_into_label(caller: object, event: str) -> None:
+        """Inserts a typed printable ASCII character at the caret while a label is being
+        edited, or passes the character on to the interactor style.
+
+        :param caller: The object that invoked the event, which is unused.
+        :param event: The name of the event, which is unused.
+        :return: None
+        """
+        nonlocal editing_text, caret_index
+        if editing_label_id is None:
+            interactor_style.OnChar()
+            return
+
+        # Enter, Escape, Backspace, and the arrow keys send control characters, or none,
+        # here, and handle_editing_key has already handled them.
+        key_code = interactor.GetKeyCode()
+        if not (isinstance(key_code, str) and " " <= key_code <= "~"):
+            return
+
+        # The caret is inside math when an odd number of unescaped dollar signs come
+        # before it. Outside math, VTK can't draw a single vertical bar, so a typed bar
+        # is ignored. Inside math, a typed bar that doesn't follow a backslash becomes
+        # the command for a single bar.
+        inserted_text = key_code
+        if key_code == "|":
+            num_dollar_signs = len(
+                _UNESCAPED_DOLLAR_SIGN_PATTERN.findall(editing_text[:caret_index])
+            )
+            if num_dollar_signs % 2 == 0:
+                return
+            if not editing_text[:caret_index].endswith("\\"):
+                inserted_text = _MATH_VERTICAL_BAR_TEXT
+
+        # Ignore any insertion that would leave a bare vertical bar, such as typing
+        # between a backslash and the bar it escapes.
+        new_text = (
+            editing_text[:caret_index] + inserted_text + editing_text[caret_index:]
+        )
+        if _BARE_VERTICAL_BAR_PATTERN.search(new_text):
+            return
+        editing_text = new_text
+        caret_index += len(inserted_text)
+        show_editing_text()
+
+    interactor_style.AddObserver("KeyPressEvent", handle_editing_key)
+    interactor_style.AddObserver("CharEvent", type_into_label)
 
 
 def _add_arrow_tips(
@@ -1652,10 +2006,17 @@ def show_diagram(
     WebP, and then closes it.
 
     The window stays open until it is closed, so the view can be oriented and the labels
-    dragged first. The diagram is saved after the window is closed, which keeps the
-    orientation and the dragged labels' positions, since closing the window does not
-    move the camera. The diagram's background is white, both on screen and in the saved
-    WebP.
+    dragged and edited first. The diagram is saved after the window is closed, which
+    keeps the orientation, the dragged labels' positions, and the edited labels' text,
+    since closing the window does not move the camera. The diagram's background is
+    white, both on screen and in the saved WebP.
+
+    VTK draws a label with math with Matplotlib, asking for its serif font family, since
+    that is the only family for which VTK sets the math in the STIX font. While the
+    window is shown, and while the saved WebP is captured, Matplotlib's serif family is
+    filled with Liberation Mono, which isn't a serif font, so the text outside the math
+    is drawn in Liberation Mono anyway. The setting is restored afterward, so no other
+    Matplotlib figure is affected.
 
     :param plotter: The Plotter holding the diagram.
     :param cpos: The camera position to show the diagram from, either "xy", to view it
@@ -1672,26 +2033,37 @@ def show_diagram(
     # it being white, and a PyVista theme could change the default.
     plotter.background_color = pv.Color(_DIAGRAM_BACKGROUND_COLOR)
     plotter.camera.parallel_projection = True
-    plotter.show(cpos=cpos, full_screen=False, auto_close=False)
 
-    # If saving, take an opaque screenshot and save it as a WebP. webp annotates
-    # file_path as a str, so the Path is converted at the boundary.
-    if save:
-        webp.save_image(
-            img=webp.Image.fromarray(
-                np.array(
-                    plotter.screenshot(
-                        filename=None,
-                        transparent_background=False,
-                        return_img=True,
+    # Matplotlib only finds a font by its family name once the font is registered with
+    # its font manager. Register the vendored file once, rather than once per diagram.
+    # VTK also changes Matplotlib's math font set as it draws each label with math, and
+    # restoring the settings when the context exits undoes that too.
+    font_manager = matplotlib.font_manager.fontManager
+    if str(_fonts.MONO_FONT_PATH) not in {
+        font_entry.fname for font_entry in font_manager.ttflist
+    }:
+        font_manager.addfont(str(_fonts.MONO_FONT_PATH))
+    with matplotlib.rc_context({"font.serif": [_fonts.MONO_FONT_FAMILY]}):
+        plotter.show(cpos=cpos, full_screen=False, auto_close=False)
+
+        # If saving, take an opaque screenshot and save it as a WebP. webp annotates
+        # file_path as a str, so the Path is converted at the boundary.
+        if save:
+            webp.save_image(
+                img=webp.Image.fromarray(
+                    np.array(
+                        plotter.screenshot(
+                            filename=None,
+                            transparent_background=False,
+                            return_img=True,
+                        )
                     )
-                )
-            ),
-            file_path=str(path),
-            lossless=False,
-            quality=quality,
-            method=WEBP_METHOD,
-        )
+                ),
+                file_path=str(path),
+                lossless=False,
+                quality=quality,
+                method=WEBP_METHOD,
+            )
 
     plotter.close()
 

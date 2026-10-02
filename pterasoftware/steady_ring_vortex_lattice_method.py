@@ -296,6 +296,13 @@ class SteadyRingVortexLatticeMethodSolver:
         drawn shorter than the solver's, and their ends are dashed to show that they
         continue. The units are in meters.
 
+        A label can be edited by double-clicking it in the diagram's window. Its raw
+        text is then shown in a monospaced font with a caret, which the left and right
+        arrow keys move. Enter keeps the new text, Escape restores the old text, and
+        entering empty text deletes the label. Text between pairs of dollar signs is
+        written as math in Matplotlib's mathtext syntax, and the label is shown in red
+        while that math isn't valid.
+
         :param show_airplane_axes_and_points: Determines whether to draw each Airplane's
             geometry axes at its CG. Can be a bool or a numpy bool and will be converted
             internally to a bool. The default is True.

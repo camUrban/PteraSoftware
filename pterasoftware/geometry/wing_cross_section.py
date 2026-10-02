@@ -479,6 +479,13 @@ class WingCrossSection:
         section axes' xz plane, so the WingCrossSection appears as it does on its
         reflected Wing. The units are in meters.
 
+        A label can be edited by double-clicking it in the diagram's window. Its raw
+        text is then shown in a monospaced font with a caret, which the left and right
+        arrow keys move. Enter keeps the new text, Escape restores the old text, and
+        entering empty text deletes the label. Text between pairs of dollar signs is
+        written as math in Matplotlib's mathtext syntax, and the label is shown in red
+        while that math isn't valid.
+
         :param show_airfoil_axes_and_points: Determines whether to draw the Airfoil's
             axes at its leading point, which coincides with this WingCrossSection's
             leading point. Can be a bool or a numpy bool and will be converted

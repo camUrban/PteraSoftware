@@ -2814,6 +2814,13 @@ class CoreUnsteadyProblem:
         is logged, because step then counts back from the last time step created so far
         rather than from the last time step.
 
+        A label can be edited by double-clicking it in the diagram's window. Its raw
+        text is then shown in a monospaced font with a caret, which the left and right
+        arrow keys move. Enter keeps the new text, Escape restores the old text, and
+        entering empty text deletes the label. Text between pairs of dollar signs is
+        written as math in Matplotlib's mathtext syntax, and the label is shown in red
+        while that math isn't valid.
+
         :param step: The time step to draw, as an index into this problem's
             SteadyProblems. Negative values count back from the last one, so the default
             of -1 draws the last time step whose SteadyProblem has been created. It must

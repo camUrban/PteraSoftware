@@ -7,8 +7,8 @@ and the geometry building that feed them, which are settled before any rendering
 They also cover add_vortices, which only adds meshes to a Plotter, so its meshes can be
 checked on an off screen Plotter that never renders. Likewise, they cover
 add_axes_and_points, whose meshes and labels are checked the same way, and whose label
-placement and dragging are checked by rendering that off screen Plotter and sending its
-interactor style mouse events.
+placement, dragging, and editing are checked by rendering that off screen Plotter and
+sending its interactor style mouse and key events.
 """
 
 import math
@@ -16,9 +16,11 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import cast
+from unittest.mock import patch
 
 import matplotlib
 import matplotlib.colors
+import matplotlib.ft2font
 import numpy as np
 import numpy.testing as npt
 import pyvista as pv
@@ -1955,6 +1957,105 @@ def _drag_mouse(
     interactor_style.InvokeEvent("LeftButtonReleaseEvent")
 
 
+def _get_label_center_display(plotter: pv.Plotter, label: pv.Label) -> tuple[int, int]:
+    """Returns the display coordinates of the center of a Label's box.
+
+    :param plotter: The Plotter whose renderer draws the Label.
+    :param label: The Label whose box's center to return.
+    :return: A tuple of two ints holding the x and y display coordinates, in pixels, of
+        the center of the Label's box.
+    """
+    anchor_display = _get_display_point(plotter, np.array(label.position, dtype=float))
+    bounding_box = [0.0, 0.0, 0.0, 0.0]
+    label.GetBoundingBox(plotter.renderer, bounding_box)
+    return (
+        round(anchor_display[0] + 0.5 * (bounding_box[0] + bounding_box[1])),
+        round(anchor_display[1] + 0.5 * (bounding_box[2] + bounding_box[3])),
+    )
+
+
+def _double_click(plotter: pv.Plotter, position_display: tuple[int, int]) -> None:
+    """Double-clicks the left mouse button at a point in a Plotter's render window.
+
+    The events are sent to the interactor style, which is what add_axes_and_points
+    observes, so the double-click reaches its observers the way a real one does.
+
+    :param plotter: The Plotter whose render window is double-clicked.
+    :param position_display: The x and y display coordinates, in pixels, at which to
+        double-click.
+    :return: None
+    """
+    assert plotter.iren is not None
+    interactor = plotter.iren.interactor
+    interactor_style = interactor.GetInteractorStyle()
+    interactor.SetEventPosition(*position_display)
+    for _ in range(2):
+        interactor_style.InvokeEvent("LeftButtonPressEvent")
+        interactor_style.InvokeEvent("LeftButtonReleaseEvent")
+
+
+def _press_key(plotter: pv.Plotter, key_sym: str, key_code: str = "\x00") -> None:
+    """Presses a key in a Plotter's render window.
+
+    A key press is followed by its character, as it is on X11. The events are sent to
+    the interactor style, which is what add_axes_and_points observes, so the key press
+    reaches its observers the way a real one does.
+
+    :param plotter: The Plotter whose render window the key is pressed in.
+    :param key_sym: The key's VTK key symbol (such as "Return" or "Left").
+    :param key_code: The key's character, which is a str holding one character. Keys
+        without a character, such as the arrow keys, send a null character. The default
+        is "\\x00".
+    :return: None
+    """
+    assert plotter.iren is not None
+    interactor = plotter.iren.interactor
+    interactor_style = interactor.GetInteractorStyle()
+    interactor.SetKeySym(key_sym)
+    interactor.SetKeyCode(key_code)
+    interactor_style.InvokeEvent("KeyPressEvent")
+    interactor_style.InvokeEvent("CharEvent")
+
+
+def _type_text(plotter: pv.Plotter, text: str) -> None:
+    """Types text into a Plotter's render window, one character's key at a time.
+
+    :param plotter: The Plotter whose render window the text is typed into.
+    :param text: The text to type, which holds only printable ASCII characters.
+    :return: None
+    """
+    for character in text:
+        _press_key(plotter, character, character)
+
+
+def _edit_label(
+    plotter: pv.Plotter, label_name: str, math_labels: bool = False
+) -> pv.Label:
+    """Adds an axes set with ID "G" at a point with ID "Cg" to a Plotter, renders it
+    viewed along the negative z direction, and double-clicks one of its labels to start
+    editing it.
+
+    :param plotter: The Plotter to add the axes set to.
+    :param label_name: The name of the Label to edit (such as "arrow label GX").
+    :param math_labels: Determines whether to write the labels as math. The default is
+        False.
+    :return: The Label being edited.
+    """
+    _output_rendering.add_axes_and_points(
+        plotter,
+        axes_ids=["G"],
+        point_ids=["Cg"],
+        transformations=[np.eye(4, dtype=float)],
+        axes_scale=1.0,
+        math_labels=math_labels,
+    )
+    plotter.camera_position = "xy"
+    plotter.screenshot(return_img=True)
+    label = _get_labels(plotter)[label_name]
+    _double_click(plotter, _get_label_center_display(plotter, label))
+    return label
+
+
 class TestAddAxesAndPoints(unittest.TestCase):
     """This class contains methods for testing _output_rendering.add_axes_and_points."""
 
@@ -2704,3 +2805,265 @@ class TestAddAxesAndPoints(unittest.TestCase):
         self.assertFalse(np.allclose(self.plotter.camera.position, camera_position))
         for label, anchor_D_Do in zip(labels.values(), listAnchors_D_Do):
             npt.assert_array_equal(label.position, anchor_D_Do)
+
+    def test_double_clicking_a_label_starts_editing_it(self) -> None:
+        """Test that double-clicking a label shows its raw text in the monospaced font,
+        shows the caret, and clears PyVista's key events.
+
+        The raw text of a math label has its dollar signs escaped, so it isn't drawn as
+        math.
+        """
+        label = _edit_label(self.plotter, "arrow label GX", math_labels=True)
+        self.assertEqual(
+            label.input,
+            r"\$" + _output_rendering.get_math_axes_label("G", "X") + r"\$",
+        )
+        self.assertEqual(label.prop.GetFontFile(), str(_fonts.MONO_FONT_PATH))
+        caret_label = _get_labels(self.plotter)["label caret"]
+        self.assertEqual(caret_label.input, _output_rendering._AXES_LABEL_CARET_TEXT)
+        self.assertTrue(caret_label.GetVisibility())
+        assert self.plotter.iren is not None
+        # noinspection PyProtectedMember
+        self.assertEqual(len(self.plotter.iren._key_press_event_callbacks), 0)
+
+    def test_a_single_click_does_not_start_editing(self) -> None:
+        """Test that a single click on a label doesn't start editing it, so typed keys
+        leave its text alone and no caret is created."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        label = _get_labels(self.plotter)["arrow label GX"]
+
+        # A drag that doesn't move the mouse is a single click.
+        center_display = _get_label_center_display(self.plotter, label)
+        _drag_mouse(self.plotter, center_display, center_display)
+        _type_text(self.plotter, "a")
+        self.assertEqual(label.input, "GX")
+        self.assertNotIn("label caret", _get_labels(self.plotter))
+
+    def test_two_slow_presses_do_not_start_editing(self) -> None:
+        """Test that two presses on a label further apart in time than the double-click
+        time don't start editing it."""
+        _output_rendering.add_axes_and_points(
+            self.plotter,
+            axes_ids=["G"],
+            point_ids=["Cg"],
+            transformations=[np.eye(4, dtype=float)],
+            axes_scale=1.0,
+        )
+        self.plotter.camera_position = "xy"
+        self.plotter.screenshot(return_img=True)
+        label = _get_labels(self.plotter)["arrow label GX"]
+        press_times = [0.0, 2.0 * _output_rendering._AXES_LABEL_DOUBLE_CLICK_TIME]
+        with patch.object(_output_rendering.time, "monotonic", side_effect=press_times):
+            _double_click(self.plotter, _get_label_center_display(self.plotter, label))
+        _type_text(self.plotter, "a")
+        self.assertEqual(label.input, "GX")
+
+    def test_typing_inserts_characters_at_the_caret(self) -> None:
+        """Test that typed characters are inserted at the caret, which starts at the end
+        of the text and moves left with the left arrow key.
+
+        The typed dollar signs are shown escaped, so they aren't drawn as math.
+        """
+        label = _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, "$a$")
+        _press_key(self.plotter, "Left")
+        _type_text(self.plotter, "b")
+        self.assertEqual(label.input, r"GX\$ab\$")
+        self.assertEqual(label.prop.color, pv.Color("black"))
+
+    def test_backspace_and_the_arrow_keys_stay_within_the_text(self) -> None:
+        """Test that the left and right arrow keys stop at the text's ends, that
+        Backspace does nothing at its start, and that Backspace deletes the character
+        before the caret."""
+        label = _edit_label(self.plotter, "arrow label GX")
+        for _ in range(3):
+            _press_key(self.plotter, "Left")
+        _press_key(self.plotter, "BackSpace", "\x08")
+        self.assertEqual(label.input, "GX")
+        for _ in range(3):
+            _press_key(self.plotter, "Right")
+        _press_key(self.plotter, "BackSpace", "\x08")
+        self.assertEqual(label.input, "G")
+
+    def test_enter_keeps_the_new_text(self) -> None:
+        """Test that Enter gives the label its new text, which without math is set in
+        the monospaced font, hides the caret, and restores PyVista's key events."""
+        label = _edit_label(self.plotter, "arrow label GX", math_labels=True)
+        for _ in range(len(label.input)):
+            _press_key(self.plotter, "BackSpace", "\x08")
+        _type_text(self.plotter, "Wing")
+        _press_key(self.plotter, "Return", "\r")
+        self.assertEqual(label.input, "Wing")
+        self.assertEqual(label.prop.color, pv.Color("black"))
+        self.assertEqual(label.prop.GetFontFile(), str(_fonts.MONO_FONT_PATH))
+        self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())
+        assert self.plotter.iren is not None
+        # noinspection PyProtectedMember
+        self.assertIn("q", self.plotter.iren._key_press_event_callbacks)
+
+    def test_enter_sets_text_with_math_in_the_times_font_family(self) -> None:
+        """Test that Enter sets a label whose new text has math in the Times font
+        family, for which VTK sets the math in the STIX font."""
+        label = _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, " $x$")
+        _press_key(self.plotter, "Return", "\r")
+        self.assertEqual(label.input, "GX $x$")
+        self.assertEqual(label.prop.font_family, "times")
+
+    def test_escape_restores_the_text_from_before_the_edit(self) -> None:
+        """Test that Escape restores the label's text and font from before the edit, and
+        hides the caret."""
+        label = _edit_label(self.plotter, "arrow label GX", math_labels=True)
+        original_text = "$" + _output_rendering.get_math_axes_label("G", "X") + "$"
+        _type_text(self.plotter, "abc")
+        _press_key(self.plotter, "Escape", "\x1b")
+        self.assertEqual(label.input, original_text)
+        self.assertEqual(label.prop.font_family, "times")
+        self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())
+
+    def test_invalid_text_is_red_and_enter_is_ignored(self) -> None:
+        """Test that text with invalid math is shown in red, with its caret, and that
+        Enter leaves it being edited."""
+        label = _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, "$")
+        self.assertEqual(label.prop.color, pv.Color("red"))
+        caret_label = _get_labels(self.plotter)["label caret"]
+        self.assertEqual(caret_label.prop.color, pv.Color("red"))
+        _press_key(self.plotter, "Return", "\r")
+        self.assertEqual(label.input, r"GX\$")
+        self.assertTrue(caret_label.GetVisibility())
+        _press_key(self.plotter, "BackSpace", "\x08")
+        self.assertEqual(label.prop.color, pv.Color("black"))
+
+    def test_entering_empty_text_deletes_the_label(self) -> None:
+        """Test that entering empty text hides the label, and that double-clicking where
+        it was doesn't start editing it again."""
+        label = _edit_label(self.plotter, "arrow label GX")
+        center_display = _get_label_center_display(self.plotter, label)
+        for _ in range(2):
+            _press_key(self.plotter, "BackSpace", "\x08")
+
+        # An empty text is shown as a space, so its box and caret stay in view.
+        self.assertEqual(label.input, " ")
+        self.assertEqual(label.prop.color, pv.Color("black"))
+        _press_key(self.plotter, "Return", "\r")
+        self.assertEqual(label.input, "")
+        self.assertFalse(label.GetVisibility())
+
+        _double_click(self.plotter, center_display)
+        _type_text(self.plotter, "a")
+        self.assertEqual(label.input, "")
+        self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())
+
+    def test_never_leaves_a_bare_vertical_bar(self) -> None:
+        """Test that the text being edited never holds a vertical bar that doesn't
+        follow a backslash, which VTK would split into table cells.
+
+        Outside math, a typed bar is ignored. Inside math, a typed bar becomes the
+        command for a single bar, unless it follows a backslash, where it completes the
+        command for a double bar. Typing between a backslash and its bar is ignored, and
+        backspacing the backslash deletes its bar too.
+        """
+        backspace = ("BackSpace", "\x08")
+        left = ("Left", "\x00")
+        cases: list[tuple[str, list[str | tuple[str, str]], str]] = [
+            ("outside math", ["a|b"], "GXab"),
+            ("inside math", ["$| x|$"], r"GX\$\vert x\vert\$"),
+            ("after a backslash", ["$\\|$"], r"GX\$\|\$"),
+            (
+                "between a backslash and its bar",
+                ["$\\|$", left, left, "a"],
+                r"GX\$\|\$",
+            ),
+            ("backspacing the backslash", ["$\\|$", left, left, backspace], r"GX\$\$"),
+        ]
+        for name, actions, expected_text in cases:
+            with self.subTest(name=name):
+                plotter = pv.Plotter(off_screen=True)
+                self.addCleanup(plotter.close)
+                label = _edit_label(plotter, "arrow label GX")
+                for action in actions:
+                    if isinstance(action, str):
+                        _type_text(plotter, action)
+                    else:
+                        _press_key(plotter, *action)
+                self.assertEqual(label.input, expected_text)
+
+    def test_double_clicking_another_label_restores_the_first(self) -> None:
+        """Test that double-clicking another label while one is being edited restores
+        the first label's text and starts editing the second."""
+        first_label = _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, "abc")
+        second_label = _get_labels(self.plotter)["arrow label GY"]
+        _double_click(
+            self.plotter, _get_label_center_display(self.plotter, second_label)
+        )
+        self.assertEqual(first_label.input, "GX")
+        _type_text(self.plotter, "d")
+        self.assertEqual(second_label.input, "GYd")
+
+    def test_keys_reach_the_interactor_style_only_while_not_editing(self) -> None:
+        """Test that VTK's shortcuts are held back while a label is being edited, and
+        work again once the edit ends.
+
+        VTK's "w" shortcut draws the scene's meshes as wireframes.
+        """
+        sphere_actor = self.plotter.add_mesh(pv.Sphere())
+        _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, "w")
+        self.assertEqual(sphere_actor.prop.style, "Surface")
+        _press_key(self.plotter, "Escape", "\x1b")
+        _type_text(self.plotter, "w")
+        self.assertEqual(sphere_actor.prop.style, "Wireframe")
+
+    def test_the_caret_moves_one_character_width_per_arrow_key(self) -> None:
+        """Test that each press of the left arrow key moves the caret left on screen by
+        the width of one of the monospaced font's characters, which are all equally
+        wide.
+
+        FreeType stores a character's width in 1/65536ths of a pixel.
+        """
+        label = _edit_label(self.plotter, "arrow label GX")
+        caret_label = _get_labels(self.plotter)["label caret"]
+        render_window = self.plotter.render_window
+        assert render_window is not None
+        mono_font = matplotlib.ft2font.FT2Font(str(_fonts.MONO_FONT_PATH))
+        mono_font.set_size(float(label.prop.font_size), render_window.GetDPI())
+        character_width = mono_font.load_char(ord("X")).linearHoriAdvance / 65536.0
+        listCaretXs_display = [
+            _get_display_point(
+                self.plotter, np.array(caret_label.position, dtype=float)
+            )[0]
+        ]
+        for _ in range(2):
+            _press_key(self.plotter, "Left")
+            listCaretXs_display.append(
+                _get_display_point(
+                    self.plotter, np.array(caret_label.position, dtype=float)
+                )[0]
+            )
+        npt.assert_allclose(
+            np.diff(listCaretXs_display), [-character_width] * 2, atol=1e-6
+        )
+
+    def test_closing_the_window_restores_the_edited_label(self) -> None:
+        """Test that rendering once the interactor is done, as show_diagram does before
+        saving a closed window's diagram, restores the edited label's text and hides the
+        caret."""
+        label = _edit_label(self.plotter, "arrow label GX")
+        _type_text(self.plotter, "abc")
+        assert self.plotter.iren is not None
+        interactor = self.plotter.iren.interactor
+        interactor.SetDone(True)
+        self.addCleanup(interactor.SetDone, False)
+        self.plotter.render()
+        self.assertEqual(label.input, "GX")
+        self.assertFalse(_get_labels(self.plotter)["label caret"].GetVisibility())

@@ -1567,6 +1567,13 @@ class Wing:
         axes at the CG, the wing axes at the leading edge root point, and this Wing's
         Panels. The units are in meters.
 
+        A label can be edited by double-clicking it in the diagram's window. Its raw
+        text is then shown in a monospaced font with a caret, which the left and right
+        arrow keys move. Enter keeps the new text, Escape restores the old text, and
+        entering empty text deletes the label. Text between pairs of dollar signs is
+        written as math in Matplotlib's mathtext syntax, and the label is shown in red
+        while that math isn't valid.
+
         :param show_wing_cross_section_axes_and_points: Determines whether to draw each
             WingCrossSection's axes at its leading point. Can be a bool or a numpy bool
             and will be converted internally to a bool. The default is True.

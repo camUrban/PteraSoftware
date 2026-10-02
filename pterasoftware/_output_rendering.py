@@ -2364,7 +2364,7 @@ def show_diagram(
 
     # If saving an svg or pdf file, read the state its export needs at the end of every
     # render, keeping only the latest.
-    is_vector = save and path.suffix in (".svg", ".pdf")
+    is_vector = save and path.suffix.lower() in (".svg", ".pdf")
     export_states: list[
         tuple[_vector_export.VectorCamera, list[_vector_export.VectorText]]
     ] = []

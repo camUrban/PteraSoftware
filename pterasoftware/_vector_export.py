@@ -19,6 +19,7 @@ makes the svg and pdf writers the same ones the results plots use.
 from __future__ import annotations
 
 import io
+import re
 from collections.abc import Sequence
 from pathlib import Path
 from typing import NamedTuple
@@ -76,6 +77,11 @@ POINTS_PER_PIXEL = 72.0 / _FIGURE_DPI
 # color. Abutting fills are anti-aliased separately by the program that displays the
 # file, which leaves faint seams between them unless each covers its edges this way.
 _FILL_SEAM_LINE_WIDTH = 0.4
+
+# Define the number of decimal places the coordinates of an svg's paths are rounded to.
+# The coordinates are in points, so this rounds them to the nearest hundredth of a
+# point, far finer than any display or print can show.
+_SVG_DECIMAL_PLACES = 2
 
 
 class VectorCamera(NamedTuple):
@@ -794,6 +800,32 @@ def _get_ribbon_triangles(
         ],
         axis=1,
     ).reshape(-1, 3, 3)
+
+
+def _round_svg_path_data(svg: str) -> str:
+    """Returns an svg with the coordinates in its paths' data rounded to
+    _SVG_DECIMAL_PLACES decimal places, with their trailing zeros removed.
+
+    Matplotlib writes every coordinate to six decimal places, which makes up most of a
+    large diagram's file without changing what is shown. Only the d attributes of path
+    elements are rounded, so the text, its embedded fonts, and the styles are left
+    alone.
+
+    :param svg: The svg's contents.
+    :return: The svg's contents, with its paths' coordinates rounded.
+    """
+
+    def round_number(number_match: re.Match[str]) -> str:
+        # Rounding a small negative number to zero gives negative zero, which is written
+        # without its sign.
+        value = round(float(number_match.group()), _SVG_DECIMAL_PLACES) + 0.0
+        return f"{value:.{_SVG_DECIMAL_PLACES}f}".rstrip("0").rstrip(".")
+
+    return re.sub(
+        r'<path d="[^"]*"',
+        lambda path_match: re.sub(r"-?\d+\.\d+", round_number, path_match.group()),
+        svg,
+    )
 
 
 class VectorLayer:
@@ -1538,12 +1570,14 @@ class VectorScene:
                 zorder += 1.0
 
             # An svg is written to a buffer first, so the fonts can be embedded in it
-            # before it reaches the file.
+            # and its paths' coordinates rounded before it reaches the file.
             facecolor = "none" if background_color is None else background_color
             if path.suffix.lower() == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", facecolor=facecolor)
-                svg = _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))
+                svg = _round_svg_path_data(
+                    _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))
+                )
                 path.write_bytes(svg.encode("utf-8"))
             else:
                 figure.savefig(path, facecolor=facecolor)

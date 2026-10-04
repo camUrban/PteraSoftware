@@ -610,6 +610,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
         font_size: int | float | None = None,
         text_color: str | Sequence[float] | None = None,
         line_width: int | float | None = None,
+        selectable_text: bool | np.bool = True,
     ) -> None:
         """Displays a diagram of one time step's SteadyProblem's Airplanes' Wings'
         Panels, along with their axes and points and the vortices this solver placed on
@@ -681,8 +682,8 @@ class UnsteadyRingVortexLatticeMethodSolver:
         :param path: The file path to save the diagram to. It can be a str or a Path,
             and its directory must already exist. Its extension sets the format: ".webp"
             saves an image, while ".svg" and ".pdf" save vector graphics whose text
-            stays selectable. It has no effect if save is False. The default is
-            "diagram.webp".
+            stays selectable, unless an svg is saved with selectable_text set to False.
+            It has no effect if save is False. The default is "diagram.webp".
         :param quality: The quality of a saved WebP, where 0.0 is the smallest file with
             the most compression artifacts and 100.0 is the largest file with the
             fewest. It can be an int or a float and will be converted internally to a
@@ -716,6 +717,14 @@ class UnsteadyRingVortexLatticeMethodSolver:
             keep the widths from the window, at 100 pixels per inch, which draws these
             lines 0.72 points wide. It has no effect unless save is True and path ends
             with ".svg" or ".pdf". The default is None.
+        :param selectable_text: Determines whether a saved svg file writes its labels as
+            selectable text, with their fonts embedded in it. Some programs that import
+            an svg ignore its embedded fonts and draw its text in other fonts, which
+            misplaces the parts of any math, so pass False to draw each label as filled
+            outlines instead, which look the same in every program but can't be selected
+            or searched. Can be a bool or a numpy bool and will be converted internally
+            to a bool. It has no effect unless save is True and path ends with ".svg".
+            The default is True.
         :return: None
         """
         step = _parameter_validation.int_in_range_return_int(
@@ -768,6 +777,9 @@ class UnsteadyRingVortexLatticeMethodSolver:
             _output_rendering.validate_diagram_figure_parameters(
                 figure_size_in, font_size, text_color, line_width
             )
+        )
+        selectable_text = _parameter_validation.boolLike_return_bool(
+            selectable_text, "selectable_text"
         )
 
         if not self._ran:
@@ -862,6 +874,7 @@ class UnsteadyRingVortexLatticeMethodSolver:
             font_size=font_size,
             text_color=text_color,
             line_width=line_width,
+            selectable_text=selectable_text,
         )
 
     def _evaluate_step_aerodynamics(self) -> None:

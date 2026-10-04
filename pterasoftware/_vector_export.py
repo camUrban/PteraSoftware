@@ -1489,12 +1489,18 @@ class VectorScene:
         camera: VectorCamera,
         background_color: matplotlib.typing.ColorType | None,
         line_width_scale: float = 1.0,
+        selectable_text: bool = True,
     ) -> None:
         """Saves the scene as an svg or pdf file, as seen through a camera.
 
-        The format follows the path's suffix. Either way, the text stays selectable and
-        searchable. A pdf embeds its fonts as TrueType, and an svg writes its text as
-        text with the fonts it uses embedded in it, as the results plots do.
+        The format follows the path's suffix. A pdf embeds its fonts as TrueType, so its
+        text stays selectable and searchable. By default, an svg writes its text as text
+        with the fonts it uses embedded in it, as the results plots do, which also keeps
+        it selectable and searchable. Some programs that import an svg ignore its
+        embedded fonts, though, and draw its text in other fonts, which misplaces the
+        parts of any math. An svg can instead draw each character of its text as a
+        filled outline, which looks the same in every program, but can't be selected or
+        searched.
 
         :param path: The path of the file to write. It must end with ".svg" or ".pdf",
             and its directory must already exist.
@@ -1505,9 +1511,17 @@ class VectorScene:
         :param line_width_scale: The factor that the widths of every layer's strokes and
             convex occluders' outlines are scaled by. It must be positive. The default
             is 1.0.
+        :param selectable_text: Determines whether an svg writes its text as text, with
+            its fonts embedded, rather than as filled outlines. It has no effect on a
+            pdf. The default is True.
         :return: None
         """
-        with matplotlib.rc_context({"pdf.fonttype": 42, "svg.fonttype": "none"}):
+        with matplotlib.rc_context(
+            {
+                "pdf.fonttype": 42,
+                "svg.fonttype": "none" if selectable_text else "path",
+            }
+        ):
             figure = matplotlib.figure.Figure(
                 figsize=(
                     camera.window_width / _FIGURE_DPI,
@@ -1570,14 +1584,16 @@ class VectorScene:
                 zorder += 1.0
 
             # An svg is written to a buffer first, so the fonts can be embedded in it
-            # and its paths' coordinates rounded before it reaches the file.
+            # and its paths' coordinates rounded before it reaches the file. An svg
+            # whose text is drawn as outlines has no text to embed fonts for.
             facecolor = "none" if background_color is None else background_color
             if path.suffix.lower() == ".svg":
                 svg_buffer = io.BytesIO()
                 figure.savefig(svg_buffer, format="svg", facecolor=facecolor)
-                svg = _round_svg_path_data(
-                    _fonts.embed_fonts_in_svg(svg_buffer.getvalue().decode("utf-8"))
-                )
+                svg = svg_buffer.getvalue().decode("utf-8")
+                if selectable_text:
+                    svg = _fonts.embed_fonts_in_svg(svg)
+                svg = _round_svg_path_data(svg)
                 path.write_bytes(svg.encode("utf-8"))
             else:
                 figure.savefig(path, facecolor=facecolor)

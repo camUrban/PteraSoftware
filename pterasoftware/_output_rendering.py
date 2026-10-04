@@ -2296,6 +2296,7 @@ def show_diagram(
     font_size: float | None,
     text_color: tuple[float, float, float, float] | None,
     line_width: float | None,
+    selectable_text: bool,
 ) -> None:
     """Shows a diagram's Plotter with a parallel projection, optionally saves it as a
     WebP, svg, or pdf file, and then closes it.
@@ -2345,6 +2346,9 @@ def show_diagram(
     :param line_width: The width, in points, of the lines in a saved svg or pdf file
         that the window draws _DIAGRAM_LINE_WIDTH pixels wide, or None to keep the
         widths from the window. Every other line's width is scaled with them.
+    :param selectable_text: Determines whether a saved svg file writes its labels as
+        selectable text, with their fonts embedded, rather than as filled outlines. It
+        has no effect unless save is True and path ends with ".svg".
     :return: None
     """
     # Set the background explicitly, since the diagram's black lines and labels rely on
@@ -2417,7 +2421,13 @@ def show_diagram(
                 line_width_scale = line_width / (
                     _vector_export.POINTS_PER_PIXEL * _DIAGRAM_LINE_WIDTH
                 )
-            scene.save(path, vector_camera, _DIAGRAM_BACKGROUND_COLOR, line_width_scale)
+            scene.save(
+                path,
+                vector_camera,
+                _DIAGRAM_BACKGROUND_COLOR,
+                line_width_scale,
+                selectable_text,
+            )
         elif save:
             # Take an opaque screenshot and save it as a WebP. webp annotates file_path
             # as a str, so the Path is converted at the boundary.

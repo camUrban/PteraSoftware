@@ -713,6 +713,15 @@ class TestVectorSceneSave(unittest.TestCase):
         self.assertIn(f"font-family: '{_fonts.FONT_FAMILY}'", contents)
         self.assertIn(">Lift Coefficient</text>", contents)
 
+    def test_saves_an_svg_whose_text_is_outlines_if_unselectable(self) -> None:
+        """Test that a saved svg whose text isn't selectable draws its text as outlines,
+        with no text elements and no embedded fonts."""
+        path = self.temporary_path / "scene.svg"
+        self.scene.save(path, self.camera, None, selectable_text=False)
+        contents = path.read_text(encoding="utf-8")
+        self.assertNotIn("<text", contents)
+        self.assertNotIn("@font-face", contents)
+
     def test_saves_a_pdf_with_truetype_fonts(self) -> None:
         """Test that a path ending with ".pdf" saves a pdf file whose fonts are embedded
         as TrueType."""

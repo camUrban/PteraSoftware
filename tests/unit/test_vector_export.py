@@ -3,7 +3,6 @@
 import tempfile
 import unittest
 from pathlib import Path
-from typing import cast
 
 import matplotlib.collections
 import matplotlib.colors
@@ -403,10 +402,14 @@ class TestVectorLayer(unittest.TestCase):
             "black",
             1.0,
         )
-        segments = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in self.get_drawn_collection(
+                    matplotlib.collections.PathCollection
+                ).get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 2)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
         npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
@@ -433,23 +436,28 @@ class TestVectorLayer(unittest.TestCase):
             1.0,
         )
         self.layer.draw(self.axes, self.camera, 1.0, line_width_scale=2.0)
-        line_collection = next(
+        stroke_collection = next(
             collection
             for collection in self.axes.collections
-            if type(collection) is matplotlib.collections.LineCollection
+            if type(collection) is matplotlib.collections.PathCollection
         )
         polygon_collection = next(
             collection
             for collection in self.axes.collections
             if type(collection) is matplotlib.collections.PolyCollection
         )
-        segments = line_collection.get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in stroke_collection.get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 2)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [88.0, 50.0]])
         npt.assert_allclose(segments[1], [[112.0, 50.0], [130.0, 50.0]])
         npt.assert_allclose(
-            np.array(line_collection.get_linewidth(), dtype=float),
-            np.full(2, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
+            np.array(stroke_collection.get_linewidth(), dtype=float),
+            np.full(1, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
         )
         npt.assert_allclose(
             np.array(polygon_collection.get_linewidth(), dtype=float),
@@ -470,10 +478,14 @@ class TestVectorLayer(unittest.TestCase):
             "black",
             1.0,
         )
-        segments = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in self.get_drawn_collection(
+                    matplotlib.collections.PathCollection
+                ).get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 1)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
 
@@ -508,13 +520,18 @@ class TestVectorLayer(unittest.TestCase):
         stroke_D_Do = np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)
         self.layer.add_polylines([stroke_D_Do], "red", 1.0)
         self.layer.add_polylines([stroke_D_Do], "blue", 1.0)
-        line_collection = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
+        stroke_collection = self.get_drawn_collection(
+            matplotlib.collections.PathCollection
         )
-        self.assertEqual(len(line_collection.get_segments()), 2)
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in stroke_collection.get_paths()
+            ]
+        )
+        self.assertEqual(len(segments), 2)
         npt.assert_array_equal(
-            line_collection.get_colors()[-1], matplotlib.colors.to_rgba("blue")
+            stroke_collection.get_edgecolor()[-1], matplotlib.colors.to_rgba("blue")
         )
 
     def test_a_nearer_stroke_hides_a_crossing_stroke_behind_it(self) -> None:
@@ -532,10 +549,14 @@ class TestVectorLayer(unittest.TestCase):
         self.layer.add_polylines(
             [np.array([[0.0, -2.0, 1.0], [0.0, 2.0, 1.0]], dtype=float)], "blue", 1.0
         )
-        segments = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in self.get_drawn_collection(
+                    matplotlib.collections.PathCollection
+                ).get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 3)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [99.0, 50.0]])
         npt.assert_allclose(segments[1], [[101.0, 50.0], [130.0, 50.0]])
@@ -550,10 +571,14 @@ class TestVectorLayer(unittest.TestCase):
         self.layer.add_polylines(
             [np.array([[0.0, -2.0, 0.0], [0.0, 2.0, 0.0]], dtype=float)], "blue", 1.0
         )
-        segments = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in self.get_drawn_collection(
+                    matplotlib.collections.PathCollection
+                ).get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 2)
         npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
         npt.assert_allclose(segments[1], [[100.0, 30.0], [100.0, 70.0]])
@@ -570,10 +595,14 @@ class TestVectorLayer(unittest.TestCase):
             [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.5, 0.05, -1.0]], dtype=float
         )
         self.layer.add_polylines([polyline_D_Do], "black", 1.0)
-        segments = cast(
-            matplotlib.collections.LineCollection,
-            self.get_drawn_collection(matplotlib.collections.LineCollection),
-        ).get_segments()
+        segments = np.concatenate(
+            [
+                np.reshape(path.vertices, (-1, 2, 2))
+                for path in self.get_drawn_collection(
+                    matplotlib.collections.PathCollection
+                ).get_paths()
+            ]
+        )
         self.assertEqual(len(segments), 2)
         npt.assert_allclose(segments[0], [[100.0, 50.0], [110.0, 50.0]])
         npt.assert_allclose(segments[1], [[110.0, 50.0], [105.0, 50.5]])

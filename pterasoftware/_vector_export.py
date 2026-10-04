@@ -30,6 +30,7 @@ import matplotlib.colors
 import matplotlib.figure
 import matplotlib.font_manager
 import matplotlib.patches
+import matplotlib.path
 import matplotlib.typing
 import numpy as np
 import scipy.spatial
@@ -1031,12 +1032,41 @@ class VectorLayer:
                     )
                 ]
             )
-            colors = [self._fill_colors[fill_id] for _, fill_id in order]
+            # Each run of consecutive pieces of the same color is written as one
+            # compound path, rather than one path per piece, which keeps the file small.
+            # Merging a run doesn't change what is painted, since its pieces are all
+            # opaque and the same color. The files are filled by the nonzero rule, so
+            # every piece is wound counterclockwise, which keeps overlapping pieces from
+            # cancelling each other out.
+            fill_paths: list[matplotlib.path.Path] = []
+            fill_path_colors: list[np.ndarray] = []
+            run_pieces: list[matplotlib.path.Path] = []
+            for piece_id, (piece_display, fill_id) in enumerate(order):
+                corners_display = piece_display[:, :2]
+                signed_double_area = np.dot(
+                    corners_display[:, 0], np.roll(corners_display[:, 1], -1)
+                ) - np.dot(np.roll(corners_display[:, 0], -1), corners_display[:, 1])
+                if signed_double_area < 0.0:
+                    corners_display = corners_display[::-1]
+                run_pieces.append(
+                    matplotlib.path.Path(
+                        np.vstack([corners_display, corners_display[:1]]), closed=True
+                    )
+                )
+                color = self._fill_colors[fill_id]
+                if piece_id == len(order) - 1 or not np.array_equal(
+                    color, self._fill_colors[order[piece_id + 1][1]]
+                ):
+                    fill_paths.append(
+                        matplotlib.path.Path.make_compound_path(*run_pieces)
+                    )
+                    fill_path_colors.append(color)
+                    run_pieces = []
             axes.add_collection(
-                matplotlib.collections.PolyCollection(
-                    [piece_display[:, :2] for piece_display, _ in order],
-                    facecolors=colors,
-                    edgecolors=colors,
+                matplotlib.collections.PathCollection(
+                    fill_paths,
+                    facecolors=fill_path_colors,
+                    edgecolors=fill_path_colors,
                     linewidths=_FILL_SEAM_LINE_WIDTH * POINTS_PER_PIXEL,
                     zorder=zorder,
                 )
@@ -1147,11 +1177,45 @@ class VectorLayer:
                     segment_widths.append(
                         float(stroke_widths[stroke_id]) * POINTS_PER_PIXEL
                     )
+
+            # Each run of consecutive opaque segments of the same color and width is
+            # written as one compound path, rather than one path per segment, which
+            # keeps the file small. Translucent segments are each written alone, since a
+            # compound path paints where its segments overlap only once. Matplotlib
+            # simplifies a long path of straight pieces by dropping some of its points,
+            # which is turned off so that every segment is kept.
+            stroke_paths: list[matplotlib.path.Path] = []
+            stroke_path_colors: list[np.ndarray] = []
+            stroke_path_widths: list[float] = []
+            run_segments: list[np.ndarray] = []
+            for segment_id, segment_display in enumerate(segments):
+                run_segments.append(segment_display)
+                color = segment_colors[segment_id]
+                width = segment_widths[segment_id]
+                if (
+                    segment_id == len(segments) - 1
+                    or color[3] < 1.0
+                    or not np.array_equal(color, segment_colors[segment_id + 1])
+                    or width != segment_widths[segment_id + 1]
+                ):
+                    stroke_path = matplotlib.path.Path(
+                        np.concatenate(run_segments),
+                        np.tile(
+                            [matplotlib.path.Path.MOVETO, matplotlib.path.Path.LINETO],
+                            len(run_segments),
+                        ),
+                    )
+                    stroke_path.should_simplify = False
+                    stroke_paths.append(stroke_path)
+                    stroke_path_colors.append(color)
+                    stroke_path_widths.append(width)
+                    run_segments = []
             axes.add_collection(
-                matplotlib.collections.LineCollection(
-                    segments,
-                    colors=segment_colors,
-                    linewidths=segment_widths,
+                matplotlib.collections.PathCollection(
+                    stroke_paths,
+                    facecolors="none",
+                    edgecolors=stroke_path_colors,
+                    linewidths=stroke_path_widths,
                     capstyle="round",
                     joinstyle="round",
                     zorder=zorder,

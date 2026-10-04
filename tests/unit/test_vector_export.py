@@ -377,9 +377,44 @@ class TestVectorLayer(unittest.TestCase):
         )
         self.layer.add_polylines([square_D_Do], "black", 1.0)
         self.assertEqual(len(self.layer._listStrokes_D_Do), 3)
-        self.layer.add_polylines([square_D_Do], "black", 1.0, closed=True)
+
+        # The closed polyline is a different color, so none of its strokes repeat the
+        # open polyline's.
+        self.layer.add_polylines([square_D_Do], "red", 1.0, closed=True)
         self.assertEqual(len(self.layer._listStrokes_D_Do), 7)
         npt.assert_array_equal(self.layer._listStrokes_D_Do[-1], square_D_Do[[3, 0]])
+
+    def test_adds_a_polyline_edge_shared_in_the_same_color_and_width_once(
+        self,
+    ) -> None:
+        """Test that neighboring closed polylines of the same color and width add the
+        edge they share once."""
+        self.layer.add_polylines(
+            [
+                np.array(
+                    [
+                        [0.0, 0.0, 0.0],
+                        [1.0, 0.0, 0.0],
+                        [1.0, 1.0, 0.0],
+                        [0.0, 1.0, 0.0],
+                    ],
+                    dtype=float,
+                ),
+                np.array(
+                    [
+                        [1.0, 0.0, 0.0],
+                        [2.0, 0.0, 0.0],
+                        [2.0, 1.0, 0.0],
+                        [1.0, 1.0, 0.0],
+                    ],
+                    dtype=float,
+                ),
+            ],
+            "black",
+            1.0,
+            closed=True,
+        )
+        self.assertEqual(len(self.layer._listStrokes_D_Do), 7)
 
     def test_a_convex_occluder_hides_a_polyline_behind_it(self) -> None:
         """Test that a polyline passing behind a convex occluder is drawn as the two

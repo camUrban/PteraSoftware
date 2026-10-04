@@ -831,6 +831,13 @@ class VectorLayer:
         self._stroke_widths: list[float] = []
         self._edge_ids: dict[tuple[tuple[float, ...], ...], int] = {}
 
+        # The polylines' strokes are keyed by their ends, rounded, along with their
+        # color and width, so a stroke repeated in the same color and width, such as an
+        # edge shared by neighboring closed polylines, is drawn once.
+        self._polyline_stroke_keys: set[
+            tuple[tuple[tuple[float, ...], ...], tuple[float, ...], float]
+        ] = set()
+
         # Each convex occluder is a tuple of its points (in diagram axes, relative to
         # the diagram origin), its faces, its fill color, its outline color, its outline
         # width, and the indices of the faces whose boundaries are outlined while they
@@ -901,6 +908,9 @@ class VectorLayer:
     ) -> None:
         """Adds polylines, which the layer's fills and convex occluders can hide.
 
+        A segment that repeats one already added by this method in the same color and
+        width, such as an edge shared by neighboring closed polylines, is added once.
+
         :param listPolylines_D_Do: A sequence of (K,3) ndarrays of floats, each holding
             a polyline's points in order along it (in diagram axes, relative to the
             diagram origin). The units are in meters.
@@ -915,7 +925,16 @@ class VectorLayer:
             if closed:
                 polyline_D_Do = np.vstack([polyline_D_Do, polyline_D_Do[:1]])
             for point_id in range(polyline_D_Do.shape[0] - 1):
-                self._listStrokes_D_Do.append(polyline_D_Do[point_id : point_id + 2])
+                stroke_D_Do = polyline_D_Do[point_id : point_id + 2]
+                key = (
+                    tuple(sorted(tuple(np.round(end, 9)) for end in stroke_D_Do)),
+                    tuple(rgba),
+                    width,
+                )
+                if key in self._polyline_stroke_keys:
+                    continue
+                self._polyline_stroke_keys.add(key)
+                self._listStrokes_D_Do.append(stroke_D_Do)
                 self._stroke_owners.append(set())
                 self._stroke_colors.append(rgba)
                 self._stroke_widths.append(width)

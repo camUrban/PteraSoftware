@@ -45,8 +45,10 @@ _ANIMATE_PREVIEW_LAST_OPACITY = 0.35
 # Define the number of samples used for multisample anti-aliasing. PyVista defaults to
 # 8, whose resolve is not reproducible on every driver: rendering one scene twice can
 # differ by a few intensity levels along an anti-aliased edge, which makes a saved WebP
-# vary between runs. Four samples is stable and renders indistinguishably, so the
-# visualizations pin it rather than take the default.
+# vary between runs. Four samples renders indistinguishably and varied less than 8 in
+# testing, so the visualizations pin it rather than take the default. It is not fully
+# reproducible either, since a pixel along an edge can still differ by one intensity
+# level between runs.
 _MULTI_SAMPLES = 4
 
 # Define the colors of the series in the results plots, which are named colors from

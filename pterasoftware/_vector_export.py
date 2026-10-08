@@ -1480,15 +1480,28 @@ def _break_cycles(
     _, components = scipy.sparse.csgraph.connected_components(
         graph, directed=True, connection="strong"
     )
+
+    # Group the items and the constraints by component in one pass over each, keeping
+    # their order within each component. Only a component of more than one item can hold
+    # a cycle.
+    item_components = components.tolist()
+    component_item_ids: dict[int, list[int]] = {}
+    for item_id, component in enumerate(item_components):
+        component_item_ids.setdefault(component, []).append(item_id)
+    component_weights: dict[int, dict[tuple[int, int], float]] = {
+        component: {}
+        for component, item_ids in component_item_ids.items()
+        if len(item_ids) > 1
+    }
+    for (first_id, later_id), weight in weights.items():
+        component = item_components[first_id]
+        if component == item_components[later_id] and component in component_weights:
+            component_weights[component][(first_id, later_id)] = weight
+
     dropped: set[tuple[int, int]] = set()
-    for component in np.flatnonzero(np.bincount(components) > 1).tolist():
+    for component in sorted(component_weights):
         dropped |= _get_cheapest_drops(
-            np.flatnonzero(components == component).tolist(),
-            {
-                pair: weight
-                for pair, weight in weights.items()
-                if components[pair[0]] == component and components[pair[1]] == component
-            },
+            component_item_ids[component], component_weights[component]
         )
     return [
         constraint

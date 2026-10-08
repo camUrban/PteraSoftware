@@ -244,13 +244,17 @@ class TestGetVisibleIntervals(unittest.TestCase):
         self.triangles_display = vector_export_fixtures.make_flat_triangle_fixture()
 
     def get_intervals(
-        self, stroke_display: list[list[float]], owners: set[int] | None = None
+        self,
+        stroke_display: list[list[float]],
+        owners: set[int] | None = None,
+        half_width: float = 0.0,
     ) -> list[tuple[float, float]]:
         """Returns the visible parts of one stroke behind or in front of the triangle.
 
         :param stroke_display: The stroke's start and end (in display coordinates).
         :param owners: The indices of the triangles that own the stroke. None means it
             has no owners.
+        :param half_width: Half of the stroke's width, in pixels. The default is 0.0.
         :return: The stroke's visible parts, as tuples of the fractions along it where
             they start and end.
         """
@@ -258,6 +262,7 @@ class TestGetVisibleIntervals(unittest.TestCase):
             np.array([stroke_display], dtype=float),
             [owners if owners is not None else set()],
             self.triangles_display,
+            np.array([half_width], dtype=float),
         )[0]
 
     def test_keeps_a_stroke_in_front(self) -> None:
@@ -286,6 +291,29 @@ class TestGetVisibleIntervals(unittest.TestCase):
         sliver past the exact crossing, which is halfway along it.
         """
         intervals = self.get_intervals([[10.0, 10.0, 20.0], [30.0, 10.0, 80.0]])
+        self.assertEqual(len(intervals), 1)
+        npt.assert_allclose(intervals[0], (0.0, 0.5), atol=1.0e-4)
+
+    def test_pulls_back_a_stroke_cut_at_the_footprints_boundary(self) -> None:
+        """Test that where a stroke is cut at the boundary of the triangle's footprint,
+        its line is pulled back by half its width, so its round end stops at the
+        boundary.
+
+        The stroke is 100.0 pixels long and leaves the footprint halfway along it, so a
+        half width of 5.0 pixels pulls its cut back by 0.05 of its length.
+        """
+        intervals = self.get_intervals(
+            [[-50.0, 10.0, 80.0], [50.0, 10.0, 80.0]], half_width=5.0
+        )
+        self.assertEqual(len(intervals), 1)
+        npt.assert_allclose(intervals[0], (0.0, 0.45))
+
+    def test_leaves_a_cut_where_a_stroke_passes_through_the_plane(self) -> None:
+        """Test that where a stroke is cut where it passes behind the triangle's plane,
+        within its footprint, the cut isn't pulled back."""
+        intervals = self.get_intervals(
+            [[10.0, 10.0, 20.0], [30.0, 10.0, 80.0]], half_width=5.0
+        )
         self.assertEqual(len(intervals), 1)
         npt.assert_allclose(intervals[0], (0.0, 0.5), atol=1.0e-4)
 
@@ -440,11 +468,11 @@ class TestVectorLayer(unittest.TestCase):
         """Test that a polyline passing behind a convex occluder is drawn as the two
         parts on either side of it.
 
-        The cube's silhouette is at x = 90.0 and x = 110.0 pixels, and its 1.0 pixel
-        wide outline hides the polyline for another pixel beyond it on each side, which
-        is half the outline's width plus half the polyline's, so the polyline's round
-        ends stop short of the outline rather than covering it. The polyline was added
-        first, so its parts are drawn before the four sides of the cube's outline.
+        The cube's silhouette is at x = 90.0 and x = 110.0 pixels, and the polyline's
+        1.0 pixel wide line is pulled back by half its width from each side of it, so
+        its round ends stop at the silhouette rather than reaching over the cube. The
+        polyline is behind the cube's outline, so its parts are drawn before the four
+        sides of the outline.
         """
         self.layer.add_convex_occluder(
             vector_export_fixtures.make_cube_points_fixture(),
@@ -465,17 +493,17 @@ class TestVectorLayer(unittest.TestCase):
             ]
         )
         self.assertEqual(len(segments), 6)
-        npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
-        npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [89.5, 50.0]])
+        npt.assert_allclose(segments[1], [[110.5, 50.0], [130.0, 50.0]])
 
     def test_scales_the_line_widths_where_drawn_and_where_they_hide(self) -> None:
         """Test that a line width scale widens the strokes, including the convex
-        occluders' outlines, both as drawn and where they hide the strokes behind them.
+        occluders' outlines, both as drawn and where a stroke's ends are pulled back
+        from what hides it.
 
         With a scale of 2.0, the cube's outline and the polyline are each 2.0 pixels
-        wide, so the outline hides the polyline for 2.0 pixels beyond the cube's
-        silhouette at x = 90.0 and x = 110.0 pixels, which is half the outline's width
-        plus half the polyline's.
+        wide, so the polyline's line is pulled back by 1.0 pixel, which is half its
+        width, from the cube's silhouette at x = 90.0 and x = 110.0 pixels.
         """
         self.layer.add_convex_occluder(
             vector_export_fixtures.make_cube_points_fixture(),
@@ -497,15 +525,16 @@ class TestVectorLayer(unittest.TestCase):
             ]
         )
         self.assertEqual(len(segments), 6)
-        npt.assert_allclose(segments[0], [[70.0, 50.0], [88.0, 50.0]])
-        npt.assert_allclose(segments[1], [[112.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [89.0, 50.0]])
+        npt.assert_allclose(segments[1], [[111.0, 50.0], [130.0, 50.0]])
         npt.assert_allclose(
             np.array(stroke_collection.get_linewidth(), dtype=float),
             np.full(1, 2.0 * _vector_export.POINTS_PER_PIXEL, dtype=float),
         )
 
     def test_a_convex_occluder_leaves_a_polyline_in_front_of_it(self) -> None:
-        """Test that a polyline passing in front of a convex occluder is drawn whole."""
+        """Test that a polyline passing in front of a convex occluder is drawn whole,
+        after the occluder's outline."""
         self.layer.add_convex_occluder(
             vector_export_fixtures.make_cube_points_fixture(),
             vector_export_fixtures.make_cube_faces_fixture(),
@@ -524,7 +553,7 @@ class TestVectorLayer(unittest.TestCase):
                 for path in self.get_drawn_stroke_collection().get_paths()
             ]
         )
-        npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[-1], [[70.0, 50.0], [130.0, 50.0]])
 
     def test_outlines_an_outlined_face_only_while_it_faces_the_camera(self) -> None:
         """Test that a convex occluder is outlined along its silhouette, plus the
@@ -574,33 +603,34 @@ class TestVectorLayer(unittest.TestCase):
             stroke_collection.get_edgecolor()[-1], matplotlib.colors.to_rgba("blue")
         )
 
-    def test_a_nearer_stroke_hides_a_crossing_stroke_behind_it(self) -> None:
-        """Test that where two strokes cross on screen, the nearer one hides the farther
-        one across its width.
+    def test_paints_the_nearer_of_two_crossing_strokes_later(self) -> None:
+        """Test that where two strokes cross on screen, neither is cut, and the nearer
+        one is painted after the farther one, even when it was added first.
 
-        The farther stroke runs along the x axis and the nearer one along the y axis,
-        1.0 meter closer to the camera, crossing it at x = 100.0 pixels. Both are 1.0
-        pixel wide, so the farther stroke is hidden for 1.0 pixel to either side, which
-        is half the nearer stroke's width plus half its own.
+        The nearer stroke runs along the y axis, 1.0 meter closer to the camera than the
+        farther one, which runs along the x axis, crossing it at x = 100.0 pixels.
         """
+        self.layer.add_polylines(
+            [np.array([[0.0, -2.0, 1.0], [0.0, 2.0, 1.0]], dtype=float)], "blue", 1.0
+        )
         self.layer.add_polylines(
             [np.array([[-3.0, 0.0, 0.0], [3.0, 0.0, 0.0]], dtype=float)], "red", 1.0
         )
-        self.layer.add_polylines(
-            [np.array([[0.0, -2.0, 1.0], [0.0, 2.0, 1.0]], dtype=float)], "blue", 1.0
+        stroke_collection = self.get_drawn_collection(
+            matplotlib.collections.PathCollection
         )
         segments = np.concatenate(
             [
                 np.reshape(path.vertices, (-1, 2, 2))
-                for path in self.get_drawn_collection(
-                    matplotlib.collections.PathCollection
-                ).get_paths()
+                for path in stroke_collection.get_paths()
             ]
         )
-        self.assertEqual(len(segments), 3)
-        npt.assert_allclose(segments[0], [[70.0, 50.0], [99.0, 50.0]])
-        npt.assert_allclose(segments[1], [[101.0, 50.0], [130.0, 50.0]])
-        npt.assert_allclose(segments[2], [[100.0, 30.0], [100.0, 70.0]])
+        self.assertEqual(len(segments), 2)
+        npt.assert_allclose(segments[0], [[70.0, 50.0], [130.0, 50.0]])
+        npt.assert_allclose(segments[1], [[100.0, 30.0], [100.0, 70.0]])
+        npt.assert_array_equal(
+            stroke_collection.get_edgecolor()[-1], matplotlib.colors.to_rgba("blue")
+        )
 
     def test_equally_deep_crossing_strokes_hide_nothing(self) -> None:
         """Test that two strokes crossing on screen at the same depth are both drawn

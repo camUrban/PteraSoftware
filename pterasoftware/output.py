@@ -146,7 +146,9 @@ def _set_preview_opacity(actors: list[pv.Actor], opacity: float) -> None:
             actor.prop.opacity = opacity
 
 
-def _create_plotter(window_width: int, window_height: int) -> pv.Plotter:
+def _create_plotter(
+    window_width: int, window_height: int, off_screen: bool
+) -> pv.Plotter:
     """Creates a Plotter with a parallel projection, multisample anti-aliasing, and the
     background color.
 
@@ -155,9 +157,14 @@ def _create_plotter(window_width: int, window_height: int) -> pv.Plotter:
 
     :param window_width: The width, in pixels, of the render window.
     :param window_height: The height, in pixels, of the render window.
+    :param off_screen: Set this to True to render off screen, without showing a window.
     :return: The new Plotter.
     """
-    plotter = pv.Plotter(window_size=[window_width, window_height], lighting=None)
+    plotter = pv.Plotter(
+        window_size=[window_width, window_height],
+        off_screen=off_screen,
+        lighting=None,
+    )
     plotter.enable_parallel_projection()  # type: ignore[call-arg]
     plotter.enable_anti_aliasing("msaa", multi_samples=_MULTI_SAMPLES)
     plotter.set_background(  # type: ignore[call-arg]
@@ -373,8 +380,12 @@ def draw(
         title bar. The text and line widths scale with it, so a larger or smaller window
         is legible rather than being drawn with the same pixel counts as the default.
         The default is (1024, 768).
-    :param save: Set this to True to save the image as a WebP. It can be a bool or a
-        numpy bool and will be converted internally to a bool. The default is False.
+    :param save: Set this to True to save the image as a WebP. The image is rendered
+        separately, off screen, at window_size and from the view the window ends with,
+        so resizing the window does not change the saved image's size or styling.
+        However, a window resized to a different aspect ratio shows more or less of the
+        scene horizontally than the saved image does. It can be a bool or a numpy bool
+        and will be converted internally to a bool. The default is False.
     :param path: The file path to save the image to. It can be a str or a Path, must end
         with ".webp", and its directory must already exist. This has no effect unless
         save is True. The default is "draw.webp".
@@ -475,7 +486,7 @@ def draw(
 
     # Create the Plotter. Its background color is set before the check below realizes
     # the window.
-    plotter = _create_plotter(window_width, window_height)
+    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
 
     # A window manager will not grant an on-screen render window the whole display, and
     # VTK silently shrinks one that asks for it, so a request that would be shrunk is
@@ -780,9 +791,34 @@ def draw(
         )
         time.sleep(1)
 
-    # If saving, take a screenshot and save it as a WebP.
+    # If saving, render the scene again in a separate off-screen Plotter, from the
+    # camera the window ended with, and save that as a WebP. The user can resize the
+    # window in ways that cannot be prevented on every platform, and the window's text
+    # and line widths stay scaled to the requested size, so capturing the window could
+    # save an image of a different size with mismatched styling. The off-screen Plotter
+    # is always the requested size. Its scalar bar layout is settled whether or not its
+    # scene is translucent, since an opaque scene's layout is already settled and the
+    # extra pass leaves it unchanged.
     if save:
-        image = _output_rendering.screenshot_image(plotter)
+        save_plotter = _create_plotter(window_width, window_height, True)
+        _add_scene(
+            save_plotter,
+            panel_surfaces,
+            wake_ring_vortex_surfaces,
+            coloring,
+            reflect_T_act,
+            window_scale,
+            streamline_surfaces,
+            image_surface_mesh,
+            image_surface_texture,
+            worldbody_geoms,
+            body_geoms,
+            T_pas_BP1_CgP1_to_E_Eo,
+        )
+        save_plotter.camera.DeepCopy(plotter.camera)
+        _output_rendering.settle_scalar_bar_layout(save_plotter)
+        image = _output_rendering.screenshot_image(save_plotter)
+        save_plotter.close()
 
         # webp annotates file_path as a str, so the Path is converted at the boundary.
         webp.save_image(
@@ -986,7 +1022,7 @@ def animate(
 
     # Create the Plotter. Its background color is set before the check below realizes
     # the window.
-    plotter = _create_plotter(window_width, window_height)
+    plotter = _create_plotter(window_width, window_height, pv.OFF_SCREEN)
 
     # A window manager will not grant an on-screen render window the whole display, and
     # VTK silently shrinks one that asks for it, so a request that would be shrunk is

@@ -1440,6 +1440,7 @@ def animate(
         frame_plotter = _create_plotter(window_width, window_height, True)
         frame_window_scale = window_scale
         frame_plotter.camera.DeepCopy(plotter.camera)
+        frame_plotter.renderer.camera_set = True
         _output_rendering.add_playback_overlays(
             frame_plotter, playback, window_scale, animate_text_color
         )

@@ -773,28 +773,44 @@ def _get_area_and_centroid(
 
 
 def _polygons_overlap(
-    firstCorners_display: np.ndarray, secondCorners_display: np.ndarray
+    first_corners: list[tuple[float, float]],
+    second_corners: list[tuple[float, float]],
 ) -> bool:
     """Returns whether two convex polygons on screen overlap by more than
     _OVERLAP_TOLERANCE, by the separating axis test.
 
-    :param firstCorners_display: A (K,2) ndarray of floats holding the first polygon's
-        corners, in order around it (in display coordinates).
-    :param secondCorners_display: A (M,2) ndarray of floats holding the second polygon's
-        corners, in order around it (in display coordinates).
+    The polygons are handled as plain floats, rather than as ndarrays, since they have
+    few corners, and numpy's overhead on arrays that small would far outweigh the
+    arithmetic.
+
+    :param first_corners: The first polygon's corners, in order around it, each a tuple
+        of its x and y positions, in pixels.
+    :param second_corners: The second polygon's corners, in the same form.
     :return: True if the polygons overlap, and False otherwise.
     """
-    for corners_display in (firstCorners_display, secondCorners_display):
-        for edge_display in np.roll(corners_display, -1, axis=0) - corners_display:
-            length = float(np.linalg.norm(edge_display))
+    for corners in (first_corners, second_corners):
+        num_corners = len(corners)
+        for corner_id in range(num_corners):
+            x, y = corners[corner_id]
+            next_x, next_y = corners[(corner_id + 1) % num_corners]
+            edge_x = next_x - x
+            edge_y = next_y - y
+            length = (edge_x * edge_x + edge_y * edge_y) ** 0.5
             if length == 0.0:
                 continue
-            axis = np.array([edge_display[1], -edge_display[0]]) / length
-            first_along = firstCorners_display @ axis
-            second_along = secondCorners_display @ axis
+            axis_x = edge_y / length
+            axis_y = -edge_x / length
+            first_along = [
+                corner_x * axis_x + corner_y * axis_y
+                for corner_x, corner_y in first_corners
+            ]
+            second_along = [
+                corner_x * axis_x + corner_y * axis_y
+                for corner_x, corner_y in second_corners
+            ]
             if (
-                first_along.max() <= second_along.min() + _OVERLAP_TOLERANCE
-                or second_along.max() <= first_along.min() + _OVERLAP_TOLERANCE
+                max(first_along) <= min(second_along) + _OVERLAP_TOLERANCE
+                or max(second_along) <= min(first_along) + _OVERLAP_TOLERANCE
             ):
                 return False
     return True
@@ -1139,28 +1155,70 @@ def _get_stroke_constraints(
     return constraints
 
 
+def _get_fill_constraints(
+    fills: list[tuple[np.ndarray, int]],
+) -> list[tuple[int, int, float, float | None, float | None]]:
+    """Finds the constraints that keep fills that overlap on screen in the BSP's order.
+
+    :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
+        of floats holding its vertices, in order counterclockwise around it on screen
+        (in display coordinates), and the index of the triangle it was cut from.
+    :return: The constraints, each a tuple of the index of the fill painted first, the
+        index of the fill painted later, the constraint's weight, which is infinite, and
+        two Nones, since neither item is a piece of a stroke.
+    """
+    fill_mins = np.array(
+        [corners_display[:, :2].min(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+    fill_maxs = np.array(
+        [corners_display[:, :2].max(axis=0) for corners_display, _ in fills]
+    ).reshape(-1, 2)
+    fill_corners = [
+        [(x, y) for x, y in corners_display[:, :2].tolist()]
+        for corners_display, _ in fills
+    ]
+    constraints: list[tuple[int, int, float, float | None, float | None]] = []
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(fill_mins, fill_maxs, fill_mins, fill_maxs)
+    ):
+        for second_id in candidate_ids[candidate_ids > first_id].tolist():
+            if _polygons_overlap(fill_corners[first_id], fill_corners[second_id]):
+                constraints.append((first_id, second_id, np.inf, None, None))
+    return constraints
+
+
 def _get_constraints(
     fills: list[tuple[np.ndarray, int]],
+    fill_constraints: list[tuple[int, int, float, float | None, float | None]],
     pieces: list[tuple[int, float, float]],
     strokes_display: np.ndarray,
     stroke_owners: Sequence[set[int]],
     occluders: _Occluders,
     widths: np.ndarray,
+    piece_fill_cache: dict[
+        tuple[int, float, float], list[tuple[int, bool, float, float]]
+    ],
 ) -> list[tuple[int, int, float, float | None, float | None]]:
     """Finds the constraints on the order the fills' pieces and the strokes' pieces are
     painted in, each of which requires one item to be painted before another.
 
     The items are indexed with the fills' pieces first, followed by the strokes'. Fills
-    that overlap on screen keep the BSP's order. Pieces of different strokes that
-    overlap on screen are painted farther first, as _get_stroke_constraints finds. Each
-    piece of a stroke is painted after every fill it overlaps on screen that is part of
-    a triangle it outlines. Of the other fills it overlaps, it is painted before each
-    that it is behind, on average over the region where they overlap, and after the
-    rest, so it wins a tie within _PLANE_TOLERANCE.
+    that overlap on screen keep the BSP's order, as _get_fill_constraints finds. Pieces
+    of different strokes that overlap on screen are painted farther first, as
+    _get_stroke_constraints finds. Each piece of a stroke is painted after every fill it
+    overlaps on screen that is part of a triangle it outlines. Of the other fills it
+    overlaps, it is painted before each that it is behind, on average over the region
+    where they overlap, and after the rest, so it wins a tie within _PLANE_TOLERANCE.
+
+    A piece's constraints with the fills depend only on the piece, so they are cached,
+    and only a piece that isn't in the cache, such as one split since the cache was
+    filled, is compared with the fills.
 
     :param fills: The fills' pieces, in the BSP's order, each a tuple of a (K,3) ndarray
         of floats holding its vertices, in order counterclockwise around it on screen
         (in display coordinates), and the index of the triangle it was cut from.
+    :param fill_constraints: The constraints between the fills, as _get_fill_constraints
+        finds them.
     :param pieces: The strokes' pieces, each a tuple of its stroke's index and the
         fractions along the stroke where it starts and ends.
     :param strokes_display: A (N,2,3) ndarray of floats holding each stroke's start and
@@ -1169,6 +1227,10 @@ def _get_constraints(
         triangles each stroke outlines.
     :param occluders: The _Occluders holding the triangles' quantities.
     :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
+    :param piece_fill_cache: A dict mapping each piece already compared with the fills
+        to its constraints with them, each a tuple of the fill's index, whether the
+        piece is painted first, the constraint's weight, and the fraction along the
+        piece where they touch. It is filled in with the pieces that aren't in it yet.
     :return: The constraints, each a tuple of the index of the item painted first, the
         index of the item painted later, the constraint's weight, and the fractions
         along the first and later items where they touch, which are None for a fill. The
@@ -1176,21 +1238,7 @@ def _get_constraints(
         constraint between fills or between a piece and a fill it outlines.
     """
     num_fills = len(fills)
-    fill_mins = np.array(
-        [corners_display[:, :2].min(axis=0) for corners_display, _ in fills]
-    ).reshape(-1, 2)
-    fill_maxs = np.array(
-        [corners_display[:, :2].max(axis=0) for corners_display, _ in fills]
-    ).reshape(-1, 2)
-
-    constraints: list[tuple[int, int, float, float | None, float | None]] = []
-    for first_id, candidate_ids in enumerate(
-        _get_overlapping_boxes(fill_mins, fill_maxs, fill_mins, fill_maxs)
-    ):
-        for second_id in candidate_ids[candidate_ids > first_id].tolist():
-            if _polygons_overlap(fills[first_id][0][:, :2], fills[second_id][0][:, :2]):
-                constraints.append((first_id, second_id, np.inf, None, None))
-
+    constraints = list(fill_constraints)
     for far_id, near_id, gap, far_fraction, near_fraction in _get_stroke_constraints(
         pieces, strokes_display, widths
     ):
@@ -1198,49 +1246,64 @@ def _get_constraints(
             (num_fills + far_id, num_fills + near_id, gap, far_fraction, near_fraction)
         )
 
-    if not pieces:
-        return constraints
-    stroke_ids = np.array([stroke_id for stroke_id, _, _ in pieces], dtype=int)
-    fractions = np.array([[low, high] for _, low, high in pieces], dtype=float)
-    starts_display = strokes_display[stroke_ids, 0]
-    directions_display = strokes_display[stroke_ids, 1] - starts_display
-    piecesEnds_display = (
-        starts_display[:, np.newaxis]
-        + fractions[:, :, np.newaxis] * directions_display[:, np.newaxis]
-    )
-    radii = 0.5 * widths[stroke_ids]
-    for piece_id, candidate_ids in enumerate(
-        _get_overlapping_boxes(
-            piecesEnds_display[:, :, :2].min(axis=1) - radii[:, np.newaxis],
-            piecesEnds_display[:, :, :2].max(axis=1) + radii[:, np.newaxis],
-            fill_mins,
-            fill_maxs,
+    new_pieces = [piece for piece in pieces if piece not in piece_fill_cache]
+    if new_pieces:
+        fill_mins = np.array(
+            [corners_display[:, :2].min(axis=0) for corners_display, _ in fills]
+        ).reshape(-1, 2)
+        fill_maxs = np.array(
+            [corners_display[:, :2].max(axis=0) for corners_display, _ in fills]
+        ).reshape(-1, 2)
+        stroke_ids = np.array([stroke_id for stroke_id, _, _ in new_pieces], dtype=int)
+        fractions = np.array([[low, high] for _, low, high in new_pieces], dtype=float)
+        starts_display = strokes_display[stroke_ids, 0]
+        directions_display = strokes_display[stroke_ids, 1] - starts_display
+        piecesEnds_display = (
+            starts_display[:, np.newaxis]
+            + fractions[:, :, np.newaxis] * directions_display[:, np.newaxis]
         )
-    ):
-        stroke_id = int(stroke_ids[piece_id])
-        for fill_id in candidate_ids.tolist():
-            corners_display, triangle_id = fills[fill_id]
-            if not occluders.usable[triangle_id]:
-                continue
-            overlap = _get_overlap_gap(
-                corners_display[:, :2],
-                occluders.normals_display[triangle_id],
-                float(occluders.offsets[triangle_id]),
-                piecesEnds_display[piece_id],
-                float(radii[piece_id]),
+        radii = 0.5 * widths[stroke_ids]
+        for new_piece_id, candidate_ids in enumerate(
+            _get_overlapping_boxes(
+                piecesEnds_display[:, :, :2].min(axis=1) - radii[:, np.newaxis],
+                piecesEnds_display[:, :, :2].max(axis=1) + radii[:, np.newaxis],
+                fill_mins,
+                fill_maxs,
             )
-            if overlap is None:
-                continue
-            gap, fraction = overlap
-            if triangle_id in stroke_owners[stroke_id]:
-                constraints.append(
-                    (fill_id, num_fills + piece_id, np.inf, None, fraction)
+        ):
+            stroke_id = int(stroke_ids[new_piece_id])
+            piece_constraints: list[tuple[int, bool, float, float]] = []
+            for fill_id in candidate_ids.tolist():
+                corners_display, triangle_id = fills[fill_id]
+                if not occluders.usable[triangle_id]:
+                    continue
+                overlap = _get_overlap_gap(
+                    corners_display[:, :2],
+                    occluders.normals_display[triangle_id],
+                    float(occluders.offsets[triangle_id]),
+                    piecesEnds_display[new_piece_id],
+                    float(radii[new_piece_id]),
                 )
-            elif gap > _PLANE_TOLERANCE:
-                constraints.append((num_fills + piece_id, fill_id, gap, fraction, None))
+                if overlap is None:
+                    continue
+                gap, fraction = overlap
+                if triangle_id in stroke_owners[stroke_id]:
+                    piece_constraints.append((fill_id, False, np.inf, fraction))
+                elif gap > _PLANE_TOLERANCE:
+                    piece_constraints.append((fill_id, True, gap, fraction))
+                else:
+                    piece_constraints.append((fill_id, False, max(-gap, 0.0), fraction))
+            piece_fill_cache[new_pieces[new_piece_id]] = piece_constraints
+
+    for piece_id, piece in enumerate(pieces):
+        for fill_id, piece_first, weight, fraction in piece_fill_cache[piece]:
+            if piece_first:
+                constraints.append(
+                    (num_fills + piece_id, fill_id, weight, fraction, None)
+                )
             else:
                 constraints.append(
-                    (fill_id, num_fills + piece_id, max(-gap, 0.0), None, fraction)
+                    (fill_id, num_fills + piece_id, weight, None, fraction)
                 )
     return constraints
 
@@ -1507,9 +1570,23 @@ def _order_items(
     occluders = _prepare_occluders(triangles_display)
     num_fills = len(fills)
     pieces = _cut_at_pierces(strokes_display, stroke_owners, occluders)
+
+    # The fills never change, so their constraints with each other are found once, and
+    # each piece's constraints with them are kept until the piece is split.
+    fill_constraints = _get_fill_constraints(fills)
+    piece_fill_cache: dict[
+        tuple[int, float, float], list[tuple[int, bool, float, float]]
+    ] = {}
     for _ in range(_SPLIT_ROUNDS):
         constraints = _get_constraints(
-            fills, pieces, strokes_display, stroke_owners, occluders, widths
+            fills,
+            fill_constraints,
+            pieces,
+            strokes_display,
+            stroke_owners,
+            occluders,
+            widths,
+            piece_fill_cache,
         )
         num_items = num_fills + len(pieces)
         if _sort_items(num_items, constraints) is not None:
@@ -1553,7 +1630,14 @@ def _order_items(
             break
 
     constraints = _get_constraints(
-        fills, pieces, strokes_display, stroke_owners, occluders, widths
+        fills,
+        fill_constraints,
+        pieces,
+        strokes_display,
+        stroke_owners,
+        occluders,
+        widths,
+        piece_fill_cache,
     )
     num_items = num_fills + len(pieces)
     order = _sort_items(num_items, _break_cycles(num_items, constraints))

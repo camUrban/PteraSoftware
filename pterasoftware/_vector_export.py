@@ -910,86 +910,124 @@ def _get_overlap_gap(
     )
 
 
-def _get_closest_approach(
-    firstStart_display: np.ndarray,
-    firstEnd_display: np.ndarray,
-    secondStart_display: np.ndarray,
-    secondEnd_display: np.ndarray,
-) -> tuple[float, float, float]:
-    """Finds where two segments come closest on screen.
+def _get_closest_approaches(
+    firstStarts_display: np.ndarray,
+    firstEnds_display: np.ndarray,
+    secondStarts_display: np.ndarray,
+    secondEnds_display: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Finds where each of a set of pairs of segments come closest on screen.
 
-    :param firstStart_display: A (2,) ndarray of floats holding the first segment's
-        start on screen (in display coordinates).
-    :param firstEnd_display: A (2,) ndarray of floats holding the first segment's end on
-        screen (in display coordinates).
-    :param secondStart_display: A (2,) ndarray of floats holding the second segment's
-        start on screen (in display coordinates).
-    :param secondEnd_display: A (2,) ndarray of floats holding the second segment's end
-        on screen (in display coordinates).
-    :return: A tuple of the fractions along the first and second segments where they
-        come closest, and the distance between them there, in pixels. Segments that
-        cross come closest where they cross.
+    :param firstStarts_display: A (M,2) ndarray of floats holding each pair's first
+        segment's start on screen (in display coordinates).
+    :param firstEnds_display: A (M,2) ndarray of floats holding each pair's first
+        segment's end on screen (in display coordinates).
+    :param secondStarts_display: A (M,2) ndarray of floats holding each pair's second
+        segment's start on screen (in display coordinates).
+    :param secondEnds_display: A (M,2) ndarray of floats holding each pair's second
+        segment's end on screen (in display coordinates).
+    :return: A tuple of three (M,) ndarrays of floats, holding the fractions along each
+        pair's first and second segments where they come closest, and the distance
+        between them there, in pixels. Segments that cross come closest where they
+        cross.
     """
-    firstDirection_display = firstEnd_display - firstStart_display
-    secondDirection_display = secondEnd_display - secondStart_display
-    offset_display = secondStart_display - firstStart_display
-    denominator = (
-        firstDirection_display[0] * secondDirection_display[1]
-        - firstDirection_display[1] * secondDirection_display[0]
+    firstDirections_display = firstEnds_display - firstStarts_display
+    secondDirections_display = secondEnds_display - secondStarts_display
+    offsets_display = secondStarts_display - firstStarts_display
+    denominators = (
+        firstDirections_display[:, 0] * secondDirections_display[:, 1]
+        - firstDirections_display[:, 1] * secondDirections_display[:, 0]
     )
-    if abs(denominator) > _DEGENERATE_TOLERANCE:
-        first_fraction = (
-            offset_display[0] * secondDirection_display[1]
-            - offset_display[1] * secondDirection_display[0]
-        ) / denominator
-        second_fraction = (
-            offset_display[0] * firstDirection_display[1]
-            - offset_display[1] * firstDirection_display[0]
-        ) / denominator
-        if 0.0 <= first_fraction <= 1.0 and 0.0 <= second_fraction <= 1.0:
-            return float(first_fraction), float(second_fraction), 0.0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        crossing_first_fractions = (
+            offsets_display[:, 0] * secondDirections_display[:, 1]
+            - offsets_display[:, 1] * secondDirections_display[:, 0]
+        ) / denominators
+        crossing_second_fractions = (
+            offsets_display[:, 0] * firstDirections_display[:, 1]
+            - offsets_display[:, 1] * firstDirections_display[:, 0]
+        ) / denominators
+    crossing = (
+        (np.abs(denominators) > _DEGENERATE_TOLERANCE)
+        & (crossing_first_fractions >= 0.0)
+        & (crossing_first_fractions <= 1.0)
+        & (crossing_second_fractions >= 0.0)
+        & (crossing_second_fractions <= 1.0)
+    )
 
-    # Segments that don't cross come closest where one of them ends.
     def project(
-        point_display: np.ndarray,
-        start_display: np.ndarray,
-        direction_display: np.ndarray,
-    ) -> float:
-        length_squared = float(direction_display @ direction_display)
-        if length_squared == 0.0:
-            return 0.0
-        return float(
-            np.clip(
-                (point_display - start_display) @ direction_display / length_squared,
+        points_display: np.ndarray,
+        starts_display: np.ndarray,
+        directions_display: np.ndarray,
+    ) -> np.ndarray:
+        lengths_squared = (
+            directions_display[:, 0] * directions_display[:, 0]
+            + directions_display[:, 1] * directions_display[:, 1]
+        )
+        relatives_display = points_display - starts_display
+        with np.errstate(divide="ignore", invalid="ignore"):
+            fractions = np.clip(
+                (
+                    relatives_display[:, 0] * directions_display[:, 0]
+                    + relatives_display[:, 1] * directions_display[:, 1]
+                )
+                / lengths_squared,
                 0.0,
                 1.0,
             )
-        )
+        return np.where(lengths_squared == 0.0, 0.0, fractions)
 
-    closest = (0.0, 0.0, np.inf)
-    for first_fraction, second_fraction in (
-        (
-            0.0,
-            project(firstStart_display, secondStart_display, secondDirection_display),
+    # Segments that don't cross come closest where one of them ends, so each pair has
+    # four candidates, one for each end, and the nearest is kept.
+    zeros = np.zeros(firstStarts_display.shape[0], dtype=float)
+    ones = np.ones(firstStarts_display.shape[0], dtype=float)
+    candidate_first_fractions = np.stack(
+        [
+            zeros,
+            ones,
+            project(secondStarts_display, firstStarts_display, firstDirections_display),
+            project(secondEnds_display, firstStarts_display, firstDirections_display),
+        ],
+        axis=1,
+    )
+    candidate_second_fractions = np.stack(
+        [
+            project(
+                firstStarts_display, secondStarts_display, secondDirections_display
+            ),
+            project(firstEnds_display, secondStarts_display, secondDirections_display),
+            zeros,
+            ones,
+        ],
+        axis=1,
+    )
+    candidateGaps_display = (
+        firstStarts_display[:, np.newaxis]
+        + candidate_first_fractions[:, :, np.newaxis]
+        * firstDirections_display[:, np.newaxis]
+        - secondStarts_display[:, np.newaxis]
+        - candidate_second_fractions[:, :, np.newaxis]
+        * secondDirections_display[:, np.newaxis]
+    )
+    candidate_distances = np.sqrt(
+        candidateGaps_display[:, :, 0] * candidateGaps_display[:, :, 0]
+        + candidateGaps_display[:, :, 1] * candidateGaps_display[:, :, 1]
+    )
+    nearest_ids = np.argmin(candidate_distances, axis=1)
+    pair_ids = np.arange(firstStarts_display.shape[0])
+    return (
+        np.where(
+            crossing,
+            crossing_first_fractions,
+            candidate_first_fractions[pair_ids, nearest_ids],
         ),
-        (1.0, project(firstEnd_display, secondStart_display, secondDirection_display)),
-        (
-            project(secondStart_display, firstStart_display, firstDirection_display),
-            0.0,
+        np.where(
+            crossing,
+            crossing_second_fractions,
+            candidate_second_fractions[pair_ids, nearest_ids],
         ),
-        (project(secondEnd_display, firstStart_display, firstDirection_display), 1.0),
-    ):
-        distance = float(
-            np.linalg.norm(
-                firstStart_display
-                + first_fraction * firstDirection_display
-                - secondStart_display
-                - second_fraction * secondDirection_display
-            )
-        )
-        if distance < closest[2]:
-            closest = (first_fraction, second_fraction, distance)
-    return closest
+        np.where(crossing, 0.0, candidate_distances[pair_ids, nearest_ids]),
+    )
 
 
 def _get_stroke_constraints(
@@ -1003,7 +1041,9 @@ def _get_stroke_constraints(
 
     Two pieces overlap where they come within the sum of their half widths of each other
     on screen, and are compared by depth where they come closest. Pieces whose depths
-    there are within _PLANE_TOLERANCE of each other don't constrain each other.
+    there are within _PLANE_TOLERANCE of each other don't constrain each other. The
+    pairs whose bounding boxes overlap are found first, and are then all compared at
+    once.
 
     :param pieces: The pieces, each a tuple of its stroke's index and the fractions
         along the stroke where it starts and ends.
@@ -1012,7 +1052,8 @@ def _get_stroke_constraints(
     :param widths: A (N,) ndarray of floats holding each stroke's width, in pixels.
     :return: The constraints, each a tuple of the farther piece's index, the nearer
         piece's index, the difference in their depths, in pixels, and the fractions
-        along the farther and nearer pieces where they come closest.
+        along the farther and nearer pieces where they come closest, in the order of
+        their pairs' first and then second pieces.
     """
     if not pieces:
         return []
@@ -1033,42 +1074,58 @@ def _get_stroke_constraints(
         + radii[:, np.newaxis]
     )
 
+    # List each pair of pieces of different strokes whose bounding boxes overlap once,
+    # with its first piece before its second.
+    first_ids_list: list[np.ndarray] = []
+    second_ids_list: list[np.ndarray] = []
+    for first_id, candidate_ids in enumerate(
+        _get_overlapping_boxes(mins, maxs, mins, maxs)
+    ):
+        later_ids = candidate_ids[candidate_ids > first_id]
+        first_ids_list.append(np.full(later_ids.shape[0], first_id, dtype=int))
+        second_ids_list.append(later_ids)
+    first_ids = np.concatenate(first_ids_list)
+    second_ids = np.concatenate(second_ids_list)
+    different = stroke_ids[first_ids] != stroke_ids[second_ids]
+    first_ids = first_ids[different]
+    second_ids = second_ids[different]
+
+    first_fractions, second_fractions, distances = _get_closest_approaches(
+        piecesStarts_display[first_ids, :2],
+        piecesEnds_display[first_ids, :2],
+        piecesStarts_display[second_ids, :2],
+        piecesEnds_display[second_ids, :2],
+    )
+    overlapping = distances < radii[first_ids] + radii[second_ids]
+    first_ids = first_ids[overlapping]
+    second_ids = second_ids[overlapping]
+    first_fractions = first_fractions[overlapping]
+    second_fractions = second_fractions[overlapping]
+    gaps = (
+        piecesStarts_display[first_ids, 2]
+        + first_fractions
+        * (piecesEnds_display[first_ids, 2] - piecesStarts_display[first_ids, 2])
+        - piecesStarts_display[second_ids, 2]
+        - second_fractions
+        * (piecesEnds_display[second_ids, 2] - piecesStarts_display[second_ids, 2])
+    )
+
     constraints: list[tuple[int, int, float, float, float]] = []
-    for first_id in range(len(pieces)):
-        candidate_ids = np.flatnonzero(
-            np.all(mins[first_id + 1 :] <= maxs[first_id], axis=1)
-            & np.all(maxs[first_id + 1 :] >= mins[first_id], axis=1)
-        ) + (first_id + 1)
-        for second_id in candidate_ids.tolist():
-            if stroke_ids[first_id] == stroke_ids[second_id]:
-                continue
-            first_fraction, second_fraction, distance = _get_closest_approach(
-                piecesStarts_display[first_id, :2],
-                piecesEnds_display[first_id, :2],
-                piecesStarts_display[second_id, :2],
-                piecesEnds_display[second_id, :2],
+    for first_id, second_id, gap, first_fraction, second_fraction in zip(
+        first_ids.tolist(),
+        second_ids.tolist(),
+        gaps.tolist(),
+        first_fractions.tolist(),
+        second_fractions.tolist(),
+    ):
+        if gap > _PLANE_TOLERANCE:
+            constraints.append(
+                (first_id, second_id, gap, first_fraction, second_fraction)
             )
-            if distance >= radii[first_id] + radii[second_id]:
-                continue
-            gap = float(
-                piecesStarts_display[first_id, 2]
-                + first_fraction
-                * (piecesEnds_display[first_id, 2] - piecesStarts_display[first_id, 2])
-                - piecesStarts_display[second_id, 2]
-                - second_fraction
-                * (
-                    piecesEnds_display[second_id, 2]
-                    - piecesStarts_display[second_id, 2]
-                )
+        elif gap < -_PLANE_TOLERANCE:
+            constraints.append(
+                (second_id, first_id, -gap, second_fraction, first_fraction)
             )
-            if gap > _PLANE_TOLERANCE:
-                constraints.append(
-                    (first_id, second_id, gap, first_fraction, second_fraction)
-                )
-            elif gap < -_PLANE_TOLERANCE:
-                constraints.append(
-                    (second_id, first_id, -gap, second_fraction, first_fraction)
-                )
     return constraints
 
 
